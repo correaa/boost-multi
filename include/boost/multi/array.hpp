@@ -25,6 +25,11 @@
 #endif
 #endif
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <ranges>    // IWYU pragma: keep
+#endif
+
 // TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
@@ -246,8 +251,14 @@ struct static_array                                                             
 #endif
 	}
 
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+	// TODO(correaa) add sentinel version
+	template<class It, class Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
+	constexpr explicit static_array(It const& first, Sentinel const& last) : static_array(first, last, allocator_type{}) {}
+#else
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, It const& last) : static_array(first, last, allocator_type{}) {}
+#endif
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
