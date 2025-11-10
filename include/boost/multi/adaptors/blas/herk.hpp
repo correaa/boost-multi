@@ -75,6 +75,9 @@ class herk_range {
 	struct iterator {
 		herk_range const* self_;
 		Size index_;
+
+		auto operator==(iterator const&) const -> bool;
+		auto operator!=(iterator const&) const -> bool;
 	};
 
 //  // using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
