@@ -84,6 +84,8 @@ class gemv_iterator {
 	using reference = void;
 	using iterator_category = std::random_access_iterator_tag;
 
+	gemv_iterator() = default;
+
 	friend auto operator-(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
 		assert(self.v_first_ == other.v_first_);
 		return self.m_it_ - other.m_it_;
