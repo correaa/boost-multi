@@ -24,8 +24,9 @@ template<typename Label, class A1D>
 void print_1d(Label const& label, A1D const& arr1D) {
 	using std::cout;
 	cout << label << ' ';
-	for(auto const& elem : arr1D)
+	for(auto const& elem : arr1D) {
 		cout << elem << ", ";
+	}
 	cout << '\n';
 }
 
@@ -34,8 +35,9 @@ void print_2d(Label const& label, A2D const& arr2D) {
 	using std::cout;
 	cout << label << '\n';
 	for(auto const& row : arr2D) {
-		for(auto const& elem : row)
+		for(auto const& elem : row) {
 			cout << elem << ", ";
+		}
 		cout << '\n';
 	}
 	cout << '\n';
@@ -123,7 +125,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		print_2d("num = ", num);
 
 		BOOST_TEST( static_cast<multi::size_t>(num.size()) == rst2D.size() );
-		BOOST_TEST( num.size() == num.end() - num.begin() );
+		BOOST_TEST( static_cast<multi::size_t>(num.size()) == num.end() - num.begin() );
 
 		auto softmax = [](auto const& matrix) {
 			// [[maybe_unused]] auto [_, _cols] = matrix.extensions();
