@@ -73,8 +73,8 @@ class herk_range {
 //  {}
 
 	struct iterator {
-		herk_range const* self_;
-		Size index_;
+		herk_range const* self_;   // NOLINT(misc-non-private-member-variables-in-classes) TODO(correaa) make private
+		Size              index_;  // NOLINT(misc-non-private-member-variables-in-classes) TODO(correaa) make private
 
 		auto operator==(iterator const&) const -> bool;
 		auto operator!=(iterator const&) const -> bool;

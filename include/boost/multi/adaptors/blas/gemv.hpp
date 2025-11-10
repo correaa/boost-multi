@@ -86,16 +86,31 @@ class gemv_iterator {
 
 	gemv_iterator() = default;
 
+	auto operator++() -> gemv_iterator& { ++m_it_; return *this; }
+	auto operator++(int) -> gemv_iterator { gemv_iterator ret{*this}; ++(*this); return ret; }
+
+	friend auto operator==(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
+		assert(self.v_first_ == other.v_first_);
+		return self.m_it_ == other.m_it_;
+	}
+
+	friend auto operator!=(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
+		assert(self.v_first_ == other.v_first_);
+		return self.m_it_ != other.m_it_;
+	}
+
 	friend auto operator-(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
 		assert(self.v_first_ == other.v_first_);
 		return self.m_it_ - other.m_it_;
 	}
+
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
 		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		else                                        {blas::gemv_n(first.ctxt_, static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		return result + count;
 	}
+
 	template<class It1DOut>
 	friend auto copy(gemv_iterator first, gemv_iterator last, It1DOut result){return copy_n(first, last - first, result);}
 	template<class It1DOut>
@@ -109,6 +124,7 @@ class gemv_iterator {
 		#endif
 		return copy(first, last, result);
 	}
+
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
 	auto operator*() const { return value_type{0.0}; }  // could be std::complex NOLINT(fuchsia-default-arguments-calls)

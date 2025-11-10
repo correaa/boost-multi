@@ -40,10 +40,14 @@ struct copy_it {
 	using iterator_category = std::output_iterator_tag;
 	using iterator_type     = copy_it;
 
-	copy_it(It it) : it_{it} {}
+	explicit copy_it(It it) : it_{it} {}
 
 	copy_it() = default;
 	copy_it(copy_it const&) = default;
+	copy_it(copy_it&&) = default;
+	auto operator=(copy_it const&) -> copy_it& = default;
+	auto operator=(copy_it&&) -> copy_it& = default;
+	~copy_it() = default;
 
 	friend auto operator-(copy_it const& c1, copy_it const& c2) { return c1.it_ - c2.it_; }
 
