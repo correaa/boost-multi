@@ -20,8 +20,12 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 	mutable std::uniform_real_distribution<> dist_{-1.0, 1.0};
 
  public:
-	n_random_complex(n_random_complex const&) = delete;
-	auto operator=(n_random_complex const&) -> n_random_complex& = delete;
+	n_random_complex() = default;
+	n_random_complex(n_random_complex const&);  // = delete;
+	auto operator=(n_random_complex const&) -> n_random_complex&;  // = delete;
+
+	constexpr auto operator==(n_random_complex const&) const;
+	constexpr auto operator!=(n_random_complex const&) const;
 
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
@@ -32,6 +36,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		using difference_type = std::ptrdiff_t;
 
+		iterator() = default;
+
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
 		// cppcheck-suppress duplInheritedMember ; to ovewrite
@@ -40,6 +46,8 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 			++n_;
 			return *this;
 		}
+		auto operator++(int) -> iterator { iterator ret{*this}; ++(*this); return ret; }
+		// auto operator--(int) -> iterator { iterator ret{*this}; --(*this); return ret; }
 
 		auto operator==(iterator const& other) const { return n_ == other.n_; }
 		auto operator!=(iterator const& other) const { return n_ != other.n_; }

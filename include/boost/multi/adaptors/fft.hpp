@@ -91,6 +91,7 @@ class dft_range {
 		Direction                            dir_;
 
 	 public:
+		const_iterator() = default;
 		const_iterator(
 			typename std::decay_t<In>::const_iterator it,
 			bool doo, std::array<bool, std::decay_t<In>::dimensionality - 1> sub_which,
@@ -107,6 +108,15 @@ class dft_range {
 		friend auto operator-(const_iterator const& lhs, const_iterator const& rhs) {
 			return static_cast<typename std::decay_t<In>::const_iterator const&>(lhs) - static_cast<typename std::decay_t<In>::const_iterator const&>(rhs);
 		}
+
+		auto operator++() -> const_iterator&;
+		auto operator--() -> const_iterator&;
+
+		auto operator++(int) -> const_iterator;
+		auto operator--(int) -> const_iterator;
+
+		auto operator==(const_iterator const& other) const -> bool;
+		auto operator!=(const_iterator const& other) const -> bool;
 
 		auto operator*() const {
 			class fake_array {

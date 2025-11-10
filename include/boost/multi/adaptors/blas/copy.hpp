@@ -40,7 +40,15 @@ struct copy_it {
 	using iterator_category = std::output_iterator_tag;
 	using iterator_type     = copy_it;
 
+	copy_it(It it) : it_{it} {}
+
+	copy_it() = default;
+	copy_it(copy_it const&) = default;
+
 	friend auto operator-(copy_it const& c1, copy_it const& c2) { return c1.it_ - c2.it_; }
+
+	auto operator==(copy_it const& other) const -> bool { return it_ == other.it_; }
+	auto operator!=(copy_it const& other) const -> bool { return it_ != other.it_; }
 
 	template<class It1DOut>
 	friend constexpr auto copy_n(copy_it first, difference_type count, It1DOut result) -> It1DOut {
@@ -58,6 +66,12 @@ struct copy_it {
 		return other.it_ - self.it_;
 	}
 	constexpr auto operator*() const -> value_type { return *it_; }
+
+	constexpr auto operator++() const -> copy_it&;
+	constexpr auto operator--() const -> copy_it&;
+
+	constexpr auto operator++(int) const -> copy_it;
+	constexpr auto operator--(int) const -> copy_it;
 };
 
 template<class A1D> [[nodiscard]]
