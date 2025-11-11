@@ -42,6 +42,14 @@ endif()
 
 message("current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
+if(MSVC)
+    cmake_policy(SET CMP0091 NEW) 
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
+
+# For extra safety, you can also enforce the CUDA runtime to be shared/dynamic:
+# set(CMAKE_CUDA_RUNTIME_LIBRARY SHARED)
+
 project(
   multi
   HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
