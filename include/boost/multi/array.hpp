@@ -299,7 +299,7 @@ struct static_array                                                             
 			assert((*out1).size() == (*rng.begin()).size());
 			auto const& out1_range = *out1;
 			auto        out2       = std::ranges::begin(out1_range);
-			for(auto j : js) {  // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
+			for(auto j : js) {          // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
 				(*this)[i][j] = *out2;  // rng[i][j];
 				++out2;
 			}
