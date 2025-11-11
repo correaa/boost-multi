@@ -184,8 +184,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto const matrix = ([](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6)).partitioned(2);
 
-		// auto matrix = parrot::range(6).as<float>().reshape({2, 3});
-
 		print_2d("sm = ", softmax(matrix));
 
 		auto const allocated_matrix = multi::array<float, 2>{
@@ -196,12 +194,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		print_2d("sm2 = ", softmax(allocated_matrix));
 
 		auto sm2 = softmax(allocated_matrix);
-		sm2.begin();
-		sm2.end();
-		// sm2[0];
 
-		// static_assert(std::ranges::random_access_range<decltype(sm2)>);
-		auto const result_maxtrix = multi::array<float, 2>(sm2);  // .begin(), sm2.end());
+		auto const result_matrix = multi::array<float, 2>(sm2);
+		print_2d("result = ", result_matrix);
 	}
 #endif
 #endif
