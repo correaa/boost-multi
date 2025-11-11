@@ -282,6 +282,32 @@ struct static_array                                                             
 	constexpr explicit static_array(It const& first, It const& last) : static_array(first, last, allocator_type{}) {}
 #endif
 
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
+	template<
+		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
+		class = decltype(std::declval<Range const&>().begin()),
+		class = decltype(std::declval<Range const&>().end()),
+		// class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
+		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T> explicit static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	: static_array({static_cast<multi::size_t>(rng.size()), static_cast<multi::size_t>((*rng.begin()).size())}) {
+		static_assert(D == 2);
+		// reextent({rng.size(), rng.begin()->size()});
+		auto [is, js] = this->extensions();
+		auto out1     = std::ranges::begin(rng);
+		for(auto i : is) {
+			assert((*out1).size() == (*rng.begin()).size());
+			auto const& out1_range = *out1;
+			auto        out2       = std::ranges::begin(out1_range);
+			for(auto j : js) {
+				(*this)[i][j] = *out2;  // rng[i][j];
+				++out2;
+			}
+			++out1;
+		}
+	}
+#endif
+
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(std::declval<Range const&>().begin()),

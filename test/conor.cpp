@@ -13,14 +13,15 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <cmath>      // for std::abs
-// #include <limits>  // for std::numeric_limits
-#include <iterator>  // IWYU pragma: keep
-#include <tuple>     // for std::get  // NOLINT(misc-include-cleaner)
+#include <iterator>   // IWYU pragma: keep
+#include <tuple>      // for std::get  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <iostream>  // for std::cout
-#include <ranges>    // IWYU pragma: keep
+#include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <functional>  // for std::cout
+#include <iostream>    // for std::cout
+#include <limits>      // for std::numeric_limits
+#include <ranges>      // IWYU pragma: keep
 #endif
 
 namespace {
@@ -113,7 +114,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST(A[0].size() == 3);
 		print_2d("A = ", A);
 
-		auto Aexp = Z | stdr::views::transform([](auto row_max) noexcept {auto [row, max] = row_max; return FWD(row) | stdr::views::transform([max](auto elem) noexcept {return std::exp(elem - max);}); });
+		auto Aexp = Z | stdr::views::transform(
+							[](auto row_max) noexcept {auto [row, max] = row_max; return FWD(row) | stdr::views::transform([max](auto elem) noexcept {return std::exp(elem - max);}); }
+						);
 
 		print_2d("Aexp = ", Aexp);
 
@@ -195,7 +198,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto sm2 = softmax(allocated_matrix);
 		sm2.begin();
 		sm2.end();
-		// auto const result_maxtrix = multi::array<float, 2>(sm2.begin(), sm2.end());
+		// sm2[0];
+
+		// static_assert(std::ranges::random_access_range<decltype(sm2)>);
+		auto const result_maxtrix = multi::array<float, 2>(sm2);  // .begin(), sm2.end());
 	}
 #endif
 #endif
