@@ -25,6 +25,11 @@
 #endif
 #endif
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <ranges>    // IWYU pragma: keep
+#endif
+
 // TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
@@ -228,6 +233,25 @@ struct static_array                                                             
 	constexpr explicit static_array(decay_type&& other) noexcept
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
+	template<class It, class Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
+	constexpr explicit static_array(It const& first, Sentinel const& last, allocator_type const& alloc) requires std::sentinel_for<Sentinel, It>
+	: array_alloc{alloc}
+	, ref(
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
+		  index_extension(adl_distance(first, last)) * multi::extensions(*first)
+	  ) {
+#if defined(__clang__) && defined(__CUDACC__)
+		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
+		if constexpr(!std::is_trivially_default_constructible_v<typename static_array::element_type> && !multi::force_element_trivial_default_construction<typename static_array::element_type>) {
+			adl_alloc_uninitialized_default_construct_n(static_array::alloc(), ref::data_elements(), ref::num_elements());
+		}
+		adl_copy_n(first, last - first, ref::begin());
+#else
+		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
+#endif
+	}
+#else
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, It const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
@@ -245,9 +269,44 @@ struct static_array                                                             
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 #endif
 	}
+#endif
 
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
+	// TODO(correaa) add sentinel version
+	template<class It, class Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
+	constexpr explicit static_array(It const& first, Sentinel const& last)
+		requires std::sentinel_for<Sentinel, It>
+	: static_array(first, last, allocator_type{}) {}
+#else
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, It const& last) : static_array(first, last, allocator_type{}) {}
+#endif
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
+	template<
+		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
+		class = decltype(std::declval<Range const&>().begin()),
+		class = decltype(std::declval<Range const&>().end()),
+		// class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
+		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T> explicit static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	: static_array({static_cast<multi::size_t>(rng.size()), static_cast<multi::size_t>((*rng.begin()).size())}) {
+		static_assert(D == 2);
+		// reextent({rng.size(), rng.begin()->size()});
+		auto [is, js] = this->extensions();
+		auto out1     = std::ranges::begin(rng);
+		for(auto i : is) {
+			assert((*out1).size() == (*rng.begin()).size());
+			auto const& out1_range = *out1;
+			auto        out2       = std::ranges::begin(out1_range);
+			for(auto j : js) {          // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
+				(*this)[i][j] = *out2;  // rng[i][j];
+				++out2;
+			}
+			++out1;
+		}
+	}
+#endif
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
@@ -257,7 +316,7 @@ struct static_array                                                             
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
-	: static_array{std::begin(rng), std::end(rng)} {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+	: static_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
