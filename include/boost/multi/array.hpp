@@ -25,7 +25,7 @@
 #endif
 #endif
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>) && __has_include(<ranges>)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
 #endif
