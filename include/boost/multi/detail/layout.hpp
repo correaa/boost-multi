@@ -252,13 +252,13 @@ class f_extensions_t {
 
 		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
-		friend constexpr auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-		friend constexpr auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+		friend constexpr auto operator==(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ == other.it_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ != other.it_; }
 
-		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-		friend auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
-		friend auto operator> (iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
-		friend auto operator>=(iterator const& self, iterator const& other) -> bool { return self.it_ >  other.it_; }
+		friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
+		friend auto operator< (iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <  other.it_; }
+		friend auto operator> (iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >  other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >  other.it_; }
 
 		constexpr auto operator*() const -> decltype(auto) {
 			if constexpr(D != 1) {
@@ -2067,6 +2067,9 @@ template<class Array> struct std::tuple_size<boost::multi::detail::decaying_arra
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
+
+// template<class Fun, ::boost::multi::dimensionality_type D>
+// [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 

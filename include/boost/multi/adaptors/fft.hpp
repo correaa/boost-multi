@@ -82,7 +82,7 @@ class dft_range {
 	In                               in_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 	Direction                        dir_;
 
-	struct const_iterator : private std::decay_t<In>::const_iterator {
+	struct const_iterator : private std::decay_t<In>::const_iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 		// static constexpr auto dimensionality = In::const_iterator::dimensionality;
 
 	 private:
@@ -91,6 +91,7 @@ class dft_range {
 		Direction                            dir_;
 
 	 public:
+		const_iterator() = default;
 		const_iterator(
 			typename std::decay_t<In>::const_iterator it,
 			bool doo, std::array<bool, std::decay_t<In>::dimensionality - 1> sub_which,
@@ -108,20 +109,33 @@ class dft_range {
 			return static_cast<typename std::decay_t<In>::const_iterator const&>(lhs) - static_cast<typename std::decay_t<In>::const_iterator const&>(rhs);
 		}
 
-		auto operator*() const {
-			class fake_array {
-				multi::extensions_t<dimensionality - 1> extensions_;
+		auto operator++() -> const_iterator&;
+		auto operator--() -> const_iterator&;
 
-			 public:
-				explicit fake_array(multi::extensions_t<dimensionality - 1> ext) : extensions_{ext} {}
-				auto extensions() const { return extensions_; }
-				//  multi::size_t size_;
-				auto extension() const {
-					using std::get;
-					return get<0>(extensions());
-				}
-				auto size() const { return extension().size(); }
-			} fa{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extensions()};
+		auto operator++(int) -> const_iterator;
+		auto operator--(int) -> const_iterator;
+
+		auto operator==(const_iterator const& other) const -> bool;
+		auto operator!=(const_iterator const& other) const -> bool;
+
+		// auto operator*() const -> reference;
+
+		class fake_array {
+			multi::extensions_t<dimensionality - 1> extensions_;
+
+			public:
+			explicit fake_array(multi::extensions_t<dimensionality - 1> ext) : extensions_{ext} {}
+			auto extensions() const { return extensions_; }
+			//  multi::size_t size_;
+			auto extension() const {
+				using std::get;
+				return get<0>(extensions());
+			}
+			auto size() const { return extension().size(); }
+		};
+
+		auto operator*() const -> fake_array {
+			fake_array fa{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extensions()};
 			return fa;
 		}
 

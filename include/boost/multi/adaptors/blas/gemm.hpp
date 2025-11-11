@@ -197,12 +197,14 @@ class gemm_iterator {
 	friend class gemm_range;
 
  public:
+	gemm_iterator() = default;
 	gemm_iterator(gemm_iterator const&) = default;
 	gemm_iterator(gemm_iterator&&) noexcept = default;
 	~gemm_iterator() = default;
 
-	auto operator=(gemm_iterator&&) -> gemm_iterator& = delete;
-	auto operator=(gemm_iterator const&) -> gemm_iterator& = delete;
+	// auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator const&) -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;
 
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
@@ -210,11 +212,14 @@ class gemm_iterator {
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
-	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
+	auto operator+=(difference_type n) -> gemm_iterator& { a_it_ += n; return *this; }
+	auto operator-=(difference_type n) -> gemm_iterator& { a_it_ -= n; return *this; }
 
 	auto operator++() -> gemm_iterator& { return operator+=(1); }  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& { return operator-=(1); }
+
+	auto operator++(int) -> gemm_iterator { gemm_iterator ret{*this}; ++(*this); return ret; }  // required by random access concept requires even if not used explicitly
+	auto operator--(int) -> gemm_iterator { gemm_iterator ret{*this}; --(*this); return ret; }
 
 	friend auto operator+(gemm_iterator ret, difference_type n) { return ret += n; }
 
