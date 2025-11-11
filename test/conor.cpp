@@ -18,9 +18,9 @@
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)
+#include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
-#include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)
+#include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>      // IWYU pragma: keep
 #endif
 
