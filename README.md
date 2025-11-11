@@ -11,23 +11,24 @@ _© Alfredo A. Correa, 2018-2025_
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
 ```cpp
-#include <boost/multi/array.hpp>
+#include <cassert>          // for assert
+#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi or https://gitlab.com/correaa/boost-multi
+
+namespace multi = boost::multi;
 
 int main() {
-    multi::array<int, 2> A {  // two-dimensional array of integers
-      {1, 2, 3},
-      {4, 5, 6}
-    };
+    multi::array<int, 2> A = {{1, 2, 3}, {4, 5, 6}};  // 2D array of integers
 
-    assert( A.size() == 2 );  // the array has 2 rows
-    assert( A.size() == A.end() - A.begin() );  // array provides interators to rows
+    assert(A.size() == 2);                    // the array has 2 rows
+    assert(A.size() == A.end() - A.begin());  // interators to rows
 
-    assert( A[1][1] == 5);  // array provies element access through indexing
+    assert(A[1][1] == 5);  // element access through indexing
 
-    assert( A.elements().size() == 2*3 );  // elements can be accessed as a "flat" sequences
-    aseert( A.elements()[4] == 5);  // the "flat" sequence can be accessed by index (and by iterator)
+    assert(A.elements().size() == 2 * 3);  // array has 6 elements
+    assert(A.elements()[4] == 5);          // elements gives "flat" sequences
 }
 ```
+[(online)](https://godbolt.org/z/6cnqzK4ah)
 
 ## Learn about Multi
 
