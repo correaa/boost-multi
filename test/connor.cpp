@@ -2,7 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#pragma GCC diagnostic ignored "-Wpsabi"  // for ranges
+// vvv this has no effect, needs to be passed directly from compilation line "-Wno-psabi"
+// #ifdef __GNUC__
+// #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
+// #endif
 
 #include <boost/multi/array.hpp>
 
@@ -102,7 +105,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto Z = std::ranges::views::zip(rst2D, maxs);
 		std::cout << get<0>(Z[0])[1] << std::endl;
 
-		auto A = Z | stdr::views::transform([](auto row_max) noexcept {auto [row, max] = row_max; return FWD(row) | stdr::views::transform([max](auto elem) noexcept {return elem - max;}); });
+		auto A = Z | stdr::views::transform(
+						 [](auto row_max) noexcept { auto [row, max] = row_max; return FWD(row) | stdr::views::transform([max](auto elem) noexcept { return elem - max; }); }
+					 );
 
 		BOOST_TEST(A.size() == 2);
 		BOOST_TEST(A[0].size() == 3);
