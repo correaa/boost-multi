@@ -11,9 +11,10 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - develop
-      - feature/**
+      - '**'        # matches every branch
+      # - master
+      # - develop
+      # - feature/**
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
