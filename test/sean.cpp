@@ -10,6 +10,9 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <concepts>                         // for constructible_from, defau...
+#include <tuple>                            // for get
+#include <type_traits>                      // for is_constructible_v
 #include <ranges>  // IWYU pragma: keep
 #endif
 
