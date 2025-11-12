@@ -397,7 +397,7 @@ clang++-16 std-23:
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
 
-clang++-16 std-23 stdlib:
+clang++-16 std-23 libc++:
   stage: build
   image: ubuntu:24.04  # debian:latest
   tags:
