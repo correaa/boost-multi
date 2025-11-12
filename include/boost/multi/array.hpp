@@ -26,8 +26,10 @@
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
+#endif
 #endif
 
 // TODO(correaa) or should be (__CUDA__) or CUDA__ || HIP__
@@ -1186,7 +1188,7 @@ struct array : static_array<T, D, Alloc> {
 	// #endif
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
+	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{
 		  (ilv.size() == 0) ? array<T, D>()
 							: array<T, D>(ilv.begin(), ilv.end())
