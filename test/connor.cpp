@@ -7,6 +7,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
+#include <cmath>      // for std::abs
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
@@ -17,12 +18,12 @@ namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
-		#ifdef __NVCC__
+#ifdef __NVCC__
 		auto fun = [](auto ii) noexcept { return static_cast<float>(ii); };
 		auto rst = fun ^ multi::extensions_t(6);
-		#else
+#else
 		auto rst = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6);
-		#endif
+#endif
 		BOOST_TEST( rst.size() == 6 );
 
 		BOOST_TEST( std::abs( rst[0] - 0.0F ) < 1e-12F );
