@@ -146,7 +146,7 @@ class f_extensions_t {
 		Proj proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_(ii * nn_ + jj, rest...); }
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
 	auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
