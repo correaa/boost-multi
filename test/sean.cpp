@@ -10,22 +10,22 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <concepts>                         // for constructible_from, defau...
-#include <tuple>                            // for get
-#include <type_traits>                      // for is_constructible_v
-#include <ranges>  // IWYU pragma: keep
+#include <concepts>     // for constructible_from, defau...
+#include <ranges>       // IWYU pragma: keep
+#include <tuple>        // for get
+#include <type_traits>  // for is_constructible_v
 #endif
 
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
-		#ifdef __NVCC__
+#ifdef __NVCC__
 		auto fun = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); };
 		auto rst = fun ^ multi::extensions_t(5, 5);
-		#else
+#else
 		auto rst = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); } ^ multi::extensions_t(5, 5);
-		#endif
+#endif
 		multi::array<int, 2> const AA = rst;
 
 		BOOST_TEST( AA.size() == rst.size() );
@@ -50,17 +50,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( rstT[1][2] == rst[2][1] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		static_assert(std::weakly_incrementable<decltype(rstT.begin())> );
-		static_assert(std::input_or_output_iterator<decltype(rstT.begin())> );
+		static_assert(std::weakly_incrementable<decltype(rstT.begin())>);
+		static_assert(std::input_or_output_iterator<decltype(rstT.begin())>);
 		BOOST_TEST( rstT.begin() == std::ranges::begin(rstT) );
 
-		static_assert(std::constructible_from<decltype(rstT.end())> );
-		static_assert(std::default_initializable<decltype(rstT.end())> );
-		static_assert(std::is_constructible_v<decltype(rstT.end())> );
-		static_assert(std::semiregular<decltype(rstT.end())> );
+		static_assert(std::constructible_from<decltype(rstT.end())>);
+		static_assert(std::default_initializable<decltype(rstT.end())>);
+		static_assert(std::is_constructible_v<decltype(rstT.end())>);
+		static_assert(std::semiregular<decltype(rstT.end())>);
 		BOOST_TEST( rstT.end() == std::ranges::end(rstT) );
 
-		static_assert( std::ranges::viewable_range<decltype(rstT)> );
+		static_assert(std::ranges::viewable_range<decltype(rstT)>);
 		auto rstTR = rstT | std::views::reverse;
 
 		BOOST_TEST( rstTR.back()[0] == rstT.front()[0] );
