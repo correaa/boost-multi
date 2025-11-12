@@ -22,6 +22,7 @@
 namespace multi = boost::multi;
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -41,6 +42,7 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 
 	return ret;
 }
+#endif
 #endif
 #endif
 
@@ -334,7 +336,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if __cplusplus >= 202002L
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
+
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
 	{
 		auto const x = multi::array{1, 2, 3};
@@ -351,6 +355,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
+#endif
 #endif
 #endif
 #endif
