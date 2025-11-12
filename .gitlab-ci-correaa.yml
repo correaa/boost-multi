@@ -343,6 +343,42 @@ clang++-latest libc++ format:  # Aug2025 clang 19
     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
+clang++-16 std-17:
+  stage: build
+  image: ubuntu:24.04  # debian:latest
+  tags:
+    - non-shared
+    - docker
+  interruptible: true
+  script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-16 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - mkdir build && cd build
+    - clang-16 --version
+    - clang++-16 --version
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=17
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
+clang++-16 std-20:
+  stage: build
+  image: ubuntu:24.04  # debian:latest
+  tags:
+    - non-shared
+    - docker
+  interruptible: true
+  script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-16 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - mkdir build && cd build
+    - clang-16 --version
+    - clang++-16 --version
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
+    - cmake --build .
+    - ctest -j 2 --output-on-failure
+  needs: ["clang++"]
+
 clang++-16 std-23:
   stage: build
   image: ubuntu:24.04  # debian:latest
