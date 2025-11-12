@@ -11,7 +11,9 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if !defined(__clang_major__) || (__clang_major__ != 16) 
 #include <ranges>  // IWYU pragma: keep
+#endif
 #endif
 
 namespace multi = boost::multi;
