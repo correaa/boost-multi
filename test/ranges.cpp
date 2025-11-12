@@ -12,7 +12,9 @@
 #include <memory>      // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
+#include <ranges>  // IWYU pragma: keep
+#endif
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -125,6 +127,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// #endif
 
 #if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L) && !defined(_MSC_VER) && !defined(__NVCOMPILER)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 	{
 		multi::array<int, 2> A = {
 			{1, 2, 3},
@@ -181,6 +184,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 	}
+#endif
 #endif
 
 	return boost::report_errors();

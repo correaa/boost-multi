@@ -11,7 +11,7 @@
 #include <type_traits>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#if !defined(__clang_major__) || (__clang_major__ != 16) 
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
 #endif
 #endif
@@ -872,7 +872,7 @@ struct elements_iterator_t
 	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
 	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -891,7 +891,7 @@ struct elements_iterator_t
 		return base_[apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
@@ -1643,7 +1643,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTEND(google-runtime-operator)
 
  private:
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
@@ -1651,7 +1651,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->stride()); }
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->stride()); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
@@ -1879,7 +1879,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 };
 
-#if(defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
@@ -3605,7 +3605,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
 	template<class TT> static auto launder_(TT* pointer) -> TT* {
-#if(defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L))
+#if defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L)
 		return std::launder(pointer);
 #else
 		return pointer;
