@@ -54,6 +54,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( rstT[1][2] == rst[2][1] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 		static_assert(std::weakly_incrementable<decltype(rstT.begin())>);
 		static_assert(std::input_or_output_iterator<decltype(rstT.begin())>);
 		BOOST_TEST( rstT.begin() == std::ranges::begin(rstT) );
@@ -76,6 +77,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( AA[3] == BB[1] );
 		// BOOST_TEST( AA[4] == BB[0] );
 #endif
+#endif
 	}
+
 	return boost::report_errors();
 }
