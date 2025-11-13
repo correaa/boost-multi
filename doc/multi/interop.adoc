@@ -661,7 +661,7 @@ Other formats for nested are possible by combining these options, for example `f
 >  [6, 7]]
 > ```
 
-(link:https://godbolt.org/z/qTTq988h6[(live)]).
+(link:https://godbolt.org/z/rYhK6hs1n[(live)]).
 
 When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
 
