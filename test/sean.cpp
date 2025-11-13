@@ -8,13 +8,12 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iterator>   // IWYU pragma: keep
-#include <tuple>      // for std::tuple  // NOLINT(misc-include-cleaner)
+#include <tuple>      // IWYU pragma: keep  // for std::tuple  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <concepts>     // for constructible_from, defau...
 #include <ranges>       // IWYU pragma: keep
-#include <tuple>        // IWYU pragma: keep  // for std::get  // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for is_constructible_v
 #endif
 #endif
