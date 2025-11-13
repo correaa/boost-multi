@@ -242,7 +242,7 @@ jobs:
             linkflags: -stdlib=libc++
           - toolset: clang
             compiler: clang++-16
-            cxxstd: "03,11,14,17,20"
+            cxxstd: "03,11,14,17,20,2b"
             os: ubuntu-latest
             container: ubuntu:22.04
             install:

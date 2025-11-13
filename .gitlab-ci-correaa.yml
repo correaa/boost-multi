@@ -343,7 +343,7 @@ clang++-latest libc++ format:  # Aug2025 clang 19
     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
-clang++-16 std-17:
+clang++-16 std-23:
   stage: build
   image: ubuntu:24.04  # debian:latest
   tags:
@@ -356,7 +356,7 @@ clang++-16 std-17:
     - mkdir build && cd build
     - clang-16 --version
     - clang++-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=17
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
