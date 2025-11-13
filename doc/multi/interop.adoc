@@ -642,28 +642,20 @@ obtaining the "flat" output `A2 subblock = [[3, 4], [6, 7]]`.
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
 ```cpp
-    fmt::print("{}\n", fmt::join(A2({1, 3}, {0, 2}), "\n"));  // first dimension rows are printer are in different lines
+    fmt::print("\n[{}]\n", fmt::join(A2({1, 3}, {0, 2}), ",\n "));  // first dimension rows are printer are in different lines
 ```
 with the output:
 
-> ```
-> [3, 4]
-> [6, 7]
-> ```
-
-In same way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which print `(2, 2)`.
-
-link:https://godbolt.org/z/WTEfnMG7n[(live)]
-
-Other formats for nested are possible by combining these options, for example `fmt::println("\n[{}]\n", fmt::join(A2, ",\n "));` would print:
 > ```
 > [[3, 4],
 >  [6, 7]]
 > ```
 
-(link:https://godbolt.org/z/rYhK6hs1n[(live)]).
+In a similar way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
 
-When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
+(link:https://godbolt.org/z/7sGExn35n[(live)]).
+
+When saving arrays to files, please consider using serialization (see section) instead of formatting facilities.
 
 ## Python (cppyy)
 
