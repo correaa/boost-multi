@@ -655,6 +655,14 @@ In same way, the size of the array can be printed simply by passing the sizes ou
 
 link:https://godbolt.org/z/WTEfnMG7n[(live)]
 
+Other formats for nested are possible by combining these options, for example `fmt::println("\n[{}]\n", fmt::join(A2, ",\n "));` would print:
+> ```
+> [[3, 4],
+>  [6, 7]]
+> ```
+
+(link:https://godbolt.org/z/qTTq988h6[(live)]).
+
 When saving arrays to files, consider using serialization (see section) instead of formatting facilities.
 
 ## Python (cppyy)
