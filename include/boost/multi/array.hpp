@@ -11,7 +11,8 @@
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
 
-#include <memory>  // for std::allocator_traits
+#include <iterator>  // for std::sentinel_for
+#include <memory>    // for std::allocator_traits
 #include <stdexcept>
 #include <tuple>        // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
