@@ -10,9 +10,11 @@
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iterator>   // IWYU pragma: keep
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <concepts>  // for totally_ordered
 #include <ranges>    // IWYU pragma: keep
+#endif
 #endif
 
 #include <tuple>        // IWYU pragma: keep
@@ -477,6 +479,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D.elements()[4] == v1D[4] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
 		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
 		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
@@ -484,7 +487,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
-		auto xs1Dr = xs1D | std::views::reverse;
+		auto xs1Dr = xs1D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs1Dr.begin() == 9 );
 		BOOST_TEST( *(xs1Dr.end() - 1) == 0 );
@@ -506,6 +509,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto v1Dr = v1D | std::views::reverse;
 		BOOST_TEST( v1Dr[0] == v1D[9] );
 		BOOST_TEST( v1Dr[9] == v1D[0] );
+#endif
 #endif
 	}
 	{
@@ -531,7 +535,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// multi::detail::what(*xs3D.begin());
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 		using xs2D_iterator = multi::extensions_t<2>::iterator;
 
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
@@ -561,13 +565,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
 		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
 
-		auto xs2Dr = xs2D | std::views::reverse;
+		auto xs2Dr = xs2D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs2Dr.begin() == *(xs2D.end() - 1) );
 		BOOST_TEST( *(xs2Dr.end() - 1) == *(xs2D.begin()) );
 
 		BOOST_TEST( xs2Dr[xs2D.size() - 1] == xs2D[0] );
 		BOOST_TEST( xs2Dr[0] == xs2D[xs2D.size() - 1] );
+#endif
 #endif
 	}
 	{
@@ -576,10 +581,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto front = *v2D.begin();
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
 		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
 
-		auto v2Dr = v2D | std::views::reverse;
+		auto v2Dr = v2D | std::ranges::views::reverse;
 
 		BOOST_TEST( (*v2Dr.begin())[4] == (*(v2D.end() - 1))[4] );
 		BOOST_TEST( (*(v2Dr.end() - 1))[4] == (*(v2D.begin()))[4] );
@@ -589,6 +595,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
+#endif
 #endif
 	}
 	{

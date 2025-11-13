@@ -11,7 +11,9 @@
 #include <type_traits>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
+#endif
 #endif
 
 #ifdef _MSC_VER
@@ -3599,7 +3601,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
 	template<class TT> static auto launder_(TT* pointer) -> TT* {
-#if (defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L))
+#if defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L)
 		return std::launder(pointer);
 #else
 		return pointer;

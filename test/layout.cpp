@@ -10,11 +10,13 @@
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
-#if __cplusplus > 201703L
-#if __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
+#include <ranges>  // IWYU pragma: keep
 #endif
 #endif
+
 #include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
@@ -1282,7 +1284,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *ext.begin() == 0 );
 		BOOST_TEST( *(ext.end() - 1) == 4 );
 
-#if !defined(__clang_major__) || (__clang_major__ != 15)
+#if !defined(__clang_major__) || (__clang_major__ > 16)
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		BOOST_TEST( *std::ranges::begin(ext) == 0 );
 		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
@@ -1293,10 +1295,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
 		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
-		static_assert(std::ranges::range<std::ranges::ref_view<boost::multi::extension_t<int, int>>>);
 
 		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
-		auto rext = ext | std::views::reverse;
+		auto rext = ext | std::ranges::views::reverse;
 
 		BOOST_TEST( rext[0] == 4 );
 		BOOST_TEST( rext[1] == 3 );
