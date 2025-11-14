@@ -16,6 +16,7 @@
 #  echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 #  sudo apt update
 #  sudo apt install intel-hpckit
+# brew install llvm@16
 
 set -x  # echo on
 
@@ -34,8 +35,6 @@ CMT="--target $1"
 CTR="--verbose -R $1"
 fi
 
- (CXX=clang++-16         cmake -S . -B .build.clang++-16  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20                                                         && cmake --build .build.clang++-16    $CMT && (ctest --test-dir .build.clang++-16    --parallel 8 $CTR || ctest --test-dir .build.clang++-16    --rerun-failed --output-on-failure $CTR) ) || exit 666
-
 if [[ $(uname -m) != 'arm64' ]]; then
 
 export PMIX_MCA_gds=hash
@@ -49,6 +48,7 @@ export UBSAN_OPTIONS=print_stacktrack=1
  (CXX=clang++                       cmake -S . -B .build.clang++        -DCMAKE_BUILD_TYPE=Debug                                                              && cmake --build .build.clang++        $CMT && (ctest --test-dir .build.clang++         $CTR || ctest --test-dir .build.clang++        --rerun-failed --output-on-failure $CTR) ) || exit 666
  (CXX=clang++                       cmake -S . -B .build.clang++.libcpp -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-stdlib=libc++" && cmake --build .build.clang++.libcpp $CMT && (ctest --test-dir .build.clang++.libcpp  $CTR || ctest --test-dir .build.clang++.libcpp --rerun-failed --output-on-failure $CTR) ) || exit 666
  (CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE                  && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel         $CTR || ctest --test-dir .build.g++-rel        --rerun-failed --output-on-failure $CTR) ) || exit 666
+ (CXX=clang++-16         cmake -S . -B .build.clang++-16  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20                                                         && cmake --build .build.clang++-16    $CMT && (ctest --test-dir .build.clang++-16    --parallel 8 $CTR || ctest --test-dir .build.clang++-16    --rerun-failed --output-on-failure $CTR) ) || exit 666
 
 if [[ $(uname -m) != 'aarch64' ]]; then
  clang-format-19 --dry-run -Werror include/**/*.hpp test/*.cpp

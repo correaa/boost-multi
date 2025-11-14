@@ -131,7 +131,7 @@ class f_extensions_t {
 		multi::index idx_;
 		Proj proj_;
 		template<class... Args>
-		constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+		constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 	};
 
 	constexpr auto operator[](index idx) const {
@@ -149,7 +149,7 @@ class f_extensions_t {
 	struct bind_transposed_t {
 		Proj proj_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_(jj, ii, rest...); }
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
 	};
 
 	auto transposed() const -> f_extensions_t<D, bind_transposed_t > {
@@ -161,10 +161,10 @@ class f_extensions_t {
 		Proj proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_((ii * nn_) + jj, rest...); }
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
-	constexpr auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
+	constexpr auto partitioned(size_type nn) const noexcept -> f_extensions_t<D + 1, bind_partitioned_t > {
 		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
 	}
 
@@ -172,7 +172,7 @@ class f_extensions_t {
 		Proj proj_;
 		size_type size_m1;
 		template<class T1, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(size_m1 - ii, rest...); }
+		constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
 	};
 
 	constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
@@ -181,7 +181,7 @@ class f_extensions_t {
 		Proj proj_;
 		size_type size_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(rest..., ii); }
+		constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
 	};
 
 	constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
@@ -191,7 +191,7 @@ class f_extensions_t {
 		Proj proj_;
 		Proj2 proj2_;
 		template<class... Ts>
-		constexpr auto operator()(Ts... rest) const -> element { return proj2_(proj_(rest...)); }
+		constexpr auto operator()(Ts... rest) const noexcept -> element { return proj2_(proj_(rest...)); }
 	};
 
 	template<class Proj2>
@@ -217,20 +217,25 @@ class f_extensions_t {
 			multi::index idx_;
 			Proj proj_;
 			template<class... Args>
-			constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+			constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 		};
 
 	 public:
-		constexpr iterator() {}  // = default;
+		constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		// iterator(iterator const& other) = default;
-		iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}
+		iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		iterator(iterator&&) = default;
 
+		auto operator=(iterator&&) -> iterator& = default;
 		auto operator=(iterator const& other) -> iterator& {
+			if(this == &other) { return *this; }
 			// assert(proj_ == other.proj_);
 			it_ = other.it_;
 			return *this;
 		}
+
+		~iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
 			f_extensions_t<D - 1, bind_front_t>,
