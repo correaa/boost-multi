@@ -7,9 +7,9 @@
 // #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
 // #endif
 
-#include <boost/multi/array.hpp>
-
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
+
+#if __cplusplus >= 202302L
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <cmath>      // for std::abs
@@ -24,47 +24,51 @@
 #include <ranges>      // IWYU pragma: keep
 #endif
 
-#include <cmath>
-#include <ranges>
+#include <boost/multi/array.hpp>
 
-#if __cplusplus >= 202302L
-
-#define FMT_HEADER_ONLY
-#define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
-#include <fmt/ranges.h>
-#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
+// #define FMT_HEADER_ONLY
+// #define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
+// #include <fmt/ranges.h>
+// #include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 auto printR2(auto const& lbl, auto const& arr2D) {
-	return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
+	// return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
+	std::cout << lbl << " = \n";
+	for(auto const& row : arr2D) {
+		for(auto const& elem : row)
+			std::cout << elem << ", ";
+		std::cout << '\n';
+	}
+	std::cout << '\n';
 }
 
-constexpr auto maxR1 = []<class R>(R const& row) {
-	return stdr::fold_left(
-		row, std::numeric_limits<stdr::range_value_t<R>>::lowest(), stdr::max
-	);
+constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& row, V low = std::numeric_limits<V>::lowest()) {
+	return stdr::fold_left(row, low, stdr::max);
 };
 
-constexpr auto sumR1 = []<class R>(R const& rng) {
-	return stdr::fold_left(rng, stdr::range_value_t<R>{}, std::plus<>{});
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = V{}) {
+	return stdr::fold_left(rng, zero, std::plus<>{});
 };
 
 #define FWD(var) std::forward<decltype(var)>(var)
 
-auto softmax(auto&& matrix) {
+auto softmax(auto&& matrix) noexcept {
 	return           //
 		FWD(matrix)  //
 		| stdv::transform([](auto&& row) {
+			  auto max = maxR1(row);
 			  return FWD(row) | stdv::transform(
-							   [max = maxR1(row)](auto elem) { return exp(elem - max); }
-						   );
+									[max](auto el) noexcept { return std::exp(el - max); }
+								);
 		  })  //
 		| stdv::transform([](auto&& row) {
+			  auto sum = sumR1(row);
 			  return FWD(row) | stdv::transform(
-							   [sum = sumR1(row)](auto elem) { return elem / sum; }
-						   );
+									[sum](auto elem) noexcept { return elem / sum; }
+								);
 		  });
 }
 
@@ -76,43 +80,23 @@ int main() {
 		 multi::extensions_t(6))
 			.partitioned(2);
 
-	printR2("Matrix", matrix);
+	printR2("matrix", matrix);
 
-	static_assert(
-		std::is_same_v<stdr::range_value_t<std::decay_t<decltype(matrix[0])>>, float>
-	);
-	// using type = stdr::range_value_t<std::decay_t<decltype(matrix[0])>>;
-	// stdr::fold_left(matrix[0], stdr::range_value_t<std::decay_t<decltype(matrix[0])>>{}, std::plus<>{});
+	printR2("softmax", softmax(matrix));
 
-	// std::cout << sumR1(matrix[0]) << "\n";
-	// std::cout << maxR1(matrix[0]) << "\n";
+	auto const alloc_matrix = multi::array<float, 2>{
+		{0.0F, 1.0F, 2.0F},
+		{3.0F, 4.0F, 5.0F}
+	};
 
-	printR2("softmax = ", softmax(matrix));
+	printR2("softmax", softmax(alloc_matrix));
 
-	BOOST_TEST(false);
+	auto const sofmax_copy = multi::array<float, 2>(softmax(alloc_matrix));
 
-#if 0
-	
-	fmt::print("{}", sumR1(matrix[0]));
+	BOOST_TEST( std::abs(sumR1(sofmax_copy[1]) - 1.0F) < 1e-12F );
 
-	printR2("sm = ", softmax(matrix));
+	//	auto const softmax_copy = +softmax(alloc_matrix);
 
-	BOOST_TEST(false);
-
-	auto const allocated_matrix =
-		multi::array<float, 2>{
-			{0.0F, 1.0F, 2.0F},
-			{3.0F, 4.0F, 5.0F}
-    };
-
-	fmt::print("{}", sumR1(allocated_matrix[0]));
-	// printR2("sm2 = ", softmax(allocated_matrix));
-
-	// auto sm2 = softmax(allocated_matrix);
-
-	// auto const result_matrix = multi::array<float, 2>(sm2);
-	// printR2("result = ", result_matrix);
-#endif
 	return boost::report_errors();
 }
 #else
