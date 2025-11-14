@@ -49,7 +49,7 @@ constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& ro
 	return stdr::fold_left(row, low, stdr::max);
 };
 
-constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = V{}) {
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) {
 	return stdr::fold_left(rng, zero, std::plus<>{});
 };
 
@@ -58,18 +58,22 @@ constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rn
 auto softmax(auto&& matrix) noexcept {
 	return           //
 		FWD(matrix)  //
-		| stdv::transform([](auto&& row) {
-			  auto max = maxR1(row);
-			  return FWD(row) | stdv::transform(
-									[max](auto el) noexcept { return std::exp(el - max); }
-								);
-		  })  //
-		| stdv::transform([](auto&& row) {
-			  auto sum = sumR1(row);
-			  return FWD(row) | stdv::transform(
-									[sum](auto elem) noexcept { return elem / sum; }
-								);
-		  });
+		|
+		stdv::transform([](auto&& row) {
+			auto max = maxR1(row);
+			return        //
+				FWD(row)  //
+				|
+				stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+		})  //
+		|
+		stdv::transform([](auto&& nums) {
+			auto den = sumR1(nums);
+			return         //
+				FWD(nums)  //
+				|
+				stdv::transform([=](auto num) noexcept { return num / den; });
+		});
 }
 
 namespace multi = boost::multi;
@@ -95,7 +99,7 @@ int main() {
 
 	BOOST_TEST( std::abs(sumR1(sofmax_copy[1]) - 1.0F) < 1e-12F );
 
-	//	auto const softmax_copy = +softmax(alloc_matrix);
+	// auto softmax_copy = +softmax(alloc_matrix);
 
 	return boost::report_errors();
 }

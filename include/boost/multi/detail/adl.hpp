@@ -293,7 +293,7 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 
 class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
-	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const
+	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt const& last, FwdIt d_first) const
 	// BOOST_MULTI_DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 	{
 	#if __cplusplus >= 202002L
