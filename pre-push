@@ -32,6 +32,8 @@ CMT="--target $1"
 CTR="--verbose -R $1"
 fi
 
+ (CXX=clang++-16         cmake -S . -B .build.clang++-16  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20                                                         && cmake --build .build.clang++-16    $CMT && (ctest --test-dir .build.clang++-16    --parallel 8 $CTR || ctest --test-dir .build.clang++-16    --rerun-failed --output-on-failure $CTR) ) || exit 666
+
 if [[ $(uname -m) != 'arm64' ]]; then
 
 export PMIX_MCA_gds=hash
