@@ -343,7 +343,7 @@ clang++-latest libc++ format:  # Aug2025 clang 19
     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
-clang++-16 std-23:
+clang++-16 std-20:
   stage: build
   image: ubuntu:24.04  # debian:latest
   tags:
@@ -356,7 +356,7 @@ clang++-16 std-23:
     - mkdir build && cd build
     - clang-16 --version
     - clang++-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
@@ -1066,8 +1066,8 @@ inq cuda:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 2400
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+    - ctest -j 4 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure -j 2 --timeout 2400
   timeout: 2 hours 30 minutes
   needs: ["inq", "g++"]  # "cuda", "inq"]
 
