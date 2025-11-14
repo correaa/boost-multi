@@ -221,16 +221,16 @@ class f_extensions_t {
 		};
 
 	 public:
-		iterator() = default;
+		constexpr iterator();  //  = default;
+
 		// iterator(iterator const& other) = default;
+		iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}
 
-		// iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}
-
-		// auto operator=(iterator const& other) -> iterator& {
-		// 	// assert(proj_ == other.proj_);
-		// 	it_ = other.it_;
-		// 	return *this;
-		// }
+		auto operator=(iterator const& other) -> iterator& {
+			// assert(proj_ == other.proj_);
+			it_ = other.it_;
+			return *this;
+		}
 
 		using value_type = std::conditional_t<(D != 1),
 			f_extensions_t<D - 1, bind_front_t>,
@@ -2070,8 +2070,8 @@ namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc need
 template<>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
 
-// template<class Fun, ::boost::multi::dimensionality_type D>
-// [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
+template<class Fun, ::boost::multi::dimensionality_type D>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
