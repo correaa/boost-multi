@@ -601,6 +601,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				 multi::extensions_t(6))
 					.partitioned(2);
 
+			auto [matrix_is, matrix_js] = matrix.extensions();
+			BOOST_TEST( matrix_is.size() == 2 );
+			BOOST_TEST( matrix_js.size() == 3 );
+
 #ifndef __NVCC__
 			static_assert(std::movable<std::decay_t<decltype(matrix[0])>::iterator>);
 #endif
