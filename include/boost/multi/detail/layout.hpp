@@ -221,7 +221,7 @@ class f_extensions_t {
 		};
 
 	 public:
-		constexpr iterator();  //  = default;
+		constexpr iterator() {}  // = default;
 
 		// iterator(iterator const& other) = default;
 		iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}

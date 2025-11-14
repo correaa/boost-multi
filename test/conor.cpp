@@ -37,8 +37,8 @@
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
-void printR2(auto const& label, auto const& arr2D) {
-	fmt::print("{} = \n[{}]\n", label, fmt::join(arr2D, ",\n "));
+auto printR2(auto const& lbl, auto const& arr2D) {
+	return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
 }
 
 constexpr auto maxR1 = []<class R>(R const& row) {
@@ -47,23 +47,25 @@ constexpr auto maxR1 = []<class R>(R const& row) {
 	);
 };
 
-[[maybe_unused]] auto sumR1 = []<class R>(R const& rng) {
+constexpr auto sumR1 = []<class R>(R const& rng) {
 	return stdr::fold_left(rng, stdr::range_value_t<R>{}, std::plus<>{});
 };
 
 #define FWD(var) std::forward<decltype(var)>(var)
 
 auto softmax(auto&& matrix) {
-	return FWD(matrix) | stdv::transform([](auto row) {
-			   return stdv::transform(
-				   [max = maxR1(row)](auto elem) { return exp(elem - max); }
-			   );
-		   }) |
-		   stdv::transform([](auto row) {
-			   return stdv::transform(
-				   [sum = sumR1(row)](auto elem) { return elem / sum; }
-			   );
-		   });
+	return           //
+		FWD(matrix)  //
+		| stdv::transform([](auto&& row) {
+			  return FWD(row) | stdv::transform(
+							   [max = maxR1(row)](auto elem) { return exp(elem - max); }
+						   );
+		  })  //
+		| stdv::transform([](auto&& row) {
+			  return FWD(row) | stdv::transform(
+							   [sum = sumR1(row)](auto elem) { return elem / sum; }
+						   );
+		  });
 }
 
 namespace multi = boost::multi;
@@ -74,15 +76,22 @@ int main() {
 		 multi::extensions_t(6))
 			.partitioned(2);
 
+	printR2("Matrix", matrix);
+
 	static_assert(
 		std::is_same_v<stdr::range_value_t<std::decay_t<decltype(matrix[0])>>, float>
 	);
 	// using type = stdr::range_value_t<std::decay_t<decltype(matrix[0])>>;
-	// stdr::fold_left(rng, stdr::range_value_t<std::decay_t<decltype(matrix[0])>>{}, std::plus<>{});
+	// stdr::fold_left(matrix[0], stdr::range_value_t<std::decay_t<decltype(matrix[0])>>{}, std::plus<>{});
+
+	// std::cout << sumR1(matrix[0]) << "\n";
+	// std::cout << maxR1(matrix[0]) << "\n";
+
+	printR2("softmax = ", softmax(matrix));
+
+	BOOST_TEST(false);
 
 #if 0
-	sumR1(matrix[0]);
-
 	
 	fmt::print("{}", sumR1(matrix[0]));
 
