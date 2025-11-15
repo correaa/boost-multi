@@ -595,6 +595,22 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
+		{
+			auto matrix =
+				([](auto ii) noexcept { return static_cast<float>(ii); } ^
+				 multi::extensions_t(6))
+					.partitioned(2);
+
+			auto [matrix_is, matrix_js] = matrix.extensions();
+			BOOST_TEST( matrix_is.size() == 2 );
+			BOOST_TEST( matrix_js.size() == 3 );
+
+#ifndef __NVCC__
+			static_assert(std::movable<std::decay_t<decltype(matrix[0])>::iterator>);
+#endif
+			BOOST_TEST( std::ranges::begin(matrix[0]) == matrix[0].begin() );
+			BOOST_TEST( std::ranges::end(matrix[0]) == matrix[0].end() );
+		}
 #endif
 #endif
 	}
