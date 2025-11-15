@@ -293,7 +293,7 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 
 class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
-	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt const& last, FwdIt d_first) const
+	[[nodiscard]] constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const  // N_O_L_I_N_T(performance-unnecessary-value-param) bug in clang-tidy
 	// BOOST_MULTI_DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 	{
 	#if __cplusplus >= 202002L
@@ -302,10 +302,10 @@ class adl_uninitialized_copy_t {
 			   std::is_constant_evaluated()
 			&& (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
-			return std::              copy(first, last, d_first);
+			return std::              copy(std::move(first), std::move(last), std::move(d_first));
 		}
 	#endif
-		return std::uninitialized_copy(first, last, d_first);
+		return std::uninitialized_copy(std::move(first), std::move(last), std::move(d_first));
 	}
 #if defined(__CUDACC__) || defined(__HIPCC__)
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
