@@ -1743,9 +1743,11 @@ struct layout_t
 				this->sub(),
 				this->stride(),
 				this->offset(),
-				this->nelems() / n
+				this->nelems() / n  // mull-ignore: cxx_div_to_mul
 			},
-			this->nelems() / n, 0, this->nelems()
+			this->nelems() / n,  // mull-ignore: cxx_div_to_mul
+			0,
+			this->nelems()
 		};
 		// new_layout.sub().nelems() /= n;
 	}
