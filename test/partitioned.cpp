@@ -331,6 +331,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A2_ref = A1.partitioned(2);
 
+		auto [is, js] = A2_ref.extensions();
+		BOOST_TEST( is.size() == 2 );
+		BOOST_TEST( js.size() == 3 );
+
 		static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
 		static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
