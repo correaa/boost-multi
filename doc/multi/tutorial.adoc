@@ -705,6 +705,97 @@ static_assert( trace() == 4 + 2 + 10 );
 ```
 https://godbolt.org/z/Porre3z8s
 
+== Restrictions (lazy array)
+
+So far we have look at usage patterns arrays that contains elements that are explicitly stored in memory (array containers).
+The library also offers "restrictions", which are functions of integer indices that are restricted (in the mathematical sense) to a range of values (a cartesian product of extensions).
+The dimensionality if this restriction is the number of indices or coordinates that this function accepts as inputs.
+
+Extensions are composed of a function (generally a lambda) and an `extensions` object and they are combined using `operator^` (which should be interpreted as an arrow pointing up)
+For example we can restrict this linear functon of indices `i` and `j` to the domain `[0, 2) x [0, 3)` (i.e. `i = 0...1` and `j = 0...2`). 
+
+
+```cpp
+auto restrict = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
+```
+
+Unlike array do do not necessarely allocate space; instead the elements are generated on demand.
+For this reason they can be regarded as "lazy" arrays.
+(They are multidimensional generalization of other lazy ranges such as `std::ranges::iota`, `std::ranges::iota | std::ranges::transform(...)` or `thrust::counting_iterator`.)
+
+The main property of a restriction is that they can be generically used as arrays.
+The elements can be evaluated in the same was as a concrete array.
+
+For example
+```
+assert( restrict[1][1] == 11 );
+```
+
+In other words, this evaluates to the array
+>```
+>  0  1  2
+> 10 11 12
+>```
+
+Furthermore, they have the same interface as `multi::array`, such as `begin()`, `end()`, `elements()`,
+which means that they can be used in the same generic algorithms.
+The main different is that the elements cannot be mutated, an there are internal pointers to extract (e.g. through functions `data_elements()` or `base()`)
+
+As a simple example, the sum of all the elements is `std::reduce(restrict.begin(), restrict.end())`.
+
+The simplest way to utilize restrictions is to generate concrete arrays from coordinates;
+this common nested loop...
+```cpp
+multi::array<int, 2> A({3, 2});
+
+auto [is, js] = A.extensions();
+
+for(auto i : is) {
+	for(auto j : js) {
+		A[i][j] = 10*i + j;
+	}
+}
+```
+...can be resplaced by a simpler construction
+```cpp
+multi::array<int, 2> const A([](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2));
+```
+
+Note that, since there is no immediate need for assigning elements, `A` can be declared `const`.
+In addition the element initialization can delegated to the library how to initialize the array.
+In some cases, the initialization could ocurr using optimal hardware- or library-specific operations.
+
+Restrictions can be used in many other contexts beyond initialization, and in combination with `std::ranges` and mixed with concrete arrays.
+In some cases functions can be generically written to work both on `multi::array`s (or `multi::subarray`s) and on restrictions.
+
+For example here we define a transformation that for each row of a matrix is substracts the mean.
+
+```cpp
+auto shift = std::views::transform(
+	[]<class R>(R&& row) {
+		auto mean = std::reduce(row.begin(), row.end()) / row.size();
+		return std::forward<R>(row) | std::views::transform([=](auto ele) { return ele - mean; });
+	}
+);
+```
+
+this operation can be applied to the lazy version and the concrete version of the array:
+
+```cpp
+auto                    lazy     = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
+multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};
+```
+
+Giving the result for `shift(lazy)` and `shift(concrete)`.
+
+>```
+> -1 0 1
+> -1 0 1
+>```
+
+link:https://godbolt.org/z/qK9cYzrzv[(live)]
+
+
 // == Broadcast (infinite views)
 
 // Broadcasting is a technique by which arrays are reinterpreted as having a higher dimension by repeating elements.
