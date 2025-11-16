@@ -13,6 +13,7 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_testing()
 
 	add_subdirectory(test)
+	add_subdirectory(cuda/test)
 endif()
 
 add_subdirectory(omp/test)

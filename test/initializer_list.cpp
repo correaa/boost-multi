@@ -18,6 +18,30 @@
 
 namespace multi = boost::multi;
 
+namespace boost::multi {
+// template<class T>
+// auto operator+(std::initializer_list<T> il) {
+// 	return multi::array<T, 1>(il);
+// }
+
+template<class T>
+auto operator+(std::initializer_list<T> il) {  // NOLINT(misc-use-anonymous-namespace,misc-use-internal-linkage)
+	multi::array<T, 1> ret({static_cast<multi::size_t>(il.size())}, T{});
+	std::copy(il.begin(), il.end(), ret.begin());
+	return ret;
+}
+
+template<class T>
+auto operator+(std::initializer_list<std::initializer_list<T>> il) {  // NOLINT(misc-use-anonymous-namespace,misc-use-internal-linkage)
+	auto const size2 = il.size() == 0 ? 0 : std::max_element(il.begin(), il.end(), [](auto const& a, auto const& b) { return a.size() < b.size(); })->size();
+
+	multi::array<T, 2> ret({static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(size2)}, T{});
+	std::copy(il.begin(), il.end(), ret.begin());
+	return ret;
+}
+
+}  // end namespace boost::multi
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
@@ -190,6 +214,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( size(arr[0]) == 3 );
 		BOOST_TEST( arr[1][1] == 344 );
+
+		using multi::operator+;
+		auto arr2 = operator+({
+			{ 12,  24, 36},
+			{112, 344, 56},
+			{152, 324, 56},
+		});
+
+		BOOST_TEST( arr2 == arr );
 	}
 	{
 		multi::array<int, 2> arr = {

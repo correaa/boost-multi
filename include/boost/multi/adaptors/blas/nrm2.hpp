@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NRM2_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NRM2_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
 
@@ -24,10 +23,12 @@ auto nrm2_n(Context&& ctxt, XIt x_first, Size count, RPtr rp) {
 	std::forward<Context>(ctxt)->nrm2(count, x_first.base(), x_first.stride(), rp);
 }
 
-template<class It, class Size, class A0D>
+template<class It, typename Size, class A0D>
 auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-length) conventional BLAS naming
 //->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {  // NOLINT(fuchsia-default-arguments-calls)
-{   return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
+{
+	// static_assert(!std::is_same_v<decltype(n), int>);
+	return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
 
 template<class Context, class X1D, class R,
 	std::enable_if_t<! multi::has_base<std::decay_t<R>>::value, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -62,7 +63,15 @@ class nrm2_ptr {
 	friend constexpr auto copy_n(nrm2_ptr first, Size2 count, ItOut d_first) {
 //  ->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {
 		assert(count == 1); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count; }
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
+	}
 
 	template<class ItOut, class Size2>
 	friend constexpr auto uninitialized_copy_n(nrm2_ptr first, Size2 count, ItOut d_first)
@@ -71,8 +80,8 @@ class nrm2_ptr {
 
 	template<class ItOut, class Size2>
 	static constexpr auto uninitialized_copy_n(nrm2_ptr first, Size2 count, ItOut d_first)
-	->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + count) {assert(count == 1);
-		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + count; }
+	->decltype(blas::nrm2_n(std::declval<ItX>(), Size2{}     , d_first), d_first + static_cast<typename std::iterator_traits<ItOut>::difference_type>(count)) {assert(count == 1);
+		return blas::nrm2_n(first.x_first_     , first.count_, d_first), d_first + static_cast<typename std::iterator_traits<ItOut>::difference_type>(count); }
 };
 
 template<class X, class Ptr = nrm2_ptr<typename X::const_iterator, typename X::size_type>>

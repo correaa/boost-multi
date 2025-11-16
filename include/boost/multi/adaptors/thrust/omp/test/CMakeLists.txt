@@ -55,8 +55,9 @@ else()
 
         add_executable(omp.cpp.x omp.cpp)
 
-        target_include_directories(omp.cpp.x SYSTEM PRIVATE ${_THRUST_INCLUDE_DIR})
-        target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost OpenMP::OpenMP_CXX ThrustOMP)
+        target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
+        target_link_libraries(omp.cpp.x PUBLIC ThrustOMP)
+        target_link_libraries(omp.cpp.x PUBLIC multi Boost::boost OpenMP::OpenMP_CXX)
 
         add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
     else()

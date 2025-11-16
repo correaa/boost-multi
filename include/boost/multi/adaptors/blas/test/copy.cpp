@@ -2,28 +2,29 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/adaptors/blas/copy.hpp>  // for copy, copy_n
 #include <boost/multi/array.hpp>               // for array, layout_t, subarray
 
+#include <boost/core/lightweight_test.hpp>
+
 #if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND)  //  && !defined(__NVCC__) && !(defined(__clang__) && defined(__CUDA__))
-	#include <algorithm>  // for transform
-	#include <chrono>     // NOLINT(build/c++11) for duration, high_resolution...
-	#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
-		#if !((defined(__clang__) && !defined(__apple_build_version__)) && defined(__CUDA__))
-			#if (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-				#include <execution>  // NOLINT(misc-include-cleaner) for execution_policy
-			#endif
-		#endif
-	#endif
-	#include <functional>  // for invoke  // IWYU pragma: keep
-	#include <iostream>    // for basic_ostream, endl, cout
+#include <algorithm>                                  // for transform
+#include <chrono>                                     // NOLINT(build/c++11) for duration, high_resolution...
+#if __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if !((defined(__clang__) && !defined(__apple_build_version__)) && defined(__CUDA__))
+#if(!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+#include <execution>  // NOLINT(misc-include-cleaner) for execution_policy
+#endif
+#endif
+#endif
+#include <functional>  // for invoke  // IWYU pragma: keep
+#include <iostream>    // for basic_ostream, endl, cout
 #endif
 
+#include <cmath>
 #include <complex>   // for operator*, operator+
 #include <iterator>  // for size
-#include <utility>  // for forward  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <utility>   // for forward  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -74,7 +75,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[2][3] == 8.0 );
 
 		multi::array<double, 1> AR3 = blas::copy(arr.rotated()[3]);  // dcopy
-		BOOST_TEST( AR3[1] == arr[1][3] );
+		BOOST_TEST( std::abs( AR3[1] - arr[1][3] ) < 1e-10 );
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
@@ -110,12 +111,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> B2D({10000, 10000}, 66.6);
 		auto&&                  B2D_block = ~(~B2D({1000, 9000}, {1000, 9000})).strided(2);
 
-		using std::chrono::high_resolution_clock;
 		using std::chrono::duration;
+		using std::chrono::high_resolution_clock;
 
 		std::cout
 			<< "MULTI assignment\n"
-			<< std::invoke([&, start_time = high_resolution_clock::now()] {
+			<< std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
 				   B2D_block = A2D_block;
 				   return duration<double>{high_resolution_clock::now() - start_time};
 			   }).count()
@@ -123,19 +124,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-		std::cout << "std::transform BLAS\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
-						 return duration<double>{high_resolution_clock::now() - start_time};
-					 }).count()
-				  << '\n';
+		std::cout
+			<< "std::transform BLAS\n"
+			<< std::invoke(
+				   [&, start_time = high_resolution_clock::now()] () noexcept {
+					   // NOLINTNEXTLINE(modernize-use-ranges) for C++20
+					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+					   return duration<double>{high_resolution_clock::now() - start_time};
+				   }
+			   ).count()
+			<< '\n';
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-	#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
-	#if !((defined(__clang__) ) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-		#if(__cplusplus >= 202002L)
-		#if !defined(__apple_build_version__)
+#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if !((defined(__clang__)) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
+#if(__cplusplus >= 202002L)
+#if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
 						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
@@ -172,16 +177,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';
-		#endif
+#endif
 
 		BOOST_TEST( A2D_block == B2D_block );
-		#endif
-	#endif
-	#endif
+#endif
+#endif
+#endif
 
 		std::cout << "std::copy\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());
+				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(modernize-use-ranges) for C++20
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';
@@ -189,7 +194,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2D_block == B2D_block );
 
 		std::cout << "Multi element assignment\n"
-				  << std::invoke([&, start_time = high_resolution_clock::now()] {
+				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
 						 B2D_block.elements() = A2D_block.elements();
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()

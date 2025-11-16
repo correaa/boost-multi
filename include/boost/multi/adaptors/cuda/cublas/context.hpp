@@ -21,10 +21,12 @@
 #define hicup(name) cuda##name
 #define hicu(name) cu##name
 #define HICU(name) CU##name
+#define thrust_hicup thrust::cuda
 #else
 #define hicup(name) hip##name
 #define hicu(name) hip##name
 #define HICU(name) HIP##name
+#define thrust_hicup thrust::hip
 #endif
 
 namespace boost {
@@ -154,7 +156,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		return ctxt;
 	};
 	context() : pimpl_t{[] {hicu(blasHandle_t) h; hicu(blasCreate)(&h); return h;}(), &hicu(blasDestroy)} {}
-	using ssize_t = int;
+	// using ssize_t = int;
 	// static int version() {int ret; cuda::cublas::call<hicu(blasGetVersion)>(nullptr, &ret); return ret;} // no hipblasGetVersion available
 	void synchronize() const {
 		// cudaError_t e = cudaDeviceSynchronize();
@@ -165,154 +167,161 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	}
 
 	template<
+		class SSize,
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::swap(std::declval<X&>(), std::declval<Y&>())),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void swap(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
-		if(is_s<X>{}) {sync_call<hicu(blasSswap)>(n, (float        *)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
-		if(is_d<X>{}) {sync_call<hicu(blasDswap)>(n, (double       *)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_c<X>{}) {sync_call<hicu(blasCswap)>(n, (Complex      *)raw_pointer_cast(x), incx, (Complex      *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZswap)>(n, (DoubleComplex*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void swap(SSize n, XP x, SSize incx, YP y, SSize incy) const {
+		if(is_s<X>{}) {sync_call<hicu(blasSswap)>(static_cast<int>(n), (float        *)raw_pointer_cast(x), static_cast<int>(incx), (float        *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_d<X>{}) {sync_call<hicu(blasDswap)>(static_cast<int>(n), (double       *)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_c<X>{}) {sync_call<hicu(blasCswap)>(static_cast<int>(n), (Complex      *)raw_pointer_cast(x), static_cast<int>(incx), (Complex      *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_z<X>{}) {sync_call<hicu(blasZswap)>(static_cast<int>(n), (DoubleComplex*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
 	template<
+		class SSize,
 		class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		class = decltype(std::declval<Y&>() = std::declval<X&>()),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void copy(ssize_t n, XP x, ssize_t incx, YP y, ssize_t incy) const {
-		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(n, (float         const*)raw_pointer_cast(x), incx, (float        *)raw_pointer_cast(y), incy);}
-		if(is_d<X>{}) {sync_call<hicu(blasDcopy)>(n, (double        const*)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_c<X>{}) {sync_call<hicu(blasCcopy)>(n, (Complex       const*)raw_pointer_cast(x), incx, (Complex      *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZcopy)>(n, (DoubleComplex const*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void copy(SSize n, XP x, SSize incx, YP y, SSize incy) const {
+		if(is_s<X>{}) {sync_call<hicu(blasScopy)>(static_cast<int>(n), (float          const*)raw_pointer_cast(x), static_cast<int>(incx), (float         *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_d<X>{}) {sync_call<hicu(blasDcopy)>(static_cast<int>(n), (double        const*)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_c<X>{}) {sync_call<hicu(blasCcopy)>(static_cast<int>(n), (Complex       const*)raw_pointer_cast(x), static_cast<int>(incx), (Complex      *)raw_pointer_cast(y), static_cast<int>(incy));}
+		if(is_z<X>{}) {sync_call<hicu(blasZcopy)>(static_cast<int>(n), (DoubleComplex const*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy));}
 	}
 
-	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type,
+	template<class SSize, class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type,
 		class = decltype(std::declval<X&>() *= ALPHA{}),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>>, int> = 0
 	>
-	void scal(ssize_t n, ALPHA const& alpha, XP x, ssize_t incx) const {
-		if(is_s<X>{}) {sync_call<hicu(blasSscal)>(n, (float         const*)alpha, (float        *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_d<X>{}) {sync_call<hicu(blasDscal)>(n, (double        const*)alpha, (double       *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_c<X>{}) {sync_call<hicu(blasCscal)>(n, (Complex       const*)alpha, (Complex      *)::thrust::raw_pointer_cast(x), incx);}
-		if(is_z<X>{}) {sync_call<hicu(blasZscal)>(n, (DoubleComplex const*)alpha, (DoubleComplex*)::thrust::raw_pointer_cast(x), incx);}
+	void scal(SSize n, ALPHA const& alpha, XP x, SSize incx) const {
+		if(is_s<X>{}) { sync_call<hicu(blasSscal)>(static_cast<int>(n), (float         const*)alpha, (float        *)::thrust::raw_pointer_cast(x), static_cast<int>(incx)); }
+		if(is_d<X>{}) { sync_call<hicu(blasDscal)>(static_cast<int>(n), (double        const*)alpha, (double       *)::thrust::raw_pointer_cast(x), static_cast<int>(incx)); }
+		if(is_c<X>{}) { sync_call<hicu(blasCscal)>(static_cast<int>(n), (Complex       const*)alpha, (Complex      *)::thrust::raw_pointer_cast(x), static_cast<int>(incx)); }
+		if(is_z<X>{}) { sync_call<hicu(blasZscal)>(static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex*)::thrust::raw_pointer_cast(x), static_cast<int>(incx)); }
 	}
 
-	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type,
+	template<class SSize, class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type,
 		typename = decltype(std::declval<Y&>() = ALPHA{}*X{} + Y{}),
-		std::enable_if_t<std::is_convertible_v<XP, ::thrust::hicup()::pointer<X>> and std::is_convertible_v<YP, ::thrust::hicup()::pointer<Y>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<XP, ::thrust_hicup::pointer<X>> and std::is_convertible_v<YP, ::thrust_hicup::pointer<Y>>, int> = 0
 	>
-	void axpy(ssize_t n, ALPHA const* alpha, XP x, ssize_t incx, YP y, ssize_t incy) {
-		if(is_d<X>{}) {sync_call<hicu(blasDaxpy)>(n, (double        const*)alpha, (double        const*)raw_pointer_cast(x), incx, (double       *)raw_pointer_cast(y), incy);}
-		if(is_z<X>{}) {sync_call<hicu(blasZaxpy)>(n, (DoubleComplex const*)alpha, (DoubleComplex const*)raw_pointer_cast(x), incx, (DoubleComplex*)raw_pointer_cast(y), incy);}
+	void axpy(SSize n, ALPHA const* alpha, XP x, SSize incx, YP y, SSize incy) {
+		if(is_d<X>{}) { sync_call<hicu(blasDaxpy)>(static_cast<int>(n), (double        const*)alpha, (double        const*)raw_pointer_cast(x), static_cast<int>(incx), (double       *)raw_pointer_cast(y), static_cast<int>(incy)); }
+		if(is_z<X>{}) { sync_call<hicu(blasZaxpy)>(static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex const*)raw_pointer_cast(x), static_cast<int>(incx), (DoubleComplex*)raw_pointer_cast(y), static_cast<int>(incy)); }
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		typename = decltype(std::declval<YY&>() = ALPHA{}*(AA{}*XX{} + AA{}*XX{})),
-		std::enable_if_t<std::is_convertible_v<AAP, ::thrust::hicup()::pointer<AA>> and std::is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> and std::is_convertible_v<YYP, ::thrust::hicup()::pointer<YY>>, int> = 0
+		std::enable_if_t<std::is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and std::is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and std::is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>, int> = 0
 	>
-	auto gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy) {
-		if(is_d<AA>{}) {sync_call<hicu(blasDgemv)>(operation{transA}, m, n, (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), lda, (double          const*)::thrust::raw_pointer_cast(xx), incx, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(yy), incy);}
-		if(is_z<AA>{}) {sync_call<hicu(blasZgemv)>(operation{transA}, m, n, (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(yy), incy);}
+	auto gemv(char transA, SSize m, SSize n, ALPHA const* alpha, AAP aa, SSize lda, XXP xx, SSize incx, BETA const* beta, YYP yy, SSize incy) {
+		if(is_d<AA>{}) {sync_call<hicu(blasDgemv)>(operation{transA}, static_cast<int>(m), static_cast<int>(n), (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (double        const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double          const*)beta, (double         *)::thrust::raw_pointer_cast(yy), static_cast<int>(incy));}
+		if(is_z<AA>{}) {sync_call<hicu(blasZgemv)>(operation{transA}, static_cast<int>(m), static_cast<int>(n), (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy));}
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		typename = decltype(std::declval<CC&>() = ALPHA{}*(AA{}*BB{} + AA{}*BB{})),
-		class = std::enable_if_t<std::is_convertible_v<AAP, ::thrust::hicup()::pointer<AA>> and std::is_convertible_v<BBP, ::thrust::hicup()::pointer<BB>> and std::is_convertible_v<CCP, ::thrust::hicup()::pointer<CC>>>
+		class = std::enable_if_t<std::is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> and std::is_convertible_v<BBP, ::thrust_hicup::pointer<BB>> and std::is_convertible_v<CCP, ::thrust_hicup::pointer<CC>>>
 	>
-	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
+	void gemm(char transA, char transB, SSize m, SSize n, SSize k, ALPHA const* alpha, AAP aa, SSize lda, BBP bb, SSize ldb, BETA const* beta, CCP cc, SSize ldc) {
 		/*MULTI_MARK_SCOPE("cublasXgemm");*/
-		if(is_d<AA>{}) {sync_call<hicu(blasDgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), lda, (double             const*)::thrust::raw_pointer_cast(bb), ldb, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(cc), ldc);}
-		if(is_z<AA>{}) {sync_call<hicu(blasZgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (DoubleComplex const*)::thrust::raw_pointer_cast(bb), ldb, (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(cc), ldc);}
+		if(is_d<AA>{}) {sync_call<hicu(blasDgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, static_cast<int>(m), static_cast<int>(n), static_cast<int>(k), (double        const*)alpha, (double        const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (double        const*)::thrust::raw_pointer_cast(bb), static_cast<int>(ldb), (double        const*)beta, (double       *)::thrust::raw_pointer_cast(cc), static_cast<int>(ldc));}
+		if(is_z<AA>{}) {sync_call<hicu(blasZgemm)>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, static_cast<int>(m), static_cast<int>(n), static_cast<int>(k), (DoubleComplex const*)alpha, (DoubleComplex const*)::thrust::raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex const*)::thrust::raw_pointer_cast(bb), static_cast<int>(ldb), (DoubleComplex const*)beta, (DoubleComplex*)::thrust::raw_pointer_cast(cc), static_cast<int>(ldc));}
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_z<AA>{} and is_z<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
-			is_convertible_v<AAP, ::thrust::hicup()::pointer<AA>> and is_convertible_v<BBP, ::thrust::hicup()::pointer<BB>>
+			is_z<AA>{} && is_z<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
+			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
-	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
-		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, m, n, (DoubleComplex const*)&alpha, (DoubleComplex*)raw_pointer_cast(aa), lda, (DoubleComplex*)raw_pointer_cast(bb), ldb);
+	void trsm(char side, char ul, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) {
+		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, static_cast<int>(m), static_cast<int>(n), (DoubleComplex const*)&alpha, (DoubleComplex*)raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex*)raw_pointer_cast(bb), static_cast<int>(ldb));
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_d<AA>{} and is_d<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
-			is_convertible_v<AAP, ::thrust::hicup()::pointer<AA>> and is_convertible_v<BBP, ::thrust::hicup()::pointer<BB>>
+			is_d<AA>{} && is_d<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
+			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
-	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
+	void trsm(char side, char ul, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) {
 		sync_call<hicu(blasDtrsm)>(
 			cuda::cublas::side{side},
 			cuda::cublas::filling{ul},
 			cuda::cublas::operation{transA},
 			cuda::cublas::diagonal{diag}, 
-			m, n, (double const*)&alpha, (double const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb
+			static_cast<int>(m), static_cast<int>(n), (double const*)&alpha, (double const*)raw_pointer_cast(aa), static_cast<int>(lda), (double*)raw_pointer_cast(bb), static_cast<int>(ldb)
 		);
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
-			is_d<XX>{} and is_d<YY>{} and is_d<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> and is_convertible_v<YYP, ::thrust::hicup()::pointer<YY>>
-			and is_convertible_v<RRP, RR*>
+			is_d<XX>{} && is_d<YY>{} && is_d<RR>{} && is_assignable_v<RR&, decltype(XX{}*YY{})>
+			&& is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> && is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>
+			&& is_convertible_v<RRP, RR*>
 		, int> =0
 	>
-	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dot(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
-		sync_call<hicu(blasDdot)>(n, ::thrust::raw_pointer_cast(xx), incx, ::thrust::raw_pointer_cast(yy), incy, rr);
+		sync_call<hicu(blasDdot)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), ::thrust::raw_pointer_cast(yy), static_cast<int>(incy), rr);
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
 			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> and is_convertible_v<YYP, ::thrust::hicup()::pointer<YY>>
-			and (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
+			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>
+			and (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		, int> =0
 	>
-	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dotc(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
-		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
-			sync_call<hicu(blasZdotc)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (DoubleComplex*)::thrust::raw_pointer_cast(rr) );
+		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)::thrust::raw_pointer_cast(rr) );
 		} else {
-			sync_call<hicu(blasZdotc)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (DoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (DoubleComplex*)rr);
+			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)rr);
 		}
 	}
 
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
-			is_z<XX>{}  and is_d<RR>{} and is_assignable<RR&, decltype(XX{}.real())>{} and
-			is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> and (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
+			is_z<XX>{} && is_d<RR>{} && is_assignable<RR&, decltype(XX{}.real())>{} and
+			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> && (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> || is_convertible_v<RRP, RR*>)
 		, int> =0
 	>
-	void asum(int n, XXP xx, int incx, RRP rr) {
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
-		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
-			sync_call<hicu(blasDzasum)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (double*)::thrust::raw_pointer_cast(rr) );
+	void asum(SSize n, XXP xx, SSize incx, RRP rr) {
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
+		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			sync_call<hicu(blasDzasum)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double*)::thrust::raw_pointer_cast(rr) );
 		} else {
-			sync_call<hicu(blasDzasum)>(n, (DoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (double*)                           rr  );
+			sync_call<hicu(blasDzasum)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (double*)                           rr  );
 		}
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
 	}
 
 	template<
+		typename Size,
+		typename SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type
 		,
@@ -325,17 +334,19 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		//  is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> && (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		// , int> =0
 	>
-	void nrm2(int n, XXP xx, int incx, RRP rr) {
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
-		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
-			sync_call<hicu(blasDznrm2)>(n, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
+	void nrm2(Size n, XXP xx, SSize incx, RRP rr) {
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
+		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			sync_call<hicu(blasDznrm2)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
 		} else {
-			sync_call<hicu(blasDznrm2)>(n, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<double*>(                           rr ) );
+			sync_call<hicu(blasDznrm2)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<double*>(                           rr ) );
 		}
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) { hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST)); }
 	}
 
 	template<
+		typename Size,
+		typename SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type
 		,
@@ -348,36 +359,36 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		//  is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> && (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		// , int> =0
 	>
-	void nrm2(int n, XXP xx, int incx, RRP rr) {
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
-		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
-			sync_call<hicu(blasDnrm2)>(n, ::thrust::raw_pointer_cast(xx), incx, reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
+	void nrm2(Size n, XXP xx, SSize incx, RRP rr) {
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));}
+		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			sync_call<hicu(blasDnrm2)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), reinterpret_cast<double*>(::thrust::raw_pointer_cast(rr)) );
 		} else {
-			sync_call<hicu(blasDnrm2)>(n, ::thrust::raw_pointer_cast(xx), incx, reinterpret_cast<double*>(                           rr ) );
+			sync_call<hicu(blasDnrm2)>(static_cast<int>(n), ::thrust::raw_pointer_cast(xx), static_cast<int>(incx), reinterpret_cast<double*>(                           rr ) );
 		}
-		if(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
+		if(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));}
 	}
 
-
 	template<
+		class SSize,
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
 			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust::hicup()::pointer<XX>> and is_convertible_v<YYP, ::thrust::hicup()::pointer<YY>>
-			and (is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>> or is_convertible_v<RRP, RR*>)
+			is_convertible_v<XXP, ::thrust_hicup::pointer<XX>> and is_convertible_v<YYP, ::thrust_hicup::pointer<YY>>
+			and (is_convertible_v<RRP, ::thrust_hicup::pointer<RR>> or is_convertible_v<RRP, RR*>)
 		, int> =0
 	>
-	void dotu(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+	void dotu(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
-		if constexpr(is_convertible_v<RRP, ::thrust::hicup()::pointer<RR>>) {
-			sync_call<hicu(blasZdotu)>(n, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), incy, reinterpret_cast<DoubleComplex*>(::thrust::raw_pointer_cast(rr)) );
+		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			sync_call<hicu(blasZdotu)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<DoubleComplex*>(::thrust::raw_pointer_cast(rr)) );
 		} else {
-			sync_call<hicu(blasZdotu)>(n, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), incx, reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), incy, reinterpret_cast<DoubleComplex*>(rr));
+			sync_call<hicu(blasZdotu)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<DoubleComplex*>(rr));
 		}
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_HOST);
 	}
@@ -391,7 +402,7 @@ namespace boost::multi::blas {
 	template<> struct is_context<boost::multi::cuda::cublas::context > : std::true_type {};
 	template<> struct is_context<boost::multi::cuda::cublas::context&> : std::true_type {};
 
-	template<class Ptr, class T = typename std::pointer_traits<Ptr>::element_type, std::enable_if_t<std::is_convertible<Ptr, ::thrust::hicup()::pointer<T>>{}, int> =0>
+	template<class Ptr, class T = typename std::pointer_traits<Ptr>::element_type, std::enable_if_t<std::is_convertible<Ptr, ::thrust_hicup::pointer<T>>{}, int> =0>
 	boost::multi::cuda::cublas::context* default_context_of(Ptr const&) {
 		namespace multi = boost::multi;
 		return &multi::cuda::cublas::context::get_instance();

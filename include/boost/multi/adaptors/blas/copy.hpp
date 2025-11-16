@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>  // for copy, default_context_of  // IWYU pragma: export
 // IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // bug in iwyu 18.1.8?
@@ -41,7 +40,19 @@ struct copy_it {
 	using iterator_category = std::output_iterator_tag;
 	using iterator_type     = copy_it;
 
+	explicit copy_it(It it) : it_{it} {}
+
+	copy_it() = default;
+	copy_it(copy_it const&) = default;
+	copy_it(copy_it&&) = default;
+	auto operator=(copy_it const&) -> copy_it& = default;
+	auto operator=(copy_it&&) -> copy_it& = default;
+	~copy_it() = default;
+
 	friend auto operator-(copy_it const& c1, copy_it const& c2) { return c1.it_ - c2.it_; }
+
+	auto operator==(copy_it const& other) const -> bool { return it_ == other.it_; }
+	auto operator!=(copy_it const& other) const -> bool { return it_ != other.it_; }
 
 	template<class It1DOut>
 	friend constexpr auto copy_n(copy_it first, difference_type count, It1DOut result) -> It1DOut {
@@ -59,6 +70,12 @@ struct copy_it {
 		return other.it_ - self.it_;
 	}
 	constexpr auto operator*() const -> value_type { return *it_; }
+
+	constexpr auto operator++() const -> copy_it&;
+	constexpr auto operator--() const -> copy_it&;
+
+	constexpr auto operator++(int) const -> copy_it;
+	constexpr auto operator--(int) const -> copy_it;
 };
 
 template<class A1D> [[nodiscard]]

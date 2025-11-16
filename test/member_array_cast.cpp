@@ -17,13 +17,10 @@
 #include <string>      // for operator""s, allocator, char_traits
 #include <tuple>       // for tie, operator==, tuple
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Winvalid-offsetof"  // Explicit padding, for particle example
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4324)  // Explicit padding, for particle example
+#ifdef _MSC_VER
+#pragma warning(disable : 4371)
+// 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm'
 #endif
 
 namespace multi = boost::multi;
@@ -33,19 +30,45 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using v3d = std::array<double, 3>;
 
-#if defined(__clang__)
+		// some members might need explicit padding to work well with member_cast
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
+#endif
+
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
-		// some members might need explicit padding to work well with member_cast
 		struct particle {
 			int mass;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#endif
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324)  // 'main::particle': structure was padded due to alignment specifier
+#pragma warning(disable : 4371)
+// ^^^ 'std::_Mem_fn<size_t main::employee::* >': layout of class may have changed
+// from a previous version of the compiler due to better packing of member 'std::_Mem_fn<size_t main::employee::* >::_Pm	'
+#endif
 			v3d position alignas(2 * sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-		};
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
+		};
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 'main::particle': '12' bytes padding added after data member 'main::particle::mass
 #endif
 
 		class particles_soa {
@@ -62,7 +85,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				int& mass;      // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-				// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
+				// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-designated-initializers) for C++20
 				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 				auto operator+() const { return operator particle(); }
 
@@ -89,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		multi::array<particle, 2> AoS({2, 2}, particle{});
-		AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};
+		AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};  // NOLINT(modernize-use-designated-initializers) for C++20
 
 		auto&& masses = AoS.member_cast<int>(&particle::mass);
 		BOOST_TEST(size(masses) == 2);
@@ -122,14 +145,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(runtime/int)
 		short salary;  // NOLINT(google-runtime-int)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 		std::size_t age;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	};
@@ -140,24 +163,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(runtime/int)
 		short salary;  // NOLINT(google-runtime-int)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 		std::size_t age;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 1427  // offsetof applied to a type other than a standard layout (this happens with NVCC+MSVC)
+#endif
 		// clang-format off
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	char padding_[
-		(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string))
-		- (offsetof(employee_dummy, age) + sizeof(age))
-	] = {};
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		char padding_[
+			(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
+		] = {};
 		// clang-format on
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 	};
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
@@ -166,22 +195,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
-		// NOLINTBEGIN(misc-include-cleaner) bug in clang-tidy 18
+		// NOLINTBEGIN(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 		multi::array<employee, 1> d1D = {
 			{ "Al"s, 1430, 35},
 			{"Bob"s, 3212, 34},
 		};
-		// NOLINTEND(misc-include-cleaner) bug in clang-tidy 18
+		// NOLINTEND(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 
 		auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 		BOOST_TEST(size(d1D_names) == size(d1D));
 		BOOST_TEST(d1D_names[1] == d1D[1].name);
 		BOOST_TEST(&d1D_names[1] == &d1D[1].name);
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {
 			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
 			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
+
 		BOOST_TEST(d2D[0][0].name == "Al");
 		BOOST_TEST(d2D[0][0].salary == 1430);
 		BOOST_TEST(d2D[0][0].age == 35);
@@ -202,27 +234,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
+#if !(defined(__NVCC__) || defined(__HIPCC__))  // this doesn't work on cuda 13, triggered by adl uninitialized_copy_n
 	// BOOST_AUTO_TEST_CASE(element_transformed_from_member)
 	{
 		struct record {
 			int id;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
 			double data;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 		};
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<record, 2> const recs = {
 			{{1, 1.1}, {2, 2.2}},
 			{{3, 3.3}, {4, 4.4}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
 
 		// multi::array<int, 2> ids = recs.element_transformed(std::mem_fn(& A::id));
 		multi::array<int, 2> ids{recs.element_transformed(&record::id)};
@@ -233,6 +268,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// recs.element_transformed(std::mem_fn(& A::id) )[1][1] = 5;  // not assignable, ok
 		// BOOST_TEST( recs[1][1].id == 5 );
 	}
+#endif
 
 // TODO(correaa) this doesn't work with NVCC (triggered by adl fill)
 #if !(defined(__NVCC__) || defined(__HIPCC__))
@@ -240,10 +276,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
+		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {
 			{  {"Al"s, 1430, 35},   {"Bob"s, 3212, 34}},
 			{{"Carl"s, 1589, 32}, {"David"s, 2300, 38}},
 		};
+		// NOLINTEND(modernize-use-designated-initializers) for C++20
 
 		// multi::array<std::size_t, 2> d2D_ages_copy =
 		d2D.element_transformed(std::mem_fn(&employee::age));
@@ -253,9 +291,3 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	return boost::report_errors();
 }
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif

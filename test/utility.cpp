@@ -34,8 +34,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));
 
 		using multi::data_elements;
-		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );  // NOLINT(readability-container-data-pointer)
-		BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );
+		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );     // NOLINT(readability-container-data-pointer)
+		BOOST_TEST( data_elements(arr) ==  arr[0][0].data() );  // cppcheck-suppress [mismatchingContainers, redundantContainerDataPointer] ; lib idiom
 
 		using multi::num_elements;
 		BOOST_TEST( num_elements(arr) == 60 );
@@ -59,9 +59,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
 
 		using multi::data_elements;
-		BOOST_TEST( data_elements(arr) == &arr[0][0] );  // NOLINT(readability-container-data-pointer) test access
-		BOOST_TEST( data_elements(arr) ==  arr[0].data() );
-		BOOST_TEST( data_elements(arr) ==  arr.front().data() );
+		BOOST_TEST( data_elements(arr) == &arr[0][0] );          // NOLINT(readability-container-data-pointer) test access
+		BOOST_TEST( data_elements(arr) ==  arr[0].data() );       // cppcheck-suppress [mismatchingContainers, redundantContainerDataPointer] ; lib idiom
+		BOOST_TEST( data_elements(arr) ==  arr.front().data() );  // cppcheck-suppress [mismatchingContainers, redundantContainerDataPointer] ; lib idiom
 
 		using multi::num_elements;
 		BOOST_TEST( num_elements(arr) == 12 );
@@ -134,16 +134,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using std::rend;
 		BOOST_TEST( *(end(varr)-1) == *(end(marr)-1) );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		using std::end;
-		BOOST_TEST( *(end(carr)-1) == *(end(marr)-1) );
+		BOOST_TEST( *(end(carr)-1) == *(end(marr)-1) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -215,7 +215,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			arr[0][0] = 990;
 
-			BOOST_TEST( arr[0][0] == 990 );
+			BOOST_TEST( arr[0][0] == 990 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 			BOOST_TEST( corigin(arr) == &arr[0][0] );
 			BOOST_TEST( size(arr) == 2 );
 

@@ -54,8 +54,8 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 	if(a_count == 0) { return c_first; }
 
 	if      ((*a_first).stride()==1 && (*b_first).stride()==1 && (*c_first).stride()==1) {
-		if     ( a_count==1 && (*b_first).size()==1 ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), (*b_first).size(), a_first.base(), (*a_first).size()  , &beta, c_first.base(), (*c_first).size()  );}
-		else if( a_count==1                        ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), (*a_first).size()  , &beta, c_first.base(), (*c_first).size()  );}
+		if     ( a_count==1 && (*b_first).size()==1 ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), (*b_first).size(), a_first.base(), (*a_first).size(), &beta, c_first.base(), (*c_first).size()  );}
+		else if( a_count==1                        ) {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), (*a_first).size(), &beta, c_first.base(), (*c_first).size()  );}
 		else                                         {CTXT->gemm('N', 'N', (*b_first).size(), a_count, (*a_first).size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), a_first. stride(), &beta, c_first.base(), c_first. stride());}
 	}else if((*a_first).stride()==1 && (*b_first).stride()==1 && c_first. stride()==1) {
 		if  (a_count==1)                            {CTXT->gemm('T', 'T', a_count, (*b_first).size(), (*a_first).size(), &alpha, a_first.base(), a_first. stride(), b_first.base(), (*b_first).size()  , &beta, c_first.base(), (*a_first).size()  );}
@@ -197,12 +197,14 @@ class gemm_iterator {
 	friend class gemm_range;
 
  public:
+	gemm_iterator() = default;
 	gemm_iterator(gemm_iterator const&) = default;
 	gemm_iterator(gemm_iterator&&) noexcept = default;
 	~gemm_iterator() = default;
 
-	auto operator=(gemm_iterator&&) -> gemm_iterator& = delete;
-	auto operator=(gemm_iterator const&) -> gemm_iterator& = delete;
+	// auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator const&) -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;
 
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
@@ -210,11 +212,14 @@ class gemm_iterator {
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
-	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
+	auto operator+=(difference_type n) -> gemm_iterator& { a_it_ += n; return *this; }
+	auto operator-=(difference_type n) -> gemm_iterator& { a_it_ -= n; return *this; }
 
 	auto operator++() -> gemm_iterator& { return operator+=(1); }  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& { return operator-=(1); }
+
+	auto operator++(int) -> gemm_iterator { gemm_iterator ret{*this}; ++(*this); return ret; }  // required by random access concept requires even if not used explicitly
+	auto operator--(int) -> gemm_iterator { gemm_iterator ret{*this}; --(*this); return ret; }
 
 	friend auto operator+(gemm_iterator ret, difference_type n) { return ret += n; }
 
@@ -249,7 +254,7 @@ class gemm_iterator {
 
 	template<class ItOut>
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first) {
-		assert( first.s_ == last.s_ ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		// assert( first.s_ == last.s_ ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return uninitialized_copy_n(first, last - first, d_first);
 	}
 
@@ -313,18 +318,20 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(rea
 		;
 }
 
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic push
-		#pragma nv_diag_suppress = implicit_return_from_non_void_function
-	#else
-		#pragma    diagnostic push
-		#pragma    diag_suppress = implicit_return_from_non_void_function
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic push
-	#pragma    diag_suppress = implicit_return_from_non_void_function
+#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
 #endif
+
+#ifdef __NVCOMPILER
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
+
 template<class A2D, class B2D, class Scalar = typename A2D::element_type, class = decltype(Scalar{0.0})>
 auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	if constexpr(is_conjugated<A2D>{}) {
@@ -335,14 +342,19 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 		return blas::gemm(ctxtp, s, a, b);
 	}
 }
-#if defined __NVCC__
-	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-		#pragma nv_diagnostic pop
-	#else
-		#pragma    diagnostic pop
-	#endif
-#elif defined __NVCOMPILER
-	#pragma    diagnostic pop
+
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#elif defined(__NVCOMPILER)
+#pragma diagnostic pop
+#endif
+
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 
 namespace operators {

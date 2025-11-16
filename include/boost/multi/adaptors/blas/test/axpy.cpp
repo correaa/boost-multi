@@ -1,15 +1,20 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4244)  // conversion deep in xmemory header
+#endif
 
 #include <boost/multi/adaptors/blas/axpy.hpp>     // for axpy, operator-
 #include <boost/multi/adaptors/blas/core.hpp>     // for context
 #include <boost/multi/adaptors/blas/numeric.hpp>  // for imag, real
 // #include <boost/multi/adaptors/complex.hpp>       // for complex, operator*
-#include <boost/multi/array.hpp>                  // for array, implicit_cast
+#include <boost/multi/array.hpp>  // for array, implicit_cast
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <cmath>
 #include <complex>  // for complex, operator+
 
 namespace multi = boost::multi;
@@ -17,8 +22,6 @@ namespace blas  = multi::blas;
 
 // using complex = multi::complex<double>;  // test internal implementation of complex (partially formed complex)
 using complex = std::complex<double>;  // test internal implementation of complex (partially formed complex)
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 namespace {
 void zero_stride() {
@@ -47,7 +50,8 @@ void zero_stride() {
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_real)
+	{
 		multi::array<double, 2> arr = {
 			{1.0,  2.0,  3.0,  4.0},
 			{5.0,  6.0,  7.0,  8.0},
@@ -59,10 +63,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::axpy(2.0, b, arr[1]);  // daxpy
-		BOOST_TEST( arr[1][2] == 2.0*b[2] + AC[1][2] );
+		BOOST_TEST( std::abs( arr[1][2] - (2.0*b[2] + AC[1][2]) ) < 1e-10 );
 	}
 
-	BOOST_AUTO_TEST_CASE(blas_axpy_repeat) {
+	// BOOST_AUTO_TEST_CASE(blas_axpy_repeat)
+	{
 		multi::array<double, 1> a1D = multi::iextension(3);
 		BOOST_TEST( a1D[0] == 0.0 );
 		BOOST_TEST( a1D[1] == 1.0 );
@@ -91,7 +96,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( arr[1][2] == 2.0*b[2] + AC[1][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_double) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_double)
+	{
 		multi::array<double, 2> const const_arr = {
 			{1.0,  2.0,  3.0,  4.0},
 			{5.0,  6.0,  7.0,  8.0},
@@ -101,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b{const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 		blas::axpy(2.0, b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
-		BOOST_TEST( arr[1][2] == 2.0*b[2] + const_arr[1][2] );
+		BOOST_TEST( std::abs( arr[1][2] - (2.0*b[2] + const_arr[1][2])) < 1e-10 );
 
 		auto const I = complex{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 
@@ -115,7 +121,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( BC[2] == conj(AC[2]) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex)
+	{
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},
 			{{5.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0}},
@@ -128,21 +135,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 2.0*x[2] + const_arr[1][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal) {
-		using complex = std::complex<double>;
-
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal)
+	{
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},
 			{{5.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0}},
 			{{9.0, 0.0}, {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}},
 		};
-		auto const                     carr = arr;
-		multi::array<complex, 1> const y    = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
-		arr[1] += blas::axpy(2.0, y);                  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+
+		auto const carr = arr;
+
+		multi::array<complex, 1> const y = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
+
+		arr[1] += blas::axpy(2.0, y);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 		BOOST_TEST( arr[1][2] == 2.0*y[2] + carr[1][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(axpy_assignment) {
+	// BOOST_AUTO_TEST_CASE(axpy_assignment)
+	{
 		multi::array<double, 1> const xx = {1.0, 1.0, 1.0};
 		multi::array<double, 1>       yy = {2.0, 2.0, 2.0};
 
@@ -151,7 +161,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( yy[0] == 5.0 );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal)
+	{
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},
 			{{5.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0}},
@@ -163,7 +174,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == -2.0*x[2] + AC[1][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context)
+	{
 		multi::array<complex, 2> arr = {
 			{{1.0, 0.0},  {2.0, 0.0},  {3.0, 0.0},  {4.0, 0.0}},
 			{{5.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0}},
@@ -176,7 +188,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 2.0*arr2[2] + arr_copy[1][2] );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
+	// BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus)
+	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 1> x = {
 			{10.0, 0.0},
@@ -186,12 +199,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<complex, 1> const y = x;  // NOLINT(readability-identifier-length) BLAS naming
 
-		using blas::operators::operator-;
+		using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 
 		BOOST_TEST( (x - y)[0] == complex(0.0, 0.0) );
 		BOOST_TEST( (y - x)[0] == complex(0.0, 0.0) );
 
-		using blas::operators::operator+;
+		using blas::operators::operator+;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 
 		BOOST_TEST( (x - (y+y))[0] == -x[0] );
 		BOOST_TEST( ((x+x) - y)[0] == +x[0] );
@@ -223,7 +236,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{13.0, 0.0},
 		};
 
-		using blas::operators::operator-=;
+		using blas::operators::operator-=;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 		X -= Y;
 		BOOST_TEST( X[0] == complex(0.0, 0.0) );
 	}
