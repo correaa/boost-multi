@@ -12,7 +12,9 @@
 #include <memory>      // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
+#include <ranges>  // IWYU pragma: keep
+#endif
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -60,6 +62,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const result = rowOddSum(values);
 
 		BOOST_TEST( result - values.begin() == 4 );
+
+		{
+			auto const lazy1D = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6);
+			auto const sum    = std::ranges::fold_left(lazy1D, float{}, std::plus<>{});
+			BOOST_TEST( std::abs(sum - (0.0F + 1.0F + 2.0F + 3.0F + 4.0F + 5.0F)) < 1e-12F );
+		}
 #endif
 	}
 
@@ -125,6 +133,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// #endif
 
 #if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L) && !defined(_MSC_VER) && !defined(__NVCOMPILER)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
 	{
 		multi::array<int, 2> A = {
 			{1, 2, 3},
@@ -181,6 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 	}
+#endif
 #endif
 
 	return boost::report_errors();

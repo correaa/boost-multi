@@ -131,10 +131,11 @@ class f_extensions_t {
 		multi::index idx_;
 		Proj proj_;
 		template<class... Args>
-		constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+		constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 	};
 
 	constexpr auto operator[](index idx) const {
+		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
@@ -144,12 +145,19 @@ class f_extensions_t {
 		}
 	}
 
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	template<class... Indices>
+	constexpr auto operator[](index idx, Indices... rest) const {
+		return operator[](idx)[rest...];
+	}
+	#endif
+
 	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
 
 	struct bind_transposed_t {
 		Proj proj_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_(jj, ii, rest...); }
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
 	};
 
 	auto transposed() const -> f_extensions_t<D, bind_transposed_t > {
@@ -161,10 +169,10 @@ class f_extensions_t {
 		Proj proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const -> element { return proj_((ii * nn_) + jj, rest...); }
+		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
-	constexpr auto partitioned(size_type nn) const -> f_extensions_t<D + 1, bind_partitioned_t > {
+	constexpr auto partitioned(size_type nn) const noexcept -> f_extensions_t<D + 1, bind_partitioned_t > {
 		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
 	}
 
@@ -172,7 +180,7 @@ class f_extensions_t {
 		Proj proj_;
 		size_type size_m1;
 		template<class T1, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(size_m1 - ii, rest...); }
+		constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
 	};
 
 	constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
@@ -181,7 +189,7 @@ class f_extensions_t {
 		Proj proj_;
 		size_type size_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const -> element { return proj_(rest..., ii); }
+		constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
 	};
 
 	constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
@@ -191,7 +199,7 @@ class f_extensions_t {
 		Proj proj_;
 		Proj2 proj2_;
 		template<class... Ts>
-		constexpr auto operator()(Ts... rest) const -> element { return proj2_(proj_(rest...)); }
+		constexpr auto operator()(Ts... rest) const noexcept -> element { return proj2_(proj_(rest...)); }
 	};
 
 	template<class Proj2>
@@ -217,20 +225,25 @@ class f_extensions_t {
 			multi::index idx_;
 			Proj proj_;
 			template<class... Args>
-			constexpr auto operator()(Args&&... rest) const { return proj_(idx_, std::forward<Args>(rest)...); }
+			constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 		};
 
 	 public:
-		iterator() = default;
+		constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+
 		// iterator(iterator const& other) = default;
+		constexpr iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		iterator(iterator&&) = default;
 
-		// iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}
+		auto operator=(iterator&&) -> iterator& = default;
+		auto operator=(iterator const& other) -> iterator& {
+			if(this == &other) { return *this; }
+			// assert(proj_ == other.proj_);
+			it_ = other.it_;
+			return *this;
+		}
 
-		// auto operator=(iterator const& other) -> iterator& {
-		// 	// assert(proj_ == other.proj_);
-		// 	it_ = other.it_;
-		// 	return *this;
-		// }
+		~iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
 			f_extensions_t<D - 1, bind_front_t>,
@@ -560,6 +573,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return static_cast<base_ const&>(*this)[idx];
 	}
 
+	// template<class... Indices>
+	// constexpr auto operator[]()
+
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D - 1>{this->base().tail()}.next_canonical(rest...)) {
@@ -872,6 +888,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
+
+	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	class iterator {  // : public weakly_incrementable<iterator> {
 		index idx_;
@@ -1445,7 +1463,7 @@ struct bilayout {
 
 template<dimensionality_type D, typename SSize>
 struct layout_t
-: multi::equality_comparable<layout_t<D, SSize>> {
+	: multi::equality_comparable<layout_t<D, SSize>> {
 	auto flatten() const {
 		return bilayout<D - 1>{
 			stride(),
@@ -1518,10 +1536,10 @@ struct layout_t
 	}
 
  public:
-#ifdef __NVCC__
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
-#endif
+	#ifdef __NVCC__
+	#pragma nv_diagnostic push
+	#pragma nv_diag_suppress = 20013  // TODO(correa) use multi::apply  // calling a constexpr __host__ function("apply") from a __host__ __device__ function("layout_t") is not allowed.
+	#endif
  private:
 	template<class... Args>
 	static BOOST_MULTI_HD constexpr auto std_apply_(Args&&... args) ->decltype(auto) { using std::apply; return apply(std::forward<Args>(args)...); }
@@ -1536,9 +1554,9 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
-#ifdef __NVCC__
-#pragma nv_diagnostic pop
-#endif
+	#ifdef __NVCC__
+	#pragma nv_diagnostic pop
+	#endif
 
 	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -1549,10 +1567,10 @@ struct layout_t
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 
  private:
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"
+	#endif
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
 		return sub_type{sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx * stride_), sub_.nelems_}();
@@ -1565,21 +1583,21 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunknown-warning-option"
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) can it be returned by reference?
+	#endif
 
 	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
 
 	BOOST_MULTI_HD constexpr auto        sub() & -> sub_type& { return sub_; }
 	BOOST_MULTI_HD constexpr auto        sub() const& -> sub_type const& { return sub_; }
@@ -1738,9 +1756,11 @@ struct layout_t
 				this->sub(),
 				this->stride(),
 				this->offset(),
-				this->nelems() / n
+				this->nelems() / n  // mull-ignore: cxx_div_to_mul
 			},
-			this->nelems() / n, 0, this->nelems()
+			this->nelems() / n,  // mull-ignore: cxx_div_to_mul
+			0,
+			this->nelems()
 		};
 		// new_layout.sub().nelems() /= n;
 	}
@@ -2070,8 +2090,8 @@ namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc need
 template<>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
 
-// template<class Fun, ::boost::multi::dimensionality_type D>
-// [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
+template<class Fun, ::boost::multi::dimensionality_type D>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 

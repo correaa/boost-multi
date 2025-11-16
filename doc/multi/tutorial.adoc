@@ -703,7 +703,151 @@ constexpr auto trace() {
 
 static_assert( trace() == 4 + 2 + 10 );
 ```
-https://godbolt.org/z/Porre3z8s
+link:https://godbolt.org/z/Porre3z8s[(live)]
+
+== Restrictions (lazy expression evaluation)
+
+So far, we have examined the use of arrays that contain elements or references to elements stored in memory; these are referred to as container arrays or concrete arrays.
+In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
+The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays".
+
+Multi's restriction arrays are functions that are wrapped in the interface of a multidimensional array.
+These functions are therefore restricted (in the mathematical sense) to a discrete range of values in a multidimensional grid (a Cartesian product of integer intervals).
+The dimensionality of a restriction is the number of indices or coordinates that this function accepts as inputs.
+
+Restrictions are constructed from a function (generally a lambda) and an `extensions` object, combined using the wedge operator (`operator^`, which can be interpreted as an arrow pointing up).
+Unlike concrete arrays, restrictions do not necessarily allocate space; instead, the elements are generated on demand.
+
+For example, we can restrict this simple function `10*i + j` where `i` and `j` belong to the domain `[0, 2) x [0, 3)` (i.e., `i = 0...1` and `j = 0...2`). 
+
+```cpp
+auto R = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
+...
+```
+Note that `R` does not request memory to store the values; it generates them only when needed. For example, `R[1][2]` yields `10*1 + 2`, or `12`.
+For this reason, they can be regarded as "lazy" arrays, a multidimensional generalization of ranges such as `std::ranges::iota`, `std::ranges::iota | std::ranges::transform(...)` or `thrust::counting_iterator`.)
+
+The main property of a restriction array is that it can be generically used in place of a concrete array because they have the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()` and (partial) indexing (`operator[]`).
+They also provide a complete iterator inteface, `.begin()`, `.end()` and they can be used as standard ranges.
+This means that generic algorithms, including some outside of Multi, can take advantage of these arrays.
+
+As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`; the same expression as if it were a concrete array).
+
+The main difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
+
+The simplest use of restrictions is for generating concrete arrays from coordinates.
+The following is a commonly used nested loop for initialization:
+```cpp
+multi::array<int, 2> A({3, 2});
+
+auto [is, js] = A.extensions();
+
+for(auto i : is) {
+	for(auto j : js) {
+		A[i][j] = 10*i + j;
+	}
+}
+```
+...which can be replaced by a simpler construction without intermediate steps:
+```cpp
+multi::array<int, 2> const A([](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2));
+```
+
+Note that since there is no immediate need to assign elements and `A` can be conveniently declared `const` if no further mutation is necessary).
+The element initialization here is delegated to the library; the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device).
+
+Restrictions can be used in many other contexts beyond initialization and assignment;
+for example in combination with `std::ranges`, or mixed with concrete arrays.
+In some cases, functions can be generically written to work both on `multi::array`s (or `multi::subarray`s) and on restrictions, when a functional programming style is desirable.
+
+For example, here we define a transformation that subtracts the mean value of each row, row by row:
+
+```cpp
+auto shift = std::views::transform(
+	[]<class Row>(Row&& row) {
+		auto mean = std::reduce(row.begin(), row.end()) / row.size();
+		return std::forward<Row>(row) | std::views::transform([=](auto ele) { return ele - mean; });
+	}
+);
+```
+
+This operation can be applied to the lazy version or to the concrete version of the array:
+
+```cpp
+auto                    lazy     = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
+multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};
+```
+
+The primary advantage of using lazy arrays and defining transformation functions is that operations can occur without requiring temporary space (allocators), which can be advantageous.
+The allocation would only happen at the point at which the result is materialized as a concrete array.
+
+```cpp
+multi::array<double, 2> S1(shift(lazy));  // allocation might ocurr here
+multi::array<double, 2> S2(shift(concrete));   // allocation might ocurr here
+```
+link:https://godbolt.org/z/qK9cYzrzv[(live)]
+
+Another possible application of restrictions is the ability to define lazy operations, also known as lazy expressions or expression templates.
+These are complex C++ expressions composed of objects (typically in through operator overload) that are evaluated only after the whole expression is built.
+In the array programming space, eliminating the need of temperaries is essential.
+
+Since arrays are expensive to copy or generate, this feature is highly regarded for array libraries.
+Here is a basic implementation example using restrictions, that can be customized for specific domains of application.
+
+For example, given two concrete arrays `A`, `B`, one can evaluate the result of a complex algebraic expression and store the result in a new array, but without building intermediate arrays:
+
+```cpp
+    auto const A = multi::array<int, 2>{{0, 1, 2}, {3, 4, 5}};
+    auto const B = multi::array<int, 2>{{0, 10, 20}, {30, 40, 50}};
+
+    using lazy::operator*;
+    using lazy::elementwise::operator+;
+    using lazy::elementwise::operator*;
+
+    multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
+
+    assert(C[1][1] == A[1][1] + (A[1][1] * B[1][1]) + (2.0 * B[1][1]));
+```
+
+The lazy operations utilized here are be implemented in a fairly intuitive way using a series of array restrictions (C++23 for simplicity):
+
+```cpp
+namespace lazy {
+
+	template <class A>
+	auto operator*(typename A::element scalar, A const& a) {
+    	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
+	}
+
+	namespace elementwise {
+		template <class A, class B>
+		auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
+    		return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
+		}
+		template <class A, class B>
+		auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
+    		return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
+		}
+	}
+}
+```
+link:https://godbolt.org/z/413GTx47v[(live)]
+
+Note that none of the operations (addition or multiplication) generate temporary concrete (allocated) arrays.
+
+There are many challenges in implementing general lazy expressions:
+1) tracking the ownership of the subexpressions (here, everything is taken by reference for simplicity, instead of exploiting copy or move semantics, or reference counting),
+2) dealing with ambiguities generated by operator overloading (hence the heavy use of templates and C++23 constraints).
+There is no single way to implement lazy operations; it depends strongly on the intended use and minute details in the implementation can have divergent semantics.
+
+In summary, restrictions can be very powerful since any function and behavior can be injected.
+However, there are some limitations to take into account to avoid surprising behavior:
+The functions that make up restrictions should behave as much as possible as pure (mathematical) functions and behave deterministically in their context of use.
+In the same way, for lambdas that capture references, the validity of the restriction objects would be contigent to the lifetime of these references.
+Analogously if the lambda captures by copy, the implications of copying these must be evaluated too.
+Just like concrete arrays, the order of evaluation of the indices can impact performance or rely on compiler optimizations.
 
 // == Broadcast (infinite views)
 

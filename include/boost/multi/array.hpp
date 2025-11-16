@@ -11,7 +11,8 @@
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
 
-#include <memory>  // for std::allocator_traits
+#include <iterator>  // for std::sentinel_for
+#include <memory>    // for std::allocator_traits
 #include <stdexcept>
 #include <tuple>        // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
@@ -235,9 +236,9 @@ struct static_array                                                             
 	constexpr explicit static_array(decay_type&& other) noexcept
 	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
-	template<class It, class Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
-	constexpr explicit static_array(It const& first, Sentinel const& last, allocator_type const& alloc) requires std::sentinel_for<Sentinel, It>
+#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
+	constexpr explicit static_array(It const& first, Sentinel const& last, allocator_type const& alloc)
 	: array_alloc{alloc}
 	, ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
@@ -273,11 +274,9 @@ struct static_array                                                             
 	}
 #endif
 
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
-	// TODO(correaa) add sentinel version
-	template<class It, class Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
+#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+	template<class It, std::sentinel_for<It> Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, Sentinel const& last)
-		requires std::sentinel_for<Sentinel, It>
 	: static_array(first, last, allocator_type{}) {}
 #else
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>

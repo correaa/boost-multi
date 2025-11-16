@@ -26,11 +26,6 @@
 
 #include <boost/multi/array.hpp>
 
-// #define FMT_HEADER_ONLY
-// #define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
-// #include <fmt/ranges.h>
-// #include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
-
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
@@ -78,28 +73,46 @@ auto softmax(auto&& matrix) noexcept {
 
 namespace multi = boost::multi;
 
+namespace lazy {
+
+template<class A>
+auto operator*(typename A::element scalar, A const& a) {
+	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
+}
+
+namespace elementwise {
+
+template<class A, class B>
+auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
+}
+
+template<class A, class B>
+auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
+}
+
+}  // namespace elementwise
+}  // namespace lazy
+
 int main() {
-	auto const matrix =
-		([](auto ii) noexcept { return static_cast<float>(ii); } ^
-		 multi::extensions_t(6))
-			.partitioned(2);
-
-	printR2("matrix", matrix);
-
-	printR2("softmax", softmax(matrix));
-
-	auto const alloc_matrix = multi::array<float, 2>{
-		{0.0F, 1.0F, 2.0F},
-		{3.0F, 4.0F, 5.0F}
+	auto const A = multi::array<int, 2>{
+		{0, 1, 2},
+		{3, 4, 5}
+	};
+	auto const B = multi::array<int, 2>{
+		{ 0, 10, 20},
+		{30, 40, 50}
 	};
 
-	printR2("softmax", softmax(alloc_matrix));
+	using lazy::operator*;
+	using lazy::elementwise::operator+;
+	using lazy::elementwise::operator*;
 
-	auto const sofmax_copy = multi::array<float, 2>(softmax(alloc_matrix));
+	multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
 
-	BOOST_TEST( std::abs(sumR1(sofmax_copy[1]) - 1.0F) < 1e-12F );
-
-	// auto softmax_copy = +softmax(alloc_matrix);
+	std::cout << "C11 = " << C[1][1] << std::endl;
+	BOOST_TEST( C[1][1] == 4 + 4*40 + 2*40 );
 
 	return boost::report_errors();
 }
