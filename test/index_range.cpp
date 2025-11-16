@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for equal
+#include <iterator>   // for size
 #include <numeric>    // for accumulate
 #include <vector>     // for vector
 // IWYU pragma: no_include <tuple>                            // for tuple_element<>::type
@@ -35,6 +36,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( * irng.begin()      ==  5 );
 		BOOST_TEST( *(irng.begin() + 1) ==  6 );
 
+		BOOST_TEST( irng.begin() < irng.begin() + 1 );
+		BOOST_TEST( !((irng.begin() + 1) < irng.begin()) );
+		BOOST_TEST( !(irng.end() < irng.begin()) );
+
+		BOOST_TEST( irng.begin() != irng.begin() + 1 );
+		BOOST_TEST( !(irng.begin() == irng.begin() + 1) );
+
 		BOOST_TEST(   irng.first()       ==  5 );
 		BOOST_TEST(   irng.last()       == 12 );
 
@@ -43,7 +51,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -51,16 +59,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::range<int> const irng{5, 12};
-		auto                    beg = irng.begin();
+
+		auto beg = irng.begin();
+
 		++beg;
 		--beg;
-		BOOST_TEST( irng.begin() == beg );
+
+		BOOST_TEST( irng.begin() == beg );  // cppcheck-suppress knownConditionTrueFalse ; for test
+		BOOST_TEST( !(irng.end() < irng.begin()) );
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_range2)
 	{
 		multi::index_extension const iex(10);
 
+		using std::size;
 		BOOST_TEST( *begin(iex) == 0 );
 		BOOST_TEST( size(iex) == 10 );
 		BOOST_TEST( iex[0] == 0 );
@@ -70,6 +83,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const xbeg = begin(iex);
 		BOOST_TEST( xbeg[0] == iex[0] );
 		BOOST_TEST( xbeg[1] == iex[1] );
+
+		BOOST_TEST( !(iex.begin() < iex.begin() + 1 - 1) );
+		BOOST_TEST( !(iex.end() < iex.end() - 1 + 1) );
+		BOOST_TEST( !(iex.end() < iex.begin()) );
+
+		BOOST_TEST( iex.begin() < iex.end() );
+		BOOST_TEST( !(iex.end() < iex.begin()) );
 
 		BOOST_TEST( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0U)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
@@ -204,7 +224,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -235,7 +255,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );

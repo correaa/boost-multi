@@ -10,7 +10,7 @@
 #include <type_traits>  // for enable_if_t, is_base_of
 #include <utility>      // for forward
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 	#define BOOST_MULTI_HD __host__ __device__
 #else
 	#define BOOST_MULTI_HD
@@ -41,6 +41,28 @@ template<class Self> struct selfable {
 	}
 };
 
+template<class Self>
+class ra_iterable : selfable<Self> {
+	ra_iterable() = default;
+	friend Self;
+
+	template<class Self2 = Self>
+	using difference_type_t = decltype(std::declval<Self2 const&>() - std::declval<Self2 const&>());
+
+ public:
+	using iterator_category = std::random_access_iterator_tag;
+
+	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	friend BOOST_MULTI_HD constexpr auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
+	// template<class Self2 = Self>
+	// friend auto operator+(difference_type<Self2> const& n, Self2 const& self) { return self + n; }
+	BOOST_MULTI_HD constexpr auto operator++(int) { Self tmp{*this}; ++(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+	BOOST_MULTI_HD constexpr auto operator--(int) { Self tmp{*this}; --(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+
+	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
+};
+
 template<class Self, class U> struct equality_comparable2;
 
 template<class Self>
@@ -60,20 +82,24 @@ template<class T, class V> struct totally_ordered2;
 template<class Self>
 struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
 	using self_type = Self;
-	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 
 	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
-	friend constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
 	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
-	friend auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }
 
-	friend auto operator>(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(self.self() == other.self()); }
-	friend auto operator>=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(self.self() == other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()); }
 };
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 struct totally_ordered2<T, void> {
 	// template<class U>
@@ -83,13 +109,22 @@ struct totally_ordered2<T, void> {
 	// template<class U>
 	// friend constexpr auto operator>(T const& self, U const& other) { return other < self; }
 };
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 template<class T>
 struct copy_constructible {};
 
 template<class T>
-struct weakly_incrementable {
-	// friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}
+struct weakly_incrementable : selfable<T> {
+ protected:
+	weakly_incrementable() = default;
+
+ public:
+	constexpr auto operator++(int) -> T {
+		auto ret{this->self()}; ++(this->self()); return ret;
+	}
 };
 
 template<class T>
@@ -107,7 +142,7 @@ struct incrementable : totally_ordered<Self> {
 	friend Self;
 
  public:
-	friend constexpr auto operator++(incrementable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator++(incrementable& self, int) -> Self {
 		static_assert(std::is_base_of_v<incrementable<Self>, Self>);
 		Self tmp{self.self()};
 		++self.self();
@@ -139,15 +174,15 @@ struct steppable : totally_ordered<Self> {
 
  public:
 	using self_type = Self;
-	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
-	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
-	friend constexpr auto operator++(steppable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator++(steppable& self, int) -> Self {
 		Self tmp{self.self()};
 		++self.self();
 		return tmp;
 	}
-	friend constexpr auto operator--(steppable& self, int) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator--(steppable& self, int) -> Self {
 		Self tmp{self.self()};
 		--self.self();
 		return tmp;
@@ -162,25 +197,22 @@ struct affine_with_unit : steppable<Self> {
 
  public:
 	using self_type = Self;
-	constexpr auto cself() const -> self_type const& { return static_cast<self_type const&>(*this); }
-	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
-	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	BOOST_MULTI_HD constexpr auto cself() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using difference_type = Difference;
-	friend constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
-	friend constexpr auto operator--(affine_with_unit& self) -> Self& { return self.self() -= difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator--(affine_with_unit& self) -> Self& { return self.self() -= difference_type{1}; }
 
-	// friend constexpr auto operator-(affine_with_unit const& self, difference_type const& diff) -> Self {
-	//  auto ret{self.self()};
-	//  ret += (-diff);
-	//  return ret;
-	// }
-	constexpr auto operator+(difference_type const& diff) const -> Self {
+	BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff) const -> Self {
 		auto ret{cself()};
 		ret += diff;
 		return ret;
 	}
-	friend constexpr auto operator+(difference_type const& diff, affine_with_unit const& self) -> Self {
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, affine_with_unit const& self) -> Self {
 		auto ret{self.self()};
 		ret += diff;
 		return ret;
@@ -203,8 +235,13 @@ struct dereferenceable {
 
 	using reference = Reference;
 
-	constexpr auto operator*() const -> reference { return *(self().operator->()); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
 };
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '7' bytes padding added after base class
+#endif
 
 template<class Self, typename Difference, typename Reference>
 struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
@@ -220,17 +257,17 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	using iterator_category = std::random_access_iterator_tag;
 
 	using self_type = Self;
-	constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
-	constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type idx) const -> reference { return *(self() + idx); }
 };
 
-// template<class T, class Reference>
-// struct dereferenceable {
-//   using reference = Reference;
-//   friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
-// };
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 template<class Self, class D>
 class addable2 {
@@ -242,10 +279,10 @@ class addable2 {
 	using difference_type = D;
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
 };
 
 template<class T, class D>
@@ -272,6 +309,10 @@ struct affine : addable2<T, Difference>
 	using difference_type = Difference;
 };
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4820 )  // '3' bytes padding added after data member
+#endif
 template<class T>
 class random_iterable {
  protected:
@@ -284,6 +325,9 @@ class random_iterable {
 	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }
 	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
 };
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 namespace detail {
 template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>
@@ -298,7 +342,7 @@ struct random_access_iterator : equality_comparable2<Self, Self> {
 	using pointer           = Pointer;
 	using reference         = Reference;
 	using iterator_category = std::random_access_iterator_tag;
-	auto operator*() const -> Reference { return *static_cast<Self const&>(*this); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> Reference { return *static_cast<Self const&>(*this); }
 };
 }  // end namespace detail
 

@@ -9,6 +9,7 @@ CheckOptions:
   - { key: readability-identifier-naming.FunctionCase                      , value: lower_case }
   - { key: readability-identifier-naming.GlobalConstantCase                , value: aNy_CasE   }
   - { key: readability-identifier-length.IgnoredLoopCounterNames           , value: "^[ijk_]$" }
+  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[xyzabcdnml]$" }
   - { key: readability-identifier-length.IgnoredVariableNames              , value: "^[ijk_]$" }
   - { key: readability-identifier-length.MethodCase                        , value: lower_case }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
@@ -22,29 +23,37 @@ CheckOptions:
   - { key: readability-identifier-naming.TemplateParameterCase             , value: CamelCase  }
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}
   - { key: readability-operators-representation.BinaryOperators            , value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
+# value: expr-type , bug in clang 16 in c++20 mode https://stackoverflow.com/a/75157215/225186
 
 Checks: '*,
   -altera-struct-pack-align,
   -boost-use-ranges,
+  -cert-dcl21-cpp,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-default-arguments-calls,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
+  -hicpp-no-array-decay,
+  -llvm-prefer-static-over-anonymous-namespace,
   -llvmlibc-*,
   -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
   -readability-magic-numbers,
   -readability-simplify-boolean-expr'
 
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
 #  -boost-use-ranges                                      // would introduce a dependency on Boost
+#  -cert-dcl21-cpp                                        // this asks postfix operator++ to return a const value
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
 #  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
-#. -fuchsia-trailing-return,                              // asks all functions to be pure 'auto'
+#  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
+#  -llvm-prefer-static-over-anonymous-namespace,          // contradicts other rules
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
+#  -modernize-use-trailing-return-type                    // mandates all lambdas end with -> auto
 #  -readability-magic-numbers,                            // many tests use magic numbers
-#  -readability-simplify-boolean-expr.                    // not friendly to BOOST_TEST macro
+#  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST

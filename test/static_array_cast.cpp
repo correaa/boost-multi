@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -18,21 +18,35 @@
 
 namespace multi = boost::multi;
 
-#if defined(__clang__)
+template<class Ref, class Involution>
+class involuted {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_'
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
-
-template<class Ref, class Involution>
-class involuted {
-	Ref                                      r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;  // TODO(correaa) put nounique members first?
+	Ref r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr involuted(Ref ref, Involution fun) : r_{ref}, f_{fun} {}
-	constexpr explicit involuted(Ref ref) : r_{ref}, f_{} {}
+	constexpr involuted(Ref ref, Involution fun)
+	// : r_{ref}, f_{fun} {}
+	: f_{fun}, r_{ref} {}
+
+	constexpr explicit involuted(Ref ref)
+	// : r_{ref}, f_{} {}
+	: f_{}, r_{ref} {}
 
 	involuted(involuted const&)     = default;
 	involuted(involuted&&) noexcept = default;
@@ -61,10 +75,15 @@ class involuted {
 	}
 };
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class It, class F>
 class involuter {
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
+
 	template<class, class> friend class involuter;
 
  public:
@@ -79,55 +98,48 @@ class involuter {
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
-	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
 	template<class Other> constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator->() const { return pointer{&*it_, f_}; }
+	constexpr auto operator->() const { return pointer{&*it_, f_}; }  // cppcheck-suppress redundantPointerOp ; lib idiom
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
 	constexpr auto operator<(involuter const& other) const { return it_ < other.it_; }
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {
-		it_ += n;
+		it_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
-
+	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	constexpr auto operator+(typename involuter::difference_type n) const { return involuter{it_ + n, f_}; }
 	constexpr auto operator-(typename involuter::difference_type n) const { return involuter{it_ - n, f_}; }
 
 	constexpr auto operator[](typename involuter::difference_type n) const { return reference{*(it_ + n), f_}; }
+	// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__)
+	friend constexpr auto operator+(typename involuter::difference_type n, involuter const& self) { return self + n; }
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
 	constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 };
-
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__cpp_deduction_guides)
+#ifdef __cpp_deduction_guides
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
@@ -175,50 +187,106 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& ref = arr.static_array_cast<int, int const*>();
 
 		BOOST_TEST( ref[1][1] == arr[1][1] );
-		BOOST_TEST( std::equal(begin(ref[1]), end(ref[1]), begin(arr[1]), end(arr[1])) );
+		BOOST_TEST( std::equal(ref[1].begin(), ref[1].end(), arr[1].begin(), arr[1].end()) );
 		BOOST_TEST( ref[1] == arr[1] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+#if !defined(_MSC_VER) && !defined(__NVCC__)
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(modernize-use-ranges)
+#endif
+		// ^^^ this doesn't work on MSVC+NVCC in C++20 because it tries to generate this type:
+		// using coty = std::common_reference<
+		// 	boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&,
+		//  	boost::multi::array<int, 1LL, std::allocator<int>> &
+		// >::type;
+		// instantiation of type "std::_Cond_res<boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t
+		// <1LL, boost::multi::size_type>> &&, boost::multi::array<int, 1LL, std::allocator<int>> &>" at line 1405
+		// instantiation of class "std::_Common_reference2C<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray
+		// <int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=
+		// boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1414
+		// instantiation of class "std::_Common_reference2B<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray
+		// <int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1426
+		// instantiation of class "std::_Common_reference2A<_Ty1, _Ty2> [with _Ty1=boost::multi::subarray
+		// <int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&, _Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1474
+		// instantiation of class "std::common_reference<_Ty1, _Ty2> [with
+		// 	_Ty1=boost::multi::subarray<int, 1LL, const int *, boost::multi::layout_t<1LL, boost::multi::size_type>> &&,
+		// 	_Ty2=boost::multi::array<int, 1LL, std::allocator<int>> &]" at line 1313 of
+		// C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+		// instantiation of "const __nv_bool std::_Is_ranges_random_iter_v [with _Iter=
+		// 	boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>]" at line 5563 of
+		// C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+		// instantiation of "__nv_bool std::equal(_InIt1, _InIt1, _InIt2, _InIt2, _Pr) [with
+		// 		_InIt1=boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>,
+		// 		_InIt2=boost::multi::array_iterator<int, 2LL, int *      , false, false, ptrdiff_t>, _Pr=std::equal_to<void>]"
+		// at line 5599 of C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility
+		// instantiation of "__nv_bool std::equal(_InIt1, _InIt1, _InIt2, _InIt2) [with
+		// 	_InIt1=boost::multi::array_iterator<int, 2LL, const int *, false, false, ptrdiff_t>,
+		// 	_InIt2=boost::multi::array_iterator<int, 2LL, int *.     , false, false, ptrdiff_t>]"
+		// at line 193 of C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\test\static_array_cast.cpp
 
 		BOOST_TEST( ref == arr );
 		BOOST_TEST( arr == ref );
 	}
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast_3)
+	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
 	{
-		{
-			multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-			multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
-			auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
-			BOOST_TEST( neg_arr[2] == arr2[2] );
-			BOOST_TEST( arr2[2] == neg_arr[2] );
-			BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
-			BOOST_TEST( neg_arr == arr2 );
-			BOOST_TEST( arr2 == neg_arr );
-		}
-		{
-			multi::static_array<int, 2> arr({4, 5}, 0);
-			std::iota(elements(arr).begin(), elements(arr).end(), 0);
+		BOOST_TEST( neg_arr[2] == arr2[2] );
+		BOOST_TEST( arr2[2] == neg_arr[2] );
+		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
+	}
+	{
+		multi::static_array<int, 2> arr({4, 5}, 0);
+		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
-			multi::array<int, 2> arr2({4, 5});
-			std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+		multi::array<int, 2> arr2({4, 5});
+		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
 
-			auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
+		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
-			BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
-			BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
+		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
+		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
 
-			BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
 
-			BOOST_TEST( arr2[1] == neg_arr[1] );
-			BOOST_TEST( neg_arr[1] == arr2[1] );
+		BOOST_TEST( arr2[1] == neg_arr[1] );
+		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-			BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
-			BOOST_TEST( neg_arr == arr2 );
-			BOOST_TEST( arr2 == neg_arr );
-		}
+		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( neg_arr == arr2 );
+		BOOST_TEST( arr2 == neg_arr );
+	}
+	{
+		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements_t{});
+		BOOST_TEST( arr.size() == 3 );
+	}
+	{
+		multi::array<int, 2> const arr({3, 4});
+		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"
+		// valgrind output:
+		// Memory checking results:
+		// Uninitialized Memory Conditional - 6
+		// Uninitialized Memory Read - 2
+		BOOST_TEST( arr.size() == 3 );
+	}
+
+	{
+		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
+		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"
+		// valgrind output:
+		// Memory checking results:
+		// Uninitialized Memory Conditional - 6
+		// Uninitialized Memory Read - 2
+		BOOST_TEST( arr.size() == 3 );
+	}
+	{
+		// multi::array<std::string, 2> arr( {3, 4}, multi::uninitialized );  // ok, fails compilation because std::string cannot be uninitialized
+		// BOOST_TEST( arr.size() == 3 );
 	}
 
 	return boost::report_errors();

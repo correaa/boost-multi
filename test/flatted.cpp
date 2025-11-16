@@ -47,7 +47,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3> const arr({13, 4, 5});
 		BOOST_TEST( arr.size() == 13 );
 		// BOOST_TEST( arr.is_flattable() );
-		BOOST_TEST( arr.flatted().size() == 52 );
+		BOOST_TEST( arr.flatted().size() == 13L*4L );
+
+		auto const& arr2 = arr.rotated();
+		BOOST_TEST( arr2.flatted().size() == 20 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(empty_array_3D_flatted)
@@ -62,6 +65,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> const arr;
 		// BOOST_TEST( arr.is_flattable() );
 		BOOST_TEST( arr.flatted().size() == 0 );
+	}
+
+	// flatted strided
+	{
+		multi::array<int, 2> arr({4, 10}, 99);
+		BOOST_TEST( &arr.strided(2).flatted()[5] != &arr[0][4] );
+		BOOST_TEST( &arr.strided(2).flatted()[5] == &arr[0][5] );
 	}
 
 	return boost::report_errors();

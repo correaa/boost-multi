@@ -1,10 +1,10 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_MPI_HPP_
 #define BOOST_MULTI_ADAPTORS_MPI_HPP_
-#pragma once
+#include <type_traits>
 
 #include <boost/multi/array.hpp>
 
@@ -12,6 +12,7 @@
 #include <mpi.h>
 
 #include <cassert>  // for assert
+#include <complex>
 #include <limits>   // for numeric_limits  NOLINT(misc-include-cleaner)
 #include <utility>  // for exchange, move
 
@@ -19,7 +20,7 @@ namespace boost::multi::mpi {
 
 using const_MPI_Datatype = MPI_Datatype const;
 
-template<class T> static const_MPI_Datatype const datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
+template<class T> static inline const_MPI_Datatype const datatype = std::conditional_t<static_cast<bool>(sizeof(T*)), void, int>{};
 
 // template<> MPI_Datatype const datatype<char> = MPI_CHAR;
 // template<> MPI_Datatype const datatype<unsigned char> = MPI_UNSIGNED_CHAR;
@@ -31,16 +32,27 @@ template<class T> static const_MPI_Datatype const datatype = std::conditional_t<
 
 // MPI3_DECLARE_DATATYPE(short                  , MPI_SHORT);
 // MPI3_DECLARE_DATATYPE(unsigned short         , MPI_UNSIGNED_SHORT);
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
+#endif
 
-template<> const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const,misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<int> = MPI_INT;  // NOLINT(misc-misplaced-const)
 
 // MPI3_DECLARE_DATATYPE(unsigned int           , MPI_UNSIGNED);
 // MPI3_DECLARE_DATATYPE(long                   , MPI_LONG);
 // MPI3_DECLARE_DATATYPE(unsigned long          , MPI_UNSIGNED_LONG);
 // MPI3_DECLARE_DATATYPE(float                  , MPI_FLOAT);
 
-template<> const_MPI_Datatype const datatype<float>  = MPI_FLOAT;   // NOLINT(misc-definitions-in-headers)
-template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(misc-definitions-in-headers)
+template<> inline const_MPI_Datatype const datatype<float>  = MPI_FLOAT;
+
+template<> inline const_MPI_Datatype const datatype<double> = MPI_DOUBLE;
+
+template<> inline const_MPI_Datatype const datatype<std::complex<double>> = MPI_DOUBLE_COMPLEX;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 // MPI3_DECLARE_DATATYPE(long double            , MPI_LONG_DOUBLE);
 // MPI3_DECLARE_DATATYPE(long long int          , MPI_LONG_LONG_INT);
@@ -50,43 +62,45 @@ template<> const_MPI_Datatype const datatype<double> = MPI_DOUBLE;  // NOLINT(mi
 template<typename T>
 struct datatype_t {
 	static const_MPI_Datatype const value;  // = datatype<T>;
-	auto operator()() const -> MPI_Datatype { return value; }
+	auto operator()() const -> decltype(datatype<T>) { return datatype<T>; }
+	operator const_MPI_Datatype() const { return datatype<T>; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,readability-const-return-type)
 };
 
 template<typename T>
 const_MPI_Datatype const datatype_t<T>::value = datatype<T>;
 
-class data {
-	void*        buf_;
-	MPI_Datatype datatype_;
+// class data {
+// 	void*        buf_;
+// 	MPI_Datatype datatype_;
 
- public:
-	data(void* buf, MPI_Datatype datatype) : buf_(buf), datatype_(datatype) {}
-	template<class It>
-	explicit data(It first)                                            // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
-	: buf_{const_cast<void*>(static_cast<void const*>(first.base()))}  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-	{
-		MPI_Type_vector(
-			1, 1,
-			first.stride(),
-			mpi::datatype<typename It::element>,
-			&datatype_
-		);
+//  public:
+// 	data(void* buf, MPI_Datatype datatype) : buf_{buf}, datatype_{datatype} {}
+// 	template<class It>
+// 	explicit data(It first)                                            // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+// 	: buf_{const_cast<void*>(static_cast<void const*>(first.base()))}  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+// 	{
+// 		assert( first.stride() <= std::numeric_limits<int>::max() );
+// 		MPI_Type_vector(
+// 			1, 1,
+// 			static_cast<int>(first.stride()),
+// 			mpi::datatype<typename It::element>,
+// 			&datatype_
+// 		);
 
-		MPI_Type_commit(&datatype_);  // type cannot be used until committed, in communication operations at least
-	}
+// 		MPI_Type_commit(&datatype_);  // type cannot be used until committed, in communication operations at least
+// 	}
 
-	data(data const&) = delete;
-	data(data&&)      = delete;
+// 	data(data const&) = delete;
+// 	data(data&&)      = delete;
 
-	auto operator=(data const&) = delete;
-	auto operator=(data&&)      = delete;
+// 	auto operator=(data const&) = delete;
+// 	auto operator=(data&&)      = delete;
 
-	~data() { MPI_Type_free(&datatype_); }
+// 	~data() { MPI_Type_free(&datatype_); }
 
-	auto buffer() const { return buf_; }
-	auto datatype() const { return datatype_; }
-};
+// 	auto buffer() const { return buf_; }
+// 	auto datatype() const { return datatype_; }
+// };
 
 template<class Layout>
 auto create_subarray_aux(
@@ -124,10 +138,10 @@ auto create_subarray_aux(
 
 template<class T = void, template<typename> class DatatypeT = mpi::datatype_t, class Size = int>
 class skeleton {
-	Size         count_;
-	MPI_Datatype datatype_;
+	MPI_Datatype datatype_ = MPI_DATATYPE_NULL;
+	Size         count_ = 0;
 
-	skeleton() : datatype_{MPI_DATATYPE_NULL} {}
+	skeleton() = default;
 
 	auto operator=(skeleton&& other) & noexcept -> skeleton& {
 		count_    = other.count_;
@@ -135,8 +149,36 @@ class skeleton {
 		return *this;
 	}
 
+ public:
+	template<class Stride, class SubLayout>
+	skeleton(Stride stride, SubLayout const& sublyt, MPI_Datatype dt, Size subcount) : count_{1} {
+		MPI_Datatype              sub_type;  // NOLINT(cppcoreguidelines-init-variables)
+		[[maybe_unused]] skeleton sk;        // NOLINT(misc-const-correctness)
+		if constexpr(SubLayout::dimensionality == 0) {
+			sub_type = dt;
+		} else {
+			assert( sublyt.size() <= std::numeric_limits<int>::max() );
+			sk       = skeleton(sublyt, dt, static_cast<int>(sublyt.size()));
+			sub_type = sk.datatype();
+		}
+
+		int dt_size;  // NOLINT(cppcoreguidelines-init-variables)
+		MPI_Type_size(dt, &dt_size);
+
+		{
+			MPI_Datatype vector_datatype;  // NOLINT(cppcoreguidelines-init-variables)
+			MPI_Type_create_hvector(
+				subcount, 1,
+				stride * dt_size,
+				sub_type, &vector_datatype
+			);
+
+			MPI_Type_create_resized(vector_datatype, 0, stride * dt_size, &datatype_);
+			MPI_Type_free(&vector_datatype);
+		}
+	}
+
 	template<class Layout>
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init,hicpp-member-init,fuchsia-default-arguments-declarations)
 	skeleton(Layout const& lyt, MPI_Datatype dt, Size subcount) : count_{static_cast<Size>(lyt.size())} {
 		assert(lyt.size() <= std::numeric_limits<Size>::max());
 
@@ -145,7 +187,8 @@ class skeleton {
 		if constexpr(Layout::dimensionality == 1) {
 			sub_type = dt;
 		} else {
-			sk       = skeleton(lyt.sub(), dt, lyt.sub().size());
+			assert( lyt.sub().size() <= std::numeric_limits<int>::max() );
+			sk       = skeleton(lyt.sub(), dt, static_cast<int>(lyt.sub().size()));
 			sub_type = sk.datatype();
 		}
 
@@ -165,9 +208,14 @@ class skeleton {
 		}
 	}
 
- public:
-	skeleton(skeleton&& other) noexcept
+ 	skeleton(skeleton&& other) noexcept
 	: count_{other.count_}, datatype_{std::exchange(other.datatype_, MPI_DATATYPE_NULL)} {}
+
+	template<class Stride, class SubLayout>
+	skeleton(Stride stride, SubLayout const& sublyt, MPI_Datatype dt)
+	: skeleton{stride, sublyt, dt, 1} {
+		MPI_Type_commit(&datatype_);
+	}
 
 	template<class Layout>
 	skeleton(Layout const& lyt, MPI_Datatype dt)
@@ -193,6 +241,10 @@ class skeleton {
 	auto datatype() && { return std::exchange(datatype_, MPI_DATATYPE_NULL); }
 };
 
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
+template<class Layout> skeleton(Layout, decltype(MPI_INT)) -> skeleton<Layout>;
+#endif
+
 template<class Layout>
 auto create_subarray(Layout const& lyt, MPI_Datatype old_datatype, MPI_Datatype* new_datatype) -> int {
 	int old_datatype_size;  // NOLINT(cppcoreguidelines-init-variables)
@@ -203,8 +255,10 @@ auto create_subarray(Layout const& lyt, MPI_Datatype old_datatype, MPI_Datatype*
 	// new_datatype = std::move(sk).type();
 	{
 		MPI_Datatype vector_datatype;  // NOLINT(cppcoreguidelines-init-variables)
+		assert( lyt.size() <= std::numeric_limits<int>::max() );
+
 		MPI_Type_create_hvector(
-			lyt.size(), 1,
+			static_cast<int>(lyt.size()), 1,
 			lyt.stride() * old_datatype_size,
 			sk.datatype(), &vector_datatype
 		);
@@ -227,16 +281,13 @@ class message : skeleton<void, DatatypeT, Size> {
 	template<class Layout>
 	message(void* buf, Layout const& lyt, MPI_Datatype dt) : skeleton_type(lyt, dt), buf_{buf} {}
 
-	// template<class TT, class Layout>
-	// message(TT* buf, Layout const& lyt) : message(buf, lyt, mpi::datatype<TT>) {}
-
 	template<class ArrayElements>
 	explicit message(ArrayElements const& arrelems)
 	: message{
-		  const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-		  arrelems.layout(),
-		  mpi::datatype<typename ArrayElements::value_type>
-	  } {}
+		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+		arrelems.layout(),
+		DatatypeT<typename ArrayElements::element>{}  // value_type>
+	} {}
 
 	message(message const& other) = delete;
 	message(message&&)            = delete;
@@ -262,6 +313,56 @@ class message : skeleton<void, DatatypeT, Size> {
 	//      return this->datatype_;
 	// }
 };
+
+template<template<typename> class DatatypeT = mpi::datatype_t, typename Size = int>
+class iterator : skeleton<void, DatatypeT, Size> {
+	void* buf_;
+	using skeleton_type = skeleton<void, DatatypeT, Size>;
+
+ public:
+	iterator(void* buf, skeleton_type&& sk) : skeleton_type{std::move(sk)}, buf_{buf} {}
+
+	template<class Stride, class SubLayout>
+	iterator(void* buf, Stride stride, SubLayout const& sublyt, MPI_Datatype dt) : skeleton_type{stride, sublyt, dt}, buf_{buf} {}
+
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v != 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	explicit iterator(ArrayIterator const& it)
+	: iterator{
+		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+		it.stride(),
+		it->layout(),
+		DatatypeT<typename ArrayIterator::element>{}
+	} {}
+
+	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	explicit iterator(ArrayIterator const& it)
+	: iterator{
+		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+		it.stride(),
+		multi::layout_t<0>{},
+		DatatypeT<typename ArrayIterator::element>{}
+	} {}
+
+	iterator(iterator const& other) = delete;
+	iterator(iterator&&)            = delete;
+
+	auto operator=(iterator const&) = delete;
+	auto operator=(iterator&&)      = delete;
+
+	~iterator() = default;
+
+	auto buffer() const { return buf_; }
+	// auto count() const { return 1; }  // an iterator doesn't have a count in most contexts, you have to figure out the count yourselve, typically size()
+	using skeleton_type::count;
+	using skeleton_type::datatype;
+};
+
+template<template<typename> class DatatypeT = mpi::datatype_t, class Array>
+auto begin(Array&& arr) {return iterator<DatatypeT>{std::forward<Array>(arr).begin()}; }
+
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides>=201703L)
+template<class ArrayElements> message(ArrayElements const&) -> message<>;
+#endif
 
 }  // namespace boost::multi::mpi
 

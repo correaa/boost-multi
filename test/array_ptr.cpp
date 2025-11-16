@@ -9,7 +9,7 @@
 
 #include <algorithm>    // for equal
 #include <array>        // for array  // IWYU pragma: keep  // bug in iwyu 8.22
-#include <memory>       // for addressof
+#include <memory>       // for addressof  // IWYU pragma: keep
 #include <type_traits>  // for is_trivially_copy_assignable_v
 #include <utility>      // for as_const, addressof, exchange, move
 #include <vector>       // for vector
@@ -58,7 +58,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto& arr_ptr2_ref = arr_ptr2;
 		arr_ptr2           = arr_ptr2_ref;
-		arr_ptr2_ref       = arr_ptr2;
+		arr_ptr2_ref       = arr_ptr2;  // cppcheck-suppress selfAssignment ;
 
 		auto const& carr2 = arr[2];
 		BOOST_TEST( carr2[0] == arr[2][0] );
@@ -78,13 +78,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto pac2  = &ac2;
 		auto parr2 = &arr[2];
-		BOOST_TEST( pac2 == parr2 );
+		BOOST_TEST( pac2 == parr2 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		pac2 = nullptr;
 		BOOST_TEST( pac2 != parr2 );
 
 		parr2 = nullptr;
-		BOOST_TEST( pac2 == parr2 );
+		BOOST_TEST( pac2 == parr2 );  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ptr)
@@ -137,7 +137,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( !(arr2P == arrP) );
 
 			arr2P = arrP;
-			BOOST_TEST(  arrP ==  arr2P );
+			BOOST_TEST(  arrP ==  arr2P );  // cppcheck-suppress knownConditionTrueFalse ;
 			BOOST_TEST( *arrP == *arr2P );
 
 			BOOST_TEST(  (*arrP).operator==(*arrP) );
@@ -168,7 +168,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			ptrs.emplace_back(arr[2].data(), 5);
 			ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
 
-			BOOST_TEST( &(*ptrs[2])[4] == &arr[3][4]     );
+			BOOST_TEST( &(*ptrs[2])[4] == &arr[3][4]     );  // cppcheck-suppress mismatchingContainers ;
 			BOOST_TEST(  (*ptrs[2])[4] == 190            );
 			BOOST_TEST(    ptrs[2]->operator[](4) == 190 );
 		}
@@ -194,33 +194,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using my_span = multi::array_ref<int, 1>;
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
 		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
-		BOOST_TEST( (*aP).size() == 5 );
-		BOOST_TEST( aP->size() == 5 );  // doesn't work on MSVC?
+		BOOST_TEST( (*aP).size() == 5 );  // cppcheck-suppress danglingTemporaryLifetime ; library idiom
+		BOOST_TEST( aP->size() == 5 );
 
 		BOOST_TEST( (*aP)[0] == 20 );
 
-		auto const& aCRef = *aP;
-		BOOST_TEST(  aCRef.size() == 5 );
+		auto const& aCRef = *aP;  // cppcheck-suppress danglingTempReference ; library idiom
 
-		BOOST_TEST( &aCRef[0] == &vec[2] );
-		BOOST_TEST(  aCRef[0] == 20     );
+		BOOST_TEST(  aCRef.size() == 5 );  // cppcheck-suppress danglingTempReference ; library idiom
 
-		auto&& aRef = *aP;
+		BOOST_TEST( &aCRef[0] == &vec[2] );  // cppcheck-suppress danglingTempReference ; library idiom
+		BOOST_TEST(  aCRef[0] == 20      );        // cppcheck-suppress danglingTempReference ; library idiom
+
+		auto&& aRef = *aP;  // cppcheck-suppress danglingTempReference ;  library idiom
 		// what(aP, aRef);
 		// (*aP)[0] = 990;
-		aRef[0] = 990;
+		aRef[0] = 990;  // cppcheck-suppress danglingTempReference ;  library idiom
 		BOOST_TEST( vec[2] == 990 );
 	}
 
@@ -240,8 +240,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto rowP2 = rowP;
 			rowP2      = rowP;  // self assigment
 
-			BOOST_TEST( rowP == rowP2 );
-			BOOST_TEST( !(rowP != rowP2) );
+			BOOST_TEST( rowP == rowP2 );     // cppcheck-suppress knownConditionTrueFalse ;
+			BOOST_TEST( !(rowP != rowP2) );  // cppcheck-suppress knownConditionTrueFalse ;
 
 			auto rowP0 = &arr[0];
 
@@ -264,7 +264,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			decltype(rowP) rowP2;
 			rowP2 = rowP;
 
-			BOOST_TEST( rowP == rowP2 );
+			BOOST_TEST( rowP == rowP2 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 			rowP2 = decltype(rowP2){nullptr};
 			BOOST_TEST( !rowP2 );

@@ -47,18 +47,18 @@ auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // N
 	return gemv_n(&ctxt, static_cast<typename MIt::element>(a), m_first, count, x_first, static_cast<typename MIt::element>(b), y_first);
 }
 
-template<class Ctxt, class A, class M, class V, class B, class W>
-auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class Ctxt, class M, class V, class W>
+auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typename M::element const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 
-	gemv_n(ctxt, static_cast<typename M::element>(a), begin(m), size(m), begin(v), static_cast<typename M::element>(b), begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
 
 	return std::forward<W>(w);
 }
 
-template<class A, class M, class V, class B, class W>
-auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
+template<class M, class V, class W>
+auto gemv(typename M::element a, M const& m, V const& v, typename M::element b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 
 	if constexpr(is_conjugated<M>{}) {
@@ -84,21 +84,38 @@ class gemv_iterator {
 	using reference = void;
 	using iterator_category = std::random_access_iterator_tag;
 
+	gemv_iterator() = default;
+
+	auto operator++() -> gemv_iterator& { ++m_it_; return *this; }
+	auto operator++(int) -> gemv_iterator { gemv_iterator ret{*this}; ++(*this); return ret; }
+
+	friend auto operator==(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
+		assert(self.v_first_ == other.v_first_);
+		return self.m_it_ == other.m_it_;
+	}
+
+	friend auto operator!=(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
+		assert(self.v_first_ == other.v_first_);
+		return self.m_it_ != other.m_it_;
+	}
+
 	friend auto operator-(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
 		assert(self.v_first_ == other.v_first_);
 		return self.m_it_ - other.m_it_;
 	}
+
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
 		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		else                                        {blas::gemv_n(first.ctxt_, static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
 		return result + count;
 	}
+
 	template<class It1DOut>
 	friend auto copy(gemv_iterator first, gemv_iterator last, It1DOut result){return copy_n(first, last - first, result);}
 	template<class It1DOut>
 	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
-		#if defined(__cpp_lib_start_lifetime_as)
+		#ifdef __cpp_lib_start_lifetime_as
 		auto count = last - first;
 		// or use start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), count); since this is always called on contiguos iterators
 		for(; count > 0; ++result, --count) {
@@ -107,6 +124,7 @@ class gemv_iterator {
 		#endif
 		return copy(first, last, result);
 	}
+
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
 	auto operator*() const { return value_type{0.0}; }  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
@@ -114,11 +132,14 @@ class gemv_iterator {
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
 class gemv_range {
-	Scalar alpha_{1.0};
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Context ctxt_;
+
 	It2D m_begin_;
 	It2D m_end_;
+
 	It1D v_first_;
-	Context ctxt_;
+
+	Scalar alpha_{1.0};
 
  public:
 	gemv_range(gemv_range&&) noexcept = default;
@@ -132,10 +153,11 @@ class gemv_range {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	gemv_range(Context ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
-	: alpha_{alpha}
+	: ctxt_{std::move(ctxt)}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
-	, ctxt_{std::move(ctxt)} {
+	, alpha_{alpha}
+	{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;

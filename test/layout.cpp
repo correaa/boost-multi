@@ -10,11 +10,13 @@
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
-#if __cplusplus > 201703L
-#if __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
+#include <ranges>  // IWYU pragma: keep
 #endif
 #endif
+
 #include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
@@ -62,8 +64,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( exts.to_linear(4, 0, 0) == exts.num_elements() );
 
 		for(int idx = 0; idx != exts.num_elements(); ++idx) {  // NOLINT(altera-unroll-loops)
-			BOOST_TEST( std::apply([&](auto... indices) {
-				return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
+			BOOST_TEST( std::apply([&](auto... indices) { return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
 		}
 	}
 
@@ -196,7 +197,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
@@ -204,14 +205,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(int i = 0; i != 10; ++i) {
 			for(int j = 0; j != 12; ++j) {
-				for(int k = 0; k != 15; ++k) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );
-					BOOST_TEST( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );
+				for(int k = 0; k != 15; ++k) {                                    // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+					BOOST_TEST( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -231,7 +232,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const [is, js, ks] = rot.extensions();
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -239,14 +240,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto const i : is) {
 			for(auto const j : js) {
-				for(auto const k : ks) {  // NOLINT(altera-unroll-loops)
-					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );
-					BOOST_TEST( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );
+				for(auto const k : ks) {                                          // NOLINT(altera-unroll-loops)
+					BOOST_TEST( &  rot.base()  [rot.layout()(i, j, k)] == &rot(i, j, k) );    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+					BOOST_TEST( &*(rot.base() + rot.layout()(i, j, k)) == &rot(i, j, k) );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
 		}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	}
@@ -406,6 +407,61 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(      arr.layout() == arr.layout()  );
 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
+
+		// auto bl = arr.layout().flatten();
+		auto const& barr = arr.flattened();
+		BOOST_TEST( &barr[10] == &arr[0][10] );
+	}
+	{
+		multi::array<double, 2> arr({6, 10});
+
+		auto const& barr = arr.strided(2).flattened();
+
+		BOOST_TEST( &barr [0] == &arr[0][0] );
+		BOOST_TEST( &barr [1] == &arr[0][1] );
+		// ...
+		BOOST_TEST( &barr [9] == &arr[0][9] );
+
+		BOOST_TEST( &barr[10] == &arr[2][0] );
+		BOOST_TEST( &barr[11] == &arr[2][1] );
+		BOOST_TEST( &barr[12] == &arr[2][2] );
+		// ...
+		BOOST_TEST( &barr[19] == &arr[2][9] );
+
+		BOOST_TEST( &barr[20] == &arr[4][0] );
+		BOOST_TEST( &barr[21] == &arr[4][1] );
+		BOOST_TEST( &barr[22] == &arr[4][2] );
+		// ...
+		BOOST_TEST( &barr[29] == &arr[4][9] );
+
+		BOOST_TEST( arr.num_elements() == 60 );
+		BOOST_TEST( barr.size() == 30 );
+	}
+	{
+		multi::array<double, 2> arr({6, 10});
+
+		auto const& barr = arr.strided(2).transposed().strided(2).transposed().flattened();
+
+		BOOST_TEST( &barr [0] == &arr[0][0] );
+		BOOST_TEST( &barr [1] == &arr[0][2] );
+		BOOST_TEST( &barr [2] == &arr[0][4] );
+		BOOST_TEST( &barr [3] == &arr[0][6] );
+		BOOST_TEST( &barr [4] == &arr[0][8] );
+
+		BOOST_TEST( &barr [5] == &arr[2][0] );
+		BOOST_TEST( &barr [6] == &arr[2][2] );
+		BOOST_TEST( &barr [7] == &arr[2][4] );
+		BOOST_TEST( &barr [8] == &arr[2][6] );
+		BOOST_TEST( &barr [9] == &arr[2][8] );
+
+		BOOST_TEST( &barr [10] == &arr[4][0] );
+		BOOST_TEST( &barr [11] == &arr[4][2] );
+		BOOST_TEST( &barr [12] == &arr[4][4] );
+		BOOST_TEST( &barr [13] == &arr[4][6] );
+		BOOST_TEST( &barr [14] == &arr[4][8] );
+
+		BOOST_TEST( arr.num_elements() == 60 );
+		BOOST_TEST( barr.size() == 15 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
@@ -441,7 +497,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(B2) == 4 );
 		B2[3][3] = 99;
 
-		BOOST_TEST( B2[3][3] == 99 );
+		BOOST_TEST( B2[3][3] == 99 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		multi::array<int, 2> B2copy{B2({0, 2}, {0, 2})};
 
@@ -474,6 +530,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto xA = extensions(arr);
 
 		using std::get;  // needed for C++17
+		using std::size;
 		BOOST_TEST( size(get<0>(xA)) == 3 );
 		BOOST_TEST( size(get<1>(xA)) == 4 );
 		BOOST_TEST( size(get<2>(xA)) == 5 );
@@ -1211,6 +1268,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& arrp2 = arr.partitioned(2);
 		BOOST_TEST( arrp2.num_elements() == arr.num_elements() );
 		BOOST_TEST( arrp2.size() == 2 );
+	}
+	{
+		multi::layout_t<2> const lyt(multi::extensions_t<2>{
+			{3,  9},
+			{0, 15}
+		});
+		BOOST_TEST( lyt.size() == 6 );
+		BOOST_TEST( lyt.extension().front() == 3 );
+		BOOST_TEST( lyt.extension().back() == 8 );
+	}
+	{
+		multi::extension_t<int> const ext(5);
+
+		BOOST_TEST( *ext.begin() == 0 );
+		BOOST_TEST( *(ext.end() - 1) == 4 );
+
+#if !defined(__clang_major__) || (__clang_major__ > 16)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( *std::ranges::begin(ext) == 0 );
+		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
+
+		BOOST_TEST( ext[0] == 0 );
+		BOOST_TEST( ext[1] == 1 );
+		BOOST_TEST( ext[4] == 4 );
+
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
+
+		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
+		auto rext = ext | std::ranges::views::reverse;
+
+		BOOST_TEST( rext[0] == 4 );
+		BOOST_TEST( rext[1] == 3 );
+		BOOST_TEST( rext[4] == 0 );
+#endif
+#endif
 	}
 
 	return boost::report_errors();
