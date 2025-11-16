@@ -703,9 +703,9 @@ constexpr auto trace() {
 
 static_assert( trace() == 4 + 2 + 10 );
 ```
-https://godbolt.org/z/Porre3z8s
+link:https://godbolt.org/z/Porre3z8s[(live)]
 
-== Restrictions (lazy arrays and operations)
+== Restrictions (lazy expression evaluation)
 
 So far, we have examined the use of arrays that contain elements or references to elements stored in memory; these are referred to as container arrays or concrete arrays.
 In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
@@ -790,7 +790,9 @@ link:https://godbolt.org/z/qK9cYzrzv[(live)]
 Another possible application of restrictions is the ability to define lazy operations, also known as lazy expressions or expression templates.
 These are complex C++ expressions composed of objects (typically in through operator overload) that are evaluated only after the whole expression is built.
 In the array programming space, eliminating the need of temperaries is essential.
-Since this feature is generally in demand for array libraries, here is a basic implementation example using restrictions.
+
+Since arrays are expensive to copy or generate, this feature is highly regarded for array libraries.
+Here is a basic implementation example using restrictions, that can be customized for specific domains of application.
 
 For example, given two concrete arrays `A`, `B`, one can evaluate the result of a complex algebraic expression and store the result in a new array, but without building intermediate arrays:
 
@@ -820,10 +822,12 @@ namespace lazy {
 	namespace elementwise {
 		template <class A, class B>
 		auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
     		return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
 		}
 		template <class A, class B>
 		auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
     		return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
 		}
 	}
