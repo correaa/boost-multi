@@ -232,7 +232,7 @@ class f_extensions_t {
 		constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		// iterator(iterator const& other) = default;
-		iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		constexpr iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 		iterator(iterator&&) = default;
 
 		auto operator=(iterator&&) -> iterator& = default;

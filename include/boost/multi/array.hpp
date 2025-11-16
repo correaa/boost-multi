@@ -276,7 +276,6 @@ struct static_array                                                             
 #if __cplusplus >= 202002L
 	template<class It, std::sentinel_for<It> Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, Sentinel const& last)
-		// requires std::sentinel_for<Sentinel, It>
 	: static_array(first, last, allocator_type{}) {}
 #else
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
