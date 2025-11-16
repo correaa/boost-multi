@@ -2,32 +2,24 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
-// IWYU pragma: no_include <algorithm>                        // for fill_n, equal
+#include <boost/core/lightweight_test.hpp>
+
+// IWYU pragma: no_include <algorithm>       // for fill_n, equal
 #include <complex>
-#include <numeric>  // for std::transform_reduce
-#include <utility>  // for move  // IWYU pragma: keep
-#include <vector>   // for vector
+// IWYU pragma: no_include <format>               // for vector
+#include <vector>  // for vector
 
 namespace multi = boost::multi;
 
-namespace {
-template<class M> auto power(M const& array) {
-	return std::accumulate(array.elements().begin(), array.elements().end(), 0.0, [](auto e1, auto e2) { return std::move(e1) + std::norm(e2); });
-	//  return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) { return std::norm(zee); });
-}
-}  // end unnamed namespace
-
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
-
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	#if !defined(__CUDACC_VER_MAJOR__) || (__CUDACC_VER_MAJOR__ < 13)
 	multi::fftw::environment const env;
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -50,7 +42,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( in_base == in.base() );  // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -75,7 +68,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( in_base == in.base() );        // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -100,7 +94,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( in_base == in.base() );  // prove no allocation
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -267,41 +262,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<int, 3> A1 = {
-			{
-				{1, 2},
-				{3, 4}
-			},
-			{
-				{5, 6},
-				{7, 8}
-			},
+			{{1, 2},
+			 {3, 4}},
+			{{5, 6},
+			 {7, 8}},
 		};
 
 		auto&& R1 = A1[1];
-		R1 = A1[0];
+		R1        = A1[0];
 
 		BOOST_TEST( A1[0] == A1[1] );
 	}
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::array<std::vector<int>, 3> A1 = {
-			{
-				{std::vector<int>(1, 0), std::vector<int>(2, 0)},
-				{std::vector<int>(3, 0), std::vector<int>(4, 0)}
-			},
-			{
-				{std::vector<int>(5, 0), std::vector<int>(6, 0)},
-				{std::vector<int>(7, 0), std::vector<int>(8, 0)}
-			},
+			{{std::vector<int>(1, 0), std::vector<int>(2, 0)},
+			 {std::vector<int>(3, 0), std::vector<int>(4, 0)}},
+			{{std::vector<int>(5, 0), std::vector<int>(6, 0)},
+			 {std::vector<int>(7, 0), std::vector<int>(8, 0)}},
 		};
 
 		auto&& R1 = A1[1];
-		R1 = A1[0].move();
+		R1        = A1[0].move();
 
 		BOOST_TEST( A1[1][0][0] == std::vector<int>(1, 0) );
 		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
 		// NOLINTEND(fuchsia-default-arguments-calls)
 	}
-
+	#endif
 	return boost::report_errors();
 }

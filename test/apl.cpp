@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__NVCC__)
-#pragma diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
+#if defined(__NVCC__) && !defined(_MSC_VER)
+#pragma nv_diag_suppress 177  // Suppress warning number 177 variable "apl::symbols::<unnamed>::\u019f" was declared but never referenced
 #endif
 
 #include <boost/multi/array.hpp>
@@ -31,6 +31,7 @@ constexpr auto iota(Extensions const& exts) {
 
 template<class... Es>
 constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
+	((void)es, ...);
 	return iota<sizeof...(Es)>(multi::extensions_t<static_cast<multi::dimensionality_type>(sizeof...(Es))>{es...});
 }
 
@@ -64,11 +65,13 @@ namespace {
 [[maybe_unused]] constexpr auto const& Ø = Zilde;
 #endif
 
+#if !defined(_MSC_VER)
 #if !defined(__GNUC__) || __GNUC__ > 9
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wc99-compat"
 #endif
 [[maybe_unused]] constexpr auto const& ϴ = Zilde;  // NOLINT(misc-confusable-identifiers)
+#endif
 #endif
 #endif
 #endif
@@ -94,7 +97,7 @@ struct underscore_t {
 #endif
 };
 
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 [[maybe_unused]] constexpr underscore_t _;
 #endif
 

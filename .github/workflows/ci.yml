@@ -11,9 +11,10 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - develop
-      - feature/**
+      - '**'        # matches every branch
+      # - master
+      # - develop
+      # - feature/**
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
@@ -305,9 +306,6 @@ jobs:
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
 
-          - toolset: clang
-            cxxstd: "03,11,14,17,20,2b"
-            os: macos-13
           - toolset: clang
             cxxstd: "03,11,14,17,20,2b"
             os: macos-14

@@ -2,10 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+#include <cstddef>
+
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
 
-#include <boost/core/lightweight_test.hpp>
+#include <thrust/reduce.h>
+#include <thrust/iterator/discard_iterator.h>
 
 namespace multi = boost::multi;
 
@@ -25,7 +29,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( M.size() == 8 );
 	BOOST_TEST( (~M).size() == 4 );
 
-	multi::thrust::universal_array<float, 1> sums(M.size());
 
 	using std::get;
 	std::cout
@@ -36,12 +39,36 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST(true);
 	// M.extensions().elements();
 
-	// auto row_ids_begin =
-	//     thrust::make_transform_iterator(
-	//         M.indexed_elements().begin(),
-	//         [] __host__ __device__ (auto const& e) { return thrust::get<0>(e); }
-	//     )
-	// ;
+	auto row_ids_begin_ref =
+	    thrust::make_transform_iterator(
+			M.extensions().elements().begin(),
+	        [] __host__ __device__ (decltype(M)::indexes e) -> std::ptrdiff_t { using std::get; return get<0>(e); }
+	    )
+	;
+
+	auto row_ids_begin =
+	    thrust::make_transform_iterator(
+			thrust::make_counting_iterator(std::ptrdiff_t{0}),
+	        [] __host__ __device__ (std::ptrdiff_t e) -> std::ptrdiff_t { return e / 4; }  // std::get; return get<0>(e); }
+	    )
+	;
+	auto row_ids_end = row_ids_begin + M.num_elements();
+
+	auto row_ids_end_ref = row_ids_begin_ref + M.num_elements();
+
+	BOOST_TEST( thrust::equal(row_ids_begin, row_ids_end, row_ids_begin_ref) );  // , row_ids_end_ref) );
+	BOOST_TEST( thrust::equal(row_ids_begin+1, row_ids_end, row_ids_begin_ref+1) );  // row_ids_end_ref) );
+
+	BOOST_TEST( row_ids_end - row_ids_begin == M.num_elements() );
+
+	multi::thrust::universal_array<float, 1> sums(M.size());
+
+	thrust::reduce_by_key(thrust::cuda::par,
+		row_ids_begin_ref, row_ids_end_ref,
+		M.elements().begin(),
+		thrust::make_discard_iterator(),
+		sums.begin()
+	);
 
 	// thrust::reduce_by_key(
 	//     thrust::make_counting_iterator(0),
@@ -50,6 +77,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//     thrust::make_discard_iterator(),
 	//     sums.data()
 	// );
+
+	BOOST_TEST( sums[0] == M[0][0] + M[0][1] + M[0][2] + M[0][3] );
+	BOOST_TEST( sums[1] == M[1][0] + M[1][1] + M[1][2] + M[1][3] );
 
 	return boost::report_errors();
 }

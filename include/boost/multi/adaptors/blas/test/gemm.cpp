@@ -268,15 +268,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			blas::context const ctxt;
 			blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));
-			BOOST_TEST(( c[1][1] == 169 && c[1][0] == 82 ));
+			BOOST_TEST( std::abs( c[1][1] - 169.0 ) < 1e-10 );
+			BOOST_TEST( std::abs( c[1][0] -  82.0 ) < 1e-10 );
 		}
 		{
 			multi::array<double, 2> const c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 			blas::context const ctxt;
 			blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));
-			BOOST_TEST( (~c)[1][1] == 169 );
-			BOOST_TEST( (~c)[1][0] ==  82 );
+			BOOST_TEST( std::abs( (~c)[1][1] - 169 ) < 1e-10 );
+			BOOST_TEST( std::abs( (~c)[1][0] -  82 ) < 1e-10 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -341,12 +342,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 3});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);      // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 17 );
+			BOOST_TEST( std::abs( c[1][2] - 17 ) < 1e-10 );
 		}
 		{
 			multi::array<double, 2> c({2, 3});                              // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 17.0 );
+			BOOST_TEST( std::abs( c[1][2] - 17.0 ) < 1e-10 );
 		}
 	}
 
@@ -443,8 +444,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-#if defined(CUDA_FOUND)
-#   include <thrust/complex.h>
+#ifdef CUDA_FOUND
+#include <thrust/complex.h>
 	BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
 		using complex = thrust::complex<double>;
 		complex const                  I{0.0, 1.0};
@@ -1664,14 +1665,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<double, 2> c = blas::gemm(0.1, a, blas::H(b));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][2] == 0. );
-		}
-		{
-			multi::array<double, 2> const a = {
-				{1, 3, 1},
-				{9, 7, 1},
-			};
-			(void)a;
+			BOOST_TEST( c[1][2] == 0.0 );
 		}
 	}
 

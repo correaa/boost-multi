@@ -31,7 +31,9 @@ endif()
 set(TEST_SRCS
 	array.cu
 	by_key.cu
+	diffusion3d_kernel.cu
 	memory_resource.cu
+	neighbor_list.cu
 	run_reduce.cu
 	set_identity_kernel.cu
 	speed.cu
@@ -59,6 +61,36 @@ foreach(TEST_FILE ${TEST_SRCS})
     if(ENABLE_CUDA)
 	    add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
     endif()
+
+	target_compile_options(${TEST_EXE} PRIVATE
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+			--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
+			--extended-lambda
+		#>
+		$<$<CXX_COMPILER_ID:MSVC>:
+		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
+			$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+				/W4    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
+			>
+			$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+				--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
+				-Xcompiler=/W4
+				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
+				-Xcompiler=/wd4324  # structure was padded due to alignment specifier
+				-Xcompiler=/wd4464
+				-Xcompiler=/wd4664
+				-Xcompiler=/wd4668
+			>
+		>
+	>
+	)
 endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
+
+# target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > --extended-lambda >)
+# target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)
+# target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+# target_compile_options(speed.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
+
+# target_compile_features(neighbor_list.cu.x PRIVATE cuda_std_20 cxx_std_20)

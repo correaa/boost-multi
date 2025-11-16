@@ -5,7 +5,9 @@
 :idprefix: tutorial_
 
 In this example, we are going to use memory that is not managed by the library and manipulate the elements.
-We can create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+
+(This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
 
 ```cpp
 #include <boost/multi/array.hpp>
@@ -23,7 +25,9 @@ int main() {
 	...
 ```
 
-Next, we print the elements in a way that corresponds to the logical arrangement:
+Next, we print the elements in a way that corresponds to the logical arrangement.
+To do that, first, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
+then we decompose it as the cartesian product of two 1-dimensional ranges of integer indices.
 
 ```cpp
 #include <iostream>  // for print
@@ -91,8 +95,6 @@ In this case, the original array will be transformed by sorting the matrix into:
 > 11 12 13 14 100
 > 16 17 18 19 150
 > ```
-
-https://godbolt.org/z/4zWTPcoK6[(live code)]
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
@@ -172,8 +174,8 @@ or equivalently,
 ```cpp
 auto C2 = + A2( {0, 2}, {0, 2} );
 ```
-Note the use of the prefix `+` as an indicator that a copy must be created (it has no arithmetic implications).
-Due to a language limitation, omitting the `+` will create another non-independent reference view of the left-hand side, which is generally undesired.
+Note the use of the prefix `\+` (plus) as an indicator that a copy must be created (it has no arithmetic implications).
+Due to a language limitation, omitting the plus symbol will create another non-independent reference view of the left-hand side, which is generally undesired.
 
 Subarray-references can also assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
@@ -191,7 +193,7 @@ A2 = A2.transposed();  // undefined result, this is an error
 
 This is an instance of the problem of _data aliasing_, which describes a common situation in which a data location in memory can be accessed through different parts of an expression or function call.
 
-This below statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
+This statement below, instead, does produce a transposition, at the cost of making one copy (implied by `+`) of the transposed array first and assigning (or moving) it back to the original array.
 
 ```cpp
 A2 = + A2.transposed();  // ok, (might allocate)
@@ -233,8 +235,8 @@ Arrays can change their size while _preserving elements_ with the `reextent` met
 
 ```cpp
 multi::array<int, 2> A = {
- {1, 2, 3},
- {4, 5, 6}
+	{1, 2, 3},
+	{4, 5, 6}
 };
 
 A.reextent({4, 4});
@@ -582,25 +584,27 @@ For example, to convert an array of integers to an array of text strings:
 
 == Uninitialized vs. initialized elements
 
-If available, the library can take advantage of trivial initialization for the specific element type.
-These types can be primitive or user-defined and come with "trivial default constructors".
-In simple terms, these constructors are not specified and do nothing, not even set values.
+If available, the library can take advantage of trivial initialization for specific element types that support it.
 
-When used in the stack, these types can be declared with no initialization (e.g., `double x;`, the initial value is not well defined or partially-formed) or with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
-Analogously, `multi::array` does not initialize individual elements of this kind of type unless specified.
+Primitive types or some user-defined are defined in such a way that their construction does nothing, not even set values.
+When used in the stack, these types can be declared with no initialization (e.g., `double x;`),
+in which case their initial value is not well defined or the state is called "partially-formed";
+or they can be declared with initialization (e.g., `double x{};`, same as `double x = 0.0;`).
+When these types are used as array elements, (e.g. `multi::array<T, D>`),
+the library does not initialize individual elements unless specified.
 
 For example, after this construction of the array, the values of the six elements of this array are unspecified (partially-formed).
 ```cpp
 multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
 ```
 
-No behavior of the program should depend on these values. 
-(Address sanitizers and memory checkers can detect use of uninitialized values.)
-This design is a slight departure from the STL's design, which [eagerly initializes elements in containers](https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/).
+No behavior of the program should depend on these values.
+(Fortunately, address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".)
+This design is a slight departure from the STL's design, which https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/[eagerly initializes elements in containers].
 
 If trivial construction is unavailable, the library uses the default initialization.
 ```cpp
-multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value, the empty value std::string{}
+multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value: empty std::string{}
 ```
 
 For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
@@ -614,7 +618,7 @@ This design is particularly advantageous for *numeric* types for which external 
 (or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround built-in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+A workaround built-in in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 ```cpp
 #include<multi/array.hpp>
 
@@ -624,6 +628,10 @@ bool multi::force_element_trivial_default_construction<std::complex<double>> = t
 
 With this line, `std::complex<double>` elements inside arrays will be left uninitialized unless a value is specified.
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
+
+Finally, the library offers a tag to explicitly state the intention of having uninitialized elements: `multi::arrray<int, 2> A2({2, 3}, multi::uninitialized_elements)`.
+This syntax will compile only if elements are trivially-default constructible; 
+therefore and as an example `multi::arrray<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
 == Const-correctness
 
@@ -695,7 +703,151 @@ constexpr auto trace() {
 
 static_assert( trace() == 4 + 2 + 10 );
 ```
-https://godbolt.org/z/Porre3z8s
+link:https://godbolt.org/z/Porre3z8s[(live)]
+
+== Restrictions (lazy expression evaluation)
+
+So far, we have examined the use of arrays that contain elements or references to elements stored in memory; these are referred to as container arrays or concrete arrays.
+In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
+The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays".
+
+Multi's restriction arrays are functions that are wrapped in the interface of a multidimensional array.
+These functions are therefore restricted (in the mathematical sense) to a discrete range of values in a multidimensional grid (a Cartesian product of integer intervals).
+The dimensionality of a restriction is the number of indices or coordinates that this function accepts as inputs.
+
+Restrictions are constructed from a function (generally a lambda) and an `extensions` object, combined using the wedge operator (`operator^`, which can be interpreted as an arrow pointing up).
+Unlike concrete arrays, restrictions do not necessarily allocate space; instead, the elements are generated on demand.
+
+For example, we can restrict this simple function `10*i + j` where `i` and `j` belong to the domain `[0, 2) x [0, 3)` (i.e., `i = 0...1` and `j = 0...2`). 
+
+```cpp
+auto R = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
+...
+```
+Note that `R` does not request memory to store the values; it generates them only when needed. For example, `R[1][2]` yields `10*1 + 2`, or `12`.
+For this reason, they can be regarded as "lazy" arrays, a multidimensional generalization of ranges such as `std::ranges::iota`, `std::ranges::iota | std::ranges::transform(...)` or `thrust::counting_iterator`.)
+
+The main property of a restriction array is that it can be generically used in place of a concrete array because they have the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()` and (partial) indexing (`operator[]`).
+They also provide a complete iterator inteface, `.begin()`, `.end()` and they can be used as standard ranges.
+This means that generic algorithms, including some outside of Multi, can take advantage of these arrays.
+
+As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`; the same expression as if it were a concrete array).
+
+The main difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
+
+The simplest use of restrictions is for generating concrete arrays from coordinates.
+The following is a commonly used nested loop for initialization:
+```cpp
+multi::array<int, 2> A({3, 2});
+
+auto [is, js] = A.extensions();
+
+for(auto i : is) {
+	for(auto j : js) {
+		A[i][j] = 10*i + j;
+	}
+}
+```
+...which can be replaced by a simpler construction without intermediate steps:
+```cpp
+multi::array<int, 2> const A([](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2));
+```
+
+Note that since there is no immediate need to assign elements and `A` can be conveniently declared `const` if no further mutation is necessary).
+The element initialization here is delegated to the library; the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device).
+
+Restrictions can be used in many other contexts beyond initialization and assignment;
+for example in combination with `std::ranges`, or mixed with concrete arrays.
+In some cases, functions can be generically written to work both on `multi::array`s (or `multi::subarray`s) and on restrictions, when a functional programming style is desirable.
+
+For example, here we define a transformation that subtracts the mean value of each row, row by row:
+
+```cpp
+auto shift = std::views::transform(
+	[]<class Row>(Row&& row) {
+		auto mean = std::reduce(row.begin(), row.end()) / row.size();
+		return std::forward<Row>(row) | std::views::transform([=](auto ele) { return ele - mean; });
+	}
+);
+```
+
+This operation can be applied to the lazy version or to the concrete version of the array:
+
+```cpp
+auto                    lazy     = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
+multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};
+```
+
+The primary advantage of using lazy arrays and defining transformation functions is that operations can occur without requiring temporary space (allocators), which can be advantageous.
+The allocation would only happen at the point at which the result is materialized as a concrete array.
+
+```cpp
+multi::array<double, 2> S1(shift(lazy));  // allocation might ocurr here
+multi::array<double, 2> S2(shift(concrete));   // allocation might ocurr here
+```
+link:https://godbolt.org/z/qK9cYzrzv[(live)]
+
+Another possible application of restrictions is the ability to define lazy operations, also known as lazy expressions or expression templates.
+These are complex C++ expressions composed of objects (typically in through operator overload) that are evaluated only after the whole expression is built.
+In the array programming space, eliminating the need of temperaries is essential.
+
+Since arrays are expensive to copy or generate, this feature is highly regarded for array libraries.
+Here is a basic implementation example using restrictions, that can be customized for specific domains of application.
+
+For example, given two concrete arrays `A`, `B`, one can evaluate the result of a complex algebraic expression and store the result in a new array, but without building intermediate arrays:
+
+```cpp
+    auto const A = multi::array<int, 2>{{0, 1, 2}, {3, 4, 5}};
+    auto const B = multi::array<int, 2>{{0, 10, 20}, {30, 40, 50}};
+
+    using lazy::operator*;
+    using lazy::elementwise::operator+;
+    using lazy::elementwise::operator*;
+
+    multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
+
+    assert(C[1][1] == A[1][1] + (A[1][1] * B[1][1]) + (2.0 * B[1][1]));
+```
+
+The lazy operations utilized here are be implemented in a fairly intuitive way using a series of array restrictions (C++23 for simplicity):
+
+```cpp
+namespace lazy {
+
+	template <class A>
+	auto operator*(typename A::element scalar, A const& a) {
+    	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
+	}
+
+	namespace elementwise {
+		template <class A, class B>
+		auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
+    		return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
+		}
+		template <class A, class B>
+		auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+			assert( a.extensions() == b.extensions() );
+    		return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
+		}
+	}
+}
+```
+link:https://godbolt.org/z/413GTx47v[(live)]
+
+Note that none of the operations (addition or multiplication) generate temporary concrete (allocated) arrays.
+
+There are many challenges in implementing general lazy expressions:
+1) tracking the ownership of the subexpressions (here, everything is taken by reference for simplicity, instead of exploiting copy or move semantics, or reference counting),
+2) dealing with ambiguities generated by operator overloading (hence the heavy use of templates and C++23 constraints).
+There is no single way to implement lazy operations; it depends strongly on the intended use and minute details in the implementation can have divergent semantics.
+
+In summary, restrictions can be very powerful since any function and behavior can be injected.
+However, there are some limitations to take into account to avoid surprising behavior:
+The functions that make up restrictions should behave as much as possible as pure (mathematical) functions and behave deterministically in their context of use.
+In the same way, for lambdas that capture references, the validity of the restriction objects would be contigent to the lifetime of these references.
+Analogously if the lambda captures by copy, the implications of copying these must be evaluated too.
+Just like concrete arrays, the order of evaluation of the indices can impact performance or rely on compiler optimizations.
 
 // == Broadcast (infinite views)
 

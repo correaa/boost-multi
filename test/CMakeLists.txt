@@ -51,13 +51,28 @@ else()
 	enable_testing()
 	include(CTest)
 
+	if (CMAKE_CUDA_HOST_COMPILER_ID STREQUAL "MSVC")
+		message(STATUS "NVCC's host compiler is MSVC.")
+		# Add specific actions or configurations for MSVC host compiler
+	else()
+		message(STATUS "NVCC's host compiler is not MSVC (ID: ${CMAKE_CUDA_HOST_COMPILER_ID}).")
+		# Add specific actions or configurations for other host compilers
+	endif()
+
 	set(WARNS
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-		-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
+		#remove Xcompile for Windows?
+		#-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 		#--Werror=cross-execution-space-call
-		--Werror ext-lambda-captures-this
-		--use_fast_math --extra-device-vectorization --restrict
-		-Xcudafe=--display_error_number -Xcudafe=--diag_suppress=20011 -Xcudafe=--diag_suppress=20014 -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+		#--Werror ext-lambda-captures-this
+		#--use_fast_math --extra-device-vectorization --restrict
+		-Xcudafe=--display_error_number
+		#-Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
+		$<$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,12>:
+			-Xcudafe=--diag_suppress=20011 # for std::string in test/allocator.cpp, more?
+			-Xcudafe=--diag_suppress=20014
+		>
+		#-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
@@ -67,6 +82,7 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wanalyzer-out-of-bounds>
 	-Waligned-new=all # (gcc 12, not in 11)
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 	-Walloc-zero
@@ -74,8 +90,8 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warith-conversion>
 	-Warray-bounds # -Warray-bounds=<0,2>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Warray-compare>
-	# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
-	# -Wattribute-alias #=<0,2> # (gcc 12, not in 11, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Warray-parameter>  #=<0,2> # (gcc 11, not in gcc 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wattribute-alias>  #=<0,2> # (gcc 12, not in 11, not in 7)
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wattribute-warning>
 	-Wattributes
 	-Wbool-compare -Wbool-operation
@@ -91,12 +107,12 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,9>:-Wcannot-profile>
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcast-align=strict -Wcast-function-type>  # (gcc 8, not in gcc 7)
 	-Wcast-qual
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>  # (gcc 8, not in gcc 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wcatch-value>  #=<0, 3>
 	-Wchar-subscripts
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>  # (gcc 11, not in 8)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>   # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wclass-conversion>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wclass-memaccess>
 	-Wclobbered
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>  # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wcomma-subscript>
 	-Wcomment  # (same as -Wcomments)
 	-Wconditionally-supported
 	-Wconversion -Wconversion-null
@@ -104,14 +120,14 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wctad-maybe-unsupported>
 	-Wctor-dtor-privacy
 	-Wdangling-else
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>  # (gcc 12, not in 11)
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>  # (gcc 13, not in 12)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdangling-pointer>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,13>:-Wdangling-reference>
 	-Wdate-time
 	-Wdelete-incomplete -Wdelete-non-virtual-dtor
 	-Wdeprecated
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wdeprecated-copy -Wdeprecated-copy-dtor>  # (gcc 11, not in gcc 8)
 	-Wdeprecated-declarations
-	# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion>
 	-Wdisabled-optimization
 	-Wdiv-by-zero -Wdouble-promotion
 	-Wduplicated-branches -Wduplicated-cond
@@ -120,12 +136,12 @@ else()
 	-Wenum-compare
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wenum-conversion>  # (gcc 11, not in 10)
 	-Wexpansion-to-defined
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>  # (gcc 11, not in 10)
-	# -Wextra-semi # (gcc 8, not in 7)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Wexceptions>
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wextra-semi>
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
 	-Wformat-contains-nul # (gcc 12, not in 11)
-	# -Wformat-diag # (gcc 10, not in 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wformat-diag>
 	-Wformat-extra-args -Wformat-nonliteral
 	-Wformat-overflow=1
 	-Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length
@@ -256,12 +272,13 @@ else()
 	>
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
-	-Werror -Wall -Wextra -Weverything
+	-Wall -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 	-Wno-poison-system-directories
+	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
 	-Wno-large-by-value-copy  # subarray references can be large
-	-Wno-padded  # most classes, e.g. layouts, need padding
+	#-Wno-padded  # most classes, e.g. layouts, need padding
 	-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 	-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
 	-Wno-undefined-reinterpret-cast  # needed to cast to c-array
@@ -316,38 +333,31 @@ else()
 	-Wwrite-strings
 	>
 	$<$<CXX_COMPILER_ID:NVHPC>:
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
-	#-Wfatal-errors
-	-fmax-errors=2
-	>
-	-Werror -Wall
-	-Wcast-qual
-	-Wformat=2
-	-Wshadow
-	-Wsign-compare
-	#-Wpedantic
-	-Wundef
-	-Wuninitialized
-	-Wunused
-	--diag_suppress unrecognized_gcc_pragma
+		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,23>:
+			#-Wfatal-errors
+			-fmax-errors=2
+		>
+		-Wall -Wextra  # -Wpedantic
+		#-Wcast-qual -Wformat=2 -Wshadow -Wsign-compare -Wundef -Wuninitialized -Wunused
 	>
 	$<$<CXX_COMPILER_ID:MSVC>:
-	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
-	/Wall    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
-	/wd4371  # layout of class may have changed from a previous version of the compiler due to better packing of member
-	/wd4514  # unreferenced inline function has been removed
-	/wd4623  # default constructor was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4625  # copy constructor was implicitly defined as deleted
-	/wd4626  # assignment operator was implicitly defined as deleted #TODO(correaa) investigate
-	/wd4710  # function not inlined
-	/wd4711  # function selected for automatic inline expansion
-	/wd4820  # bytes padding added after base class
-	/wd4866  # compiler may not enforce left-to-right evaluation order for call
-	/wd4848  # support for attribute [[msvc::no_unique_address]] in C++17 and earlier is a vendor extension
-	/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
-	/wd5026  # move constructor was implicitly defined as deleted
-	/wd5027  # move assignment operator was implicitly defined as deleted
-	/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+		$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+			/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
+			/wd4514  # unreferenced inline function has been removed
+			/wd4866  # compiler may not enforce left-to-right evaluation order for call to 'boost::multi::subarray<int,1,int *,boost::multi::layout_t<1,__int64> >::operator[]' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_ref.cpp.x.vcxproj]
+			/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+			/wd5031  # likely mismatch, popping warning state pushed in different file
+		>
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+			-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
+			-Xcompiler=/wd4464  # relative include path contains '..'
+			-Xcompiler=/wd4514  # unreferenced inline function has been removed
+			-Xcompiler=/wd4668  # warning C4668: '__NV_NO_HOST_COMPILER_CHECK' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+			-Xcompiler=/wd4866  # compiler may not enforce left-to-right evaluation order for call
+			-Xcompiler=/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
+			-Xcompiler=/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
+		>
 	>
 	)
 
@@ -365,8 +375,6 @@ else()
 		target_link_libraries(main PUBLIC multi)
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
-		# target_compile_definitions(main PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
@@ -393,6 +401,8 @@ else()
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
+			set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
+
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
@@ -403,5 +413,12 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
+
+		target_compile_options(allocator.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(minimalistic_ptr.cpp.x  PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(move.cpp.x              PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(member_array_cast.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(transform.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
+		target_compile_options(conor.cpp.x             PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-psabi> )
 	endif()
 endif()

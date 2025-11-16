@@ -4,18 +4,17 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_FFTW_HPP
 #define BOOST_MULTI_ADAPTORS_FFTW_HPP
-#pragma once
 
 #include <boost/multi/array.hpp>
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export©343
+#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
 
 #include <algorithm>  // sort
 #include <chrono>
 #include <complex>
 #include <numeric>  // accumulate
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 #include <thread>
 #endif
 
@@ -292,13 +291,13 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		},
 		boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple)
 	);
-	auto const part = std::stable_partition(which_iodims.begin(), which_iodims.end() - 1, [](auto elem) { return std::get<0>(elem); });
+	auto const part = std::stable_partition(which_iodims.begin(), std::prev(which_iodims.end()), [](auto elem) { return std::get<0>(elem); });
 
 	std::array<fftw_iodim64, D> dims{};
 	std::array<fftw_iodim64, D> howmany_dims{};
 
 	auto const dims_end         = std::transform(which_iodims.begin(), part, dims.begin(), [](auto elem) { return elem.second; });
-	auto const howmany_dims_end = std::transform(part, which_iodims.end() - 1, howmany_dims.begin(), [](auto elem) { return elem.second; });
+	auto const howmany_dims_end = std::transform(part, std::prev(which_iodims.end()), howmany_dims.begin(), [](auto elem) { return elem.second; });
 
 	assert(in_base);
 	assert(out_base);
@@ -315,7 +314,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		flags |= FFTW_PRESERVE_INPUT;
 	}
 
-	auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+	// auto* const out_base_digested = [](auto&& ref) { return &ref; }(out_base);  // workaround to take address of out_base when it returns an rvalue
+	auto* const out_base_digested = &out_base;
 
 	fftw_plan ret = fftw_plan_guru64_dft(
 		/*int                 rank         */ static_cast<int>(dims_end - dims.begin()),
@@ -340,7 +340,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int dir) {
 namespace fftw {
 
 inline auto initialize_threads() -> bool {
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 	return fftw_init_threads();
 #else
 	return false;
@@ -379,7 +379,7 @@ inline auto const forward  = sign::forward;
 enum class direction : decltype(FFTW_FORWARD) {  // NOLINT(performance-enum-size)
 	backward = FFTW_BACKWARD,
 	none     = 0,
-	forward  = FFTW_FORWARD,
+	forward  = FFTW_FORWARD
 };
 
 class plan;
@@ -459,17 +459,16 @@ class plan {
 
 	[[nodiscard]] auto cost() const -> double { return fftw_cost(const_cast<fftw_plan>(impl_.get())); }  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 	[[nodiscard]] auto flops() const {
-		struct /*ret_t&*/ {
-			double add = {};
-			double mul = {};
-			double fma = {};
-			//  explicit operator double() const{return add + mul + 2*fma;}
-		} ret;
-		fftw_flops(const_cast<fftw_plan>(impl_.get()), &ret.add, &ret.mul, &ret.fma);  // NOLINT(cppcoreguidelines-pro-type-const-cast)
-		return ret;
+		double add;  // NOLINT(cppcoreguidelines-init-variables)
+		double mul;  // NOLINT(cppcoreguidelines-init-variables)
+		double fma;  // NOLINT(cppcoreguidelines-init-variables)
+
+		fftw_flops(const_cast<fftw_plan>(impl_.get()), &add, &mul, &fma);
+
+		return add + mul + fma;  // <- if FMA supported, otherwise: add + mul + 2*fma;
 	}
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
  public:
 	static void make_thread_safe() {
 		fftw_make_planner_thread_safe();  // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
@@ -547,6 +546,10 @@ class io_zip_iterator {
 	auto operator=(io_zip_iterator&&) noexcept -> io_zip_iterator& = default;
 };
 
+template<class InIt, class OutIt>
+io_zip_iterator(std::array<bool, InIt::reference::rank_v>, InIt, OutIt, sign)
+-> io_zip_iterator<InIt, OutIt>;
+
 template<class In, class Out>
 auto environment::make_plan_forward(std::array<bool, +In::rank_v> which, In const& in, Out&& out) {
 	return plan::forward(which, in, std::forward<Out>(out));
@@ -557,7 +560,7 @@ auto environment::make_plan_backward(std::array<bool, +In::rank_v> which, In con
 	return plan::backward(which, in, std::forward<Out>(out));
 }
 
-#if defined(HAVE_FFTW3_THREADS)
+#ifdef HAVE_FFTW3_THREADS
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int  plan::nthreads_       = (initialize_threads(), with_nthreads());
 #endif

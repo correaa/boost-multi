@@ -48,7 +48,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double z;
 		};
 		multi::array<vec3, 1> arr(multi::extensions_t<1>{multi::iextension{100}});
-		arr[8] = {1.0, 2.0, 3.0};
+		arr[8] = {1.0, 2.0, 3.0};  // NOLINT(modernize-use-designated-initializers) for C++20
 		BOOST_TEST( std::abs( arr[8].y - 2.0 ) < 1E-6 );
 
 		BOOST_TEST( std::abs( arr.reinterpret_array_cast<double>(3)[8][1] - arr[8].y ) < 1E-6 );
@@ -198,7 +198,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		vector3 v3d;
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -207,7 +207,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 		BOOST_TEST( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

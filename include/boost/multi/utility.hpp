@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_UTILITY_HPP
 #define BOOST_MULTI_UTILITY_HPP
-#pragma once
 
 #include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
 #include <boost/multi/detail/layout.hpp>
@@ -14,13 +13,24 @@
 #include <memory>       // for allocator<>
 #include <type_traits>  // for std::invoke_result
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4626)  // 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>': assignment operator was implicitly defined as deleted [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\element_transformed.cpp.x.vcxproj]
+#endif
+
 namespace boost::multi {
+
+struct uninitialized_elements_t {
+	explicit uninitialized_elements_t() = default;
+};
+
+inline constexpr uninitialized_elements_t uninitialized_elements{};
 
 template<class T, class Ptr = T*>
 struct move_ptr : private std::move_iterator<Ptr> {
@@ -85,7 +95,7 @@ template<class T> struct ref_add_const<T&> {
 	using type = T const&;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -133,27 +143,29 @@ struct transform_ptr {
 		return std::invoke(f_, *p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
 	constexpr auto operator+=(difference_type n) -> transform_ptr& {
-		p_ += n;
+		p_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {
-		p_ -= n;
+		p_ -= n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
 	constexpr auto operator+(difference_type n) const -> transform_ptr { return transform_ptr{*this} += n; }
 	constexpr auto operator-(difference_type n) const -> transform_ptr { return transform_ptr{*this} -= n; }
+
+	constexpr auto friend operator+(difference_type n, transform_ptr const& self) { return self + n; }
 
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type { return p_ - other.p_; }
 
@@ -169,12 +181,22 @@ struct transform_ptr {
 
  private:
 	Ptr p_;
-	UF  f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // '7' bytes padding added after data member 'boost::multi::transform_ptr<main::complex,const main::<lambda_3>,main::complex *,std::complex<double>>::f_'
+#pragma warning(disable : 4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'boost::multi::transform_ptr<int,int main::S::* ,main::S *,int &>::f_'
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS
+	UF f_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) technically this type can be const
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 	template<class, class, class, class> friend struct transform_ptr;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -428,6 +450,12 @@ auto extensions(Container const& cont) {
 
 template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
+template<class T, typename = decltype(std::declval<T const&>().elements())>
+auto        has_elements_aux(T const&) -> std::true_type;
+inline auto has_elements_aux(...) -> std::false_type;
+
+template<class T> struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
+
 template<class T, typename = decltype(std::declval<T const&>().extensions())>
 auto        has_extensions_aux(T const&) -> std::true_type;
 inline auto has_extensions_aux(...) -> std::false_type;
@@ -456,9 +484,6 @@ template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int>
 		return boost::multi::extensions_t<1>{array.extension()};
 	}
 }
-
-template<class... Ts> auto what() -> std::tuple<Ts&&...>        = delete;
-template<class... Ts> auto what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
 
 template<class Arr2D>
 auto transposed(Arr2D&& arr)
@@ -601,7 +626,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 	return num_elements(arr[0]);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
@@ -612,7 +637,7 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -623,6 +648,10 @@ inline auto valid_mull(int age) -> bool {
 }  // end namespace detail
 
 }  // end namespace boost::multi
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #undef BOOST_MULTI_HD
 

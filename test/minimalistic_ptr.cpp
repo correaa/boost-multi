@@ -23,11 +23,12 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	template<class> friend class ptr;
 
  public:
-	ptr() = default;
+	ptr() = default;  // cppcheck-suppress uninitMemberVar ;
+
 	constexpr explicit ptr(T* impl) : impl_{impl} {}
-	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-			 >
-	// cppcheck-suppress [noExplicitConstructor,unmatchedSuppression]
+
+	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// cppcheck-suppress noExplicitConstructor ;
 	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -35,7 +36,7 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -46,7 +47,9 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr{impl_ - n}; }
 
-#if defined(__clang__)
+	friend constexpr auto operator+(difference_type n, ptr const& self) { return self + n; }
+
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -74,7 +77,7 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -85,7 +88,9 @@ class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator-(difference_type n) const { return ptr2{impl_ - n}; }
 
-#if defined(__clang__)
+	friend constexpr auto operator+(difference_type n, ptr2 const& self) { return self + n; }
+
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
@@ -99,7 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(test_minimalistic_ptr)
 	{
 		std::array<int, 400> buffer{};
-		BOOST_TEST( buffer.size() == 400 );
+		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
 		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
@@ -107,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
 
-		BOOST_TEST(  (*CCP)[1][1] == 9 );
+		BOOST_TEST(  (*CCP)[1][1] == 9 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 		BOOST_TEST( &(*CCP)[1][1] == &buffer[21] );
 
 		// auto&& CC2 = (*CCP).static_array_cast<double, minimalistic::ptr2<double>>();

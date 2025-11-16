@@ -1,4 +1,9 @@
-#pragma once  // NOLINT(llvm-header-guard)
+// Copyright 2018-2024 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
+#define BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
 
 #include <boost/multi/array.hpp>
 #include <thrust/system/omp/memory.h> // for ::thrust::omp::allocator
@@ -80,3 +85,5 @@ struct iterator_system<::boost::multi::elements_iterator_t<Pointer, LayoutType> 
 // }
 
 }  // end namespace thrust
+
+#endif  // BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP

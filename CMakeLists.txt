@@ -1,4 +1,4 @@
-# Copyright 2018-2024 Alfredo A. Correa
+# Copyright 2018-2025 Alfredo A. Correa
 # Copyright 2024 Matt Borland
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
@@ -46,23 +46,76 @@ project(
   multi
   HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
   DESCRIPTION "A header-only modern C++ library that provides access and manipulation of data in multidimensional arrays."
-  VERSION 0.80.1
+  VERSION 0.88.0
   LANGUAGES CXX)
 
 message(STATUS "Boost.Multi: standalone mode ON")
 
 add_library(multi INTERFACE)
 
-target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
-target_compile_options(multi INTERFACE
-  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
-  $<$<CXX_COMPILER_ID:MSVC>:/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- > >  # this is needed for MSVC in C++17 mode
+add_library(boost.multi ALIAS multi)
+add_library(boost::multi ALIAS multi)
+
+#target_sources(
+#  multi
+#  PUBLIC
+#    FILE_SET HEADERS
+#    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#    FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/boost/multi/array.hpp
+#)
+
+set_target_properties(
+  multi
+  PROPERTIES
+    # VERIFY_INTERFACE_HEADER_SET ON
+    EXPORT_NAME multi-targets
 )
+
+target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+
+#if(NOT ENABLE_CUDA)
+#target_compile_options(multi INTERFACE
+#  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+#  $<$<CXX_COMPILER_ID:MSVC>:
+#    /EHsc
+#    $<$<COMPILE_FEATURES:cxx_std_17>:/permissive- >
+#    /wd5027  # move assignment operator was implicitly defined as deleted, for detail::array_allocator
+#  >  # this is needed for MSVC in C++17 mode
+#)
+#else()
+#target_compile_options(multi INTERFACE
+#  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
+#  $<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/EHsc $<$<COMPILE_FEATURES:cxx_std_17>:-Xcompiler=/permissive- > >  # this is needed for MSVC in C++17 mode
+#)
+
+if(NOT ENABLE_CIRCLE)
+  target_compile_options(multi INTERFACE
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
+      -Wno-c++17-extensions
+      -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
+      -Wno-padded
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
+    >
+    $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
+    $<$<CXX_COMPILER_ID:MSVC>:
+      $<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
+        /EHsc /permissive-
+      >
+      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+        -Xcompiler=/EHsc -Xcompiler=/permissive-
+      >
+    >
+  )
+endif()
 
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(multi INTERFACE cxx_std_17)
 if(ENABLE_CUDA)
-  target_compile_features(multi INTERFACE cuda_std_17)
+  if(WIN32)
+    target_compile_features(multi INTERFACE cuda_std_20)
+  else()
+    target_compile_features(multi INTERFACE cuda_std_17)
+  endif()
 endif()
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -74,6 +127,7 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   return()
 endif()
 ################################################################################
+
 
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
@@ -95,16 +149,21 @@ write_basic_package_version_file("${PROJECT_BINARY_DIR}/multi-config-version.cma
 message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
 
 install(
-  TARGETS multi
-  EXPORT multi-targets
-  INCLUDES
-  DESTINATION "${CMAKE_INSTALL_DATADIR}")
+  TARGETS multi COMPONENT multi
+  EXPORT multi
+  # EXPORT multi-targets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/debug>
+  # "${CMAKE_INSTALL_DATADIR}"
+  # RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}$<$<CONFIG:Debug>:/debug>
+  # INCLUDES
+  # FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-install(
-  EXPORT ${PROJECT_NAME}-targets
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
-  NAMESPACE multi::
-  FILE "${PROJECT_NAME}-targets.cmake")
+#install(
+#  EXPORT ${PROJECT_NAME}-targets
+#  DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+#  NAMESPACE multi::
+#  FILE "${PROJECT_NAME}-targets.cmake")
 
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake" DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}")
 
@@ -141,6 +200,34 @@ if(MULTI_BUILD_TESTS)
     add_subdirectory(include/boost/multi/adaptors)
   endif()
 endif()
+
+# # Find the quom tool. Adjust the path if quom is not in your system's PATH.
+# # Alternatively, you could download it as part of a custom build step.
+# find_program(QUOM_EXECUTABLE quom REQUIRED)
+
+# # Define variables for the input and output files
+# set(QUOM_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/boost/multi/array.hpp")
+# set(QUOM_OUTPUT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/array_amalgamated.hpp")
+
+# # Use add_custom_command to run quom and generate the single header.
+# add_custom_command(
+#     OUTPUT ${QUOM_OUTPUT_HEADER}
+#     COMMAND ${QUOM_EXECUTABLE} --output ${QUOM_OUTPUT_HEADER} ${QUOM_INPUT_HEADER}
+#     DEPENDS ${QUOM_INPUT_HEADER}
+#     COMMENT "Generating single header file with quom"
+# )
+
+# # Create an interface library to encapsulate the single header.
+# # This makes it easy for other targets to use the generated header.
+# add_library(my_project_single_header INTERFACE)
+
+# # The generated header becomes a dependency of the interface library.
+# add_dependencies(my_project_single_header ${QUOM_OUTPUT_HEADER})
+
+# # Add the binary directory to the include path so targets can find the generated header.
+# target_include_directories(my_project_single_header INTERFACE
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+# )
 
 if(MULTI_BUILD_PACKAGE)
   list(APPEND source-generators TBZ2 TGZ TXZ ZIP)

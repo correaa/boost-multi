@@ -20,25 +20,34 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 	mutable std::uniform_real_distribution<> dist_{-1.0, 1.0};
 
  public:
-	n_random_complex(n_random_complex const&) = delete;
-	auto operator=(n_random_complex const&) -> n_random_complex& = delete;
+	n_random_complex() = default;
+	n_random_complex(n_random_complex const&);  // = delete;
+	auto operator=(n_random_complex const&) -> n_random_complex&;  // = delete;
+
+	constexpr auto operator==(n_random_complex const&) const;
+	constexpr auto operator!=(n_random_complex const&) const;
 
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
-	class iterator : public boost::multi::detail::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {
-		n_random_complex<T> const* ptr_;
-		std::size_t                n_;
+	class iterator : public boost::multi::detail::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+		n_random_complex<T> const* ptr_;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+		std::size_t                n_;    // NOLINT(cppcoreguidelines-pro-type-member-init)
 
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		using difference_type = std::ptrdiff_t;
 
+		iterator() = default;
+
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
+		// cppcheck-suppress duplInheritedMember ; to ovewrite
 		auto operator*() const { return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)}; }
 		auto operator++() -> iterator& {
 			++n_;
 			return *this;
 		}
+		auto operator++(int) -> iterator { iterator ret{*this}; ++(*this); return ret; }
+		// auto operator--(int) -> iterator { iterator ret{*this}; --(*this); return ret; }
 
 		auto operator==(iterator const& other) const { return n_ == other.n_; }
 		auto operator!=(iterator const& other) const { return n_ != other.n_; }
@@ -81,9 +90,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;
 			std::for_each(
-				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
+				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(),  // cppcheck-suppress mismatchingContainerExpression ;
+				[&fdft, &arr, &res](auto /*idx*/) {
 					fdft.execute(arr.base(), res.base());
-					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());
+					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());  // NOLINT(modernize-use-ranges) for C++20
 				}
 			);
 			std::cout << "FFTW shift " << unnamed.elapsed_sec() / repeat << " sec\n";  // prints  0.000882224 sec

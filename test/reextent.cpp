@@ -10,6 +10,7 @@
 // IWYU pragma: no_include <algorithm>                        // for fill_n  // bug in iwyu 14.0.6? with GNU stdlib
 #include <initializer_list>  // for initializer_list
 #include <iterator>          // for size
+#include <tuple>             // for get  // NOLINT(misc-include-cleaner)
 #include <type_traits>       // for make_unsigned_t
 #include <utility>           // for move
 #include <vector>            // for vector
@@ -41,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
 		BOOST_TEST(size(arr3) == 2);
@@ -62,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 0 );
 	}
 
-#if !defined(__circle_build__)
+#ifndef __circle_build__
 	{
 		multi::array<int, 2> const arr({2, 3});
 
@@ -109,7 +110,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
 		BOOST_TEST(size(arr3) == 2);
@@ -129,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
 		BOOST_TEST(size(arr3) == 2);
@@ -149,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* const A_base = arr.base();
 
@@ -169,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* const A_base = arr.base();
 
@@ -187,7 +188,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		auto* const A_base = arr.base();
 
@@ -330,7 +331,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( Darr.extensions() == Aarr.extensions() );
 	}
 
-#if !defined(__INTEL_COMPILER)
+#ifndef __INTEL_COMPILER
 	// BOOST_AUTO_TEST_CASE(extension_index_op)
 	{
 		multi::array<double, 2> const Aarr({11, 13});

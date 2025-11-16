@@ -2,7 +2,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_HERK_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/copy.hpp>
 #include <boost/multi/adaptors/blas/core.hpp>
@@ -74,8 +73,11 @@ class herk_range {
 //  {}
 
 	struct iterator {
-		herk_range const* self_;
-		Size index_;
+		herk_range const* self_;   // NOLINT(misc-non-private-member-variables-in-classes) TODO(correaa) make private
+		Size              index_;  // NOLINT(misc-non-private-member-variables-in-classes) TODO(correaa) make private
+
+		auto operator==(iterator const&) const -> bool;
+		auto operator!=(iterator const&) const -> bool;
 	};
 
 //  // using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
@@ -114,34 +116,38 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 	if constexpr(is_conjugated<C2D>{}) {
 		herk(flip(c_side), alpha, a, beta, hermitized(c));
 		return std::forward<C2D>(c);
-	}
-
-	auto base_a = base_aux(a);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
-	auto base_c = base_aux(c);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
-	if constexpr(is_conjugated<A2D>{}) {
-	//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
-		// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-		if     (stride(a)==1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
-		else if(stride(a)==1 && c.stride()==1) {
-			if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
-			else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}
-		else if(stride(a)!=1 && c.stride()==1) { herk(c_side==filling::upper?'U':'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.rotated().stride());}
-		else if(stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c          .stride());}
-		else                                   { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	} else {
-	//  auto& ctxt = *blas::default_context_of(           a.base() );
-		if     (stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.stride());}
-		else if(stride(a)!=1 && c.stride()==1) {
-			if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
-			else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}
-		else if(stride(a)==1 && c.stride()!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		else if(stride(a)==1 && c.stride()==1) {herk(c_side==filling::upper?'U':'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
-	//  else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-	}
 
-	return std::forward<C2D>(c);
+		auto base_a = base_aux(a);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+		auto base_c = base_aux(c);  // NOLINT(llvm-qualified-auto,readability-qualified-auto) TODO(correaa)
+
+		// cppcheck-suppress-begin knownConditionTrueFalse ; bug in cppcheck 2.18?
+		if constexpr(is_conjugated<A2D>{}) {
+		//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
+			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
+			if     (stride(a)==1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
+			else if(stride(a)==1 && c.stride()==1) {
+				if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());}
+				else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			}
+			else if(stride(a)!=1 && c.stride()==1) { herk(c_side==filling::upper?'U':'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.rotated().stride());}
+			else if(stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c          .stride());}
+			else                                   { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		} else {
+		//  auto& ctxt = *blas::default_context_of(           a.base() );
+			if     (stride(a)!=1 && c.stride()!=1) { herk(c_side==filling::upper?'L':'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(        a ), &beta, base_c, c.stride());}
+			else if(stride(a)!=1 && c.stride()==1) {
+				if(size(a)==1)                     { herk(c_side==filling::upper?'L':'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
+				else                               { assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			}
+			else if(stride(a)==1 && c.stride()!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			else if(stride(a)==1 && c.stride()==1) {herk(c_side==filling::upper?'U':'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());}
+		//  else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		}
+		// cppcheck-suppress-end knownConditionTrueFalse ; bug in cppcheck 2.18?
+
+		return std::forward<C2D>(c);
+	}
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,

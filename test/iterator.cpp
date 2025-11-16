@@ -262,8 +262,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr[1][0] == "10" );
 
-		BOOST_TEST( std::is_sorted(begin(arr), end(arr)) );                      // sorted by rows  // NOLINT(boost-use-ranges)
-		BOOST_TEST( std::is_sorted(begin(arr.rotated()), end(arr.rotated())) );  // sorted by cols
+		BOOST_TEST( std::is_sorted(begin(arr), end(arr)) );                      // sorted by rows  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::is_sorted(begin(arr.rotated()), end(arr.rotated())) );  // sorted by cols  // NOLINT(modernize-use-ranges)
 
 		BOOST_TEST( (*begin( arr           )).size() == arr[0].size() );
 		BOOST_TEST(   begin( arr           )->size() == arr[0].size() );
@@ -282,7 +282,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
-		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>{out, ","});  // NOLINT(boost-use-ranges)
+		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>(out, ","));  // NOLINT(modernize-use-ranges)
 		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});                                                   // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );

@@ -108,7 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(   subarr.elements().begin() == subarr.elements().begin()  );
 		BOOST_TEST( !(subarr.elements().begin() != subarr.elements().begin()) );
-		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );
+		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );  // cppcheck-suppress duplicateExpression ; for testing purposes
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_test_stencil)
@@ -159,11 +159,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			for(; end1 != beg1; --end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
-			BOOST_TEST( end1 == beg1 );
+			BOOST_TEST( end1 == beg1 );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			for(; end1 != end2; ++end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
-			BOOST_TEST( end1 == end2 );
+			BOOST_TEST( end1 == end2 );  // cppcheck-suppress knownConditionTrueFalse ;
 		}
 
 		BOOST_TEST( arr.elements().size() == arr.elements().end() - arr.elements().begin() );
@@ -292,10 +292,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 		BOOST_TEST( arr.size() == 3 );
 
-		movable_type const front = std::move(arr)[0];
+		movable_type const front = std::move(arr)[0];  // cppcheck-suppress accessMoved ; for testing purposes
 
 		BOOST_TEST( front == movable_value );
-		BOOST_TEST( arr[0].empty()           );         // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
+		// cppcheck-suppress accessMoved ; for testing purposes
+		BOOST_TEST( arr[0].empty()           );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
 		BOOST_TEST( arr[1] == movable_value  );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		std::move(arr)[1] = movable_value;
@@ -330,8 +333,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::move(vec) = std::vector<int>{30, 40, 50};  // NOLINT(fuchsia-default-arguments-calls)
 
+		// cppcheck-suppress accessMoved ; for testing purposes
 		std::move(vec)[1] = 990;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
+		// cppcheck-suppress accessMoved ; for testing purposes
 		BOOST_TEST( vec[1] == 990 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 		multi::array<int, 1>       arr1 = {10, 20, 30};
@@ -362,6 +367,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		v1D(_)    = A2D(0, _);            // v1D() = A2D( 0 )   ;
 		B2D(_, _) = A2D({0, 2}, {0, 2});  // B2D() = A2D({0, 2}, {0, 2});
 	}
+	{
+		auto A2D = multi::array<int, 2>{
+			{1, 2},
+			{3, 4}
+		};
+		BOOST_TEST( A2D[1][1] == 4 );
 
+		A2D[1][1] = 44;
+
+		BOOST_TEST( A2D[1][1] == 44 );  // cppcheck-suppress knownConditionTrueFalse ;  // test syntax
+
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+		BOOST_TEST(( A2D[1, 1] == 44 ));
+
+		A2D[1, 1] = 444;
+		BOOST_TEST(( A2D[1, 1] == 444 ));
+
+		using boost::multi::_;
+		BOOST_TEST(( &A2D[_, 1][1] == &A2D[1, 1] ));
+#endif
+	}
 	return boost::report_errors();
 }

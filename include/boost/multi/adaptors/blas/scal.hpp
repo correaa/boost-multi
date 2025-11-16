@@ -4,7 +4,6 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
-#pragma once
 
 #include <boost/multi/adaptors/blas/core.hpp>
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
@@ -19,7 +18,7 @@ using core::scal;
 template<class It, class Size>
 auto scal_n(typename It::element a, It first, Size count) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	auto ctxt = blas::default_context_of(first.base());
-	ctxt->scal(count, &a, first.base(), first.stride());
+	ctxt->scal(static_cast<core::ssize_t>(count), &a, first.base(), static_cast<core::ssize_t>(first.stride()));
 }
 
 template<class Scalar, class It1D>

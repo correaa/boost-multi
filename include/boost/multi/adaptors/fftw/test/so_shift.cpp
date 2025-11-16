@@ -16,7 +16,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	using complex = std::complex<double>;
 
 	// input array
-	auto const x = std::invoke([] {  // NOLINT(readability-identifier-length)
+	auto const x = std::invoke([] () noexcept {  // NOLINT(readability-identifier-length)
 		multi::static_array<complex, 1> const ret2(8); (void)ret2;
 
 		multi::array<complex, 1> ret(8);

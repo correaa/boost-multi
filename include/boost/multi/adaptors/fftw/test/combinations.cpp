@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>
+
 #include <boost/multi/adaptors/fftw.hpp>
 #include <boost/multi/array.hpp>
 
@@ -38,8 +40,6 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
-#include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
 
@@ -48,7 +48,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::fftw::environment const env;
 
-	BOOST_AUTO_TEST_CASE(fft_combinations) {  // , *boost::unit_test::tolerance(0.00001)) {
+	// BOOST_AUTO_TEST_CASE(fft_combinations)
+	{
 		using complex = std::complex<double>;
 		{
 			multi::static_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
@@ -65,7 +66,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// marray<complex, 4> ret(exts);
 			multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};
@@ -89,9 +90,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 			cout << "case ";
-			std::for_each(which.begin(), which.end(), [](auto elem) { std::cout << elem << ", "; });
-			// copy(which.begin(), which.end(), std::ostream_iterator<bool>{cout, ", "});
-			cout << "\n";
+			std::for_each(which.begin(), which.end(), [](auto elem) { std::cout << elem << ", "; });  // NOLINT(modernize-use-ranges) for C++20
 
 			marray<complex, 4> out = in;
 			{
@@ -122,14 +121,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark) {  //, *boost::unit_test::enabled()) {
+	// BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark)
+	{
 		using namespace std::string_literals;        // NOLINT(build/namespaces) for ""s
 
 		using complex  = std::complex<double>;
 		namespace fftw = multi::fftw;
 
 		marray<complex, 4> in(exts);
-		std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
+		std::iota(in.elements().begin(), in.elements().end(), 1.2);
 
 		BOOST_TEST(in[0][0][0][0] == 1.2);
 		std::array<bool, 4> which = {false, true, true, true};
@@ -160,25 +160,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			marray<complex, 4> out2(exts);
 			fftw::dft(which, in, out2, fftw::forward);
 		}();
-		BOOST_TEST(in0000 == in[0][0][0][0]);
+		BOOST_TEST(in0000 == in[0][0][0][0]);  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
+	// BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax)
+	{
 		// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
-		std::vector<std::array<bool, 4>> const which_cases = {
-			{{false,  true,  true,  true}},
-			{{false,  true,  true, false}},
-			{{ true, false, false, false}},
-			{{ true,  true, false, false}},
-			{{false, false,  true, false}},
-			{{false, false, false, false}},
-		};
+		// std::vector<std::array<bool, 4>> const which_cases = {
+		// 	{{false,  true,  true,  true}},
+		// 	{{false,  true,  true, false}},
+		// 	{{ true, false, false, false}},
+		// 	{{ true,  true, false, false}},
+		// 	{{false, false,  true, false}},
+		// 	{{false, false, false, false}},
+		// };
 		using complex = std::complex<double>;
 
 		auto const in = [&] {
 			marray<complex, 4> ret(exts);
 			std::generate(
-				ret.data_elements(), ret.data_elements() + ret.num_elements(),
+				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},
 				 uniform_01 = std::uniform_real_distribution<>{}]() mutable {
 					return complex{uniform_01(eng), uniform_01(eng)};

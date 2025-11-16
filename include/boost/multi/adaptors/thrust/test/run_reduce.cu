@@ -1,5 +1,4 @@
-
-// #define ENABLE_GPU 1
+#define ENABLE_GPU 1
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -7,10 +6,36 @@
 
 #include <thrust/universal_allocator.h>
 
+#include <boost/multi/adaptors/thrust.hpp>
+#include <boost/multi/array.hpp>
+
+#include <thrust/reduce.h>
+#include <thrust/iterator/discard_iterator.h>
+
+#include <boost/multi/adaptors/thrust/reduce_by_index.hpp>
+
 #include <chrono>
 
+template<class Tp>
+inline
+#if defined(_MSC_VER)
+	__forceinline
+#else
+	__attribute__((always_inline))
+#endif
+	void
+	DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
+#if defined(_MSC_VER)
+	_ReadWriteBarrier(); (void)value;
+#else
+	asm volatile("" : : "r,m"(value) : "memory");  // NOLINT(hicpp-no-assembler)
+#endif
+}
+
+namespace multi = boost::multi;
+
 template<class kernel_type, class array_type>
-__global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_vr(multi::size_t sizex, multi::size_t sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto                   reduction_buffer = (typename array_type::element*)shared_mem;  // {blockDim.x, blockDim.y}
@@ -32,6 +57,7 @@ __global__ void reduce_kernel_vr(long sizex, long sizey, kernel_type kernel, arr
 	__syncthreads();
 
 	// do reduction in shared mem
+
 	for(unsigned int s = blockDim.y / 2; s > 0; s >>= 1) {
 		if(tid < s) {
 			reduction_buffer[threadIdx.x + blockDim.x * tid] += reduction_buffer[threadIdx.x + blockDim.x * (tid + s)];
@@ -49,26 +75,26 @@ template<class type, size_t dim, class allocator = thrust::universal_allocator<t
 using array = boost::multi::array<type, dim, allocator>;
 
 struct reduce {
-	explicit reduce(long arg_size) : size(arg_size) {
+	explicit reduce(multi::size_t arg_size) : size(arg_size) {
 	}
-	long size;
+	multi::size_t size;
 };
 
 template<typename array_type>
 struct array_access {
 	array_type array;
 
-	__host__ __device__ auto operator()(long ii) const {
+	__host__ __device__ auto operator()(multi::size_t ii) const {
 		return array[ii];
 	}
 
-	__host__ __device__ auto operator()(long ix, long iy) const {
+	__host__ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
 		return array[ix][iy];
 	}
 };
 
 template<class type, class kernel_type>
-auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
+auto run(multi::size_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
 
 	auto const sizey = redy.size;
 
@@ -78,8 +104,8 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 
 	gpu::array<type, 1> accumulator(sizex, 0.0);
 
-	for(long iy = 0; iy < sizey; iy++) {
-		for(long ix = 0; ix < sizex; ix++) {
+	for(multi::size_t iy = 0; iy < sizey; iy++) {
+		for(multi::size_t ix = 0; ix < sizex; ix++) {
 			accumulator[ix] += kernel(ix, iy);
 		}
 	}
@@ -151,35 +177,66 @@ auto run(long sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<dec
 }  // namespace gpu
 
 struct prod {
-	/*__host__*/ __device__ auto operator()(long ix, long iy) const {
+	/*__host__*/ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
 		return double(ix) * double(iy);
 	}
 };
 
 auto main() -> int {
+	#ifdef NDEBUG
+	multi::size_t const maxsize = 39062;
+	multi::size_t const nmax = 1000;
+	#else
+	multi::size_t const maxsize = 390;  // 390625;
+	multi::size_t const nmax = 100;  // 10000;
+	#endif
+	auto pp = [] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); };
 
-	long const maxsize = 390;  // 390625;
-	long const nmax = 100;  // 10000;
+	std::chrono::microseconds mus{0};
+	std::size_t FLOPs = 0;
 
-	auto start = std::chrono::high_resolution_clock::now();
+	for(multi::size_t nx = 1; nx <= nmax; nx *= 10) {
+		for(multi::size_t ny = 1; ny <= maxsize; ny *= 5) {
 
-	int rank = 0;
-	for(long nx = 1; nx <= nmax; nx *= 10) {
-		for(long ny = 1; ny <= maxsize; ny *= 5) {
+			multi::thrust::device_array<double, 2> M = [&]() {
+				multi::thrust::universal_array<double, 2> ret({nx, ny});
+				auto const [xs, ys] = ret.extensions();
+				for(auto ix : xs) {
+					for(auto iy : ys) {
+						ret[ix][iy] = pp(ix, iy);
+					}
+				}
+				return ret;
+			}();
+			cudaDeviceSynchronize();
+			DoNotOptimize(M);
 
-			auto pp = [] __host__ __device__(long ix, long iy) -> double { return double(ix) * double(iy); };
+			auto start = std::chrono::high_resolution_clock::now();
 
-			auto res = gpu::run<double>(nx, gpu::reduce(ny), pp);
+			multi::thrust::device_array<double, 1> sums(M.size());
+			multi::thrust::reduce_by_index(M, sums);
 
-			BOOST_TEST(typeid(decltype(res)) == typeid(gpu::array<double, 1>));
-			BOOST_TEST(res.size() == nx);
+			// auto sums = gpu::run<double>(nx, gpu::reduce(ny), gpu::array_access<decltype(M.begin())>{M.begin()});
 
-			for(long ix = 0; ix < nx; ix++)
-				BOOST_TEST(res[ix] == double(ix) * ny * (ny - 1.0) / 2.0);
-			rank++;
+			cudaDeviceSynchronize();
+			DoNotOptimize(sums);
+
+			mus += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
+			FLOPs += nx*ny;
 		}
 	}
-	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << "ms\n";
+	std::cout << "time " << mus.count() << " µs FLOPS " << FLOPs << " flops/s " << FLOPs/(mus.count()/1e6)/1e9 << '\n';
 
+	{
+		auto nx = 13;
+		auto ny = 19;
+
+		multi::thrust::device_array<double, 1> sums(nx);
+		multi::thrust::reduce_by_index(
+			[] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); }
+			^ multi::extensions_t<2>(nx, ny),
+			sums
+		);
+	}
 	return boost::report_errors();
 }

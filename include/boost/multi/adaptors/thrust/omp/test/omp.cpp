@@ -2,28 +2,31 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef _VSTD
-# define _VSTD std  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-#endif
-
 #include <boost/multi/adaptors/thrust/omp.hpp>  // NOLINT(misc-include-cleaner)
 
-#if !defined(__clang__)
-# include <boost/multi/array.hpp>
-#endif
-
-#include <omp.h>
-#include <thrust/reduce.h>
-#include <thrust/system/omp/detail/par.h>
+#include <omp.h>  // for omp_get_num_threads
 
 #include <boost/core/lightweight_test.hpp>
 
-#if !defined(__clang__)
-# include <chrono>
-# include <cstdio>
-# include <iostream>
+#ifndef __clang__
+#include <boost/multi/array.hpp>
 #endif
 
+// #include <omp.h>  // NOLINT(clang-diagnostic-error)
+#include <thrust/reduce.h>                       // IWYU pragma: keep
+#include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
+
+#ifndef __clang__
+#include <chrono>
+#include <cstdio>
+#include <iostream>
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#endif
+
+#ifndef __clang__
 namespace {
 
 template<class Array1D>
@@ -42,9 +45,9 @@ auto parallel_array_sum(Array1D const& arr) {
 	auto const                   size  = arr.size();
 	auto const* const            aptr  = raw_pointer_cast(arr.data_elements());
 	typename Array1D::value_type total = 0.0;
-#pragma omp parallel for reduction(+ : total)                 // NOLINT(openmp-use-default-none)
+#pragma omp parallel for reduction(+ : total)                // NOLINT(openmp-use-default-none)
 	for(typename Array1D::size_type i = 0; i < size; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-		total += aptr[i];                                     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		total += aptr[i];                                    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	return total;
 }
@@ -53,20 +56,20 @@ template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
 #if !defined(__NVCOMPILER) && !defined(_MSC_VER)
-	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
+		// cppcheck-suppress useStlAlgorithm ;  // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #elif defined(_MSC_VER)
-	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+	for(auto i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #else
-	#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto it = arr.extension().begin(); it < arr.extension().end(); ++it) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+#pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
+	for(auto it = arr.extension().begin(); it < arr.extension().end(); ++it) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[*it];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
@@ -84,6 +87,7 @@ auto thrust_omp_array_sum(Array1D const& arr) {
 	return thrust::reduce(thrust::omp::par, arr.begin(), arr.end(), typename Array1D::value_type{});
 }
 
+// clang-format off
 template<class Tp>
 inline
 #if defined(_MSC_VER)
@@ -93,9 +97,9 @@ __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp const& value) {  // NOLINT(readability-identifier-naming)
 #if defined(_MSC_VER)
-	_ReadWriteBarrier();
+	_ReadWriteBarrier(); (void)value;
 #else
-	asm volatile("" : : "r,m"(value) : "memory");                            // NOLINT(hicpp-no-assembler)
+	asm volatile("" : : "r,m"(value) : "memory");  // NOLINT(hicpp-no-assembler)
 #endif
 }
 
@@ -108,17 +112,19 @@ __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 #if defined(_MSC_VER)
-	_ReadWriteBarrier();
+	_ReadWriteBarrier(); (void)value;
 #else
-	#if defined(__clang__)
-		asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
-	#else
-		asm volatile("" : "+m,r"(value) : : "memory");
-	#endif
+#if defined(__clang__)
+	asm volatile("" : "+r,m"(value) : : "memory");  // NOLINT(hicpp-no-assembler)
+#else
+	asm volatile("" : "+m,r"(value) : : "memory");
+#endif
 #endif
 }
+// clang-format on
 
 }  // end namespace
+#endif
 
 // auto parallel_array_sum(int n, float const *a) {
 //     float total = 0.0;
@@ -146,13 +152,13 @@ auto main() -> int {
 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	}
 
-#if !defined(__clang__)
+#ifndef __clang__
 	namespace multi = boost::multi;
 
 	multi::thrust::omp::array<double, 1> arr(1U << 20U);
 
 	{
-# pragma omp parallel for default(none) shared(arr)
+#pragma omp parallel for default(none) shared(arr)
 		for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
 			arr[i] = static_cast<double>(i) * static_cast<double>(i);
 		}

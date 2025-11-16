@@ -1,10 +1,9 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
-#pragma once
 
 // #include <boost/multi/adaptors/complex.hpp>
 
@@ -20,15 +19,18 @@
 
 // #include <boost/multi/adaptors/complex.hpp>
 
+#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>   // for BOOST_MULTI_NO_UNIQUE_ADDRESS
+
 #include <complex>                                           // for complex
-#include <cstddef>                                           // for nullptr_t
+// #include <cstddef>                                           // for nullptr_t
 #include <functional>                                        // for negate
 #include <iterator>                                          // for iterator...
 #include <memory>                                            // for pointer_...
 #include <type_traits>                                       // for decay_t
 #include <utility>                                           // for declval
+// IWYU pragma: no_include <version>                                    // for nullptr_t
 
-#if defined(__NVCC__)
+#ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
@@ -68,16 +70,27 @@ template<class Ref, class Involution> class involuted;
 
 template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F>> class involuter;  // IWYU pragma: keep  // bug in iwyu 0.22/18.1.8?
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class Ref, class Involution>
 class involuted {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 7 bytes padding added after f_
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;
 	Ref        r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	Involution f_;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr explicit involuted(Ref& ref, Involution fun) : r_{ref}, f_{fun} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
-	constexpr explicit involuted(Ref& ref) : r_{ref}, f_{} {}
+	constexpr explicit involuted(Ref& ref, Involution fun) : f_{fun}, r_{ref} {}  // r_{std::forward<Ref>(ref)}, f_{fun} {}
+	constexpr explicit involuted(Ref& ref) : f_{}, r_{ref} {}
 
 	~involuted() = default;
 
@@ -85,7 +98,7 @@ class involuted {
 	involuted(involuted&&) noexcept = default;
 
 	auto operator=(involuted const& other) -> involuted&     = delete;
-	auto operator=(involuted&& other) noexcept -> involuted& = default;
+	auto operator=(involuted&& other) noexcept -> involuted& = delete;  // default
 
 	constexpr auto decay() const& -> decay_type { return f_(r_); }
 
@@ -150,8 +163,11 @@ class involuted {
 		return self.operator decay_type().imag();
 	}
 };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
-#if defined(__cpp_deduction_guides)
+#ifdef __cpp_deduction_guides
 template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 #endif
 
@@ -160,10 +176,22 @@ auto default_allocator_of(involuter<It, F> const& iv) {
 	return default_allocator_of(iv.it_);
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
 template<class It, class F, class Reference>
 class involuter {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4820)  // 7 bytes padding added after f_
+#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS F  f_;
 	It it_;
-	F  f_;  // [[no_unique_address]]
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 	template<class, class, class> friend class involuter;
 
  public:
@@ -177,17 +205,16 @@ class involuter {
 
 	involuter() = default;
 
-	BOOST_MULTI_HD constexpr explicit involuter(It it) : it_{std::move(it)}, f_{} {}
-	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it) : f_{}, it_{std::move(it)} {}
+	BOOST_MULTI_HD constexpr explicit involuter(It it, F fun) : f_{std::move(fun)}, it_{std::move(it)} {}
 
 	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
+	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
 	template<class Other, decltype(detail::explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
-	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_} {}
+	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
-	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }
 
 	// auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
 	// auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
@@ -197,21 +224,32 @@ class involuter {
 	friend auto operator==(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ == nil; }
 	friend auto operator!=(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ != nil; }
 
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	constexpr auto operator+=(difference_type n) -> involuter& {
-		it_ += n;
+		it_ += n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	constexpr auto operator-=(difference_type n) -> involuter& {
-		it_ -= n;
+		it_ -= n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
+	constexpr auto operator[](difference_type n) const { return reference{*(it_ + n), f_}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
 
 	template<class = void>  // workaround for nvcc
-	constexpr friend auto operator+(involuter lhs, difference_type n) { return lhs += n; }
+	friend BOOST_MULTI_HD constexpr auto operator+(involuter lhs, difference_type n) { return lhs += n; }
 	template<class = void>  // workaround for nvcc
-	constexpr friend auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
+	friend BOOST_MULTI_HD constexpr auto operator-(involuter lhs, difference_type n) { return lhs -= n; }
 
-	auto operator-(involuter const& other) const { return it_ - other.it_; }
+	template<class = void>  // workaround for nvcc
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, involuter lhs) { return lhs + n; }
+
+	BOOST_MULTI_HD constexpr auto operator-(involuter const& other) const { return it_ - other.it_; }
 
 	explicit operator bool() const { return it_; }
 	using underlying_type = It;
@@ -230,6 +268,9 @@ class involuter {
 		return get_allocator(inv.it_);
 	}
 };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It> using negater  = involuter<It, std::negate<>>;
@@ -241,13 +282,13 @@ struct conjugate {
 		return conj(zee);
 	}
 
-#if defined(__CUDACC__)
+#ifdef __CUDACC__
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
 	}
 #endif
-#if defined(__HIPCC__)
+#ifdef __HIPCC__
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::hip::tag> zee) const {
 		return conj(static_cast<Complex>(zee));

@@ -16,7 +16,7 @@
 #include <numeric>   // for accumulate
 #include <vector>    // for vector
 // IWYU pragma: no_include <version>  // for __cpp_lib_ranges
-#if defined(__cpp_lib_ranges)
+#ifdef __cpp_lib_ranges
 #include <concepts>  // IWYU pragma: keep
 #endif
 
@@ -40,7 +40,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(    (uu >= tt)  );
 	}
 
-#if defined(__cpp_lib_ranges)
+#ifdef __cpp_lib_ranges
 	// BOOST_AUTO_TEST_CASE(sort_2D)
 	{
 		multi::array<int, 2> A2D = {
@@ -108,7 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)  for C++20
 
 		multi::array<double, 2> d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
@@ -116,25 +116,55 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{100.0, 11.0, 12.0, 13.0, 14.0},
 			{ 50.0,  6.0,  7.0,  8.0,  9.0},
 		};
-		BOOST_TEST( !std::is_sorted(begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::stable_sort(begin(d2D), end(d2D));
-		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls)
-
-		BOOST_TEST((
-		d2D == decltype(d2D){
-			{ 30.0,  1.0,  2.0,  3.0,  4.0},
-			{ 50.0,  6.0,  7.0,  8.0,  9.0},
-			{100.0, 11.0, 12.0, 13.0, 14.0},
-			{150.0, 16.0, 17.0, 18.0, 19.0},
+		{
+			bool       check = true;
+			auto       first = d2D.begin();
+			auto const last  = d2D.end();
+			auto       next  = d2D.begin();
+			++next;
+			while(next != last) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+				if(*next < *first) {
+					check = false;
+					break;
+				}
+				++first;
+				++next;
+			}
+			BOOST_TEST( !check );
 		}
-	));
 
-		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
+		BOOST_TEST(!(
+				   (*(d2D.begin()    ) <= *(d2D.begin() + 1))
+				&& (*(d2D.begin() + 1) <= *(d2D.begin() + 2))
+				&& (*(d2D.begin() + 2) <= *(d2D.begin() + 3))
+		));
 
-		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));
-		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );
-		BOOST_TEST( std::is_sorted( begin(d2D          ), end(d2D          ) ) );
+#if !defined(__clang_major__) || (__clang_major__ != 7)      // bug in is_sorted in clang 7
+		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
+#endif
+
+		std::stable_sort(d2D.begin(), d2D.end());         // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
+
+		// clang-format off
+		BOOST_TEST(
+			d2D == decltype(d2D)({
+				{ 30.0,  1.0,  2.0,  3.0,  4.0},
+				{ 50.0,  6.0,  7.0,  8.0,  9.0},
+				{100.0, 11.0, 12.0, 13.0, 14.0},
+				{150.0, 16.0, 17.0, 18.0, 19.0},
+			})
+		);
+		// clang-format on
+
+#if !defined(__clang_major__) || (__clang_major__ != 7)                        // bug in is_sorted in clang 7
+		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
+#endif
+
+		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));           // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted( begin(d2D          ), end(d2D          ) ) );                      // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST((
 		d2D == decltype(d2D){
@@ -148,8 +178,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort)
 	{
-		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );
+		std::vector<double> vec = {1.0, 2.0, 3.0};        // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(modernize-use-ranges) for C++20
 
 		// clang-format off
 	std::array<std::array<double, 5>, 4> d2D {{
@@ -162,11 +192,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
+#endif
+
 		std::stable_sort(begin(d2D_ref), end(d2D_ref));
 		BOOST_TEST( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
 
+#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+#endif
+
 		std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
 		BOOST_TEST( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
 	}
@@ -201,7 +237,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		name2[1] = 'a';
 		name2[2] = 'b';
-		name2[3] = 'c';
+		name2[3] = 'c';  // cppcheck-suppress knownConditionTrueFalse ;
 
 		BOOST_TEST(  name2 != name1 );
 		BOOST_TEST(!(name2 == name1));
@@ -214,7 +250,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( name2[1] == 'a' );
 		BOOST_TEST( name2[2] == 'b' );
-		BOOST_TEST( name2[3] == 'c' );
+		BOOST_TEST( name2[3] == 'c' );  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	// BOOST_AUTO_TEST_CASE(lexicographical_compare_offset_2d)
@@ -255,7 +291,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( name2[2][0] == 'b' );
 		BOOST_TEST( name2[2][1] == 'a' );
 		BOOST_TEST( name2[3][0] == 'c' );
-		BOOST_TEST( name2[3][1] == 'a' );
+		BOOST_TEST( name2[3][1] == 'a' );  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	// BOOST_AUTO_TEST_CASE(accumulate_1d)

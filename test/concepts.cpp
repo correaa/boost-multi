@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -17,14 +17,14 @@
 #endif
 
 // NOLINTBEGIN(misc-include-cleaner)
-#include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT  // IWYU pragma: keep
-#include <boost/concept_check.hpp>               // for Assignable, CopyCons...  // IWYU pragma: keep
-#include <boost/iterator/iterator_facade.hpp>    // for operator-  // IWYU pragma: keep
-#include <boost/multi_array.hpp>                 // for multi_array  // IWYU pragma: keep
-#include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept  // IWYU pragma: keep
+// #include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT  // IWYU pragma: keep
+// #include <boost/concept_check.hpp>               // for Assignable, CopyCons...  // IWYU pragma: keep
+// #include <boost/iterator/iterator_facade.hpp>    // for operator-  // IWYU pragma: keep
+// #include <boost/multi_array.hpp>                 // for multi_array  // IWYU pragma: keep
+// #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept  // IWYU pragma: keep
 // NOLINTEND(misc-include-cleaner)
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop

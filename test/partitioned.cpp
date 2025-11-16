@@ -7,16 +7,21 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for is_sorted
-#include <array>      // for array
-#include <cstddef>    // for ptrdiff_t
-// #include <iostream>
+#include <algorithm>    // for is_sorted
+#include <array>        // for array
+#include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for size
 #include <string>       // for operator""s, string, string_lite...
 #include <tuple>        // for apply  // IWYU pragma: keep
 #include <type_traits>  // for declval, decay_t, decay, decay<>...
 #include <utility>      // for move
 #include <vector>
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#pragma warning(disable : 5026)  // move constructor was implicitly defined as deleted
+#endif
 
 namespace multi = boost::multi;
 
@@ -326,6 +331,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A2_ref = A1.partitioned(2);
 
+		auto [is, js] = A2_ref.extensions();
+		BOOST_TEST( is.size() == 2 );
+		BOOST_TEST( js.size() == 3 );
+
 		static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
 		static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
@@ -372,7 +381,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &A3_ref[1][1][0] == &A2[3][0] );
 
 		A3_ref[0][0][0] = 99;
-		BOOST_TEST( A3_ref[0][0][0] == 99 );
+		BOOST_TEST( A3_ref[0][0][0] == 99 );  // cppcheck-suppress knownConditionTrueFalse ;
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_partitioned)
@@ -510,6 +519,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.layout().strides());
 
+		// NOLINTNEXTLINE(modernize-use-ranges) for C++20
 		BOOST_TEST( std::is_sorted(strides.rbegin(), strides.rend()) && arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
 		// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
@@ -830,4 +840,4 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	return boost::report_errors();
-}
+}  // NOLINT(readability/fn_size)

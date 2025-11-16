@@ -32,7 +32,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{30.0, 31.0, 32.0},
 		};
 
-		using multi::_;
 		using multi::U;
 
 		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == size(arr) );
@@ -43,16 +42,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::ALL < 2 , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <= multi::ALL     , 2) ) == 3 );
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ;
 		BOOST_TEST( size( arr( 1 <= multi::ALL < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 		BOOST_TEST( size( arr(      multi::_       , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::_   < 2 , 2) ) == 2 );
-		BOOST_TEST( size( arr( 1 <= multi::_       , 2) ) == 3 );
+		BOOST_TEST( size( arr( 1 <= multi::_       , 2) ) == 3 );  // cppcheck-suppress compareBoolExpressionWithInt ;
+
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
 		BOOST_TEST( size( arr( 1 <= multi::_   < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
+		using multi::_;
 		BOOST_TEST( size( arr(             _       , 2) ) == 4 );
 		BOOST_TEST( size( arr(             _ < 2   , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <=        _       , 2) ) == 3 );
+
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
 		BOOST_TEST( size( arr( 1 <=        _ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 	}
 
@@ -120,9 +125,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr( 1 <= *_       , 2) ) == 3 );
 		BOOST_TEST( size( arr( 1 <=  U       , 2) ) == 3 );
 
+		// cppcheck-suppress-begin [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
 		BOOST_TEST( size( arr( 1 <=  _ < 3   , 2) ) == 2 );   // NOLINT(bugprone-chained-comparison)
 		BOOST_TEST( size( arr( 1 <= *_ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 		BOOST_TEST( size( arr( 1 <=  U < 3   , 2) ) == 2 );   // NOLINT(bugprone-chained-comparison)
+		// cppcheck-suppress-end [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
 
 		BOOST_TEST( size( arr(      *_ < 2   , 2) ) == 2 );
 		BOOST_TEST( size( arr(       U < 2   , 2) ) == 2 );

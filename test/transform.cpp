@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2025 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -17,6 +17,10 @@
 #include <string>       // for to_string  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
+#endif
 
 #define BOOST_MULTI_DECLRETURN(ExpR) \
 	->decltype(ExpR) { return ExpR; }  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
@@ -65,7 +69,7 @@ class involuted {
 	auto operator==(involuted const& other) const { return r_ == other.r_; }
 	auto operator!=(involuted const& other) const { return r_ == other.r_; }
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
@@ -74,7 +78,7 @@ class involuted {
 #endif
 	auto operator==(decay_type const& other) const { return Involution{}(r_) == other; }
 	auto operator!=(decay_type const& other) const { return Involution{}(r_) != other; }
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
@@ -103,7 +107,8 @@ class involuter {
 	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
-	constexpr auto operator->() const { return pointer{&*it_}; }
+	// cppcheck-suppress redundantPointerOp ; lib idiom
+	constexpr auto operator->() const { return &*it_; }  // pointer{&*it_}; }
 
 	constexpr auto operator==(involuter const& other) const { return it_ == other.it_; }
 	constexpr auto operator!=(involuter const& other) const { return it_ != other.it_; }
@@ -117,16 +122,17 @@ class involuter {
 		return *this;
 	}
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }
-	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }
+	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-#if defined(__clang__)
+	friend constexpr auto operator+(difference_type n, involuter const& self) { return self + n; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 };
@@ -160,7 +166,7 @@ struct conjugate<> : private basic_conjugate_t {
 	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
-#if defined(__NVCC__)
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
@@ -180,11 +186,12 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 		return imag(static_cast<typename conjd::decay_type>(self));
 	}
 };
-#if defined(__NVCC__)
+
+#if defined(__NVCC__) && !defined(_MSC_VER)
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(__cpp_deduction_guides)
+#ifdef __cpp_deduction_guides
 template<class T> conjd(T&&) -> conjd<T>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
@@ -268,8 +275,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// negd_arr2[1][1] = 3.0;  // can't compile, ok, read-only
 		}
 		{
-#if defined(__cpp_deduction_guides)
-#if defined(__clang__)
+#ifdef __cpp_deduction_guides
+
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -288,7 +296,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( std::abs( zee[1][1] - 66.0) < 1E-6 );
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

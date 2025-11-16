@@ -205,6 +205,9 @@ double const n = multi::blas::nrm2(v[0]);  // acting on a row view
 // auto const n = +multi::blas::nrm2(v[0]);
 ```
 
+[(live)](https://godbolt.org/z/xf61EPWbT)
+
+
 ### `auto multi::blas::asum(`_complex/real vector_`) -> `_convertible to real scalar_
 
 Returns the sum of the absolute values of the elements of a vector (norm-1).

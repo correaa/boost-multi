@@ -21,6 +21,7 @@
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
+// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
 
@@ -171,19 +172,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( va[1] [0][0] == "1"s );  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 		BOOST_TEST( va[2] [0][0] == "2"s );
 
-		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		std::vector<multi::array<std::string, 2>> const wa = {
 			multi::array<std::string, 2>({0, 0}, "0"s),
 			multi::array<std::string, 2>({1, 1}, "1"s),
 			multi::array<std::string, 2>({2, 2}, "2"s),
 		};
-		// #else
-		//      std::vector<multi::array<std::string, 2>> const wa = {
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(0, 0), "0"s),
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(1, 1), "1"s),
-		//          multi::array<std::string, 2>(multi::extensions_t<2>(2, 2), "2"s),
-		//      };
-		// #endif
 
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
 		BOOST_TEST( size(va) == size(wa) );
@@ -242,6 +235,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST( AA[9][19][1][1][1] == 99 );
 	}
+#endif
 
 	// BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)
 	{
@@ -259,7 +253,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( AA[9][19][1][1][1] == 99 );
 	}
-#endif
 
 	// BOOST_AUTO_TEST_CASE(const_elements)
 	{
@@ -287,10 +280,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(( buffer == std::array<char, 13>{{'x', 'y', 'z', '&', 'o', 'o', 'o', 'o', 'o', 'o', 'A', 'B', 'C'}} ));
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(( buffer == std::array<char, 13>{{'0', '1', '2', 'o', 'o', 'o', 'o', 'o', 'o', 'x', 'y', 'z', '&'}} ));
 #endif
 
@@ -314,10 +307,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
 #endif
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(( buffer == std::array<char, 13>{{'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b', 'X', 'X', 'X'}} ));
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(( buffer == std::array<char, 13>{{'X', 'X', 'X', 'b', 'b', 'b', 'b', 'b', 'b', 'a', 'a', 'a', 'a'}} ));
 #endif
 
@@ -338,10 +331,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer[0] == 4 );
 		BOOST_TEST( buffer[1] == 5 );
 
-#if defined(__GLIBCXX__)
+#ifdef __GLIBCXX__
 		BOOST_TEST(Aarr[0][0] == 4);
 #endif
-#if defined(_LIBCPP_VERSION)
+#ifdef _LIBCPP_VERSION
 		BOOST_TEST(Aarr[0][0] == 996);
 #endif
 	}
@@ -489,7 +482,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( ww[3] == cat );
 
 		ww[3] = dog;
-		BOOST_TEST( ww[3] == dog );
+		BOOST_TEST( ww[3] == dog );  // cppcheck-suppress knownConditionTrueFalse ;
 		BOOST_TEST( vv[3] == cat );
 
 		auto xx = std::move(ww);
@@ -542,7 +535,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 
 		ww[3][3] = 51;
 
-		BOOST_TEST( ww[3][3] == 51 );
+		BOOST_TEST( ww[3][3] == 51 );  // cppcheck-suppress knownConditionTrueFalse ;
 		BOOST_TEST( vv[3][3] == 42 );
 
 		swap(ww, vv);
@@ -564,7 +557,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		small_array<int, 2, 4UL * 4UL> yy({4, 4});
 		yy = vv;
 
-		BOOST_TEST( yy == vv );
+		BOOST_TEST( yy == vv );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		yy = std::move(vv);
 		BOOST_TEST( vv.size() == 4 );  // NOLINT(clang-analyzer-cplusplus.Move,bugprone-use-after-move,hicpp-invalid-access-moved)
@@ -577,12 +570,12 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[0] == xx );
 			BOOST_TEST( VV[1] == vv );
 
-			std::sort(VV.begin(), VV.end());
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
 
 			VV.resize(10, xx);
-			std::sort(VV.begin(), VV.end());
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
 		}
 	}
 #endif
@@ -592,10 +585,10 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		{
 			std::vector<int> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ;
 
 			ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ;
 
 			ww = std::move(vv);
 			BOOST_TEST( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
@@ -608,10 +601,10 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		{
 			std::vector<int, multi::detail::static_allocator<int, 32>> vv(20, 11);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int, multi::detail::static_allocator<int, 32>> ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			ww = vv;
-			BOOST_TEST( ww == vv );
+			BOOST_TEST( ww == vv );  // cppcheck-suppress knownConditionTrueFalse ; for testing purposes
 
 			ww = std::move(vv);
 			BOOST_TEST( vv.size() == 0 );  // NOLINT(readability-container-size-empty,bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)

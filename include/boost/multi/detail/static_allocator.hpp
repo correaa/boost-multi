@@ -15,7 +15,7 @@
 
 namespace boost::multi::detail {
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
@@ -42,7 +42,14 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	#pragma warning(pop)
 #endif
 
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4820)  // warning C4820: 'boost::multi::detail::static_allocator<main::T,32>': '3' bytes padding added after data member 'boost::multi::detail::static_allocator<main::T,32>::dirty_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\allocator.cpp.x.vcxproj]
+#endif
 	bool dirty_ = false;
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
  public:
 	using value_type = T;
@@ -116,7 +123,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	using is_always_equal = std::true_type;
 };
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 

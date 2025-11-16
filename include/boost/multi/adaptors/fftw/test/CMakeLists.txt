@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
-
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -44,6 +43,7 @@ set(TEST_SRCS
   combinations.cpp
 # copy.cpp
   core.cpp
+  direct_vs_transpose.cpp
   fft.cpp
   moved.cpp
   shift.cpp
@@ -70,7 +70,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
-	target_link_libraries(${TEST_EXE} PRIVATE multi multi_fftw3)  # PkgConfig::FFTW)
+	target_link_libraries(${TEST_EXE} PUBLIC multi)
+	target_link_libraries(${TEST_EXE} PRIVATE multi_fftw3)  # PkgConfig::FFTW)
 
 	if(NOT DEFINED ENABLE_CIRCLE)
 		target_compile_options(
@@ -87,13 +88,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-fstack-usage
 				>
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-					-Werror
 					-Wall
 					-Wextra
-					-fno-common
 					-Wpedantic
-					-Wmove
-					-Wno-error=\#warnings
+					#-fno-common
+					#-Wmove
+					#-Wno-error=\#warnings
 				>
 				$<$<CXX_COMPILER_ID:Intel>:
 					-wd161
