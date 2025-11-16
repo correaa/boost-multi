@@ -135,6 +135,7 @@ class f_extensions_t {
 	};
 
 	constexpr auto operator[](index idx) const {
+		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
@@ -143,6 +144,13 @@ class f_extensions_t {
 			return proj_(idx);
 		}
 	}
+
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	template<class... Indices>
+	constexpr auto operator[](index idx, Indices... rest) const {
+		return operator[](idx)[rest...];
+	}
+	#endif
 
 	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
 
@@ -565,6 +573,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return static_cast<base_ const&>(*this)[idx];
 	}
 
+	// template<class... Indices>
+	// constexpr auto operator[]()
+
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D - 1>{this->base().tail()}.next_canonical(rest...)) {
@@ -877,6 +888,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
+
+	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	class iterator {  // : public weakly_incrementable<iterator> {
 		index idx_;
