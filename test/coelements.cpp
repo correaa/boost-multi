@@ -47,7 +47,6 @@ co_celements(Arr2D const& arr2d) {
 #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-#if 0
 	multi::array<int, 2> const arr = {
 		{0, 1, 2},
 		{3, 4, 5}
@@ -78,6 +77,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *(++co_celements(arr).begin()) == 1 );
 	}
 #endif
-#endif
+
 	return boost::report_errors();
 }
