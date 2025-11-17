@@ -126,6 +126,7 @@ struct transform_ptr {
 #if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 #endif
+	constexpr transform_ptr() : p_{}, f_{} {}
 
 	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
 
@@ -178,6 +179,13 @@ struct transform_ptr {
 	constexpr auto operator!=(std::nullptr_t const& nil) const -> bool { return p_ != nil; }
 
 	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
+
+	constexpr transform_ptr(transform_ptr const& other) :  p_{other.p_}, f_{other.f_} {}
+	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {
+		// assert(f_ == other.f_);
+		p_ = other.p_;
+		return *this;
+	}
 
  private:
 	Ptr p_;

@@ -829,6 +829,7 @@ template<> struct extensions_t<0> : tuple<> {
 	using element = tuple<>;
 
 	using nelems_type = index;
+	using difference_type = index;
 
 	explicit BOOST_MULTI_HD constexpr extensions_t(tuple<> const& tup)
 	: base_{tup} {}
