@@ -237,8 +237,8 @@ struct static_array                                                             
 #if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
 	constexpr explicit static_array(It const& first, Sentinel const& last, allocator_type const& alloc)
-	: array_alloc{alloc}
-	, ref(
+	: array_alloc{alloc},
+	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
 		  index_extension(adl_distance(first, last)) * multi::extensions(*first)
 	  ) {
@@ -416,7 +416,7 @@ struct static_array                                                             
 	}
 
 	template<class F>  // TODO(correaa) make more generic, e.g.: take ArrayWithElementsLike
-	constexpr static_array(multi::f_extensions_t<D, F> const& other, allocator_type const& alloc)
+	constexpr static_array(multi::restriction<D, F> const& other, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{other.extensions()}.num_elements())),
@@ -427,7 +427,7 @@ struct static_array                                                             
 
 	template<class F>  // ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr static_array(multi::f_extensions_t<D, F> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
+	constexpr static_array(multi::restriction<D, F> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
 	: static_array(other, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename static_array::iterator>()))>
