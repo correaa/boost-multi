@@ -730,13 +730,11 @@ For this reason, they can be regarded as "lazy" arrays, a multidimensional gener
 The main property of a restriction array is that it can be generically used in place of a concrete array because they have the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()` and (partial) indexing (`operator[]`).
 They also provide a complete iterator inteface, `.begin()`, `.end()` and they can be used as standard ranges.
 This means that generic algorithms, including some outside of Multi, can take advantage of these arrays.
-
 As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`; the same expression as if it were a concrete array).
 
-The main difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
+A key difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
 
-The simplest use of restrictions is for generating concrete arrays from coordinates.
-The following is a commonly used nested loop for initialization:
+A first use of restrictions is for generating concrete arrays from coordinates, to replace the following commonly used nested loop for initialization:
 ```cpp
 multi::array<int, 2> A({3, 2});
 
@@ -750,46 +748,48 @@ for(auto i : is) {
 ```
 ...which can be replaced by a simpler construction without intermediate steps:
 ```cpp
-multi::array<int, 2> const A([](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2));
+multi::array<int, 2> const A = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2);
 ```
 
-Note that since there is no immediate need to assign elements and `A` can be conveniently declared `const` if no further mutation is necessary).
-The element initialization here is delegated to the library; the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device).
+Note that since there is no immediate need to assign elements, and the target array can be conveniently declared `const` if no further mutation is necessary).
+The element initialization here is delegated to the library;
+the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device) and in any order.
 
 Restrictions can be used in many other contexts beyond initialization and assignment;
 for example in combination with `std::ranges`, or mixed with concrete arrays.
 In some cases, functions can be generically written to work both on `multi::array`s (or `multi::subarray`s) and on restrictions, when a functional programming style is desirable.
 
 For example, here we define a transformation that subtracts the mean value of each row, row by row:
-
 ```cpp
 auto shift = std::views::transform(
 	[]<class Row>(Row&& row) {
 		auto mean = std::reduce(row.begin(), row.end()) / row.size();
-		return std::forward<Row>(row) | std::views::transform([=](auto ele) { return ele - mean; });
+		return std::forward<Row>(row) | std::views::transform([=](auto e) { return e - mean; });
 	}
 );
 ```
 
 This operation can be applied to the lazy version or to the concrete version of the array:
-
 ```cpp
-auto lazy = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
-multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};
+auto lazy = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);  // no allocation
+multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};  // allocation
+
+auto lazy_shifted = shift(lazy);   // doesn't allocate
+auto concrete_shifted = shift(concrete);  // doesn't allocate (hodls a reference to concrete)
 ```
 
 The primary advantage of using lazy arrays and defining transformation functions is that operations can occur without requiring temporary space (allocators), which can be advantageous.
-The allocation would only happen at the point at which the result is materialized as a concrete array.
+The allocation would only happen at the point at which the result is materialized as a concrete copy.
 
 ```cpp
-multi::array<double, 2> S1(shift(lazy));  // allocation might ocurr here
-multi::array<double, 2> S2(shift(concrete));   // allocation might ocurr here
+
+multi::array<double, 2> shift_lazy_copy(shift(lazy));          // allocates here
+multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ```
 link:https://godbolt.org/z/qK9cYzrzv[(live)]
 
-Another possible application of restrictions is the ability to define lazy operations, also known as lazy expressions or expression templates.
+Another possible application of restrictions is the ability to define lazy expressions, also known as expression templates.
 These are complex C++ expressions composed of objects (typically in through operator overload) that are evaluated only after the whole expression is built.
-In the array programming space, eliminating the need of temperaries is essential.
 
 Since arrays are expensive to copy or generate, this feature is highly regarded for array libraries.
 Here is a basic implementation example using restrictions, that can be customized for specific domains of application.
@@ -809,7 +809,7 @@ For example, given two concrete arrays `A`, `B`, one can evaluate the result of 
     assert(C[1][1] == A[1][1] + (A[1][1] * B[1][1]) + (2.0 * B[1][1]));
 ```
 
-The lazy operations utilized here are be implemented in a fairly intuitive way using a series of array restrictions (C++23 for simplicity):
+The lazy operations utilized here can beimplemented in a fairly intuitive way using a series of array restrictions (C++23 for simplicity):
 
 ```cpp
 namespace lazy {
@@ -832,18 +832,18 @@ namespace lazy {
 ```
 link:https://godbolt.org/z/n3hs44hvW[(live)]
 
-Note that none of the intermediate operations generate temporary concrete (allocated) arrays.
+Note that, again, none of the intermediate operations generate temporary concrete (allocated) arrays.
 
 There are many challenges in implementing general lazy expressions:
 1) tracking the ownership of the subexpressions (here, everything is taken by reference for simplicity, instead of exploiting copy or move semantics, or reference counting),
 2) dealing with ambiguities generated by operator overloading (hence the heavy use of templates and C++23 constraints).
-There is no single way to implement lazy operations; it depends strongly on the intended use and minute details in the implementation can have divergent semantics.
+There is no single way to implement lazy operations; it depends strongly on the intended use and small details can lead to divergent semantics.
 
 In summary, restrictions can be very powerful since any function and behavior can be injected.
 However, there are some limitations to take into account to avoid surprising behavior:
 The functions that make up restrictions should behave as much as possible as pure (mathematical) functions and behave deterministically in their context of use.
-For lambdas that capture references, the validity of the restriction objects would be contigent to the lifetime of these references.
-Analogously if the lambda captures by copy, the implications of copying must be evaluated too.
+For lambdas that capture references, the validity of the restriction objects is be contigent to the lifetime of these references.
+Analogously if the lambdas capture by copy, the implications of copying must be evaluated too.
 Just like concrete arrays, the order of evaluation of the indices can impact performance or rely on compiler optimizations.
 
 // == Broadcast (infinite views)
