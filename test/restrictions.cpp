@@ -84,11 +84,13 @@ namespace elementwise {
 
 template<class A, class B>
 auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	assert(a.extensions() == b.extensions());
 	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
 }
 
 template<class A, class B>
 auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	assert(a.extensions() == b.extensions());
 	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
 }
 

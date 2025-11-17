@@ -226,12 +226,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[9] == 40 );
 		// BOOST_TEST( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
 
-		// arr.reextent(boost::multi::tuple<int>(22));
-		// BOOST_TEST( size(arr) == 22 );
-		// BOOST_TEST( arr[9] == 40 );
+		boost::multi::detail::tuple<int> t1(22);
+		boost::multi::extensions_t<1> ex1 = t1;
+		using std::get;
+		BOOST_TEST( get<0>(ex1).size() == 22 );
+
+		arr.reextent(boost::multi::tuple<int>(22));
+		BOOST_TEST( arr.size() == 22 );
+		BOOST_TEST( arr[9] == 40 );
 
 		arr.reextent({23});
-		BOOST_TEST( size(arr) == 23 );
+		BOOST_TEST( arr.size() == 23 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(tuple_decomposition)

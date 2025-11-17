@@ -1109,7 +1109,6 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 		return std::move(*this);
 	}
 #endif
-
 	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {
 		return *this;
 	}
@@ -1453,7 +1452,7 @@ struct array : static_array<T, D, Alloc> {
 		this->destroy();
 		this->deallocate();
 		this->base_            = tmp.base();
-		this->layout_mutable() = tmp.layout();
+		this->layout_mutable() = tmp.layout();  // TODO(correaa) don't use mutable layout interface
 		return *this;
 	}
 
