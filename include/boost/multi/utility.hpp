@@ -182,7 +182,11 @@ struct transform_ptr {
 
 	// constexpr transform_ptr(transform_ptr const& other) :  p_{other.p_}, f_{other.f_} {}
 	transform_ptr(transform_ptr const&) = default;
+	transform_ptr(transform_ptr&&) = default;
 
+	~transform_ptr() = default;
+
+	auto operator=(transform_ptr&&) -> transform_ptr& = default;
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {
 		// assert(f_ == other.f_);
 		p_ = other.p_;
