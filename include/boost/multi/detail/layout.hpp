@@ -657,7 +657,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
  private:
 	template<std::size_t N, class Tu> 
-	static auto std_get_(Tu const& tu) {
+	static BOOST_MULTI_HD constexpr auto std_get_(Tu const& tu) {
 		using std::get;
 		return get<N>(tu);
 	}
