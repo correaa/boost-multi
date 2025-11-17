@@ -2450,7 +2450,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	template<
 		bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		>
-	BOOST_MULTI_HD constexpr explicit array_iterator(array_iterator<Element, 1, Ptr, OtherIsConst> const& other)
+	BOOST_MULTI_HD constexpr /*explicit*/ array_iterator(array_iterator<Element, 1, Ptr, OtherIsConst, IsMove, Stride> const& other)
 	: ptr_{other.base()}, stride_{other.stride()} {}
 
 	template<
