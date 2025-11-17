@@ -813,7 +813,6 @@ The lazy operations utilized here are be implemented in a fairly intuitive way u
 
 ```cpp
 namespace lazy {
-
 	template <class A>
 	auto operator*(typename A::element scalar, A const& a) {
     	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
@@ -822,18 +821,16 @@ namespace lazy {
 	namespace elementwise {
 		template <class A, class B>
 		auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-			assert( a.extensions() == b.extensions() );
     		return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
 		}
 		template <class A, class B>
 		auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-			assert( a.extensions() == b.extensions() );
     		return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
 		}
 	}
 }
 ```
-link:https://godbolt.org/z/413GTx47v[(live)]
+link:https://godbolt.org/z/n3hs44hvW[(live)]
 
 Note that none of the intermediate operations generate temporary concrete (allocated) arrays.
 
