@@ -180,7 +180,9 @@ struct transform_ptr {
 
 	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
 
-	constexpr transform_ptr(transform_ptr const& other) :  p_{other.p_}, f_{other.f_} {}
+	// constexpr transform_ptr(transform_ptr const& other) :  p_{other.p_}, f_{other.f_} {}
+	transform_ptr(transform_ptr const&) = default;
+
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {
 		// assert(f_ == other.f_);
 		p_ = other.p_;
