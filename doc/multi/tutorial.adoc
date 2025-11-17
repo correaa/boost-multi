@@ -709,7 +709,7 @@ link:https://godbolt.org/z/Porre3z8s[(live)]
 
 So far, we have examined the use of arrays that contain elements or references to elements stored in memory; these are referred to as container arrays or concrete arrays.
 In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
-The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays".
+The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays" and are a tool for general delayed evaluation.
 
 Multi's restriction arrays are functions that are wrapped in the interface of a multidimensional array.
 These functions are therefore restricted (in the mathematical sense) to a discrete range of values in a multidimensional grid (a Cartesian product of integer intervals).
@@ -774,7 +774,7 @@ auto shift = std::views::transform(
 This operation can be applied to the lazy version or to the concrete version of the array:
 
 ```cpp
-auto                    lazy     = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
+auto lazy = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensions_t<2>(2, 3);
 multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};
 ```
 
@@ -835,7 +835,7 @@ namespace lazy {
 ```
 link:https://godbolt.org/z/413GTx47v[(live)]
 
-Note that none of the operations (addition or multiplication) generate temporary concrete (allocated) arrays.
+Note that none of the intermediate operations generate temporary concrete (allocated) arrays.
 
 There are many challenges in implementing general lazy expressions:
 1) tracking the ownership of the subexpressions (here, everything is taken by reference for simplicity, instead of exploiting copy or move semantics, or reference counting),
@@ -845,8 +845,8 @@ There is no single way to implement lazy operations; it depends strongly on the 
 In summary, restrictions can be very powerful since any function and behavior can be injected.
 However, there are some limitations to take into account to avoid surprising behavior:
 The functions that make up restrictions should behave as much as possible as pure (mathematical) functions and behave deterministically in their context of use.
-In the same way, for lambdas that capture references, the validity of the restriction objects would be contigent to the lifetime of these references.
-Analogously if the lambda captures by copy, the implications of copying these must be evaluated too.
+For lambdas that capture references, the validity of the restriction objects would be contigent to the lifetime of these references.
+Analogously if the lambda captures by copy, the implications of copying must be evaluated too.
 Just like concrete arrays, the order of evaluation of the indices can impact performance or rely on compiler optimizations.
 
 // == Broadcast (infinite views)
