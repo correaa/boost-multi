@@ -930,7 +930,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
-				return ((self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_)) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
+				if constexpr(D == 1) {
+					return self.curr_ - other.curr_;
+				} else {
+					return ((self.curr_ - other.curr_) * (self.rest_end_ - self.rest_begin_)) + (self.rest_it_ - self.rest_begin_) - (other.rest_it_ - other.rest_begin_);
+				}
 			}
 
 			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const {
@@ -942,25 +946,33 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator++() -> auto& {
-				// printf("++\n");
-				++rest_it_;
-				if( rest_it_ == rest_end_ ) {
-					rest_it_ = rest_begin_;
+				if constexpr(D == 1) {
 					++curr_;
+				} else {
+					++rest_it_;
+					if( rest_it_ == rest_end_ ) {
+						rest_it_ = rest_begin_;
+						++curr_;
+					}
 				}
 				return *this;
 			}
 
 			BOOST_MULTI_HD constexpr auto operator--() -> auto& {
-				// assert(0);
-				// printf("--\n");
-				if( rest_it_ == rest_begin_ ) {
-					rest_it_ = rest_end_;
+				if constexpr(D == 1) {
 					--curr_;
+				} else {
+					if( rest_it_ == rest_begin_ ) {
+						rest_it_ = rest_end_;
+						--curr_;
+					}
+					--rest_it_;
 				}
-				--rest_it_;
 				return *this;
 			}
+
+			BOOST_MULTI_HD constexpr auto operator++(int) { iterator ret{*this}; ++(*this); return ret; }
+			BOOST_MULTI_HD constexpr auto operator--(int) { iterator ret{*this}; --(*this); return ret; }
 
 			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }
 
@@ -998,6 +1010,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class Func>
 	constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
+
+	constexpr auto transposed() const {
+		return [](auto i, auto j, auto... rest){ return detail::mk_tuple(j, i, rest...); } ^layout_t<D>(*this).transpose().extensions();
+	}
 
 	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
