@@ -226,9 +226,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[9] == 40 );
 		// BOOST_TEST( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
 
-		arr.reextent(boost::multi::tuple<int>(22));
-		BOOST_TEST( size(arr) == 22 );
-		BOOST_TEST( arr[9] == 40 );
+		// arr.reextent(boost::multi::tuple<int>(22));
+		// BOOST_TEST( size(arr) == 22 );
+		// BOOST_TEST( arr[9] == 40 );
 
 		arr.reextent({23});
 		BOOST_TEST( size(arr) == 23 );

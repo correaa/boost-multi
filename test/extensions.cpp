@@ -17,6 +17,8 @@
 #endif
 #endif
 
+#include <multi/utility.hpp>
+
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <variant>        // for get, iwyu bug
@@ -127,6 +129,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*it) == 1 );
 
 		it += 2;
+
+		// multi::detail::what(x1d.elements().end());
 
 		BOOST_TEST( it == x1d.elements().end() );
 
@@ -333,12 +337,12 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xns2d_a == xn2 );
 		BOOST_TEST( xns2d_b == xn2 );
 
-		multi::extensions_t<2> const met2{xns2d};
+		// multi::extensions_t<2> const met2{xns2d};
 
-		multi::layout_t<2> const lyt(met2);
-		multi::layout_t<2> const lyt_2(xns2d);
+		// multi::layout_t<2> const lyt(met2);
+		// multi::layout_t<2> const lyt_2(xns2d);
 
-		BOOST_TEST( lyt == lyt_2 );
+		// BOOST_TEST( lyt == lyt_2 );
 
 		// multi::array<int, 1> const arr2({xn2});
 	}

@@ -356,6 +356,245 @@ class restriction {
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
+struct monostate : equality_comparable<monostate> {
+	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) { return true; }
+};
+
+template<> struct extensions_t<0> : tuple<> {
+	using base_ = tuple<>;
+
+ private:
+	// base_ impl_;
+
+ public:
+	extensions_t(extensions_t const&) = default;
+
+	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
+
+	using rank = std::integral_constant<dimensionality_type, 0>;
+	using element = tuple<>;
+
+	using nelems_type = index;
+
+	struct elements_t {
+		struct iterator {
+			iterator() = default;
+
+			template<class... Dat>
+			iterator(Dat const&...) = delete;
+
+			constexpr auto operator*() const { return tuple<>{}; }
+			constexpr auto operator+(difference_type) const { return iterator{}; }
+			constexpr auto operator++() -> iterator& { return *this; }
+			constexpr auto operator--() -> iterator& { return *this; }
+
+			constexpr auto operator==(iterator const&) const { return true ; }
+			constexpr auto operator!=(iterator const&) const { return false ; }
+
+			constexpr auto operator<(iterator const&) const {return false;}
+
+			constexpr auto operator-(iterator const&) const -> difference_type { return 1; }
+			constexpr auto operator-(difference_type) const { return *this; }
+		};
+
+		constexpr auto begin() const { return iterator{}; }
+		constexpr auto end() const { return iterator{}; }
+	};
+
+	constexpr auto elements() const { return elements_t{}; }
+
+	explicit BOOST_MULTI_HD constexpr extensions_t(tuple<> const& tup)
+	: base_{tup} {}
+
+	extensions_t() = default;
+
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
+
+	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
+
+	static BOOST_MULTI_HD constexpr auto num_elements() /*const*/ -> size_type { return 1; }
+
+	using indices_type = tuple<>;
+
+	[[nodiscard]] static constexpr auto from_linear(nelems_type const& n) /*const*/ -> indices_type {
+		assert(n == 0);
+		(void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
+		return indices_type{};
+	}
+	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
+
+	static BOOST_MULTI_HD constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
+	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
+
+	constexpr void operator[](index) const = delete;
+
+	static BOOST_MULTI_HD constexpr auto next_canonical() /*const*/ -> bool { return true; }
+	static BOOST_MULTI_HD constexpr auto prev_canonical() /*const*/ -> bool { return true; }
+
+	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t { return {}; }
+
+	constexpr BOOST_MULTI_HD auto operator==(extensions_t const& /*other*/) const { return true; }
+	constexpr BOOST_MULTI_HD auto operator!=(extensions_t const& /*other*/) const { return false; }
+
+	template<std::size_t Index>  // TODO(correaa) = detele ?
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element_t<Index, base_> {
+		using boost::multi::detail::get;
+		return get<Index>(self.base());
+	}
+
+	template<std::size_t Index>  // TODO(correaa) = detele ?
+	// cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto get() const -> typename std::tuple_element_t<Index, base_> {
+		using boost::multi::detail::get;
+		return get<Index>(this->base());
+	}
+};
+
+template<typename SSize>
+struct layout_t<0, SSize>
+: multi::equality_comparable<layout_t<0, SSize>> {
+	using dimensionality_type = multi::dimensionality_type;
+	using rank                = std::integral_constant<dimensionality_type, 0>;
+
+	using size_type       = SSize;
+	using difference_type = std::make_signed_t<size_type>;
+	using index           = difference_type;
+	using index_extension = multi::index_extension;
+	using index_range     = multi::range<index>;
+
+	using sub_type    = monostate;
+	using stride_type = monostate;
+	using offset_type = index;
+	using nelems_type = index;
+
+	using strides_type = tuple<>;
+	using offsets_type = tuple<>;
+	using nelemss_type = tuple<>;
+
+	using extension_type = void;
+
+	using extensions_type = extensions_t<rank::value>;
+	using sizes_type      = tuple<>;
+	using indexes         = tuple<>;
+
+	static constexpr dimensionality_type rank_v         = rank::value;
+	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
+
+	friend constexpr auto dimensionality(layout_t const& /*self*/) { return rank_v; }
+
+ private:
+	#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4820)  // '6' bytes padding added after data member
+	#endif
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpadded"
+	#endif
+	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
+
+	offset_type offset_;
+
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
+	#ifdef _MSC_VER
+	#pragma warning(pop)
+	#endif
+
+	nelems_type nelems_;
+
+	template<dimensionality_type, typename> friend struct layout_t;
+
+ public:
+	layout_t() = default;
+
+	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
+	: offset_{0}, nelems_{1} {}
+
+	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
+
+	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return extensions_type{}; }
+	friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
+
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
+	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
+
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
+	friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
+
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto nelemss() const { return nelemss_type{}; }
+
+	BOOST_MULTI_HD constexpr auto operator()() const { return offset_; }
+	// constexpr explicit operator offset_type() const {return offset_;}
+
+	constexpr auto stride() const -> stride_type = delete;
+	constexpr auto offset() const -> offset_type { return offset_; }
+	constexpr auto nelems() const -> nelems_type { return nelems_; }
+	constexpr auto sub() const -> sub_type = delete;
+
+	constexpr auto size() const -> size_type           = delete;
+	constexpr auto extension() const -> extension_type = delete;
+
+	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }
+
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
+	constexpr auto empty() const noexcept { return nelems_ == 0; }
+
+	friend constexpr auto empty(layout_t const& self) noexcept { return self.empty(); }
+
+	[[deprecated("is going to be removed")]]
+	constexpr auto is_compact() const -> bool = delete;
+
+	constexpr auto base_size() const -> size_type { return 0; }
+	constexpr auto origin() const -> offset_type { return 0; }
+
+	constexpr auto reverse() const { return *this; }
+	// constexpr auto reverse()          -> layout_t& {return *this;}
+
+	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
+		return layout_t<0, SSize>{};
+	}
+
+	BOOST_MULTI_HD constexpr auto halve() const {
+		return layout_t<1, SSize>(*this, 0, 0, 0);
+	}
+
+	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
+	constexpr auto scale(size_type /*num*/, size_type /*den*/) const { return *this; }
+
+	//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
+	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
+		return 
+			self.sub_ == other.sub_ &&
+			self.stride_ == other.stride_ &&
+			self.nelems_ == other.nelems_
+		;
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+	}
+
+	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
+		return !(self==other);
+		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
+	}
+
+	constexpr auto operator<(layout_t const& other) const -> bool {
+		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
+	}
+
+	BOOST_MULTI_HD constexpr auto rotate() const { return *this; }
+	BOOST_MULTI_HD constexpr auto unrotate() const { return *this; }
+
+	constexpr auto hull_size() const -> size_type { return num_elements(); }  // not in bytes
+};
+
 template<dimensionality_type D>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
@@ -522,7 +761,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		extensions_t<D - 1> rest_;
 		friend extensions_t;
 	
-		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
+		template<class... As>
+		constexpr iterator(As...) = delete;
+
+		constexpr iterator(index idx, extensions_t<D - 1> const& rest) : idx_{idx}, rest_{rest} {}
 
 	 public:
 		iterator() = default;
@@ -566,8 +808,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		friend constexpr auto operator>=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ >= other.idx_; }
 	};
 
-	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
-	constexpr auto end()   const { return iterator{this->base().head().last() , this->base().tail()}; }
+	constexpr auto begin() const -> iterator { return iterator{this->base().head().first(), extensions_t<D - 1>(this->base().tail())}; }
+	constexpr auto end()   const -> iterator { return iterator{this->base().head().last() , extensions_t<D - 1>(this->base().tail())}; }
 
 	constexpr auto operator[](index idx) const {
 		return static_cast<base_ const&>(*this)[idx];
@@ -650,31 +892,39 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
-				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
-					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
-				} else if(n < 0) {  // mull-ignore
-					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
-					if(rest_it_ == rest_end_) {
-						rest_it_ = rest_begin_;
-						++curr_;
+				if constexpr(D == 1) {
+					curr_ += n;
+				} else {
+					if(n > 0) {  // mull-ignore: cxx_gt_to_ge
+						curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
+						rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
+					} else if(n < 0) {  // mull-ignore
+						curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
+						rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
+						if(rest_it_ == rest_end_) {
+							rest_it_ = rest_begin_;
+							++curr_;
+						}
 					}
 				}
 				return *this;
 			}
 
 			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
-				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
-					curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_));
-					if(rest_it_ == rest_end_) {
-						rest_it_ = rest_begin_;
-						++curr_;
+				if constexpr(D == 1) {
+					curr_ -= n;
+				} else {
+					if(n > 0) {  // mull-ignore: cxx_gt_to_ge
+						curr_ -= (rest_end_ - rest_it_ + n) / (rest_end_ - rest_begin_);
+						rest_it_ = rest_end_ - ((rest_end_ - rest_it_ + n) % (rest_end_ - rest_begin_));
+						if(rest_it_ == rest_end_) {
+							rest_it_ = rest_begin_;
+							++curr_;
+						}
+					} else if(n < 0) {  // mull-ignore
+						curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
+						rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_));
 					}
-				} else if(n < 0) {  // mull-ignore
-					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
-					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_));
 				}
 				return *this;
 			}
@@ -721,7 +971,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			friend BOOST_MULTI_HD constexpr auto operator<=(iterator const& self, iterator const& other) { return (self < other) || (self == other); }
 		};
 
-		constexpr auto begin() const {
+		constexpr auto begin() const -> iterator {
 			return iterator{
 				xs_.head().begin(),
 				extensions_t<D - 1>{xs_.tail()}.elements().begin(),
@@ -816,68 +1066,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 };
 
-template<> struct extensions_t<0> : tuple<> {
-	using base_ = tuple<>;
-
- private:
-	// base_ impl_;
-
- public:
-	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
-
-	using rank = std::integral_constant<dimensionality_type, 0>;
-	using element = tuple<>;
-
-	using nelems_type = index;
-
-	explicit BOOST_MULTI_HD constexpr extensions_t(tuple<> const& tup)
-	: base_{tup} {}
-
-	extensions_t() = default;
-
-	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
-	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
-
-	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
-
-	static BOOST_MULTI_HD constexpr auto num_elements() /*const*/ -> size_type { return 1; }
-
-	using indices_type = tuple<>;
-
-	[[nodiscard]] static constexpr auto from_linear(nelems_type const& n) /*const*/ -> indices_type {
-		assert(n == 0);
-		(void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
-		return indices_type{};
-	}
-	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
-
-	static BOOST_MULTI_HD constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
-	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
-
-	constexpr void operator[](index) const = delete;
-
-	static BOOST_MULTI_HD constexpr auto next_canonical() /*const*/ -> bool { return true; }
-	static BOOST_MULTI_HD constexpr auto prev_canonical() /*const*/ -> bool { return true; }
-
-	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t { return {}; }
-
-	constexpr BOOST_MULTI_HD auto operator==(extensions_t const& /*other*/) const { return true; }
-	constexpr BOOST_MULTI_HD auto operator!=(extensions_t const& /*other*/) const { return false; }
-
-	template<std::size_t Index>  // TODO(correaa) = detele ?
-	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element_t<Index, base_> {
-		using boost::multi::detail::get;
-		return get<Index>(self.base());
-	}
-
-	template<std::size_t Index>  // TODO(correaa) = detele ?
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto get() const -> typename std::tuple_element_t<Index, base_> {
-		using boost::multi::detail::get;
-		return get<Index>(this->base());
-	}
-};
-
+#if 0
 template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
 
@@ -1137,6 +1326,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return get<Index>(self.base());
 	}
 };
+#endif
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
@@ -1229,10 +1419,6 @@ apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(aut
 }  // end namespace std
 
 namespace boost::multi {
-
-struct monostate : equality_comparable<monostate> {
-	friend BOOST_MULTI_HD constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) { return true; }
-};
 
 template<typename SSize = multi::index>
 class stride_t {
@@ -1432,14 +1618,14 @@ struct bilayout {
 			: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
 			BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return stride_t{stride1_, nn * stride2_, nelems2_}; }
 			BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
-#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
+		#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+		#endif
 			BOOST_MULTI_HD constexpr auto operator+(double* ptr) { return ptr + (stride2_ % nelems2_) + ((stride2_ / nelems2_) * stride1_); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
-#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic pop
-#endif
+		#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+		#pragma clang diagnostic pop
+		#endif
 		};
 		return stride_t{stride1_, stride2_, nelems2_};
 	}
@@ -1835,10 +2021,10 @@ struct layout_t
 		return layout_t{sub_.scale(factor), stride_ * factor, offset_ * factor, nelems_ * factor};
 	}
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
+	#endif
 
 	BOOST_MULTI_HD constexpr auto take(size_type n) const {
 		return layout_t(
@@ -1865,153 +2051,9 @@ struct layout_t
 		return layout_t{sub_.scale(num, den), stride_ * num / den, offset_ /* *num/den */, nelems_ * num / den};
 	}
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-};
-
-template<typename SSize>
-struct layout_t<0, SSize>
-: multi::equality_comparable<layout_t<0, SSize>> {
-	using dimensionality_type = multi::dimensionality_type;
-	using rank                = std::integral_constant<dimensionality_type, 0>;
-
-	using size_type       = SSize;
-	using difference_type = std::make_signed_t<size_type>;
-	using index           = difference_type;
-	using index_extension = multi::index_extension;
-	using index_range     = multi::range<index>;
-
-	using sub_type    = monostate;
-	using stride_type = monostate;
-	using offset_type = index;
-	using nelems_type = index;
-
-	using strides_type = tuple<>;
-	using offsets_type = tuple<>;
-	using nelemss_type = tuple<>;
-
-	using extension_type = void;
-
-	using extensions_type = extensions_t<rank::value>;
-	using sizes_type      = tuple<>;
-	using indexes         = tuple<>;
-
-	static constexpr dimensionality_type rank_v         = rank::value;
-	static constexpr dimensionality_type dimensionality = rank_v;  // TODO(correaa) : consider deprecation
-
-	friend constexpr auto dimensionality(layout_t const& /*self*/) { return rank_v; }
-
- private:
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4820)  // '6' bytes padding added after data member
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
-	BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type    sub_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS stride_type stride_;  // TODO(correaa) padding struct 'boost::multi::layout_t<0>' with 1 byte to align 'stride_' [-Werror,-Wpadded]
-
-	offset_type offset_;
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-	nelems_type nelems_;
-
-	template<dimensionality_type, typename> friend struct layout_t;
-
- public:
-	layout_t() = default;
-
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
-	: offset_{0}, nelems_{1} {}
-
-	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
-
-	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
-
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }
-	friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
-
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
-	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
-
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
-	friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
-
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto nelemss() const { return nelemss_type{}; }
-
-	BOOST_MULTI_HD constexpr auto operator()() const { return offset_; }
-	// constexpr explicit operator offset_type() const {return offset_;}
-
-	constexpr auto stride() const -> stride_type = delete;
-	constexpr auto offset() const -> offset_type { return offset_; }
-	constexpr auto nelems() const -> nelems_type { return nelems_; }
-	constexpr auto sub() const -> sub_type = delete;
-
-	constexpr auto size() const -> size_type           = delete;
-	constexpr auto extension() const -> extension_type = delete;
-
-	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }
-
-	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
-	constexpr auto empty() const noexcept { return nelems_ == 0; }
-
-	friend constexpr auto empty(layout_t const& self) noexcept { return self.empty(); }
-
-	[[deprecated("is going to be removed")]]
-	constexpr auto is_compact() const -> bool = delete;
-
-	constexpr auto base_size() const -> size_type { return 0; }
-	constexpr auto origin() const -> offset_type { return 0; }
-
-	constexpr auto reverse() const { return *this; }
-	// constexpr auto reverse()          -> layout_t& {return *this;}
-
-	BOOST_MULTI_HD constexpr auto take(size_type /*n*/) const {
-		return layout_t<0, SSize>{};
-	}
-
-	BOOST_MULTI_HD constexpr auto halve() const {
-		return layout_t<1, SSize>(*this, 0, 0, 0);
-	}
-
-	// [[deprecated("use two arg version")]] constexpr auto scale(size_type /*size*/) const {return *this;}
-	constexpr auto scale(size_type /*num*/, size_type /*den*/) const { return *this; }
-
-	//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
-	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
-		return 
-			self.sub_ == other.sub_ &&
-			self.stride_ == other.stride_ &&
-			self.nelems_ == other.nelems_
-		;
-		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) == std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
-	}
-
-	friend BOOST_MULTI_HD constexpr auto operator!=(layout_t const& self, layout_t const& other) {
-		return !(self==other);
-		// return std::tie(self.sub_, self.stride_, self.offset_, self.nelems_) != std::tie(other.sub_, other.stride_, other.offset_, other.nelems_);
-	}
-
-	constexpr auto operator<(layout_t const& other) const -> bool {
-		return std::tie(offset_, nelems_) < std::tie(other.offset_, other.nelems_);
-	}
-
-	BOOST_MULTI_HD constexpr auto rotate() const { return *this; }
-	BOOST_MULTI_HD constexpr auto unrotate() const { return *this; }
-
-	constexpr auto hull_size() const -> size_type { return num_elements(); }  // not in bytes
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
 };
 
 BOOST_MULTI_HD constexpr auto
