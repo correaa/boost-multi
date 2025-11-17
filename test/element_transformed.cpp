@@ -79,6 +79,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( conjd_arr[0] == 1.0 - 2.0*I );
 
 		#if defined(__cplusplus) && (__cplusplus >= 202002L)
+		auto conjd_arr_beg = conjd_arr.begin();
+		conjd_arr_beg = conjd_arr.end();
+
+		static_assert( std::movable<decltype(conjd_arr_beg)> );
+		static_assert( std::weakly_incrementable<decltype(conjd_arr_beg)> );
 		BOOST_TEST( conjd_arr.begin() == std::ranges::begin(conjd_arr) );
 		#endif
 
