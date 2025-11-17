@@ -101,7 +101,7 @@ struct extensions_t;
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
 template<dimensionality_type D, class Proj>
-class f_extensions_t {
+class restriction {
 	extensions_t<D> xs_;
 	Proj proj_;
 
@@ -117,7 +117,7 @@ class f_extensions_t {
 
 	using difference_type = typename extensions_t<D>::difference_type;
 
-	BOOST_MULTI_HD constexpr f_extensions_t(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
 	using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
 
@@ -138,7 +138,7 @@ class f_extensions_t {
 		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
-			// return f_extensions_t<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
+			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
 			return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
@@ -160,7 +160,7 @@ class f_extensions_t {
 		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
 	};
 
-	auto transposed() const -> f_extensions_t<D, bind_transposed_t > {
+	auto transposed() const -> restriction<D, bind_transposed_t > {
 		return bind_transposed_t{proj_} ^ layout_t<D>(extensions()).transpose().extensions();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
@@ -172,7 +172,7 @@ class f_extensions_t {
 		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
-	constexpr auto partitioned(size_type nn) const noexcept -> f_extensions_t<D + 1, bind_partitioned_t > {
+	constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t > {
 		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
 	}
 
@@ -203,7 +203,7 @@ class f_extensions_t {
 	};
 
 	template<class Proj2>
-	auto element_transformed(Proj2 proj2) const -> f_extensions_t<D, bind_element_transformed_t<Proj2> > {
+	auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2> > {
 		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extensions();
 	}
 
@@ -213,7 +213,7 @@ class f_extensions_t {
 
 		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
-		friend f_extensions_t;
+		friend restriction;
 
 		template<class Fun, class... Args>
 		static constexpr auto apply_(Fun&& fun, Args&&... args) {
@@ -246,7 +246,7 @@ class f_extensions_t {
 		~iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
-			f_extensions_t<D - 1, bind_front_t>,
+			restriction<D - 1, bind_front_t>,
 			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
 
@@ -279,7 +279,7 @@ class f_extensions_t {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return f_extensions_t<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), proj_});
+				return restriction<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), proj_});
 			} else {
 				using std::get;
 				return proj_(get<0>(*it_));
@@ -306,12 +306,12 @@ class f_extensions_t {
 		Proj proj_;
 
 		elements_t(typename extensions_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
-		friend class f_extensions_t;
+		friend class restriction;
 
 	public:
 		auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
 
-		using difference_type = f_extensions_t::difference_type;
+		using difference_type = restriction::difference_type;
 
 		class iterator : ra_iterable<iterator> {
 			typename extensions_t<D>::elements_t::iterator it_;
@@ -484,11 +484,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class Func>
 	friend BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t const& xs) {
-		return f_extensions_t<D, Func>(xs, std::move(fun));
+		return restriction<D, Func>(xs, std::move(fun));
 	}
 	template<class Func>
 	friend constexpr auto operator->*(extensions_t const& xs, Func fun) {
-		return f_extensions_t<D, Func>(xs, std::move(fun));
+		return restriction<D, Func>(xs, std::move(fun));
 	}
 
 	BOOST_MULTI_HD constexpr auto sub() const {
@@ -1025,7 +1025,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	template<class Func>
 	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
-		return f_extensions_t<1, Func>(xs, std::move(fun));
+		return restriction<1, Func>(xs, std::move(fun));
 	}
 
 	using nelems_type = index;
@@ -2091,7 +2091,7 @@ template<>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<class Fun, ::boost::multi::dimensionality_type D>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::f_extensions_t<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::restriction<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
