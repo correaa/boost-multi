@@ -11,6 +11,7 @@
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 
 #include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include <boost/multi/detail/extensions.hpp>
 #include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
 #include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
 #include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
@@ -367,6 +368,20 @@ template<> struct extensions_t<0> : tuple<> {
 	// base_ impl_;
 
  public:
+
+	// template<class OtherExtensions,
+	// 	decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.base()) )* = nullptr
+	// >
+	// // cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	// BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// : base_{other.base()} {}
+
+	template<class OtherExtensions,
+		std::enable_if_t<std::is_same_v<OtherExtensions, multi::detail::extensions<> >,int> =0
+	>
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const&) {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
 	extensions_t(extensions_t const&) = default;
 
 	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
@@ -695,6 +710,13 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	: extensions_t(tup, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
 	// template<std::size_t I, class TU> static constexpr auto get_(TU const& tu) { using std::get; return get<I>(tu); }
+
+	// template<class OtherExtensions,
+	// 	decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extension()) )* = nullptr
+	// >
+	// // cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	// BOOST_MULTI_HD constexpr extensions_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// : base_{other.extension()} {}
 
 	template<class OtherExtensions,
 		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
@@ -1082,7 +1104,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	}
 };
 
-#if 0
+#ifdef _BOOST_MULTI_USE_EXTENSIONS_1D_SPECIALIZATION
 template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
 
