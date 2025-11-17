@@ -144,7 +144,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto ll = [](auto xx, auto yy) {
 			return xx + yy;
 		};
-		multi::f_extensions_t<2, decltype(ll)> const x2df({4, 2}, ll);
+		multi::restriction<2, decltype(ll)> const x2df({4, 2}, ll);
 		(void)x2df;
 		auto val = x2df[3][1];
 		BOOST_TEST(val == 4);
@@ -345,7 +345,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
 
-		// boost::multi::f_extensions_t<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
+		// boost::multi::restriction<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
 		BOOST_TEST( x2df.elements()[0] == 0 );
 		BOOST_TEST( x2df.elements()[1] == 1 );
 		BOOST_TEST( x2df.elements()[2] == 2 );
