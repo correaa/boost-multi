@@ -419,7 +419,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{std::move(base)} {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
 
@@ -946,7 +946,7 @@ struct elements_range_t {
 	template<class OtherRange, decltype(multi::detail::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
-	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{base}, l_{lyt} {}
+	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{std::move(base)}, l_{lyt} {}
 
 	constexpr auto base() -> pointer { return base_; }
 	constexpr auto base() const -> const_pointer { return base_; }
@@ -2495,7 +2495,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
-	: ptr_{ptr}, stride_{stride} {}
+	: ptr_{std::move(ptr)}, stride_{stride} {}
 
  private:
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
