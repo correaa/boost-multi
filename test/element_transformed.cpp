@@ -13,13 +13,13 @@
 
 // IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
 // IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
-#include <complex>  // IWYU pragma: keep  // for complex, operator*, operator+
-#include <utility>  // IWYU pragma: keep  // for declval, forward
-#include <vector>   // IWYU pragma: keep  // for vector
+#include <complex>   // IWYU pragma: keep  // for complex, operator*, operator+
+#include <iterator>  // IWYU pragma: keep  // for weakly_incrementable
+#include <utility>   // IWYU pragma: keep  // for declval, forward
+#include <vector>    // IWYU pragma: keep  // for vector
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // IWYU pragma: keep
-#include <iterator>  // for weakly_incrementable
 #include <ranges>    // IWYU pragma: keep
 #endif
 
