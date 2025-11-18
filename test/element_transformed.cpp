@@ -18,7 +18,7 @@
 #include <utility>   // IWYU pragma: keep  // for declval, forward
 #include <vector>    // IWYU pragma: keep  // for vector
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
 #include <concepts>  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
 #endif
@@ -80,7 +80,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 		BOOST_TEST( conjd_arr[0] == 1.0 - 2.0*I );
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
 		auto conjd_arr_beg = conjd_arr.begin();
 		conjd_arr_beg      = conjd_arr.end();
 
