@@ -9,13 +9,19 @@
 
 #include <boost/multi/array.hpp>  // for transform_ptr, array, subarray
 
-#include <boost/core/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 // IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
 // IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
-#include <complex>  // for complex, operator*, operator+
-#include <utility>  // for declval, forward
-#include <vector>   // for vector
+#include <complex>   // IWYU pragma: keep  // for complex, operator*, operator+
+#include <iterator>  // IWYU pragma: keep  // for weakly_incrementable
+#include <utility>   // IWYU pragma: keep  // for declval, forward
+#include <vector>    // IWYU pragma: keep  // for vector
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
+#include <concepts>  // IWYU pragma: keep
+#include <ranges>    // IWYU pragma: keep
+#endif
 
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
@@ -73,6 +79,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 		BOOST_TEST( conjd_arr[0] == 1.0 - 2.0*I );
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
+		auto conjd_arr_beg = conjd_arr.begin();
+		conjd_arr_beg      = conjd_arr.end();
+
+		static_assert(std::movable<decltype(conjd_arr_beg)>);
+		static_assert(std::weakly_incrementable<decltype(conjd_arr_beg)>);  // NOLINT(misc-include-cleaner)
+		BOOST_TEST( conjd_arr.begin() == std::ranges::begin(conjd_arr) );
+#endif
 
 		// BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
 		// BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);

@@ -281,8 +281,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  public:
 	array_types() = default;  // cppcheck-suppress uninitMemberVar ; base_ not initialized
 
-	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
-	: Layout{lyt}, base_{data} {}
+	// BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
+	// : Layout{lyt}, base_{data} {}
+	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr data)
+	: Layout{lyt}, base_{std::move(data)} {}
 
  protected:
 	template<
@@ -417,7 +419,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{base} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{std::move(base)} {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
 
@@ -800,7 +802,7 @@ struct elements_iterator_t
 	template<typename, class> friend struct elements_range_t;
 
 	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
-	: base_{base}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
+	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
 
  public:
 	elements_iterator_t() = default;
@@ -944,7 +946,7 @@ struct elements_range_t {
 	template<class OtherRange, decltype(multi::detail::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
-	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{base}, l_{lyt} {}
+	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{std::move(base)}, l_{lyt} {}
 
 	constexpr auto base() -> pointer { return base_; }
 	constexpr auto base() const -> const_pointer { return base_; }
@@ -1744,7 +1746,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) const& {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast_<
 			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
 			std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
@@ -1754,7 +1756,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) & {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) & {
 		return static_array_cast_<
 			std::decay_t<std::invoke_result_t<UF const&, element_ref>>,
 			transform_ptr<
@@ -1762,7 +1764,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 				UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const>,
@@ -2450,7 +2452,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	template<
 		bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		>
-	BOOST_MULTI_HD constexpr explicit array_iterator(array_iterator<Element, 1, Ptr, OtherIsConst> const& other)
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr array_iterator(array_iterator<Element, 1, Ptr, OtherIsConst, IsMove, Stride> const& other)
 	: ptr_{other.base()}, stride_{other.stride()} {}
 
 	template<
@@ -2492,7 +2495,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
 	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
-	: ptr_{ptr}, stride_{stride} {}
+	: ptr_{std::move(ptr)}, stride_{stride} {}
 
  private:
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
@@ -3268,7 +3271,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) const& {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast<
 			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
 			std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
@@ -3278,7 +3281,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) & {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) & {
 		return static_array_cast<
 			std::decay_t<std::invoke_result_t<UF const&, element_ref>>,
 			transform_ptr<
@@ -3286,7 +3289,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 				UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,

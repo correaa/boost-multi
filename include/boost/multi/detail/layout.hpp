@@ -131,7 +131,7 @@ class restriction {
 		multi::index idx_;
 		Proj proj_;
 		template<class... Args>
-		constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+		BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 	};
 
 	constexpr auto operator[](index idx) const {
@@ -157,10 +157,10 @@ class restriction {
 	struct bind_transposed_t {
 		Proj proj_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
 	};
 
-	auto transposed() const -> restriction<D, bind_transposed_t > {
+	BOOST_MULTI_HD auto transposed() const -> restriction<D, bind_transposed_t > {
 		return bind_transposed_t{proj_} ^ layout_t<D>(extensions()).transpose().extensions();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
@@ -169,10 +169,10 @@ class restriction {
 		Proj proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
 	};
 
-	constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t > {
+	BOOST_MULTI_HD constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t > {
 		return bind_partitioned_t{proj_, size()/nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
 	}
 
@@ -180,30 +180,30 @@ class restriction {
 		Proj proj_;
 		size_type size_m1;
 		template<class T1, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
 	};
 
-	constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
+	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
 
 	struct bind_rotated_t {
 		Proj proj_;
 		size_type size_;
 		template<class T1, class T2, class... Ts>
-		constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
 	};
 
-	constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
+	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
 
 	template<class Proj2>
 	struct bind_element_transformed_t {
 		Proj proj_;
 		Proj2 proj2_;
 		template<class... Ts>
-		constexpr auto operator()(Ts... rest) const noexcept -> element { return proj2_(proj_(rest...)); }
+		BOOST_MULTI_HD constexpr auto operator()(Ts... rest) const noexcept -> element { return proj2_(proj_(rest...)); }
 	};
 
 	template<class Proj2>
-	auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2> > {
+	BOOST_MULTI_HD auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2> > {
 		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extensions();
 	}
 
@@ -216,7 +216,7 @@ class restriction {
 		friend restriction;
 
 		template<class Fun, class... Args>
-		static constexpr auto apply_(Fun&& fun, Args&&... args) {
+		static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {
 			using std::apply;
 			return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
 		}
@@ -225,18 +225,18 @@ class restriction {
 			multi::index idx_;
 			Proj proj_;
 			template<class... Args>
-			constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+			BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 		};
 
 	 public:
 		constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		// iterator(iterator const& other) = default;
-		constexpr iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		BOOST_MULTI_HD constexpr iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 		iterator(iterator&&) = default;
 
 		auto operator=(iterator&&) -> iterator& = default;
-		auto operator=(iterator const& other) -> iterator& {
+		BOOST_MULTI_HD constexpr auto operator=(iterator const& other) -> iterator& {
 			if(this == &other) { return *this; }
 			// assert(proj_ == other.proj_);
 			it_ = other.it_;
@@ -275,7 +275,7 @@ class restriction {
 		friend auto operator> (iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >  other.it_; }
 		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >  other.it_; }
 
-		constexpr auto operator*() const -> decltype(auto) {
+		BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
@@ -747,7 +747,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto elements() const { return elements_t{*this}; }
 
 	template<class Func>
-	constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
+	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
 
 	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
@@ -829,6 +829,7 @@ template<> struct extensions_t<0> : tuple<> {
 	using element = tuple<>;
 
 	using nelems_type = index;
+	using difference_type = index;
 
 	explicit BOOST_MULTI_HD constexpr extensions_t(tuple<> const& tup)
 	: base_{tup} {}
