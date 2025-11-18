@@ -18,7 +18,7 @@
 #include <vector>   // for vector
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <ranges>      // IWYU pragma: keep
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
@@ -78,14 +78,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 		BOOST_TEST( conjd_arr[0] == 1.0 - 2.0*I );
 
-		#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
 		auto conjd_arr_beg = conjd_arr.begin();
-		conjd_arr_beg = conjd_arr.end();
+		conjd_arr_beg      = conjd_arr.end();
 
-		static_assert( std::movable<decltype(conjd_arr_beg)> );
-		static_assert( std::weakly_incrementable<decltype(conjd_arr_beg)> );
+		static_assert(std::movable<decltype(conjd_arr_beg)>);
+		static_assert(std::weakly_incrementable<decltype(conjd_arr_beg)>);
 		BOOST_TEST( conjd_arr.begin() == std::ranges::begin(conjd_arr) );
-		#endif
+#endif
 
 		// BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
 		// BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
