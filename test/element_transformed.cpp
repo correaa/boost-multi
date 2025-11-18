@@ -19,6 +19,7 @@
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // IWYU pragma: keep
+#include <iterator>  // for weakly_incrementable
 #include <ranges>    // IWYU pragma: keep
 #endif
 
