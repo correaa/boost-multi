@@ -17,9 +17,10 @@
 #endif
 #endif
 
+#include <iterator>     // for size, begin, end  // IWYU pragma: keep
+
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 #include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
-#include <iterator>     // for size, begin, end  // IWYU pragma: keep
 #include <numeric>      // for iota  // IWYU pragma: keep
 #include <type_traits>  // for is_same_v  // IWYU pragma: keep
 #include <utility>      // for pair  // IWYU pragma: keep
@@ -192,6 +193,47 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 #endif
+	{
+		std::vector<std::vector<int>> vv =
+			{
+				{1, 2, 3},
+				{{4, 5}}
+        };
+		BOOST_TEST( vv[0][0] == 1 );
+		BOOST_TEST( vv[0][1] == 2 );
+		BOOST_TEST( vv[1][0] == 4 );
+
+		auto jj = vv | std::views::join;
+		BOOST_TEST( *jj.begin() == 1 );
+
+		BOOST_TEST( *std::next(jj.begin(), 1) == 2 );
+
+		multi::array<int, 2> mm = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		static_assert(std::random_access_iterator<decltype(mm.begin())>);
+		static_assert(std::random_access_iterator<decltype((*mm.begin()).begin())>);
+
+		auto it1 = std::next(mm.begin(), 2);
+		auto it2 = std::next((*mm.begin()).begin(), 2);
+
+		static_assert(std::is_same_v<decltype(mm.begin())::iterator_category, std::random_access_iterator_tag>);
+		static_assert(std::is_same_v<decltype((*mm.begin()).begin())::iterator_category, std::random_access_iterator_tag>);
+
+		auto kk = mm | std::views::join;
+		BOOST_TEST( *kk.begin() == 1 );
+
+		static_assert(std::forward_iterator<decltype(kk.begin())>);
+		BOOST_TEST( *std::next(kk.begin(), 0) == 1 );  // boom!
+		
+		// BOOST_TEST( *std::next(kk.begin(), 1) == 2 );
+		// BOOST_TEST( *std::next(kk.begin(), 2) == 3 );
+		// BOOST_TEST( *std::next(kk.begin(), 3) == 4 );
+		// BOOST_TEST( *std::next(kk.begin(), 4) == 5 );
+		// BOOST_TEST( *std::next(kk.begin(), 5) == 6 );
+	}
 
 	return boost::report_errors();
 }
