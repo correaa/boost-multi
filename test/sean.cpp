@@ -11,11 +11,9 @@
 #include <tuple>      // IWYU pragma: keep  // for std::tuple  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <concepts>     // for constructible_from, defau...
 #include <ranges>       // IWYU pragma: keep
 #include <type_traits>  // for is_constructible_v
-#endif
 #endif
 
 namespace multi = boost::multi;
@@ -34,7 +32,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( AA.extensions() == rst.extensions() );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 		multi::array<int, 2> const BB = rst | std::ranges::views::reverse;
 
 		BOOST_TEST( AA[0] == BB[4] );  // as A[0][0] == B[4][0] && A[0][1] == B[4][1] ...
@@ -42,7 +39,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( AA[2] == BB[2] );  // ...
 		BOOST_TEST( AA[3] == BB[1] );
 		BOOST_TEST( AA[4] == BB[0] );
-#endif
 #endif
 
 		auto rstT = rst.transposed();
@@ -54,7 +50,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( rstT[1][2] == rst[2][1] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 		static_assert(std::weakly_incrementable<decltype(rstT.begin())>);
 		static_assert(std::input_or_output_iterator<decltype(rstT.begin())>);
 		BOOST_TEST( rstT.begin() == std::ranges::begin(rstT) );
@@ -74,7 +69,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto rstTR2 = rstT.reversed();
 
 		BOOST_TEST( rstTR2[3][4] == rstTR[3][4] );
-#endif
 #endif
 	}
 
