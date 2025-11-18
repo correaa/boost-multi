@@ -281,8 +281,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  public:
 	array_types() = default;  // cppcheck-suppress uninitMemberVar ; base_ not initialized
 
-	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
-	: Layout{lyt}, base_{data} {}
+	// BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
+	// : Layout{lyt}, base_{data} {}
+	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr data)
+	: Layout{lyt}, base_{std::move(data)} {}
 
  protected:
 	template<
@@ -1744,7 +1746,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
  public:
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) const& {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast_<
 			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
 			std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
@@ -1754,7 +1756,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) & {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) & {
 		return static_array_cast_<
 			std::decay_t<std::invoke_result_t<UF const&, element_ref>>,
 			transform_ptr<
@@ -1762,7 +1764,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 				UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const>,
@@ -3269,7 +3271,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) const& {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast<
 			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
 			std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
@@ -3279,7 +3281,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) & {
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) & {
 		return static_array_cast<
 			std::decay_t<std::invoke_result_t<UF const&, element_ref>>,
 			transform_ptr<
@@ -3287,7 +3289,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 				UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>>(std::forward<UF>(fun));
 	}
 	template<class UF>
-	constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
+	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
