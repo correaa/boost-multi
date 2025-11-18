@@ -126,7 +126,7 @@ struct transform_ptr {
 #if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 #endif
-#ifdef __NVCC__
+#if defined(__NVCC__) || defined(__NVCOMPILER)
 	constexpr transform_ptr() {}
 #else
 	constexpr transform_ptr();  // : p_{}, f_{} {}
