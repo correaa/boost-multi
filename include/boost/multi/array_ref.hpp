@@ -798,11 +798,18 @@ struct elements_iterator_t
 	using indices_type = typename extensions_t<layout_type::dimensionality>::indices_type;
 	indices_type ns_   = {};
 
+	pointer curr_;
+
 	template<typename, class> friend struct elements_iterator_t;
 	template<typename, class> friend struct elements_range_t;
 
 	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
-	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
+	: base_{std::move(base)},
+	  l_{lyt},
+	  n_{n},
+	  xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)},
+	  curr_{base_ + apply(l_, ns_)}  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	{}
 
  public:
 	elements_iterator_t() = default;
@@ -3888,6 +3895,83 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+template<class /*_Iterator*/>
+struct __segmented_iterator_traits;
+
+_LIBCPP_END_NAMESPACE_STD
+#else
+namespace std {
+template<class /*_Iterator*/>
+struct __segmented_iterator_traits;
+}
+#endif
+
+// clang-format off
+namespace std {
+
+// template <class > struct __segmented_iterator_traits;
+
+template <class ElementPtr>
+struct __segmented_iterator_traits<::boost::multi::elements_iterator_t<ElementPtr**, boost::multi::layout_t<2>>> {
+//   requires(_JoinViewIterator::__is_join_view_iterator && ranges::common_range<typename _JoinViewIterator::_Parent> &&
+//            __has_random_access_iterator_category<typename _JoinViewIterator::_Outer>::value &&
+//            __has_random_access_iterator_category<typename _JoinViewIterator::_Inner>::value)
+// struct __segmented_iterator_traits<_JoinViewIterator> {
+//   using __segment_iterator =
+//       _LIBCPP_NODEBUG __iterator_with_data<typename _JoinViewIterator::_Outer, typename _JoinViewIterator::_Parent*>;
+	// using __segment_iterator =
+	// 	::boost::multi::arra ;
+	// ;
+
+//   using __local_iterator = typename _JoinViewIterator::_Inner;
+	using __local_iterator = ::boost::multi::elements_iterator_t<ElementPtr, ::boost::multi::layout_t<1> >;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+
+//   // TODO: Would it make sense to enable the optimization for other iterator types?
+
+	// static constexpr __segment(::boost::multi::elements_iterator_t<ElementPtr, boost::multi::layout_t<2>> iter) {
+	// 	return ::boost::multi::elements_iterator_t<ElementPtr, boost::multi::layout_t<1>>(
+	// 		pointer base, iter.layout(), difference_type n
+	// 	)
+
+	// 	// return ::boost::multi::elements_iterator_t<ElementPtr, boost::multi::layout_t<1>>
+	// }
+
+//   static constexpr _LIBCPP_HIDE_FROM_ABI __segment_iterator __segment(_JoinViewIterator __iter) {
+//     if (ranges::empty(__iter.__parent_->__base_))
+//       return {};
+//     if (!__iter.__inner_.has_value())
+//       return __segment_iterator(--__iter.__outer_, __iter.__parent_);
+//     return __segment_iterator(__iter.__outer_, __iter.__parent_);
+//   }
+
+//   static constexpr _LIBCPP_HIDE_FROM_ABI __local_iterator __local(_JoinViewIterator __iter) {
+//     if (ranges::empty(__iter.__parent_->__base_))
+//       return {};
+//     if (!__iter.__inner_.has_value())
+//       return ranges::end(*--__iter.__outer_);
+//     return *__iter.__inner_;
+//   }
+
+//   static constexpr _LIBCPP_HIDE_FROM_ABI __local_iterator __begin(__segment_iterator __iter) {
+//     return ranges::begin(*__iter.__get_iter());
+//   }
+
+//   static constexpr _LIBCPP_HIDE_FROM_ABI __local_iterator __end(__segment_iterator __iter) {
+//     return ranges::end(*__iter.__get_iter());
+//   }
+
+//   static constexpr _LIBCPP_HIDE_FROM_ABI _JoinViewIterator
+//   __compose(__segment_iterator __seg_iter, __local_iterator __local_iter) {
+//     return _JoinViewIterator(
+//         std::move(__seg_iter).__get_data(), std::move(__seg_iter).__get_iter(), std::move(__local_iter));
+//   }
+};
+}  // end namespace std
+// clang-format on
 
 #undef BOOST_MULTI_HD
 

@@ -388,5 +388,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( &A2D[_, 1][1] == &A2D[1, 1] ));
 #endif
 	}
+	// {
+	// 	multi::array<int, 2> A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+	// 	auto Aes = A({0, 2}, {0, 2}).elements();
+	// 	BOOST_TEST(sizeof(std::__segmented_iterator_traits<decltype(Aes.begin())>));
+	// }
 	return boost::report_errors();
 }
