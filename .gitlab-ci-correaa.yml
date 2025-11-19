@@ -1270,12 +1270,14 @@ headers:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install pip python3-venv
+    - apt-get -qq update && apt-get -qq install pip python3-venv mcpp
     - mkdir .public
-    - cp include/boost/multi/array.hpp .public/boost-multi.txt
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
+    - quom -I include include/boost/multi/array.hpp boost-multi-amalgamated.hpp
+    - cat boost-multi-amalgamated.hpp
+    - cp -r boost-multi-amalgamated.hpp .public/boost-multi-amalgamated.txt
     - mv .public public
   artifacts:
     paths:
