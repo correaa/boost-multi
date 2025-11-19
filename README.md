@@ -45,9 +45,10 @@ _Multi_ has no external dependencies and can be used immediately after downloadi
 git clone https://gitlab.com/correaa/boost-multi.git
 ```
 
-_Multi_ doesn't require installation since a single header is enough to use the entire core library;
+_Multi_ doesn't require installation since it is a header-only library, and including the main header brings the code library:
 ```c++
-#include <multi/array.hpp>
+// c++ -I multi_root_dir/include main.cpp
+#include <boost/multi/array.hpp>
 
 int main() { ... }
 ```
@@ -80,6 +81,9 @@ FetchContent_MakeAvailable(multi)
 ...
 target_link_libraries(my_target PUBLIC multi)
 ```
+
+Finally, the whole cpre library can be alternatively downloaded as a single amalgamated header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+
 
 ## Support
 
