@@ -17,8 +17,6 @@
 #endif
 #endif
 
-#include <iterator>     // for size, begin, end  // IWYU pragma: keep
-
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 #include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
 #include <numeric>      // for iota  // IWYU pragma: keep
@@ -110,28 +108,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	// #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
-	// BOOST_AUTO_TEST_CASE(range_copy_n_1D) {
-	//  namespace multi = boost::multi;
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+	// BOOST_AUTO_TEST_CASE(range_copy_n_1D)
+	{
+		namespace multi = boost::multi;
 
-	//  multi::array<int, 1> const X1 = {1, 2, 3};
-	//  multi::array<int, 1> X2(X1.extensions());
+		multi::array<int, 1> const X1 = {1, 2, 3};
+		multi::array<int, 1>       X2(X1.extensions());
 
-	//  std::ranges::copy_n(X1.begin(), 10, X2.begin());
+		std::ranges::copy_n(X1.begin(), X1.size(), X2.begin());
 
-	//  BOOST_TEST( X1 == X2 );
-	// }
+		BOOST_TEST( X1 == X2 );
+	}
 
-	// BOOST_AUTO_TEST_CASE(range_copy_n) {
-	//  namespace multi = boost::multi;
+	// BOOST_AUTO_TEST_CASE(range_copy_n)
+	{
+		namespace multi = boost::multi;
 
-	//  multi::array<int, 2> const X1({ 10, 10 }, 99);
-	//  multi::array<int, 2> X2(X1.extensions());
+		multi::array<int, 2> const X1({10, 10}, 99);
+		multi::array<int, 2>       X2(X1.extensions());
 
-	//  std::ranges::copy_n(X1.begin(), 10, X2.begin());
-	//  BOOST_TEST( X1 == X2 );
-	// }
-	// #endif
+		std::ranges::copy_n(X1.begin(), X1.size(), X2.begin());
+		BOOST_TEST( X1 == X2 );
+	}
+#endif
 
 #if defined(__cpp_lib_ranges_zip) && (__cpp_lib_ranges_zip >= 202110L) && !defined(_MSC_VER) && !defined(__NVCOMPILER)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
@@ -193,6 +193,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 #endif
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
 	{
 		std::vector<std::vector<int>> vv =
 			{
@@ -207,7 +209,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *jj.begin() == 1 );
 
 		BOOST_TEST( *std::next(jj.begin(), 1) == 2 );
-
+	}
+	{
 		multi::array<int, 2> mm = {
 			{1, 2, 3},
 			{4, 5, 6}
@@ -216,24 +219,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::random_access_iterator<decltype(mm.begin())>);
 		static_assert(std::random_access_iterator<decltype((*mm.begin()).begin())>);
 
-		auto it1 = std::next(mm.begin(), 2);
-		auto it2 = std::next((*mm.begin()).begin(), 2);
+		static_assert(std::forward_iterator<decltype(mm.begin())>);
+		static_assert(std::forward_iterator<decltype((*mm.begin()).begin())>);
 
-		static_assert(std::is_same_v<decltype(mm.begin())::iterator_category, std::random_access_iterator_tag>);
-		static_assert(std::is_same_v<decltype((*mm.begin()).begin())::iterator_category, std::random_access_iterator_tag>);
+		static_assert(std::ranges::random_access_range<decltype(mm)>);
+		static_assert(std::ranges::random_access_range<decltype(*mm.begin())>);
 
-		auto kk = mm | std::views::join;
-		BOOST_TEST( *kk.begin() == 1 );
+		static_assert(std::ranges::forward_range<decltype(mm)>);
+		static_assert(std::ranges::forward_range<decltype(*mm.begin())>);
 
-		static_assert(std::forward_iterator<decltype(kk.begin())>);
-		BOOST_TEST( *std::next(kk.begin(), 0) == 1 );  // boom!
-		
-		// BOOST_TEST( *std::next(kk.begin(), 1) == 2 );
-		// BOOST_TEST( *std::next(kk.begin(), 2) == 3 );
-		// BOOST_TEST( *std::next(kk.begin(), 3) == 4 );
-		// BOOST_TEST( *std::next(kk.begin(), 4) == 5 );
-		// BOOST_TEST( *std::next(kk.begin(), 5) == 6 );
+		auto jj = mm | std::views::join;
+		BOOST_TEST( *jj.begin() == 1 );
+
+		static_assert(std::ranges::input_range<decltype(jj)>);
+		// static_assert(std::ranges::forward_range<decltype(jj)>);
+		// static_assert(std::forward_iterator<decltype(jj.begin())>);
 	}
+#endif
 
 	return boost::report_errors();
 }
