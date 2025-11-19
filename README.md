@@ -37,6 +37,7 @@ int main() {
 ## Try Multi
 
 Before installing the library, you can try it [online](https://godbolt.org/z/dvacqK8jE) through the Godbolt's Compiler Explorer.
+The core of the library can be downloaded, to try locally, as a single amalgamated header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp/
 
 ## Install Multi
 
@@ -81,8 +82,6 @@ FetchContent_MakeAvailable(multi)
 ...
 target_link_libraries(my_target PUBLIC multi)
 ```
-
-Finally, the whole cpre library can be alternatively downloaded as a single amalgamated header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
 
 ## Support
