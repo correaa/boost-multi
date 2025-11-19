@@ -194,7 +194,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 #endif
 
-#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 	{
 		std::vector<std::vector<int>> vv =
 			{
