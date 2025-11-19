@@ -1251,11 +1251,10 @@ pages:
     - source .venv/bin/activate
     - pip install quom
     - quom include/boost/multi/array.hpp boost-multi.hpp
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
     - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
     - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
     - date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
-    - git log | head -12 | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
+    # - git log | head -12 | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
     - cat boost-multi.hpp >> .public/boost-multi.hpp
     - cat .public/boost-multi.hpp
     # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
