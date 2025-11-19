@@ -11,10 +11,8 @@
 #include <iterator>   // IWYU pragma: keep
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <concepts>  // for totally_ordered
 #include <ranges>    // IWYU pragma: keep
-#endif
 #endif
 
 #include <tuple>        // IWYU pragma: keep
@@ -479,7 +477,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D.elements()[4] == v1D[4] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
 		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
 		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
@@ -510,7 +507,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1Dr[0] == v1D[9] );
 		BOOST_TEST( v1Dr[9] == v1D[0] );
 #endif
-#endif
 	}
 	{
 		auto xs2D = multi::extensions_t<2>(5, 7);
@@ -535,7 +531,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// multi::detail::what(*xs3D.begin());
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 		using xs2D_iterator = multi::extensions_t<2>::iterator;
 
 		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
@@ -573,7 +568,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs2Dr[xs2D.size() - 1] == xs2D[0] );
 		BOOST_TEST( xs2Dr[0] == xs2D[xs2D.size() - 1] );
 #endif
-#endif
 	}
 	{
 		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
@@ -581,7 +575,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto front = *v2D.begin();
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-#if !defined(__clang_major__) || (__clang_major__ != 16)
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
 		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
 
@@ -612,7 +605,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			BOOST_TEST( std::ranges::end(matrix[0]) == matrix[0].end() );
 		}
 #endif
-#endif
 	}
 	{
 		multi::extensions_t<2> const x2D(6, 5);
@@ -623,5 +615,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<1>(p3D).size() == 3 );
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
+
 	return boost::report_errors();
 }
