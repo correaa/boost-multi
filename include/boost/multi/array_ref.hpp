@@ -8,6 +8,7 @@
 #include <boost/multi/detail/tuple_zip.hpp>
 #include <boost/multi/utility.hpp>  // IWYU pragma: export
 
+#include <cmath>
 #include <type_traits>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
@@ -3888,6 +3889,59 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+namespace boost::multi::elementwise_expr {
+#if __cplusplus >= 202302L
+
+template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
+constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
+	return [fun = std::forward<F>(fun), &arr, &arrs...](auto is) { return fun(arr[is], arrs[is]...); } ^ multi::extensions_t<1>({arr.extension()});
+}
+
+template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<Arrays>::element>()...))>
+constexpr auto apply(F&& fun, A&& arr, Arrays&&... arrs) {
+	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
+}
+
+template<class A, class B>
+constexpr auto operator+(A&& a, B&& b) { return elementwise_expr::apply(std::plus<>{}, a, b); }
+
+template<class A, class B>
+constexpr auto operator-(A&& a, B&& b) { return elementwise_expr::apply(std::minus<>{}, a, b); }
+
+template<class A>
+constexpr auto operator-(A&& a) { return elementwise_expr::apply(std::negate<>{}, a); }
+
+template<class A, class B>
+constexpr auto operator*(A&& a, B&& b) { return elementwise_expr::apply(std::multiplies<>{}, a, b); }
+
+template<class A, class B>
+constexpr auto operator/(A&& a, B&& b) { return elementwise_expr::apply(std::divides<>{}, a, b); }
+
+template<class A, class B>
+constexpr auto operator&&(A&& a, B&& b) { return elementwise_expr::apply(std::logical_and<>{}, a, b); }
+
+template<class A, class B>
+constexpr auto operator||(A&& a, B&& b) { return elementwise_expr::apply(std::logical_or<>{}, a, b); }
+
+template<class A>
+constexpr auto exp(A&& a) {
+	return [&a](auto... is) {
+		using ::std::exp;
+		return exp(a[is...]);
+	} ^ a.extensions();
+}
+
+template<class A>
+constexpr auto abs(A&& a) {
+	return [&a](auto... is) {
+		using ::std::abs;
+		return abs(a[is...]);
+	} ^ a.extensions();
+}
+
+#endif
+}  // end namespace boost::multi::elementwise_expr
 
 #undef BOOST_MULTI_HD
 
