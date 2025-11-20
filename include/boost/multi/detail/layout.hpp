@@ -145,6 +145,19 @@ class restriction {
 		}
 	}
 
+ private:
+	template<class Fun, class... Args>
+	static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {
+		using std::apply;
+		return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
+	}
+
+ public:
+	using reference = std::conditional_t<(D != 1),
+		restriction<D - 1, bind_front_t>,
+		decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+	>;
+
 	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
 	constexpr auto operator[](index idx, Indices... rest) const {
@@ -215,12 +228,6 @@ class restriction {
 
 		friend restriction;
 
-		template<class Fun, class... Args>
-		static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {
-			using std::apply;
-			return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
-		}
-
 		struct bind_front_t {
 			multi::index idx_;
 			Proj proj_;
@@ -246,6 +253,11 @@ class restriction {
 		~iterator() = default;
 
 		using value_type = std::conditional_t<(D != 1),
+			restriction<D - 1, bind_front_t>,
+			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+		>;
+
+		using reference = std::conditional_t<(D != 1),
 			restriction<D - 1, bind_front_t>,
 			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
