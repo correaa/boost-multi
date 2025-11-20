@@ -245,9 +245,9 @@ class restriction {
 		BOOST_MULTI_HD constexpr auto operator()(restriction::index idx) const noexcept { return proj2_(proj_[idx]); }
 	};
 
-	template<class Proj2>
+	template<class Proj2, dimensionality_type One = 1  /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2> > {
-		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extensions_t<1>({extension()});
+		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extensions_t<One>({extension()});
 	}
 
 	class iterator {
