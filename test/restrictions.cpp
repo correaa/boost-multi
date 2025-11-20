@@ -125,6 +125,10 @@ int main() {
 		auto iotax4 = iota.repeated(4);
 
 		BOOST_TEST( iotax4.size() == 4 );
+
+		BOOST_TEST( get<0>(iotax4.sizes()) == 4 );
+		BOOST_TEST( get<1>(iotax4.sizes()) == 5 );
+
 		BOOST_TEST( iotax4[0][0] == 0 );
 		BOOST_TEST( iotax4[1][0] == 0 );
 		BOOST_TEST( iotax4[2][0] == 0 );
