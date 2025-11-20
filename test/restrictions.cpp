@@ -11,17 +11,17 @@
 
 #if __cplusplus >= 202302L
 
-#include <algorithm>  // IWYU pragma: keep  // for std::equal
-#include <cmath>      // for std::abs
-#include <iterator>   // IWYU pragma: keep
-#include <tuple>      // for std::get  // NOLINT(misc-include-cleaner)
-
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <algorithm>   // IWYU pragma: keep  // for std::equal
+#include <cmath>       // for std::abs
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
+#include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <ranges>      // IWYU pragma: keep
+#include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <ranges>    // IWYU pragma: keep
 #endif
 
 #include <boost/multi/array.hpp>
@@ -96,23 +96,45 @@ auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensio
 }  // namespace lazy
 
 int main() {
-	auto const A = multi::array<int, 2>{
-		{0, 1, 2},
-		{3, 4, 5}
-	};
-	auto const B = multi::array<int, 2>{
-		{ 0, 10, 20},
-		{30, 40, 50}
-	};
+	{
+		auto const A = multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		auto const B = multi::array<int, 2>{
+			{ 0, 10, 20},
+			{30, 40, 50}
+		};
 
-	using lazy::operator*;
-	using lazy::elementwise::operator+;
-	using lazy::elementwise::operator*;
+		using lazy::operator*;
+		using lazy::elementwise::operator+;
+		using lazy::elementwise::operator*;
 
-	multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
+		multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
 
-	std::cout << "C11 = " << C[1][1] << std::endl;
-	BOOST_TEST( C[1][1] == 4 + 4*40 + 2*40 );
+		std::cout << "C11 = " << C[1][1] << std::endl;
+		BOOST_TEST( C[1][1] == 4 + 4*40 + 2*40 );
+	}
+	{
+		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
+
+		BOOST_TEST( iota.size() == 5 );
+		BOOST_TEST( iota[0] == 0 );
+		BOOST_TEST( iota[4] == 4 );
+
+		auto iotax4 = iota.repeated(4);
+
+		BOOST_TEST( iotax4.size() == 4 );
+		BOOST_TEST( iotax4[0][0] == 0 );
+		BOOST_TEST( iotax4[1][0] == 0 );
+		BOOST_TEST( iotax4[2][0] == 0 );
+		BOOST_TEST( iotax4[3][0] == 0 );
+
+		BOOST_TEST( iotax4[0][1] == 1 );
+		BOOST_TEST( iotax4[1][1] == 1 );
+		BOOST_TEST( iotax4[2][1] == 1 );
+		BOOST_TEST( iotax4[3][1] == 1 );
+	}
 
 	return boost::report_errors();
 }
