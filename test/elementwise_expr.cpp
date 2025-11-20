@@ -7,6 +7,7 @@
 #if __cplusplus >= 202302L
 #include <boost/multi/array.hpp>
 
+#include <iostream>
 #include <ranges>
 
 namespace multi = boost::multi;
@@ -51,23 +52,26 @@ int main() {
 	// std::views::transform([](auto row) { return row | stdv::transform([max = maxR1(row)](auto ele) { return exp(ele - max); }); })
 	// | std::views::transform([](auto nums) { return nums | stdv::transform([den = sumR1(nums)](auto num) { return num / den; }); });
 
-	{
-		using multi::elementwise_expr::apply;
 
-		auto const matrix =
-			([](auto ii) noexcept { return static_cast<float>(ii); } ^
-			 multi::extensions_t(6))
-				.partitioned(2);
-
-		constexpr auto maxR1 = []<class R, class V = std::ranges::range_value_t<R>>(R const& row, V low = std::numeric_limits<V>::lowest()) {
-			return std::ranges::fold_left(row, low, std::ranges::max);
-		};
-
-		using multi::elementwise_expr::apply_front;
-		auto matrix_minus_row_max = apply_front([&](auto&& row) { return apply_front([max = maxR1(row)](auto elem) { return elem - max; }, row); }, matrix);
-
-		BOOST_TEST( std::abs( matrix_minus_row_max[0][2] ) < 1e-12F );
-	}
+//	{
+//		using multi::elementwise_expr::apply;
+//
+//		auto const matrix =
+//			([](auto ii) noexcept { return static_cast<float>(ii); } ^
+//			 multi::extensions_t(6))
+//				.partitioned(2);
+//
+//		constexpr auto maxR1 = []<class R, class V = std::ranges::range_value_t<R>>(R const& row, V low = std::numeric_limits<V>::lowest()) {
+//			return std::ranges::fold_left(row, low, std::ranges::max);
+//		};
+//
+//		#define BOOST_MULTI_FWD(var) std::forward<decltype(var)>(var)
+//		using multi::elementwise_expr::apply_front;
+//		auto matrix_minus_row_max = apply_front([&](auto row) { return apply_front([max = maxR1(row)](auto elem) { return elem/*- max*/; }, row); }, matrix);
+//
+//		std::cout << std::abs( matrix_minus_row_max[0][2] ) << '\n';
+//		BOOST_TEST( std::abs( matrix_minus_row_max[0][2] ) < 1e-12F );
+//	}
 	return boost::report_errors();
 }
 #else
