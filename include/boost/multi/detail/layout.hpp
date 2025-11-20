@@ -178,6 +178,16 @@ class restriction {
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
+	struct bind_repeat_t {
+		Proj proj_;
+		template<class... Ts>
+		BOOST_MULTI_HD constexpr auto operator()(multi::index /*unused*/, Ts... rest) const noexcept -> element { return proj_(rest...); }
+	};
+
+	BOOST_MULTI_HD auto repeated(multi::size_t n) const -> restriction<D + 1, bind_repeat_t> {
+		return bind_repeat_t{proj_} ^ (n*extensions());
+	}
+
 	struct bind_partitioned_t {
 		Proj proj_;
 		size_type nn_;
