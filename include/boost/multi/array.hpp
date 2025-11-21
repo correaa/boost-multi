@@ -319,7 +319,7 @@ struct static_array                                                             
 		auto [is, js] = this->extensions();
 		{
 			index const i        = 0;
-			auto  inner_it = std::ranges::begin(outer_ref);
+			auto        inner_it = std::ranges::begin(outer_ref);
 			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
 				(*this)[i][j] = *inner_it;  // rng[i][j];
 				++inner_it;
