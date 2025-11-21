@@ -113,6 +113,16 @@ namespace boost::multi {
 template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
 struct const_subarray;
 
+namespace detail {
+template<class T, dimensionality_type D, class... Ts>
+auto is_const_subarray_aux(multi::const_subarray<T, D, Ts...> const&) -> std::true_type;
+auto is_const_subarray_aux(...) -> std::false_type;
+}
+
+template<class T> struct is_const_subarray : decltype(detail::is_const_subarray_aux(std::declval<T>())){};
+template<class T>
+constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
@@ -987,11 +997,18 @@ struct elements_range_t {
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t&&)      = delete;
 
-	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
+	// template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
+	// 	return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive bug in mull-18
+	// }
+	// template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
+	// 	// if(is_empty() && other.is_empty()) { return false; }
+	// 	return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
+	// }
+
+	template<class Range> auto operator==(Range const& other) const -> bool {
 		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive bug in mull-18
 	}
-	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
-		// if(is_empty() && other.is_empty()) { return false; }
+	template<class Range> auto operator!=(Range const& other) const -> bool {
 		return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
 	}
 
@@ -1171,7 +1188,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::reference;
 
-	using default_allocator_type = typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type;
+	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
 
 	constexpr auto get_allocator() const -> default_allocator_type {
 		using multi::get_allocator;
@@ -3246,6 +3263,16 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	friend constexpr auto operator<=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(self, other) || self == other; }
 	friend constexpr auto operator>=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
+
+	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	friend constexpr auto operator==(const_subarray const& self, Range const& other) -> bool {
+		return self.extensions() == other.extensions() && self.elements() == other.elements();
+	}
+
+	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	friend constexpr auto operator!=(const_subarray const& self, Range const& other) -> bool {
+		return self.extensions() != other.extensions() || self.elements() == other.elements();
+	}
 
  private:
 	template<class A1, class A2>
