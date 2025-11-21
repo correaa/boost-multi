@@ -3890,7 +3890,8 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 #pragma warning(pop)
 #endif
 
-namespace boost::multi::elementwise_expr {
+namespace boost::multi {
+namespace elementwise_expr {
 #if __cplusplus >= 202302L
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
@@ -3898,16 +3899,53 @@ constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
 	return [fun = std::forward<F>(fun), &arr, &arrs...](auto is) { return fun(arr[is], arrs[is]...); } ^ multi::extensions_t<1>({arr.extension()});
 }
 
-template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<Arrays>::element>()...))>
-constexpr auto apply(F&& fun, A&& arr, Arrays&&... arrs) {
-	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
+template<class F, class... A> struct apply_bind_t;
+
+template<class F, class A>
+struct apply_bind_t<F, A> {
+	F fun_;
+	A a_;
+
+	constexpr auto operator()(auto... is) const {
+		return fun_(a_[is...]);  // arrs[is...]...);
+	}
+};
+
+template<class F, class A, class B>
+struct apply_bind_t<F, A, B> {
+	F fun_;
+	A a_;
+	B b_;
+
+	constexpr auto operator()(auto... is) const {
+		return fun_(a_[is...], b_[is...]);  // arrs[is...]...);
+	}
+};
+
+template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
+constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
+	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{fun, arr, arrs...} ^ arr.extensions();
+	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
+}
+
+template<class F, class A, class B, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<B>::element>()))>
+constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
+	if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
+		return apply_broadcast(fun, a.repeated(b.size()), b);
+	} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
+		return apply_broadcast(fun, a, b.repeated(a.size()));
+	} else {
+		return apply(fun, a, b);
+	}
 }
 
 template<class A, class B>
 constexpr auto operator+(A&& a, B&& b) { return elementwise_expr::apply(std::plus<>{}, a, b); }
 
 template<class A, class B>
-constexpr auto operator-(A&& a, B&& b) { return elementwise_expr::apply(std::minus<>{}, a, b); }
+constexpr auto operator-(A&& a, B&& b) {
+	return elementwise_expr::apply_broadcast(std::minus<>{}, a, b);
+}
 
 template<class A>
 constexpr auto operator-(A&& a) { return elementwise_expr::apply(std::negate<>{}, a); }
@@ -3916,7 +3954,9 @@ template<class A, class B>
 constexpr auto operator*(A&& a, B&& b) { return elementwise_expr::apply(std::multiplies<>{}, a, b); }
 
 template<class A, class B>
-constexpr auto operator/(A&& a, B&& b) { return elementwise_expr::apply(std::divides<>{}, a, b); }
+constexpr auto operator/(A&& a, B&& b) {
+	return elementwise_expr::apply_broadcast(std::divides<>{}, a, b);
+}
 
 template<class A, class B>
 constexpr auto operator&&(A&& a, B&& b) { return elementwise_expr::apply(std::logical_and<>{}, a, b); }
@@ -3924,12 +3964,33 @@ constexpr auto operator&&(A&& a, B&& b) { return elementwise_expr::apply(std::lo
 template<class A, class B>
 constexpr auto operator||(A&& a, B&& b) { return elementwise_expr::apply(std::logical_or<>{}, a, b); }
 
+template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>
+constexpr auto operator|(A&& a, F fun) {
+	return a.element_transformed(fun);
+}
+
+template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std::declval<typename std::decay_t<A>::reference>()))*> = nullptr>
+constexpr auto operator|(A&& a, F fun) {
+	return a.transformed(fun);
+}
+
+template<class A>
+struct exp_bind_t {
+	A a_;
+
+	constexpr auto operator()(auto... is) const {
+		using ::std::exp;
+		return exp(a_[is...]);
+	}
+};
+
 template<class A>
 constexpr auto exp(A&& a) {
-	return [&a](auto... is) {
-		using ::std::exp;
-		return exp(a[is...]);
-	} ^ a.extensions();
+	// return [&a](auto... is) {
+	// 	using ::std::exp;
+	// 	return exp(a[is...]);
+	// } ^ a.extensions();
+	return exp_bind_t<A>{a} ^ a.extensions();
 }
 
 template<class A>
@@ -3941,7 +4002,10 @@ constexpr auto abs(A&& a) {
 }
 
 #endif
-}  // end namespace boost::multi::elementwise_expr
+}  // end namespace elementwise_expr
+
+namespace broadcast = elementwise_expr;
+}  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
 

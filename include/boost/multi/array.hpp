@@ -282,6 +282,22 @@ struct static_array                                                             
 #endif
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
+ private:
+	void extent_(typename static_array::extensions_type const& extensions) {
+		auto new_layout = typename static_array::layout_t{extensions};
+		if(new_layout.num_elements() == 0) {
+			return;
+		}
+		this->layout_mutable() = new_layout;  // typename array::layout_t{extensions};
+		this->base_            = this->static_array::array_alloc::allocate(
+            static_cast<typename multi::allocator_traits<typename static_array::allocator_type>::size_type>(
+                new_layout.num_elements()
+            ),
+            this->data_elements()  // used as hint
+        );
+	}
+
+ public:
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of<static_array, std::decay_t<Range>>{}>,
 		class = decltype(std::declval<Range const&>().begin()),
@@ -289,20 +305,38 @@ struct static_array                                                             
 		// class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T> explicit static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
-	: static_array({static_cast<multi::size_t>(rng.size()), static_cast<multi::size_t>((*rng.begin()).size())}) {
+	: static_array() {
+		if(rng.size() == 0) {
+			return;
+		}
+		auto outer_it = std::ranges::begin(rng);
 		static_assert(D == 2);
-		// reextent({rng.size(), rng.begin()->size()});
+
+		auto const& outer_ref   = *outer_it;
+		auto        common_size = static_cast<size_type>(outer_ref.size());
+		extent_({static_cast<size_type>(rng.size()), common_size});
+
 		auto [is, js] = this->extensions();
-		auto out1     = std::ranges::begin(rng);
-		for(auto i : is) {
-			assert((*out1).size() == (*rng.begin()).size());
-			auto const& out1_range = *out1;
-			auto        out2       = std::ranges::begin(out1_range);
-			for(auto j : js) {          // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
-				(*this)[i][j] = *out2;  // rng[i][j];
-				++out2;
+		{
+			index const i        = 0;
+			auto        inner_it = std::ranges::begin(outer_ref);
+			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
+				(*this)[i][j] = *inner_it;  // rng[i][j];
+				++inner_it;
 			}
-			++out1;
+			++outer_it;
+		}
+
+		for(index i = 1; i != is.last(); ++i) {
+			auto const& outer_ref2 = *outer_it;
+			assert(outer_ref2.size() == common_size);
+
+			auto inner_it = std::ranges::begin(outer_ref2);
+			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
+				(*this)[i][j] = *inner_it;  // rng[i][j];
+				++inner_it;
+			}
+			++outer_it;
 		}
 	}
 #endif
@@ -1225,27 +1259,14 @@ struct array : static_array<T, D, Alloc> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
-	// auto move() & -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-	//  subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>>
-	//      ret = multi::static_array_cast<typename array::element_type, multi::move_ptr<typename array::element_type>>(*this);
-
-	//  layout_t<D>::operator=({});
-
-	//  assert(this->stride() != 0);
-	//  return ret;
-	// }
-	// friend auto move(array& self) -> subarray<typename array::element_type, D, multi::move_ptr<typename array::element_type>> {
-	//  return self.move();
-	// }
-
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	// typename array::allocator_type
 	array(array&& other, Alloc const& alloc) noexcept
 	: static_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);
 	}
+
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
 		assert(this->stride() != 0);
 	}

@@ -7,6 +7,10 @@
 // #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
 // #endif
 
+#if defined(__GNUC__) && (__GNUC__ == 15)
+// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #if __cplusplus >= 202302L
@@ -115,6 +119,8 @@ int main() {
 		std::cout << "C11 = " << C[1][1] << std::endl;
 		BOOST_TEST( C[1][1] == 4 + 4*40 + 2*40 );
 	}
+
+	// test repeat
 	{
 		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
 
@@ -138,6 +144,62 @@ int main() {
 		BOOST_TEST( iotax4[1][1] == 1 );
 		BOOST_TEST( iotax4[2][1] == 1 );
 		BOOST_TEST( iotax4[3][1] == 1 );
+	}
+
+	// subtract max
+	{
+		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(6);
+		auto mat  = iota.partitioned(2);
+
+		BOOST_TEST( mat.size() == 2 );
+		BOOST_TEST( mat[0].size() == 3 );
+
+		BOOST_TEST( mat[0][0] == 0 );
+		BOOST_TEST( mat[0][1] == 1 );
+		BOOST_TEST( mat[0][2] == 2 );
+
+		BOOST_TEST( mat[1][0] == 3 );
+		BOOST_TEST( mat[1][1] == 4 );
+		BOOST_TEST( mat[1][2] == 5 );
+
+		auto max_per_row = mat.transformed(maxR1);
+
+		BOOST_TEST( max_per_row.num_elements() == 2 );
+		BOOST_TEST( max_per_row.size() == 2 );
+
+		auto max_per_row_repeat   = max_per_row.repeated(3);
+		auto max_per_row_repeat_T = max_per_row_repeat.transposed();
+
+		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
+
+		using multi::elementwise_expr::operator-;
+		auto subtract = mat - max_per_row_repeat_T;
+		BOOST_TEST( subtract[0][0] == -2 );
+		BOOST_TEST( subtract[0][1] == -1 );
+		BOOST_TEST( subtract[0][2] ==  0 );
+
+		BOOST_TEST( subtract[1][0] == -2 );
+		BOOST_TEST( subtract[1][1] == -1 );
+		BOOST_TEST( subtract[1][2] ==  0 );
+
+		using multi::elementwise_expr::exp;
+		auto subtract_exp = exp(subtract);
+
+		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
+
+		printR2("partial", exp(~(~mat - mat.transformed(maxR1))));
+
+		auto&& exp_m_max = exp(mat - ~mat.transformed(maxR1).repeated(3));
+		printR2("partial", exp_m_max);
+
+		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
+		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
+		using multi::broadcast::operator/;
+		using multi::broadcast::operator|;
+		auto x = exp(~mat - (mat | maxR1));
+		printR2("final", ~(x / ((~x) | sumR1)));
+
+		BOOST_TEST( std::abs((~(x / ((~x) | sumR1)))[1][1] - 0.244728) < 1e-3 );
 	}
 
 	return boost::report_errors();
