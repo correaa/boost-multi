@@ -313,8 +313,8 @@ struct static_array                                                             
 		static_assert(D == 2);
 
 		auto const& outer_ref   = *outer_it;
-		auto        common_size = outer_ref.size();
-		extent_({rng.size(), common_size});
+		auto        common_size = static_cast<size_type>(outer_ref.size());
+		extent_({static_cast<size_type>(rng.size()), common_size});
 
 		auto [is, js] = this->extensions();
 		{
