@@ -3918,7 +3918,43 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 #endif
 
 namespace boost::multi {
+
+template<class A> struct bind_category {
+	using type = A;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::array<T, D, Ts...>> {
+	using type = ::boost::multi::array<T, D, Ts...>;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::array<T, D, Ts...>&> {
+	using type = ::boost::multi::array<T, D, Ts...>&;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::array<T, D, Ts...> const&> {
+	using type = ::boost::multi::array<T, D, Ts...> const&;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::subarray<T, D, Ts...>> {
+	using type = ::boost::multi::subarray<T, D, Ts...>;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::subarray<T, D, Ts...>&> {
+	using type = ::boost::multi::subarray<T, D, Ts...>&;
+};
+
+template<class T, dimensionality_type D, class... Ts>
+struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
+	using type = ::boost::multi::subarray<T, D, Ts...> const&;
+};
+
 namespace elementwise_expr {
+
 #if __cplusplus >= 202302L
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
@@ -3962,7 +3998,7 @@ constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
 	} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
 		return apply_broadcast(fun, a, b.repeated(a.size()));
 	} else {
-		return apply(fun, a, b);
+		return apply(fun, std::forward<A>(a), std::forward<B>(b));
 	}
 }
 
@@ -4017,7 +4053,7 @@ constexpr auto exp(A&& a) {
 	// 	using ::std::exp;
 	// 	return exp(a[is...]);
 	// } ^ a.extensions();
-	return exp_bind_t<A>{a} ^ a.extensions();
+	return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(a)} ^ a.extensions();
 }
 
 template<class A>

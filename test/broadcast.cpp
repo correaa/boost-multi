@@ -39,6 +39,20 @@ namespace multi = boost::multi;
 
 int main() {
 	{
+		multi::array a = {1.0, 2.0, 3.0};
+
+		using multi::broadcast::exp;
+		auto c = exp(std::move(a));
+
+		// multi::detail::what(c);
+		static_assert(std::is_copy_constructible_v<decltype(c)>);
+
+		// printR2("c", c);
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
 		multi::array a = {1, 2, 3};
 		multi::array b = {4, 5, 6};
 
