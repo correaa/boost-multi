@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 // IWYU pragma: no_include <algorithm>  // for copy  // bug in iwyu 14.0.6? with GNU stdlib
-#include <algorithm>         // for std::copy  // IWYU pragma: keep
+#include <algorithm>         // IWYU pragma: keep
 #include <array>             // for array
 #include <complex>           // for operator*, operator+, complex
 #include <initializer_list>  // for initializer_list, begin, end
