@@ -100,8 +100,41 @@ struct extensions_t;
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
+namespace detail {
+struct non_copyable_base {
+	non_copyable_base(non_copyable_base const&) = delete;
+	non_copyable_base(non_copyable_base&&) = default;
+
+	non_copyable_base() = default;
+
+	auto operator=(non_copyable_base const&) -> non_copyable_base& = default;
+	auto operator=(non_copyable_base&&) -> non_copyable_base& = default;
+
+	~non_copyable_base() = default;
+};
+
+struct copyable_base {
+	copyable_base(copyable_base const&) = default;
+	copyable_base(copyable_base&&) = default;
+
+	copyable_base() = default;
+
+	auto operator=(copyable_base const&) -> copyable_base& = default;
+	auto operator=(copyable_base&&) -> copyable_base& = default;
+
+	~copyable_base() = default;
+};
+}  // end namespace detail
+
 template<dimensionality_type D, class Proj>
-class restriction {
+class restriction
+:
+	std::conditional_t<
+		std::is_reference_v<Proj>,
+		detail::non_copyable_base,
+		detail::copyable_base
+	>
+{
 	extensions_t<D> xs_;
 	Proj proj_;
 
@@ -1064,9 +1097,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
 	}
 
-	template<class Func>
-	friend constexpr auto operator^(Func fun, extensions_t const& xs) {
-		return restriction<1, Func>(xs, std::move(fun));
+	template<class Fun>
+	friend constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+		return restriction<1, Fun>(xs, std::forward<Fun>(fun));
 	}
 
 	using nelems_type = index;
