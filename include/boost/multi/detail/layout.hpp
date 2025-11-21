@@ -116,6 +116,7 @@ class restriction {
 	constexpr static dimensionality_type rank_v = D;
 
 	using difference_type = typename extensions_t<D>::difference_type;
+	using index = typename extensions_t<D>::index;
 
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
@@ -139,7 +140,8 @@ class restriction {
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
-			return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
+			return bind_front_t{idx, proj_} ^ extensions_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
@@ -173,10 +175,12 @@ class restriction {
 		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
 	};
 
-	BOOST_MULTI_HD auto transposed() const -> restriction<D, bind_transposed_t > {
+	BOOST_MULTI_HD constexpr auto transposed() const -> restriction<D, bind_transposed_t > {
 		return bind_transposed_t{proj_} ^ layout_t<D>(extensions()).transpose().extensions();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
+
+	BOOST_MULTI_HD constexpr auto operator~() const { return transposed(); }
 
 	struct bind_repeat_t {
 		Proj proj_;
@@ -228,6 +232,22 @@ class restriction {
 	template<class Proj2>
 	BOOST_MULTI_HD auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2> > {
 		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extensions();
+	}
+
+	template<class Proj2>
+	class bind_transform_t {
+		restriction proj_;
+		Proj2 proj2_;
+		friend restriction;
+		bind_transform_t(restriction proj, Proj2 proj2) : proj_{std::move(proj)}, proj2_{std::move(proj2)} {}
+
+	 public:
+		BOOST_MULTI_HD constexpr auto operator()(restriction::index idx) const noexcept { return proj2_(proj_[idx]); }
+	};
+
+	template<class Proj2, dimensionality_type One = 1  /*workaround for MSVC*/>
+	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2> > {
+		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extensions_t<One>({extension()});
 	}
 
 	class iterator {
@@ -595,9 +615,6 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return static_cast<base_ const&>(*this)[idx];
 	}
 
-	// template<class... Indices>
-	// constexpr auto operator[]()
-
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D - 1>{this->base().tail()}.next_canonical(rest...)) {
@@ -911,6 +928,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using size_type = multi::index_extension::size_type;
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
+	using index = multi::index;
 
 	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
