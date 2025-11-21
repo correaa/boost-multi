@@ -7,8 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// IWYU pragma: no_include <algorithm>  // for copy  // bug in iwyu 14.0.6? with GNU stdlib
-#include <algorithm>         // IWYU pragma: keep
+#include <algorithm>         // IWYU pragma: keep  // for copy
 #include <array>             // for array
 #include <complex>           // for operator*, operator+, complex
 #include <initializer_list>  // for initializer_list, begin, end
@@ -20,10 +19,6 @@
 namespace multi = boost::multi;
 
 namespace boost::multi {
-// template<class T>
-// auto operator+(std::initializer_list<T> il) {
-// 	return multi::array<T, 1>(il);
-// }
 
 template<class T>
 auto operator+(std::initializer_list<T> il) {  // NOLINT(misc-use-anonymous-namespace,misc-use-internal-linkage)
