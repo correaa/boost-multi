@@ -654,7 +654,7 @@ oneapi-2022.2:
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
-oneapi-latest c++20:
+oneapi-latest c++23:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   allow_failure: false
@@ -670,7 +670,7 @@ oneapi-latest c++20:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
