@@ -32,6 +32,7 @@ Checks: '*,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -fuchsia-default-arguments-calls,
+  -fuchsia-statically-constructed-objects,
   -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
   -hicpp-no-array-decay,
@@ -48,6 +49,7 @@ Checks: '*,
 #  -cert-dcl21-cpp                                        // this asks postfix operator++ to return a const value
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
+#  -fuchsia-statically-constructed-objects,               // used for traits, is_const_subarray
 #  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -hicpp-no-array-decay,                                 // for Boost Lightweight Test

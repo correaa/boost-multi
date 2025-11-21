@@ -1,51 +1,65 @@
-// Copyright 2023-2025 Alfredo A. Correa
-// Copyright 2024 Matt Borland
+// Copyright 2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
+
+#if __cplusplus >= 202302L
+#include <algorithm>   // IWYU pragma: keep  // for std::equal
+#include <cmath>       // for std::abs
+#include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
+#include <iterator>    // IWYU pragma: keep
+#include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
+
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <ranges>    // IWYU pragma: keep
+#endif
+
 #include <boost/multi/array.hpp>
+// #include <boost/multi/detail/what.hpp>
 
-#include <boost/core/lightweight_test.hpp>
+namespace stdr = std::ranges;
+namespace stdv = std::views;
 
-#include <algorithm>  // for std::ranges::fold_left
-#include <cmath>      // IWYU pragma: keep  for std::abs
-// IWYU pragma: no_include <cstdlib>                          // for abs
-// IWYU pragma: no_include <stdlib.h>                          // for abs
+// auto printR2(auto const& lbl, auto const& arr2D) {
+// 	// return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
+// 	std::cout << lbl << " = \n";
+// 	for(auto const& row : arr2D) {
+// 		for(auto const& elem : row)
+// 			std::cout << elem << ", ";
+// 		std::cout << '\n';
+// 	}
+// 	std::cout << '\n';
+// }
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(broadcast_as_fill)
+int main() {
 	{
-		multi::array<int, 1> bb = {10, 11};
+		multi::array a = {1, 2, 3};
+		multi::array b = {4, 5, 6};
 
-		multi::array<int, 2> BB({10, 2});
+		using multi::broadcast::operator+;
+		auto&& c = a + b;
 
-		// std::fill  (BB.begin(), BB.end(), bb);                                       // canonical way
-		std::fill_n(BB.begin(), BB.size(), bb);  // canonical way
-
-		// std::copy_n(bb.broadcasted().begin(), BB.size(), BB.begin());                // doesn't work because faulty implementation of copy_n
-		// thrust::copy_n(bb.broadcasted().begin(), BB.size(), BB.begin());                // equivalent, using broadcast
-
-		// std::copy_n(bb.broadcasted().begin(), bb.broadcasted().size(), BB.begin());  // incorrect, undefined behavior, no useful size()
-		// std::copy  (bb.broadcasted().begin(), bb.broadcasted().end(), BB.begin());   // incorrect, undefined behavior, non-terminating loop (end is not reacheable)
-		// BB = bb.broadcasted();
-
-		BOOST_TEST( BB[0] == bb );
-		BOOST_TEST( BB[1] == bb );
-
-		// NOLINTNEXTLINE(modernize-use-ranges)
-		BOOST_TEST( std::all_of(BB.begin(), BB.end(), [&bb](auto const& row) { return row == bb; }) );
-
-		multi::array<double, 0> const one{1.0};
-
-		BOOST_TEST( one == 1.0 );
-
-		auto const& ones = one.broadcasted();
-		BOOST_TEST( std::abs( *ones.begin() - 1.0 ) < 1.0e-8 );
-
-		// BOOST_TEST( ones.layout().nelems() == (std::numeric_limits<multi::size_type>::max)() );
+		// multi::detail::what(c);
+		// printR2("c", c);
+		BOOST_TEST(( c == multi::array{5, 7, 9} ));
+		// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
 	}
+
+	// np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) + np.array([10, 20, 30])
+	// array([[11, 22, 33],
+	//        [14, 25, 36],
+	//        [17, 28, 39]])
 
 	return boost::report_errors();
 }
+#else
+auto main() -> int {
+	return boost::report_errors();
+}
+#endif
