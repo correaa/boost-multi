@@ -305,7 +305,7 @@ struct static_array                                                             
 		// class = decltype(/*static_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T> explicit static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
-	: static_array() {                                                                                                                                              //{static_cast<multi::size_t>(rng.size()), static_cast<multi::size_t>((*rng.begin()).size())}) {
+	: static_array() {
 		if(rng.size() == 0) {
 			return;
 		}
@@ -318,7 +318,7 @@ struct static_array                                                             
 
 		auto [is, js] = this->extensions();
 		{
-			index i        = 0;
+			index const i        = 0;
 			auto  inner_it = std::ranges::begin(outer_ref);
 			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
 				(*this)[i][j] = *inner_it;  // rng[i][j];
