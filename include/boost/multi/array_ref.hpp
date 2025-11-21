@@ -117,7 +117,7 @@ namespace detail {
 template<class T, dimensionality_type D, class... Ts>
 auto is_const_subarray_aux(multi::const_subarray<T, D, Ts...> const&) -> std::true_type;
 auto is_const_subarray_aux(...) -> std::false_type;
-}
+}  // end namespace detail
 
 template<class T> struct is_const_subarray : decltype(detail::is_const_subarray_aux(std::declval<T>())){};
 template<class T>

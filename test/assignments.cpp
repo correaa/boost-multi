@@ -42,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> arr  = {10, 20, 30};
 		multi::array<int, 1> arr2 = {10, 20, 30};
 
-		static_assert( multi::is_const_subarray_v<decltype(arr2)> );
+		static_assert(multi::is_const_subarray_v<decltype(arr2)>);
 
 		BOOST_TEST(    arr == arr2  );
 		BOOST_TEST( !(arr != arr2) );
