@@ -24,18 +24,16 @@
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
-auto printR2(auto const& lbl, auto const& arr2D) {
-	// return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
-	std::cout << lbl << " = \n";
-	for(auto const& row : arr2D) {
-		for(auto const& elem : row)
-			std::cout << elem << ", ";
-		std::cout << '\n';
-	}
-	std::cout << '\n';
-}
-
-#define FWD(var) std::forward<decltype(var)>(var)
+// auto printR2(auto const& lbl, auto const& arr2D) {
+// 	// return fmt::print("{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
+// 	std::cout << lbl << " = \n";
+// 	for(auto const& row : arr2D) {
+// 		for(auto const& elem : row)
+// 			std::cout << elem << ", ";
+// 		std::cout << '\n';
+// 	}
+// 	std::cout << '\n';
+// }
 
 namespace multi = boost::multi;
 
@@ -48,6 +46,7 @@ int main() {
 		auto&& c = a + b;
 
 		// multi::detail::what(c);
+		// printR2("c", c);
 		BOOST_TEST(( c == multi::array{5, 7, 9} ));
 		// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
 	}
