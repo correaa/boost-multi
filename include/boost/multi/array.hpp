@@ -741,6 +741,9 @@ struct dynamic_array                                                            
 	friend void swap(dynamic_array& lhs, dynamic_array& rhs) noexcept { lhs.swap_(rhs); }
 };
 
+template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
+using static_array [[deprecated("static_array has been renamed to dynamics_array (uses dynamic memory)")]] = dynamic_array<T, D, Alloc>;
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
