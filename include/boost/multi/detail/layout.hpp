@@ -252,9 +252,9 @@ class restriction {
 
 	class iterator {
 		typename extensions_t<D>::iterator it_;
-		Proj proj_;
+		Proj const* Pproj_;
 
-		iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+		iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
 
 		friend restriction;
 
@@ -266,19 +266,21 @@ class restriction {
 		};
 
 	 public:
-		constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		constexpr iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
+		// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
-		// iterator(iterator const& other) = default;
-		BOOST_MULTI_HD constexpr iterator(iterator const& other) noexcept : it_{other.it_}, proj_{other.proj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		iterator(iterator const& other) = default;
+		// BOOST_MULTI_HD constexpr iterator(iterator const& other) noexcept : it_{other.it_}, Pproj_{other.Pproj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 		iterator(iterator&&) = default;
 
 		auto operator=(iterator&&) -> iterator& = default;
-		BOOST_MULTI_HD constexpr auto operator=(iterator const& other) -> iterator& {
-			if(this == &other) { return *this; }
-			// assert(proj_ == other.proj_);
-			it_ = other.it_;
-			return *this;
-		}
+		auto operator=(iterator const&) -> iterator& = default;
+		// BOOST_MULTI_HD constexpr auto operator=(iterator const& other) -> iterator& {
+		// 	if(this == &other) { return *this; }
+		// 	// assert(proj_ == other.proj_);
+		// 	it_ = other.it_;
+		// 	return *this;
+		// }
 
 		~iterator() = default;
 
@@ -289,7 +291,7 @@ class restriction {
 
 		using reference = std::conditional_t<(D != 1),
 			restriction<D - 1, bind_front_t>,
-			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
+			decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
 
 		using iterator_category = std::random_access_iterator_tag;
@@ -321,18 +323,18 @@ class restriction {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return restriction<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), proj_});
+				return restriction<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), *Pproj_});
 			} else {
 				using std::get;
-				return proj_(get<0>(*it_));
+				return (*Pproj_)(get<0>(*it_));
 			}
 		}
 
 		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
-	constexpr auto begin() const { return iterator{xs_.begin(), proj_}; }
-	constexpr auto end() const { return iterator{xs_.end(), proj_}; }
+	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
+	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto sizes() const { return xs_.sizes(); }
