@@ -172,7 +172,7 @@ int main() {
 
 		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
 
-		using multi::elementwise_expr::operator-;
+		using multi::broadcast::operator-;
 		auto subtract = mat - max_per_row_repeat_T;
 		BOOST_TEST( subtract[0][0] == -2 );
 		BOOST_TEST( subtract[0][1] == -1 );
@@ -182,7 +182,7 @@ int main() {
 		BOOST_TEST( subtract[1][1] == -1 );
 		BOOST_TEST( subtract[1][2] ==  0 );
 
-		using multi::elementwise_expr::exp;
+		using multi::broadcast::exp;
 		auto subtract_exp = exp(subtract);
 
 		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
