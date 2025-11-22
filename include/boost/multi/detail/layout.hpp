@@ -1099,7 +1099,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	template<class Fun>
 	friend constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
-		return restriction<1, Fun>(xs, std::forward<Fun>(fun));
+		return restriction<1, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
 	}
 
 	using nelems_type = index;
