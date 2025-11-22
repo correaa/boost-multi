@@ -45,10 +45,6 @@ int main() {
 		using multi::broadcast::exp;
 		auto c = exp(std::move(a));
 
-		// multi::detail::what(c);
-		// static_assert(std::is_copy_constructible_v<decltype(c)>);
-
-		// printR2("c", c);
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
@@ -59,10 +55,26 @@ int main() {
 		using multi::broadcast::exp;
 		auto c = exp(a);
 
-		// multi::detail::what(c);
-		// static_assert(std::is_copy_constructible_v<decltype(c)>);
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		multi::array a = {1.0, 2.0, 3.0};
 
-		// printR2("c", c);
+		using multi::broadcast::exp;
+		auto c = exp(multi::array{1.0, 2.0, 3.0});
+
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		multi::array a = {1.0, 2.0, 3.0};
+
+		using multi::broadcast::exp;
+		auto c = exp({1.0, 2.0, 3.0});
+
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
@@ -73,10 +85,15 @@ int main() {
 		using multi::broadcast::exp;
 		auto c = exp(a());
 
-		// multi::detail::what(c);
-		// static_assert(std::is_copy_constructible_v<decltype(c)>);
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		auto r = [](auto i) constexpr { return static_cast<double>(i + 1); } ^ multi::extensions_t<1>{3};
+		using multi::broadcast::exp;
+		auto c = exp(r);
 
-		// printR2("c", c);
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
