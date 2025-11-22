@@ -22,18 +22,18 @@ int main() {
 		{30, 40, 50}
 	};
 
-	using multi::elementwise_expr::apply;
+	using multi::broadcast::apply;
 
 	multi::array<int, 2> const C1 = apply(std::plus<>{}, A, B);
 
 	BOOST_TEST( C1[1][1] == std::plus<>{}(A[1][1], B[1][1]) );
 
-	using multi::elementwise_expr::operator+;
+	using multi::broadcast::operator+;
 	multi::array<int, 2> const C2 = A + B;
 
 	BOOST_TEST( C1 == C2 );
 
-	using multi::elementwise_expr::operator-;
+	using multi::broadcast::operator-;
 	multi::array<int, 2> const C3 = A - (-B);
 
 	BOOST_TEST( C2 == C3 );
@@ -41,7 +41,7 @@ int main() {
 	{
 		multi::array<double, 1> aa = {1.0, 2.0, 3.0};
 
-		using multi::elementwise_expr::exp;
+		using multi::broadcast::exp;
 		BOOST_TEST( std::abs( exp(aa)[2] - std::exp(aa[2]) ) < 1e-12 );
 
 		auto exp_aa_copy = +exp(aa);
@@ -53,7 +53,7 @@ int main() {
 	// | std::views::transform([](auto nums) { return nums | stdv::transform([den = sumR1(nums)](auto num) { return num / den; }); });
 
 	//	{
-	//		using multi::elementwise_expr::apply;
+	//		using multi::broadcast::apply;
 	//
 	//		auto const matrix =
 	//			([](auto ii) noexcept { return static_cast<float>(ii); } ^
@@ -65,7 +65,7 @@ int main() {
 	//		};
 	//
 	//		#define BOOST_MULTI_FWD(var) std::forward<decltype(var)>(var)
-	//		using multi::elementwise_expr::apply_front;
+	//		using multi::broadcast::apply_front;
 	//		auto matrix_minus_row_max = apply_front([&](auto row) { return apply_front([max = maxR1(row)](auto elem) { return elem/*- max*/; }, row); }, matrix);
 	//
 	//		std::cout << std::abs( matrix_minus_row_max[0][2] ) << '\n';
