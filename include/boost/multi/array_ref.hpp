@@ -4048,21 +4048,26 @@ struct exp_bind_t {
 };
 
 template<class A>
-constexpr auto exp(A&& a) {
-	// return [&a](auto... is) {
-	// 	using ::std::exp;
-	// 	return exp(a[is...]);
-	// } ^ a.extensions();
-	return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(a)} ^ a.extensions();
-}
+constexpr auto exp(A&& a) { return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(a)} ^ a.extensions(); }
+
+template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::array<T, 1>{il}); }
+template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::array<T, 2>{il}); }
 
 template<class A>
-constexpr auto abs(A&& a) {
-	return [&a](auto... is) {
+struct abs_bind_t {
+	A a_;
+
+	constexpr auto operator()(auto... is) const {
 		using ::std::abs;
-		return abs(a[is...]);
-	} ^ a.extensions();
-}
+		return exp(a_[is...]);
+	}
+};
+
+template<class A>
+constexpr auto abs(A&& a) { return abs_bind_t<typename bind_category<A>::type>{std::forward<A>(a)} ^ a.extensions(); }
+
+template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(multi::array<T, 1>{il}); }
+template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
 
 #endif
 }  // end namespace broadcast
