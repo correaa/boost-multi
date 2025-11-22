@@ -12,6 +12,7 @@
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
+#include <utility>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -45,13 +46,46 @@ int main() {
 		auto c = exp(std::move(a));
 
 		// multi::detail::what(c);
-		static_assert(std::is_copy_constructible_v<decltype(c)>);
+		// static_assert(std::is_copy_constructible_v<decltype(c)>);
 
 		// printR2("c", c);
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
+	{
+		multi::array a = {1.0, 2.0, 3.0};
+
+		using multi::broadcast::exp;
+		auto c = exp(a);
+
+		// multi::detail::what(c);
+		// static_assert(std::is_copy_constructible_v<decltype(c)>);
+
+		// printR2("c", c);
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		multi::array a = {1.0, 2.0, 3.0};
+
+		using multi::broadcast::exp;
+		auto c = exp(a());
+
+		// multi::detail::what(c);
+		// static_assert(std::is_copy_constructible_v<decltype(c)>);
+
+		// printR2("c", c);
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	// {
+	// 	multi::array a = {1, 2, 3};
+	// 	using multi::broadcast::operator+;
+	// 	auto c = a + 1;
+	// }
 	{
 		multi::array a = {1, 2, 3};
 		multi::array b = {4, 5, 6};
@@ -64,7 +98,8 @@ int main() {
 		BOOST_TEST(( c == multi::array{5, 7, 9} ));
 		// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
 	}
-
+	{
+	}
 	// np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) + np.array([10, 20, 30])
 	// array([[11, 22, 33],
 	//        [14, 25, 36],

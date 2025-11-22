@@ -3953,7 +3953,7 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 	using type = ::boost::multi::subarray<T, D, Ts...> const&;
 };
 
-namespace elementwise_expr {
+namespace broadcast {
 
 #if __cplusplus >= 202302L
 
@@ -3994,38 +3994,38 @@ constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 template<class F, class A, class B, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<B>::element>()))>
 constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
 	if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
-		return apply_broadcast(fun, a.repeated(b.size()), b);
+		return apply_broadcast(std::forward<F>(fun), a.repeated(b.size()), b);
 	} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
-		return apply_broadcast(fun, a, b.repeated(a.size()));
+		return apply_broadcast(std::forward<F>(fun), a, b.repeated(a.size()));
 	} else {
-		return apply(fun, std::forward<A>(a), std::forward<B>(b));
+		return apply(std::forward<F>(fun), std::forward<A>(a), std::forward<B>(b));
 	}
 }
 
 template<class A, class B>
-constexpr auto operator+(A&& a, B&& b) { return elementwise_expr::apply(std::plus<>{}, a, b); }
+constexpr auto operator+(A&& a, B&& b) { return broadcast::apply(std::plus<>{}, std::forward<A>(a), std::forward<B>(b)); }
 
 template<class A, class B>
 constexpr auto operator-(A&& a, B&& b) {
-	return elementwise_expr::apply_broadcast(std::minus<>{}, a, b);
+	return broadcast::apply_broadcast(std::minus<>{}, a, b);
 }
 
 template<class A>
-constexpr auto operator-(A&& a) { return elementwise_expr::apply(std::negate<>{}, a); }
+constexpr auto operator-(A&& a) { return broadcast::apply(std::negate<>{}, a); }
 
 template<class A, class B>
-constexpr auto operator*(A&& a, B&& b) { return elementwise_expr::apply(std::multiplies<>{}, a, b); }
+constexpr auto operator*(A&& a, B&& b) { return broadcast::apply(std::multiplies<>{}, a, b); }
 
 template<class A, class B>
 constexpr auto operator/(A&& a, B&& b) {
-	return elementwise_expr::apply_broadcast(std::divides<>{}, a, b);
+	return broadcast::apply_broadcast(std::divides<>{}, a, b);
 }
 
 template<class A, class B>
-constexpr auto operator&&(A&& a, B&& b) { return elementwise_expr::apply(std::logical_and<>{}, a, b); }
+constexpr auto operator&&(A&& a, B&& b) { return broadcast::apply(std::logical_and<>{}, a, b); }
 
 template<class A, class B>
-constexpr auto operator||(A&& a, B&& b) { return elementwise_expr::apply(std::logical_or<>{}, a, b); }
+constexpr auto operator||(A&& a, B&& b) { return broadcast::apply(std::logical_or<>{}, a, b); }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>
 constexpr auto operator|(A&& a, F fun) {
@@ -4065,9 +4065,7 @@ constexpr auto abs(A&& a) {
 }
 
 #endif
-}  // end namespace elementwise_expr
-
-namespace broadcast = elementwise_expr;
+}  // end namespace broadcast
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
