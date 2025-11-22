@@ -48,8 +48,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( a0 == 60.0 );
 		}
 		{
-			std::allocator<double> const   alloc;
+			std::allocator<double> const alloc;
+
 			multi::dynamic_array<double, 0> a0(45.0, alloc);
+
 			BOOST_TEST( num_elements(a0) == 1 );
 			BOOST_TEST( a0 == 45.0 );
 

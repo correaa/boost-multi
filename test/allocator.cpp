@@ -32,7 +32,7 @@ using small_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// dynamic_array_allocator
 	{
-		multi::array<int, 2> const                             ma({2, 3}, 99);
+		multi::array<int, 2> const                              ma({2, 3}, 99);
 		multi::dynamic_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 		BOOST_TEST( sma == ma );
 	}

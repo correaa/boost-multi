@@ -420,7 +420,7 @@ struct dynamic_array                                                            
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& exts)
 	: dynamic_array(exts, allocator_type{}) {}
 
-	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr dynamic_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& alloc)
 	: dynamic_array(extensions, alloc) {}
@@ -435,7 +435,7 @@ struct dynamic_array                                                            
 	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
 	explicit constexpr dynamic_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& /*alloc*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****"]]*/;
 
-	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
+	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr dynamic_array(::boost::multi::extensions_t<D> const& extensions, UninitilazedTag /*unusued*/) : dynamic_array(extensions) {}
 
@@ -514,7 +514,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...>& other)                                                                                                                     // moLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...>& other)                                                                                                                    // moLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
 	}
@@ -529,7 +529,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...>&& other)                                                                                                                     // NOLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...>&& other)                                                                                                                    // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		assert(this->stride() != 0);
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
@@ -545,7 +545,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...> const& other)                                                                                                                     // NOLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...> const& other)                                                                                                                    // NOLINT(fuchsia-default-arguments-declarations)
 	: array_alloc{},
 	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
@@ -583,7 +583,7 @@ struct dynamic_array                                                            
 
 	dynamic_array(
 		std::initializer_list<typename dynamic_array<T, D>::value_type> values,
-		allocator_type const&                                          alloc
+		allocator_type const&                                           alloc
 	)
 	: dynamic_array{(values.size() == 0) ? dynamic_array<T, D>() : dynamic_array<T, D>(values.begin(), values.end()), alloc} {}
 
@@ -712,8 +712,8 @@ struct dynamic_array                                                            
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {                                 // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		assert(extensions(other) == dynamic_array::extensions());                                               // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {                               // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		assert(extensions(other) == dynamic_array::extensions());                                              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
@@ -923,7 +923,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 #endif
 	}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>                                        // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>                                          // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // 3
 	: dynamic_array(extension * extensions(value), alloc) {
 		assert(this->stride() != 0);
@@ -931,7 +931,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		fill(this->begin(), this->end(), value);
 	}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>           // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>             // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)  // 3
 	: dynamic_array(extension, value, allocator_type{}) {}
 	// : dynamic_array(extension * extensions(value)) {  // TODO(correaa) : call other constructor (above)
@@ -1092,7 +1092,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 #endif
 
 	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {
-		assert(equal_extensions_if_(std::integral_constant<bool, (dynamic_array::rank_v != 0)>{}, other));      // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert(equal_extensions_if_(std::integral_constant<bool, (dynamic_array::rank_v != 0)>{}, other));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
@@ -1111,7 +1111,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_t>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		// cppcheck-suppress duplInheritedMember ; to overwrite
 		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
-																										  // return dynamic_array_cast<typename dynamic_array::value_type, typename dynamic_array::element_const_ptr>(*this);
+																											// return dynamic_array_cast<typename dynamic_array::value_type, typename dynamic_array::element_const_ptr>(*this);
 	}
 
 	template<class Archive>
@@ -1229,7 +1229,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	template<
 		class OtherT,
 		class = std::enable_if_t<std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                                       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{
 		  (ilv.size() == 0) ? array<T, D>()()
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
