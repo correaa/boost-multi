@@ -1247,16 +1247,16 @@ pages:
     - cd ..
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
-    - python3 -m venv .venv
-    - source .venv/bin/activate
-    - pip install quom
-    - quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
-    - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
-    - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
-    - date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
+    #- python3 -m venv .venv
+    #- source .venv/bin/activate
+    #- pip install quom
+    #- quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
+    #- echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
+    #- echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
+    #- date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
-    - cat boost-multi.hpp >> .public/boost-multi.hpp
-    - cat .public/boost-multi.hpp
+    #- cat boost-multi.hpp >> .public/boost-multi.hpp
+    #- cat .public/boost-multi.hpp
     # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
     - mv .public public
   artifacts:
@@ -1267,22 +1267,26 @@ pages:
 headers:
   stage: basic
   allow_failure: true
-  #only:
-  #  refs:
-  #    - master
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install pip python3-venv mcpp
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet pip python3-venv
     - mkdir .public
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
-    - quom -I include include/boost/multi/array.hpp boost-multi-amalgamated.hpp
-    - cat boost-multi-amalgamated.hpp
-    - cp -r boost-multi-amalgamated.hpp .public/boost-multi-amalgamated.txt
+    - quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
+    - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
+    - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
+    - date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
+    - cat boost-multi.hpp >> .public/boost-multi.hpp
+    - cat .public/boost-multi.hpp
     - mv .public public
   artifacts:
     paths:
     - public
+  # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
