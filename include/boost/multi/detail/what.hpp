@@ -6,9 +6,9 @@
 #define BOOST_MULTI_DETAIL_WHAT_HPP
 
 namespace boost::multi::detail {
-template<class T, class... Ts> auto what() -> std::tuple<Ts&&...>        = delete;
 template<class T> auto              what(T&&) -> T&&                     = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
 template<class... Ts> auto          what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
+template<class T, class... Ts> auto what() -> std::tuple<Ts&&...>        = delete;
 
 template<int V> auto what_value() -> std::integral_constant<int, V> = delete;
 template<int V> struct what_value_t;
