@@ -1098,7 +1098,7 @@ template<class It>
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
-template<typename, ::boost::multi::dimensionality_type, class Alloc> struct static_array;  // this might be needed by MSVC 14.3 in c++17 mode
+template<typename, ::boost::multi::dimensionality_type, class Alloc> struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1135,7 +1135,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
 
-	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;
+	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct dynamic_array;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
@@ -2819,7 +2819,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct const_subarray;
-	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct static_array;  // TODO(correaa) check if this is necessary
+	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct dynamic_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);

@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for array_ref, static_array, array_ptr
+#include <boost/multi/array.hpp>  // for array_ref, dynamic_array, array_ptr
 
 // IWYU pragma: no_include <algorithm>  // for copy
 #include <complex>  // for complex
@@ -40,20 +40,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			// vvv--- TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
-			multi::static_array<double, 0> a0 = multi::static_array<double, 0>{45.0};
+			multi::dynamic_array<double, 0> a0 = multi::dynamic_array<double, 0>{45.0};
 			BOOST_TEST( num_elements(a0) == 1 );
 			BOOST_TEST( a0 == 45.0 );
 
-			a0 = multi::static_array<double, 0>{60.0};
+			a0 = multi::dynamic_array<double, 0>{60.0};
 			BOOST_TEST( a0 == 60.0 );
 		}
 		{
 			std::allocator<double> const   alloc;
-			multi::static_array<double, 0> a0(45.0, alloc);
+			multi::dynamic_array<double, 0> a0(45.0, alloc);
 			BOOST_TEST( num_elements(a0) == 1 );
 			BOOST_TEST( a0 == 45.0 );
 
-			a0 = multi::static_array<double, 0>{60.0};
+			a0 = multi::dynamic_array<double, 0>{60.0};
 			BOOST_TEST( a0 == 60.0 );
 		}
 	}

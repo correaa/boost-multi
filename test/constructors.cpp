@@ -28,8 +28,8 @@ struct multiplies_bind1st {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_construct_1d)
 	{
-		multi::static_array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 10);
-		//  multi::static_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
+		multi::dynamic_array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 10);
+		//  multi::dynamic_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[1] == 10 );
 	}
