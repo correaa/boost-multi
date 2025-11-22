@@ -1250,7 +1250,7 @@ pages:
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
-    - quom -I include include/boost/multi/array.hpp boost-multi.hpp
+    - quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
     - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
     - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
     - date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
