@@ -129,7 +129,7 @@ struct transform_ptr {
 #if defined(__NVCC__) || defined(__NVCOMPILER)
 	constexpr transform_ptr() {}
 #else
-	constexpr transform_ptr();  // : p_{}, f_{} {}
+	constexpr transform_ptr() = default;
 #endif
 	template<class UFF>
 	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}
