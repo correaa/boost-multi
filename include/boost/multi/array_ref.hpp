@@ -816,11 +816,7 @@ struct elements_iterator_t
 
 	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
 	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)}
-	// : base_{std::move(base)},
-	//   l_{lyt},
-	//   n_{n},
-	//   xs_{l_.extensions()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)},
-		, curr_{base_ + apply(l_, ns_)}  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	, curr_{base_ + apply(l_, ns_)}  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	{}
 
  public:
