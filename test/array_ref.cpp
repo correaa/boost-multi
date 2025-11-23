@@ -1113,7 +1113,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			print_me1(arr2);
 			print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
 
-			multi::static_array<int, 1> marr(
+			multi::dynamic_array<int, 1> marr(
 				// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
 				multi::extensions_t<1>
 				// #endif
@@ -1148,7 +1148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			//  print_me2(&arr2);  // this crashes clang-tidy
 			print_me2({arr2.data(), {6}});
 
-			//  multi::static_array<int, 1> marr({10}, 99);
+			//  multi::dynamic_array<int, 1> marr({10}, 99);
 			//  print_me2(&marr);  // TODO(correaa) make this work
 		}
 	}
