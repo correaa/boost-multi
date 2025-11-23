@@ -3925,13 +3925,13 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 _LIBCPP_BEGIN_NAMESPACE_STD
 
 template<class /*_Iterator*/>
-struct __segmented_iterator_traits;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+struct __segmented_iterator_traits;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp,cert-dcl58-cpp)
 
 _LIBCPP_END_NAMESPACE_STD
 #else
 namespace std {  // NOLINT(cert-dcl58-cpp)
 template<class /*_Iterator*/>
-struct __segmented_iterator_traits;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+struct __segmented_iterator_traits;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp,cert-dcl58-cpp)
 }  // end namespace std
 #endif
 
@@ -3941,7 +3941,7 @@ namespace std {  // NOLINT(cert-dcl58-cpp)
 // template <class > struct __segmented_iterator_traits;
 
 template <class ElementPtr>
-struct __segmented_iterator_traits<::boost::multi::elements_iterator_t<ElementPtr**, boost::multi::layout_t<2>>> {  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+struct __segmented_iterator_traits<::boost::multi::elements_iterator_t<ElementPtr**, boost::multi::layout_t<2>>> {  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp,cert-dcl58-cpp)
 //   requires(_JoinViewIterator::__is_join_view_iterator && ranges::common_range<typename _JoinViewIterator::_Parent> &&
 //            __has_random_access_iterator_category<typename _JoinViewIterator::_Outer>::value &&
 //            __has_random_access_iterator_category<typename _JoinViewIterator::_Inner>::value)
