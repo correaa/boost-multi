@@ -14,7 +14,6 @@
 #include <iterator>  // for std::sentinel_for
 #include <memory>    // for std::allocator_traits
 #include <stdexcept>
-#include <tuple>        // needed by a deprecated function
 #include <type_traits>  // for std::common_reference
 #include <utility>      // for std::move
 
