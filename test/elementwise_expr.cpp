@@ -6,6 +6,7 @@
 
 #if __cplusplus >= 202302L
 #include <boost/multi/array.hpp>
+#include <boost/multi/broadcast.hpp>
 
 #include <iostream>
 #include <ranges>
