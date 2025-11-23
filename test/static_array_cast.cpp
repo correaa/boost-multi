@@ -161,9 +161,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( m5 == -50 );
 	}
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast)
+	// BOOST_AUTO_TEST_CASE(dynamic_array_cast)
 	{
-		multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+		multi::dynamic_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 
 		auto&& ref = arr.static_array_cast<double, double const*>();
 
@@ -229,8 +229,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
 	{
-		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+		multi::dynamic_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+		multi::dynamic_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
 		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
@@ -241,7 +241,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2 == neg_arr );
 	}
 	{
-		multi::static_array<int, 2> arr({4, 5}, 0);
+		multi::dynamic_array<int, 2> arr({4, 5}, 0);
 		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
 		multi::array<int, 2> arr2({4, 5});

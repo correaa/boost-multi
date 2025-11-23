@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
-		multi::static_array<double, 2> d2D({10, 10});
+		multi::dynamic_array<double, 2> d2D({10, 10});
 
 		std::mt19937_64 eng(std::random_device{}());
 
@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 
-		multi::static_array<double, 2> d2D({1000, 1000});
+		multi::dynamic_array<double, 2> d2D({1000, 1000});
 
 		auto gen = [e = std::mt19937_64(std::random_device{}())]() mutable {
 			return std::uniform_real_distribution<>{}(e);
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_small) {
 		{
-			multi::static_array<double, 0> d0D{12.0};
+			multi::dynamic_array<double, 0> d0D{12.0};
 
 			std::ofstream ofs{"serialization-static_0D.xml"};
 			assert(ofs);

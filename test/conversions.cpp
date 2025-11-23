@@ -43,8 +43,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( cee.real() - static_cast<float>(zee.real())) < 1E-6F );
 
-		multi::static_array<std::complex<float>, 1> const  CEE1(10, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
-		multi::static_array<std::complex<double>, 1> const ZEE1 = CEE1;
+		multi::dynamic_array<std::complex<float>, 1> const  CEE1(10, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
+		multi::dynamic_array<std::complex<double>, 1> const ZEE1 = CEE1;
 
 		// BOOST_TEST( zee == cee );  // fails to compile, ok. since types are not comparable ...
 		// BOOST_TEST( ZEE1 == CEE1 );  // fails to compile, ok. ...then arrays are not comparable either, but a transformation is comparable...
@@ -63,8 +63,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( cee.real() - static_cast<float>(zee.real()) ) < 1E-6F );
 
-		multi::static_array<std::complex<double>, 1> const ZEE1(10, std::complex<float>{});
-		multi::static_array<std::complex<float>, 1> const  CEE1{ZEE1};
+		multi::dynamic_array<std::complex<double>, 1> const ZEE1(10, std::complex<float>{});
+		multi::dynamic_array<std::complex<float>, 1> const  CEE1{ZEE1};
 
 		BOOST_TEST( ZEE1 == CEE1.element_transformed([](auto const& ce) noexcept { return std::complex<double>(ce); }));
 	}

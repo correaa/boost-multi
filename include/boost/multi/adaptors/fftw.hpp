@@ -612,7 +612,7 @@ template<typename... A> auto dft_backward(A&&... args)
 // }
 
 template<class T, boost::multi::dimensionality_type D>
-using static_array = ::boost::multi::static_array<T, D, fftw::allocator<T>>;
+using dynamic_array = ::boost::multi::dynamic_array<T, D, fftw::allocator<T>>;
 
 template<class T, multi::dimensionality_type D>
 using array = ::boost::multi::array<T, D, fftw::allocator<T>>;

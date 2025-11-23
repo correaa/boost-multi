@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using complex = std::complex<double>;
 		{
-			multi::static_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+			multi::dynamic_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			ret[1][2][3][4] = std::complex<double>{1.0, 2.0};
 			BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 		}

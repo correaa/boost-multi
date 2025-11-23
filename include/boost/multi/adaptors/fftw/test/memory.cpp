@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part1) {
 	};
 
 	{
-		multi::static_array<complex, 2> fwd(in.extensions());
+		multi::dynamic_array<complex, 2> fwd(in.extensions());
 
 		auto* data = fwd.data_elements();
 

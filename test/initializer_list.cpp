@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for array, static_array, num_elements
+#include <boost/multi/array.hpp>  // for array, dynamic_array, num_elements
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -45,34 +45,34 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( vec[1] == 20 );
 	}
 	{
-		multi::static_array<int, 1> arr = {12, 34, 56};
+		multi::dynamic_array<int, 1> arr = {12, 34, 56};
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[2] == 56 );
 	}
 	{
-		multi::static_array<int, 1> const arr = {12, 34, 56};
+		multi::dynamic_array<int, 1> const arr = {12, 34, 56};
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[2] == 56 );
 	}
 	{
 		auto const il = {12, 34, 56};
 
-		multi::static_array<int, 1> const arr(il);
+		multi::dynamic_array<int, 1> const arr(il);
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[2] == 56 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		auto const il = {12, 34, 56};
 
-		multi::static_array<int, 1> const arr(begin(il), end(il));
+		multi::dynamic_array<int, 1> const arr(begin(il), end(il));
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[2] == 56 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
-		multi::static_array<int, 1> const arr = {12, 34, 56};
+		multi::dynamic_array<int, 1> const arr = {12, 34, 56};
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[2] == 56 );
-		BOOST_TEST(( arr == multi::static_array<int, 1>{12, 34, 56} ));
+		BOOST_TEST(( arr == multi::dynamic_array<int, 1>{12, 34, 56} ));
 		BOOST_TEST(( arr == decltype(arr){12, 34, 56} ));
 	}
 	{
@@ -101,7 +101,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using std::begin;
 		using std::end;
-		multi::static_array<double, 1> const arr(begin(stdarr), end(stdarr));
+		multi::dynamic_array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_TEST( size(arr) == 3 );
 	}
 
@@ -119,10 +119,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #endif
 
 		{
-			multi::static_array const arr = {12, 34, 56};
+			multi::dynamic_array const arr = {12, 34, 56};
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::static_array{12, 34, 56} ));
+			BOOST_TEST(( arr == multi::dynamic_array{12, 34, 56} ));
 		}
 		{
 			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d)
 	{
-		multi::static_array<int, 1> const arr = {11, 22, 33};
+		multi::dynamic_array<int, 1> const arr = {11, 22, 33};
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr[1] == 22 );
 	}
@@ -188,7 +188,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d)
 	{
-		multi::static_array<double, 2> const arr = {
+		multi::dynamic_array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
 			{15.2, 32.4, 5.6, 3.4},
@@ -253,7 +253,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using std::begin;
 		using std::end;
 
-		multi::static_array<int, 2> arr(begin(nested), end(nested));
+		multi::dynamic_array<int, 2> arr(begin(nested), end(nested));
 
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( size(arr[0]) == 2 );
@@ -263,7 +263,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::array<std::array<int, 2>, 3> const nested = {
 			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
 		};
-		multi::static_array<int, 2> const arr(std::begin(nested), std::end(nested));
+		multi::dynamic_array<int, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_TEST((
 			arr == multi::array<int, 2> {{
@@ -311,9 +311,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == 4.0 + 2.0*I );
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list)
+	// BOOST_AUTO_TEST_CASE(multi_tests_dynamic_array_initializer_list)
 	{
-		multi::static_array<std::complex<double>, 2> SA = {
+		multi::dynamic_array<std::complex<double>, 2> SA = {
 			{{1.0, 0.0}, {2.0, 0.0}},
 			{{3.0, 0.0}, {4.0, 0.0}},
 		};
@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_static)
 	{
-		multi::static_array arr({10, 20, 30});
+		multi::dynamic_array arr({10, 20, 30});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -434,7 +434,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(initializer_list_2d)
 	{
 		{
-			multi::static_array const arr({
+			multi::dynamic_array const arr({
 				{1.0, 2.0, 3.0},
 				{4.0, 5.0, 6.0},
 			});
