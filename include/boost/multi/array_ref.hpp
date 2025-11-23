@@ -3929,14 +3929,14 @@ struct __segmented_iterator_traits;
 
 _LIBCPP_END_NAMESPACE_STD
 #else
-namespace std {
+namespace std {  // NOLINT(cert-dcl58-cpp)
 template<class /*_Iterator*/>
 struct __segmented_iterator_traits;
 }
 #endif
 
 // clang-format off
-namespace std {
+namespace std {  // NOLINT(cert-dcl58-cpp)
 
 // template <class > struct __segmented_iterator_traits;
 
