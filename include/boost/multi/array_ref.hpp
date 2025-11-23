@@ -3932,7 +3932,7 @@ _LIBCPP_END_NAMESPACE_STD
 namespace std {  // NOLINT(cert-dcl58-cpp)
 template<class /*_Iterator*/>
 struct __segmented_iterator_traits;  // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-}
+}  // end namespace std
 #endif
 
 // clang-format off
