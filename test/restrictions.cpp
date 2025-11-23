@@ -29,6 +29,7 @@
 #endif
 
 #include <boost/multi/array.hpp>
+#include <boost/multi/broadcast.hpp>
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
