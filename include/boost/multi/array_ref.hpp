@@ -1439,9 +1439,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	auto flattened() const {
 		auto new_layout = this->layout().flatten();
-		return boost::multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>{
-			new_layout, this->base_
-		};
+		return multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>(this->layout().flatten(), this->base_);
 	}
 
 	constexpr auto broadcasted() const& {
