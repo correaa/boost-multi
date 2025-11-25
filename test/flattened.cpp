@@ -27,13 +27,7 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(layout_3)
 	{
-		multi::array<double, 2> arr(
-// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<2>
-// #endif
-			{50, 50}
-		);
-		BOOST_TEST( size(arr)  == 50 );
+		multi::array<double, 2> arr({50, 50});
 		BOOST_TEST( arr.size() == 50 );
 
 		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
@@ -46,7 +40,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(      arr.layout() == arr.layout()  );
 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
 
-		// auto bl = arr.layout().flatten();
 		auto const& barr = arr.flattened();
 		BOOST_TEST( &barr[10] == &arr[0][10] );
 	}
@@ -100,6 +93,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.num_elements() == 60 );
 		BOOST_TEST( barr.size() == 15 );
+	}
+	{
+		multi::array<double, 2> arr({3, 5});
+
+		auto&& barr = arr.flattened();
+
+		BOOST_TEST( &barr [0] == &arr[0][0] );
+
+		barr.begin();
 	}
 
 	return boost::report_errors();
