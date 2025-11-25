@@ -102,6 +102,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &barr [0] == &arr[0][0] );
 
 		BOOST_TEST( &*barr.begin() == &barr[0] );
+		BOOST_TEST( &*(barr.begin() + 1) == &barr[1] );
 	}
 
 	return boost::report_errors();

@@ -2902,7 +2902,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-		return *((this->stride() * idx - this->offset()) + this->base_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return *(this->base_ + (this->stride() * idx - this->offset()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
