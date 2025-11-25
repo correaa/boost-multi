@@ -303,17 +303,10 @@ class restriction
 		// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		iterator(iterator const& other) = default;
-		// BOOST_MULTI_HD constexpr iterator(iterator const& other) noexcept : it_{other.it_}, Pproj_{other.Pproj_} {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
-		iterator(iterator&&) = default;
+		iterator(iterator&&) noexcept = default;
 
-		auto operator=(iterator&&) -> iterator& = default;
-		auto operator=(iterator const&) -> iterator& = default;
-		// BOOST_MULTI_HD constexpr auto operator=(iterator const& other) -> iterator& {
-		// 	if(this == &other) { return *this; }
-		// 	// assert(proj_ == other.proj_);
-		// 	it_ = other.it_;
-		// 	return *this;
-		// }
+		auto operator=(iterator&&) noexcept -> iterator& = default;
+		auto operator=(iterator const&) -> iterator&     = default;
 
 		~iterator() = default;
 
