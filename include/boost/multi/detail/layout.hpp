@@ -1506,10 +1506,15 @@ struct bilayout {
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 		#endif
-		BOOST_MULTI_HD constexpr auto operator+(double* ptr) { return ptr + (stride2_ % nelems2_) + ((stride2_ / nelems2_) * stride1_); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+		template<class Ptr>
+		friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, stride_type const& self) -> Ptr& {
+			return ptr += (self.stride2_ % self.nelems2_) + ((self.stride2_ / self.nelems2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+		}
 		#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 		#pragma clang diagnostic pop
 		#endif
+		template<class Ptr>
+		friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, stride_type const& self) { auto ret{ptr}; ret+=self; return ret; }
 	};
 
 	using index_range     = void;
