@@ -104,6 +104,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &*barr.begin() == &barr[0] );
 		BOOST_TEST( &*(barr.begin() + 1) == &barr[1] );
 	}
+	{
+		multi::array<int, 2> arr({3, 5});
+
+		auto&& barr = arr.flattened();
+
+		BOOST_TEST( &barr [0] == &arr[0][0] );
+
+		BOOST_TEST( &*barr.begin() == &barr[0] );
+		BOOST_TEST( &*(barr.begin() + 1) == &barr[1] );
+	}
+	{
+		multi::array<int, 1> const arr({5});
+
+		// auto const& barr = arr.flattened();  // compilation error, good
+	}
+	{
+		multi::array<int, 3> const arr({3, 5, 7});
+
+		auto const& barr = arr.flattened();
+
+		BOOST_TEST( barr.size() == 15 );
+	}
 
 	return boost::report_errors();
 }
