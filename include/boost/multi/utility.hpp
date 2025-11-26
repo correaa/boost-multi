@@ -189,7 +189,7 @@ struct transform_ptr {
 
 	~transform_ptr() = default;
 
-	auto operator=(transform_ptr&&) -> transform_ptr& = default;
+	auto operator=(transform_ptr&&) noexcept -> transform_ptr& = default;
 
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
 		// assert(f_ == other.f_);
