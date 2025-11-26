@@ -60,7 +60,7 @@ c++-macos-shell:
     # - apt-get -qq update
     # - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     # - g++ --version
-    - brew install boost cmake
+    # - brew install boost cmake
     - c++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
@@ -76,7 +76,7 @@ g++-omp-thrust:
   script:
     - apt-get clean
     - apt-get -qq update --allow-unauthenticated
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
