@@ -60,7 +60,7 @@ c++-macos-shell:
     # - apt-get -qq update
     # - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     # - g++ --version
-    - brew install cmake
+    - brew install boost cmake
     - c++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
@@ -71,6 +71,7 @@ g++-omp-thrust:
   stage: build
   interruptible: true
   tags:
+    - docker
     - non-shared
   script:
     - apt-get clean
@@ -282,6 +283,7 @@ clang++ ubsan:  # more UB is detected on Release
   stage: build
   tags:
     - non-shared
+    - docker
   interruptible: true
   script:
     - apt-get -qq update
