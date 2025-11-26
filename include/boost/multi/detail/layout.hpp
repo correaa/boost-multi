@@ -1510,7 +1510,7 @@ struct bilayout {
 		friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, stride_type const& self) { auto ret{ptr}; ret+=self; return ret; }
 	};
 
-	using index_range     = void;
+	using index_range     = multi::range<index>;
 	using extension_type  = void;
 	using extensions_type = void;
 	using sizes_type      = void;
