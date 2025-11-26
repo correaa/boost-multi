@@ -60,6 +60,7 @@ c++-macos-shell:
     # - apt-get -qq update
     # - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     # - g++ --version
+    - brew install cmake
     - c++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
