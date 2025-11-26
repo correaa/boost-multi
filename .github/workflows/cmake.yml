@@ -155,7 +155,7 @@ jobs:
       run: .\vcpkg\vcpkg install fftw3
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization fftw3
+      run: .\vcpkg\vcpkg install boost-multi-array boost-serialization fftw3
 
     - name: Set up Boost environment variables
       run: |
@@ -198,7 +198,7 @@ jobs:
       run: .\vcpkg\vcpkg install fftw3
 
     - name: Install Boost
-      run: .\vcpkg\vcpkg install boost-multi-array boost-timer boost-serialization
+      run: .\vcpkg\vcpkg install boost-multi-array boost-serialization
 
     - name: Set up Boost environment variables
       run: |
