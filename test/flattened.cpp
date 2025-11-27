@@ -125,6 +125,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const& barr = arr.flattened();
 
 		BOOST_TEST( barr.size() == 15 );
+
+		// auto const& bbarr = barr.flattened();
 	}
 
 	return boost::report_errors();
