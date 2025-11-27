@@ -56,7 +56,7 @@ c++-macos-shell:
   tags:
     - macos
   script:
-    - brew install boost cmake fftw
+    # - brew install boost cmake fftw  # one time
     - cmake --version
     - c++ --version
     - mkdir build && cd build
