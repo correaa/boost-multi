@@ -277,7 +277,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			complex cee{1.0, 2.0};
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test purposes
-			auto* ceePC = reinterpret_cast<double (*)[2]>(&cee);
+			auto* ceePC = reinterpret_cast<double(*)[2]>(&cee);
 			(*ceePC)[0] = 11.0;
 			BOOST_TEST( ceePC );
 			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );

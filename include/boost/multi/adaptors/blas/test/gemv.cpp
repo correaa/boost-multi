@@ -183,7 +183,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::array<T, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
 			MV(a, x, w2);
-			BOOST_TEST_LT(std::abs(w2[0] - y[0]), 0.0001);
+			BOOST_TEST( std::abs(w2[0] - y[0]) < 0.0001F );
 		}
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
