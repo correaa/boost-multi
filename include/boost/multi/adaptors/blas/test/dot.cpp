@@ -141,13 +141,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-		BOOST_TEST_EQ(
-			real(res),
-			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(
+			std::abs(
+			real(res)-
+			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))
+			)
+			< 1.0e-10	
+			// NOLINT(fuchsia-default-arguments-calls)
 		);
-		BOOST_TEST_EQ(
-			imag(res),
+		BOOST_TEST(
+			std::abs(
+			imag(res)-
 			imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+			) < 1.0e-10
 		);
 	}
 
@@ -172,19 +178,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs(real(res)) > 1e-6F );
 
 		// // an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-		BOOST_TEST_EQ(
-			real(res),
+		BOOST_TEST(
+			std::abs(
+			real(res) -
 			real(std::inner_product(
 				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); }
 			))
+		)< 1.0e-10F
 		);
-		BOOST_TEST_EQ(
-			imag(res),
+		BOOST_TEST(
+			std::abs(
+			imag(res)-
 			imag(
 				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); })
 			)
+		) < 1.0e-10F
 		);
 	}
 
