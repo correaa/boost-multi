@@ -1446,6 +1446,39 @@ class contiguous_layout {
 	}
 };
 
+template<typename Stride1, typename Stride2, typename Size1>
+class bistride {
+	using stride1_type = Stride1;
+	using size1_type = Size1;
+	using stride2_type = Stride2;
+	using offset_type     = std::ptrdiff_t;
+
+	stride1_type stride1_;
+	stride2_type stride2_;
+	size_type    nelems2_;
+
+	public:
+	using category = std::random_access_iterator_tag;
+
+	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size)  // NOLINT(bugprone-easily-swappable-parameters)
+	: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
+	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return bistride{stride1_, nn * stride2_, nelems2_}; }
+	BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
+	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+	#endif
+	template<class Ptr>
+	friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, bistride const& self) -> Ptr& {
+		return ptr += (self.stride2_ % self.nelems2_) + ((self.stride2_ / self.nelems2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+	}
+	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
+	template<class Ptr>
+	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) { auto ret{ptr}; ret+=self; return ret; }
+};
+
 template<dimensionality_type D>
 struct bilayout {
 	using size_type       = multi::size_t;  // SSize;
@@ -1483,32 +1516,7 @@ struct bilayout {
 	using offset_type     = std::ptrdiff_t;
 	// using stride_type     = void;  // std::pair<stride1_type, stride2_type>;
 
-	class stride_type {
-		stride1_type stride1_;
-		stride2_type stride2_;
-		size_type    nelems2_;
-
-		public:
-		using category = std::random_access_iterator_tag;
-
-		BOOST_MULTI_HD constexpr explicit stride_type(stride1_type stride1, stride2_type stride2, size_type size)  // NOLINT(bugprone-easily-swappable-parameters)
-		: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
-		BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return stride_type{stride1_, nn * stride2_, nelems2_}; }
-		BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
-		#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-		#endif
-		template<class Ptr>
-		friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, stride_type const& self) -> Ptr& {
-			return ptr += (self.stride2_ % self.nelems2_) + ((self.stride2_ / self.nelems2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
-		}
-		#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-		#pragma clang diagnostic pop
-		#endif
-		template<class Ptr>
-		friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, stride_type const& self) { auto ret{ptr}; ret+=self; return ret; }
-	};
+	using stride_type = bistride<stride1_type, stride2_type, size_type>;
 
 	using index_range     = multi::range<index>;
 	using extension_type  = void;
