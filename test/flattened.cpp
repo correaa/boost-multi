@@ -105,14 +105,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &*(barr.begin() + 1) == &barr[1] );
 	}
 	{
-		multi::array<int, 2> arr({3, 5});
+		multi::array<int, 2> arr = {
+			{0, 1, 2, 3, 4},
+			{5, 6, 7, 8, 9},
+			{10, 11, 12, 13, 14}
+		};
 
-		auto&& barr = arr.flattened();
+		BOOST_TEST( arr.size() == 3 );
+
+		auto&& barr = arr().flattened();
 
 		BOOST_TEST( &barr [0] == &arr[0][0] );
 
 		BOOST_TEST( &*barr.begin() == &barr[0] );
 		BOOST_TEST( &*(barr.begin() + 1) == &barr[1] );
+
+		auto it = barr.begin();
+		BOOST_TEST( &*it == &arr[0][0] );
+		BOOST_TEST( &*(it + 1) == &arr[0][1] );
+		BOOST_TEST( &*(it + 4) == &arr[0][4] );
+		std::cout << *(it + 5) << std::endl;
+		BOOST_TEST( &*(it + 5) == &arr[1][0] );
+		// multi::detail::what(it);
 	}
 	{
 		multi::array<int, 1> const arr({5});
