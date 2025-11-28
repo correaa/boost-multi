@@ -124,7 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &*it == &arr[0][0] );
 		BOOST_TEST( &*(it + 1) == &arr[0][1] );
 		BOOST_TEST( &*(it + 4) == &arr[0][4] );
-		std::cout << *(it + 5) << std::endl;
+
 		BOOST_TEST( &*(it + 5) == &arr[1][0] );
 		// multi::detail::what(it);
 	}
