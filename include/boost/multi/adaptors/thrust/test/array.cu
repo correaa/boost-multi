@@ -183,7 +183,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			thrust::copy_n(thrust::cuda::par, aA.data_elements(), aA.size(), aB.data_elements());
 
-			auto Ait = multi::array_iterator<int, 1, thrust::device_ptr<int>>(Aptr, 1);
+			auto Ait = multi::array_iterator<int, 1, thrust::device_ptr<int>>(Aptr, {}, 1);
 
 			static_assert(std::is_same_v<
 						  ::thrust::iterator_system<decltype(Ait)>::type,
