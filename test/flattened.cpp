@@ -152,6 +152,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& arr = arr_original({0, 3}, {0, 5});
 
+		multi::array_iterator<int, 2, int *> const bit{arr.base(), arr.layout().sub(), arr.stride()};
+		BOOST_TEST(( *bit == multi::array{0, 1, 2, 3, 4} ));
+
+		// multi::detail::what(arr.begin());
+
 		BOOST_TEST( arr.size() == 3 );
 
 		auto&& barr = arr().flattened();
