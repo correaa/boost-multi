@@ -643,7 +643,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type { return stride_; }
 
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr { return self.base(); }
-	//  friend constexpr auto     stride(array_iterator const& self) -> stride_type { return self.stride_; }  // TODO(correaa) remove
+	friend constexpr auto     stride(array_iterator const& self) -> stride_type { return self.stride_; }  // TODO(correaa) remove
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
