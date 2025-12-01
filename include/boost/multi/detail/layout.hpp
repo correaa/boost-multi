@@ -1446,7 +1446,7 @@ class contiguous_layout {
 	}
 };
 
-template<typename Stride1, typename Stride2, typename Size1>
+template<typename Stride1, typename Stride2, typename Size1, typename Pointer = void*>
 class bistride {
 	using stride1_type = Stride1;
 	using size1_type = Size1;
@@ -1454,6 +1454,7 @@ class bistride {
 	using offset_type     = std::ptrdiff_t;
 
 	stride1_type stride1_;
+	Pointer ptr_ = {};
 	stride2_type stride2_;
 	size_type    nelems2_;
 
@@ -1546,6 +1547,36 @@ struct bilayout {
 	auto is_compact() const = delete;
 
 	using index_extension = multi::index_extension;
+};
+
+template<class Ptr>
+class segmented_ptr {
+	Ptr ptr_;
+	Ptr first_;
+	Ptr last_;
+	std::ptrdiff_t stride_;
+
+ public:
+	segmented_ptr(Ptr ptr, Ptr first, Ptr last, std::ptrdiff_t stride) : ptr_{ptr}, first_{first}, last_{last}, stride_{stride} {}
+	auto operator++() -> segmented_ptr& {
+		++ptr_;
+		if(ptr_ == last_) {
+			first_ += stride_;
+			last_ += stride_;
+			ptr_ = first_;
+		}
+		return *this;
+	}
+
+	auto operator--() -> segmented_ptr& {
+		if(ptr_ == first_) {
+			first_ -= stride_;
+			last_ -= stride_;
+			ptr_ = last_;
+		}
+		--ptr_;
+		return *this;
+	}
 };
 
 template<dimensionality_type D, typename SSize>
