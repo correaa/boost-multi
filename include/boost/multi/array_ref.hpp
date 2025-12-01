@@ -543,8 +543,6 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
-	// BOOST_MULTI_HD constexpr explicit array_iterator(std::nullptr_t nil) : ptr_{nil} {}
-	// BOOST_MULTI_HD constexpr array_iterator() : array_iterator{nullptr} {}
 	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
 
 	template<class, dimensionality_type, class, bool, bool, typename> friend struct array_iterator;
@@ -555,8 +553,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
 	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
-	template<class EElement, typename PPtr, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr  // propagate implicitness of pointer
-			 >
+	template<class EElement, typename PPtr, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr>  // propagate implicitness of pointer
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr /*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: ptr_(other.ptr_), stride_{other.stride_} {}
@@ -603,11 +600,6 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	}
 
 	BOOST_MULTI_HD constexpr auto operator<(array_iterator const& other) const -> bool {
-		// BOOST_MULTI_ASSERT((*ptr_).layout() == (*(other.ptr_)).layout());
-		// BOOST_MULTI_ASSERT(stride_ != 0);
-		// return
-		//     ((0 < stride_) && (ptr_.base() - other.ptr_.base() < 0))
-		//  || ((stride_ < 0) && (0 < ptr_.base() - other.ptr_.base()));  // TODO(correaa) consider the case where stride_ is negative
 		return 0 < other - *this;
 	}
 
@@ -632,7 +624,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 
  private:
 	ptr_type    ptr_;
-	stride_type stride_;  // = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?  // TODO(correaa) remove to make type trivial
+	stride_type stride_;
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -650,7 +642,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr auto base() const -> element_ptr { return ptr_.base_; }
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type { return stride_; }
 
-	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr { return self.base(); }     // TODO(correaa) remove
+	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr { return self.base(); }
 	friend constexpr auto     stride(array_iterator const& self) -> stride_type { return self.stride_; }  // TODO(correaa) remove
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -662,6 +654,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		ptr_.base_ += stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
+
 	constexpr auto operator--() -> array_iterator& {
 		ptr_.base_ -= stride_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
@@ -681,6 +674,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		advance_(+n);
 		return *this;
 	}
+
 	constexpr auto operator-=(difference_type n) -> array_iterator& {
 		advance_(-n);
 		return *this;
