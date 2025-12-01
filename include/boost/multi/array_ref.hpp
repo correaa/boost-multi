@@ -2504,8 +2504,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	BOOST_MULTI_HD explicit constexpr array_iterator(Ptr ptr, Stride stride)
-	: ptr_{std::move(ptr)}, stride_{stride} {}
+	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, 0, element_ptr>::element_ptr base, layout_t<0> const& /*lyt*/, Stride stride)
+	: ptr_(std::move(base) /*, lyt*/), stride_{stride} {}
 
  private:
 	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
@@ -3201,8 +3201,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator{this->base_, this->stride()}; }
-	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->stride()}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator{this->base_, this->layout().sub(), this->stride()}; }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{this->base_ + types::nelems(), this->layout().sub(), this->stride()}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
