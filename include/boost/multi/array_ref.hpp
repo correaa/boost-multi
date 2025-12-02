@@ -1164,8 +1164,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
-	constexpr auto elements() & -> elements_range { return elements_aux_(); }
-	constexpr auto elements() && -> elements_range { return elements_aux_(); }
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }
 	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
 
@@ -2000,6 +1998,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
+	using const_subarray<T, D, ElementPtr, Layout>::elements;
+	constexpr auto elements() &  { return this->elements_aux_(); }
+	constexpr auto elements() && { return this->elements_aux_(); }
+
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto begin() && noexcept { return this->begin_aux_(); }
@@ -2696,6 +2698,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr operator element_ref() && noexcept { return *(this->base_); }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref() & noexcept { return *(this->base_); }        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref() const& noexcept { return *(this->base_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+
+	constexpr auto elements() const&;
 
 	constexpr auto begin() const& = delete;
 	constexpr auto end() const&   = delete;
