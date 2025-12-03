@@ -28,24 +28,28 @@ else()
         if(NOT Thrust_FOUND)
             message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
 
-            find_package(Git QUIET)
+            find_package(CCCL COMPONENTS Thrust)
 
-            if(GIT_FOUND)
-                message(STATUS "Git command found: ${GIT_EXECUTABLE}")
-            else()
-                message(WARNING "Git command not found, won't fetch content.")
-                return()
+            if(NOT CCCL_FOUND)
+                find_package(Git QUIET)
+
+                if(GIT_FOUND)
+                    message(STATUS "Git command found: ${GIT_EXECUTABLE}")
+                else()
+                    message(WARNING "Git command not found, won't fetch content.")
+                    return()
+                endif()
+
+                include(FetchContent)
+                FetchContent_Declare(
+                    cccl-cmake
+                    GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
+                    GIT_TAG main
+                    GIT_SHALLOW ON
+                )
+                FetchContent_MakeAvailable(cccl-cmake)
             endif()
 
-            include(FetchContent)
-            FetchContent_Declare(
-                cccl-cmake
-                GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-                GIT_TAG main
-                GIT_SHALLOW ON
-            )
-            FetchContent_MakeAvailable(cccl-cmake)
-            
         endif()
 
         include(CTest)
