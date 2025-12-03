@@ -103,7 +103,7 @@ arm64:
   needs: ["g++"]
 
 c++-macos-shell:
-  stage: basic
+  stage: build
   interruptible: true
   allow_failure: true  # runner might not be available
   tags:
