@@ -49,21 +49,6 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
-
-c++-macos-shell:
-  stage: basic
-  interruptible: false
-  tags:
-    - macos
-  script:
-    # - brew install boost cmake fftw  # one time
-    - cmake --version
-    - c++ --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
-    - cmake --build . --parallel 2 || cmake --build . --verbose
-    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
-
 g++-omp-thrust:
   stage: build
   interruptible: true
@@ -116,6 +101,23 @@ arm64:
     - cmake --build .
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -j 2 --output-on-failure
   needs: ["g++"]
+
+c++-macos-shell:
+  stage: build
+  interruptible: true
+  allow_failure: true  # runner might not be available
+  tags:
+    - macos
+    - shell
+  script:
+    # - brew install boost cmake fftw  # one time
+    - cmake --version
+    - c++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+  needs: ["clang++"]
 
 coverage:
   stage: build
