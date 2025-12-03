@@ -41,7 +41,7 @@ else()
             FetchContent_Declare(
                 cccl-cmake
                 GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-                GIT_TAG main
+                GIT_TAG v3.1.0  # main
                 GIT_SHALLOW ON
             )
             FetchContent_MakeAvailable(cccl-cmake)
