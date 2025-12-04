@@ -20,11 +20,11 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "NVHPC")
 endif()
 
 if(DISABLE_THRUST_OMP)
-    message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
+    message(WARNING "OMP disabled, OMP-through-Thrust capabilities will not be tested")
 else()
     if(OpenMP_FOUND)
-
         find_package(Thrust CONFIG)
+
         if(NOT Thrust_FOUND)
             message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
 
@@ -45,7 +45,6 @@ else()
                 GIT_SHALLOW ON
             )
             FetchContent_MakeAvailable(cccl-cmake)
-            
         endif()
 
         include(CTest)
@@ -55,9 +54,12 @@ else()
 
         add_executable(omp.cpp.x omp.cpp)
 
-        target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
-        target_link_libraries(omp.cpp.x PUBLIC ThrustOMP)
-        target_link_libraries(omp.cpp.x PUBLIC multi Boost::boost OpenMP::OpenMP_CXX)
+        # target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
+        # target_link_libraries(omp.cpp.x PUBLIC ThrustOMP)
+        # target_link_libraries(omp.cpp.x PUBLIC multi Boost::boost OpenMP::OpenMP_CXX)
+        #
+        # could just be:
+        target_link_libraries(omp.cpp.x PUBLIC multi Boost::boost ThrustOMP)
 
         add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
     else()
