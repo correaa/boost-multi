@@ -237,6 +237,50 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &(*(it + 10)) == &arr[2][0] );
 		BOOST_TEST( &(*(it + 11)) == &arr[2][1] );
+
+		BOOST_TEST( &(*it) == &arr[0][0] );
+		++it;
+		BOOST_TEST( &(*it) == &arr[0][1] );
+		++it;
+		BOOST_TEST( &(*it) == &arr[0][2] );
+		it += 2;
+		BOOST_TEST( &(*it) == &arr[0][4] );
+
+		++it;
+		BOOST_TEST( &(*(it)) == &arr[1][0] );
+		++it;
+		BOOST_TEST( &(*(it)) == &arr[1][1] );
+
+		it += 7;
+		BOOST_TEST( &(*(it)) == &arr[2][3] );
+
+		auto it2 = barr.begin();
+		++it2;
+		it2 += 12;
+		BOOST_TEST( &(*(it2)) == &arr[2][3] );
+
+		// multi::detail::what(it);
+	}
+	{
+		multi::array<int, 2> const arr({3 + 1, 5 + 2});
+
+		auto const& barr = arr({0, 3}, {0, 5}).flattened();
+
+		BOOST_TEST( barr.size() == 15 );
+
+		auto it = barr.begin();
+
+		BOOST_TEST( &(*(it + 0)) == &arr[0][0] );
+		BOOST_TEST( &(*(it + 1)) == &arr[0][1] );
+		BOOST_TEST( &(*(it + 2)) == &arr[0][2] );
+		BOOST_TEST( &(*(it + 3)) == &arr[0][3] );
+		BOOST_TEST( &(*(it + 4)) == &arr[0][4] );
+
+		BOOST_TEST( &(*(it + 5)) == &arr[1][0] );
+		BOOST_TEST( &(*(it + 6)) == &arr[1][1] );
+
+		BOOST_TEST( &(*(it + 10)) == &arr[2][0] );
+		BOOST_TEST( &(*(it + 11)) == &arr[2][1] );
 	}
 
 	return boost::report_errors();
