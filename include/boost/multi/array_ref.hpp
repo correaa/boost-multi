@@ -2594,6 +2594,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	BOOST_MULTI_HD constexpr auto operator*() const noexcept -> reference {
 		return static_cast<reference>(*ptr_);
 	}
+
+	// BOOST_MULTI_HD constexpr auto segment() const -> segment_type {
+	// }
 };
 
 #ifdef __clang__
