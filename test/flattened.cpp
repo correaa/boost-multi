@@ -250,7 +250,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &(*it) == &arr[0][4] );
 
 			++it;
-			std::cout << *it << '\n';
+			// std::cout << *it << '\n';
 			BOOST_TEST( &(*it) == &arr[1][0] );
 
 			// ++it;
