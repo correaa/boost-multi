@@ -205,14 +205,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( barr.size() == 15 );
 
-		// auto it = barr.begin();
-		// BOOST_TEST( &*(it + 0)[0] == &arr[0][0][0] );
-		// BOOST_TEST( &*(it + 1)[0] == &arr[0][1][0] );
-		// BOOST_TEST( &*(it + 2)[0] == &arr[0][2][0] );
-		// BOOST_TEST( &*(it + 3)[0] == &arr[0][3][0] );
-		// BOOST_TEST( &*(it + 4)[0] == &arr[0][4][0] );
+		auto it = barr.begin();
 
-		// auto const& bbarr = barr.flattened();
+		BOOST_TEST( &(*(it + 0))[0] == &arr[0][0][0] );
+		BOOST_TEST( &(*(it + 1))[0] == &arr[0][1][0] );
+		BOOST_TEST( &(*(it + 2))[0] == &arr[0][2][0] );
+		BOOST_TEST( &(*(it + 3))[0] == &arr[0][3][0] );
+		BOOST_TEST( &(*(it + 4))[0] == &arr[0][4][0] );
+
+		BOOST_TEST( &(*(it + 5))[0] == &arr[1][0][0] );
+
+		BOOST_TEST( &(*(it + 10))[0] == &arr[2][0][0] );
+	}
+	{
+		multi::array<int, 2> const arr({3, 5});
+
+		auto const& barr = arr.flattened();
+
+		BOOST_TEST( barr.size() == 15 );
+
+		auto it = barr.begin();
+
+		BOOST_TEST( &(*(it + 0)) == &arr[0][0] );
+		BOOST_TEST( &(*(it + 1)) == &arr[0][1] );
+		BOOST_TEST( &(*(it + 2)) == &arr[0][2] );
+		BOOST_TEST( &(*(it + 3)) == &arr[0][3] );
+		BOOST_TEST( &(*(it + 4)) == &arr[0][4] );
+
+		BOOST_TEST( &(*(it + 5)) == &arr[1][0] );
+		BOOST_TEST( &(*(it + 6)) == &arr[1][1] );
+
+		BOOST_TEST( &(*(it + 10)) == &arr[2][0] );
+		BOOST_TEST( &(*(it + 11)) == &arr[2][1] );
 	}
 
 	return boost::report_errors();

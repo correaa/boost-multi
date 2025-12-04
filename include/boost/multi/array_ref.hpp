@@ -541,7 +541,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 
 	using ptr_type = subarray_ptr<element, D - 1, element_ptr, layout_t<D - 1>, true>;
 
-	using stride_type = index;
+	using stride_type = Stride;
 	using layout_type = typename reference::layout_type;  // layout_t<D - 1>
 
 	BOOST_MULTI_HD constexpr array_iterator() : ptr_{}, stride_{} {}  // = default;  // TODO(correaa) make = default, now it is not compiling
@@ -549,14 +549,16 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 	template<class, dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
 
 	template<
-		class EElement, typename PPtr,
-		decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr>
-	BOOST_MULTI_HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& other)
+		class EElement, typename PPtr, bool B, typename S, class L,
+		decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr, false, B, S, L>>().base()))* = nullptr>
+	BOOST_MULTI_HD constexpr explicit array_iterator(array_iterator<EElement, D, PPtr, false, B, S, L> const& other)
 	: ptr_{element_ptr{other.base()}, other.ptr_->layout()}, stride_{other.stride_} {}
 
-	template<class EElement, typename PPtr, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().base()))* = nullptr>  // propagate implicitness of pointer
+	template<
+		class EElement, typename PPtr, bool B, typename S, class L,
+		decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr, false, B, S, L>>().base()))* = nullptr>  // propagate implicitness of pointer
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	BOOST_MULTI_HD constexpr /*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	BOOST_MULTI_HD constexpr /*mplct*/ array_iterator(array_iterator<EElement, D, PPtr, false, B, S, L> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: ptr_(other.ptr_), stride_{other.stride_} {}
 
 	array_iterator(array_iterator const&)                    = default;
@@ -604,7 +606,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		return 0 < other - *this;
 	}
 
-	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D - 1, element_ptr>::element_ptr base, layout_t<D - 1> const& lyt, index stride)
+	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D - 1, element_ptr>::element_ptr base, layout_t<D - 1> const& lyt, stride_type stride)
 	: ptr_(base, lyt), stride_{stride} {}
 
 	template<class, dimensionality_type, class, class> friend struct const_subarray;
@@ -1610,9 +1612,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
-	using iterator       = array_iterator<element, D, element_ptr>;
-	using const_iterator = array_iterator<element, D, element_ptr, true>;
-	using move_iterator  = array_iterator<element, D, element_ptr, false, true>;
+	using iterator       = array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using const_iterator = array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using move_iterator  = array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;
 
 	// using  move_iterator = array_iterator<element, D, element_move_ptr >;
 
