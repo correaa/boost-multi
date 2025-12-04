@@ -1541,7 +1541,7 @@ struct bilayout {
 	auto extensions() const = delete;
 	auto is_empty() const   = delete;
 	auto empty() const      = delete;
-	auto sub() const        = delete;
+	BOOST_MULTI_HD constexpr auto sub() const { return sub_; }
 	auto sizes() const      = delete;
 
 	auto is_compact() const = delete;
