@@ -1454,16 +1454,16 @@ class bistride {
 	using offset_type     = std::ptrdiff_t;
 
 	stride1_type stride1_;
-	Pointer ptr_ = {};
 	stride2_type stride2_;
 	size_type    nelems2_;
+	Pointer ptr_;
 
 	public:
 	using category = std::random_access_iterator_tag;
 
-	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size)  // NOLINT(bugprone-easily-swappable-parameters)
-	: stride1_{stride1}, stride2_{stride2}, nelems2_{size} {}
-	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return bistride{stride1_, nn * stride2_, nelems2_}; }
+	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size, Pointer ptr)  // NOLINT(bugprone-easily-swappable-parameters)
+	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr} {}
+	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return bistride{stride1_, nn * stride2_, nelems2_, ptr_}; }
 	BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic push
@@ -1471,7 +1471,9 @@ class bistride {
 	#endif
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, bistride const& self) -> Ptr& {
-		return ptr += (self.stride2_ % self.nelems2_) + ((self.stride2_ / self.nelems2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+		assert(self.ptr_);
+		auto dist = ptr - static_cast<Ptr>(self.ptr_);
+		return ptr = static_cast<Ptr>(self.ptr_) + ((self.stride2_ + dist) % self.nelems2_) + (((self.stride2_ + dist) / self.nelems2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic pop
@@ -1503,6 +1505,7 @@ struct bilayout {
 	stride2_type stride2_;
 	size_type    nelems2_;
 	sub_type     sub_;
+	void* ptr_;
 
  public:
 	bilayout(
@@ -1510,9 +1513,10 @@ struct bilayout {
 		size_type    nelems1,
 		stride2_type stride2,  // NOLINT(bugprone-easily-swappable-parameters)
 		size_type    nelems2,
-		sub_type     sub
+		sub_type     sub,
+		void* ptr
 	)
-	: stride1_{stride1}, nelems1_{nelems1}, stride2_{stride2}, nelems2_{nelems2}, sub_{std::move(sub)} {}
+	: stride1_{stride1}, nelems1_{nelems1}, stride2_{stride2}, nelems2_{nelems2}, sub_{std::move(sub)}, ptr_{ptr} {}
 
 	using offset_type     = std::ptrdiff_t;
 	// using stride_type     = void;  // std::pair<stride1_type, stride2_type>;
@@ -1529,7 +1533,7 @@ struct bilayout {
 
 	// auto stride() const = delete;
 	BOOST_MULTI_HD constexpr auto stride() const {
-		return stride_type{stride1_, stride2_, nelems2_};
+		return stride_type{stride1_, stride2_, nelems2_, ptr_};
 	}
 	auto num_elements() const = delete;
 
@@ -1582,13 +1586,15 @@ class segmented_ptr {
 template<dimensionality_type D, typename SSize>
 struct layout_t
 	: multi::equality_comparable<layout_t<D, SSize>> {
-	auto flatten() const {
+	template<class Ptr = void*>
+	auto flatten(Ptr ptr) const {
 		return bilayout<D - 1>{
 			stride(),
 			nelems(),
 			sub().stride(),
 			sub().nelems(),
-			sub().sub()
+			sub().sub(),
+			ptr
 		};
 	}
 
