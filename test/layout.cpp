@@ -388,30 +388,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_3)
-// 	{
-// 		multi::array<double, 2> arr(
-// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-// 			multi::extensions_t<2>
-// #endif
-// 			{50, 50}
-// 		);
-// 		BOOST_TEST( size(arr)  == 50 );
-// 		BOOST_TEST( arr.size() == 50 );
+	// 	{
+	// 		multi::array<double, 2> arr(
+	// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+	// 			multi::extensions_t<2>
+	// #endif
+	// 			{50, 50}
+	// 		);
+	// 		BOOST_TEST( size(arr)  == 50 );
+	// 		BOOST_TEST( arr.size() == 50 );
 
-// 		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
-// 		BOOST_TEST( size(arr[0].sliced(10, 20))  == 10 );
+	// 		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
+	// 		BOOST_TEST( size(arr[0].sliced(10, 20))  == 10 );
 
-// 		static_assert(decltype(arr(0, {10, 20}))::rank_v == 1);
+	// 		static_assert(decltype(arr(0, {10, 20}))::rank_v == 1);
 
-// 		BOOST_TEST( size(arr(0, {10, 20})) == 10 );
+	// 		BOOST_TEST( size(arr(0, {10, 20})) == 10 );
 
-// 		BOOST_TEST(      arr.layout() == arr.layout()  );
-// 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
+	// 		BOOST_TEST(      arr.layout() == arr.layout()  );
+	// 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
 
-// 		// auto bl = arr.layout().flatten();
-// 		auto const& barr = arr.flattened();
-// 		BOOST_TEST( &barr[10] == &arr[0][10] );
-// 	}
+	// 		// auto bl = arr.layout().flatten();
+	// 		auto const& barr = arr.flattened();
+	// 		BOOST_TEST( &barr[10] == &arr[0][10] );
+	// 	}
 	// {
 	// 	multi::array<double, 2> arr({6, 10});
 
