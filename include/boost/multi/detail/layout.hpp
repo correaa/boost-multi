@@ -1457,18 +1457,16 @@ class bistride {
 	stride2_type stride2_;
 	size_type    nelems2_;
 	Pointer ptr_;
-	std::ptrdiff_t n_ = 1;
+	std::ptrdiff_t n_;
 
 	public:
 	using category = std::random_access_iterator_tag;
 
 	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size, Pointer ptr)  // NOLINT(bugprone-easily-swappable-parameters)
-	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{stride2} {}
+	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{1} {}
 
 	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size, Pointer ptr, std::ptrdiff_t n)  // NOLINT(bugprone-easily-swappable-parameters)
-	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{n} {
-		std::cout << "constructor n_ " << n_ << "\n";
-	}
+	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{n} {}
 
 	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return bistride{stride1_, stride2_, nelems2_, ptr_, nn*n_}; }
 
@@ -1478,13 +1476,8 @@ class bistride {
 	#endif
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, bistride const& self) -> Ptr& {
-		assert(self.ptr_);
-		std::cout << "stride1_ " << self.stride1_ << '\n';
-		std::cout << "stride2_ " << self.stride2_ << '\n';
-		std::cout << "n_ " << self.n_ << '\n';
-
-		auto dist = ptr - static_cast<Ptr>(self.ptr_);
-		return ptr = static_cast<Ptr>(self.ptr_) + ((self.n_ + dist) % self.stride2_) + (((self.n_ + dist) / self.stride2_) * self.stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,clang-diagnostic-unsafe-buffer-usage)
+		ptr = ptr + self;
+		return ptr;
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic pop
@@ -1492,15 +1485,20 @@ class bistride {
 
 	BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
 	template<class Ptr>
-	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& /*self*/) {
-		return ptr;
-		// auto dist = ptr - static_cast<Ptr>(self.ptr_);
-		// auto y = dist / nelems2_;  // self.stride2_;
-		// dist -= stride2_*y;
-		// auto x = dist / stride2_;
-		// dist -= dist % self.stride2_;
-		// return ptr = static_cast<Ptr>(self.ptr_) + ((self.n_ + dist) % self.stride2_) + (((self.n_ + dist) / self.stride2_) * self.stride1_);
-		// auto ret{ptr}; ret+=self; return ret;
+	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
+		auto base = static_cast<Ptr>(self.ptr_);
+		auto dist = ptr - base;
+		auto i = dist / self.stride1_;
+		auto j = (dist % self.stride1_) / self.stride2_;
+
+		auto shift = j + self.n_;
+		auto size2 = self.nelems2_/self.stride2_;
+
+		auto j0 = shift % size2;
+		auto i0 = (shift / size2) + i;
+
+		auto ret = base + (i0 * self.stride1_) + (j0 * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return ret;
 	}
 };
 
@@ -1555,7 +1553,7 @@ struct bilayout {
 
 	// auto stride() const = delete;
 	BOOST_MULTI_HD constexpr auto stride() const {
-		return stride_type{stride1_, stride2_, nelems2_, ptr_};
+		return stride_type{stride1_, stride2_, nelems2_, ptr_, 1};
 	}
 	auto num_elements() const = delete;
 
