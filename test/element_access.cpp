@@ -389,43 +389,43 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 	{
-		multi::array<int, 2> arr({(5*5) + 3, (7*7) + 11});
-		auto&& barr = arr({0, static_cast<multi::index>(5*5)}, {0, static_cast<multi::index>(7*7)}).strided(5);
+		multi::array<int, 2> arr({(5 * 5) + 3, (7 * 7) + 11});
+		auto&&               barr = arr({0, static_cast<multi::index>(5 * 5)}, {0, static_cast<multi::index>(7 * 7)}).strided(5);
 
 		BOOST_TEST( barr.size() == 5 );
 		BOOST_TEST( barr.stride() == static_cast<multi::index>(5*((7*7) + 11)) );
 
 		{
-			auto x0 = 3;
-			auto y0 = 13;
+			auto i0 = 3;
+			auto j0 = 13;
 
-			auto ptr = &(barr[x0][y0]);
+			auto* ptr = &(barr[i0][j0]);
 
 			auto dist = ptr - barr.base();
 
-			auto x = dist / barr.layout().stride();  // get<1>(barr.layout().nelemss());
+			auto i = dist / barr.layout().stride();  // get<1>(barr.layout().nelemss());
 
-			BOOST_TEST( x == x0 );
+			BOOST_TEST( i == i0 );
 
 			dist = dist % barr.layout().stride();
 
 			using std::get;
-			auto y = dist / get<1>(barr.layout().strides());
+			auto j = dist / get<1>(barr.layout().strides());
 
-			BOOST_TEST( y == y0 );
+			BOOST_TEST( j == j0 );
 		}
 		{
 			using std::get;
 			auto [is, js] = barr.extensions();
 			for(auto i : is) {
-				for(auto j : js) {
+				for(auto j : js) {  // NOLINT(altera-unroll-loops)
 					BOOST_TEST(
 						&barr[i][j] == 
 						&barr[
-							(&(barr[i][j]) - barr.base()) / get<0>(barr.strides())
+							(&barr[i][j] - barr.base()) / get<0>(barr.strides())
 						]
 						[
-							(&(barr[i][j]) - barr.base()) % get<0>(barr.strides()) / get<1>(barr.strides())
+							(&barr[i][j] - barr.base()) % get<0>(barr.strides()) / get<1>(barr.strides())
 						]
 					);
 				}
