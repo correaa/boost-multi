@@ -1479,6 +1479,21 @@ class bistride {
 		ptr = ptr + self;
 		return ptr;
 	}
+
+	template<class Ptr>
+	friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, bistride& self) -> Ptr& {
+		if(self.n_ == 1) {
+			ptr += self.stride2_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			if(ptr == static_cast<Ptr>(self.ptr_) + self.nelems2_) {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				self.ptr_ = static_cast<Ptr>(self.ptr_) + self.stride1_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				ptr = static_cast<Ptr>(self.ptr_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			}
+		} else {
+			ptr = ptr + self;
+		}
+		return ptr;
+	}
+
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic pop
 	#endif

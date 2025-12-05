@@ -394,7 +394,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& barr = arr({0, 5L * 5L}, {0, 7L * 7L}).strided(5);
 
 		BOOST_TEST( barr.size() == 5 );
-		BOOST_TEST( barr.stride() == static_cast<multi::index>(5*((7*7) + 11)) );
+		BOOST_TEST( barr.stride() == 5L*((7L*7L) + 11L) );
 
 		{
 			auto i0 = 3;
@@ -421,7 +421,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			for(auto i : is) {
 				for(auto j : js) {  // NOLINT(altera-unroll-loops)
 					BOOST_TEST(
-						&barr[i][j] == 
+						&barr[i][j] ==
 						&barr[
 							(&barr[i][j] - barr.base()) / get<0>(barr.strides())
 						]

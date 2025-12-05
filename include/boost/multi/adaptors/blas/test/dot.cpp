@@ -146,7 +146,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			real(res)-
 			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))
 			)
-			< 1.0e-10	
+			< 1.0e-10
 			// NOLINT(fuchsia-default-arguments-calls)
 		);
 		BOOST_TEST(
