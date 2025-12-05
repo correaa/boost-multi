@@ -390,7 +390,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		multi::array<int, 2> arr({(5 * 5) + 3, (7 * 7) + 11});
-		auto&&               barr = arr({0, static_cast<multi::index>(5 * 5)}, {0, static_cast<multi::index>(7 * 7)}).strided(5);
+
+		auto&& barr = arr({0, 5L * 5L}, {0, 7L * 7L}).strided(5);
 
 		BOOST_TEST( barr.size() == 5 );
 		BOOST_TEST( barr.stride() == static_cast<multi::index>(5*((7*7) + 11)) );

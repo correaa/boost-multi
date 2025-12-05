@@ -1500,6 +1500,15 @@ class bistride {
 		auto ret = base + (i0 * self.stride1_) + (j0 * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
+
+	template<class Ptr>
+	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
+		auto base = static_cast<Ptr>(ptr_);
+		auto dist = ptr - base;
+		auto i = dist / stride1_;
+		auto ret = base + (i * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return ret;
+	}
 };
 
 template<dimensionality_type D>
