@@ -388,5 +388,49 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( &A2D[_, 1][1] == &A2D[1, 1] ));
 #endif
 	}
+	{
+		multi::array<int, 2> arr({(5*5) + 3, (7*7) + 11});
+		auto&& barr = arr({0, static_cast<multi::index>(5*5)}, {0, static_cast<multi::index>(7*7)}).strided(5);
+
+		BOOST_TEST( barr.size() == 5 );
+		BOOST_TEST( barr.stride() == 5*((7*7) + 11) );
+
+		{
+			auto x0 = 3;
+			auto y0 = 13;
+
+			auto ptr = &(barr[x0][y0]);
+
+			auto dist = ptr - barr.base();
+
+			auto x = dist / barr.layout().stride();  // get<1>(barr.layout().nelemss());
+
+			BOOST_TEST( x == x0 );
+
+			dist = dist % barr.layout().stride();
+
+			using std::get;
+			auto y = dist / get<1>(barr.layout().strides());
+
+			BOOST_TEST( y == y0 );
+		}
+		{
+			using std::get;
+			auto [is, js] = barr.extensions();
+			for(auto i : is) {
+				for(auto j : js) {
+					BOOST_TEST(
+						&barr[i][j] == 
+						&barr[
+							(&(barr[i][j]) - barr.base()) / get<0>(barr.strides())
+						]
+						[
+							(&(barr[i][j]) - barr.base()) % get<0>(barr.strides()) / get<1>(barr.strides())
+						]
+					);
+				}
+			}
+		}
+	}
 	return boost::report_errors();
 }
