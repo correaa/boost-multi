@@ -2552,7 +2552,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> array_iterator& {
-		ptr_ += stride_ * n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		ptr_ = ptr_ + stride_ * n;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> array_iterator& {
