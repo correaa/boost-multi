@@ -1434,6 +1434,13 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, types::base_};
 	}
 
+ private:
+	auto flattened_aux_() const {
+		auto new_layout = this->layout().flatten(this->base_);
+		return multi::subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
+	}
+
+ public:
 	auto flattened() const {
 		auto new_layout = this->layout().flatten(this->base_);
 		return multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
@@ -2499,6 +2506,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	}
 
 	constexpr auto operator->() const { return static_cast<pointer>(ptr_); }
+
+	constexpr auto segment() const {}
 
 	using element     = Element;
 	using element_ptr = Ptr;

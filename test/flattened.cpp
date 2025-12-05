@@ -224,6 +224,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( &(*(it + 10)) == &arr[2][0] );
 			BOOST_TEST( &(*(it + 11)) == &arr[2][1] );
+
+			// auto&& sgm = it.segment();
 		}
 		{
 			auto it = barr.begin();
