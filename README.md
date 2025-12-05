@@ -17,7 +17,10 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 namespace multi = boost::multi;
 
 int main() {
-    multi::array<int, 2> A = {{1, 2, 3}, {4, 5, 6}};  // 2D array of integers
+    multi::array<int, 2> A = {  // 2D array of integers
+        {1, 2, 3},
+        {4, 5, 6}
+    };
 
     assert(A.size() == 2);                    // the array has 2 rows
     assert(A.size() == A.end() - A.begin());  // interators to rows
@@ -26,9 +29,20 @@ int main() {
 
     assert(A.elements().size() == 2 * 3);  // array has 6 elements
     assert(A.elements()[4] == 5);          // elements gives "flat" sequences
+
+    using multi::_;  // wildcard
+
+    auto&& col1 = A(_, 1);  // second column
+    assert( col1.size() == 2 );
+
+    auto&& row1 = A(1, _);  // second row
+    assert( row1.size() == 3 );
+
+    auto&& block = A({0, 2}, {0, 2});  // a 2x2 block
+    assert( block.elements().size() == 4 );  
 }
 ```
-[(online)](https://godbolt.org/z/6cnqzK4ah)
+[(online)](https://godbolt.org/z/KxGoP5Kq9)
 
 ## Learn about Multi
 
