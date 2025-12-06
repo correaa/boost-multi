@@ -1240,20 +1240,20 @@ extensions_t(multi::size_t, multi::size_t, multi::size_t, multi::size_t, multi::
 #endif
 
 template<boost::multi::dimensionality_type D>
-struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp) to implement structured binding
+struct std::tuple_size<boost::multi::extensions_t<D>>  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured binding
 : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
 template<>
-struct std::tuple_element<0, boost::multi::extensions_t<0>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
+struct std::tuple_element<0, boost::multi::extensions_t<0>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured binding
 	using type = void;
 };
 
 template<std::size_t Index, boost::multi::dimensionality_type D>
-struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cert-dcl58-cpp) to implement structured binding
+struct std::tuple_element<Index, boost::multi::extensions_t<D>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured binding
 	using type = typename std::tuple_element_t<Index, typename boost::multi::extensions_t<D>::base_>;
 };
 
-namespace std {  // NOLINT(cert-dcl58-cpp)
+namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification)
 
 // clang wants tuple_size to be a class, not a struct with -Wmismatched-tags
 #if !defined(__GLIBCXX__) || (__GLIBCXX__ <= 20190406)
@@ -1274,7 +1274,7 @@ template<> class tuple_size<boost::multi::extensions_t<5>> : public std::integra
 
 #if !defined(_MSC_VER) && (!defined(__GLIBCXX__) || (__GLIBCXX__ <= 20240707))
 template<std::size_t N, ::boost::multi::dimensionality_type D>
-constexpr auto get(::boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+constexpr auto get(::boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get, gcc workaround
 	-> decltype(tp.template get<N>()) {
 	return tp.template get<N>();
 }
@@ -1286,13 +1286,13 @@ constexpr auto get(::boost::multi::extensions_t<D> const& tp)  // NOLINT(cert-dc
 //  return tp.template get<N>(); }
 
 template<std::size_t N, ::boost::multi::dimensionality_type D>
-constexpr auto get(::boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+constexpr auto get(::boost::multi::extensions_t<D>& tp)  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get, gcc workaround
 	-> decltype(tp.template get<N>()) {
 	return tp.template get<N>();
 }
 
 template<std::size_t N, boost::multi::dimensionality_type D>
-constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get, gcc workaround
+constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get, gcc workaround
 	-> decltype(std::move(tp).template get<N>()) {
 	return std::move(tp).template get<N>();
 }

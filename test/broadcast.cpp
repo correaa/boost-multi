@@ -98,11 +98,12 @@ int main() {
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
-	// {
-	// 	multi::array a = {1, 2, 3};
-	// 	using multi::broadcast::operator+;
-	// 	auto c = a + 1;
-	// }
+	{
+		multi::array a = {1, 2, 3};
+		using multi::broadcast::operator+;
+		auto c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	}
 	{
 		multi::array a = {1, 2, 3};
 		multi::array b = {4, 5, 6};

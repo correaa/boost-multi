@@ -281,8 +281,8 @@ class intersecting_range {
 	
 	constexpr intersecting_range() noexcept :  // MSVC 19.07 needs constexpr to initialize ALL later
 		impl_{
-			(std::numeric_limits<IndexType>::min)(),  // parent needed for MSVC min/max macros
-			(std::numeric_limits<IndexType>::max)()
+			(std::numeric_limits<IndexType>::min)(),  // NOLINT(readability-redundant-parentheses) for MSVC min macros
+			(std::numeric_limits<IndexType>::max)()   // NOLINT(readability-redundant-parentheses) for MSVC max macros
 		}
 	{}
 
