@@ -1128,6 +1128,10 @@ struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 
 	using dynamic_array<T, 0, Alloc>::operator=;
 
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	BOOST_MULTI_HD constexpr auto operator[]() const& { return *(this->base()); }
+#endif
+
 #if !defined(__NVCOMPILER) || (__NVCOMPILER_MAJOR__ > 22 || (__NVCOMPILER_MAJOR__ == 22 && __NVCOMPILER_MINOR__ > 5))  // bug in nvcc 22.5: error: "operator=" has already been declared in the current scope
 	template<class TT, class... Args>
 	auto operator=(multi::array<TT, 0, Args...> const& other) & -> array& {

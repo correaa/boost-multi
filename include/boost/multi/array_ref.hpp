@@ -2700,8 +2700,12 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto begin() const& = delete;
 	constexpr auto end() const&   = delete;
 
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	constexpr auto operator[]() const& = delete;
+#else
 	template<class IndexType>
 	constexpr auto operator[](IndexType const&) const& = delete;
+#endif
 
 	auto           diagonal() const     = delete;
 	constexpr auto sliced() const&      = delete;
