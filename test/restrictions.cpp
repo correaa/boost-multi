@@ -212,6 +212,10 @@ int main() {
 
 		BOOST_TEST( lazy_0D[] == 1 );
 		BOOST_TEST( decltype(lazy_0D)::dimensionality == 0 );
+
+		auto rep = lazy_0D.repeated(5);
+		BOOST_TEST( decltype(rep)::dimensionality == 1 );
+		BOOST_TEST( rep.size() == 5 );
 	}
 
 	return boost::report_errors();
