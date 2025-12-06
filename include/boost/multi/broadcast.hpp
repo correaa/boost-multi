@@ -127,12 +127,10 @@ constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
 }
 
 template<class A, class B>
-constexpr auto operator+(A&& a, B&& b) { return broadcast::apply(std::plus<>{}, std::forward<A>(a), std::forward<B>(b)); }
+constexpr auto operator+(A&& a, B&& b) { return broadcast::apply_broadcast(std::plus<>{}, std::forward<A>(a), std::forward<B>(b)); }
 
 template<class A, class B>
-constexpr auto operator-(A&& a, B&& b) {
-	return broadcast::apply_broadcast(std::minus<>{}, a, b);
-}
+constexpr auto operator-(A&& a, B&& b) { return broadcast::apply_broadcast(std::minus<>{}, a, b); }
 
 template<class A>
 constexpr auto operator-(A&& a) { return broadcast::apply(std::negate<>{}, a); }
