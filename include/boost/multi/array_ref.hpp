@@ -528,7 +528,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
 		IsConst,
 		const_subarray<element, D - 1, element_ptr>,
 		subarray<element, D - 1, element_ptr>>;
-	using const_reference = const_subarray<element, D - 1, element_ptr>;  // TODO(correaa) should be const_subarray (base of subarray)
+	using const_reference = const_subarray<element, D - 1, element_ptr>;
 
 	template<class Element2>
 	using rebind = array_iterator<std::decay_t<Element2>, D, typename std::pointer_traits<ElementPtr>::template rebind<Element2>, IsConst, IsMove, Stride>;
@@ -1183,7 +1183,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) { return D; }
 
-	using typename types::reference;
+	// using typename types::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
 
@@ -1203,7 +1203,17 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
 	constexpr auto operator+() const -> decay_type { return decay(); }
-	using typename types::const_reference;
+	// using typename types::const_reference;
+
+	using reference = typename std::conditional_t<
+		(D > 1),
+		const_subarray<element, D - 1, element_ptr>,
+		typename std::iterator_traits<element_ptr>::reference>;
+
+	using const_reference = typename std::conditional_t<
+		(D > 1),
+		const_subarray<element, D - 1, element_ptr>,
+		typename std::iterator_traits<element_const_ptr>::reference>;
 
  private:
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
@@ -1216,7 +1226,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 	#endif
-		return const_reference(
+		return reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
@@ -1950,6 +1960,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
 	using move_iterator = array_iterator<T, D, ElementPtr, false, true>;
+
+	using typename const_subarray<T, D, ElementPtr, Layout>::element;
+	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
+	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
+
+	using reference = typename std::conditional_t<
+		(D > 1),
+		subarray<element, D - 1, element_ptr>,
+		typename std::iterator_traits<element_ptr>::reference>;
+
+	using const_reference = typename std::conditional_t<
+		(D > 1),
+		const_subarray<element, D - 1, element_ptr>,
+		typename std::iterator_traits<element_const_ptr>::reference>;
 
 	subarray(subarray&&) noexcept = default;
 	~subarray()                   = default;
