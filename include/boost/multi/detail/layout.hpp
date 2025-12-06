@@ -161,6 +161,7 @@ class restriction
 		array<element, D - 1>
 	>;
 
+ private:
 	struct bind_front_t {
 		multi::index idx_;
 		Proj proj_;
@@ -168,19 +169,6 @@ class restriction
 		BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 	};
 
-	constexpr auto operator[](index idx) const {
-		// assert( extension().contains(idx) );
-		if constexpr(D != 1) {
-			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
-			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
-			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
-			return bind_front_t{idx, proj_} ^ extensions_t<D - 1>(xs_.base().tail());
-		} else {
-			return proj_(idx);
-		}
-	}
-
- private:
 	template<class Fun, class... Args>
 	static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {
 		using std::apply;
@@ -198,7 +186,21 @@ class restriction
 	constexpr auto operator[](index idx, Indices... rest) const {
 		return operator[](idx)[rest...];
 	}
+	constexpr auto operator[]() const -> decltype(auto) { return proj_() ; }
 	#endif
+
+	constexpr auto operator[](index idx) const -> decltype(auto) {
+		// assert( extension().contains(idx) );
+		if constexpr(D != 1) {
+			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
+			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
+			return bind_front_t{idx, proj_} ^ extensions_t<D - 1>(xs_.base().tail());
+		} else {
+			return proj_(idx);
+		}
+	}
+
 
 	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
 
@@ -895,6 +897,8 @@ template<> struct extensions_t<0> : tuple<> {
 	using rank = std::integral_constant<dimensionality_type, 0>;
 	using element = tuple<>;
 
+	using index = multi::index;
+
 	using nelems_type = index;
 	using difference_type = index;
 
@@ -943,6 +947,11 @@ template<> struct extensions_t<0> : tuple<> {
 	constexpr auto get() const -> typename std::tuple_element_t<Index, base_> {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
+	}
+
+	template<class Fun>
+	friend constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+		return restriction<0, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
 	}
 };
 

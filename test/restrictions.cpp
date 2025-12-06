@@ -202,6 +202,17 @@ int main() {
 
 		BOOST_TEST( std::abs((~(x / ((~x) | sumR1)))[1][1] - 0.244728) < 1e-3 );
 	}
+	{
+	 	auto lazy_one = [](multi::index) { return 1; } ^ multi::extensions_t<1>{10};
+
+		BOOST_TEST( lazy_one[3] == 1 );
+		BOOST_TEST( decltype(lazy_one)::dimensionality == 1 );
+
+		auto lazy_0D = []() { return 1; } ^ multi::extensions_t<0>{};
+
+		BOOST_TEST( lazy_0D[] == 1 );
+		BOOST_TEST( decltype(lazy_0D)::dimensionality == 0 );
+	}
 
 	return boost::report_errors();
 }
