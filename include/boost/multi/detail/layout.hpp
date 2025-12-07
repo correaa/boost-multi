@@ -808,7 +808,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			};
 		}
 
-		auto operator[](index idx) const { return begin()[idx]; }
+		BOOST_MULTI_HD constexpr auto operator[](index idx) const { return begin()[idx]; }
 
 		auto size() const { return xs_.num_elements(); }
 	};
@@ -1005,7 +1005,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			return ht_tuple(idx_, rest_.base());
 		}
 
-		constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
