@@ -1300,7 +1300,7 @@ constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-c
 
 template<typename Fn, boost::multi::dimensionality_type D>
 constexpr auto
-apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) I have to specialize std::apply as a workaround
+apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
 	return xs.apply(std::forward<Fn>(fn));
 }
 
@@ -1368,7 +1368,7 @@ class contiguous_layout {
 	using extensions_type = multi::extensions_t<1>;
 
 	using stride_type  = std::integral_constant<int, 1>;
-	using strides_type = typename boost::multi::detail::tuple<stride_type>;
+	using strides_type = boost::multi::detail::tuple<stride_type>;
 
 	using offset_type = std::integral_constant<int, 0>;
 
@@ -2193,8 +2193,8 @@ struct layout_t<0, SSize>
 
 BOOST_MULTI_HD constexpr auto
 operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extensions_type const& /*zero*/)
-	-> typename layout_t<1>::extensions_type {
-	return typename layout_t<1>::extensions_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
+	-> layout_t<1>::extensions_type {
+	return layout_t<1>::extensions_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
 }
 
 BOOST_MULTI_HD constexpr auto operator*(extensions_t<1> const& extensions_1d, extensions_t<1> const& self) {
@@ -2259,8 +2259,8 @@ struct decaying_array : Array {
 };
 }  // end namespace boost::multi::detail
 
-template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
-template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple size
+template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
+template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace

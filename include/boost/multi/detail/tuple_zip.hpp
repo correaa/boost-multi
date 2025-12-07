@@ -406,7 +406,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 #endif
 
 template<class... Ts>
-struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	// // cppcheck-suppress unusedStructMember
 	// static constexpr std::size_t value = sizeof...(Ts);
 };
@@ -417,17 +417,17 @@ struct std::tuple_element<0, boost::multi::detail::tuple<>> {  // NOLINT(cert-dc
 };
 
 template<class T0>
-struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = T0;
 };
 
 template<class T0, class... Ts>
-struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = T0;
 };
 
 template<std::size_t N, class T0, class... Ts>
-struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
@@ -437,10 +437,10 @@ BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_seq
 	return std::forward<F>(fn)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
 
-namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
+namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured bindings
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -448,7 +448,7 @@ BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> c
 }
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
