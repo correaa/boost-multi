@@ -183,13 +183,13 @@ class restriction
 
 	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
-	constexpr auto operator[](index idx, Indices... rest) const {
+	BOOST_MULTI_HD constexpr auto operator[](index idx, Indices... rest) const {
 		return operator[](idx)[rest...];
 	}
-	constexpr auto operator[]() const -> decltype(auto) { return proj_() ; }
+	BOOST_MULTI_HD constexpr auto operator[]() const -> decltype(auto) { return proj_() ; }
 	#endif
 
-	constexpr auto operator[](index idx) const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) {
 		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
@@ -358,7 +358,7 @@ class restriction
 			}
 		}
 
-		auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+		BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
@@ -381,7 +381,7 @@ class restriction
 		friend class restriction;
 
 	public:
-		auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
+		BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) { using std::apply; return apply(proj_, elems_[idx]); }
 
 		using difference_type = restriction::difference_type;
 
@@ -415,7 +415,7 @@ class restriction
 			friend auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
 
 
-			constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 		};
 
 		auto begin() const { return iterator{elems_.begin(), proj_}; }
@@ -626,7 +626,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			return ht_tuple(idx_, rest_.base());
 		}
 
-		constexpr auto operator[](difference_type const& n) const -> reference { return *((*this) + n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference { return *((*this) + n); }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
@@ -641,7 +641,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
 	constexpr auto end()   const { return iterator{this->base().head().last() , this->base().tail()}; }
 
-	constexpr auto operator[](index idx) const {
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const {
 		return static_cast<base_ const&>(*this)[idx];
 	}
 
@@ -808,7 +808,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			};
 		}
 
-		auto operator[](index idx) const { return begin()[idx]; }
+		BOOST_MULTI_HD constexpr auto operator[](index idx) const { return begin()[idx]; }
 
 		auto size() const { return xs_.num_elements(); }
 	};
@@ -1005,7 +1005,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			return ht_tuple(idx_, rest_.base());
 		}
 
-		constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
@@ -1075,7 +1075,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			BOOST_MULTI_HD constexpr auto operator<(iterator const& other) const { return base_() < other.base_(); }
 			BOOST_MULTI_HD constexpr auto operator<=(iterator const& other) const { return base_() <= other.base_(); }
 
-			auto operator[](difference_type n) const { return *((*this) + n); }
+			BOOST_MULTI_HD auto operator[](difference_type n) const { return *((*this) + n); }
 		};
 		// using const_iterator = iterator;
 
@@ -1156,7 +1156,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	static BOOST_MULTI_HD constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
 
-	constexpr auto operator[](index idx) const {
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const {
 		using std::get;
 		return multi::detail::tuple<multi::index>{get<0>(this->base())[idx]};
 	}
@@ -1405,7 +1405,7 @@ class contiguous_layout {
 	}
 
  public:
-	constexpr auto operator[](index idx) const { return at_aux_(idx); }
+	BOOST_MULTI_HD constexpr auto operator[](index idx) const { return at_aux_(idx); }
 
 	template<typename... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return operator[](idx)(rest...); }
