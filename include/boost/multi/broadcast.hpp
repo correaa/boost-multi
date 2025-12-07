@@ -118,9 +118,9 @@ constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 template<class F, class A, class B, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<B>::element>()))>
 constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-		return apply_broadcast(std::forward<F>(fun), [a = std::forward<A>(a)](){ return a; } ^ multi::extensions_t<0>{}, std::forward<B>(b));
+		return apply_broadcast(std::forward<F>(fun), [a = std::forward<A>(a)]() { return a; } ^ multi::extensions_t<0>{}, std::forward<B>(b));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return apply_broadcast(std::forward<F>(fun), std::forward<A>(a), [b = std::forward<B>(a)](){ return b; } ^ multi::extensions_t<0>{});
+		return apply_broadcast(std::forward<F>(fun), std::forward<A>(a), [b = std::forward<B>(a)]() { return b; } ^ multi::extensions_t<0>{});
 	} else {
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
 			return apply_broadcast(std::forward<F>(fun), a.repeated(b.size()), b);
