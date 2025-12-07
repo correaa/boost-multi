@@ -381,7 +381,7 @@ class restriction
 		friend class restriction;
 
 	public:
-		BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
+		BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) { using std::apply; return apply(proj_, elems_[idx]); }
 
 		using difference_type = restriction::difference_type;
 
