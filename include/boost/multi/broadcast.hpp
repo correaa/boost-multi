@@ -117,15 +117,20 @@ constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 
 template<class F, class A, class B, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<B>::element>()))>
 constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
-	if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
-		return apply_broadcast(std::forward<F>(fun), a.repeated(b.size()), b);
-	} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
-		return apply_broadcast(std::forward<F>(fun), a, b.repeated(a.size()));
+	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
+		return apply_broadcast(std::forward<F>(fun), [a = std::forward<A>(a)](){ return a; } ^ multi::extensions_t<0>{}, std::forward<B>(b));
 	} else {
-		return apply(std::forward<F>(fun), std::forward<A>(a), std::forward<B>(b));
+		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
+			return apply_broadcast(std::forward<F>(fun), a.repeated(b.size()), b);
+		} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
+			return apply_broadcast(std::forward<F>(fun), a, b.repeated(a.size()));
+		} else {
+			return apply(std::forward<F>(fun), std::forward<A>(a), std::forward<B>(b));
+		}
 	}
 }
 
+// remember that you need C++23 to use the broadcast feature
 template<class A, class B>
 constexpr auto operator+(A&& a, B&& b) { return broadcast::apply_broadcast(std::plus<>{}, std::forward<A>(a), std::forward<B>(b)); }
 

@@ -54,9 +54,10 @@ struct array_allocator {
  private:
 	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 
-	using allocator_traits = typename multi::allocator_traits<allocator_type>;
-	using size_type_       = typename allocator_traits::size_type;
-	using pointer_         = typename allocator_traits::pointer;
+	using allocator_traits = multi::allocator_traits<allocator_type>;
+
+	using size_type_ = typename allocator_traits::size_type;  // typename needed in C++17
+	using pointer_   = typename allocator_traits::pointer;    // typename needed in C++17
 
  protected:
 	constexpr auto alloc() & -> auto& { return alloc_; }
