@@ -302,6 +302,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.num_elements() == 60 );
 		BOOST_TEST( barr.size() == 15 );
 	}
+	{
+		multi::array<int, 2> const arr_original = {
+			{ 0,  1,  2,  3,  4, 99},
+			{ 5,  6,  7,  8,  9, 99},
+			{10, 11, 12, 13, 14, 99},
+			{99, 99, 99, 99, 99, 99}
+		};
+
+		auto&& arr = arr_original({0, 3}, {0, 5});
+		BOOST_TEST( arr.elements()[2] == 2 );
+		// BOOST_TEST( arr.elements()[3] = 22 );  // doesn't compile, good
+	}
 
 	return boost::report_errors();
 }
