@@ -381,7 +381,7 @@ class restriction
 		friend class restriction;
 
 	public:
-		auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
+		BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) { return std::apply(proj_, elems_[idx]); }
 
 		using difference_type = restriction::difference_type;
 
@@ -415,7 +415,7 @@ class restriction
 			friend auto operator< (iterator const& self, iterator const& other) -> bool { return self.it_ <  other.it_; }
 
 
-			constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 		};
 
 		auto begin() const { return iterator{elems_.begin(), proj_}; }
