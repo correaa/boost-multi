@@ -2006,7 +2006,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
 	using const_subarray<T, D, ElementPtr, Layout>::elements;
-	constexpr auto elements() &  { return this->elements_aux_(); }
+	constexpr auto elements() & { return this->elements_aux_(); }
 	constexpr auto elements() && { return this->elements_aux_(); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
