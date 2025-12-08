@@ -6,6 +6,7 @@
 #define BOOST_MULTI_BROADCAST_HPP_
 
 #include <boost/multi/array_ref.hpp>
+#include <boost/multi/utility.hpp>  // for multi::detail::apply_square
 
 // #include <boost/multi/detail/tuple_zip.hpp>
 // #include <boost/multi/utility.hpp>  // IWYU pragma: export
@@ -79,7 +80,7 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 
 namespace broadcast {
 
-#if __cplusplus >= 202302L
+// #if __cplusplus >= 202302L
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
 constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
@@ -94,7 +95,7 @@ struct apply_bind_t<F, A> {
 	A a_;
 
 	constexpr auto operator()(auto... is) const {
-		return fun_(a_[is...]);  // arrs[is...]...);
+		return fun_(detail::invoke_square(a_, is...));  // a_[is...] in. C++23
 	}
 };
 
@@ -105,7 +106,10 @@ struct apply_bind_t<F, A, B> {
 	B b_;
 
 	constexpr auto operator()(auto... is) const {
-		return fun_(a_[is...], b_[is...]);  // arrs[is...]...);
+		return fun_(
+			multi::detail::invoke_square(a_, is...),  // a_[is...] in C++23 
+			multi::detail::invoke_square(b_, is...)   // b_[is...] in C++23
+		);
 	}
 };
 
@@ -115,7 +119,7 @@ constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
-template<class F, class A, class B, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<B>::element>()))>
+template<class F, class A, class B>
 constexpr auto apply_broadcast(F&& fun, A&& a, B&& b) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
 		return apply_broadcast(std::forward<F>(fun), [a = std::forward<A>(a)]() { return a; } ^ multi::extensions_t<0>{}, std::forward<B>(b));
@@ -143,7 +147,7 @@ template<class A>
 constexpr auto operator-(A&& a) { return broadcast::apply(std::negate<>{}, a); }
 
 template<class A, class B>
-constexpr auto operator*(A&& a, B&& b) { return broadcast::apply(std::multiplies<>{}, a, b); }
+constexpr auto operator*(A&& a, B&& b) { return broadcast::apply_broadcast(std::multiplies<>{}, a, b); }
 
 template<class A, class B>
 constexpr auto operator/(A&& a, B&& b) {
@@ -151,10 +155,10 @@ constexpr auto operator/(A&& a, B&& b) {
 }
 
 template<class A, class B>
-constexpr auto operator&&(A&& a, B&& b) { return broadcast::apply(std::logical_and<>{}, a, b); }
+constexpr auto operator&&(A&& a, B&& b) { return broadcast::apply_broadcast(std::logical_and<>{}, a, b); }
 
 template<class A, class B>
-constexpr auto operator||(A&& a, B&& b) { return broadcast::apply(std::logical_or<>{}, a, b); }
+constexpr auto operator||(A&& a, B&& b) { return broadcast::apply_broadcast(std::logical_or<>{}, a, b); }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>
 constexpr auto operator|(A&& a, F fun) {
@@ -172,7 +176,7 @@ struct exp_bind_t {
 
 	constexpr auto operator()(auto... is) const {
 		using ::std::exp;
-		return exp(a_[is...]);
+		return exp(multi::detail::invoke_square(a_, is...));  // a_[is...] in C++23
 	}
 };
 
@@ -188,7 +192,7 @@ struct abs_bind_t {
 
 	constexpr auto operator()(auto... is) const {
 		using ::std::abs;
-		return exp(a_[is...]);
+		return abs(multi::detail::invoke_square(a_, is...));  // a_[is...] in C++23
 	}
 };
 
@@ -198,7 +202,7 @@ constexpr auto abs(A&& a) { return abs_bind_t<typename bind_category<A>::type>{s
 template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(multi::array<T, 1>{il}); }
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
 
-#endif
+// #endif
 }  // end namespace broadcast
 }  // end namespace boost::multi
 
