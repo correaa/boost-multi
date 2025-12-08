@@ -56,8 +56,8 @@ struct array_allocator {
 
 	using allocator_traits = multi::allocator_traits<allocator_type>;
 
-	using size_type_ = typename allocator_traits::size_type;  // typename needed in C++17
-	using pointer_   = typename allocator_traits::pointer;    // typename needed in C++17
+	using size_type_ = typename allocator_traits::size_type;  // NOLINT(readability-redundant-typename) typename needed in C++17
+	using pointer_   = typename allocator_traits::pointer;    // NOLINT(readability-redundant-typename) typename needed in C++17
 
  protected:
 	constexpr auto alloc() & -> auto& { return alloc_; }
@@ -68,11 +68,11 @@ struct array_allocator {
 	constexpr auto allocate(size_type_ n) -> pointer_ {
 		return n ? allocator_traits::allocate(alloc_, n) : pointer_{nullptr};
 	}
-	constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {
+	constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {  // NOLINT(readability-redundant-typename) typename needed in C++17
 		return n ? allocator_traits::allocate(alloc_, n, hint) : pointer_{nullptr};
 	}
 
-	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {
+	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(readability-redundant-typename) typename needed in C++17
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
 
