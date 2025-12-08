@@ -8,6 +8,7 @@
 #include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
 #include <boost/multi/detail/layout.hpp>
 
+#include <cassert>
 #include <functional>   // for std::invoke
 #include <iterator>     // for std::size (in c++17)
 #include <memory>       // for allocator<>
@@ -666,6 +667,30 @@ inline auto valid_mull(int age) -> bool {
 }  // end namespace detail
 
 }  // end namespace boost::multi
+
+namespace boost::multi::detail {
+
+template<class F>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fn);
+}
+
+template<class F, class Arg>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fn)[std::forward<Arg>(arg)];
+}
+
+template<class F, class Arg, class... Args>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+// #if __cplusplus >= 202302L
+// 	assert((invoke_square(fn[arg], args...) == fn[arg, args...]));
+// 	return std::forward<F>(fn)[std::forward<Arg>(arg), std::forward<Arg>(args)...];
+// #else
+	return invoke_square(std::forward<F>(fn)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
+// #endif
+}
+
+}  // end namespace boost::multi::detail
 
 #ifdef _MSC_VER
 #pragma warning(pop)

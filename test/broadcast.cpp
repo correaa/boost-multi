@@ -4,7 +4,7 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L
+// #if __cplusplus >= 202302L
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -100,7 +100,7 @@ int main() {
 	}
 	{
 		multi::array a = {1, 2, 3};
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement; bug in cppcheck?
 		auto c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
 		BOOST_TEST(( c == multi::array{2, 3, 4} ));
 	}
@@ -117,6 +117,17 @@ int main() {
 		// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
 	}
 	{
+		multi::array const A = {0, 1, 2};
+		multi::array const B = {10, 11, 12};
+		multi::array const C = {100, 111, 222};
+
+		// multi::array<int, 1> B = {10, 11, 12};
+
+		using multi::broadcast::operator+;
+		using multi::broadcast::operator*;
+		multi::array const D = A + B + 2 * C;
+
+		BOOST_TEST( D[2] == A[2] + B[2] + 2 * C[2] );
 	}
 	// np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) + np.array([10, 20, 30])
 	// array([[11, 22, 33],
@@ -125,8 +136,8 @@ int main() {
 
 	return boost::report_errors();
 }
-#else
-auto main() -> int {
-	return boost::report_errors();
-}
-#endif
+// #else
+// auto main() -> int {
+// 	return boost::report_errors();
+// }
+// #endif
