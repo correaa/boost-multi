@@ -163,12 +163,12 @@ constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::apply_broadc
 template<class A, class B>
 constexpr auto operator||(A&& a, B&& b) { return broadcast::apply_broadcast(std::logical_or<>{}, std::forward<A>(a), std::forward<B>(b)); }
 
-template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>
+template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
 constexpr auto operator|(A&& a, F fun) {
 	return std::forward<A>(a).element_transformed(fun);
 }
 
-template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std::declval<typename std::decay_t<A>::reference>()))*> = nullptr>
+template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std::declval<typename std::decay_t<A>::reference>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
 constexpr auto operator|(A&& a, F fun) {
 	return std::forward<A>(a).transformed(fun);
 }
