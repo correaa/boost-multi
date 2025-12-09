@@ -555,7 +555,7 @@ struct dynamic_array                                                            
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
-	dynamic_array(dynamic_array const& other)  // 5b
+	BOOST_MULTI_HD constexpr dynamic_array(dynamic_array const& other)  // 5b
 	: array_alloc{
 		  multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
 	  },

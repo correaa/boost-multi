@@ -683,7 +683,7 @@ BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg) -> decltype(auto)
 template<class F, class Arg, class... Args>
 BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
 	return invoke_square(std::forward<F>(fn)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
-	// return            std::forward<F>(fn)[std::forward<Arg>(arg),  std::forward<Arg>(args)...];
+	// return            std::forward<F>(fn)[std::forward<Arg>(arg),  std::forward<Arg>(args)...];  // will not work with iterators or cursors in the current state, it is also a C++23-only feature
 }
 
 }  // end namespace boost::multi::detail

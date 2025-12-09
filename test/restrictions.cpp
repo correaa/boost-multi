@@ -217,6 +217,45 @@ int main() {
 		BOOST_TEST( decltype(rep)::dimensionality == 1 );
 		BOOST_TEST( rep.size() == 5 );
 	}
+	{
+		multi::extensions_t<1> xs(5);
+		BOOST_TEST( xs.size() == 5 );
+
+		auto curxs = xs.home();
+		BOOST_TEST( curxs[2] == xs[2] );
+	}
+	{
+		multi::extensions_t<2> xs(3, 5);
+		BOOST_TEST( xs.size() == 3 );
+
+		auto curxs = xs.home();
+		BOOST_TEST( curxs[0][0] == xs[0][0] );
+		BOOST_TEST( curxs[1][1] == xs[1][1] );
+	}
+	{
+		multi::extensions_t<3> xs(3, 5, 7);
+		BOOST_TEST( xs.size() == 3 );
+
+		auto curxs = xs.home();
+		BOOST_TEST( curxs[0][0][0] == xs[0][0][0] );
+		BOOST_TEST( curxs[1][1][1] == xs[1][1][1] );
+	}
+	{
+		auto v1D = [](auto ii) { return (ii * ii); } ^ multi::extensions_t<1>(3);
+		BOOST_TEST( v1D[2] == (2*2) );
+
+		auto cur = v1D.home();
+		BOOST_TEST( cur[2] == v1D[2] );
+	}
+	{
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
+
+		auto cur = v2D.home();
+		BOOST_TEST( cur[2][2] == v2D[2][2] );
+
+		// auto front = *v2D.begin();
+	}
 
 	return boost::report_errors();
 }
