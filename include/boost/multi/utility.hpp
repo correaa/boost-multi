@@ -682,12 +682,8 @@ BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg) -> decltype(auto)
 
 template<class F, class Arg, class... Args>
 BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
-// #if __cplusplus >= 202302L
-// 	assert((invoke_square(fn[arg], args...) == fn[arg, args...]));
-// 	return std::forward<F>(fn)[std::forward<Arg>(arg), std::forward<Arg>(args)...];
-// #else
 	return invoke_square(std::forward<F>(fn)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
-// #endif
+	// return            std::forward<F>(fn)[std::forward<Arg>(arg),  std::forward<Arg>(args)...];
 }
 
 }  // end namespace boost::multi::detail
