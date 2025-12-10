@@ -745,7 +745,7 @@ struct cursor_t {
 				strides_.tail()
 			};
 		} else {
-			return base_[get<0>(strides_) * n];
+			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 	}
 
@@ -3317,6 +3317,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
 	friend constexpr auto operator==(const_subarray const& self, Range const& other) -> bool {
+		return self.extensions() == other.extensions() && self.elements() == other.elements();
+	}
+
+	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	friend constexpr auto operator==(Range const& other, const_subarray const& self) -> bool {
 		return self.extensions() == other.extensions() && self.elements() == other.elements();
 	}
 

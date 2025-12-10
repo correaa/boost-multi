@@ -433,5 +433,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
+	{
+		multi::array<int, 2> arr = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		BOOST_TEST( arr[1][1] == 5 );
+		BOOST_TEST( multi::detail::invoke_square(arr, 1, 1) == 5 );
+		BOOST_TEST( multi::detail::invoke_square(arr[1], 1) == 5 );
+		BOOST_TEST( multi::detail::invoke_square(arr[1][1]) == 5 );
+	}
 	return boost::report_errors();
 }
