@@ -630,10 +630,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using std::apply;
 			if constexpr(DD != 1) {
 				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> {
-					apply([n] BOOST_MULTI_HD (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
+					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
 				};
 			} else {
-				return apply([n] BOOST_MULTI_HD (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
+				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
 			}
 		}
 	};
