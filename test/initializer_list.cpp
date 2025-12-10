@@ -485,6 +485,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2[0][0] == 0);
 		BOOST_TEST( arr3[0][0] == 0);
 	}
+
 	#ifdef __cpp_deduction_guides
 	{
 		std::initializer_list<int> const il = {1, 2, 3};
