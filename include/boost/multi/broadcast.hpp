@@ -178,7 +178,7 @@ struct abs_bind_t {
 };
 
 template<class A>
-constexpr auto abs(A&& a) { return abs_bind_t<typename bind_category<A>::type>{std::forward<A>(a)} ^ a.extensions(); }
+constexpr auto abs(A const& a) { return abs_bind_t<decltype(a.home())>{a.home()} ^ a.extensions(); }
 
 template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(multi::array<T, 1>{il}); }
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
