@@ -201,7 +201,6 @@ class restriction
 		}
 	}
 
-
 	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
 
 	struct bind_transposed_t {
@@ -283,6 +282,31 @@ class restriction
 	template<class Proj2, dimensionality_type One = 1  /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2> > {
 		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extensions_t<One>({extension()});
+	}
+
+	template<class Cursor, dimensionality_type DD = D>
+	class cursor_t {
+		Proj const* Pproj_;
+		Cursor cur_;
+		friend class restriction;
+		explicit constexpr cursor_t(Proj const* Pproj, Cursor cur) : Pproj_{Pproj}, cur_{cur} {}
+
+	 public:
+		using difference_type = restriction::difference_type;
+
+	 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
+			if constexpr(DD != 1) {
+				auto cur = cur_[n];
+				return cursor_t<decltype(cur), DD - 1>{Pproj_, cur};
+			} else {
+				return apply_(*Pproj_, cur_[n]);
+			}
+		}
+	};
+
+	auto home() const {
+		auto cur = extensions().home();
+		return cursor_t<decltype(cur), D>{&proj_, cur};
 	}
 
 	class iterator {
@@ -588,6 +612,35 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
+
+	template<class Before, dimensionality_type DD>
+	class cursor_t {
+		Before bef_;
+		// missing start indices information
+		template<class, dimensionality_type> friend class cursor_t;
+		friend extensions_t;
+
+	 public:
+		cursor_t() = default;
+		explicit cursor_t(Before const& bef) : bef_{bef} {}
+		
+		static constexpr dimensionality_type dimensionality = DD;
+
+		constexpr auto operator[](difference_type n) const {
+			using std::apply;
+			if constexpr(DD != 1) {
+				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> {
+					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
+				};
+			} else {
+				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
+			}
+		}
+	};
+
+	auto home() const {
+		return cursor_t<tuple<>, D>{};
+	}
 
 	class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) constructor does not initialize these fields: idx_
 		index idx_;
@@ -968,6 +1021,25 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using index = multi::index;
 
 	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+
+	class cursor_t {
+		index idx_;
+		extensions_t<0> rest_;
+		friend extensions_t;
+
+		constexpr cursor_t(index idx, extensions_t<0> rest) : idx_{idx}, rest_{rest} {}
+
+	 public:
+		cursor_t() = default;
+		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<0>>().base()));
+		using reference = value_type;
+
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return ht_tuple(idx_ + n, rest_.base());; }
+	};
+
+	auto home() const -> cursor_t {
+		return cursor_t{this->base().head().first(), extensions_t<0>{this->base().tail()}};
+	}
 
 	class iterator {  // : public weakly_incrementable<iterator> {
 		index idx_;
