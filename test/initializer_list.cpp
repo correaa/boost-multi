@@ -486,5 +486,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr3[0][0] == 0);
 	}
 
+#ifdef __cpp_deduction_guides
+	{
+		std::initializer_list<int> const il = {1, 2, 3};
+
+		multi::const_subarray<int, 1> const csarr(il);
+
+		BOOST_TEST( &csarr[1] == &il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+	{
+		std::initializer_list<int> const il = {1, 2, 3};
+
+		multi::const_subarray const csarr(il);
+
+		BOOST_TEST( &csarr[1] == &il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
+	{
+		BOOST_TEST( multi::const_subarray({1, 2, 3})[1] == 2 );
+	}
+#endif
+
 	return boost::report_errors();
 }
