@@ -745,7 +745,7 @@ struct cursor_t {
 				strides_.tail()
 			};
 		} else {
-			return base_[get<0>(strides_) * n];
+			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 	}
 

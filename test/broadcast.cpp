@@ -9,7 +9,6 @@
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <utility>
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -24,17 +23,7 @@ namespace multi = boost::multi;
 int main() {
 	// NOLINTBEGIN(readability-identifier-length)
 	{
-		multi::array a = {1.0, 2.0, 3.0};
-
-		using multi::broadcast::exp;
-		auto c = exp(std::move(a));
-
-		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
-		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
-		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
-	}
-	{
-		multi::array a = {1.0, 2.0, 3.0};
+		multi::array const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a);
@@ -47,7 +36,7 @@ int main() {
 		multi::array const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
-		auto c = exp(multi::array{1.0, 2.0, 3.0});
+		auto c = exp(a);
 
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
@@ -57,7 +46,17 @@ int main() {
 		multi::array const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
-		auto c = exp({1.0, 2.0, 3.0});
+		auto c = exp(a);  // multi::array{1.0, 2.0, 3.0});
+
+		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
+		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		multi::array const a = {1.0, 2.0, 3.0};
+
+		using multi::broadcast::exp;
+		auto c = exp(a);
 
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
