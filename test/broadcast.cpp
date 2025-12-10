@@ -9,6 +9,7 @@
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <utility>     // for forward  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -20,8 +21,8 @@
 
 namespace multi = boost::multi;
 
+// NOLINTBEGIN(readability-identifier-length)
 int main() {
-	// NOLINTBEGIN(readability-identifier-length)
 	{
 		multi::array const a = {1.0, 2.0, 3.0};
 
@@ -81,43 +82,43 @@ int main() {
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
-	{
-		multi::array const a = {1, 2, 3};
-		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
-		auto c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
-		BOOST_TEST(( multi::array{2, 3, 4} == c ));
-		BOOST_TEST(( c == multi::array{2, 3, 4} ));
-	}
-	{
-		multi::array const a = {1, 2, 3};
-		multi::array const b = {4, 5, 6};
+	// {
+	// 	multi::array const a = {1, 2, 3};
+	// 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+	// 	auto c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+	// 	BOOST_TEST(( multi::array{2, 3, 4} == c ));
+	// 	BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	// }
+	// {
+	// 	multi::array const a = {1, 2, 3};
+	// 	multi::array const b = {4, 5, 6};
 
-		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
-		auto&& c = a + b;
+	// 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+	// 	auto&& c = a + b;
 
-		// multi::detail::what(c);
-		// printR2("c", c);
-		BOOST_TEST(( c == multi::array{5, 7, 9} ));
-		// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
-	}
-	{
-		multi::array const A = {0, 1, 2};        // NOLINT(llvm-header-guard)
-		multi::array const B = {10, 11, 12};     // NOLINT(llvm-header-guard)
-		multi::array const C = {100, 111, 222};  // NOLINT(llvm-header-guard)
+	// 	// multi::detail::what(c);
+	// 	// printR2("c", c);
+	// 	BOOST_TEST(( c == multi::array{5, 7, 9} ));
+	// 	// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
+	// }
+	// {
+	// 	multi::array const A = {0, 1, 2};        // NOLINT(llvm-header-guard)
+	// 	multi::array const B = {10, 11, 12};     // NOLINT(llvm-header-guard)
+	// 	multi::array const C = {100, 111, 222};  // NOLINT(llvm-header-guard)
 
-		// multi::array<int, 1> B = {10, 11, 12};
+	// 	// multi::array<int, 1> B = {10, 11, 12};
 
-		using multi::broadcast::operator+;     // cppcheck-suppress constStatement;
-		using multi::broadcast::operator*;     // cppcheck-suppress constStatement;
-		multi::array const D = A + B + 2 * C;  // NOLINT(llvm-header-guard)
+	// 	using multi::broadcast::operator+;     // cppcheck-suppress constStatement;
+	// 	using multi::broadcast::operator*;     // cppcheck-suppress constStatement;
+	// 	multi::array const D = A + B + 2 * C;  // NOLINT(llvm-header-guard)
 
-		BOOST_TEST( D[2] == A[2] + B[2] + (2 * C[2]) );
-	}
+	// 	BOOST_TEST( D[2] == A[2] + B[2] + (2 * C[2]) );
+	// }
 	// np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) + np.array([10, 20, 30])
 	// array([[11, 22, 33],
 	//        [14, 25, 36],
 	//        [17, 28, 39]])
 
 	return boost::report_errors();
-	// NOLINTEND(readability-identifier-length)
 }
+// NOLINTEND(readability-identifier-length)

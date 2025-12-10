@@ -153,12 +153,14 @@ class exp_bind_t {
 	}
 };
 
+template<class A> exp_bind_t(A) -> exp_bind_t<A>;
+
 template<class A>
 constexpr auto exp(A const& alpha) {
 	auto xs = alpha.extensions();  // TODO(correaa) consider using .home() cursor
 	auto hm = alpha.home();
 	// return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(alpha)} ^ xs;
-	return exp_bind_t<decltype(hm)>(hm) ^ xs;
+	return exp_bind_t(hm) ^ xs;
 }
 
 template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::array<T, 1>{il}); }
