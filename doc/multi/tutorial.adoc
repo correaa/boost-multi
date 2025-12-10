@@ -705,9 +705,10 @@ static_assert( trace() == 4 + 2 + 10 );
 ```
 link:https://godbolt.org/z/Porre3z8s[(live)]
 
-== Restrictions (lazy expression evaluation)
+== Restrictions (lazy arrays)
 
-So far, we have examined the use of arrays that contain elements or references to elements stored in memory; these are referred to as container arrays or concrete arrays.
+So far, we have examined the use of arrays that contain elements or references to elements stored in memory;
+these are referred to as container arrays or concrete arrays.
 In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
 The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays" and are a tool for general delayed evaluation.
 
@@ -724,13 +725,15 @@ For example, we can restrict this simple function `10*i + j` where `i` and `j` b
 auto R = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
 ...
 ```
-Note that `R` does not request memory to store the values; it generates them only when needed. For example, `R[1][2]` yields `10*1 + 2`, or `12`.
+Note that `R` does not request memory to store the values; it generates them only when needed.
+For example, `R[1][2]` yields `12` (by performing the operation `10*1 + 2`).
 For this reason, they can be regarded as "lazy" arrays, a multidimensional generalization of ranges such as `std::ranges::iota`, `std::ranges::iota | std::ranges::transform(...)` or `thrust::counting_iterator`.)
 
 The main property of a restriction array is that it can be generically used in place of a concrete array because they have the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()` and (partial) indexing (`operator[]`).
-They also provide a complete iterator inteface, `.begin()`, `.end()` and they can be used as standard ranges.
+They also provide a complete iterator inteface, `.begin()`, `.end()`, `.home()` and they can be used as standard ranges.
 This means that generic algorithms, including some outside of Multi, can take advantage of these arrays.
-As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`; the same expression as if it were a concrete array).
+As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`
+(the same expression as if it were a concrete array).
 
 A key difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
 
@@ -746,12 +749,12 @@ for(auto i : is) {
 	}
 }
 ```
-...which can be replaced by a simpler construction without intermediate steps:
+... with a simpler construction without intermediate steps:
 ```cpp
-multi::array<int, 2> const A = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2);
+multi::array<int, 2> const A = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2);  // same result as the loop
 ```
 
-Note that since there is no immediate need to assign elements, and the target array can be conveniently declared `const` if no further mutation is necessary).
+Note that target array can be conveniently declared `const` if no further mutation is necessary.
 The element initialization here is delegated to the library;
 the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device) and in any order.
 
@@ -788,63 +791,29 @@ multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ```
 link:https://godbolt.org/z/qK9cYzrzv[(live)]
 
-Another possible application of restrictions is the ability to define lazy expressions, also known as expression templates.
-These are complex C++ expressions composed of objects (typically in through operator overload) that are evaluated only after the whole expression is built.
+== Broadcast (lazy expressions)
 
-Since arrays are expensive to copy or generate, this feature is highly regarded for array libraries.
-Here is a basic implementation example using restrictions, that can be customized for specific domains of application.
+The library provides a series of operator overloads to generate expression that can be lazily evaluated.
+Lazy expressions are useful to generate complex array equations that are evaluated in element-wise fashion without the involvement of temporary arrays or storage.
+These operations include summation, multiplication (elementwise), together with most special functions (`exp`, `abs`, `sin`, `cos`, ...)
 
-For example, given two concrete arrays `A`, `B`, one can evaluate the result of a complex algebraic expression and store the result in a new array, but without building intermediate arrays:
-
-```cpp
-    auto const A = multi::array<int, 2>{{0, 1, 2}, {3, 4, 5}};
-    auto const B = multi::array<int, 2>{{0, 10, 20}, {30, 40, 50}};
-
-    using lazy::operator*;
-    using lazy::elementwise::operator+;
-    using lazy::elementwise::operator*;
-
-    multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
-
-    assert(C[1][1] == A[1][1] + (A[1][1] * B[1][1]) + (2.0 * B[1][1]));
 ```
+#include <multi/broadcast.hpp>  // brings operators
+...
 
-The lazy operations utilized here can beimplemented in a fairly intuitive way using a series of array restrictions (C++23 for simplicity):
+multi::array<int, 2> D = ...;
 
-```cpp
-namespace lazy {
-	template <class A>
-	auto operator*(typename A::element scalar, A const& a) {
-    	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
-	}
+multi::array<int, 2> const A = {{...}};
+multi::array<int, 2> const B = {{...}};
+multi::array<int, 2> const C = {{...}};
 
-	namespace elementwise {
-		template <class A, class B>
-		auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-    		return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
-		}
-		template <class A, class B>
-		auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-    		return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
-		}
-	}
-}
+using multi::broadcast::operator+;
+D = A + B + C;  // this operation will not allocate (if D has the correct sizes)
 ```
-link:https://godbolt.org/z/n3hs44hvW[(live)]
+link:https://godbolt.org/z/neK16a4Yn[(live)]
 
-Note that, again, none of the intermediate operations generate temporary concrete (allocated) arrays.
-
-There are many challenges in implementing general lazy expressions:
-1) tracking the ownership of the subexpressions (here, everything is taken by reference for simplicity, instead of exploiting copy or move semantics, or reference counting),
-2) dealing with ambiguities generated by operator overloading (hence the heavy use of templates and C++23 constraints).
-There is no single way to implement lazy operations; it depends strongly on the intended use and small details can lead to divergent semantics.
-
-In summary, restrictions can be very powerful since any function and behavior can be injected.
-However, there are some limitations to take into account to avoid surprising behavior:
-The functions that make up restrictions should behave as much as possible as pure (mathematical) functions and behave deterministically in their context of use.
-For lambdas that capture references, the validity of the restriction objects is be contigent to the lifetime of these references.
-Analogously if the lambdas capture by copy, the implications of copying must be evaluated too.
-Just like concrete arrays, the order of evaluation of the indices can impact performance or rely on compiler optimizations.
+The key feature of these operations is that they provide automatic "broadcasting", which is convenient for simplifying notation.
+Broadcasting (as it is known in Numpy and in Matlab), or scalar extensions (APL) is a feature that allows to reinterpret binary operations with mismatching dimensionality.
 
 // == Broadcast (infinite views)
 
