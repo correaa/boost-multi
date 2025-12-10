@@ -110,7 +110,7 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) { return adl_alloc_destroy_n(this->alloc(), first, n); }
 
  public:
-	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
+	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
 };
 
 }  // end namespace detail
@@ -1273,16 +1273,16 @@ struct array : dynamic_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	array(array&& other, Alloc const& alloc) noexcept
+	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept
 	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);
 	}
 
-	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
 		assert(this->stride() != 0);
 	}
 
-	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
+	// friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
 	void swap(array& other) noexcept {
 		using std::swap;
