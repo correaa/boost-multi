@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/multi/array.hpp>
+#include <boost/multi/broadcast.hpp>
+
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
@@ -9,15 +12,7 @@
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <utility>     // for forward  // NOLINT(misc-include-cleaner)
-
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <ranges>    // IWYU pragma: keep
-#endif
-
-#include <boost/multi/array.hpp>
-#include <boost/multi/broadcast.hpp>
+#include <utility>     // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
