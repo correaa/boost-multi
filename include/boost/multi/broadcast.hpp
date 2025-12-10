@@ -8,40 +8,6 @@
 #include <boost/multi/array_ref.hpp>
 #include <boost/multi/utility.hpp>  // for multi::detail::apply_square
 
-// #include <boost/multi/detail/tuple_zip.hpp>
-// #include <boost/multi/utility.hpp>  // IWYU pragma: export
-
-// #include <cmath>
-// #include <type_traits>
-
-// #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-// #include <ranges>  // IWYU pragma: keep
-// #endif
-
-// #ifdef _MSC_VER
-// #pragma warning(push)
-// #pragma warning(disable : 4623)  // assignment operator was implicitly defined as deleted
-// #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
-// #pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
-// #endif
-
-// #include <boost/multi/detail/adl.hpp>  // TODO(correaa) remove instantiation of force_element_trivial in this header
-// #include <boost/multi/detail/config/ASSERT.hpp>
-// #include <boost/multi/detail/layout.hpp>          // IWYU pragma: export
-// #include <boost/multi/detail/memory.hpp>          // for pointer_traits
-// #include <boost/multi/detail/operators.hpp>       // for random_iterable
-// #include <boost/multi/detail/pointer_traits.hpp>  // IWYU pragma: export
-// #include <boost/multi/detail/serialization.hpp>
-// #include <boost/multi/detail/types.hpp>  // for dimensionality_type  // IWYU pragma: export
-
-// #include <algorithm>  // fpr copy_n
-// #include <array>
-// #include <cstring>     // for std::memset in reinterpret_cast
-// #include <functional>  // for std::invoke
-// #include <iterator>    // for std::next
-// #include <memory>      // for std::pointer_traits
-// #include <new>         // for std::launder
-
 namespace boost::multi {
 
 template<class A> struct bind_category {
@@ -174,8 +140,11 @@ constexpr auto operator|(A&& a, F fun) {
 }
 
 template<class A>
-struct exp_bind_t {
+class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	explicit exp_bind_t(A a) : a_{a} {}
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
@@ -185,9 +154,11 @@ struct exp_bind_t {
 };
 
 template<class A>
-constexpr auto exp(A&& alpha) {
+constexpr auto exp(A const& alpha) {
 	auto xs = alpha.extensions();  // TODO(correaa) consider using .home() cursor
-	return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(alpha)} ^ xs;
+	auto hm = alpha.home();
+	// return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(alpha)} ^ xs;
+	return exp_bind_t<decltype(hm)>(hm) ^ xs;
 }
 
 template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::array<T, 1>{il}); }
