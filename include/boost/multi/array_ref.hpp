@@ -741,7 +741,7 @@ struct cursor_t {
 				ElementPtr,
 				D - 1,
 				std::decay_t<decltype(strides_.tail())>>{
-				base_ + get<0>(strides_) * n,
+				base_ + get<0>(strides_) * n,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				strides_.tail()
 			};
 		} else {

@@ -8,6 +8,8 @@
 #include <boost/multi/array_ref.hpp>
 #include <boost/multi/utility.hpp>  // for multi::detail::apply_square
 
+#include <type_traits>
+
 namespace boost::multi {
 
 template<class A> struct bind_category {
@@ -105,9 +107,45 @@ constexpr auto apply_broadcast(F&& fun, A&& alpha, B&& omega) {
 	}
 }
 
-// remember that you need C++23 to use the broadcast feature
 template<class A, class B>
-constexpr auto operator+(A&& alpha, B&& omega) { return broadcast::apply_broadcast(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+class apply_plus_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+
+ public:
+	template<class AA, class BB>
+	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
+			 +
+			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
+			;
+	}
+};
+
+template<class A, class B>
+constexpr auto operator+(A&& alpha, B&& omega) noexcept {
+	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
+		return broadcast::operator+([alpha_ = std::forward<A>(alpha)]() { return alpha_; } ^ multi::extensions_t<0>{}, omega);
+	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
+		return broadcast::operator+(alpha, [omega_ = std::forward<B>(omega)]() { return omega_; } ^ multi::extensions_t<0>{});
+	} else if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
+		return broadcast::operator+(alpha.repeated(omega.size()), omega);
+	} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
+		return broadcast::operator+(alpha, omega.repeated(alpha.size()));
+	} else {
+		// return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
+		// auto ah = alpha.home();
+		// auto oh = omega.home();
+		// return broadcast::apply_plus_t<decltype(ah), decltype(oh)>(ah, oh) ^ axs;
+		auto axs = alpha.extensions();
+		assert(axs == omega.extensions());
+		return broadcast::apply_plus_t<A, B>(std::forward<A>(alpha), std::forward<B>(omega)) ^ axs;
+	}
+	//	return broadcast::apply_broadcast(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+}
 
 template<class A, class B>
 constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::apply_broadcast(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
@@ -144,7 +182,8 @@ class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
 
  public:
-	explicit exp_bind_t(A a) : a_{a} {}
+	template<class AA>                                                 // , std::enable_if_t<!std::is_base_v<exp_bind_t<A>, std::decay_t<AA> >, int> =0>
+	explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
@@ -156,15 +195,16 @@ class exp_bind_t {
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
 template<class A>
-constexpr auto exp(A const& alpha) {
-	auto xs = alpha.extensions();  // TODO(correaa) consider using .home() cursor
-	auto hm = alpha.home();
+constexpr auto exp(A&& alpha) {
+	auto xs = alpha.extensions();
+	// auto hm = alpha.home();
+	// return exp_bind_t(hm) ^ xs;
+	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 	// return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(alpha)} ^ xs;
-	return exp_bind_t(hm) ^ xs;
 }
 
-template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::array<T, 1>{il}); }
-template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::array<T, 2>{il}); }
+template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T, 1, 16>(il)); }
+template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::inplace_array<T, 2, 16>(il)); }
 
 template<class A>
 struct abs_bind_t {

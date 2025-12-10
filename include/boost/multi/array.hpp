@@ -10,6 +10,7 @@
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
+#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
 #include <iterator>  // for std::sentinel_for
 #include <memory>    // for std::allocator_traits
@@ -329,7 +330,7 @@ struct dynamic_array                                                            
 
 		for(index i = 1; i != is.last(); ++i) {
 			auto const& outer_ref2 = *outer_it;
-			assert(outer_ref2.size() == common_size);
+			assert(static_cast<multi::size_t>(outer_ref2.size()) == common_size);
 
 			auto inner_it = std::ranges::begin(outer_ref2);
 			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
@@ -1122,6 +1123,9 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		ref::serialize(arxiv, version);
 	}
 };
+
+template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL>
+using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
