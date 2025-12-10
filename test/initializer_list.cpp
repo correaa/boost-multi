@@ -495,7 +495,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &csarr[1] == &il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
-		std::initializer_list const il = {1, 2, 3};
+		std::initializer_list<int> const il = {1, 2, 3};
 
 		multi::const_subarray const csarr(il);
 
