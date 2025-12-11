@@ -233,8 +233,13 @@ struct dynamic_array                                                            
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
-	constexpr explicit dynamic_array(decay_type&& other) noexcept
-	: dynamic_array(std::move(other), allocator_type{}) {}  // 6b
+	explicit constexpr dynamic_array(decay_type&& other) noexcept
+	: /*array_alloc{},*/ ref(std::exchange(other.base_, nullptr), other.extensions()) {
+		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
+	}
+
+	// constexpr explicit dynamic_array(decay_type&& other) noexcept
+	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
 
 #if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
