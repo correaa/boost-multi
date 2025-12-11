@@ -1094,7 +1094,7 @@ inq cuda:
   needs: ["inq", "g++"]  # "cuda", "inq"]
 
 inq rocm:
-  stage: build  # test
+  stage: test
   # image: rocm/dev-ubuntu-22.04
   image: rocm/dev-ubuntu-24.04
   allow_failure: false
