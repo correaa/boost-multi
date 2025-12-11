@@ -803,16 +803,18 @@ multi::array<int, 2> const A = {{...}};
 multi::array<int, 2> const B = {{...}};
 multi::array<int, 2> const C = {{...}};
 
-using multi::broadcast::operator+;
-D = A + B + C;  // this operation will not generate an intermediate array and will not allocate (if D has the correct sizes)
+using multi::broadcast::operator+;  // import elementwise lazy addition
+using multi::broadcast::operator*;  // import elementwise lazy multiplication
+
+D = A + B + 2*C + A*B;  // will not generate intermediate arrays and will not allocate if D has already the correct sizes
 ```
-link:https://godbolt.org/z/neK16a4Yn[(live)]
+link:https://godbolt.org/z/dsTe6a4T1[(live)]
 
 A key feature of these operations is automatic "broadcasting", which simplifies notation and is common in modern array languages.
 So-called broadcasting (in Numpy or Matlab) or scalar extension (in APL) allows binary operations on data of different dimensionality.
 Dimensionality mismatches are handled by broadcasting, but size mismatches are not (assertions catch these in debug mode).
 
-In this example, the `1` is "repeated" or interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
+In this example brew, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
 ```cpp
 multi::array<int, 1> const a = {1, 2, 3};
 
@@ -823,11 +825,12 @@ assert( a + 1 == multi::array<int, 1>{2, 3, 4} );
 Similarly, such a scalar can also be promoted into higher dimensionality if necessary:
 ```cpp
 multi::array<int, 2> const A = {
- {1, 2, 3},
- {4, 5, 6}
+	{1, 2, 3},
+	{4, 5, 6}
 };
 
 using multi::broadcast::operator+;
+
 assert( A + 1 == multi::array<int, 2>{{2, 3, 4}, {5, 6, 7}} );
 ```
 
@@ -835,13 +838,14 @@ The same behavior applies to arrays, on either side of the operation:
 
 ```cpp
 multi::array<int, 2> const A = {
- {1, 2, 3},
- {4, 5, 6}
+	{1, 2, 3},
+	{4, 5, 6}
 };
 
 multi::array<int, 2> const b = {1, 2, 3};
 
 using multi::broadcast::operator+;
+
 assert( b + A == multi::array<int, 2>{{2, 4, 6}, {5, 7, 9}} );
 ```
 Inside the expression, `b` was promoted effectively into a 2D array by repetition (`{{1, 2, 3}, {1, 2, 3}}`).
@@ -850,21 +854,21 @@ Operations can be combined in a single expression:
 
 ```cpp
 multi::array<int, 2> const A = {
- {1, 2, 3},
- {4, 5, 6}
+	{1, 2, 3},
+	{4, 5, 6}
 };
 
 multi::array<int, 2> const B = {
- {3, 2, 1},
- {6, 5, 4}
+	{3, 2, 1},
+	{6, 5, 4}
 };
 
 multi::array<int, 2> const b = {1, 2, 3};
 
 using multi::broadcast::operator+;
 using multi::broadcast::operator*;
-using multi::broadcast::operator/;
-using multi::broadcast::exp;
+using multi::broadcast::operator/;  // import elementwise lazy division
+using multi::broadcast::exp;        // import elementwise exponentiation
 
 auto const& expr = 2*b + A / exp(B);
 
@@ -873,13 +877,13 @@ assert( expr[2][1] == 2*b[2] + A[2][1] / std::exp(B[2][1]) );
 
 Expressions can be named (e.g., `expr` above), but they generally do not own the objects used in the expression.
 Most arrays used in the expression are taken by reference, and array elements are neither copied nor allocated.
-Therefore, we should treat expressions as references to arrays.
-Expressions do not have independent value semantics.
+Therefore, we should treat expressions as references to arrays, since they do not have independent value semantics.
 
-To use operators, explicitly import them into your current namespace, as shown in the examples; or using `using namespace multi::broadcast` is possible but not recommended.
+Expressions generate special unspecified types, they are internally based on parameterized `multi::restriction` types.
+
+To use operators, you need to explicitly import them into your current namespace, as shown in the examples -- using `using namespace multi::broadcast` is possible but not recommended.
 This is to avoid surprises by confusing broadcast elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
-But fundamentally, these operations return expression objects with different semantics, not concrete arrays.
-
+Also as a reminder that these operations return expression objects with referential semantics, not concrete arrays.
 For example, returning expressions that refer to local array variables from a C++ function generally will produce dangling references.
 
 Most expressions should be immediately converted to concrete arrays, ideally on a single line.
@@ -901,14 +905,14 @@ Lazy expressions are fully integrated with the rest of the library, meaning that
 ```cpp
 template<class Array>
 auto trace(Array const& arr) {
- auto const& diag = arr.diagonal();
- return std::reduce(diag.begin(), diag.end()); 
+	auto const& diag = arr.diagonal();
+	return std::reduce(diag.begin(), diag.end()); 
 }
 ...
 
 multi::array<double, 2> const A = {
- {1.0, 2.0},
- {3.0, 4.0}
+	{1.0, 2.0},
+	{3.0, 4.0}
 };
 
 assert( trace(A) == 1.0 + 4.0 );  // approximately
