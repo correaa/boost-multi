@@ -235,6 +235,8 @@ int main() {
 		BOOST_TEST( cur[2][2] == v2D[2][2] );
 
 		// auto front = *v2D.begin();
+		auto const v2D_diag = v2D.diagonal();
+		BOOST_TEST( v2D_diag[2] == v2D[2][2] );
 	}
 
 	return boost::report_errors();
