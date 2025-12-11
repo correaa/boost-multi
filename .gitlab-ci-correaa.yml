@@ -1258,7 +1258,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
@@ -1269,12 +1269,15 @@ pages:
     - cd ..
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
-    - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
-    - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
+    # - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
+    # - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
-    - quom include/boost/multi/array.hpp boost-multi.hpp -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
+    - quom --help
+    - cd include
+    - tree -L 4
+    - quom ./boost/multi/array.hpp boost-multi.hpp -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
     - cat boost-multi.hpp
     #- quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
     #- date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
