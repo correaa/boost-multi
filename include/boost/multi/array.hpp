@@ -233,7 +233,6 @@ struct dynamic_array                                                            
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
-	// NOcppcheck-suppress noExplicitConstructor ; allow terse syntax
 	explicit constexpr dynamic_array(decay_type&& other) noexcept
 	: array_alloc{std::move(other.alloc())}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
