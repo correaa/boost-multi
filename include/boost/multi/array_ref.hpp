@@ -741,7 +741,7 @@ struct cursor_t {
 				ElementPtr,
 				D - 1,
 				std::decay_t<decltype(strides_.tail())>>{
-				base_ + get<0>(strides_) * n,
+				base_ + get<0>(strides_) * n,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				strides_.tail()
 			};
 		} else {
@@ -1185,7 +1185,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
 
-	constexpr auto get_allocator() const -> default_allocator_type {
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type {
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
@@ -2845,7 +2845,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using default_allocator_type = typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type;
 
-	constexpr auto get_allocator() const -> default_allocator_type { return default_allocator_of(const_subarray::base()); }
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type { return default_allocator_of(const_subarray::base()); }
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
@@ -2968,6 +2968,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		// TODO(correaa) introduce a broadcasted_layout?
 		multi::layout_t<2> const new_layout(this->layout(), 0, 0, 1);  // , (std::numeric_limits<size_type>::max)()};
 		return const_subarray<T, 2, ElementPtr, multi::layout_t<2>>(new_layout, types::base_);
+	}
+
+	constexpr auto repeated(multi::size_t n) const& {
+		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
 	}
 
 	template<template<class...> class Container = std::vector, class... As>
