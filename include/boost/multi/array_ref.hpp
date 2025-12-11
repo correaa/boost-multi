@@ -2970,6 +2970,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return const_subarray<T, 2, ElementPtr, multi::layout_t<2>>(new_layout, types::base_);
 	}
 
+	constexpr auto repeated(multi::size_t n) const& {
+		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
+	}
+
 	template<template<class...> class Container = std::vector, class... As>
 	constexpr auto to(As&&... as) const& {
 		using inner_value_type = typename const_subarray::value_type;

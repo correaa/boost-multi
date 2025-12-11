@@ -212,7 +212,7 @@ struct dynamic_array                                                            
 
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	dynamic_array(dynamic_array&& other) noexcept
+	constexpr dynamic_array(dynamic_array&& other)
 	: array_alloc{other.alloc()},
 	  ref{
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
