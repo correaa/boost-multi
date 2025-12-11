@@ -707,46 +707,44 @@ link:https://godbolt.org/z/Porre3z8s[(live)]
 
 == Restrictions (lazy arrays)
 
-So far, we have examined the use of arrays that contain elements or references to elements stored in memory;
-these are referred to as container arrays or concrete arrays.
-In this section, we will describe another type of multidimensional array in which the elements are not stored but calculated on the fly instead.
-The arrays are called "restrictions"; they are also commonly referred to as "lazy arrays" and are a tool for general delayed evaluation.
+So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
+In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
+These are called "restrictions arrays" here, also commonly "lazy arrays", and enable delayed evaluation.
 
-Multi's restriction arrays are functions that are wrapped in the interface of a multidimensional array.
-These functions are therefore restricted (in the mathematical sense) to a discrete range of values in a multidimensional grid (a Cartesian product of integer intervals).
+Multi's restriction arrays are functions wrapped in a multidimensional array interface.
+These functions are restricted (in the mathematical sense) to a discrete range of values in a multidimensional Cartesian grid.
 The dimensionality of a restriction is the number of indices or coordinates that this function accepts as inputs.
 
-Restrictions are constructed from a function (generally a lambda) and an `extensions` object, combined using the wedge operator (`operator^`, which can be interpreted as an arrow pointing up).
-Unlike concrete arrays, restrictions do not necessarily allocate space; instead, the elements are generated on demand.
+Restrictions are built from a function (often a lambda) and an `extensions` object.
+They are combined with the wedge operator (`operator^`), which resembles an upward arrow.
+Unlike concrete arrays, restrictions do not allocate space; elements are generated when needed.
 
 For example, we can restrict this simple function `10*i + j` where `i` and `j` belong to the domain `[0, 2) x [0, 3)` (i.e., `i = 0...1` and `j = 0...2`). 
 
 ```cpp
 auto R = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
-...
 ```
-Note that `R` does not request memory to store the values; it generates them only when needed.
+Note that `R` does not allocate memory, and it generates values as needed.
 For example, `R[1][2]` yields `12` (by performing the operation `10*1 + 2`).
-For this reason, they can be regarded as "lazy" arrays, a multidimensional generalization of ranges such as `std::ranges::iota`, `std::ranges::iota | std::ranges::transform(...)` or `thrust::counting_iterator`.)
 
-The main property of a restriction array is that it can be generically used in place of a concrete array because they have the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()` and (partial) indexing (`operator[]`).
-They also provide a complete iterator inteface, `.begin()`, `.end()`, `.home()` and they can be used as standard ranges.
-This means that generic algorithms, including some outside of Multi, can take advantage of these arrays.
-As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end())`
+The main property of a restriction array is that it can be generically used in place of a concrete array because it has the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()`, and (partial) indexing (`operator[]`).
+They also provide a complete iterator interface, `.begin()`, `.end()`, `.home()`, and they can be used as standard ranges.
+This allows generic algorithms, including some outside Multi, to use these arrays.
+As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end()).`
 (the same expression as if it were a concrete array).
 
-A key difference with concrete arrays is that their elements cannot be mutated, and that there are no internal pointers or layouts to extract (e.g., through functions like `.data_elements()`, `.base()`, `.layout()` or `.stride()`).
+A key difference with concrete arrays is that their elements cannot be changed after creation (i.e., they are immutable). Additionally, concrete arrays do not use internal pointers—addresses that indicate where data is stored—or internal layouts—formats describing the structure of the array—to extract information (e.g., through functions like `.data_elements()`, `.base()`, `.layout()`, or `.stride()`).
 
-A first use of restrictions is for generating concrete arrays from coordinates, to replace the following commonly used nested loop for initialization:
+An elemental use for restrictions is for generating concrete arrays from coordinates, replacing common nested initialization loops:
 ```cpp
 multi::array<int, 2> A({3, 2});
 
 auto [is, js] = A.extensions();
 
 for(auto i : is) {
-	for(auto j : js) {
-		A[i][j] = 10*i + j;
-	}
+ for(auto j : js) {
+  A[i][j] = 10*i + j;
+ }
 }
 ```
 ... with a simpler construction without intermediate steps:
@@ -754,21 +752,20 @@ for(auto i : is) {
 multi::array<int, 2> const A = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(3, 2);  // same result as the loop
 ```
 
-Note that target array can be conveniently declared `const` if no further mutation is necessary.
-The element initialization here is delegated to the library;
-the initialization could occur using optimal hardware- or library-specific operations (e.g., on a GPU device) and in any order.
+Note that the target array can be conveniently declared `const` if no further mutation is necessary.
+Element initialization is delegated to the library here.
+Initialization can use optimal hardware- or library-specific operations (e.g., on a GPU) and may occur in any order.
 
-Restrictions can be used in many other contexts beyond initialization and assignment;
-for example in combination with `std::ranges`, or mixed with concrete arrays.
-In some cases, functions can be generically written to work both on `multi::array`s (or `multi::subarray`s) and on restrictions, when a functional programming style is desirable.
+Restrictions apply in many contexts beyond initialization and assignment;
+for example, with `std::ranges` or concrete arrays.
+In some cases, functions can be generically written to work both on `multi::arrays (or `multi::subarrays) and on restrictions, when a functional programming style is desirable.
 
-For example, here we define a transformation that subtracts the mean value of each row, row by row:
-```cpp
+For example, this transformation subtracts each row's mean value, row by row:
 auto shift = std::views::transform(
-	[]<class Row>(Row&& row) {
-		auto mean = std::reduce(row.begin(), row.end()) / row.size();
-		return std::forward<Row>(row) | std::views::transform([=](auto e) { return e - mean; });
-	}
+ []<class Row>(Row&& row) {
+  auto mean = std::reduce(row.begin(), row.end()) / row.size();
+  return std::forward<Row>(row) | std::views::transform([=](auto e) { return e - mean; });
+ }
 );
 ```
 
@@ -778,14 +775,13 @@ auto lazy = [](auto i, auto j) -> double { return 10 * i + j; } ^ multi::extensi
 multi::array<double, 2> concrete = {{0.0, 1.0, 2.0}, {10.0, 11.0, 12.0}};  // allocation
 
 auto lazy_shifted = shift(lazy);   // doesn't allocate
-auto concrete_shifted = shift(concrete);  // doesn't allocate (hodls a reference to concrete)
+auto concrete_shifted = shift(concrete);  // non-allocating; holds reference
 ```
 
-The primary advantage of using lazy arrays and defining transformation functions is that operations can occur without requiring temporary space (allocators), which can be advantageous.
-The allocation would only happen (if at all) at the point at which the result is materialized as a concrete copy.
+The main advantage of using lazy arrays and transformation functions is that operations can be performed without requiring temporary arrays or memory allocations.
+The allocation would occur only when the result is materialized as a new concrete copy.
 
 ```cpp
-
 multi::array<double, 2> shift_lazy_copy(shift(lazy));          // allocates here
 multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ```
@@ -793,9 +789,9 @@ link:https://godbolt.org/z/qK9cYzrzv[(live)]
 
 == Broadcast (lazy expressions)
 
-The library provides a facility and a series of operator overloads to generate expression that are lazily evaluated.
-Lazy expressions are useful to generate complex array equations that are evaluated in element-wise fashion without the involvement of temporary arrays or storage.
-These operations include summation, multiplication (elementwise), together with most special functions (`exp`, `abs`, `sin`, `cos`, ...)
+The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.
+Lazy expressions are useful for generating complex array expressions that are evaluated element-wise without the need for temporary arrays or storage.
+These operations include summation and elementwise multiplication, along with most special functions (`exp`, `abs`, `sin`, `cos`, ...).
 
 ```cpp
 #include <multi/broadcast.hpp>  // brings operators
@@ -808,15 +804,15 @@ multi::array<int, 2> const B = {{...}};
 multi::array<int, 2> const C = {{...}};
 
 using multi::broadcast::operator+;
-D = A + B + C;  // this operation will not generater an intermediate array and will not allocate (if D has the correct sizes)
+D = A + B + C;  // this operation will not generate an intermediate array and will not allocate (if D has the correct sizes)
 ```
 link:https://godbolt.org/z/neK16a4Yn[(live)]
 
-The key feature of these operations is that they provide automatic "broadcasting", which is convenient for simplifying notation, and it is common in modern array languages.
-Broadcasting (as it is known in Numpy and in Matlab), or scalar extensions (APL) is a feature that allows to reinterpret binary operations with mismatching dimensionality.
-Generally dimensionality mismatch are handled by broadcasting, but size mismatch are not accepted (assertions try to catch these in debug compilation mode.)
+A key feature of these operations is automatic "broadcasting", which simplifies notation and is common in modern array languages.
+So-called broadcasting (in Numpy or Matlab) or scalar extension (in APL) allows binary operations on data of different dimensionality.
+Dimensionality mismatches are handled by broadcasting, but size mismatches are not (assertions catch these in debug mode).
 
-In this case, the scalar is "repeated" effectively to `{1, 1, 1}` (without copies) to match the dimensionality of left operand.
+In this example, the `1` is "repeated" or interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
 ```cpp
 multi::array<int, 1> const a = {1, 2, 3};
 
@@ -824,23 +820,23 @@ using multi::broadcast::operator+;
 assert( a + 1 == multi::array<int, 1>{2, 3, 4} );
 ```
 
-Similarly a scalar (a non-array) can be also promoted into higher dimensionality if necessary:
+Similarly, such a scalar can also be promoted into higher dimensionality if necessary:
 ```cpp
 multi::array<int, 2> const A = {
-	{1, 2, 3},
-	{4, 5, 6}
+ {1, 2, 3},
+ {4, 5, 6}
 };
 
 using multi::broadcast::operator+;
 assert( A + 1 == multi::array<int, 2>{{2, 3, 4}, {5, 6, 7}} );
 ```
 
-The same behavior applies to non-scalars, to either side of the operation:
+The same behavior applies to arrays, on either side of the operation:
 
 ```cpp
 multi::array<int, 2> const A = {
-	{1, 2, 3},
-	{4, 5, 6}
+ {1, 2, 3},
+ {4, 5, 6}
 };
 
 multi::array<int, 2> const b = {1, 2, 3};
@@ -848,19 +844,19 @@ multi::array<int, 2> const b = {1, 2, 3};
 using multi::broadcast::operator+;
 assert( b + A == multi::array<int, 2>{{2, 4, 6}, {5, 7, 9}} );
 ```
-Inside the expression, `b` was promoted effectively into a 2D array by repetition (`{{1, 2, 3}, {1, 2, 3}}`)
+Inside the expression, `b` was promoted effectively into a 2D array by repetition (`{{1, 2, 3}, {1, 2, 3}}`).
 
 Operations can be combined in a single expression:
 
 ```cpp
 multi::array<int, 2> const A = {
-	{1, 2, 3},
-	{4, 5, 6}
+ {1, 2, 3},
+ {4, 5, 6}
 };
 
 multi::array<int, 2> const B = {
-	{3, 2, 1},
-	{6, 5, 4}
+ {3, 2, 1},
+ {6, 5, 4}
 };
 
 multi::array<int, 2> const b = {1, 2, 3};
@@ -875,44 +871,44 @@ auto const& expr = 2*b + A / exp(B);
 assert( expr[2][1] == 2*b[2] + A[2][1] / std::exp(B[2][1]) );
 ```
 
-Expressions can be named (like above `expr`), but do not own the objects utilized in the expression.
-Most elements in the expression are not owned and arrays elements are never copied or allocated.
-Therefore we should regard expressions as references to external arrays, they don't have the independent sematics of a value.
+Expressions can be named (e.g., `expr` above), but they generally do not own the objects used in the expression.
+Most arrays used in the expression are taken by reference, and array elements are neither copied nor allocated.
+Therefore, we should treat expressions as references to arrays.
+Expressions do not have independent value semantics.
 
-Operators need to be explicitly pulled from the broadcast namespace, like in the examples or by `using namespace multi::broadcast` (not recommended).
-This is to avoid surprises by confusing broadcast elementwise operations with other common algebraic operations such matrix multiplication or matrix exponentiation;
-but fundamentally because the results of these operations are not concrete arrays, but expression objects with a different semantics.
+To use operators, explicitly import them into your current namespace, as shown in the examples; or using `using namespace multi::broadcast` is possible but not recommended.
+This is to avoid surprises by confusing broadcast elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
+But fundamentally, these operations return expression objects with different semantics, not concrete arrays.
 
-For example, returning expressions that refer tp local array variables from a C++ function generally produces dangling references.
+For example, returning expressions that refer to local array variables from a C++ function generally will produce dangling references.
 
-Most expressions should be immediately evaluated into a concrete arrays, idealy in a single line.
-A common pattern consists in materializing the expression into an a concrete array, either by construction or by assignment:
+Most expressions should be immediately converted to concrete arrays, ideally on a single line.
+A common pattern consists of materializing the expression into a concrete array, either by construction or by assignment:
 
 ```cpp
+multi::array<int, 2> expr_copy1 = 2*b + A / exp(B);  // allocate with implied size and initialize elements from the expression evaluation
+
+auto expr_copy2 =+ (2*b + A / exp(B));  // prefix + evaluates the expression into a concrete array
+
 multi::array<int, 2> expr_copy2({2, 3});
 ...
 expr_copy2 = 2*b + A / exp(B);  // allocation not expected because expr_copy2 has the "right" size, elements are assigned from the expression evaluation
 ```
 
-```cpp
-multi::array<int, 2> expr_copy1 = 2*b + A / exp(B);  // allocate with implied size and initialize elements from the expression evaluation
-// or auto expr_copy1 =+ 2*b + A / exp(B);
-```
-
 Lazy expressions are fully integrated with the rest of the library, meaning that they can be utilized generically in the same way as immutable concrete arrays.
-(Also they don't have a layout or an internal pointer.)
+(Also, they don't have a layout or an internal pointer.)
 
 ```cpp
 template<class Array>
 auto trace(Array const& arr) {
-	auto const& diag = arr.diagonal();
-	return std::reduce(diag.begin(), diag.end()); 
+ auto const& diag = arr.diagonal();
+ return std::reduce(diag.begin(), diag.end()); 
 }
 ...
 
 multi::array<double, 2> const A = {
-	{1.0, 2.0},
-	{3.0, 4.0}
+ {1.0, 2.0},
+ {3.0, 4.0}
 };
 
 assert( trace(A) == 1.0 + 4.0 );  // approximately
@@ -921,9 +917,9 @@ using multi::broadcast::exp;
 assert( trace(exp(A)) == std::exp(1.0) + std::exp(4.0) ); // approximately
 ```
 
-Custom functions can be applied by using the `multi::broadcast::map` function:
-```
-auto const& AVE = multi::broadcast::map([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
+Custom functions can be applied by using the `invoke` function:
+```cpp
+auto const& AVE = multi::broadcast::invoke([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
 ```
 
 // == Broadcast (infinite views)
