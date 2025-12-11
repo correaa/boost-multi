@@ -214,6 +214,19 @@ class restriction
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
+	struct bind_diagonal_t {
+		Proj proj_;
+		template<class T1, class... Ts>
+		BOOST_MULTI_HD constexpr auto operator()(T1 ij, Ts... rest) const noexcept -> element { return proj_(ij, ij, rest...); }
+	};
+
+	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t > {
+		static_assert( D > 1 );
+		using std::get;  // needed for C++17
+		return bind_diagonal_t{proj_} ^ (std::min( get<0>(sizes()), get<1>(sizes()) )*extensions().sub().sub());
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
+	}
+
 	BOOST_MULTI_HD constexpr auto operator~() const { return transposed(); }
 
 	struct bind_repeat_t {
@@ -1021,6 +1034,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using index = multi::index;
 
 	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+
+	constexpr auto sub() const { return extensions_t<0>{this->base().tail()}; }
 
 	class cursor_t {
 		index idx_;
