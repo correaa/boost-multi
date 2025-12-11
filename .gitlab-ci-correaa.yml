@@ -1277,7 +1277,7 @@ pages:
     - quom --help
     - cd include
     - tree -L 4
-    - quom ./boost/multi/array.hpp boost-multi.hpp -I . -l boost/multi -g 'BOOST_MULTI_.*_HPP_?'  # -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
+    - quom ./boost/multi/array.hpp boost-multi.hpp -I . -g 'BOOST_MULTI_.*_HPP_?'  # -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
     - cat boost-multi.hpp
     #- quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
     #- date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
