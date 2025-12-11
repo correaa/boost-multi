@@ -1275,6 +1275,7 @@ pages:
     - source .venv/bin/activate
     - pip install quom
     - quom include/boost/multi/array.hpp boost-multi.hpp -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
+    - cat boost-multi.hpp
     #- quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
     #- date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
