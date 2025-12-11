@@ -84,22 +84,22 @@ struct apply_bind_t<F, A, B> {
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	auto xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
-	assert((xs == arrs.extensions()) && ...);
+	assert(((xs == arrs.extensions()) && ...));
 	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
 	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
 template<class F, class A, class B>
-constexpr auto invoke(F&& fun, A&& alpha, B&& omega) {
+constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-		return invoke(std::forward<F>(fun), [alpha = std::forward<A>(alpha)]() { return alpha; } ^ multi::extensions_t<0>{}, std::forward<B>(omega));
+		return map(std::forward<F>(fun), [alpha = std::forward<A>(alpha)]() { return alpha; } ^ multi::extensions_t<0>{}, std::forward<B>(omega));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return invoke(std::forward<F>(fun), std::forward<A>(alpha), [omega = std::forward<B>(omega)]() { return omega; } ^ multi::extensions_t<0>{});
+		return map(std::forward<F>(fun), std::forward<A>(alpha), [omega = std::forward<B>(omega)]() { return omega; } ^ multi::extensions_t<0>{});
 	} else {
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
-			return invoke(std::forward<F>(fun), alpha.repeated(omega.size()), omega);
+			return map(std::forward<F>(fun), alpha.repeated(omega.size()), omega);
 		} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
-			return invoke(std::forward<F>(fun), alpha, omega.repeated(alpha.size()));
+			return map(std::forward<F>(fun), alpha, omega.repeated(alpha.size()));
 		} else {
 			return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
 		}
@@ -143,28 +143,28 @@ constexpr auto operator+(A&& alpha, B&& omega) noexcept {
 	// 	assert(axs == omega.extensions());
 	// 	return broadcast::apply_plus_t<A, B>(std::forward<A>(alpha), std::forward<B>(omega)) ^ axs;
 	// }
-	return broadcast::invoke(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class A, class B>
-constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::invoke(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::map(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A>
 constexpr auto operator-(A&& alpha) { return broadcast::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
 template<class A, class B>
-constexpr auto operator*(A&& alpha, B&& omega) { return broadcast::invoke(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator*(A&& alpha, B&& omega) { return broadcast::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
 constexpr auto operator/(A&& alpha, B&& omega) {
-	return broadcast::invoke(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return broadcast::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class A, class B>
-constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::invoke(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
-constexpr auto operator||(A&& a, B&& b) { return broadcast::invoke(std::logical_or<>{}, std::forward<A>(a), std::forward<B>(b)); }
+constexpr auto operator||(A&& a, B&& b) { return broadcast::map(std::logical_or<>{}, std::forward<A>(a), std::forward<B>(b)); }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
 constexpr auto operator|(A&& a, F fun) {
