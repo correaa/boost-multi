@@ -1280,7 +1280,11 @@ struct array : dynamic_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 	}
 
-	BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
+	// BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
+	// 	assert(this->stride() != 0);
+	// }
+
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
 
