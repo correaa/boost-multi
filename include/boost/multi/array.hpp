@@ -825,9 +825,10 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	using typename ref::difference_type;
 	using typename ref::size_type;
 	using typename ref::value_type;
+
 	constexpr explicit dynamic_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
-	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc)  // 6b
+	BOOST_MULTI_HD constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept  // 6b
 	: array_alloc{alloc}, ref{other.base_, other.extensions()} {
 		std::move(other).ref::layout_t::operator=({});
 	}
