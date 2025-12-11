@@ -1269,12 +1269,12 @@ pages:
     - cd ..
     - cp -r doc/multi.html .public
     # - cp -r doc/multi.adoc .public
+    - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
+    - echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
     #- python3 -m venv .venv
     #- source .venv/bin/activate
     #- pip install quom
     #- quom -I `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
-    #- echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
-    #- echo "// download from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
     #- date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
     #- cat boost-multi.hpp >> .public/boost-multi.hpp
