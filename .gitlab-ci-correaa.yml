@@ -1285,6 +1285,7 @@ pages:
     #- cat boost-multi.hpp >> .public/boost-multi.hpp
     #- cat .public/boost-multi.hpp
     # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
+    - cd ..
     - mv .public public
   artifacts:
     paths:
