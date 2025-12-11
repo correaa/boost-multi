@@ -207,7 +207,7 @@ template<class T> constexpr auto exp(std::initializer_list<std::initializer_list
 
 template<class A>
 struct abs_bind_t {
-	A a_;
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
