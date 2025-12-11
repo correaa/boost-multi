@@ -17,7 +17,7 @@
 namespace multi = boost::multi;
 
 // NOLINTBEGIN(readability-identifier-length)
-int main() {
+int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array const a = {1.0, 2.0, 3.0};
 
@@ -73,9 +73,34 @@ int main() {
 		using multi::broadcast::exp;
 		auto c = exp(r);
 
+		BOOST_TEST( c.extensions() == r.extensions() );
+
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
+	}
+	{
+		multi::array<int, 1> a = {1, -2, -3};
+
+		using multi::broadcast::abs;
+		auto const& c = abs(a);
+
+		BOOST_TEST( c.extensions() == a.extensions() );
+
+		BOOST_TEST( c[0] == std::abs(a[0]) );
+		BOOST_TEST( c[1] == std::abs(a[1]) );
+		BOOST_TEST( c[2] == std::abs(a[2]) );
+
+		multi::array<int, 1> const c_copy1 = c;
+
+		BOOST_TEST( c_copy1.extensions() == c.extensions() );
+
+		multi::array const c_copy2 = c;
+		BOOST_TEST( c_copy2 == c_copy1 );
+
+		auto const c_copy3 = +c;
+		BOOST_TEST( c_copy3 == c_copy1 );
+		BOOST_TEST( c_copy3.base() != nullptr );
 	}
 	// {
 	// 	multi::array const a = {1, 2, 3};
