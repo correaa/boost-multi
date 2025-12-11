@@ -243,6 +243,39 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST(( multi::array{2, 3, 4} == c ));
 		BOOST_TEST(( c == multi::array{2, 3, 4} ));
 	}
+	{
+		multi::array<int, 2> const A = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		multi::array<int, 1> const b = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		multi::array<int, 2> const C = A + b;
+
+		BOOST_TEST((
+			C ==
+			multi::array<int, 2>{
+				{2, 4, 6},
+				{5, 7, 9}
+        	}
+		));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		multi::array<int, 1> const b = a + 1;
+
+		BOOST_TEST(( b == multi::array<int, 1>{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
+	}
 
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
