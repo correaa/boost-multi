@@ -1016,7 +1016,7 @@ template<> struct extensions_t<0> : tuple<> {
 	}
 
 	template<class Fun>
-	friend constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+	friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
 		return restriction<0, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
 	}
 };
@@ -1189,7 +1189,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	}
 
 	template<class Fun>
-	friend constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+	friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
 		return restriction<1, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
 	}
 

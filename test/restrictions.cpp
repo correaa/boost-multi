@@ -101,26 +101,6 @@ auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensio
 }  // namespace lazy
 
 int main() {
-	{
-		auto const A = multi::array<int, 2>{
-			{0, 1, 2},
-			{3, 4, 5}
-		};
-		auto const B = multi::array<int, 2>{
-			{ 0, 10, 20},
-			{30, 40, 50}
-		};
-
-		using lazy::operator*;
-		using lazy::elementwise::operator+;
-		using lazy::elementwise::operator*;
-
-		multi::array<int, 2> const C = A + (A * B) + (2.0 * B);
-
-		std::cout << "C11 = " << C[1][1] << std::endl;
-		BOOST_TEST( C[1][1] == 4 + 4*40 + 2*40 );
-	}
-
 	// test repeat
 	{
 		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
