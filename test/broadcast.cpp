@@ -10,9 +10,10 @@
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <iterator>    // IWYU pragma: keep
-#include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <utility>     // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <iostream>
+#include <iterator>  // IWYU pragma: keep
+#include <limits>    // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <utility>   // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
@@ -42,7 +43,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
-		auto c = exp(a);  // multi::array{1.0, 2.0, 3.0});
+		auto c = exp(a);
 
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
@@ -103,24 +104,209 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( c_copy3.base() != nullptr );
 	}
 	// {
-	// 	multi::array const a = {1, 2, 3};
+	// 	using multi::broadcast::exp;
+	// 	auto c = exp(
+	// 		{{1.0, 2.0, 3.0},
+	// 		{4.0, 5.0, 6.0}}
+	// 	);
+
+	// 	BOOST_TEST( std::abs(c[0][0] - std::exp(1.0)) < 1e-4 );
+	// 	BOOST_TEST( std::abs(c[0][1] - std::exp(2.0)) < 1e-4 );
+	// 	BOOST_TEST( std::abs(c[0][2] - std::exp(3.0)) < 1e-4 );
+
+	// 	BOOST_TEST( std::abs(c[1][0] - std::exp(4.0)) < 1e-4 );
+	// 	BOOST_TEST( std::abs(c[1][1] - std::exp(5.0)) < 1e-4 );
+	// 	BOOST_TEST( std::abs(c[1][2] - std::exp(6.0)) < 1e-4 );
+	// }
+	{
+		multi::array const a = {-1, -2, 3};
+
+		using multi::broadcast::abs;
+		auto c = abs(a);
+
+		BOOST_TEST( c[0] == 1 );
+		BOOST_TEST( c[1] == 2 );
+		BOOST_TEST( c[2] == 3 );
+	}
+	{
+		multi::array const a = {1, 2, 3};
+		multi::array const b = {4, 5, 6};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+		auto c = a + b;
+
+		BOOST_TEST(( c == multi::array{5, 7, 9} ));
+	}
+	{
+		multi::array const a = {1, 2, 3};
+		multi::array const b = {4, 5, 6};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+		auto const& c = a + b;
+
+		BOOST_TEST(( c == multi::array{5, 7, 9} ));
+	}
+	{
+		auto const A = multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		auto const B = multi::array<int, 2>{
+			{ 0, 10, 20},
+			{30, 40, 50}
+		};
+
+		using multi::broadcast::operator+;
+
+		multi::array<int, 2> const C = A + B;
+
+		BOOST_TEST( C[1][1] == A[1][1] + B[1][1] );
+	}
+	{
+		auto const A = multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		auto const B = multi::array<int, 2>{
+			{ 0, 10, 20},
+			{30, 40, 50}
+		};
+		auto const C = multi::array<int, 2>{
+			{  0, 100, 200},
+			{300, 400, 500}
+		};
+
+		using multi::broadcast::operator+;
+
+		multi::array<int, 2> const D = A + B + C;
+
+		BOOST_TEST( D[1][1] == A[1][1] + B[1][1] + C[1][1] );
+	}
+	{
+		auto const A = multi::array<int, 2>{
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		auto const B = multi::array<int, 2>{
+			{ 0, 10, 20},
+			{30, 40, 50}
+		};
+
+		using multi::broadcast::operator*;
+		using multi::broadcast::operator+;
+
+		multi::array<int, 2> const C = A + (A * B);
+
+		BOOST_TEST( C[1][1] == A[1][1] + (A[1][1] * B[1][1]) );
+	}
+	{
+		multi::array const a = {1, 2, 3};
+
+		auto f1d = [](auto) { return 1; } ^ multi::extensions_t<1>{3};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+
+		auto const& c = a + f1d;
+
+		BOOST_TEST(( multi::array{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	}
+	{
+		multi::array const a = {1, 2, 3};
+
+		auto f = []() { return 1; } ^ multi::extensions_t<0>{};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+
+		auto const& c = a + f;
+
+		BOOST_TEST(( multi::array{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+
+		auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+
+		BOOST_TEST(( multi::array{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+
+		std::cout << (a + 1)[1] << '\n';
+		BOOST_TEST(( multi::array{2, 3, 4} == a + 1 ));
+		BOOST_TEST(( a + 1 == multi::array{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
+
+		auto c = a + 1;
+
+		BOOST_TEST(( multi::array{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 2> const A = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		multi::array<int, 1> const b = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		multi::array<int, 2> const C = A + b;
+
+		BOOST_TEST((
+			C ==
+			multi::array<int, 2>{
+				{2, 4, 6},
+				{5, 7, 9}
+        	}
+		));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		multi::array<int, 1> const b = a + 1;
+
+		BOOST_TEST(( b == multi::array<int, 1>{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 1> const a = {1, 2, 3};
+
+		using multi::broadcast::operator+;
+		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
+	}
+
+	// {
+	// 	multi::array<int, 1> const a = {1, 2, 3};
+
 	// 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
-	// 	auto c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+
+	// 	auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+
 	// 	BOOST_TEST(( multi::array{2, 3, 4} == c ));
 	// 	BOOST_TEST(( c == multi::array{2, 3, 4} ));
 	// }
 	// {
-	// 	multi::array const a = {1, 2, 3};
-	// 	multi::array const b = {4, 5, 6};
+	// 	multi::array<int, 1> const a = {1, 2, 3};
 
 	// 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
-	// 	auto&& c = a + b;
 
-	// 	// multi::detail::what(c);
-	// 	// printR2("c", c);
-	// 	BOOST_TEST(( c == multi::array{5, 7, 9} ));
-	// 	// BOOST_TEST( std::ranges::equal(c, multi::array{5, 7, 9}) );
+	// 	auto const& c = a + 1;
+
+	// 	BOOST_TEST(( multi::array{2, 3, 4} == c ));
+	// 	BOOST_TEST(( c == multi::array{2, 3, 4} ));
 	// }
+
 	// {
 	// 	multi::array const A = {0, 1, 2};        // NOLINT(llvm-header-guard)
 	// 	multi::array const B = {10, 11, 12};     // NOLINT(llvm-header-guard)

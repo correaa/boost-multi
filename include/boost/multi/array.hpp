@@ -10,6 +10,7 @@
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
+#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
 
 #include <iterator>  // for std::sentinel_for
 #include <memory>    // for std::allocator_traits
@@ -109,7 +110,7 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) { return adl_alloc_destroy_n(this->alloc(), first, n); }
 
  public:
-	constexpr auto get_allocator() const -> allocator_type { return alloc_; }
+	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
 };
 
 }  // end namespace detail
@@ -211,7 +212,8 @@ struct dynamic_array                                                            
 
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	dynamic_array(dynamic_array&& other) noexcept
+	// dynamic_array(dynamic_array&&) = delete;
+	constexpr dynamic_array(dynamic_array&& other) noexcept(false)  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor)
 	: array_alloc{other.alloc()},
 	  ref{
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
@@ -231,8 +233,13 @@ struct dynamic_array                                                            
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
-	constexpr explicit dynamic_array(decay_type&& other) noexcept
-	: dynamic_array(std::move(other), allocator_type{}) {}  // 6b
+	explicit constexpr dynamic_array(decay_type&& other) noexcept
+	: array_alloc{std::move(other.alloc())}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
+		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
+	}
+
+	// constexpr explicit dynamic_array(decay_type&& other) noexcept
+	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
 
 #if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>
@@ -329,7 +336,7 @@ struct dynamic_array                                                            
 
 		for(index i = 1; i != is.last(); ++i) {
 			auto const& outer_ref2 = *outer_it;
-			assert(outer_ref2.size() == common_size);
+			assert(static_cast<multi::size_t>(outer_ref2.size()) == common_size);
 
 			auto inner_it = std::ranges::begin(outer_ref2);
 			for(auto j : js) {              // NOLINT(altera-unroll-loops) TODO(correa) change to algorithm applied on elements
@@ -823,9 +830,10 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	using typename ref::difference_type;
 	using typename ref::size_type;
 	using typename ref::value_type;
+
 	constexpr explicit dynamic_array(allocator_type const& alloc) : array_alloc{alloc} {}
 
-	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc)  // 6b
+	BOOST_MULTI_HD constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept  // 6b
 	: array_alloc{alloc}, ref{other.base_, other.extensions()} {
 		std::move(other).ref::layout_t::operator=({});
 	}
@@ -1123,6 +1131,9 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	}
 };
 
+template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL>
+using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;
@@ -1269,16 +1280,20 @@ struct array : dynamic_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	array(array&& other, Alloc const& alloc) noexcept
+	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept
 	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {
 		assert(this->stride() != 0);
 	}
 
-	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
+	// BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
+	// 	assert(this->stride() != 0);
+	// }
+
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
 
-	friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
+	// friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
 	void swap(array& other) noexcept {
 		using std::swap;
