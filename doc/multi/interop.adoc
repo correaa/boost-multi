@@ -105,7 +105,7 @@ int main() {
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
 In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[(live)]
 
-The library also supports memory resources from other libraries, including those returning special pointer types (see the [CUDA Thrust](#cuda-thrust) section and the Boost.Interprocess section).
+The library also supports memory resources from other libraries, including those returning special pointer types (see the "CUDA Thrust" section and the "Boost.Interprocess" section).
 
 ### Substitutability with standard vector and span
 
