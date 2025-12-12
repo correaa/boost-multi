@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_UTILITY_HPP
 #define BOOST_MULTI_UTILITY_HPP
 
-#include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
-#include <boost/multi/detail/layout.hpp>
+#include "boost/multi/detail/implicit_cast.hpp"  // IWYU pragma: export
+#include "boost/multi/detail/layout.hpp"
 
 #include <cassert>
 #include <functional>   // for std::invoke

@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_FFTW_HPP
 #define BOOST_MULTI_ADAPTORS_FFTW_HPP
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
+#include "boost/multi/adaptors/fftw/memory.hpp"  // IWYU pragma: export
 
 #include <algorithm>  // sort
 #include <chrono>
