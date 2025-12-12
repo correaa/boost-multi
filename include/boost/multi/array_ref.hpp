@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
 
-#include <boost/multi/detail/tuple_zip.hpp>
-#include <boost/multi/utility.hpp>  // IWYU pragma: export
+#include "boost/multi/detail/tuple_zip.hpp"
+#include "boost/multi/utility.hpp"  // IWYU pragma: export
 
 #include <cmath>
 #include <type_traits>
