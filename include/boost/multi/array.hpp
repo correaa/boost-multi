@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
 
-#include <boost/multi/array_ref.hpp>  // IWYU pragma: export
-#include <boost/multi/detail/adl.hpp>
+#include "boost/multi/array_ref.hpp"  // IWYU pragma: export
+#include "boost/multi/detail/adl.hpp"
 #include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
 #include <boost/multi/detail/is_trivial.hpp>
 #include <boost/multi/detail/memory.hpp>
@@ -216,7 +216,7 @@ struct dynamic_array                                                            
 	constexpr dynamic_array(dynamic_array&& other) noexcept(false)  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor)
 	: array_alloc{other.alloc()},
 	  ref{
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename)
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
 		  other.extensions()
 	  } {
 		adl_alloc_uninitialized_move_n(
@@ -242,11 +242,11 @@ struct dynamic_array                                                            
 	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
 
 #if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
-	template<class It, std::sentinel_for<It> Sentinel = It, class = /*typename*/ std::iterator_traits<std::decay_t<It>>::difference_type>
+	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(
-		  array_alloc::allocate(static_cast</*typename*/ multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
 		  index_extension(adl_distance(first, last)) * multi::extensions(*first)
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
@@ -280,7 +280,7 @@ struct dynamic_array                                                            
 #endif
 
 #if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
-	template<class It, std::sentinel_for<It> Sentinel, class = /*typename*/ std::iterator_traits<std::decay_t<It>>::difference_type>
+	template<class It, std::sentinel_for<It> Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last)
 	: dynamic_array(first, last, allocator_type{}) {}
 #else
@@ -290,14 +290,14 @@ struct dynamic_array                                                            
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
  private:
-	void extent_(typename dynamic_array::extensions_type const& extensions) {  // NOLINT(readability-redundant-typename)
+	void extent_(typename dynamic_array::extensions_type const& extensions) {  // NOLINT(readability-redundant-typename) needed for C++17
 		auto new_layout = typename dynamic_array::layout_t{extensions};
 		if(new_layout.num_elements() == 0) {
 			return;
 		}
 		this->layout_mutable() = new_layout;  // typename array::layout_t{extensions};
 		this->base_            = this->dynamic_array::array_alloc::allocate(
-            static_cast</*typename*/ multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(
+            static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(  // NOLINT(readability-redundant-typename) needed for C++17
                 new_layout.num_elements()
             ),
             this->data_elements()  // used as hint
