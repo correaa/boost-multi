@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
 
-#include <boost/multi/array_ref.hpp>
+#include "boost/multi/array_ref.hpp"
 
 #include <cassert>                            // for assert
 #include <complex>                             // for complex

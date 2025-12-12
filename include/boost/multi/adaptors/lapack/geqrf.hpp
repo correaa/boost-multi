@@ -5,9 +5,8 @@
 #ifndef BOOST_MULTI_ADAPTORS_LAPACK_GEQRF_HPP
 #define BOOST_MULTI_ADAPTORS_LAPACK_GEQRF_HPP
 
-#include <boost/multi/adaptors/blas/filling.hpp>
-// #include <boost/multi/adaptors/lapack/core.hpp>
-#include <boost/multi/utility.hpp>  // for size
+#include "boost/multi/adaptors/blas/filling.hpp"
+#include "boost/multi/utility.hpp"  // for size
 
 #include <algorithm>  // for min
 #include <cassert>

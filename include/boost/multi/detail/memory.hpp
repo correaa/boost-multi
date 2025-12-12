@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
 
-#include <boost/multi/utility.hpp>  // for has_rank, to_address
+#include "boost/multi/utility.hpp"  // for has_rank, to_address
 
 #include <iterator>                 // for copy, iterator_traits
 #include <memory>                   // for allocator_traits

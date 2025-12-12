@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_DOT_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_DOT_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
-#include <boost/multi/adaptors/blas/numeric.hpp>     // for is_complex
-#include <boost/multi/adaptors/blas/operations.hpp>  // for blas::C
+#include "boost/multi/adaptors/blas/core.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"     // for is_complex
+#include "boost/multi/adaptors/blas/operations.hpp"  // for blas::C
 
 namespace boost::multi::blas {
 

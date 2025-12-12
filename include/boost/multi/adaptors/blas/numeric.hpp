@@ -5,23 +5,16 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
-// #include <boost/multi/adaptors/complex.hpp>
+#include "boost/multi/array_ref.hpp"
 
-#include <boost/multi/array_ref.hpp>
+#include "boost/multi/adaptors/blas/complex_traits.hpp"
+#include "boost/multi/adaptors/blas/numeric/is_complex.hpp"
+#include "boost/multi/adaptors/complex/adl.hpp"
 
-#include <boost/multi/adaptors/complex/adl.hpp>
+#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"  // for BOOST_MULTI_NO_UNIQUE_ADDRESS
+#include "boost/multi/detail/pointer_traits.hpp"
 
-#include <boost/multi/adaptors/blas/complex_traits.hpp>
-
-// #include <boost/multi/detail/pointer_traits.hpp>
-
-#include <boost/multi/adaptors/blas/numeric/is_complex.hpp>
-
-// #include <boost/multi/adaptors/complex.hpp>
-
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>   // for BOOST_MULTI_NO_UNIQUE_ADDRESS
-
-#include <complex>                                           // for complex
+#include <complex>  // for complex
 // #include <cstddef>                                           // for nullptr_t
 #include <functional>                                        // for negate
 #include <iterator>                                          // for iterator...

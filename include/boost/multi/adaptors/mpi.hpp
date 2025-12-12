@@ -4,9 +4,10 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_MPI_HPP_
 #define BOOST_MULTI_ADAPTORS_MPI_HPP_
-#include <type_traits>
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
+
+#include <type_traits>
 
 #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>

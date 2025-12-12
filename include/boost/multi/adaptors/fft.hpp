@@ -12,8 +12,6 @@
 #include "boost/multi/adaptors/hipfft.hpp"
 #endif
 
-// #include <boost/multi/array_ref.hpp>  // for extensions_t, const_subarray, get
-
 #include <array>        // for array
 #include <cstddef>      // for size_t
 #include <iterator>     // for random_access_iterator_tag

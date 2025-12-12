@@ -5,10 +5,10 @@
 #ifndef BOOST_MULTI_ADAPTORS_LAPACK_SYEV_HPP
 #define BOOST_MULTI_ADAPTORS_LAPACK_SYEV_HPP
 
-#include <boost/multi/adaptors/blas/filling.hpp"
-#include <boost/multi/adaptors/lapack/core.hpp"
+#include "boost/multi/adaptors/blas/filling.hpp"
+#include "boost/multi/adaptors/lapack/core.hpp"
 
-#include <boost/multi/config/NODISCARD.hpp"
+#include "boost/multi/config/NODISCARD.hpp"
 
 #include <cassert>
 
