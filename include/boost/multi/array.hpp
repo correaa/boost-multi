@@ -7,10 +7,10 @@
 
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
-#include <boost/multi/detail/is_trivial.hpp>
-#include <boost/multi/detail/memory.hpp>
-#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
+#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
+#include "boost/multi/detail/is_trivial.hpp"
+#include "boost/multi/detail/memory.hpp"
+#include "boost/multi/detail/static_allocator.hpp"  // TODO(correaa) export IWYU
 
 #include <iterator>  // for std::sentinel_for
 #include <memory>    // for std::allocator_traits
