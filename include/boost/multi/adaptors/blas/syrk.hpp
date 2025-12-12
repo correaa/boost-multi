@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_SYRK_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_SYRK_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
-#include <boost/multi/adaptors/blas/filling.hpp>
-#include <boost/multi/adaptors/blas/numeric.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
+#include "boost/multi/adaptors/blas/filling.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"
 
 namespace boost::multi::blas {
 

@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_CUDA_CUBLAS_CALL_HPP
 #pragma once
 
-#include <boost/multi/adaptors/cuda/cublas/error.hpp>
+#include "boost/multi/adaptors/cuda/cublas/error.hpp"
 
 #if !defined(MULTI_USE_HIP)
 #include<cuda_runtime.h>  // cudaDeviceSynchronize

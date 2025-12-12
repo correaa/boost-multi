@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP_
 #pragma once
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
 
 #include <thrust/device_allocator.h>
 
@@ -43,15 +43,13 @@
 // #include <hip_runtime_api.h>                                  // for cudaGetDevice, cudaMemPrefetchAsync, cudaPointerGetAttributes
 #endif
 
-#include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
+#include "boost/multi/adaptors/thrust/fix_pointer_traits.hpp"
 
-#include<cassert>
+#include <cassert>
 #include <iterator>                                            // for iterator_traits
 #include <memory>                                              // for allocator_traits, allocator, pointer_traits
 // #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
 #include <type_traits>                                         // for decay_t
-
-// #include <boost/multi/adaptors/thrust/fix_copy.hpp>
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 // namespace thrust {
