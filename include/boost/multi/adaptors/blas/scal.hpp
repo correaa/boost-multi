@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_SCAL_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"  // for blas, multi
 
 // IWYU pragma: no_include <type_traits>  // for declval  // needed by iwyu-clang-linux

@@ -1,12 +1,11 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>  // for copy, default_context_of  // IWYU pragma: export
-// IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // bug in iwyu 18.1.8?
+#include "boost/multi/adaptors/blas/core.hpp"  // IWYU pragma: keep
 
 #include <cassert>   // for assert
 #include <iterator>  // for iterator_traits, outpu...
