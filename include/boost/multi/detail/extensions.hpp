@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 #define BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 
-#include <boost/multi/detail/index_range.hpp>
+#include "boost/multi/detail/index_range.hpp"
 
 #if (__cplusplus >= 202002L) && !defined(_MSC_VER) && __has_include(<format>)
 #include <format>

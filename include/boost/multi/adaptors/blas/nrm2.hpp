@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NRM2_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NRM2_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
 
 #include<complex>  // std::norm
 

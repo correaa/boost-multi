@@ -5,12 +5,10 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
-// #include <boost/multi/adaptors/blas/gemv.hpp>
-#include <boost/multi/adaptors/blas/numeric.hpp>
-// #include <boost/multi/adaptors/blas/operations.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"
 
-#include <boost/multi/array_ref.hpp>              // for base, size, begin
+#include "boost/multi/array_ref.hpp"              // for base, size, begin
 
 #include <cassert>                               // for assert
 #include <cstddef>                                // for nullptr_t
