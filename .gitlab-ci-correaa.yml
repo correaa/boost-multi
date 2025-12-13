@@ -1279,7 +1279,7 @@ pages:
     - echo "// single header vesion of the Boost.Multi library" >> ../.public/boost-multi.hpp
     - echo "// download a newer version from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> ../.public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> ../.public/boost-multi.hpp
-    - cat boost-multi.hpp >> ,,/.public/boost-multi.hpp
+    - cat boost-multi.hpp >> ../.public/boost-multi.hpp
     - cat boost-multi.hpp
     - cd ..
     - mv .public public
