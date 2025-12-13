@@ -7,6 +7,6 @@
 
 #include "boost/multi/array.hpp"
 #include "boost/multi/array_ref.hpp"
-#include "boost/multi/restriction.hpp"
+#include "boost/multi/broadcast.hpp"
 
-#endlf  //  BOOST_MULTI_HPP
+#endif  //  BOOST_MULTI_HPP
