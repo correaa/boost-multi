@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
+#pragma once
 
 #include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for random_access_iterator_tag

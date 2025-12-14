@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_POINTER_TRAITS_HPP
 #define BOOST_MULTI_DETAIL_POINTER_TRAITS_HPP
+#pragma once
 
 #include <cstddef>      // for size_t
 #include <iterator>     // for iterator_traits

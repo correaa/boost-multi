@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
 #define BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
+#pragma once
 
 #include <type_traits>
 #include <utility>
