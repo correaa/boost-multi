@@ -501,7 +501,7 @@ template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst
 struct array_iterator;
 
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride, class SubLayout>
-struct array_iterator  // NOLINT(fuchsia-multiple-inheritance) for facades
+struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
@@ -2792,7 +2792,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 #endif
 
 template<typename T, typename ElementPtr, class Layout>
-struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) to define operators via CRTP
+struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
 : multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
 , array_types<T, 1, ElementPtr, Layout> {
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
