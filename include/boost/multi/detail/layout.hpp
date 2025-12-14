@@ -1150,8 +1150,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { return iterator{*this} += n; }
-			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { return iterator{*this} -= n; }
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { iterator ret{*this}; return ret += n; }
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { iterator ret{*this}; return ret -= n; }
 
 			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
 				return self.base_() - other.base_();
