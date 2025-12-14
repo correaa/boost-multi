@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_BROADCAST_HPP
 #define BOOST_MULTI_BROADCAST_HPP
+#pragma once
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/utility.hpp"  // for multi::detail::apply_square

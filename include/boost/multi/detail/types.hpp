@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_TYPES_HPP
 #define BOOST_MULTI_DETAIL_TYPES_HPP
+#pragma once
 
 #include <cstddef>      // for std::size_t
 #include <type_traits>  // for make_signed_t
