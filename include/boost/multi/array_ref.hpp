@@ -3160,7 +3160,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) { return paren_aux_(isrange); }
 
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const& -> decltype(paren_(*this, std::forward<Args>(args)...)) {
+//	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const& -> decltype(paren_(*this, std::forward<Args>(args)...)) {
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... args) const& -> decltype(paren_(std::declval<const_subarray<T, 1, ElementPtr, Layout> const&>(), std::forward<Args>(args)...)) {
 		return paren_(*this, std::forward<Args>(args)...);
 	}
 
