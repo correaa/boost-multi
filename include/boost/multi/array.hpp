@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
+#pragma once
 
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"

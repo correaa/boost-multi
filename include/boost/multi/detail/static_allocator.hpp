@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+#pragma once
 
 #include "boost/multi/detail/config/NODISCARD.hpp"
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"

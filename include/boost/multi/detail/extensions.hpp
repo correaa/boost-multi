@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 #define BOOST_MULTI_DETAIL_EXTENSIONS_HPP
+#pragma once
 
 #include "boost/multi/detail/index_range.hpp"
 
