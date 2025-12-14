@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_IS_TRIVIAL_HPP
 #define BOOST_MULTI_DETAIL_IS_TRIVIAL_HPP
+#pragma once
 
 #include <type_traits>
 

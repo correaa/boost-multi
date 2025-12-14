@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_ADL_HPP
 #define BOOST_MULTI_DETAIL_ADL_HPP
+#pragma once
 
 #include "boost/multi/detail/what.hpp"
 

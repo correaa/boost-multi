@@ -40,6 +40,7 @@ Checks: '*,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
+  -portability-avoid-pragma-once,
   -readability-magic-numbers,
   -readability-simplify-boolean-expr'
 
@@ -56,6 +57,7 @@ Checks: '*,
 #  -llvm-prefer-static-over-anonymous-namespace,          // contradicts other rules
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
-#  -modernize-use-trailing-return-type                    // mandates all lambdas end with -> auto
+#  -modernize-use-trailing-return-type,                   // mandates all lambdas end with -> auto
+#  -portability-avoid-pragma-once,                        // this project uses #pragma once
 #  -readability-magic-numbers,                            // many tests use magic numbers
 #  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST

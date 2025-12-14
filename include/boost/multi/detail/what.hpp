@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_WHAT_HPP
 #define BOOST_MULTI_DETAIL_WHAT_HPP
+#pragma once
 
 namespace boost::multi::detail {
 template<class T> auto              what(T&&) -> T&&                     = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)

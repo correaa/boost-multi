@@ -6,6 +6,7 @@
 // it is ~3 times slower than blas::gemm but it is more generic in the type and in the operations
 // when compiled using -DCMAKE_CXX_FLAGS_RELEASE="-Ofast -DNDEBUG -mfpmath=sse -march=native -funroll-loops"
 
+#pragma once
 #ifndef BOOST_MULTI_ALGORITHM_GEMM_HPP
 #define BOOST_MULTI_ALGORITHM_GEMM_HPP
 

@@ -4,6 +4,7 @@
 
 #ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
+#pragma once
 
 #include "boost/multi/utility.hpp"  // for has_rank, to_address
 
