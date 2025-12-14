@@ -1275,7 +1275,7 @@ pages:
     - quom --help
     - cd include
     - tree -L 4
-    - quom -I. multi.hpp boost-multi.hpp -g 'BOOST_MULTI_.+_HPP.*'  # -s "~> stitch <~" -g BOOST_MULTI_.+_HPP
+    - quom -I. multi.hpp boost-multi.hpp
     - echo -e "#include \"boost-multi.hpp\"\n int main() {}" > a.cpp
     - c++ -std=c++17 a.cpp
     - echo "// single header vesion of the Boost.Multi library" >> ../.public/boost-multi.hpp
