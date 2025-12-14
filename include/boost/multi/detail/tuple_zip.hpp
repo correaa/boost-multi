@@ -215,16 +215,12 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifdef __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
+#elif defined(__NVCOMPILER)
+	#pragma diagnostic push
+	#pragma diag_suppress = implicit_return_from_non_void_function
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 	template<std::size_t N>
@@ -250,9 +246,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
-#endif
-
-#ifndef _MSC_VER
+#elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 
