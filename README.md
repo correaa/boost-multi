@@ -6,7 +6,7 @@
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
 
-_© Alfredo A. Correa, 2018-2025_
+_© Alfredo A. Correa, 2018-2026_
 
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
@@ -50,8 +50,12 @@ int main() {
 
 ## Try Multi
 
-Before installing the library, you can try it [online](https://godbolt.org/z/dvacqK8jE) through the Godbolt's Compiler Explorer.
-The core of the library can be downloaded, to try locally, as a single amalgamated header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp/
+Before installing the library, you can try it [online](https://godbolt.org/z/occ7Yz78d) through the Godbolt's Compiler Explorer.
+The core of the library can be downloaded, to try locally with `#include <dir/boost-multi.hpp>, as a single (amalgamated) header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+
+```
+wget https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+```
 
 ## Install Multi
 
@@ -63,7 +67,7 @@ git clone https://gitlab.com/correaa/boost-multi.git
 _Multi_ doesn't require installation since it is a header-only library, and including the main header brings the code library:
 ```c++
 // c++ -I multi_root_dir/include main.cpp
-#include <boost/multi/array.hpp>
+#include <boost/multi.hpp>
 
 int main() { ... }
 ```
