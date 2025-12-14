@@ -377,7 +377,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	#pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
 	#pragma diagnostic pop
-#elif defined(_MSC_VER)
+#elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
 #endif
 
