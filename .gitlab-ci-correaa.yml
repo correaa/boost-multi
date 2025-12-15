@@ -1258,7 +1258,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
@@ -1282,7 +1282,7 @@ pages:
     - echo "// This version was generated on $(date), git hash $(git rev-parse --short HEAD)" >> ../.public/boost-multi.hpp
     - echo "// and it was downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
-    - echo "// #pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
+    - echo "// \#pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
