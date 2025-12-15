@@ -1258,7 +1258,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
