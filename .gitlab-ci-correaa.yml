@@ -1284,7 +1284,7 @@ pages:
     - echo "" >> ../.public/boost-multi.hpp
     - echo "#pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
-    - git log | head -12 | sed 's/^/\/\/\ /' >> ../.public/boost-multi.hpp
+    # - git log | head -12 | sed 's/^/\/\/\ /' >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
     - cat boost-multi.hpp >> ../.public/boost-multi.hpp
     - cat boost-multi.hpp
