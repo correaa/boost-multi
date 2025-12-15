@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_HPP
-#define BOOST_MULTI_HPP
+#ifndef BOOST_MULTI_HPP_
+#define BOOST_MULTI_HPP_
 
 #include "boost/multi/array.hpp"
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/broadcast.hpp"
 
-#endif  //  BOOST_MULTI_HPP
+#endif  //  BOOST_MULTI_HPP_
