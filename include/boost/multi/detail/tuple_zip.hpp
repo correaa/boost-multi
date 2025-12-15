@@ -340,16 +340,12 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { 
 #ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifdef __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
+#elif defined(__NVCOMPILER)
+	#pragma diagnostic push
+	#pragma diag_suppress = implicit_return_from_non_void_function
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 template<std::size_t N, class T0, class... Ts>
@@ -381,13 +377,11 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 }
 
 #ifdef __NVCC__
-#pragma nv_diagnostic pop
+	#pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
-#pragma diagnostic pop
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
+	#pragma diagnostic pop
+#elif defined(__GNUC__)
+	#pragma GCC diagnostic pop
 #endif
 
 }  // end namespace detail
