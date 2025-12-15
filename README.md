@@ -51,11 +51,8 @@ int main() {
 ## Try Multi
 
 Before installing the library, you can try it [online](https://godbolt.org/z/occ7Yz78d) through the Godbolt's Compiler Explorer.
-The core of the library can be downloaded, to try locally with `#include <dir/boost-multi.hpp>, as a single (amalgamated) header from https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
-```
-wget https://correaa.gitlab.io/boost-multi/boost-multi.hpp
-```
+Alternatively, the core of the library can be downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp as a single (amalgamated) header, and used locally with `#include <DIR/boost-multi.hpp>`,
 
 ## Install Multi
 
