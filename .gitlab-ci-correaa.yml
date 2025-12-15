@@ -1282,7 +1282,7 @@ pages:
     - echo "// This version was generated on $(date), git hash $(git rev-parse --short HEAD)" >> ../.public/boost-multi.hpp
     - echo "// and it was downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
-    - echo "#pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
+    - echo "// #pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
     # - git log | head -12 | sed 's/^/\/\/\ /' >> ../.public/boost-multi.hpp
     - echo "" >> ../.public/boost-multi.hpp
