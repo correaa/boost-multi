@@ -218,7 +218,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #elif defined(__NVCOMPILER)
 	#pragma diagnostic push
 	#pragma diag_suppress = implicit_return_from_non_void_function
-#elif (defined(__GNUC__) || !defined(__EDG__))
+#elif (defined(__GNUC__) && !defined(__EDG__))
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -246,7 +246,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
-#elif (defined(__GNUC__) || !defined(__EDG__))
+#elif (defined(__GNUC__) && !defined(__EDG__))
 #pragma GCC diagnostic pop
 #endif
 
@@ -343,7 +343,7 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { 
 #elif defined(__NVCOMPILER)
 	#pragma diagnostic push
 	#pragma diag_suppress = implicit_return_from_non_void_function
-#elif defined(__GNUC__) || !defined(__EDG__)
+#elif defined(__GNUC__) && !defined(__EDG__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
@@ -380,7 +380,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 	#pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
 	#pragma diagnostic pop
-#elif defined(__GNUC__) || !defined(__EDG__)
+#elif defined(__GNUC__) && !defined(__EDG__)
 	#pragma GCC diagnostic pop
 #endif
 
