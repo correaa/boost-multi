@@ -3276,13 +3276,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__EDG__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 	[[deprecated("implement as negative stride")]] constexpr auto rbegin() const& { return const_reverse_iterator(end()); }  // TODO(correaa) implement as negative stride?
 	[[deprecated("implement as negative stride")]] constexpr auto rend() const& { return const_reverse_iterator(begin()); }  // TODO(correaa) implement as negative stride?
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__EDG__)
 #pragma GCC diagnostic pop
 #endif
 
