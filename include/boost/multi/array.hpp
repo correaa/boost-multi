@@ -1571,6 +1571,9 @@ template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> ar
 template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
 template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
 
+// template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value, int> =0>
+// array(T) -> array<T, static_cast<dimensionality_type>(0U)>;
+
 #undef BOOST_MULTI_IL
 
 template<class T> array(T[]) -> array<T, static_cast<dimensionality_type>(1U)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
