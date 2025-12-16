@@ -81,7 +81,7 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// using multi::broadcast::exp;
 	// using multi::broadcast::operator/;
 
- 	// return
+	// return
 	// 	[mat = FWD(mat)](auto i) {
 	// 		auto const& mati = mat[i];
 	// 		auto const& row = exp(mati - maxR1(mati));
@@ -113,7 +113,6 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// 		return FWD(nums) |
 	// 				stdv::transform([=](auto n) noexcept { return n / d; });
 	// 	});
-
 
 	//	return sum_exp;
 }
