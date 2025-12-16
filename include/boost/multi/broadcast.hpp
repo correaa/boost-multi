@@ -86,7 +86,7 @@ template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	auto xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extensions()) && ...) && "sizes mismatch");
-	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>(std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...) ^ xs;
+	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
 	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
@@ -194,7 +194,7 @@ class exp_bind_t {
 
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
-template<class A, std::enable_if_t<multi::has_dimensionality<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+template<class A, std::enable_if_t<multi::has_dimensionality<std::decay_t<A>>::value, int> =0>  // NOLINT(modernize-use-constraints)
 constexpr auto exp(A&& alpha) {
 	auto xs = alpha.extensions();
 	// auto hm = alpha.home();

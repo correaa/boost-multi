@@ -62,13 +62,13 @@ auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero 
 
 namespace multi = boost::multi;
 
-#ifdef __NVCC__
-#define BOOST_MULTI_HD __host__ __device__
-#else
-#define BOOST_MULTI_HD
-#endif
+// #ifdef __NVCC__
+// #define BOOST_MULTI_HD __host__ __device__
+// #else
+// #define BOOST_MULTI_HD
+// #endif
 
-auto softmax2(auto&& mat) noexcept {
+auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// auto const max_per_row = [&](auto i) { return maxR1(matrix[i]); } ^ multi::extensions_t<1>{matrix.extension()};
 
 	//  using multi::broadcast::operator-;
@@ -78,8 +78,8 @@ auto softmax2(auto&& mat) noexcept {
 	// auto maxR1s = [&](auto ii) { return maxR1(matrix[ii]); } ^ multi::extensions_t<1>{matrix.extension()};
 
 	using multi::broadcast::operator-;
-	using multi::broadcast::exp;
-	using multi::broadcast::operator/;
+	// using multi::broadcast::exp;
+	// using multi::broadcast::operator/;
 
  	// return
 	// 	[mat = FWD(mat)](auto i) {
@@ -89,14 +89,31 @@ auto softmax2(auto&& mat) noexcept {
 	// 	}^multi::extensions_t<1>{2}
 	// ;
 
-	return
-		[
-			shiftexp = [mat = FWD(mat)](auto i) { auto row = mat[i]; return exp(row - maxR1(row)); } ^ multi::extensions_t<1>{2}
-		] BOOST_MULTI_HD (auto i) {
-			auto row = shiftexp[i];
-			return row / sumR1(row);
-		}^
-		multi::extensions_t<1>{2};
+	// return
+	// 	[
+	// 		shiftexp = [mat = FWD(mat)](auto i) { auto row = mat[i]; return exp(row - maxR1(row)); } ^ multi::extensions_t<1>{2}
+	// 	] BOOST_MULTI_HD (auto i) {
+	// 		auto row = shiftexp[i];
+	// 		return row / sumR1(row);
+	// 	}^
+	// 	multi::extensions_t<1>{2};
+
+	return ([mat = FWD(mat)](auto i) { return mat[i] - maxR1(mat[i]); } ^ multi::extensions_t<1>{2});
+
+	// return FWD(matrix)  //
+	// 	|              //
+	// 	stdv::transform([](auto&& row) {
+	// 		auto max = maxR1(row);
+	// 		return FWD(row) |
+	// 				stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+	// 	})  //
+	// 	|     //
+	// 	stdv::transform([](auto&& nums) {
+	// 		auto d = sumR1(nums);
+	// 		return FWD(nums) |
+	// 				stdv::transform([=](auto n) noexcept { return n / d; });
+	// 	});
+
 
 	//	return sum_exp;
 }
@@ -135,7 +152,7 @@ int main() {
 	};
 
 	printR2("softmax of alloc array", softmax(alloc_matrix));
-	// printR2("softmax2 of alloc array", softmax2(alloc_matrix));
+	printR2("softmax2 of alloc array", softmax2(alloc_matrix));
 
 	// materialize
 	multi::array<float, 2> const sofmax_copy(softmax(alloc_matrix));
