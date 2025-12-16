@@ -1133,7 +1133,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	}
 };
 
-template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL>
+template<class T, multi::dimensionality_type D, std::size_t Capacity = ((D > 0) ? (4UL * 4UL) : 1)>
 using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 
 template<typename T, class Alloc>
@@ -1192,6 +1192,11 @@ struct array : dynamic_array<T, D, Alloc> {
 	BOOST_MULTI_HD constexpr auto operator&() & -> array* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 	// cppcheck-suppress duplInheritedMember ; to override  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
+
+	using dynamic_array<T, D, Alloc>::repeated;
+	constexpr auto repeated(multi::size_t n) && {  // cppcheck-suppress duplInheritedMember;
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * this->extensions());
+	}
 
 	template<class Archive, class ArTraits = multi::archive_traits<Archive>>
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
@@ -1571,8 +1576,11 @@ template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> ar
 template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
 template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
 
-// template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value, int> =0>
-// array(T) -> array<T, static_cast<dimensionality_type>(0U)>;
+template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value && !multi::has_empty<T>::value, int> = 0>
+array(T) -> array<T, static_cast<dimensionality_type>(0U), multi::detail::static_allocator<T, 1>>;
+
+// template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value && !multi::has_empty<T>::value, int> =0>
+// inplace_array(T) -> inplace_array<T, static_cast<dimensionality_type>(0U)>;
 
 #undef BOOST_MULTI_IL
 

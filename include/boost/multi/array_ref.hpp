@@ -1129,6 +1129,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& base)
 	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
+	constexpr auto repeated(multi::size_t n) const& {
+		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
+	}
+
  protected:
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
@@ -2657,7 +2661,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using layout_type = Layout;
 
 	constexpr auto repeated(multi::size_t n) const& {
-		return [base = this->base_](auto /*idx*/) { return *base; } ^ multi::extensions_t<1>{n};;
+		return [base = this->base_](auto /*idx*/) { return *base; } ^ multi::extensions_t<1>{n};
 	}
 
 	constexpr auto operator=(element const& elem) & -> const_subarray& {
@@ -3786,6 +3790,16 @@ constexpr auto ref(
 	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
 
+template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value && !multi::has_empty<T>::value, int> = 0>
+constexpr auto ref(T& singleton) {
+	return array_ref<T, 0>(singleton);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+}
+
+template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value && !multi::has_empty<T>::value, int> = 0>
+constexpr auto ref(T const& singleton) {
+	return array_cref<T, 0>(singleton);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+}
+
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr
 : subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
@@ -3890,6 +3904,9 @@ template<class Ptr> array_ref(Ptr, index_extensions<2>) -> array_ref<typename st
 template<class Ptr> array_ref(Ptr, index_extensions<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
+
+template<class T, std::enable_if_t<!multi::has_dimensionality<T>::value && !multi::has_size<T>::value && !multi::has_empty<T>::value, int> = 0>
+array_ref(T) -> array_ref<T, static_cast<dimensionality_type>(0U)>;
 
 template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size_v<Tuple>, It>;
 

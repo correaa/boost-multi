@@ -448,6 +448,11 @@ auto        has_extension_aux(T const&) -> std::true_type;
 inline auto has_extension_aux(...) -> std::false_type;
 template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
+template<class T, typename = decltype(std::declval<T>().empty())>
+auto        has_empty_aux(T const&) -> std::true_type;
+inline auto has_empty_aux(...) -> std::false_type;
+template<class T> struct has_empty : decltype(has_empty_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
 template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto extension(Container const& cont)                                                  // TODO(correaa) consider "extent"
 	-> decltype(multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {

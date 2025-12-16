@@ -116,6 +116,11 @@ struct dot_ref : private Ptr {
 #endif
 	auto operator+() const -> decay_type {return decay();}
 
+	static constexpr dimensionality_type dimensionality = 0;
+	static constexpr dimensionality_type rank_v = 0;
+
+	constexpr auto empty() -> bool { return false; }
+
 	// friend auto operator==(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() == other.decay();}
 	// friend auto operator!=(dot_ref const& self, dot_ref const& other) -> bool {return self.decay() != other.decay();}
 

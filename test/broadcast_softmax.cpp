@@ -12,14 +12,16 @@
 #endif
 #endif
 
-#if defined(__cpp_lib_ranges) && !defined(_MSC_VER)
+#ifdef __cpp_lib_ranges
 
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
 #include <boost/multi/broadcast.hpp>
 
+#include <functional>
 #include <iostream>
 #include <limits>
 #include <numeric>
+#include <utility>
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -60,38 +62,43 @@ auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero 
 
 namespace multi = boost::multi;
 
-auto softmax2(auto&& matrix) noexcept {
+#ifdef __NVCC__
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
+auto softmax2(auto&& mat) noexcept {
 	// auto const max_per_row = [&](auto i) { return maxR1(matrix[i]); } ^ multi::extensions_t<1>{matrix.extension()};
 
 	//  using multi::broadcast::operator-;
 
 	// using multi::broadcast::exp;
 
-    // auto maxR1s = [&](auto ii) { return maxR1(matrix[ii]); } ^ multi::extensions_t<1>{matrix.extension()};
+	// auto maxR1s = [&](auto ii) { return maxR1(matrix[ii]); } ^ multi::extensions_t<1>{matrix.extension()};
 
 	using multi::broadcast::operator-;
 	using multi::broadcast::exp;
+	using multi::broadcast::operator/;
 
-    // auto shifted_exp = [matrix = FWD(matrix), maxR1s = std::move(maxR1s)](auto i, auto j) {
-	// 	return std::exp(matrix[i][j] - maxR1s[i]);
-	// } ^ matrix.extensions();
+ 	// return
+	// 	[mat = FWD(mat)](auto i) {
+	// 		auto const& mati = mat[i];
+	// 		auto const& row = exp(mati - maxR1(mati));
+	// 		return row / sumR1(row);
+	// 	}^multi::extensions_t<1>{2}
+	// ;
 
-	auto shifted_exp = [matrix = FWD(matrix)](auto i) {
-		return exp(
-            matrix - (multi::array<float, 0>(maxR1(matrix[i])).repeated(3))
-        )[i];
-	} ^ multi::extensions_t<1>{matrix.extension()};
+	return
+		[
+			shiftexp = [mat = FWD(mat)](auto i) { auto row = mat[i]; return exp(row - maxR1(row)); } ^ multi::extensions_t<1>{2}
+		] BOOST_MULTI_HD (auto i) {
+			auto row = shiftexp[i];
+			return row / sumR1(row);
+		}^
+		multi::extensions_t<1>{2};
 
-	auto const sum_exp =
-		[shifted_exp = std::move(shifted_exp)](auto i) {
-			auto shifted_expi = shifted_exp[i];
-			using multi::broadcast::operator/;
-			return shifted_expi / sumR1(shifted_expi);
-			// return [shifted_expi=std::move(shifted_expi), sum_expi = std::move(sum_expi)](auto j) { return shifted_expi[j] / sum_expi; } ^ multi::extensions_t<1>{3};
-		} ^
-		multi::extensions_t<1>{matrix.extension()};
-
-	return sum_exp;
+	//	return sum_exp;
 }
 
 auto softmax(auto&& matrix) noexcept {
@@ -122,12 +129,13 @@ int main() {
 	printR2("softmax of lazy array", softmax(lazy_matrix));
 	printR2("softmax2 of lazy array", softmax2(lazy_matrix));
 
-	multi::array<float, 2> const alloc_matrix = {
+	multi::array<float, 2> alloc_matrix = {
 		{0.0F, 1.0F, 2.0F},
 		{3.0F, 4.0F, 5.0F}
 	};
 
 	printR2("softmax of alloc array", softmax(alloc_matrix));
+	// printR2("softmax2 of alloc array", softmax2(alloc_matrix));
 
 	// materialize
 	multi::array<float, 2> const sofmax_copy(softmax(alloc_matrix));
