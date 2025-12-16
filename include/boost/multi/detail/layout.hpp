@@ -402,8 +402,8 @@ class restriction
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
-	constexpr auto size() const { return xs_.size(); }
-	constexpr auto sizes() const { return xs_.sizes(); }
+	constexpr auto size() const noexcept { return xs_.size(); }
+	constexpr auto sizes() const noexcept { return xs_.sizes(); }
 
 	constexpr auto extension() const { return xs_.extension(); }
 	constexpr auto extensions() const { return xs_; }

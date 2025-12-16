@@ -12,7 +12,7 @@
 #endif
 #endif
 
-#ifdef __cpp_lib_ranges
+#if defined(__cpp_lib_ranges) && !defined(_MSC_VER)
 
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
 #include <boost/multi/broadcast.hpp>
@@ -78,7 +78,7 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// auto maxR1s = [&](auto ii) { return maxR1(matrix[ii]); } ^ multi::extensions_t<1>{matrix.extension()};
 
 	using multi::broadcast::operator-;
-	// using multi::broadcast::exp;
+	using multi::broadcast::exp;
 	// using multi::broadcast::operator/;
 
 	// return
@@ -98,7 +98,9 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// 	}^
 	// 	multi::extensions_t<1>{2};
 
-	return ([mat = FWD(mat)](auto i) { return mat[i] - maxR1(mat[i]); } ^ multi::extensions_t<1>{2});
+	auto ret = ([mat = FWD(mat)](auto i) { return exp(mat[i] - maxR1(mat[i])); } ^ multi::extensions_t<1>{2});
+	// auto ret2 = exp(ret);
+	return ret;
 
 	// return FWD(matrix)  //
 	// 	|              //
