@@ -194,7 +194,7 @@ class exp_bind_t {
 
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
-template<class A, std::enable_if_t<multi::has_dimensionality<std::decay_t<A>>::value, int> =0>  // NOLINT(modernize-use-constraints)
+template<class A, std::enable_if_t<multi::has_dimensionality<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints)
 constexpr auto exp(A&& alpha) {
 	auto xs = alpha.extensions();
 	// auto hm = alpha.home();
