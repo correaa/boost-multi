@@ -79,7 +79,7 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 
 	using multi::broadcast::operator-;
 	using multi::broadcast::exp;
-	// using multi::broadcast::operator/;
+	using multi::broadcast::operator/;
 
 	// return
 	// 	[mat = FWD(mat)](auto i) {
@@ -98,9 +98,11 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	// 	}^
 	// 	multi::extensions_t<1>{2};
 
-	auto ret = ([mat = FWD(mat)](auto i) { return exp(mat[i] - maxR1(mat[i])); } ^ multi::extensions_t<1>{2});
-	// auto ret2 = exp(ret);
-	return ret;
+	// auto ret = [mat = FWD(mat)](auto i) { return exp(mat[i] - maxR1(mat[i])); } ^ multi::extensions_t<1>{2};
+	return
+		[ret =
+			 [mat = FWD(mat)](auto i) { return exp(mat[i] - maxR1(mat[i])); } ^ multi::extensions_t<1>{2}](auto i) { auto reti = ret[i]; return std::move(reti) / sumR1(reti); } ^
+		multi::extensions_t<1>{2};
 
 	// return FWD(matrix)  //
 	// 	|              //
