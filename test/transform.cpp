@@ -127,7 +127,6 @@ class involuter {
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-
 	constexpr auto operator+(difference_type n) const { return involuter{it_ + n}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	constexpr auto operator-(difference_type n) const { return involuter{it_ - n}; }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 

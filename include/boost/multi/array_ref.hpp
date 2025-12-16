@@ -735,6 +735,11 @@ struct cursor_t {
 	BOOST_MULTI_HD constexpr explicit cursor_t(OtherCursor const& other) : strides_{other.strides()}, base_{other.base()} {}
 
  public:
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
@@ -749,6 +754,9 @@ struct cursor_t {
 			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 	}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 	BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
 		return operator[](n);

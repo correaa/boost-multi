@@ -487,20 +487,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #ifdef __cpp_deduction_guides
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	{
 		std::initializer_list<int> const il = {1, 2, 3};
 
 		multi::const_subarray<int, 1> const csarr(il);
 
-		BOOST_TEST( &csarr[1] == &il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	{
 		std::initializer_list<int> const il = {1, 2, 3};
 
 		multi::const_subarray const csarr(il);
 
-		BOOST_TEST( &csarr[1] == &il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	{
 		BOOST_TEST( multi::const_subarray({1, 2, 3})[1] == 2 );
 	}
