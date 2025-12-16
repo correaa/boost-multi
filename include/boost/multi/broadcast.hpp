@@ -95,7 +95,7 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
 		return map(std::forward<F>(fun), [alpha_ = std::forward<A>(alpha)]() -> decltype(auto) { return alpha_; } ^ multi::extensions_t<0>{}, std::forward<B>(omega));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return map(std::forward<F>(fun), std::forward<A>(alpha), [omega_ = std::forward<B>(omega)]()  -> decltype(auto) { return omega_; } ^ multi::extensions_t<0>{});
+		return map(std::forward<F>(fun), std::forward<A>(alpha), [omega_ = std::forward<B>(omega)]() -> decltype(auto) { return omega_; } ^ multi::extensions_t<0>{});
 	} else {
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
 			return map(std::forward<F>(fun), alpha.repeated(omega.size()), omega);
