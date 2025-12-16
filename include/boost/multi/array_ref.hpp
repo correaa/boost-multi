@@ -2656,6 +2656,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	using layout_type = Layout;
 
+	constexpr auto repeated(multi::size_t n) const& {
+		return [base = this->base_](auto /*idx*/) { return *base; } ^ multi::extensions_t<1>{n};;
+	}
+
 	constexpr auto operator=(element const& elem) & -> const_subarray& {
 		//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		adl_copy_n(&elem, 1, this->base_);
