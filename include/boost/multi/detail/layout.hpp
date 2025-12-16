@@ -1050,7 +1050,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		using value_type = decltype(ht_tuple(std::declval<index>(), std::declval<extensions_t<0>>().base()));
 		using reference = value_type;
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return ht_tuple(idx_ + n, rest_.base());; }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return ht_tuple(idx_ + n, rest_.base()); }
 	};
 
 	auto home() const -> cursor_t {
@@ -1591,10 +1591,6 @@ class bistride {
 		return ptr;
 	}
 
-	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-	#pragma clang diagnostic pop
-	#endif
-
 	BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
@@ -1612,6 +1608,9 @@ class bistride {
 		auto ret = base + (i0 * self.stride1_) + (j0 * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
+	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
 
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
