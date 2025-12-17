@@ -97,9 +97,9 @@ auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
 	using multi::broadcast::exp;
 	using multi::broadcast::operator/;
 
-	// auto ret = [mat = FWD(mat)] (multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
+	auto ret = [mat = FWD(mat)] (multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
 
-	auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extensions_t<1>{2};
+	// auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extensions_t<1>{2};
 
 	return
 		[ret = std::move(ret)](auto irow) {
