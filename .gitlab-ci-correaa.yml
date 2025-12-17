@@ -111,7 +111,7 @@ c++-macos-shell:
     - macos
     - shell
   script:
-    # - brew install boost cmake fftw  # one time
+    - brew install boost cmake fftw  # one time
     - cmake --version
     - c++ --version
     - mkdir build && cd build
