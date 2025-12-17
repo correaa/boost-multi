@@ -32,7 +32,7 @@ namespace {
 void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability-identifier-naming)
 	//  fmt::print("\n{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
 	std::cout << lbl << "=\n";
-	for(auto const& row : arr2D) {  // NOLINT(altera-unroll-loops)
+	for(auto const& row : arr2D) {     // NOLINT(altera-unroll-loops)
 		for(auto const& elem : row) {  // NOLINT(altera-unroll-loops)
 			std::cout << elem << ' ';
 		}
