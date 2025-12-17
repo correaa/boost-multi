@@ -39,6 +39,7 @@ g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
   interruptible: false
   tags:
     - non-shared
+    - docker
   script:
     - apt-get clean
     - apt-get -qq update
@@ -267,6 +268,7 @@ clang++:
   stage: basic
   tags:
     - non-shared
+    - docker
   interruptible: false
   script:
     - apt-get clean
