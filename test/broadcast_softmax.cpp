@@ -19,7 +19,6 @@
 
 #include <algorithm>  // for max
 #include <cmath>      // for exp, __cpp_lib_ranges
-#include <functional>
 #include <iostream>
 #include <limits>
 #include <numeric>
