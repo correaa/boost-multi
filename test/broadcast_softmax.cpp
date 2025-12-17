@@ -48,7 +48,8 @@ void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability
 }
 }  // namespace
 
-constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcept {
+template<class R, class V = stdr::range_value_t<R>>
+constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-naming)
 	// fmt::print("M");
 	std::cout << 'M';
 #if defined(__cpp_lib_ranges_fold)
@@ -73,13 +74,35 @@ constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rn
 namespace multi = boost::multi;
 
 namespace {
-auto softmax2(auto&& mat) noexcept -> decltype(auto) {
+
+template<class M>
+class ret_t {
+	M mat_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+
+ public:
+	template<class MM>
+	BOOST_MULTI_HD constexpr explicit ret_t(MM&& mat) : mat_{std::forward<MM>(mat)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	BOOST_MULTI_HD constexpr auto operator()(multi::index irow) const {
+		using multi::broadcast::operator-;
+		using multi::broadcast::exp;
+
+		auto mati = mat_[irow];
+		return exp(std::move(mati) - maxR1(mati));
+	}
+};
+
+auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
 	using multi::broadcast::operator-;
 	using multi::broadcast::exp;
 	using multi::broadcast::operator/;
 
+	// auto ret = [mat = FWD(mat)] (multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
+
+	auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extensions_t<1>{2};
+
 	return
-		[ret = [mat = FWD(mat)] BOOST_MULTI_HD(auto irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2}] BOOST_MULTI_HD(auto irow) {
+		[ret = std::move(ret)](auto irow) {
 			auto reti = ret[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
@@ -105,9 +128,17 @@ auto softmax(auto&& matrix) noexcept {
 
 namespace multi = boost::multi;
 
+struct iden_t {
+	BOOST_MULTI_HD constexpr auto operator()(multi::index idx) const -> float {
+		return static_cast<float>(idx);
+	}
+};
+
+constexpr iden_t iden;
+
 int main() {
 	auto const lazy_matrix =
-		([] BOOST_MULTI_HD(auto idx) -> float { return static_cast<float>(idx); } ^ multi::extensions_t(6))
+		(iden ^ multi::extensions_t(6))
 			.partitioned(2);
 
 	printR2("lazy matrix", lazy_matrix);
