@@ -22,6 +22,7 @@
 #include <iostream>
 #include <limits>
 #include <numeric>
+#include <string>  // for basic_string, operator<<
 #include <utility>
 
 namespace stdr = std::ranges;
