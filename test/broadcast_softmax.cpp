@@ -27,19 +27,21 @@
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
-void printR2(auto const& lbl, auto const& arr2D) {
+namespace {
+void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability-identifier-naming)
 	//  fmt::print("\n{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
 	std::cout << lbl << "=\n";
-	for(auto const& row : arr2D) {
-		for(auto const& e : row) {
-			std::cout << e << ' ';
+	for(auto const& row : arr2D) {  // NOLINT(altera-unroll-loops)
+		for(auto const& elem : row) {
+			std::cout << elem << ' ';
 		}
 		std::cout << '\n';
 	}
 	std::cout << '\n';
 }
+}  // namespace
 
-auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcept {
+auto const maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcept {
 	// fmt::print("M");
 	std::cout << 'M';
 #if defined(__cpp_lib_ranges_fold)
@@ -49,7 +51,7 @@ auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcep
 #endif
 };
 
-auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {
+auto const sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOINT(fuchsia-default-arguments-declarations)
 	// fmt::print("S");
 	std::cout << 'S';
 #if defined(__cpp_lib_ranges_fold)
@@ -63,14 +65,15 @@ auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero 
 
 namespace multi = boost::multi;
 
+namespace {
 auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	using multi::broadcast::operator-;
 	using multi::broadcast::exp;
 	using multi::broadcast::operator/;
 
 	return
-		[ret = [mat = FWD(mat)](auto i) { return exp(mat[i] - maxR1(mat[i])); } ^ multi::extensions_t<1>{2}](auto i) {
-			auto reti = ret[i];
+		[ret = [mat = FWD(mat)](auto irow) { return exp(mat[irow] - maxR1(mat[irow])); } ^ multi::extensions_t<1>{2}](auto irow) {
+			auto reti = ret[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
 		multi::extensions_t<1>{2};
@@ -86,17 +89,18 @@ auto softmax(auto&& matrix) noexcept {
 		   })  //
 		 |     //
 		   stdv::transform([](auto&& nums) {
-			   auto d = sumR1(nums);
+			   auto den = sumR1(nums);
 			   return FWD(nums) |
-					  stdv::transform([=](auto n) noexcept { return n / d; });
+					  stdv::transform([=](auto elem) noexcept { return elem / den; });
 		   });
 }
+}  // namespace
 
 namespace multi = boost::multi;
 
 int main() {
 	auto const lazy_matrix =
-		([](auto i) -> float { return static_cast<float>(i); } ^ multi::extensions_t(6))
+		([](auto idx) -> float { return static_cast<float>(idx); } ^ multi::extensions_t(6))
 			.partitioned(2);
 
 	printR2("lazy matrix", lazy_matrix);
