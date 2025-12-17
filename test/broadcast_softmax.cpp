@@ -12,7 +12,7 @@
 #endif
 #endif
 
-#if defined(__cpp_lib_ranges) && !defined(_MSC_VER)
+#if defined(__cpp_lib_ranges) && !defined(_MSC_VER) && !defined(__circle_build__)
 
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
 #include <boost/multi/broadcast.hpp>
@@ -49,7 +49,7 @@ void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability
 }  // namespace
 
 template<class R, class V = stdr::range_value_t<R>>
-constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-naming)
+constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-naming,misc-use-internal-linkage)
 	// fmt::print("M");
 	std::cout << 'M';
 #if defined(__cpp_lib_ranges_fold)
@@ -57,7 +57,7 @@ constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-
 #else
 	return std::accumulate(rng.begin(), rng.end(), std::numeric_limits<V>::lowest(), stdr::max);
 #endif
-};
+}
 
 constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOLINT(fuchsia-default-arguments-declarations)
 	// fmt::print("S");
