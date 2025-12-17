@@ -33,7 +33,7 @@ void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability
 	//  fmt::print("\n{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
 	std::cout << lbl << "=\n";
 	for(auto const& row : arr2D) {  // NOLINT(altera-unroll-loops)
-		for(auto const& elem : row) {
+		for(auto const& elem : row) {  // NOLINT(altera-unroll-loops)
 			std::cout << elem << ' ';
 		}
 		std::cout << '\n';
@@ -42,7 +42,7 @@ void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability
 }
 }  // namespace
 
-auto const maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcept {
+constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) noexcept {
 	// fmt::print("M");
 	std::cout << 'M';
 #if defined(__cpp_lib_ranges_fold)
@@ -52,7 +52,7 @@ auto const maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng) n
 #endif
 };
 
-auto const sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOINT(fuchsia-default-arguments-declarations)
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOLINT(fuchsia-default-arguments-declarations)
 	// fmt::print("S");
 	std::cout << 'S';
 #if defined(__cpp_lib_ranges_fold)
@@ -73,7 +73,7 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	using multi::broadcast::operator/;
 
 	return
-		[ret = [mat = FWD(mat)](auto irow) { return exp(mat[irow] - maxR1(mat[irow])); } ^ multi::extensions_t<1>{2}](auto irow) {
+		[ret = [mat = FWD(mat)](auto irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2}](auto irow) {
 			auto reti = ret[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
