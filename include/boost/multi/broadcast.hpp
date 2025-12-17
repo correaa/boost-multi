@@ -11,6 +11,12 @@
 
 #include <type_traits>
 
+#ifdef __NVCC__
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace boost::multi {
 
 template<class A> struct bind_category {
@@ -182,8 +188,8 @@ class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
 
  public:
-	template<class AA>                                                 // , std::enable_if_t<!std::is_base_v<exp_bind_t<A>, std::decay_t<AA> >, int> =0>
-	explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	template<class AA>                                                                          // , std::enable_if_t<!std::is_base_v<exp_bind_t<A>, std::decay_t<AA> >, int> =0>
+	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
@@ -195,7 +201,7 @@ class exp_bind_t {
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
 template<class A>
-constexpr auto exp(A&& alpha) {
+BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	auto xs = alpha.extensions();
 	// auto hm = alpha.home();
 	// return exp_bind_t(hm) ^ xs;
