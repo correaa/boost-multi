@@ -936,7 +936,7 @@ rocm:
     - non-shared
     - docker
     - high-bandwidth  # for download rocm extras
-    # - x86_64  # for rocm image
+    - x86_64  # for rocm image
   interruptible: true
   script:
     - apt-get -qq update
