@@ -28,6 +28,12 @@
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
+#ifdef __NVCC__
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 namespace {
 void printR2(std::string const& lbl, auto const& arr2D) {  // NOLINT(readability-identifier-naming)
 	//  fmt::print("\n{} = \n[{}]\n\n", lbl, fmt::join(arr2D, ",\n "));
@@ -73,7 +79,7 @@ auto softmax2(auto&& mat) noexcept -> decltype(auto) {
 	using multi::broadcast::operator/;
 
 	return
-		[ret = [mat = FWD(mat)](auto irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2}](auto irow) {
+		[ret = [mat = FWD(mat)] BOOST_MULTI_HD(auto irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2}] BOOST_MULTI_HD(auto irow) {
 			auto reti = ret[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
@@ -101,7 +107,7 @@ namespace multi = boost::multi;
 
 int main() {
 	auto const lazy_matrix =
-		([](auto idx) -> float { return static_cast<float>(idx); } ^ multi::extensions_t(6))
+		([] BOOST_MULTI_HD(auto idx) -> float { return static_cast<float>(idx); } ^ multi::extensions_t(6))
 			.partitioned(2);
 
 	printR2("lazy matrix", lazy_matrix);
