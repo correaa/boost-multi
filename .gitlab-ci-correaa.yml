@@ -902,6 +902,28 @@ cuda-13.0.1:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++", "clang++", "cuda"]
 
+cuda-13.1.0:
+  stage: build
+  allow_failure: false
+  image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:13.0.1-devel-ubuntu24.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - arch75
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - cmake --version
+    - mkdir build && cd build
+    - g++ --version
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-ftemplate-backtrace-limit=0" -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
+    - cmake --build . --verbose --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
+  needs: ["g++", "clang++", "cuda"]
+
 culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
