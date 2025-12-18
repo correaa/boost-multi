@@ -169,7 +169,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		using multi::broadcast::operator+;
 		using multi::broadcast::operator*;
 
-		multi::array<int, 1> const C = A + (2*B);
+		multi::array<int, 1> const C = A + (2 * B);
 
 		BOOST_TEST( C[1] == A[1] + (2*B[1]) );
 	}
