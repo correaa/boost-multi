@@ -48,7 +48,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 20)
+		# set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PUBLIC ../../../../../include)

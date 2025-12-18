@@ -4,6 +4,7 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
+#if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
 #include <boost/multi/broadcast.hpp>
 
@@ -130,3 +131,8 @@ int main() {
 
 	return boost::report_errors();
 }
+#else
+int main() {
+		return boost::report_errors();
+}
+#endif
