@@ -163,6 +163,17 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( C[1][1] == A[1][1] + B[1][1] );
 	}
 	{
+		auto const A = multi::array<int, 1>{0, 1, 2};
+		auto const B = multi::array<int, 1>{0, 10, 20};
+
+		using multi::broadcast::operator+;
+		using multi::broadcast::operator*;
+
+		multi::array<int, 1> const C = A + 2*B;
+
+		BOOST_TEST( C[1] == A[1] + 2*B[1] );
+	}
+	{
 		auto const A = multi::array<int, 2>{
 			{0, 1, 2},
 			{3, 4, 5}
