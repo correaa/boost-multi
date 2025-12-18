@@ -6,7 +6,7 @@
 #define BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP
 #pragma once
 
-#include <cstddef>      // for size_t
+// #include <cstddef>      // for size_t
 #include <tuple>        // for deprecated functions  // for make_index_sequence, index_sequence, tuple_element, tuple_size, apply, tuple
 #include <type_traits>  // for declval, decay_t, conditional_t, true_type
 #include <utility>      // for forward, move
