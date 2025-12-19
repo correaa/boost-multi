@@ -91,7 +91,15 @@ struct apply_bind_t<F, A, B> {
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	auto xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
+	// if constexpr(std::decay_t<A>::dimensionality > 1) {
+	// 	using std::get;
+	// 	std::cout << "exts: " << get<1>(arr.extensions()).size() << " vs ";
+	// 	((std::cout << get<1>(arrs.extensions()).size() << " "), ...);
+	// 	std::cout << '\n';
+	// 	std::cout << std::flush;
+	// }
 	assert(((xs == arrs.extensions()) && ...));
+	// std::cout << ... << arrs.extensions() << '\n';
 	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
 	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
@@ -103,10 +111,11 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
 		return map(std::forward<F>(fun), std::forward<A>(alpha), [omega_ = std::forward<B>(omega)]() -> decltype(auto) { return omega_; } ^ multi::extensions_t<0>{});
 	} else {
+		using std::get;
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
-			return map(std::forward<F>(fun), std::forward<A>(alpha).repeated(omega.size()), std::forward<B>(omega));
+			return map(std::forward<F>(fun), std::forward<A>(alpha).repeated(get<std::decay_t<B>::dimensionality - std::decay_t<A>::dimensionality - 1>(omega.sizes())), std::forward<B>(omega));
 		} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
-			return map(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega).repeated(alpha.size()));
+			return map(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega).repeated(get<std::decay_t<A>::dimensionality - std::decay_t<B>::dimensionality - 1>(alpha.sizes())));
 		} else {
 			return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
 		}

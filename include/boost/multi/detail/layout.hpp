@@ -1033,8 +1033,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using difference_type = multi::index_extension::difference_type;
 	using element = tuple<multi::index_extension::value_type>;
 	using index = multi::index;
+	using sizes_type = tuple<size_type>;
 
 	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sub() const { return extensions_t<0>{this->base().tail()}; }
 
