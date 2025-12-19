@@ -268,7 +268,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			multi::array<int, 2>{
 				{2, 4, 6},
 				{5, 7, 9}
-        	}
+			}
 		));
 	}
 	{
@@ -285,7 +285,6 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		using multi::broadcast::operator+;
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
-
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 
