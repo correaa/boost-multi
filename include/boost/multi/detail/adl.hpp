@@ -23,6 +23,8 @@
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
 
+#include <cuda/std/iterator>
+
 #ifdef __NVCC__
 #pragma nv_diagnostic pop  // nv_diagnostics pop
 #endif
