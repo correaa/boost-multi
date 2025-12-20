@@ -23,7 +23,11 @@
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
 
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if THRUST_VERSION >= 300102
 #include <cuda/std/iterator>
+#endif
+#endif
 
 #ifdef __NVCC__
 #pragma nv_diagnostic pop  // nv_diagnostics pop
