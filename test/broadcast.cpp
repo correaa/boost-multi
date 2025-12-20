@@ -13,8 +13,8 @@
 #include <iostream>
 #include <iterator>  // IWYU pragma: keep
 #include <limits>    // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <utility>   // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <numeric>
+#include <utility>  // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
@@ -332,9 +332,18 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
-		multi::array<int, 2> A = {{0, 1, 2}, {3, 4, 5}};
-		multi::array<int, 2> B = {{0, 1, 2}, {3, 4, 5}};
-		multi::array<int, 2> C = {{0, 1, 2}, {3, 4, 5}};
+		multi::array<int, 2> A = {
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		multi::array<int, 2> B = {
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+		multi::array<int, 2> C = {
+			{0, 1, 2},
+			{3, 4, 5}
+		};
 
 		using multi::broadcast::operator+;
 		using multi::broadcast::operator*;
