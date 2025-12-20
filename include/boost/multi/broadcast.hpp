@@ -110,7 +110,7 @@ class identity_bind {
 
  public:
 	template<class TT>
-	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}
+	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
