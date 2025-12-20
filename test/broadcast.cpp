@@ -332,15 +332,15 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
-		multi::array<int, 2> A = {
+		multi::array<int, 2> const A = {
 			{0, 1, 2},
 			{3, 4, 5}
 		};
-		multi::array<int, 2> B = {
+		multi::array<int, 2> const B = {
 			{0, 1, 2},
 			{3, 4, 5}
 		};
-		multi::array<int, 2> C = {
+		multi::array<int, 2> const C = {
 			{0, 1, 2},
 			{3, 4, 5}
 		};
@@ -348,9 +348,9 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		using multi::broadcast::operator+;
 		using multi::broadcast::operator*;
 
-		multi::array<int, 2> D = A + A * B + 2 * C;
+		multi::array<int, 2> const D = A + A * B + 2 * C;
 
-		assert(D[1][1] == A[1][1] + A[1][1] * B[1][1] + 2 * C[1][1]);
+		BOOST_TEST(D[1][1] == A[1][1] + A[1][1] * B[1][1] + 2 * C[1][1]);
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
