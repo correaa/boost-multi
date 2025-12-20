@@ -104,12 +104,23 @@ constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
+template<class T>
+class identity_bind {
+	T val_;
+
+ public:
+	template<class TT>
+	constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}
+
+	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
+};
+
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-		return map(std::forward<F>(fun), [alpha_ = std::forward<A>(alpha)]() -> decltype(auto) { return alpha_; } ^ multi::extensions_t<0>{}, std::forward<B>(omega));
+		return map(std::forward<F>(fun), identity_bind<A>{std::forward<A>(alpha)} ^ multi::extensions_t<0>{}, std::forward<B>(omega));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return map(std::forward<F>(fun), std::forward<A>(alpha), [omega_ = std::forward<B>(omega)]() -> decltype(auto) { return omega_; } ^ multi::extensions_t<0>{});
+		return map(std::forward<F>(fun), std::forward<A>(alpha), identity_bind<B>{std::forward<B>(omega)} ^ multi::extensions_t<0>{});
 	} else {
 		using std::get;
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
