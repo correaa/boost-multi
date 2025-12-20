@@ -24,8 +24,7 @@
 #include <thrust/uninitialized_copy.h>
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-// #if THRUST_VERSION >= 300102
-#if __has_include(<cuda/std/iterator>)
+#if THRUST_VERSION >= 300102
 #include <cuda/std/iterator>
 #endif
 #endif
@@ -485,9 +484,9 @@ namespace adl {
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION < 300102
-	using thrust::distance;
+	using ::thrust::distance;
 #else
-	using cuda::std::distance;
+	using ::cuda::std::distance;
 #endif
 #endif
 
