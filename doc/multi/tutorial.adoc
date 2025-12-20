@@ -228,6 +228,18 @@ B[1] = A[2].element_moved();
 Each of the 10 *elements* of the third row of `A` is moved into the second row of `B`.
 `A[2]` still has 10 (moved-from) empty vectors.
 
+Finally, initialization of array variables can determine both the element type and dimensionality (Class Template Argument Deduction) from the right-hand-side.
+This is particularly useful when using direct initialization or initialization from subarrays.
+
+```cpp
+multi::array A1D = {1, 2, 3};  // deduced as array<int, 1>
+multi::array A2D = {           // deduced as array<int, 2>
+	{1, 2, 3},
+	{3, 4, 5}
+};
+
+multi::array row = A2D[1];     // deduced as array<int, 1>
+```
 
 == Change sizes (extents)
 
