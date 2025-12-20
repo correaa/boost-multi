@@ -496,7 +496,7 @@ class adl_distance_t {
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 };
-}  // end namespace 
+}  // end namespace adl
 
 inline constexpr adl::adl_distance_t adl_distance;
 
