@@ -345,7 +345,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
-		auto trace_D = std::reduce(r.begin(), r.end(), 0.0);
+		auto trace_D = std::reduce(r.begin(), r.end(), 0);
 
 		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
