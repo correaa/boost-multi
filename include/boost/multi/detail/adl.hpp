@@ -476,7 +476,7 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 }
 }  // end namespace xtd
 
-namespace {
+namespace adl {
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION < 300102
@@ -496,9 +496,9 @@ class adl_distance_t {
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 };
-}
+}  // end namespace 
 
-inline constexpr adl_distance_t adl_distance;
+inline constexpr adl::adl_distance_t adl_distance;
 
 class adl_begin_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                std::begin(std::forward<As>(args)...))
