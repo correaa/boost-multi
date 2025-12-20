@@ -14,6 +14,7 @@
 #include <iterator>  // IWYU pragma: keep
 #include <limits>    // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <utility>   // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <numeric>
 
 namespace multi = boost::multi;
 
@@ -329,6 +330,24 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		using multi::broadcast::operator+;
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
+	}
+	{
+		multi::array<int, 2> A = {{0, 1, 2}, {3, 4, 5}};
+		multi::array<int, 2> B = {{0, 1, 2}, {3, 4, 5}};
+		multi::array<int, 2> C = {{0, 1, 2}, {3, 4, 5}};
+
+		using multi::broadcast::operator+;
+		using multi::broadcast::operator*;
+
+		multi::array<int, 2> D = A + A * B + 2 * C;
+
+		assert(D[1][1] == A[1][1] + A[1][1] * B[1][1] + 2 * C[1][1]);
+
+		auto const& r = (A + A * B + 2 * C).diagonal();
+
+		auto trace_D = std::reduce(r.begin(), r.end(), 0.0);
+
+		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};

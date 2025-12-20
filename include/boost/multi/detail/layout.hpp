@@ -350,10 +350,13 @@ class restriction
 
 		~iterator() = default;
 
+		using difference_type = std::ptrdiff_t;		
 		using value_type = std::conditional_t<(D != 1),
 			restriction<D - 1, bind_front_t>,
 			decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
 		>;
+
+		using pointer = void;
 
 		using reference = std::conditional_t<(D != 1),
 			restriction<D - 1, bind_front_t>,
