@@ -24,7 +24,8 @@
 #include <thrust/uninitialized_copy.h>
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
-#if THRUST_VERSION >= 300102
+// #if THRUST_VERSION >= 300102
+#if __has_include(<cuda/std/iterator>)
 #include <cuda/std/iterator>
 #endif
 #endif
