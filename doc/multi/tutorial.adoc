@@ -938,6 +938,9 @@ Custom functions can be applied by using the `invoke` function:
 auto const& AVE = multi::broadcast::invoke([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
 ```
 
+Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms.
+(e.g. https://godbolt.org/z/Ee1ohKxhW)
+
 // == Broadcast (infinite views)
 
 // Broadcasting is a technique by which arrays are reinterpreted as having a higher dimension by repeating elements.
