@@ -220,13 +220,10 @@ class exp_bind_t {
 
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
-template<class A, std::enable_if_t<multi::has_dimensionality<std::decay_t<A>>::value, int> =0>  // NOLINT(modernize-use-constraints) for C++23
+template<class A, std::enable_if_t<multi::has_extensions<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
-	auto xs = alpha.extensions();
-	// auto hm = alpha.home();
-	// return exp_bind_t(hm) ^ xs;
+	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
-	// return exp_bind_t<typename bind_category<A>::type>{std::forward<A>(alpha)} ^ xs;
 }
 
 template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T, 1, 16>(il)); }
