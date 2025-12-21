@@ -51,7 +51,8 @@ export UBSAN_OPTIONS=print_stacktrack=1
  (CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE                  && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel        $CTR || ctest --test-dir .build.g++-rel        --rerun-failed --output-on-failure $CTR) ) || exit 666
 
 if [[ $(uname -m) != 'aarch64' ]]; then
- clang-format-19 --dry-run -Werror include/**/*.hpp test/*.cpp
+ clang-format-19 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp
+ diff -u include/**/*.hpp test/*.cpp <(clang-format-19 include/**/*.hpp test/*.cpp)
 
 #(CXX="$HOME/bin/circle" cmake -S . -B .build.circle     -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1 -DCMAKE_CXX_EXTENSIONS=OFF -DENABLE_CIRCLE=1 -DCMAKE_THREAD_LIBS_INIT="-lpthread"                                                                                              && cmake --build .build.circle     $CMT && (ctest --test-dir .build.circle     $CTR || ctest --test-dir .build.circle     --rerun-failed --output-on-failure $CTR)) || exit 666
 #(                       cmake -S . -B .build.nvcc.relax -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_FLAGS="--extended-lambda --expt-relaxed-constexpr --threads 2" -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CUDA_ARCHITECTURE=native  && cmake --build .build.nvcc.relax $CMT && (ctest --test-dir .build.nvcc.relax $CTR || ctest --test-dir .build.nvcc.relax --rerun-failed --output-on-failure $CTR)) || exit 666
