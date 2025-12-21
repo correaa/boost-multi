@@ -73,11 +73,11 @@ struct copy_it {
 	}
 	constexpr auto operator*() const -> value_type { return *it_; }
 
-	constexpr auto operator++() const -> copy_it&;
-	constexpr auto operator--() const -> copy_it&;
+	constexpr auto operator++() -> copy_it&;  // void {};  // -> copy_it& { assert(0); /*++it_;*/ return *this; }
+	constexpr auto operator--() -> copy_it&;  // void {};  // -> copy_it& { assert(0); /*--it_;*/ return *this; }
 
-	constexpr auto operator++(int) const -> copy_it;
-	constexpr auto operator--(int) const -> copy_it;
+	constexpr auto operator++(int) -> copy_it;
+	constexpr auto operator--(int) -> copy_it;
 };
 
 template<class A1D> [[nodiscard]]
