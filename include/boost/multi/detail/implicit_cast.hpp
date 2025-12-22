@@ -21,4 +21,4 @@ template<class To, class From, std::enable_if_t<std::is_constructible_v<To, From
 constexpr auto explicit_cast(From&& ref) -> To {return static_cast<To>(std::forward<From&&>(ref));}
 
 }  // end namespace boost::multi::detail
-#endif
+#endif  // BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
