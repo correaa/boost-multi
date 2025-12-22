@@ -94,7 +94,7 @@ In the more general case for the dimensionality, we have the following correspon
 | Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 2> v1D({3});` (at scope)       
 | Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`                             
 | Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`                            
-| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _::_ , _ ) = A2D({0, 2}, {0, 2});`               
+| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`               
 |===
 
 Note that these correspondences are notationally logical;
@@ -107,12 +107,13 @@ These rules extend to higher dimensionality.
 
 // Multi doesn't provide algebraic operators, using algorithms is encouraged instead.
 Multi provides algebraic operators that are expanded elementwise,
-For example, a FORTRAN statement like `A = A + B` is translated as this:
+For example, a FORTRAN statement like `C = A + B` or `C = C + A` is translated as this:
 
 ```cpp
 using multi::broadcast::operator+;
 
-A = A + B;
+multi::array C = A + B;
+C = C + A;  // assigning to itself is ok for elementwise operations
 ```
 
 For one-dimensional arrays, this is equivalent to :
@@ -138,11 +139,11 @@ A FORTRAN statement like `C = 2.0*C` is rewritten as
 ```cpp
 using multi::broadcast::operator*;
 
-C = 2.0*C;
+C = 2.0*C;  // self-assignment is ok because this an elementwise operation
 ```
 (equivalent to `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) { return 2.0*e; });`.)
 
-Simple loops can be mapped as well, taking into account indexing differences:
+Simple loops can be mapped as well, taking into account indexing differences (C++ version on the rigth):
 ```fortran
 do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
   do j = 1, 5       !   for(int j = 0; j != 5; ++j) {
@@ -152,7 +153,7 @@ end do              ! }
 ```
 link:https://godbolt.org/z/77onne46W[(live)]
 
-However, algorithms like `transform`, `reduce`, `transform_reduce`and `for_each`, and offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
-In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will do.
+However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
+In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
 > **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help integrating the Boost infraestructure to the unit tests.
