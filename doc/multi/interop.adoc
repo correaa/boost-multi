@@ -659,17 +659,17 @@ When saving arrays to files, please consider using serialization (see section) i
 
 ## Python (cppyy)
 
-There is no special code to interoperated with Python;
+There is no special code to interoperate with Python;
 however the memory layout is compatible with Numpy and pybind11 binding with zero-copy could be written.
 Furthermore the library works out-of-the-box via de automatic `cppyy` bindings.
 
-Here it is a complete Python session:
+Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
 
 ```python
 # We import the library
 import cppyy
 cppyy.add_include_path('path-to/boost-multi/include')
-cppyy.include("boost/multi/array.hpp")
+cppyy.include("boost/multi/array.hpp")  # or from single header https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
 multi = cppyy.gbl.boost.multi
 
