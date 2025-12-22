@@ -1938,6 +1938,7 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto        offset() const -> index { return offset_; }
 	friend BOOST_MULTI_HD constexpr auto offset(layout_t const& self) -> index { return self.offset(); }
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
+
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 
 	constexpr auto base_size() const {
@@ -1981,9 +1982,9 @@ struct layout_t
 		return std::apply([](auto... extensions) { return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...}; }, extensions().base()).at(static_cast<std::size_t>(dim));
 	}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14
 	   //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	constexpr auto stride(dimensionality_type dim) const {
-		return std::apply([](auto... strides) { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
-	}
+	// constexpr auto stride(dimensionality_type dim) const {
+	//	return std::apply([](auto... strides) { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
+	// }
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 

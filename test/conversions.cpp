@@ -184,7 +184,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( wec2D.size() == 2 );
 		BOOST_TEST( wec2D[0].size() == 2 );
 	}
-
+	{
+		multi::array<int, 1> arr = {1, 2, 3, 4, 5, 6};
+		BOOST_TEST(( arr.strided(2) == multi::array{1, 3, 5} ));
+	}
 	return boost::report_errors();
 }
 
