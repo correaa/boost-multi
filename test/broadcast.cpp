@@ -350,7 +350,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		multi::array<int, 2> const D = A + A * B + 2 * C;
 
-		BOOST_TEST(D[1][1] == A[1][1] + A[1][1] * B[1][1] + 2 * C[1][1]);
+		BOOST_TEST( D[1][1] == A[1][1] + (A[1][1] * B[1][1]) + (2 * C[1][1]) );
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
