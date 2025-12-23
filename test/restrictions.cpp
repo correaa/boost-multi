@@ -238,6 +238,26 @@ int main() {
 		auto const v2D_diag = v2D.diagonal();
 		BOOST_TEST( v2D_diag[2] == v2D[2][2] );
 	}
+	{
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+
+		multi::array<multi::index, 2> v2D_copy = v2D;
+
+		multi::array<multi::index, 2> v2D_copy2(v2D.extensions());
+
+		v2D_copy2() = v2D;
+		BOOST_TEST( v2D_copy2 == v2D_copy );
+
+		multi::array<multi::index, 2> v2D_copy3;
+		v2D_copy3 = v2D;
+
+		BOOST_TEST( v2D_copy3 == v2D_copy );
+
+		// multi::array<multi::index, 2> v2D_copy4;
+
+		// v2D_copy4() = v2D;  // this fails with an assert because sizes do not match
+		// BOOST_TEST( v2D_copy4 == v2D_copy );
+	}
 
 	return boost::report_errors();
 }
