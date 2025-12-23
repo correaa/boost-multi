@@ -35,6 +35,7 @@ set(TEST_SRCS
 	diffusion3d_kernel.cu
 	memory_resource.cu
 	neighbor_list.cu
+	restriction.cu
 	run_reduce.cu
 	set_identity_kernel.cu
 	speed.cu
