@@ -335,7 +335,8 @@ class restriction
 			multi::index idx_;
 			Proj proj_;
 			template<class... Args>
-			BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+			BOOST_MULTI_HD // BOOST_MULTI_DEV
+			constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 		};
 
 	 public:
