@@ -11,6 +11,14 @@
 
 namespace multi = boost::multi;
 
+class nonbuiltin {
+	multi::index val_;
+	public:
+	nonbuiltin(multi::index val) : val_{val} {}
+	__host__ __device__ constexpr nonbuiltin(nonbuiltin const& other) : val_{other.val_} {}  // make it non-trivially copyable
+	__host__ __device__ constexpr auto val() const -> multi::index { return val_; }
+};
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
 	{
@@ -29,16 +37,41 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			= [a] __host__ __device__(multi::index i, multi::index j) { return i + j + a; } ^ multi::extensions_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 + 99);
 	}
+	{
+		nonbuiltin nbi(99);
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr 
+			= [nbi] __host__ __device__(multi::index i, multi::index j) { return i + j + nbi.val(); } ^ multi::extensions_t(10, 10);
+		BOOST_TEST( arr[3][4] == 3 + 4 + 99);
+	}
 	// {
-	// 	multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) constexpr { return i + j; } ^ multi::extensions_t(10, 10);
-	// 	BOOST_TEST( arr[3][4] == 3 + 4 );
+	// 	nonbuiltin nbi(99);
+	// 	multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr 
+	// 		= [nbi] __host__ __device__(auto i, auto j) { return i + j + nbi.val(); } ^ multi::extensions_t(10, 10);
+	// 	BOOST_TEST( arr[3][4] == 3 + 4 + 99);
 	// }
+	{
+		nonbuiltin nbi(99);
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr 
+			= [nbi] (multi::index i, multi::index j) { return i + j + nbi.val(); } ^ multi::extensions_t(10, 10);
+		BOOST_TEST( arr[3][4] == 3 + 4 + 99);
+	}
+	// {
+	// 	auto fun = [] __device__(int i, int j) { return i + j; };
+	// 	multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr 
+	// 		= device{fun} ^ multi::extensions_t(10, 10);
+	// 	BOOST_TEST( arr[3][4] == 3 + 4 + 99);
+	// }
+	{
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr
+			= [](multi::index i, multi::index j) constexpr { return i + j; } ^ multi::extensions_t(10, 10);
+		BOOST_TEST( arr[3][4] == 3 + 4 );
+	}
 	// {
 	// 	multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) { return i + j; } ^ multi::extensions_t(10, 10);
 	// 	BOOST_TEST( arr[3][4] == 3 + 4 );
 	// }
 
-    // multi::thrust::universal_array<thrust::complex<double>, 2> arr_gold({50, 70});
+	// multi::thrust::universal_array<thrust::complex<double>, 2> arr_gold({50, 70});
 
 	// auto [is, js] = arr_gold.extensions();
 	// for(auto i : is) {
