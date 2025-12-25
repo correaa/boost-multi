@@ -17,6 +17,26 @@
 #define BOOST_MULTI_HD
 #endif
 
+#ifdef __NVCC__
+#define BOOST_MULTI_DEV __device__
+#else
+#define BOOST_MULTI_DEV
+#endif
+
+// namespace boost::multi 
+// {}
+// #ifdef __NVCC__
+// template<class F>
+// struct device {
+// 	F f_;
+// 	template<class... Ts> __device__ auto operator()(Ts&& ... ts) const {
+// 		return f_(std::forward<Ts>(ts)...);
+// 	}
+// }
+// #else
+// #define BOOST_MULTI_DEV
+// #endif
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4514)  // boost::multi::detail::tuple<>::operator <': unreferenced inline function has been removed
@@ -141,12 +161,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<class F, std::size_t... I>
-	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_DEV constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
 	template<class F, std::size_t... I>
-	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD  // BOOST_MULTI_DEV
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(std::move(*this).template get<I>()...);
 	}
 
