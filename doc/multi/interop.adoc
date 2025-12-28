@@ -620,29 +620,28 @@ Although it is not ideal, arrays can be printed and formated by looping over ele
 Fortunatelly, the library automatically works with the external library link:https://fmt.dev/latest/index.html[{fmt}], both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library;
 they simply work well together using the "ranges" part of the formatting library.
-fmt allows a high degree of confurability.
+fmt allows a high degree of configurability.
 
-This example prints a 2-dimensional subblock of a larger array.
-
+This example prints a 2-dimensional subblock of a larger array:
 ```cpp
 #include "fmt/ranges.h"
 ...
-    multi::array<double, 2> A2 = {
+    multi::array<double, 2> A2D = {
         {1.0, 2.0,      3.0}, 
         /*-subblock-**/
         {3.0, 4.0, /**/ 5.0},
         {6.0, 7.0, /**/ 8.0},
     };
 
-    fmt::print("A2 subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
+    fmt::print("A2D subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
 ```
-obtaining the "flat" output `A2 subblock = [[3, 4], [6, 7]]`.
+yielding the "flat" output `A2D subblock = [[3, 4], [6, 7]]`.
 (A similar effect can be achieved with link:https://godbolt.org/z/4ehd4s5vf[experimental C++23 `std::print` in libc++].)
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
 ```cpp
-    fmt::print("\n[{}]\n", fmt::join(A2({1, 3}, {0, 2}), ",\n "));  // first dimension rows are printer are in different lines
+    fmt::print("\n[{}]\n", fmt::join(A2({1, 3}, {0, 2}), ",\n "));  // rows are printed in separate lines
 ```
 with the output:
 
@@ -660,7 +659,7 @@ When saving arrays to files, please consider using serialization (see section) i
 ## Python (cppyy)
 
 There is no special code to interoperate with Python;
-however the memory layout is compatible with Numpy and pybind11 binding with zero-copy could be written.
+however the memory layout is compatible with Numpy and pybind11 binding with zero-copy.
 Furthermore the library works out-of-the-box via de automatic `cppyy` bindings.
 
 Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
