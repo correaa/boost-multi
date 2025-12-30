@@ -274,7 +274,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// Uninitialized Memory Read - 2
 		BOOST_TEST( arr.size() == 3 );
 	}
+	{
+		multi::array<int, 2> const arr1({{3, 5}});  // this array has 1-row
+		multi::array<int, 2> const arr2 = {{3, 5}};  // this array has 1-row
 
+		BOOST_TEST( arr1 == arr2  );
+	}
+	{
+		multi::array<int, 2> const arr(std::array<multi::size_t, 2>{{3, 4}});
+		BOOST_TEST( arr.size() == 3 );
+	}
 	{
 		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
 		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"
