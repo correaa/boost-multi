@@ -275,8 +275,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 3 );
 	}
 	{
-		multi::array<int, 2> const arr1({{3, 5}});  // this array has 1-row
-		multi::array<int, 2> const arr2 = {{3, 5}};  // this array has 1-row
+		multi::array<int, 2> const arr1({
+			{3, 5}
+		});  // this array has 1-row
+		multi::array<int, 2> const arr2 = {
+			{3, 5}
+		};  // this array has 1-row
 
 		BOOST_TEST( arr1 == arr2  );
 	}
