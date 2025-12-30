@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
+#include <array>        // for array
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
