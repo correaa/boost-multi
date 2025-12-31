@@ -430,7 +430,7 @@ struct dynamic_array                                                            
 	: dynamic_array(exts, allocator_type{}) {}
 
 	// to make cling cppyy overload resolution easier
-	template<class = void>  // gives low priority
+	template<typename = void>  // gives low priority
 	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
 	: dynamic_array(std::apply([](auto... sizes) { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
 
