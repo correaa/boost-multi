@@ -1,10 +1,10 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ARRAY_HPP_
-#define BOOST_MULTI_ARRAY_HPP_
-#pragma once
+#ifndef BOOST_MULTI_ARRAY_HPP
+#define BOOST_MULTI_ARRAY_HPP
+// #pragma once
 
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"
@@ -1680,4 +1680,4 @@ struct version<boost::multi::array<T, D, A>> {
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_ARRAY_HPP_
+#endif  // BOOST_MULTI_ARRAY_HPP

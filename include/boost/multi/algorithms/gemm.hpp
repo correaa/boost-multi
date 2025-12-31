@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -6,9 +6,9 @@
 // it is ~3 times slower than blas::gemm but it is more generic in the type and in the operations
 // when compiled using -DCMAKE_CXX_FLAGS_RELEASE="-Ofast -DNDEBUG -mfpmath=sse -march=native -funroll-loops"
 
-#pragma once
 #ifndef BOOST_MULTI_ALGORITHM_GEMM_HPP
 #define BOOST_MULTI_ALGORITHM_GEMM_HPP
+// #pragma once
 
 #include <execution>  // for par  // needs linking to TBB library
 #include <numeric>  // for inner_product and transform_reduce

@@ -1,10 +1,10 @@
-// Copyright 2023-2025 Alfredo A. Correa
+// Copyright 2023-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
 #define BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
-#pragma once
+// #pragma once
 
 #include <type_traits>
 #include <utility>
