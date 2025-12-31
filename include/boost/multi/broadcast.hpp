@@ -109,7 +109,7 @@ class identity_bind {
 	T val_;
 
  public:
-	template<class TT>
+	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay_t<TT> >, int> =0>
 	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
@@ -208,13 +208,13 @@ class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
 
  public:
-	template<class AA>                                                                          // , std::enable_if_t<!std::is_base_v<exp_bind_t<A>, std::decay_t<AA> >, int> =0>
-	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	template<class AA, std::enable_if_t<!std::is_base_of_v<exp_bind_t, std::decay_t<AA> >, int> =0>
+	constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
-	constexpr auto operator()(Is... is) const {
+	constexpr auto operator()(Is... indices) const {
 		using ::std::exp;
-		return exp(multi::detail::invoke_square(a_, is...));  // a_[is...] in C++23
+		return exp(multi::detail::invoke_square(a_, indices...));  // a_[is...] in C++23
 	}
 };
 
