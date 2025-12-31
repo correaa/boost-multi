@@ -77,6 +77,20 @@ struct stride_traits<std::integral_constant<Integer, 1>> {
 #endif
 };
 
+template<class DeviceFun>
+class device {
+	DeviceFun f_;
+
+ public:
+	template<class... Args>
+#ifdef __NVCC__
+	__device__
+#endif
+	constexpr auto operator()(Args&&... args) const
+	->decltype(f_(std::forward<Args>(args)...)) {
+		return f_(std::forward<Args>(args)...); }
+};
+
 namespace detail {
 
 template<class Tuple, std::size_t... Ns>

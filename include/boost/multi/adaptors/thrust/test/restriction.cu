@@ -20,8 +20,22 @@ class nonbuiltin {
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	{
+		multi::array<multi::index, 1> const arr 
+			= [] (multi::index i) { return i; } ^ multi::extensions_t(10);
+		BOOST_TEST( arr[3] == 3 );
+    }
+    {
+		multi::array<multi::index, 1, thrust::cuda::allocator<multi::index>> const arr 
+			= [] __host__ __device__ (multi::index i) { return i; } ^ multi::extensions_t(10);
+		BOOST_TEST( arr[3] == 3 );
+	}
+    // {
+	// 	multi::array<multi::index, 1, thrust::cuda::allocator<multi::index>> const arr 
+	// 		= [] __device__ (multi::index i) { return i; } ^ multi::extensions_t(10);
+	// 	BOOST_TEST( arr[3] == 3 );
+	// }
+    {
 		multi::array<multi::index, 2> const arr 
 			= [] (multi::index i, multi::index j) { return i + j; } ^ multi::extensions_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
