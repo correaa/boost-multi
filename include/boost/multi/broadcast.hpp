@@ -109,7 +109,7 @@ class identity_bind {
 	T val_;
 
  public:
-	template<class TT>
+	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
@@ -208,7 +208,7 @@ class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
 
  public:
-	template<class AA>                                                                          // , std::enable_if_t<!std::is_base_v<exp_bind_t<A>, std::decay_t<AA> >, int> =0>
+	template<class AA, std::enable_if_t<!std::is_base_of_v<exp_bind_t, std::decay_t<AA>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
