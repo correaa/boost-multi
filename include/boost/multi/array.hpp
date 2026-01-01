@@ -1,10 +1,10 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ARRAY_HPP_
-#define BOOST_MULTI_ARRAY_HPP_
-#pragma once
+#ifndef BOOST_MULTI_ARRAY_HPP
+#define BOOST_MULTI_ARRAY_HPP
+// #pragma once
 
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"
@@ -306,8 +306,9 @@ struct dynamic_array                                                            
 	}
 
  public:
+#if !defined(__CLING__)  // TODO(correaa) add std::from_range_t constructor (C++23)
 	template<
-		class Range, class = std::enable_if_t<!std::is_base_of<dynamic_array, std::decay_t<Range>>{}>,
+		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
@@ -347,10 +348,12 @@ struct dynamic_array                                                            
 			++outer_it;
 		}
 	}
+#endif  // __CLING__
 #endif
 
+#if !defined(__CLING__)  // TODO(correaa) add std::from_range_t constructor (C++23)
 	template<
-		class Range, class = std::enable_if_t<!std::is_base_of<dynamic_array, std::decay_t<Range>>{}>,
+		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>> >,
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
@@ -358,6 +361,7 @@ struct dynamic_array                                                            
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+#endif  // __CLING__
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -430,7 +434,7 @@ struct dynamic_array                                                            
 	: dynamic_array(exts, allocator_type{}) {}
 
 	// to make cling cppyy overload resolution easier
-	template<typename = void>  // gives low priority
+	template<class = void>  // gives low priority
 	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
 	: dynamic_array(std::apply([](auto... sizes) { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
 
@@ -1680,4 +1684,4 @@ struct version<boost::multi::array<T, D, A>> {
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_ARRAY_HPP_
+#endif  // BOOST_MULTI_ARRAY_HPP
