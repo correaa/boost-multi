@@ -352,8 +352,9 @@ struct dynamic_array                                                            
 #endif
 
 #if !defined(__CLING__)  // TODO(correaa) add std::from_range_t constructor (C++23)
+
 	template<
-		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>> >,
+		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
@@ -361,6 +362,7 @@ struct dynamic_array                                                            
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+
 #endif  // __CLING__
 
 	template<class TT>
@@ -385,7 +387,7 @@ struct dynamic_array                                                            
 #endif
 	}
 
-	dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element_type const& elem, allocator_type const& alloc)  // (2)  // NOLINT(readability-redundant-typename)
+	dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element_type const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename)
