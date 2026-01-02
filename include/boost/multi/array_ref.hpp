@@ -1333,7 +1333,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-		return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, types::base_);
+		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + n* this->layout().stride());
+		// return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1341,9 +1343,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto dropped(difference_type n) const& -> basic_const_array { return dropped_aux_(n); }
-	constexpr auto dropped(difference_type n) && -> const_subarray { return dropped_aux_(n); }
-	constexpr auto dropped(difference_type n) & -> const_subarray { return dropped_aux_(n); }
+	constexpr auto dropped(difference_type n) const& { return dropped_aux_(n).as_const(); }
+	// constexpr auto dropped(difference_type n) && -> const_subarray { return dropped_aux_(n); }
+	// constexpr auto dropped(difference_type n) & -> const_subarray { return dropped_aux_(n); }
 
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {

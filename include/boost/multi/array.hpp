@@ -392,13 +392,14 @@ struct dynamic_array                                                            
 	}
 
 	template<class Element>
-	explicit dynamic_array(
+	explicit dynamic_array(  /*** if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality ***/
 		Element const& elem, allocator_type const& alloc,
 		std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
 	)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
-	constexpr dynamic_array(typename dynamic_array::extensions_type exts, typename dynamic_array::element_type const& elem)  // NOLINT(readability-redundant-typename)
+	// NOLINT(readability-redundant-typename)
+	constexpr dynamic_array(typename dynamic_array::extensions_type exts, typename dynamic_array::element_type const& elem)  /*** if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality ***/
 	: array_alloc{},
 	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
 		  exts,

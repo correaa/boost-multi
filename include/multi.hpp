@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,5 +8,6 @@
 #include "boost/multi/array.hpp"
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/broadcast.hpp"
+#include "boost/multi/io.hpp"
 
 #endif  //  BOOST_MULTI_HPP_
