@@ -140,9 +140,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			 }
 		};
 
-		std::cout << "A4D = " << arr << "; no more, no less " << std::endl;
+		std::cout << "A4D = " << arr << "; no more, no less " << '\n';
 
-		std::cout << "A4D.extesion() = " << arr.extension() << std::endl;
+		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
 	}
 
 

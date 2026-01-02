@@ -23,20 +23,20 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 		os << tab;
 	}
 	os << open[0];
-	if(Array::dimensionality > 1) {
+	if constexpr(Array::dimensionality > 1) {
 		os << '\n';
 	}
 	if(arr.size()) {
 		multi::detail::print(os, arr.front(), open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		for(auto const& item : arr.dropped(1)) {
 			os << sep[0] << ' ';
-			if(Array::dimensionality > 1) {
+			if constexpr(Array::dimensionality > 1) {
 				os << '\n';
 			}
 			multi::detail::print(os, item, open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		}
 	}
-	if(Array::dimensionality > 1) {
+	if constexpr(Array::dimensionality > 1) {
 		os << sep[0] << ' ' << '\n';
 		for(auto count = 0; count != indent; ++count) {
 			os << tab;
