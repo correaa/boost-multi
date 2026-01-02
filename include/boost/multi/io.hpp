@@ -1,3 +1,11 @@
+// Copyright 2026 Alfredo A. Correa
+// Distributed under the Boost Software License, Version 1.0.
+// https://www.boost.org/LICENSE_1_0.txt
+
+#ifndef BOOST_MULTI_IO_HPP
+#define BOOST_MULTI_IO_HPP
+// #pragma once
+
 #include "boost/multi/utility.hpp"
 
 #include <iostream>
@@ -6,39 +14,49 @@ namespace boost::multi {
 
 namespace detail {
 
-template<class Array, std::enable_if_t<!has_dimensionality<Array>::value, int> = 0>
+template<class Array, std::enable_if_t<!has_dimensionality<Array>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 void print(std::ostream& os, Array const& arr, std::string_view /*open*/, std::string_view /*sep*/, std::string_view /*close*/, std::string_view /*tag*/, int /*indent*/) {
 	os << arr;
 }
 
-template<class Array, std::enable_if_t<has_dimensionality<Array>::value && (Array::dimensionality == 0), int> = 0>
+template<class Array, std::enable_if_t<has_dimensionality<Array>::value && (Array::dimensionality == 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 void print(std::ostream& os, Array const& arr, std::string_view /*open*/, std::string_view /*sep*/, std::string_view /*close*/, std::string_view /*tag*/, int /*indent*/) {
 	assert(!arr.empty());
 	os << static_cast<typename Array::element_cref>(arr);
 }
 
-template<class Array, std::enable_if_t<has_dimensionality<Array>::value && (Array::dimensionality > 0), int> = 0>
+template<class Array, std::enable_if_t<has_dimensionality<Array>::value && (Array::dimensionality > 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 void print(std::ostream& os, Array const& arr, std::string_view open, std::string_view sep, std::string_view close, std::string_view tab, int indent) {
-	for(auto count = 0; count != indent; ++count) {
+	for(auto count = 0; count != indent; ++count) {  // NOLINT(altera-unroll-loops)
 		os << tab;
 	}
 	os << open[0];
 	if constexpr(Array::dimensionality > 1) {
 		os << '\n';
 	}
-	if(arr.size()) {
-		multi::detail::print(os, arr.front(), open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
-		for(auto const& item : arr.dropped(1)) {
-			os << sep[0] << ' ';
+	for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
+		multi::detail::print(os, arr[idx], open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
+		if(idx != arr.extension().back()) {
+			os << sep[0];
 			if constexpr(Array::dimensionality > 1) {
 				os << '\n';
+			} else {
+				os << ' ';
 			}
-			multi::detail::print(os, item, open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		}
 	}
+	// multi::detail::print(os, arr.front(), open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
+	// for(auto const& item : arr.dropped(1)) {
+	// 	os << sep[0] << ' ';
+	// 	if constexpr(Array::dimensionality > 1) {
+	// 		os << '\n';
+	// 	}
+	// 	multi::detail::print(os, item, open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
+	// }
+	// }
 	if constexpr(Array::dimensionality > 1) {
 		os << sep[0] << ' ' << '\n';
-		for(auto count = 0; count != indent; ++count) {
+		for(auto count = 0; count != indent; ++count) {  // NOLINT(altera-unroll-loops)
 			os << tab;
 		}
 	}
@@ -47,7 +65,7 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 
 }  // namespace detail
 
-template<class Array, std::enable_if_t<Array::dimensionality >= 0, int> = 0>
+template<class Array, std::enable_if_t<Array::dimensionality >= 0, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto operator<<(std::ostream& os, Array const& arr) -> std::ostream& {
 	multi::detail::print(os, arr, "{", ",", "}", "\t", 0);
 	return os;
@@ -55,7 +73,7 @@ auto operator<<(std::ostream& os, Array const& arr) -> std::ostream& {
 
 template<typename Integer>
 auto operator<<(std::ostream& os, extension_t<Integer> const& ext) -> std::ostream& {
-	if(ext.size() == 0) {
+	if(ext.empty()) {
 		return os << "[)";
 	}
 	if(ext.front() != 0) {
@@ -65,3 +83,4 @@ auto operator<<(std::ostream& os, extension_t<Integer> const& ext) -> std::ostre
 }
 
 }  // namespace boost::multi
+#endif  // BOOST_MULTI_IO_HPP
