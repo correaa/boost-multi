@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <sstream>
+// IWYU pragma: no_include <string>                           // for allocator, operator<<
 
 namespace multi = boost::multi;
 
