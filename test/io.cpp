@@ -113,6 +113,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A3D = " << arr << "; no more, no less " << std::endl;
 	}
 	{
+		multi::array<double, 0> arr{5.0};
+		std::cout << "A0D = " << arr << "; no more, no less " << std::endl;
+	}
+	{
 		multi::array<double, 4> arr = {
 			{
              {
@@ -137,11 +141,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		std::cout << "A4D = " << arr << "; no more, no less " << std::endl;
+
+		std::cout << "A4D.extesion() = " << arr.extension() << std::endl;
 	}
-	{
-		multi::array<double, 0> arr{5.0};
-		std::cout << "A0D = " << arr << "; no more, no less " << std::endl;
-	}
+
 
 	return boost::report_errors();
 }
