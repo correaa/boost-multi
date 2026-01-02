@@ -9,7 +9,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <type_traits>  // for is_same_v, is_same
 
 namespace multi = boost::multi;
 
