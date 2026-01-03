@@ -306,7 +306,6 @@ struct dynamic_array                                                            
 	}
 
  public:
-#if !defined(__CLING__)  // TODO(correaa) add std::from_range_t constructor (C++23)
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		class = decltype(std::declval<Range const&>().begin()),
@@ -349,10 +348,7 @@ struct dynamic_array                                                            
 			++outer_it;
 		}
 	}
-#endif  // __CLING__
 #endif
-
-#if !defined(__CLING__)  // TODO(correaa) add std::from_range_t constructor (C++23)
 
 	template<
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(modernize-type-traits) bug in clang-tidy 19.1
@@ -363,8 +359,6 @@ struct dynamic_array                                                            
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
-
-#endif  // __CLING__
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -1259,6 +1253,11 @@ struct array : dynamic_array<T, D, Alloc> {
 							: array<T, D>(ilv.begin(), ilv.end())
 	  } {
 	}
+
+#ifdef __CLING__
+	explicit array(std::tuple<long, long> const& exts) 
+	: array(std::apply([](auto... sizes) { return typename array::extensions_type{sizes...}; }, exts)) {}
+#endif
 
 	template<
 		class OtherT,
