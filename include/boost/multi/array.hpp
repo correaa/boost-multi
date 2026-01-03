@@ -430,6 +430,11 @@ struct dynamic_array                                                            
 		uninitialized_default_construct();
 	}
 
+	template<class... Args>
+	static auto from_extensions(Args... exts) {
+		return dynamic_array(::boost::multi::extensions_t<D>(exts...));
+	}
+
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& exts)
 	: dynamic_array(exts, allocator_type{}) {}
 
