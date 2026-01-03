@@ -756,7 +756,7 @@ print(npa2d)
 > ```python
 > [[1. 2.]
 >  [4. 5.]]
->```
+> ```
 
 To complete the round trip, the other way around,
 ```python
