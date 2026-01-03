@@ -660,7 +660,8 @@ When saving arrays to files, please consider using serialization (see section) i
 
 There is no special code to interoperate with Python;
 however the memory layout is compatible with Numpy and pybind11 binding with zero-copy.
-Furthermore the library works out-of-the-box via de automatic `cppyy` bindings.
+
+Furthermore the library works out-of-the-box via de automatic `cppyy` bindings, providing a syntax similar to that of C++.
 
 Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
 
@@ -672,7 +673,7 @@ cppyy.include("boost/multi/array.hpp")  # or from single header https://correaa.
 
 multi = cppyy.gbl.boost.multi
 
-# We can created a one-dimensional array with 4 initialized to 0.0, or from a list of numbers.
+# We can created a one-dimensional array with 4 elements initialized to 0.0, or from a list of numbers.
 # We can print the array and change the element values:
 a1d = multi.array['double', 1](4, 0.0)
 a1d = multi.array['double', 1]([1.0, 2.0, 3.0, 4.0])
@@ -719,6 +720,32 @@ print(a2d[0])
 > ```python
 > { 66.600000, 2.0000000 }
 > ```
+
+Take into account that assignment in Python differs from that of C++.
+This can be particularly confusing when assigning elements from a list.
+
+```python
+a2d = multi.array['double', 2]();  # empty 2D array
+print(type(a2d))
+```
+> ```python
+> <class cppyy.gbl.boost.multi.array<double,2,std::allocator<double>> at 0xa133120>
+> ```
+
+```python
+a2d = [[1.0, 2.0],[3.0, 4.0]];  # this is now a Python list
+print(type(a2d))
+```
+> ```python
+> <class 'list'>
+> ```
+
+The last line reassign the variable into a Python list, changing its type.
+To reassign the elements without changing the type, use `.assign` instead:
+
+```python
+a2d.assign([[1.0, 2.0],[3.0, 4.0]])
+```
 
 ## Legacy libraries (C-APIs)
 
