@@ -747,6 +747,17 @@ To reassign the elements without changing the type, use `.assign` instead:
 a2d.assign([[1.0, 2.0],[3.0, 4.0]])
 ```
 
+An array (which uses contiguous memory) can be converted into a Numpy array, without making copies
+
+```python
+npa2d = np.frombuffer(a2d.base(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
+print(npa2d)
+```
+> ```python
+> [[1. 2.]
+>  [4. 5.]]
+>```
+
 ## Legacy libraries (C-APIs)
 
 Multi-dimensional array data structures exist in all languages, whether implicitly defined by its strides structure or explicitly at the language level.
