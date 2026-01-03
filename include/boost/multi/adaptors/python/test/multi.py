@@ -1,5 +1,6 @@
-import cppyy
-import numpy as np
+# /home/correaa/boost-multi/.venv/bin/python /home/correaa/boost-multi/include/boost/multi/adaptors/python/test/multi.py
+import cppyy  # automatic C++ bindings provided by cppyy
+import numpy as np  # to demonstrate interoperability
 
 # bind Multi to Python
 cppyy.add_include_path('/home/correaa/boost-multi/include')
