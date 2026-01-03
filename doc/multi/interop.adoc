@@ -747,16 +747,32 @@ To reassign the elements without changing the type, use `.assign` instead:
 a2d.assign([[1.0, 2.0],[3.0, 4.0]])
 ```
 
-An array (which uses contiguous memory) can be converted into a Numpy array, without making copies
+An array that uses contiguous memory can be converted into a Numpy array, without making copies
 
 ```python
-npa2d = np.frombuffer(a2d.base(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
+npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
 print(npa2d)
 ```
 > ```python
 > [[1. 2.]
 >  [4. 5.]]
 >```
+
+To complete the round trip, the other way around,
+```python
+a2d_ref = multi.array_ref['double', 2](multi.extensions_t[2](*npa2d.shape), npa2d)
+print(a2d_ref)
+
+> ```python
+> {
+>         {1, 2},
+>         {4, 999.9}, 
+> }
+> ```
+
+Note that the elements fpr these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory, so modifying one, nodifies the rest.
+Special care must be taken if the original element is resized, or assigned to a different Python object, in which case the memory will not be valid.
+For this reason alone, it would be an error to name the last variable as the original (`a2d`) instead of the new name (`a2d_ref`).
 
 ## Legacy libraries (C-APIs)
 
