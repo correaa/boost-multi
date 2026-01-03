@@ -23,7 +23,7 @@
 #include <cstddef>           // for size_t, ptrdiff_t, __GLIBCXX__
 #include <cstdlib>           // for abs
 #include <initializer_list>  // for initializer_list
-#include <iostream>
+// #include <iostream>
 #include <iterator>
 #include <memory>       // for swap
 #include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
@@ -78,6 +78,22 @@ struct stride_traits<std::integral_constant<Integer, 1>> {
 };
 
 namespace detail {
+
+template<class DeviceFun>
+class device {
+	DeviceFun fun_;
+
+ public:
+	explicit device(DeviceFun fun) : fun_{std::move(fun)} {}
+
+	template<class... Args>
+#ifdef __NVCC__
+	__device__
+#endif
+	constexpr auto operator()(Args&&... args) const
+	->decltype(fun_(std::forward<Args>(args)...)) {
+		return fun_(std::forward<Args>(args)...); }
+};
 
 template<class Tuple, std::size_t... Ns>
 constexpr auto tuple_tail_impl(Tuple&& tup, std::index_sequence<Ns...> /*012*/) {

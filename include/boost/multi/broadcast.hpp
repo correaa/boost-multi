@@ -109,7 +109,7 @@ class identity_bind {
 	T val_;
 
  public:
-	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }

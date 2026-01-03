@@ -1,10 +1,10 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ARRAY_HPP_
-#define BOOST_MULTI_ARRAY_HPP_
-#pragma once
+#ifndef BOOST_MULTI_ARRAY_HPP
+#define BOOST_MULTI_ARRAY_HPP
+// #pragma once
 
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"
@@ -307,12 +307,13 @@ struct dynamic_array                                                            
 
  public:
 	template<
-		class Range, class = std::enable_if_t<!std::is_base_of<dynamic_array, std::decay_t<Range>>{}>,
+		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                 // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T> explicit dynamic_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T>
+	explicit dynamic_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array() {
 		if(rng.size() == 0) {
 			return;
@@ -350,7 +351,7 @@ struct dynamic_array                                                            
 #endif
 
 	template<
-		class Range, class = std::enable_if_t<!std::is_base_of<dynamic_array, std::decay_t<Range>>{}>,
+		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(modernize-type-traits) bug in clang-tidy 19.1
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
@@ -381,20 +382,23 @@ struct dynamic_array                                                            
 #endif
 	}
 
-	dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element_type const& elem, allocator_type const& alloc)  // (2)  // NOLINT(readability-redundant-typename)
+	dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element_type const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename)
 	}
 
 	template<class Element>
-	explicit dynamic_array(
+	explicit dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
 		Element const& elem, allocator_type const& alloc,
 		std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
 	)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
-	constexpr dynamic_array(typename dynamic_array::extensions_type exts, typename dynamic_array::element_type const& elem)  // NOLINT(readability-redundant-typename)
+	// NOLINT(readability-redundant-typename)
+	constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
+		typename dynamic_array::extensions_type exts, typename dynamic_array::element_type const& elem
+	)
 	: array_alloc{},
 	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
 		  exts,
@@ -424,6 +428,11 @@ struct dynamic_array                                                            
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
+	}
+
+	template<class... Args>
+	static auto from_extensions(Args... exts) {
+		return dynamic_array(::boost::multi::extensions_t<D>(exts...));
 	}
 
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& exts)
@@ -1250,6 +1259,11 @@ struct array : dynamic_array<T, D, Alloc> {
 	  } {
 	}
 
+#ifdef __CLING__
+	explicit array(std::tuple<long, long> const& exts) 
+	: array(std::apply([](auto... sizes) { return typename array::extensions_type{sizes...}; }, exts)) {}
+#endif
+
 	template<
 		class OtherT,
 		class = std::enable_if_t<std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
@@ -1680,4 +1694,4 @@ struct version<boost::multi::array<T, D, A>> {
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_ARRAY_HPP_
+#endif  // BOOST_MULTI_ARRAY_HPP
