@@ -10,7 +10,8 @@ namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 
-	multi::inplace_array<int[4][4]> a2d = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	multi::inplace_array<int[4][4]> a2d = {
 		{1, 2},
 		{3, 4}
 	};
