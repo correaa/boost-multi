@@ -18,9 +18,9 @@ class ncnm {
 	ncnm(ncnm const&) = delete;
 	ncnm(ncnm&&)      = delete;
 	explicit ncnm(int val) : val_{val} {}
-	~ncnm() = default;
-    auto operator=(ncnm const&) = delete;
-    auto operator=(ncnm&&) = delete;
+	~ncnm()                     = default;
+	auto operator=(ncnm const&) = delete;
+	auto operator=(ncnm&&)      = delete;
 
 	int val() const { return val_; }
 };
@@ -50,11 +50,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2d_ref[1][1].val() == 3 );
 	}
 	{
-		multi::array<int, 2> arr2d_res1 = [](auto ii, auto jj) { return ii * 2 + jj; } ^ multi::extensions_t{2, 2};
+		multi::array<int, 2> arr2d_res1 = [](auto ii, auto jj) { return static_cast<int>((ii * 2) + jj); } ^ multi::extensions_t{2, 2};
 		// multi::array<int, 2> arr2d_res2 = [rr = rando{}](auto, auto) mutable { return static_cast<int>(rr); } ^ multi::extensions_t<2>({2, 2});
 
 		// std::cout << arr2d_res1 << std::endl;
 		// std::cout << arr2d_res2 << std::endl;
+
+		BOOST_TEST( arr2d_res1[1][1] == 3 );
+	}
+	{
+		multi::array arr2d_res1 = [](auto ii, auto jj) { return (ii * 2) + jj; } ^ multi::extensions_t{2, 2};
 
 		BOOST_TEST( arr2d_res1[1][1] == 3 );
 	}
