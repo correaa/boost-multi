@@ -679,7 +679,7 @@ a1d = multi.array['double', 1](4, 0.0)
 a1d = multi.array['double', 1]([1.0, 2.0, 3.0, 4.0])
 print(a1d)
 ```
-> ```python
+> ```
 > { 1.0000000, 2.0000000, 3.0000000, 4.0000000 }
 > ```
 ```python
@@ -687,7 +687,7 @@ print(a1d)
 a1d[2] = 99.9
 print(a1d)
 ```
-> ```python
+> ```
 > { 1.0000000, 2.0000000, 99.900000, 4.0000000 }
 > ```
 ```python
@@ -698,7 +698,7 @@ a2d = multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])
 # We can retrive information from an individual element, or from a row
 print(a2d.transposed()[0])
 ```
-> ```python
+> ```
 > { 1.0000000, 3.0000000 }
 > ```
 ```python
@@ -709,7 +709,7 @@ print(arow)
 arow[0] = 66.6
 print(a2d[0])
 ```
-> ```python
+> ```
 > { 66.600000, 2.0000000 }
 > ```
 ```python
@@ -717,18 +717,18 @@ arow_copy = + a2d[0]
 arow_copy = 11111.1
 print(a2d[0])
 ```
-> ```python
+> ```
 > { 66.600000, 2.0000000 }
 > ```
 
-Take into account that assignment in Python differs from that of C++.
+Take into account that assignment in Python differs semantically from that of C++.
 This can be particularly confusing when assigning elements from a list.
 
 ```python
 a2d = multi.array['double', 2]();  # empty 2D array
 print(type(a2d))
 ```
-> ```python
+> ```
 > <class cppyy.gbl.boost.multi.array<double,2,std::allocator<double>> at 0xa133120>
 > ```
 
@@ -736,7 +736,7 @@ print(type(a2d))
 a2d = [[1.0, 2.0],[3.0, 4.0]];  # this is now a Python list
 print(type(a2d))
 ```
-> ```python
+> ```
 > <class 'list'>
 > ```
 
@@ -747,30 +747,31 @@ To reassign the elements without changing the type, use `.assign` instead:
 a2d.assign([[1.0, 2.0],[3.0, 4.0]])
 ```
 
-An array that uses contiguous memory can be converted into a Numpy array, without making copies
+Pointers from arrays can be extracted normally and reused in other libraries, to access the elements throug other Python libraries;
+for example, an array that uses contiguous memory can be converted into a Numpy array, without making copies
 
 ```python
 npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
 print(npa2d)
 ```
-> ```python
+> ```
 > [[1. 2.]
 >  [4. 5.]]
 > ```
 
-To complete the round trip, the other way around,
+The other way around,
 ```python
 a2d_ref = multi.array_ref['double', 2](multi.extensions_t[2](*npa2d.shape), npa2d)
 print(a2d_ref)
-
-> ```python
+```
+> ```
 > {
 >         {1, 2},
 >         {4, 999.9}, 
 > }
 > ```
 
-Note that the elements fpr these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory, so modifying one, nodifies the rest.
+Note that the elements fpr these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory; so modifying one, also nodifies the rest.
 Special care must be taken if the original element is resized, or assigned to a different Python object, in which case the memory will not be valid.
 For this reason alone, it would be an error to name the last variable as the original (`a2d`) instead of the new name (`a2d_ref`).
 

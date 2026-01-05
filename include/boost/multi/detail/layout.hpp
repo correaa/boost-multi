@@ -115,6 +115,9 @@ constexpr auto tuple_tail(Tuple&& t)  // NOLINT(readability-identifier-length) s
 template<dimensionality_type D>
 struct extensions_t;
 
+template<dimensionality_type D>
+using sizes_t = typename extensions_t<D>::sizes_type;
+
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
 namespace detail {
@@ -910,6 +913,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
+
+	using sizes_type = boost::multi::detail::tuple_prepend_t<size_type, typename extensions_t<D - 1>::sizes_type>;
 
  private:
 	template<class Archive, std::size_t... I>
