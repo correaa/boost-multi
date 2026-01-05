@@ -90,18 +90,9 @@ struct apply_bind_t<F, A, B> {
 
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
-	auto xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
-	// if constexpr(std::decay_t<A>::dimensionality > 1) {
-	// 	using std::get;
-	// 	std::cout << "exts: " << get<1>(arr.extensions()).size() << " vs ";
-	// 	((std::cout << get<1>(arrs.extensions()).size() << " "), ...);
-	// 	std::cout << '\n';
-	// 	std::cout << std::flush;
-	// }
+	auto const xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extensions()) && ...));
-	// std::cout << ... << arrs.extensions() << '\n';
 	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
-	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
 template<class T>
@@ -110,7 +101,7 @@ class identity_bind {
 
  public:
 	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}                         // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
@@ -209,7 +200,7 @@ class exp_bind_t {
 
  public:
 	template<class AA, std::enable_if_t<!std::is_base_of_v<exp_bind_t, std::decay_t<AA>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}       // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
@@ -226,8 +217,8 @@ BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
-template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T, 1, 16>(il)); }
-template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::inplace_array<T, 2, 16>(il)); }
+// template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T[16]>(il)); }
+// template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::inplace_array<T[4][4]>(il)); }
 
 template<class A>
 struct abs_bind_t {
