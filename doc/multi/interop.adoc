@@ -721,7 +721,7 @@ print(a2d[0])
 > { 66.600000, 2.0000000 }
 > ```
 
-Take into account that assignment in Python differs from that of C++.
+Take into account that assignment in Python differs semantically from that of C++.
 This can be particularly confusing when assigning elements from a list.
 
 ```python
@@ -747,7 +747,8 @@ To reassign the elements without changing the type, use `.assign` instead:
 a2d.assign([[1.0, 2.0],[3.0, 4.0]])
 ```
 
-An array that uses contiguous memory can be converted into a Numpy array, without making copies
+Pointers from arrays can be extracted normally and reused in other libraries, to access the elements throug other Python libraries;
+for example, an array that uses contiguous memory can be converted into a Numpy array, without making copies
 
 ```python
 npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
@@ -758,7 +759,7 @@ print(npa2d)
 >  [4. 5.]]
 > ```
 
-To complete the round trip, the other way around,
+The other way around,
 ```python
 a2d_ref = multi.array_ref['double', 2](multi.extensions_t[2](*npa2d.shape), npa2d)
 print(a2d_ref)
