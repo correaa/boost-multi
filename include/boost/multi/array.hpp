@@ -22,7 +22,7 @@
 #if __has_include(<memory_resource>)
 #include <memory_resource>
 // Apple clang provides the header but not the compiled library prior to version 16
-#if(defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001))
+#if defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001))
 #define BOOST_MULTI_HAS_MEMORY_RESOURCE
 #endif
 #endif
@@ -1169,22 +1169,22 @@ struct inplace_array_impl<T[N1][N2][N3]> {  // NOLINT(cppcoreguidelines-avoid-c-
 };
 
 template<class T>
-struct inplace_array_impl<T[]> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+struct inplace_array_impl<T[]> {                            // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
 	using type = typename inplace_array_impl<T[16]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
 };
 
 template<class T>
-struct inplace_array_impl<T*> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+struct inplace_array_impl<T*> {
 	using type = typename inplace_array_impl<T[16]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
 };
 
 template<class T>
-struct inplace_array_impl<T**> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+struct inplace_array_impl<T**> {
 	using type = typename inplace_array_impl<T[4][4]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
 };
 
 template<class T>
-struct inplace_array_impl<T***> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+struct inplace_array_impl<T***> {
 	using type = typename inplace_array_impl<T[2][2][2]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
 };
 
