@@ -679,7 +679,7 @@ a1d = multi.array['double', 1](4, 0.0)
 a1d = multi.array['double', 1]([1.0, 2.0, 3.0, 4.0])
 print(a1d)
 ```
-> ```python
+> ```
 > { 1.0000000, 2.0000000, 3.0000000, 4.0000000 }
 > ```
 ```python
@@ -687,7 +687,7 @@ print(a1d)
 a1d[2] = 99.9
 print(a1d)
 ```
-> ```python
+> ```
 > { 1.0000000, 2.0000000, 99.900000, 4.0000000 }
 > ```
 ```python
@@ -698,7 +698,7 @@ a2d = multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])
 # We can retrive information from an individual element, or from a row
 print(a2d.transposed()[0])
 ```
-> ```python
+> ```
 > { 1.0000000, 3.0000000 }
 > ```
 ```python
@@ -709,7 +709,7 @@ print(arow)
 arow[0] = 66.6
 print(a2d[0])
 ```
-> ```python
+> ```
 > { 66.600000, 2.0000000 }
 > ```
 ```python
@@ -717,7 +717,7 @@ arow_copy = + a2d[0]
 arow_copy = 11111.1
 print(a2d[0])
 ```
-> ```python
+> ```
 > { 66.600000, 2.0000000 }
 > ```
 
@@ -728,7 +728,7 @@ This can be particularly confusing when assigning elements from a list.
 a2d = multi.array['double', 2]();  # empty 2D array
 print(type(a2d))
 ```
-> ```python
+> ```
 > <class cppyy.gbl.boost.multi.array<double,2,std::allocator<double>> at 0xa133120>
 > ```
 
@@ -736,7 +736,7 @@ print(type(a2d))
 a2d = [[1.0, 2.0],[3.0, 4.0]];  # this is now a Python list
 print(type(a2d))
 ```
-> ```python
+> ```
 > <class 'list'>
 > ```
 
@@ -753,7 +753,7 @@ An array that uses contiguous memory can be converted into a Numpy array, withou
 npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
 print(npa2d)
 ```
-> ```python
+> ```
 > [[1. 2.]
 >  [4. 5.]]
 > ```
@@ -762,8 +762,8 @@ To complete the round trip, the other way around,
 ```python
 a2d_ref = multi.array_ref['double', 2](multi.extensions_t[2](*npa2d.shape), npa2d)
 print(a2d_ref)
-
-> ```python
+```
+> ```
 > {
 >         {1, 2},
 >         {4, 999.9}, 
