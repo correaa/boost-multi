@@ -110,7 +110,7 @@ class identity_bind {
 
  public:
 	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}                         // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
@@ -209,7 +209,7 @@ class exp_bind_t {
 
  public:
 	template<class AA, std::enable_if_t<!std::is_base_of_v<exp_bind_t, std::decay_t<AA>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+	BOOST_MULTI_HD constexpr explicit exp_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}       // NOLINT(bugprone-forwarding-reference-overload)
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
@@ -226,8 +226,8 @@ BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
-template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T, 1, 16>(il)); }
-template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::inplace_array<T, 2, 16>(il)); }
+// template<class T> constexpr auto exp(std::initializer_list<T> il) { return exp(multi::inplace_array<T[16]>(il)); }
+// template<class T> constexpr auto exp(std::initializer_list<std::initializer_list<T>> il) { return exp(multi::inplace_array<T[4][4]>(il)); }
 
 template<class A>
 struct abs_bind_t {

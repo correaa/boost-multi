@@ -22,7 +22,7 @@
 #if __has_include(<memory_resource>)
 #include <memory_resource>
 // Apple clang provides the header but not the compiled library prior to version 16
-#if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001))
+#if(defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) && !(defined(__APPLE__) && defined(__clang_major__) && __clang_major__ <= 15) && (!defined(_LIBCPP_VERSION) || !(_LIBCPP_VERSION <= 160001))
 #define BOOST_MULTI_HAS_MEMORY_RESOURCE
 #endif
 #endif
@@ -311,9 +311,9 @@ struct dynamic_array                                                            
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                                                                 // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T>
-	explicit dynamic_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                        // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T>  //
+		explicit dynamic_array(Range const& rng)                                                                            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array() {
 		if(rng.size() == 0) {
 			return;
@@ -1146,8 +1146,52 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	}
 };
 
-template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL>
-using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+namespace detail {
+
+template<class T>
+struct inplace_array_impl {
+	using type = multi::dynamic_array<T, 0, multi::detail::static_allocator<T, 1>>;
+};
+
+template<class T, std::size_t N1>
+struct inplace_array_impl<T[N1]> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = multi::dynamic_array<T, 1, multi::detail::static_allocator<T, N1>>;
+};
+
+template<class T, std::size_t N1, std::size_t N2>
+struct inplace_array_impl<T[N1][N2]> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = multi::dynamic_array<T, 2, multi::detail::static_allocator<T, (N1 + 1) * N2>>;
+};
+
+template<class T, std::size_t N1, std::size_t N2, std::size_t N3>
+struct inplace_array_impl<T[N1][N2][N3]> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = multi::dynamic_array<T, 3, multi::detail::static_allocator<T, (N1 + 1) * N2 * N3>>;
+};
+
+template<class T>
+struct inplace_array_impl<T[]> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = typename inplace_array_impl<T[16]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+};
+
+template<class T>
+struct inplace_array_impl<T*> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = typename inplace_array_impl<T[16]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+};
+
+template<class T>
+struct inplace_array_impl<T**> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = typename inplace_array_impl<T[4][4]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+};
+
+template<class T>
+struct inplace_array_impl<T***> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+	using type = typename inplace_array_impl<T[2][2][2]>::type;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for notation
+};
+
+}  // namespace detail
+
+template<class T>
+using inplace_array = typename detail::inplace_array_impl<T>::type;
 
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
@@ -1260,7 +1304,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	}
 
 #ifdef __CLING__
-	explicit array(std::tuple<long, long> const& exts) 
+	explicit array(std::tuple<long, long> const& exts)
 	: array(std::apply([](auto... sizes) { return typename array::extensions_type{sizes...}; }, exts)) {}
 #endif
 
