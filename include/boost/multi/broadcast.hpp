@@ -90,18 +90,9 @@ struct apply_bind_t<F, A, B> {
 
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
-	auto xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
-	// if constexpr(std::decay_t<A>::dimensionality > 1) {
-	// 	using std::get;
-	// 	std::cout << "exts: " << get<1>(arr.extensions()).size() << " vs ";
-	// 	((std::cout << get<1>(arrs.extensions()).size() << " "), ...);
-	// 	std::cout << '\n';
-	// 	std::cout << std::flush;
-	// }
+	auto const xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extensions()) && ...));
-	// std::cout << ... << arrs.extensions() << '\n';
 	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
-	//	return [fun = std::forward<F>(fun), &arr, &arrs...](auto... is) { return fun(arr[is...], arrs[is...]...); } ^ arr.extensions();
 }
 
 template<class T>
