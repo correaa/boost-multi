@@ -27,17 +27,17 @@ Instead, the Multi library is dimension-generic and doesn't make any algebraic a
 
 Other frameworks includes the OpenCV (Open Computing Vision) framework, which is too specialized to make a comparison here.
 
-Here is a table comparing with `mdspan`, R. Garcia's link:https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html[Boost.MultiArray] and Eigen. 
+Here is a table comparing with `mdspan`, R. Garcia's link:https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html[Boost.MultiArray] and Eigen.
 link:https://godbolt.org/z/555893MqW[(online)].
 
 |===
-|                                      | Multi                                                                      | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen                                                                           
-                    
-| No external Deps                     | **yes** (only Standard Library C++17)                                      | **yes** (only Standard Library C++17/C++26)                                     | **yes** (only Boost)                                                           | **yes**                                                                                 
+|                                      | Multi                                                                      | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen
+
+| No external Deps                     | **yes** (only Standard Library C++17)                                      | **yes** (only Standard Library C++17/C++26)                                     | **yes** (only Boost)                                                           | **yes**
 | Arbitrary number of dims             | **yes**, via positive dimension (compile-time) parameter `D`               | **yes**                                                                         | **yes**                                                                        | no  (only 1D and 2D)
-| Non-owning view of data              | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`              | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)` 
-| Compile-time dim size                | no                                                                         | **yes**, via template parameters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>`
-| Array values (owning data)           | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`                       | yes? (planned for `mdarray`)                                                    | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])`         | **yes**, via `Eigen::Array<T>(n1, n2)` 
+| Non-owning view of data              | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`              | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)`
+| Compile-time dim size                | no                                                                         | **yes**, via template parameters `mdspan{T*, extent<16, dynamic_extents>+{32}+ }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>`
+| Array values (owning data)           | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`                       | yes? (planned for `mdarray`)                                                    | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])`         | **yes**, via `Eigen::Array<T>(n1, n2)`
 | Value semantic (Regular)             | **yes**, via cctor, mctor, assign, massign, auto decay of views            | yes? (planned for `mdarray`)                                                    | partial, assigment on equal extensions                                         | **yes** (?)
 | Move semantic                        | **yes**, via mctor and massign                                             | yes? for `mdarray` (depends on adapted container)                               | no (C++98 library)                                                             | **yes** (?)
 | const-propagation semantics          | **yes**, via `const` or `const&`                                           | no, const mdspan elements are assignable!                                       | no, inconsistent                                                               | (?)
@@ -60,7 +60,7 @@ link:https://godbolt.org/z/555893MqW[(online)].
 | Arbitrary layout                     | no                                                                         | **yes**, possibly inefficient, no efficient slicing                             | no                                                                             | no
 | Flattening of elements               | **yes**, via `A.elements()` range (efficient representation)               | **yes**, but via indices roundtrip (inefficient)                                | no, only for allocated arrays                                                  | no, not for subblocks (?)
 | Iterators                            | **yes**, standard compliant, random-access-iterator                        | no                                                                              | **yes**, limited                                                               | no
-| Multidimensional iterators (cursors) | **yes** (experimental)                                                     | no                                                                              | no                                                                             | no         
+| Multidimensional iterators (cursors) | **yes** (experimental)                                                     | no                                                                              | no                                                                             | no
 | STL algorithms or Ranges             | **yes**                                                                    | no, limited via `std::cartesian_product`                                        | **yes**, some do not work                                                      | no
 | Compatibility with Boost             | **yes**, serialization, interprocess  (see below)                          | no                                                                              | no                                                                             | no
 | Compatibility with Thrust or GPUs    | **yes**, via flatten views (loop fusion), thrust-pointers/-refs            | no                                                                              | no                                                                             | no
@@ -89,14 +89,14 @@ Like in FORTRAN, arrays are not initialized automatically for simple types (e.g.
 In the more general case for the dimensionality, we have the following correspondence:
 
 |===
-|                              | FORTRAN                                          | C++ Multi                                            
+|                              | FORTRAN                                          | C++ Multi
 
-| Construction 2D (3 by 3)     | `real*8 :: A2D(3,3)` (at top)                    | `multi::array<double, 2> A2D({3, 3});` (at scope)    
-| Construction 2D (2 by 2)     | `real*8 :: B2D(2,2)` (at top)                    | `multi::array<double, 2> B2D({2, 2});` (at scope)    
-| Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 2> v1D({3});` (at scope)       
-| Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`                             
-| Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`                            
-| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`               
+| Construction 2D (3 by 3)     | `real*8 :: A2D(3,3)` (at top)                    | `multi::array<double, 2> A2D({3, 3});` (at scope)
+| Construction 2D (2 by 2)     | `real*8 :: B2D(2,2)` (at top)                    | `multi::array<double, 2> B2D({2, 2});` (at scope)
+| Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 2> v1D(+{3}+);` (at scope)
+| Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`
+| Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`
+| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`
 |===
 
 Note that these correspondences are notationally logical;

@@ -122,10 +122,10 @@ Both values are assignable, have the same element access patterns and iterator i
 
 They differ conceptually in their resizing operations: `multi::array<T, 1>` doesn't insert or push elements and resizing works differently.
 The difference is that the library doesn't implement *amortized* allocations; therefore, these operations would be of a higher complexity cost than the `std::vector`.
-For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `multi::array`, whose primary utility is for element preservation when necessary.
+For this reason, `resize(new_size)` is replaced with `reextent(+{new_size}+)` in `multi::array`, whose primary utility is for element preservation when necessary.
 
 In a departure from standard containers, elements are left initialized if they have trivial constructor.
-So, while `multi::array<T, 1> A({N}, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
+So, while `multi::array<T, 1> A(+{N}+, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
 RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
 
 With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
