@@ -23,12 +23,13 @@ int main() {
     };
 
     assert(A.size() == 2);                    // the array has 2 rows
-    assert(A.size() == A.end() - A.begin());  // interators to rows
+    assert(A.size() == A.end() - A.begin());  // iterators to rows
 
     assert(A[1][1] == 5);  // element access through indexing
+    A[1][1] = 55;          // element modified
 
     assert(A.elements().size() == 2 * 3);  // array has 6 elements
-    assert(A.elements()[4] == 5);          // elements gives "flat" sequences
+    assert(A.elements()[4] == 55);          // elements gives "flat" sequences
 
     using multi::_;  // wildcard
 
