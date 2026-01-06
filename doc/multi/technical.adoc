@@ -40,7 +40,8 @@ std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
-Since C++23, (or when `__cpp_multitdimensional_subscript` is defined), element access supports multidimensional subscript operators: `A[i, j]` is equivalent to `A[i][j]`, `A[i, j, k]` is equivalent to `A[i][j][k]`, etc. for indices `i` , `j`, `k`, ... .
+Since C++23 (when the `__cpp_multitdimensional_subscript` is available), element access supports multidimensional subscript notation.
+In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
 ## Iteration past-end in the abstract machine
 
