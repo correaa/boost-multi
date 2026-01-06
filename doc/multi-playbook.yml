@@ -1,5 +1,5 @@
 site:
-  title: Boost.multi
+  title: Boost.Multi
   start_page: multi::index.adoc
 content:
   sources:
