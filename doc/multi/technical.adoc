@@ -30,7 +30,7 @@ For this reason, `A(i, j, k)`, `A(i, j)(k)`, `A(i)(j)(k)`, `A[i](j)[k]` are exam
 
 (Since C++23, the library also accepts multidimensional subscript notation `A[i, j, k]`)
 
-Sub-block notation, when at least one argument is an index range, e.g., `A({i0, i1}, j, k)` has no equivalent square-bracket notation.
+Sub-block notation, when at least one argument is an index range, e.g., `A({i0, i1}, j, k)` has no equivalent with individual square-bracket notation.
 Note also that `A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; their resulting sublocks have different dimensionality.
 
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
@@ -39,6 +39,9 @@ Additionally, array coordinates can be directly stored in tuple-like data struct
 std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
+
+Since C++23 (when the `__cpp_multitdimensional_subscript` is available), element access supports multidimensional subscript notation.
+In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
 ## Iteration past-end in the abstract machine
 
