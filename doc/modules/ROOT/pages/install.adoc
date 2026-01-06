@@ -7,47 +7,59 @@
 Before using the library, you can try it https://godbolt.org/z/dvacqK8jE[online].
 
 _Multi_ has no external dependencies and can be used immediately after downloading.
-```bash
+
+[source,bash]
+----
 git clone https://gitlab.com/correaa/boost-multi.git
-```
+----
 
 _Multi_ doesn't require installation since a single header is enough to use the entire core library;
-```c++
+
+[source,c++]
+----
 #include <multi/array.hpp>
 
 int main() { ... }
-```
+----
 
 The library can still be installed with CMake.
 The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
-```bash
+
+[source,bash]
+----
 cd boost-multi
 mkdir -p build && cd build
 cmake . -B ./build  # --install-prefix=$HOME/.local
 cmake --install ./build  # or sudo ...
-```
+----
 
 _Testing_ the library requires Boost.Core (headers), installed for example, via
 `sudo apt install cmake git g{plus}{plus} libboost-test-dev make`
 or `sudo dnf install boost-devel cmake gcc-c{plus}{plus} git`.
 A CMake build system is provided to compile and run basic tests.
-```bash
+
+[source,bash]
+----
 ctest -C ./build
-```
+----
 
 Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
-```cmake
+
+[source,cmake]
+----
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi
-```
+----
 
 Alternatively to the library can be fetched on demand:
-```cmake
+
+[source,cmake]
+----
 include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
 FetchContent_MakeAvailable(multi)
 ...
 target_link_libraries(my_target PUBLIC multi)
-```
+----
 
 The code requires any modern https://godbolt.org/z/hxEYGYEWc[C\++ compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard C\++17 support;
 for reference, (at least) any of:
