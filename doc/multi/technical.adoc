@@ -40,6 +40,8 @@ std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
+Since C++23, (or when `__cpp_multitdimensional_subscript` is defined), element access supports multidimensional subscript operators: `A[i, j]` is equivalent to `A[i][j]`, `A[i, j, k]` is equivalent to `A[i][j][k]`, etc. for indices `i` , `j`, `k`, ... .
+
 ## Iteration past-end in the abstract machine
 
 It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory.
