@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <array>
-#include <new>
+#include <new>  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
