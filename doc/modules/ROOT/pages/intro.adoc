@@ -1,6 +1,10 @@
 [#intro]
 
-= Introduction
+= Boost.Multi
+
+Alfredo A. Correa (last modified: {docdatetime})
+
+== Introduction
 
 :idprefix: intro_
 

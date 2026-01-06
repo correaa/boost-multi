@@ -4,7 +4,8 @@
 
 :idprefix: appendix_
 
-# Appendix: Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
+[#appendix_comparison]
+== Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
 
 The C++23 standard provides `std::mdspan`, a non-owning _multidimensional_ array.
 So here is an appropriate point to compare the two libraries.
@@ -66,7 +67,8 @@ link:https://godbolt.org/z/555893MqW[(online)].
 | Used in production                   | link:https://qmcpack.org/[QMCPACK], link:https://gitlab.com/npneq/inq[INQ] | (?) , experience from Kokkos incarnation                                        | **yes** (?)                                                                    | link:https://eigen.tuxfamily.org/index.php?title=Main_Page#Projects_using_Eigen[**yes**]
 |===
 
-# Appendix: Multi for FORTRAN programmers
+[#appendix_fortran]
+== Multi for FORTRAN programmers
 
 This section summarizes simple cases translated from FORTRAN syntax to C++ using the library.
 The library strives to give a familiar feeling to those who use multidimensional arrays in FORTRAN.
