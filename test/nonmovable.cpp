@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <array>
+#include <new>
 
 namespace multi = boost::multi;
 
@@ -62,6 +63,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array arr2d_res1 = [](auto ii, auto jj) { return (ii * 2) + jj; } ^ multi::extensions_t{2, 2};
 
 		BOOST_TEST( arr2d_res1[1][1] == 3 );
+
+#ifdef __cpp_multitdimensional_subscrip
+		BOOST_TEST( arr2d_res1[1, 1] == 3 );
+#endif
 	}
 
 	return boost::report_errors();
