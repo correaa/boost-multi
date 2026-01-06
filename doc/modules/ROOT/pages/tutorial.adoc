@@ -270,7 +270,7 @@ A = multi::array<int, 2>({4, 4}, 99)  // for initialization with specific value 
 A = {};  // empties the array, equivalent to `A.reextent({0, 0});`.
 ```
 
-Subarrays or views cannot change their size or be emptied (e.g., `A[1].rextent({4})` or `A[1].clear()` will not compile).
+Subarrays or views cannot change their size or be emptied (e.g., `A[1].rextent(+{4}+)` or `A[1].clear()` will not compile).
 For the same reason, subarrays cannot be assigned from an array or another subarray of different size.
 
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
