@@ -53,7 +53,7 @@ Most of the time, arguments should be passed through generic parameters to also 
 The most useful functions work on the _concept_ of an array rather than on a concrete type, for example:
 
 ```cpp
-template<class ArrayDouble2D>  // instead of the overspecific argument std::array<double, 2>
+template<class ArrayDouble2D>  // instead of the overspecific argument multi::array<double, 2>
 auto element_1_1(ArrayDouble2D const& m) -> double const& { return m[1][1]; }
 ...
 assert( &element_1_1(A) == &A[1][1] );
