@@ -1,0 +1,6 @@
+name: multi
+version: ~
+title: Boost.Multi
+nav:
+  - modules/ROOT/nav.adoc
+start_page: intro.adoc
