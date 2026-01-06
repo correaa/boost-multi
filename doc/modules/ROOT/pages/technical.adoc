@@ -4,7 +4,8 @@
 
 :idprefix: technical_
 
-## Indexing (square brackets vs. parenthesis?)
+[#technical_indexing]
+== Indexing (square brackets vs. parenthesis?)
 
 The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
 It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.
@@ -14,14 +15,17 @@ It turns out that modern compilers with a fair level of optimization (`-O2`) can
 In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
 As a result, these two loops lead to the link:https://godbolt.org/z/eEWWq34Yc[same machine code]:
 
-```cpp
+[source,cpp]
+----
 	// given the values of i and k and accumulating variable acc ...
     for(long j = 0; j != M; ++j) {acc += A[i][j][k];}
-```
-```cpp
+----
+
+[source,cpp]
+----
     auto* base = A.base() + i*std::get<0>(A.strides()) + k*std::get<2>(A.strides());
     for(long j = 0; j != M; ++j) {acc += *(base + j*std::get<1>(A.strides()));}
-```
+----
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access;
 it does so as part of a more general syntax to generate sub-blocks.
@@ -35,15 +39,17 @@ Note also that `A({i0, i1}, j, k)` is not equivalent to `A({i0, i1})(j, k)`; the
 
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
-```cpp
+[source,cpp]
+----
 std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
-```
+----
 
 Since C++23 (when the `__cpp_multitdimensional_subscript` is available), element access supports multidimensional subscript notation.
 In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
-## Iteration past-end in the abstract machine
+[#technical_iteration]
+== Iteration past-end in the abstract machine
 
 It's crucial to grasp that pointers are limited to referencing valid memory in the strict C abstract machine, such as allocated memory.
 This understanding is key to avoiding undefined behavior in your code.
