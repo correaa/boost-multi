@@ -33,7 +33,7 @@ The value of an array can be copied, (moved,) and compared;
 copies are equal but independent (disjoint).
 
 ```cpp
-std::array<double, 2> B = A;                   // we make a copy
+multi::array<double, 2> B = A;                   // we make a copy
 
 assert(  B              ==  A              );  // copies are equal
 assert(  B.extensions() ==  A.extensions() );  // extensions (sizes) are equal
