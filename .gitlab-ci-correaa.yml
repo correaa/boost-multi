@@ -1309,16 +1309,17 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - npm -i -q @antora/cli @antora/site-generator
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
-    - cd doc
+    - cd doc_back
     # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
     # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
     - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
     - cd ..
-    - cp -r doc/multi.html .public
+    - cp -r doc_back/multi.html .public
     # - cp -r doc/multi.adoc .public
     - python3 -m venv .venv
     - source .venv/bin/activate
