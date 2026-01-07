@@ -22,29 +22,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby (for Asciidoctor)
-        uses: ruby/setup-ruby@v1
+      - name: Set up Node.js (for Antora)
+        uses: actions/setup-node@v4
         with:
-          ruby-version: '3.2'
+          node-version: '20'
 
-      - name: Install Asciidoctor
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+      - name: Install Antora
+        run: npm i -g @antora/cli @antora/site-generator
 
-      - name: Install Boost Build (b2)
-        run: |
-          pandoc --version
-          asciidoctor --version
+      - name: Verify Antora installation
+        run: antora --version
 
-      - name: Build Docs with b2
+      - name: Build Docs with Antora
         run: |
-          mkdir .public
           cd doc
-          asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
+          ./build_antora.sh
           cd ..
-          cp -r doc/multi.html .public
-          # cp -r doc/multi.html .public/index.html
+
+      - name: Prepare artifact for GitHub Pages
+        run: cp -r doc/html .public
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
