@@ -36,6 +36,7 @@ jobs:
       - name: Build Docs with Antora
         run: |
           cd doc
+          chmod +x antora_docs.sh
           ./antora_docs.sh
           cd ..
 
