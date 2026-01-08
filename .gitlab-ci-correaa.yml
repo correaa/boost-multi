@@ -1313,6 +1313,7 @@ pages:
     - npm i -q @antora/cli @antora/site-generator
     # - antora --version
     - cd doc
+    - chmod +x build_antora.sh
     - ./build_antora.sh
     - cd ..
     - cp -r doc/html .public
