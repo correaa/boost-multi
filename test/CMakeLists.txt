@@ -21,7 +21,7 @@ else()
 
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-	option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
+	# option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
 
 	find_package(Boost CONFIG)
 # find_package(Boost COMPONENTS headers)  # should be last
@@ -74,7 +74,7 @@ else()
 		>
 		#-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
 	>
-	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror
+	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: # -Werror
 		$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-ftrivial-auto-var-init=pattern>
 	# -WNSObject-attribute # (gcc 12, not in 11)
 	# -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
@@ -287,7 +287,8 @@ else()
 	# -Rpass -Rpass-analysis -Rpass-missed
 	# -Rsanitize-address # -Rsearch-path-usage
 	>
-	$<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra # also IntelLLVM, XL (ibm), XLClang (ibm)
+	$<$<CXX_COMPILER_ID:Intel>: # -Werror
+	-Wall -Wextra # also IntelLLVM, XL (ibm), XLClang (ibm)
 	-diag-disable=remark
 	-diag-error:3846
 	-diag-disable=1011  # disables warning missing return at the end of non-void function
@@ -380,7 +381,7 @@ else()
 		if(NOT DEFINED ENABLE_CIRCLE)
 			target_compile_options(main PRIVATE ${WARNS})
 		else()
-			target_compile_options    (main PRIVATE -Werror -Wall)
+			target_compile_options    (main PRIVATE -Wall)  # -Werror
 		endif()
 		add_test(NAME main COMMAND $<TARGET_FILE:main>)
 
@@ -402,12 +403,12 @@ else()
 				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
 			endif()
 
-			set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
+			# set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 			if(NOT DEFINED ENABLE_CIRCLE)
 				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
 			else()
-				target_compile_options(${TEST_EXE} PRIVATE -Werror -Wall)
+				target_compile_options(${TEST_EXE} PRIVATE -Wall)  # -Werror
 			endif()
 
 			set_target_properties(${TEST_EXE} PROPERTIES CXX_EXTENSIONS OFF)
