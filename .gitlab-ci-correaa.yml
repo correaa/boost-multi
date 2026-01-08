@@ -1310,7 +1310,7 @@ pages:
     - docker
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv
-    - npm -i -q @antora/cli @antora/site-generator
+    - npm i -q @antora/cli @antora/site-generator
     - pandoc --version
     - asciidoctor --version
     - mkdir .public
