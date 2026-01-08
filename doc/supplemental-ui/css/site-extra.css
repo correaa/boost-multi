@@ -30,8 +30,8 @@ aside.toc.sidebar {
 pre.highlight code.language-c\+\+ {
     background-color: #1e1e2e !important;
     border: 1px solid #313244 !important;
-    border-radius: 8px !important;
-    padding: 1.25rem !important;
+    border-radius: 4px !important;
+    padding: 0.5rem !important;
     overflow-x: auto !important;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
     font-size: 0.9rem !important;
