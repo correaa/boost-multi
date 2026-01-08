@@ -2,8 +2,8 @@
    TOC SIDEBAR - Push to right edge
    ======================================== */
 aside.toc.sidebar {
-    margin-left: auto;
-    margin-right: 0;
+    margin-left: 0;
+    margin-right: auto;
 }
 
 /* ========================================
@@ -11,13 +11,40 @@ aside.toc.sidebar {
    ======================================== */
 @media screen and (min-width: 1024px) {
     article.doc {
-        max-width: none;
+        max-width: 1400px;
         flex-grow: 1;
     }
 
     /* Alternative: if the parent uses grid */
     .body {
         grid-template-columns: auto 1fr auto;
+    }
+
+    .toolbar .breadcrumbs {
+        max-width: 1510px;
+        flex-grow: 1;
+    }
+
+    /* Navbar content alignment */
+    /* Align navbar contents with content while keeping navbar full-width */
+    nav.navbar {
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Constrain navbar-brand specifically */
+    .navbar-brand {
+        max-width: calc((100vw) / 2);
+        width: 100%;
+        margin-left: 0;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Set a specific width for the search input */
+    #search-input {
+        width: 400px;
     }
 }
 
@@ -30,8 +57,8 @@ aside.toc.sidebar {
 pre.highlight code.language-c\+\+ {
     background-color: #1e1e2e !important;
     border: 1px solid #313244 !important;
-    border-radius: 8px !important;
-    padding: 1.25rem !important;
+    border-radius: 4px !important;
+    padding: 0.5rem !important;
     overflow-x: auto !important;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
     font-size: 0.9rem !important;
