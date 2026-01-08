@@ -693,10 +693,8 @@ When saving arrays to files, please consider using serialization (see section) i
 [#interop_python]
 == Python (cppyy)
 
-There is no special code to interoperate with Python;
-however the memory layout is compatible with Numpy and pybind11 binding with zero-copy.
-
-Furthermore, the library works out-of-the-box via de automatic `cppyy` bindings, providing a syntax similar to that of C++.
+The library works out-of-the-box via de automatic `cppyy` bindings, providing a syntax similar to that of C++.
+Additionally, the memory layouts are compatible with Numpy which makes possible to interoperate C++ and python code without memory copies.
 
 Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
 
