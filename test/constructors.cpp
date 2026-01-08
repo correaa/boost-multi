@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+#include <boost/multi/io.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -227,6 +228,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
 		// std::vector<decltype(AA[0])> vv(3, AA[0]);
 	}
+	{
+		using arri1d = multi::array<int, 1> const;
 
+		// #ifdef __clang__
+		// #pragma clang diagnostic push
+		// #pragma clang diagnostic ignored "-Wbraced-scalar-init"
+		// #endif
+
+		// clang-format off
+		// arri1d A1({3}, {11});    BOOST_TEST((A1 == arri1d{11, 11, 11} && A1.size() == 3));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		// arri1d A2{{3}, {11}};    BOOST_TEST((A2 == arri1d{3, 11}      && A2.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		// arri1d A3 = {{3}, {11}}; BOOST_TEST((A3 == arri1d{3, 11}      && A3.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		arri1d A4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
+		// arri1d A5{{3}, 11};      BOOST_TEST((A5 == arri1d{3, 11}      && A5.size() == 2));  // ok  , clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		// arri1d A6 = {{3}, 11};   BOOST_TEST((A6 == arri1d{3, 11}      && A6.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		arri1d A7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
+		arri1d A8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
+		arri1d A9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+
+		arri1d B1(multi::extensions_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
+		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
+
+		multi::array C4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
+		multi::array C7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
+		multi::array C8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
+		multi::array C9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+		// clang-format on
+
+		// #ifdef __clang__
+		// #pragma clang diagnostic pop
+		// #endif
+	}
 	return boost::report_errors();
 }
