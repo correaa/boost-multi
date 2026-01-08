@@ -168,4 +168,4 @@ link:https://godbolt.org/z/77onne46W[(live)]
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
-> **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help integrating the Boost infraestructure to the unit tests.
+> **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help integrating the Boost infraestructure to the unit tests, and for the formatting of the documentation.

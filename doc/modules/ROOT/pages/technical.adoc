@@ -62,7 +62,7 @@ The second case is that or negative strides in general.
 The third case is that of iterators of transposed array.
 
 In all these cases, the `.end()` iterator may point to invalid memory. 
-It's important to note that the act of constructing certain iterators, even if the element is never dereferenced, is undefined in the abstract machine.
+It's important to note that the act of constructing certain iterators, even if the element is never dereferenced, is undefined in the abstract machine.
 This underscores the need for caution when using such operations in your code.
 
 A thorough description of the cases and workaround is beyond the scope of this section.
