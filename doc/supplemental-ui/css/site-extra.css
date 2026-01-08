@@ -23,7 +23,29 @@ aside.toc.sidebar {
     .toolbar .breadcrumbs {
         max-width: 1510px;
         flex-grow: 1;
-    }    /* Navbar content alignment */
+    }
+
+    /* Navbar content alignment */
+    /* Align navbar contents with content while keeping navbar full-width */
+    nav.navbar {
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Constrain navbar-brand specifically */
+    .navbar-brand {
+        max-width: calc((100vw) / 2);
+        width: 100%;
+        margin-left: 0;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Set a specific width for the search input */
+    #search-input {
+        width: 400px;
+    }
 }
 
 /* ========================================
