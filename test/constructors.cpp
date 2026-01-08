@@ -4,7 +4,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/io.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -250,10 +249,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arri1d B1(multi::extensions_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
 		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
 
-		multi::array C4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
-		multi::array C7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
-		multi::array C8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
-		multi::array C9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+		multi::array const C4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
+		multi::array const C7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
+		multi::array const C8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
+		multi::array const C9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
 		// clang-format on
 
 		// #ifdef __clang__
