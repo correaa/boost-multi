@@ -20,8 +20,8 @@ This library offers array containers and subarrays in arbitrary dimensions with 
                            1  i │  j │  k │       1  p │  q │  r │───┤
                            └────┴────┴────┘       └────┴────┴────┘ x │
                                                      └────┴─────┴────┘
- ```
-These depicted 1D, 2D, and 3D arrays containing letters can be represented, with this library, as C++ objects independently declared as
+```
+These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp
 multi::array<char, 1> A1D = {'a', 'b', 'c'};
 multi::array<char, 2> A2D = { {'f', 'g', 'h'}, {'i', 'j', 'k'} };
