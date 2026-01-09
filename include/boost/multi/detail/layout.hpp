@@ -908,7 +908,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class Func>
 	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
 
-	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }
+	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
@@ -1515,7 +1515,7 @@ class contiguous_layout {
 	: /*sub_{sub}, stride_{} offset_{},*/ nelems_{nelems} {}
 
  private:
-	constexpr auto at_aux_(index /*idx*/) const {
+	static constexpr auto at_aux_(index /*idx*/) {
 		return sub_type{};  // sub_.sub_, sub_.stride_, sub_.offset_ + offset_ + (idx*stride_), sub_.nelems_}();
 	}
 
@@ -1527,8 +1527,8 @@ class contiguous_layout {
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const { return at_aux_(idx); }
 	BOOST_MULTI_HD constexpr auto operator()() const { return *this; }
 
-	BOOST_MULTI_HD constexpr auto stride() const { return std::integral_constant<int, 1>{}; }
-	BOOST_MULTI_HD constexpr auto offset() const { return std::integral_constant<int, 0>{}; }
+	static BOOST_MULTI_HD constexpr auto stride() { return std::integral_constant<int, 1>{}; }
+	static BOOST_MULTI_HD constexpr auto offset() { return std::integral_constant<int, 0>{}; }
 	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, nelems_}; }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
@@ -1545,26 +1545,26 @@ class contiguous_layout {
 	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
 	BOOST_MULTI_HD constexpr auto empty() const { return is_empty(); }
 
-	constexpr auto sub() const { return layout_t<0, SSize>{}; }
+	static constexpr auto sub() { return layout_t<0, SSize>{}; }
 
-	constexpr auto is_compact() const { return std::true_type{}; }
+	static constexpr auto is_compact() { return std::true_type{}; }
 
 	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
 		assert(count <= this->size());
 
 		return contiguous_layout{
-			this->sub(),
-			this->stride(),
-			this->offset(),
-			this->stride() * (this->size() - count)
+			/*this->*/sub(),
+			/*this->*/stride(),
+			/*this->*/offset(),
+			/*this->*/stride() * (this->size() - count)
 		};
 	}
 
 	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
 		return contiguous_layout{
-			this->sub(),
-			this->stride(),
-			this->offset(),
+			/*this->*/sub(),
+			/*this->*/stride(),
+			/*this->*/offset(),
 			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
 		};
 	}
@@ -1704,7 +1704,7 @@ struct bilayout {
 	}
 	auto num_elements() const = delete;
 
-	BOOST_MULTI_HD constexpr auto offset() const { return offset_type{}; }
+	BOOST_MULTI_HD static constexpr auto offset() { return offset_type{}; }
 	BOOST_MULTI_HD constexpr auto size() const { return (nelems2_ / stride2_) * (nelems1_ / stride1_); }
 
 	auto nelems() const     = delete;
@@ -2263,8 +2263,8 @@ struct layout_t<0, SSize>
 	[[deprecated("is going to be removed")]]
 	constexpr auto is_compact() const -> bool = delete;
 
-	constexpr auto base_size() const -> size_type { return 0; }
-	constexpr auto origin() const -> offset_type { return 0; }
+	static constexpr auto base_size() -> size_type { return 0; }
+	static constexpr auto origin() -> offset_type { return 0; }
 
 	constexpr auto reverse() const { return *this; }
 	// constexpr auto reverse()          -> layout_t& {return *this;}

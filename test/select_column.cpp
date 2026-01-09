@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -42,14 +42,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::ALL < 2 , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <= multi::ALL     , 2) ) == 3 );
-		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ;
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFals, compareValueOutOfTypeRangeError] ;
 		BOOST_TEST( size( arr( 1 <= multi::ALL < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 		BOOST_TEST( size( arr(      multi::_       , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::_   < 2 , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <= multi::_       , 2) ) == 3 );  // cppcheck-suppress compareBoolExpressionWithInt ;
 
-		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse, compareValueOutOfTypeRangeError] ; library syntax
 		BOOST_TEST( size( arr( 1 <= multi::_   < 3 , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 
 		using multi::_;
@@ -57,7 +57,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr(             _ < 2   , 2) ) == 2 );
 		BOOST_TEST( size( arr( 1 <=        _       , 2) ) == 3 );
 
-		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
+		// cppcheck-suppress [compareBoolExpressionWithInt, knownConditionTrueFalse, compareValueOutOfTypeRangeError] ; library syntax
 		BOOST_TEST( size( arr( 1 <=        _ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
 	}
 
@@ -125,14 +125,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size( arr( 1 <= *_       , 2) ) == 3 );
 		BOOST_TEST( size( arr( 1 <=  U       , 2) ) == 3 );
 
-		// cppcheck-suppress-begin [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
-		BOOST_TEST( size( arr( 1 <=  _ < 3   , 2) ) == 2 );   // NOLINT(bugprone-chained-comparison)
-		BOOST_TEST( size( arr( 1 <= *_ < 3   , 2) ) == 2 );  // NOLINT(bugprone-chained-comparison)
-		BOOST_TEST( size( arr( 1 <=  U < 3   , 2) ) == 2 );   // NOLINT(bugprone-chained-comparison)
-		// cppcheck-suppress-end [compareBoolExpressionWithInt, knownConditionTrueFalse] ; library syntax
+		// NOLINTBEGIN(bugprone-chained-comparison)
+		// cppcheck-suppress-begin [compareBoolExpressionWithInt, knownConditionTrueFalse, compareValueOutOfTypeRangeError] ; library syntax
+		BOOST_TEST( arr( 1 <=  _ < 3   , 2).size() == 2 );
+		BOOST_TEST( arr( 1 <= *_ < 3   , 2).size() == 2 );
+		BOOST_TEST( arr( 1 <=  U < 3   , 2).size() == 2 );
+		// cppcheck-suppress-end [compareBoolExpressionWithInt, knownConditionTrueFalse, compareValueOutOfTypeRangeError] ; library syntax
+		// NOLINTEND(bugprone-chained-comparison)
 
-		BOOST_TEST( size( arr(      *_ < 2   , 2) ) == 2 );
-		BOOST_TEST( size( arr(       U < 2   , 2) ) == 2 );
+		BOOST_TEST( arr(      *_ < 2   , 2).size() == 2 );
+		BOOST_TEST( arr(       U < 2   , 2).size() == 2 );
 	}
 
 	return boost::report_errors();

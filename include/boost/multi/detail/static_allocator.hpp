@@ -117,7 +117,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #pragma warning( pop ) 
 #endif
 
-	void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
+	static void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
 		assert(n <= N);
 	}
 

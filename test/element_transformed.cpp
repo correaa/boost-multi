@@ -298,8 +298,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
-		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		// cppcheck-suppress CastAddressToIntegerAtReturn ;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> int(&)[3] { return carr[idx]; });
+		// ^^^  TODO(correaa) investigate, portability: Returning an address value in a function with integer return type is not portable.
 
 		BOOST_TEST( &indirect_v[1][2] ==  &carr[3][2] );
 		BOOST_TEST(  indirect_v[1][2] ==  320 );
