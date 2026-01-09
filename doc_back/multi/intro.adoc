@@ -11,20 +11,20 @@ This library offers array containers and subarrays in arbitrary dimensions with 
 
 ```
 1D ┌─0──┬─1──┬─2──┐  2D  ┌─0──┬─1──┬─2──┐  3D  ┌─0──┬─1──┬─2──┐      4D, ... ND
-   │  0 │  1 │  2 │     0│  0 │  1 │  2 │     0│  0 │  1 │  2 │2──┐
-   └────┴────┴────┘      ├────┼────┼────┤      ├────┼────┼────┤ 8 │
-                        1│  3 │  4 │  5 │     1│  3 │  4 │  5 │───┤
-                         └────┴────┴────┘      └────┴────┴────┘11 │
+   │  a │  b │  c │      0  f │  g │  h │      0  m │  n │  o │2──┐
+   └────┴────┴────┘      ├────┼────┼────┤      ├────┼────┼────┤ u │
+                         1  i │  j │  k │      1  p │  q │  r │───┤
+                         └────┴────┴────┘      └────┴────┴────┘ x │
                                                   └────┴─────┴────┘
 ```
-These depicted 1D, 2D, and 3D arrays can be represented by objects declared as 
+These depicted 1D, 2D, and 3D arrays with can be represented by objects idependently declared as 
 ```cpp
-multi::array<int, 1> A1D = ...;
-multi::array<int, 2> A2D = ...;
-multi::array<int, 3> A3D = ...;
+multi::array<char, 1> A1D = ...;
+multi::array<char, 2> A2D = ...;
+multi::array<char, 3> A3D = ...;
 ```
-and the elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 1`, `A2D[1][0] == 3` and `A3D[1][0][2] == 7`
-(note that the 3D case has two planes, the first index selects the plane.)
+and the elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 'b'`, `A2D[1][0] == 'i'` and `A3D[1][0][2] == 'u'`
+Note that the depicted 3D case has only two planes, the first index `0` or `1` selects the plane `top` or `bottom`.)
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
 The internal data structure layout (when mapped to computer memory) is stride-based, which makes it compatible with low-level C libraries.
