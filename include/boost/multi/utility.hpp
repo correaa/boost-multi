@@ -660,10 +660,10 @@ constexpr auto layout(std::array<T, N> const& arr) {
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
 	return multi::layout_t<1>{
-			{},
-			1,
-			0,
-			static_cast<multi::size_t>(il.size())
+		{},
+		1,
+		0,
+		static_cast<multi::size_t>(il.size())
 	};
 }
 
