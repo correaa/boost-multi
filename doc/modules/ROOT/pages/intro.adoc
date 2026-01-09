@@ -11,16 +11,16 @@ Alfredo A. Correa (last modified: {docdatetime})
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and, in combination with GPUs, to Artificial Intelligence and Machine Learning.
-This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
+This library offers array containers and subarrays in arbitrary dimensions with well-behaved  value semantics,
 
 ```
-1D ┌─0──┬─1──┬─2──┐  2D  ┌─0──┬─1──┬─2──┐  3D  ┌─0──┬─1──┬─2──┐      4D, ... ND
-   │  a │  b │  c │      0  f │  g │  h │      0  m │  n │  o │2──┐
-   └────┴────┴────┘      ├────┼────┼────┤      ├────┼────┼────┤ u │
-                         1  i │  j │  k │      1  p │  q │  r │───┤
-                         └────┴────┴────┘      └────┴────┴────┘ x │
-                                                  └────┴─────┴────┘
-```
+ 1D ┌─0──┬─1──┬─2──┐   2D  ┌─0──┬─1──┬─2──┐   3D  ┌─0──┬─1──┬─2──┐       4D, ... ND
+    │  a │  b │  c │       0  f │  g │  h │       0  m │  n │  o │2──┐
+    └────┴────┴────┘       ├────┼────┼────┤       ├────┼────┼────┤ u │
+                           1  i │  j │  k │       1  p │  q │  r │───┤
+                           └────┴────┴────┘       └────┴────┴────┘ x │
+                                                     └────┴─────┴────┘
+ ```
 These depicted 1D, 2D, and 3D arrays containing letters can be represented, with this library, as C++ objects independently declared as
 ```cpp
 multi::array<char, 1> A1D = {'a', 'b', 'c'};
