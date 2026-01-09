@@ -67,12 +67,12 @@ template<class T> class randomizer<std::complex<T>> {
 };
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	fftw::environment const env;
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_identity_2) {  //, *boost::unit_test::tolerance(0.0001)) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_identity_2)
+	{  //, *boost::unit_test::tolerance(0.0001)) {
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -86,18 +86,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<complex, 2> out(extensions(in));
 
-		multi::fftw::dft_forward({
-									 {false, false}
-        },
-								 in, out);  // out = in;
+		// clang-format off
+		multi::fftw::dft_forward({{false, false}}, in, out);  // out = in;
+		// clang-format on
 
-		BOOST_TEST( std::abs( in[2][2].real() - out[2][2].real() ) < 1e-10 );  // cppcheck-suppress
+		BOOST_TEST( std::abs( in[2][2].real() - out[2][2].real() ) < 1e-10 );
 		BOOST_TEST( std::abs( in[2][2].imag() - out[2][2].imag() ) < 1e-10 );
 
 		BOOST_TEST( out == in );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_many) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_many)
+	{
 		using complex = std::complex<double>;
 
 		auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -120,7 +120,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( in == out );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
+	// BOOST_AUTO_TEST_CASE(fftw_many1_from_2)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -143,7 +144,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(out2 == out);
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
+	// BOOST_AUTO_TEST_CASE(fftw_many2_from_3)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -166,7 +168,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(out2 == out);
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_power_plan)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -184,7 +187,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-7 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -200,7 +204,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -216,7 +221,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_power_dft) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_power_dft)
+	{
 		using complex                 = std::complex<double>;
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
@@ -230,7 +236,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace) {
+	// BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -251,7 +258,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( powerin - (power(io)/static_cast<double>(num_elements(io))) < 1e-10 );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -265,7 +273,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square)
+	{
 		using complex = std::complex<double>;
 
 		[[maybe_unused]] auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
@@ -280,21 +289,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( in != in_transpose );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 		multi::array<std::string, 2> in = {
-			{"100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
+			// NOLINTNEXTLINE(misc-include-cleaner) bug in clang-tidy 18
+			{"100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},
 			{  "3.0 + 3.0*I"s,  "7.0 - 4.0*I"s, "1.0 +  9.0*I"s},
 			{  "4.0 + 1.0*I"s,  "5.0 + 3.0*I"s, "2.0 +  4.0*I"s},
 			{  "3.0 - 1.0*I"s,  "8.0 + 7.0*I"s, "2.0 +  1.0*I"s},
 			{ "31.0 - 1.0*I"s, "18.0 + 7.0*I"s, "2.0 + 10.0*I"s},
 		};
+
 		multi::array<std::string, 2> const in_transpose = in.transposed();
-		in                                              = in.transposed();
+
+		in = in.transposed();
+
 		BOOST_TEST( in != in_transpose );
 	}
 
-	BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
+	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square)
+	{
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 		multi::array<std::string, 2> in = {
@@ -303,7 +318,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{  "4.0 + 1.0*I"s, "5.0 + 3.0*I"s, "2.0 +  4.0*I"s},
 		};
 		multi::array<std::string, 2> const in_transpose = in.transposed();
-		in                                              = in.transposed();
+
+		in = in.transposed();
 		BOOST_TEST( in != in_transpose );
 	}
 

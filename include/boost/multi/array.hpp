@@ -108,7 +108,7 @@ struct array_allocator {
 	}
 
 	template<typename It>
-	auto destroy_n(It first, size_type n) { return adl_alloc_destroy_n(this->alloc(), first, n); }
+	auto destroy_n(It first, size_type n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
  public:
 	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }

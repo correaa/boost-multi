@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( *std::next(pp, 8) == 42 );
 		// (pp + 8)->~double();
-		sa.deallocate(pp, 10);
+		sa.deallocate(pp, 10);  // NOLINT(readability-static-accessed-through-instance)
 	}
 
 // Clang-20 likely has incompatibility with GCC-14 here since the error points to the STL:

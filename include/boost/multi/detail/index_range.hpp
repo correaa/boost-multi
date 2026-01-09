@@ -214,8 +214,8 @@ class range {
 
 	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
 
 	[[nodiscard]] constexpr auto cbegin() const { return const_iterator{first_}; }
 	[[nodiscard]] constexpr auto cend() const { return const_iterator{last_}; }
