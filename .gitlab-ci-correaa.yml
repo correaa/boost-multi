@@ -992,12 +992,12 @@ culang++-20 cuda-13.0.1 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 20
-    - apt-get install --no-install-recommends -y clang-20 clang-tidy-20
+    - ./llvm.sh 21
+    - apt-get install --no-install-recommends -y clang-21 clang-tidy-21
     - mkdir build && cd build
-    - clang++-20 --version
-    - clang-tidy-20 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-20 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-20 -DCMAKE_CXX_COMPILER=clang++-20 -DCMAKE_CUDA_ARCHITECTURES=native  # =75  # =80
+    - clang++-21 --version
+    - clang-tidy-21 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-21 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-21 -DCMAKE_CXX_COMPILER=clang++-21 -DCMAKE_CUDA_ARCHITECTURES=native  # =75  # =80
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
