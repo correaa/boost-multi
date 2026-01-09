@@ -9,6 +9,7 @@
 
 #include <algorithm>         // IWYU pragma: keep  // for copy
 #include <array>             // for array
+#include <cmath>             // for abs
 #include <complex>           // for operator*, operator+, complex
 #include <initializer_list>  // for initializer_list, begin, end
 #include <iterator>          // for size, begin, end
@@ -513,6 +514,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( multi::const_subarray({1, 2, 3})[1] == 2 );
 	}
 #endif
+	{
+		std::initializer_list<std::initializer_list<int> > const il = 
+		{
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		auto const il_lyt = multi::layout(il);
+		auto [s1, s2] = il_lyt.strides();
+
+		BOOST_TEST( std::abs(s1) >= 3 );
+		BOOST_TEST( s2 == 1 );
+
+		// multi::const_subarray<int, 2> const csarr(il);
+
+		// BOOST_TEST( csarr[1][1] == 5 );
+
+		// BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
 
 	return boost::report_errors();
 }
