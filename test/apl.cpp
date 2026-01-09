@@ -40,11 +40,12 @@ constexpr auto iota([[maybe_unused]] Es... es) {  // for nvcc 14
 namespace symbols {
 
 namespace {
+#ifndef CPPCHECK
 #if !defined(__NVCOMPILER) && (!defined(__GNUC__) || __GNUC__ > 9)
-// cppcheck-suppress [syntaxError] -begin
-template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }
+template<class... Es> [[maybe_unused]] auto ι(Es... es) { return iota(es...); }  // cppcheck-suppress ;
 #endif
-// cppcheck-suppress [syntaxError] -end
+#endif
+
 }  // end namespace
 
 }  // end namespace symbols

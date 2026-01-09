@@ -28,7 +28,7 @@ int main() {
 
 	multi::array<int, 2> const C1 = apply(std::plus<>{}, A, B);
 
-	BOOST_TEST( C1[1][1] == std::plus<>{}(A[1][1], B[1][1]) );
+	BOOST_TEST( C1[1][1] == std::plus<>{}(A[1][1], B[1][1]) );  // NOLINT(build/include_what_you_use)
 
 	using multi::broadcast::operator+;
 	multi::array<int, 2> const C2 = A + B;
