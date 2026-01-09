@@ -37,7 +37,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		using difference_type = std::ptrdiff_t;
 
-		iterator() = default;
+		iterator() = default;  // cppcheck-suppress [uninitMemberVar];
 
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 

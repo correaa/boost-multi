@@ -113,7 +113,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( x1d.elements().begin() < x1d.elements().end() );
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().end() );
-		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );
+		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
 		auto x1d = multi::extensions_t<1>(3);
