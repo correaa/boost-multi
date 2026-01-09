@@ -657,6 +657,27 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
+template<class T>
+constexpr auto layout(std::initializer_list<T> const& il) {
+	return multi::layout_t<1>{
+			{},
+			1,
+			0,
+			static_cast<multi::size_t>(il.size())
+	};
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<T> > const& il) {
+	return multi::layout_t<2>{
+			layout(*il.begin()),
+			((il.begin() + 1)->begin()) - (il.begin()->begin()),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			0,
+			static_cast<multi::size_t>(il.size())
+	};
+}
+
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
