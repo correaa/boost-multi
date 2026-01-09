@@ -157,7 +157,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 50}
 		};
 
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + B;
 
@@ -167,8 +167,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		auto const A = multi::array<int, 1>{0, 1, 2};
 		auto const B = multi::array<int, 1>{0, 10, 20};
 
-		using multi::broadcast::operator+;
-		using multi::broadcast::operator*;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
+		using multi::broadcast::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 1> const C = A + (2 * B);
 
@@ -184,8 +184,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{20, 30}
 		};
 
-		using multi::broadcast::operator+;
-		using multi::broadcast::operator*;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
+		using multi::broadcast::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (2 * B);
 
@@ -201,8 +201,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 55}
 		};
 
-		using multi::broadcast::operator+;
-		using multi::broadcast::operator*;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
+		using multi::broadcast::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (2 * B);
 
@@ -222,7 +222,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{300, 400, 500}
 		};
 
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const D = A + B + C;
 
@@ -238,8 +238,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 50}
 		};
 
-		using multi::broadcast::operator*;
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator*;  // cppcheck-suppress [constStatement];
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (A * B);
 
@@ -306,7 +306,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		multi::array<int, 1> const b = {1, 2, 3};
 
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 		multi::array<int, 2> const C = A + b;
 
 		BOOST_TEST((
@@ -320,7 +320,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 		multi::array<int, 1> const b = a + 1;
 
 		BOOST_TEST(( b == multi::array<int, 1>{2, 3, 4} ));
@@ -328,7 +328,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::broadcast::operator+;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
@@ -345,8 +345,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{3, 4, 5}
 		};
 
-		using multi::broadcast::operator+;
-		using multi::broadcast::operator*;
+		using multi::broadcast::operator+;  // cppcheck-suppress [constStatement];
+		using multi::broadcast::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const D = A + A * B + 2 * C;
 

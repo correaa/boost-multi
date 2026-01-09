@@ -4,7 +4,7 @@
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP_
 #define BOOST_MULTI_ARRAY_REF_HPP_
-#pragma once
+// #pragma once
 
 #include "boost/multi/detail/tuple_zip.hpp"
 #include "boost/multi/utility.hpp"  // IWYU pragma: export
@@ -1333,7 +1333,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + (n * this->layout().stride()));
+		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + (n * this->layout().stride()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
 		// return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)

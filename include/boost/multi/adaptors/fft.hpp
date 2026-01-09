@@ -89,7 +89,7 @@ class dft_range {
 		Direction                            dir_;
 
 	 public:
-		const_iterator() = default;
+		const_iterator() = default;  // cppcheck-suppress [uninitMemberVar];
 		const_iterator(
 			typename std::decay_t<In>::const_iterator it,
 			bool doo, std::array<bool, std::decay_t<In>::dimensionality - 1> sub_which,

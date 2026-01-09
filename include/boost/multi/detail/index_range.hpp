@@ -1,10 +1,10 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
-#define BOOST_MULTI_DETAIL_INDEX_RANGE_HPP  // NOLINT(llvm-header-guard)
-#pragma once
+#define BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
+// #pragma once
 
 #include "boost/multi/detail/implicit_cast.hpp"
 #include "boost/multi/detail/serialization.hpp"

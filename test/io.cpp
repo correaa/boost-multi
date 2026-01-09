@@ -14,7 +14,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	// matlab 1d
 	{
 		multi::array<double, 1> const arr = {1.0, 2.0, 3.0};
