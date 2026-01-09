@@ -1,10 +1,10 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
-#pragma once
+// #pragma once
 
 #include <cstddef>      // for ptrdiff_t
 #include <iterator>     // for random_access_iterator_tag

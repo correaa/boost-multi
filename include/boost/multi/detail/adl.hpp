@@ -1,10 +1,10 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_ADL_HPP
 #define BOOST_MULTI_DETAIL_ADL_HPP
-#pragma once
+// #pragma once
 
 #include "boost/multi/detail/what.hpp"
 
@@ -737,4 +737,4 @@ inline constexpr alloc_uninitialized_fill_n_t adl_alloc_uninitialized_fill_n;
 #undef BOOST_MULTI_DECLRETURN
 #undef BOOST_MULTI_JUSTRETURN
 
-#endif
+#endif  // BOOST_MULTI_DETAIL_ADL_HPP
