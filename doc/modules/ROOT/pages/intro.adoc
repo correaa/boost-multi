@@ -42,7 +42,7 @@ Features of this library that aim to facilitate the manipulation of multidimensi
 A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
 * Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
 * Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
-* Lazy evaluation of expressions well integrated with the rest of the library
+* Lazy arrays and evaluation of array expressions well integrated with the rest of the library.
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
@@ -51,9 +51,9 @@ This library shares some of their goals and is compatible and complementary to t
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 
-The library's primary concern is with the storage and logic structure of data;
-it doesn't make algebraic or geometric assumptions about the arrays and their elements.
-(It is still a good building block for implementing mathematical algorithms,
+The library's primary concern is with the storage and logic structure of data.
+It doesn't make algebraic or geometric assumptions about the arrays and their elements.
+(althoug they are still good building blocks for implementing mathematical algorithms,
 such as representing algebraic dense matrices in the 2D case, or tensors in the 3D case.)
 
 The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
