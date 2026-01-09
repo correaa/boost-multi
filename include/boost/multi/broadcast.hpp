@@ -1,10 +1,10 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_BROADCAST_HPP
 #define BOOST_MULTI_BROADCAST_HPP
-#pragma once
+// #pragma once
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/utility.hpp"  // for multi::detail::apply_square

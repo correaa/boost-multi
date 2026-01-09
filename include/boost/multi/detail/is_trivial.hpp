@@ -1,10 +1,10 @@
-// Copyright 2022-2025 Alfredo A. Correa
+// Copyright 2022-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_IS_TRIVIAL_HPP
 #define BOOST_MULTI_DETAIL_IS_TRIVIAL_HPP
-#pragma once
+// #pragma once
 
 #include <type_traits>
 

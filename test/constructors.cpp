@@ -236,24 +236,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #endif
 
 		// clang-format off
-		// arri1d A1({3}, {11});    BOOST_TEST((A1 == arri1d{11, 11, 11} && A1.size() == 3));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
-		// arri1d A2{{3}, {11}};    BOOST_TEST((A2 == arri1d{3, 11}      && A2.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
-		// arri1d A3 = {{3}, {11}}; BOOST_TEST((A3 == arri1d{3, 11}      && A3.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
-		arri1d A4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
-		// arri1d A5{{3}, 11};      BOOST_TEST((A5 == arri1d{3, 11}      && A5.size() == 2));  // ok  , clang warning: braces around scalar initializer [-Wbraced-scalar-init]
-		// arri1d A6 = {{3}, 11};   BOOST_TEST((A6 == arri1d{3, 11}      && A6.size() == 2));  // fair, clang warning: braces around scalar initializer [-Wbraced-scalar-init]
+		// arri1d A1({3}, {11});    BOOST_TEST((A1 == arri1d{11, 11, 11} && A1.size() == 3));  // fair, clang warning: [-Wbraced-scalar-init]
+		// arri1d A2{{3}, {11}};    BOOST_TEST((A2 == arri1d{3, 11}      && A2.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
+		// arri1d A3 = {{3}, {11}}; BOOST_TEST((A3 == arri1d{3, 11}      && A3.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
+#ifndef CPPCHECK
+		arri1d A4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning  // cppcheck-suppress [internalAstError];
+		// arri1d A5{{3}, 11};      BOOST_TEST((A5 == arri1d{3, 11}      && A5.size() == 2));  // ok  , clang warning: [-Wbraced-scalar-init]
+		// arri1d A6 = {{3}, 11};   BOOST_TEST((A6 == arri1d{3, 11}      && A6.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
 		arri1d A7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
 		arri1d A8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
 		arri1d A9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+#endif
 
 		arri1d B1(multi::extensions_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
 #ifndef __circle_build__  // deduced types not allowed in function parameters
 		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
 #endif
-		multi::array const C4({3}, 11);  BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning
-		multi::array const C7(3, 11);    BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
-		multi::array const C8{3, 11};    BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
-		multi::array const C9 = {3, 11}; BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+#ifndef CPPCHECK
+		multi::array const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
+		multi::array const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
+		multi::array const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
+		multi::array const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
+#endif
 		// clang-format on
 
 		// #ifdef __clang__
