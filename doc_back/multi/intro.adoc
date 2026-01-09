@@ -8,31 +8,51 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and, in combination with GPUs, to Artificial Intelligence and Machine Learning.
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved value semantics,
-featuring logical access recursively across dimensions and to elements through indices and iterators.
 
-The internal data structure layout is stride-based, which makes it compatible with low-level C libraries.
+```
+1D ┌─0──┬─1──┬─2──┐  2D  ┌─0──┬─1──┬─2──┐  3D  ┌─0──┬─1──┬─2──┐      4D, ... ND
+   │  0 │  1 │  2 │     0│  0 │  1 │  2 │     0│  0 │  1 │  2 │2──┐
+   └────┴────┴────┘      ├────┼────┼────┤      ├────┼────┼────┤ 8 │
+                        1│  3 │  4 │  5 │     1│  3 │  4 │  5 │───┤
+                         └────┴────┴────┘      └────┴────┴────┘11 │
+                                                  └────┴─────┴────┘
+```
+These depicted 1D, 2D, and 3D arrays can be represented by objects declared as 
+```cpp
+multi::array<int, 1> A1D = ...;
+multi::array<int, 2> A2D = ...;
+multi::array<int, 3> A3D = ...;
+```
+and the elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 1`, `A2D[1][0] == 3` and `A3D[1][0][2] == 7`
+(note that the 3D case has two planes, the first index selects the plane.)
+
+The library features logical access recursively across dimensions and to elements through indices and iterators.
+The internal data structure layout (when mapped to computer memory) is stride-based, which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
 Features of this library that aim to facilitate the manipulation of multidimensional arrays include:
 
-* Value semantics of multidimensional array containers and well-defined referential semantics to avoid unnecessary copies if possible.
+* Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
 A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
 * Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust --CUDA and AMD GPUs--, Boost).
 * Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
+* Lazy evaluation of expressions well integrated with the rest of the library
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
 or with the standard MDSpan proposal `std::mdspan`.
-This library shares some of their goals and is compatible with them, but it is designed at a different level of generality and with other priorities (such as the features listed above).
+This library shares some of their goals and is compatible and complementary to them;
+but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 
 The library's primary concern is with the storage and logic structure of data;
 it doesn't make algebraic or geometric assumptions about the arrays and their elements.
-(It is still a good building block for implementing mathematical algorithms, such as representing algebraic dense matrices in the 2D case.)
+(It is still a good building block for implementing mathematical algorithms,
+such as representing algebraic dense matrices in the 2D case, or tensors in the 3D case.)
 
-The library does not throw exceptions and provides basic guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
+The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
 _Multi_ is a header-only library and C++17 or later is required.
