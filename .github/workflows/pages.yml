@@ -43,6 +43,10 @@ jobs:
       - name: Prepare artifact for GitHub Pages
         run: cp -r doc/html .public
 
+      # Makes another copy of doc/html/index.html into .public but with the name multi.html
+      - name: Create multi.hmtl redirect
+        run: cp doc/html/index.html .public/multi.html
+
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:

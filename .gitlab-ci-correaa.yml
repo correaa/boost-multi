@@ -1318,6 +1318,7 @@ pages:
     - ./antora_docs.sh
     - cd ..
     - cp -r doc/html .public
+    - cp doc/html/index.html .public/multi.html
     # - pandoc --version
     # - asciidoctor --version
     # - mkdir .public
