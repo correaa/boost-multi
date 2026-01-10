@@ -521,7 +521,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		auto const il_lyt = multi::layout(il);
-		auto [s1, s2]     = il_lyt.strides();
+
+		auto [s1, s2] = il_lyt.strides();
 
 		BOOST_TEST( std::abs(s1) >= 3 );
 		BOOST_TEST( s2 == 1 );

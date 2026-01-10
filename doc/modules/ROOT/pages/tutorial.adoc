@@ -14,7 +14,7 @@ We can create a static C-array of ``double``s, and refer to it via a bidimension
 
 [source,cpp]
 ----
-#include <boost/multi/array.hpp>
+#include <boost/multi/array_ref.hpp>  // for unmanaged memory
 
 namespace multi = boost::multi;
 
@@ -113,6 +113,8 @@ An `array` is initialized by specifying the index extensions and, optionally, a 
 
 [source,cpp]
 ----
+#include <boost/multi/array.hpp>  // for array value containers (owning memory)
+
 multi::array<int, 1> A1({3}      , 11);  // {11, 11, 11}
 
 multi::array<int, 2> A2({2, 3}   , 22);  // { {22, 22, 22}, {22, 22, 22} }
@@ -803,6 +805,8 @@ For example, we can restrict this simple function `10*i + j` where `i` and `j` b
 
 [source,cpp]
 ----
+#include <boost/multi/restrictions.hpp>   // for restrictions/lazy arrays
+...
 auto R = [](auto i, auto j) { return 10*i + j; } ^ multi::extensions_t<2>(2, 3);
 ----
 Note that `R` does not allocate memory, and it generates values as needed.
@@ -820,6 +824,8 @@ An elemental use for restrictions is for generating concrete arrays from coordin
 
 [source,cpp]
 ----
+#include <boost/multi/restrictions.hpp>   // for array values
+...
 multi::array<int, 2> A({3, 2});
 
 auto [is, js] = A.extensions();
@@ -886,7 +892,7 @@ These operations include summation and elementwise multiplication, along with mo
 
 [source,cpp]
 ----
-#include <multi/broadcast.hpp>  // brings operators
+#include <boost/multi/broadcast.hpp>  // brings operators, expressions
 ...
 
 multi::array<int, 2> D = ...;

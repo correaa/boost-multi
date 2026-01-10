@@ -58,6 +58,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements
 | `operator=`       | assigns the elements from the source; the sizes must match
+| `swap` (friend)   | swaps the elements from the source O(n); the sizes must match
 |===
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
@@ -282,6 +283,8 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 | (constructors)    | `array::array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements;`array::array(It first, It last)` and `array::array(Range const& rng)`, same for a range of subarrays. `dynamic_array::dynamic_array(std::initializer_list<...>, Alloc = {})` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements
 | `operator=`       | assigns for a source `subarray`, or from another `array`. `array`s can be moved
+| `operator=`       | assigns the elements from the source; the sizes don't need to must match, in which case allocates
+| `swap` (friend)   | swaps the elements from the source O(1); the sizes don't need to match
 |===
 
 |===
