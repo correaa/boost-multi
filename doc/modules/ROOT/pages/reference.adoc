@@ -58,7 +58,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 | (constructors)    | not exposed; copy constructor is not available since the instances are not copyable; destructors are trivial since it doesn't own the elements
 | `operator=`       | assigns the elements from the source; the sizes must match
-| `swap` (friend)   | swaps the elements from the source O(n); the sizes must match
+| `swap` (friend)   | swaps the elements of two subarrays O(n) cost; the sizes must match
 |===
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
