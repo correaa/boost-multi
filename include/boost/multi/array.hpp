@@ -1564,18 +1564,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
-	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	[[nodiscard]] constexpr auto operator+() && { return array{*this}; }      // cppcheck-suppress duplInheritedMember ; to overwrite
+	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }         // cppcheck-suppress duplInheritedMember ; to overwrite
+	[[nodiscard]] constexpr auto operator+() && { return array{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element_type const& elem) & -> array& {  // NOLINT(readability-redundant-typename)
 		if(exs == this->extensions()) {
 			return *this;
 		}
-
-		// array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		// auto const is = intersection(this->extensions(), x);
-		// tmp.apply(is) = this->apply(is);
-		// swap(tmp);
 
 		// implementation with hint
 		auto&& tmp = typename array::ref(
@@ -1592,7 +1587,6 @@ struct array : dynamic_array<T, D, Alloc> {
 		this->deallocate();
 		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
 		this->layout_mutable() = tmp.layout();
-		//  (*this).array::layout_t::operator=(tmp.layout());
 
 		return *this;
 	}
