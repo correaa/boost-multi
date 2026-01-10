@@ -1564,8 +1564,8 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
-	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	[[nodiscard]] constexpr auto operator+() && { return array{*this}; }      // cppcheck-suppress duplInheritedMember ; to overwrite
+	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }         // cppcheck-suppress duplInheritedMember ; to overwrite
+	[[nodiscard]] constexpr auto operator+() && { return array{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element_type const& elem) & -> array& {  // NOLINT(readability-redundant-typename)
 		if(exs == this->extensions()) {
