@@ -92,11 +92,11 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 ==== `multi::subarray<T, D, P = T*>` element access
 
 |===
-|`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively
+|`operator[]`       | access specified element by index (single argument), returns a `reference` member type (see above), for `D > 1` it can be used recursively
 |`front`            | access first element (undefined result if array is empty). Takes no argument.
 |`back`             | access last element  (undefined result if array is empty). Takes no argument.
-|`operator()`       | When used with zero arguments, it returns a `subarray` reference representing the whole array.
-|`operator()(i)`    | When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension).
+|`operator()`       | When used with zero arguments, it returns a subarray reference representing the whole array.
+|`operator()(i)`    | When used with one argument, access a specified element by index (return a `reference` member type) or by range (return a `subarray` of equal dimension).
 |===
 
 - `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
