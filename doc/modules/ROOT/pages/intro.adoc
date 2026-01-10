@@ -23,6 +23,7 @@ This library offers array containers and subarrays in arbitrary dimensions with 
 ```
 These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp
+#include <boost/multi.hpp>
 multi::array<char, 1> A1D = {'a', 'b', 'c'};
 multi::array<char, 2> A2D = { {'f', 'g', 'h'}, {'i', 'j', 'k'} };
 multi::array<char, 3> A3D = /*... nested list of letters (chars) */ ;
@@ -56,7 +57,7 @@ The code is entirely independent and has fundamental implementation and semantic
 The library's primary concern is with the storage and logic structure of data.
 It doesn't make algebraic or geometric assumptions about the arrays and their elements.
 (althoug they are still good building blocks for implementing mathematical algorithms,
-such as representing algebraic dense matrices in the 2D case, or tensors in the 3D case.)
+such as representing algebraic dense matrices in the 2D case, or tensors in the general case.)
 
 The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
