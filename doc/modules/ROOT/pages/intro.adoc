@@ -31,7 +31,9 @@ and their elements, when retrived by their coordinates (indices) are such that, 
 Note that the depicted 3D case has only two planes, the first index (e.g. `1`) selects the plane (e.g. bottom).
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
-The internal data structure layout (when mapped to computer memory) is stride-based, which makes it compatible with low-level C libraries.
+The internal data structure layout (when mapped to computer memory) is
+https://en.wikipedia.org/wiki/Stride_of_an_array[stride-based],
+which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
