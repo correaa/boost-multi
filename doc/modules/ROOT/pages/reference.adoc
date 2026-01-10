@@ -42,8 +42,8 @@ The whole object can be invalidated if the original array is destroyed.
 |`const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
 |`index`           | indexing type in the leading dimension (usually `std::diffptr_t`)
 |`size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually std::diffptr_t)
-|`index_rang`      | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
-|`extesion_type`   | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
+|`index_range`     | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
+|`extension_type`  | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
 |`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
 |`pointer`         | `multi::subarray_ptr<T, D-1, P >` or, for `D == 1`, `P` (the element pointer type, usually `T*`)
 |`const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
@@ -212,9 +212,9 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 An `array_ref` can be invalidated if the original buffer is deallocated.
 
 [#ref_dynamic_array]
-=== Static arrays
+=== Dynamic arrays
 
-A static array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
+A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
 This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
 Memory is requested by an allocator of type Alloc (standard allocator by default).
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::dynamic_array`.
