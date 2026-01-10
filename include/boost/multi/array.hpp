@@ -1572,11 +1572,6 @@ struct array : dynamic_array<T, D, Alloc> {
 			return *this;
 		}
 
-		// array tmp(x, e, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		// auto const is = intersection(this->extensions(), x);
-		// tmp.apply(is) = this->apply(is);
-		// swap(tmp);
-
 		// implementation with hint
 		auto&& tmp = typename array::ref(
 			this->static_::array_alloc::allocate(
@@ -1592,7 +1587,6 @@ struct array : dynamic_array<T, D, Alloc> {
 		this->deallocate();
 		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
 		this->layout_mutable() = tmp.layout();
-		//  (*this).array::layout_t::operator=(tmp.layout());
 
 		return *this;
 	}
