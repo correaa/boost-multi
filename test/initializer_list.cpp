@@ -515,13 +515,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		std::initializer_list<std::initializer_list<int> > const il = 
-		{
+		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
 
 		auto const il_lyt = multi::layout(il);
+
 		auto [s1, s2] = il_lyt.strides();
 
 		BOOST_TEST( std::abs(s1) >= 3 );
