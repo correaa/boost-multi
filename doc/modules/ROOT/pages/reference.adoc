@@ -40,11 +40,11 @@ The whole object can be invalidated if the original array is destroyed.
 |`value_type`      | `multi::array<T, D - 1>` or, for `D == 1`, `T` (the element type)
 |`reference`       | `multi::subarray<T, D-1>` or, for `D == 1`, `pointer_traits<P>::reference` (usually `T&`)
 |`const_reference` | `multi::const_subarray<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
-|`index`           | indexing type in the leading dimension (usually `std::diffptr_t`)
+|`index`           | indexing type in the leading dimension (usually `std::ptrdiff_t`)
 |`size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually std::diffptr_t)
 |`index_range`     | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
 |`extension_type`  | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
-|`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::diffptr_t`)
+|`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::ptrdiff_t`)
 |`pointer`         | `multi::subarray_ptr<T, D-1, P >` or, for `D == 1`, `P` (the element pointer type, usually `T*`)
 |`const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
 |`iterator`        | describe a random-access iterator in the leading dimension
@@ -68,8 +68,8 @@ these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `m
 
 |===
 | `operator==`/`operator!=` | Tells if elements of two `subarray` s are equal and if extensions of the subarrays are the same
-| `operator<`/`operator<=`  | Less-than/less-or-equal      lexicographical comparison (requires elements to be comparable)
-| `operator>`/`operator>=`  | Greater-than/grater-or-equal lexicographical comparison (requires elements to be comparable)
+| `operator<`/`operator<=`  | Less-than/less-or-equal lexicographical comparison (requires elements to be comparable)
+| `operator>`/`operator>=`  | Greater-than/greater-or-equal lexicographical comparison (requires elements to be comparable)
 |===
 
 It is important to note that, in this library, comparisons are also always "deep".
@@ -93,9 +93,9 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 |===
 |`operator[]`       | access specified element by index (single argument), returns a `reference` (see above), for `D > 1` it can be used recursively
 |`front`            | access first element (undefined result if array is empty). Takes no argument.
-|`back`             | access last element  (undefined result ifarray is empty). Takes no argument.
+|`back`             | access last element  (undefined result if array is empty). Takes no argument.
 |`operator()`       | When used with zero arguments, it returns a `subarray` reference representing the whole array.
-|`operator()(i)     | When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension).
+|`operator()(i)`    | When used with one argument, access a specified element by index (return a `reference`) or by range (return a `subarray` of equal dimension).
 |===
 
 - `subarray::operator()(i, j, k, ...)`, as in `S(i, j, k)` for indices `i`, `j`, `k` is a synonym for `A[i][j][k]`, the number of indices can be lower than the total dimension (e.g., `S` can be 4D).
@@ -142,7 +142,7 @@ These operations generate different ways to view the elements of a (sub)array, b
 | `dropped`                                  | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
 | `element_transformed`                      | creates a view of the array, where each element is transformed according to a function (first and only argument)
 | `elements`                                 | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
-| `rotated/unrotated`                        | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j])`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument.
+| `rotated/unrotated`                        | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j]`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument.
 | `taked`                                    | a view of the original array with the first elements
 | `transposed` (same as prefix `operator~`)  | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.
 | `partitioned`                              | a view of higher dimensionality resulting by splitting the original range in a certain number of parts (complementary to `.chunked`)
@@ -166,7 +166,7 @@ For example, if the `array` from which it originates is destroyed or resized.
 [#ref_array_ref]
 === Array references
 
-An array reference _D_-dimensional view of the contiguous pre-existing memory buffer, and it is represented by the type `multi::array_ref<T, D, P = T*>`.
+An array reference, or _D_-dimensional view of the contiguous pre-existing memory buffer are represented by object of type `multi::array_ref<T, D, P = T*>`.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
 
 Since `array_ref` is-a `subarray`, it inherits all the class methods and types described before and, in addition, it defines these members below.
@@ -224,14 +224,14 @@ For most uses, a `multi::array` should be preferred instead.
 The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
 It can be useful for scoped uses of arrays and multithreaded programming and to ensure that assignments do not incur allocations.
-The C++ coreguiles proposed a similar (albeith one-dimensional) class, called linkL:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
+The C++ core guidelines proposed a similar (albeit one-dimensional) class, called linkL:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
 
 |===
 | Member types      | same as for `array_ref`
 |===
 
 |===
-| Member fuctions   | same as for `array_ref` plus ...
+| Member functions  | same as for `array_ref` plus ...
 
 | (constructors)    | `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements
@@ -263,13 +263,13 @@ The C++ coreguiles proposed a similar (albeith one-dimensional) class, called li
 |===
 
 |===
-| Relational fuctions   |  same as for `array_ref`
+| Relational functions   |  same as for `array_ref`
 |===
 
 [#ref_array]
 === Arrays
 
-An array of integer positive dimension D has value semantics if element type T has value semantics, and it is represented by `multi::array<T, D, Alloc = std::allocator<T>>`.
+An array of integer positive dimension `D` has value semantics if its element type `T` has value semantics, and it is represented by `multi::array<T, D, Alloc = std::allocator<T>>`.
 It supports stateful and polymorphic allocators, which is implied for the special type `multi::pmr::array<T, D>`.
 
 |===
@@ -353,7 +353,7 @@ A[1][1] = 9.0;
 
 assert( buffer[11] == 9.0 );  // the target memory is affected
 ----
-Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
+Since `array_ref` does not manage the memory associated with it, the reference can simply dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
 
 [#ref_special_memory]
 === Special Memory: Pointers and Views
@@ -404,7 +404,7 @@ link:https://godbolt.org/z/oeTss3s35[(live)]
 Another kind of use of the internal pointer-like type is to transform underlying values.
 These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
-In combination with a transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
+In combination with a transposed view, it can create a hermitian (transposed-conjugate) view of the matrix (without copying elements).
 We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
 The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::::hermitized` in multi-adaptors).
 
@@ -464,15 +464,15 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 | `multi::array<T, D> const B = A.element_transformed(fun);` | Yes        | No  | Yes | Implicit conversion to `T` if result is different, dimensions must match. B can be mutable.
 | `multi::array<T, D> const B = + A.element_transformed(fun);` | Yes (and move, or might allocate twice if types don't match)  | No  | Yes | Not recommended
 | `multi::array<T, D> const B{A.element_transformed(fun)};` | Yes        | No  | Yes | Explicit conversion to `T` if result is different, dimensions must match
-| `auto const B = + A.elements_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred
+| `auto const B = + A.element_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred
 | `auto const B = A.element_transformed(fun);`               | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const`, not recommended
-| `auto const& B = A.elements_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`. Preferred way.
+| `auto const& B = A.element_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`. Preferred way.
 | `multi::array<T, D> B(A.extensions()); B = A.element_transformed(fun);`           | Yes         | Yes (during construction)  | Yes | "Two-step" construction. `B` is mutable. Not recommended
 |===
 
 |===
-| Assigment    | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes
+| Assignment   | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes
 
-| `B = A.elements_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred
-| `B = + A.elements_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended.
+| `B = A.element_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred
+| `B = + A.element_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended.
 |===
