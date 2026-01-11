@@ -1,6 +1,6 @@
 [#technical]
 
-= Technical points
+= Technical points (design rationale)
 
 :idprefix: technical_
 
@@ -66,3 +66,85 @@ It's important to note that the act of constructing certain iterators, even if t
 This underscores the need for caution when using such operations in your code.
 
 A thorough description of the cases and workaround is beyond the scope of this section.
+
+== Can I change the dimensionality of an array dynamically?
+
+No, dimensionality cannot be set or changed dynamically, this is fundamental to this library.
+Dimensionality is part of the type of the array or subarray objects.
+This is a choice is make because it is useful to know the dimensionality of an object at compile-time rather than conditionally.
+The reason is that in general there are not many algorithms or uses that work in the same way in different dimensions.
+
+The library achieves a different kind of cross-dimensional flexibility by:
+a) Treating D-dimensional arrays as, for example, one-dimensional arrays arrays of (D-1)-dimensional subarrays.
+In fact, a D-dimensional array can be generated from an array of lower dimensionality
+
+[source,cpp]
+----
+multi::array<int, 1> A1D = {1, 2, 3};
+multi::array<int, 2> A2D(2, A1D);
+
+assert((A2D == multi::array<int, 2>{{1, 2, 3}, {1, 2, 3}}));
+
+assert( A2D[0] == A1D );
+assert( A2D[1] == A1D );
+----
+
+https://godbolt.org/z/rMEoG3d5c
+
+b) By providing `.elements()` method which gives a flattened view of array of any dimensionality. 
+
+[source,cpp]
+----
+multi::array<int, 1> A1D = {1, 2, 3};
+multi::array<int, 2> A2D = {{1, 2, 3}, {4, 5, 6}};
+
+std::for_each(A1D.elements().begin(), A1D.elements().end(), [](auto&& elem) {elem *= 2;} );
+std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {elem *= 2;} );
+----
+
+== Why is dimensionality static and the sizes are dynamic?
+
+Because this is a useful combination for medium to large arrays.
+Static sizes can be useful for two different orthogonal reason
+a) compile-time arrays,
+b) avoid allocations
+
+Different features have different trade-off:
+
+|===
+|                         | Pros                                     | Const                                                        
+
+| Dynamic dimensionality  | Avoids (dimension) templates/duck typing | Frequent runtime checks for dimensionality, layout and indices need to be dynamic themselves
+| Dynamics sizes          | Runtime adjust sizes              | Requires either allocations or sizes are compile-time bounded
+| Fixed sizes             | Can be stack-based/loop unrolling | No runtime choice, imposes small sizes                       
+| Stack-based             | Avoids allocations                | Sizes are fixed or 
+|===
+
+Here is what the library provides:
+
+|===
+| Type                              | Dimensionality   | Sizes                     | Memory                   | Ownership
+
+| `multi::array<T, D>`              | Static           | Dynamic/Mutable           | Heap (allocates)         | Yes, transferable (movable)
+| `multi::dynamic_array<T, D>`      | Static           | Dynamic/Immutable         | Heap (allocates)         | Yes, non-transferable (pinned)
+| `multi::array_ref<T, D>`          | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
+| `multi::subarray<T, D>`           | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
+| `multi::inplace_array<T, D, ...>` | Static           | Dynamic/Mutable (bounded) | Stack                    | Yes, non-transferable (pinned)
+|===
+
+(note that dimensionality is static --compile-time--)
+
+Other cases can be handled by alternatives by other libraries or not provided directly by the library:
+
+|===
+| Type                                                                                       | Dimensionality   | Sizes                          | Memory                   | Ownership
+
+| xtensor, `std::variant<multi::array<T, 1>, multi::array<T, 2>, ...>`, see Python interface | Dynamic          | Dynamic/Mutable                | Heap  (allocates)        | Yes
+| `std::mdspan<T, DynamicExt>`                                                               | Static           | Dynamic/Immutable (rebindable) | Any   (doesn't allocate) | No (rebindable)
+| `std::mdspan<T, StaticExt>`                                                                | Static           | Static/Immutable (rebindable)  | Any   (allocate)         | No (rebindable)
+| `std::mdarray<T, DynamicExt...>` (C++26)                                                   | Static           | Dynamic/Mutable                | Heap  (allocates)        | Yes (container adaptor)
+| `std::mdarray<T, StaticExt...>` (C++26)                                                    | Static           | Static or Dynamic/Mutable      | Heap  (allocates)        | Yes (container adaptor)
+| `std::array<std::array<T, S1>, S2, ...>`                                                   | Static           | Immutable                      | Stack (doesn't allocate) | No, (pinned)
+|===
+
+
