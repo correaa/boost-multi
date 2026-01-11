@@ -15,6 +15,22 @@ When using the library, it is simpler to start from `array`, and other types are
 however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `dynamic_array`, and `array` have an *is-a* relationship (from left to right). 
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref` (and more).
 
+==== Summary (cheat sheet) ===
+
+This is quick guide to summarize the semantic properties of each class.
+The main array type to reach for is `multi::array`, the other types are for special uses.
+`multi::subarray<T, D>` are generally not used explicitly.
+
+|===
+| Type                              | Dimensionality   | Sizes                     | Memory                   | Ownership
+
+| `multi::array<T, D, ...>`         | Static           | Dynamic/Mutable           | Heap (allocates)         | Yes, transferable (movable)
+| `multi::array_ref<T, D>`          | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
+| `multi::inplace_array<T, D, ...>` | Static           | Dynamic/Mutable (bounded) | Stack                    | Yes, non-transferable (pinned)
+| `multi::dynamic_array<T, D, ...>` | Static           | Dynamic/Immutable         | Heap (allocates)         | Yes, non-transferable (pinned)
+| `multi::subarray<T, D>`           | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
+|===
+
 [#ref_subarray]
 === Subarrays
 
