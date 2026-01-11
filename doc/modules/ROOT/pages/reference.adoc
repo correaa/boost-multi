@@ -22,13 +22,13 @@ The main array type to reach for is `multi::array`, the other types are for spec
 `multi::subarray<T, D>` are generally not used explicitly.
 
 |===
-| Type                              | Dimensionality   | Sizes                     | Memory                   | Ownership
+| Type                              | Dimensionality   | Sizes                     | Memory                   | Ownership | Uses
 
-| `multi::array<T, D, ...>`         | Static           | Dynamic/Mutable           | Heap (allocates)         | Yes, transferable (movable)
-| `multi::array_ref<T, D>`          | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
-| `multi::inplace_array<T, D, ...>` | Static           | Dynamic/Mutable (bounded) | Stack                    | Yes, non-transferable (pinned)
-| `multi::dynamic_array<T, D, ...>` | Static           | Dynamic/Immutable         | Heap (allocates)         | Yes, non-transferable (pinned)
-| `multi::subarray<T, D>`           | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)
+| `multi::array<T, D, ...>`         | Static           | Dynamic/Mutable           | Heap (allocates)         | Yes, transferable (movable)    | General purpose (value type)
+| `multi::array_ref<T, D>`          | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)                   | Use existing buffers (e.g. from other libs)
+| `multi::inplace_array<T, D, ...>` | Static           | Dynamic/Mutable (bounded) | Stack                    | Yes, non-transferable (pinned) | Fast, stack constrained, lowest level of divide and conquer
+| `multi::dynamic_array<T, D, ...>` | Static           | Dynamic/Immutable         | Heap (allocates)         | Yes, non-transferable (pinned) | Multithreading, prevent invalidation
+| `multi::subarray<T, D>`           | Static           | Dynamic/Immutable         | Any  (doesn't allocate)  | No, (pinned)                   | As reference, Implicitly used through `auto` or template, prevent code bloat across compilation boundaries
 |===
 
 [#ref_subarray]
