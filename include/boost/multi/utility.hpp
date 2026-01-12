@@ -656,6 +656,9 @@ template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
@@ -667,6 +670,11 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 	};
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span?
+#endif
 template<class T>
 constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il) {
 	return multi::layout_t<2>{
@@ -676,7 +684,6 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 		static_cast<multi::size_t>(il.size())
 	};
 }
-
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
