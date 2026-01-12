@@ -165,6 +165,11 @@ constexpr auto operator+(A&& alpha, B&& omega) noexcept {
 }
 
 template<class A, class B>
+constexpr auto add(A&& alpha, B&& omega) noexcept {
+	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+}
+
+template<class A, class B>
 constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::map(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A>
