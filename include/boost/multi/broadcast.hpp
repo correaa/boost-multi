@@ -144,23 +144,6 @@ class apply_plus_t {
 
 template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
-	// if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-	// 	return broadcast::operator+([alpha_ = std::forward<A>(alpha)]() { return alpha_; } ^ multi::extensions_t<0>{}, omega);
-	// } else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-	// 	return broadcast::operator+(alpha, [omega_ = std::forward<B>(omega)]() { return omega_; } ^ multi::extensions_t<0>{});
-	// } else if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
-	// 	return broadcast::operator+(alpha.repeated(omega.size()), omega);
-	// } else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
-	// 	return broadcast::operator+(alpha, omega.repeated(alpha.size()));
-	// } else {
-	// 	// return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
-	// 	// auto ah = alpha.home();
-	// 	// auto oh = omega.home();
-	// 	// return broadcast::apply_plus_t<decltype(ah), decltype(oh)>(ah, oh) ^ axs;
-	// 	auto axs = alpha.extensions();
-	// 	assert(axs == omega.extensions());
-	// 	return broadcast::apply_plus_t<A, B>(std::forward<A>(alpha), std::forward<B>(omega)) ^ axs;
-	// }
 	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
