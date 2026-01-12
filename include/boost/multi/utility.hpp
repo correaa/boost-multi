@@ -661,6 +661,30 @@ constexpr auto layout(std::array<T, N> const& arr) {
 #endif
 
 template<class T>
+auto base(std::initializer_list<T> const& il) -> T const* {
+	if(il.size() == 0) { return nullptr; }
+	return il.begin();
+}
+
+template<class T>
+auto base(std::initializer_list<std::initializer_list<T>> const& il) -> T const* {
+	if(il.size() == 0) { return nullptr; }
+	return base(*il.begin());
+}
+
+template<class T>
+auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) -> T const* {
+	if(il.empty()) { return nullptr; }
+	return base(*il.begin());
+}
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"  // for clang 13
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span?
+#endif
+
+template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
 	return multi::layout_t<1>{
 		{},
@@ -670,13 +694,30 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 	};
 }
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option"  // for clang 13
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span?
-#endif
 template<class T>
 constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il) {
+	if(il.size() == 0) { return multi::layout_t<2>{}; }
+	if(il.size() <= 1) {
+		return multi::layout_t<2>{
+			layout(*il.begin()),
+			static_cast<multi::size_t>(il.size()),
+			0,
+			static_cast<multi::size_t>(il.size())
+		};
+	}
+	// TODO(correaa) add
+	return multi::layout_t<2>{
+		layout(*il.begin()),
+		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		base(*(il.begin() + 0)),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		0,
+		static_cast<multi::size_t>(il.size())
+	};
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+	if(il.empty()) { return multi::layout_t<2>{}; }
 	return multi::layout_t<2>{
 		layout(*il.begin()),
 		((il.begin() + 1)->begin()) - (il.begin()->begin()),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

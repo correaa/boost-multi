@@ -505,6 +505,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::const_subarray const csarr(il);
 
+		BOOST_TEST(*multi::base(il) == 1);
 		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #ifdef __clang__
@@ -519,6 +520,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1, 2, 3},
 			{4, 5, 6}
 		};
+
+		BOOST_TEST(*multi::base(il) == 1);
 
 		auto const il_lyt = multi::layout(il);
 
