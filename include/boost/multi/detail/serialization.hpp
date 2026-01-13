@@ -136,4 +136,4 @@ using ::boost::serialization::make_nvp;
 
 }  // end namespace boost
 
-#endif  // BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
+#endif  // BOOST_MULTI_DETAIL_SERIALIZATION_HPP
