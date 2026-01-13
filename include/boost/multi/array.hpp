@@ -1345,7 +1345,7 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	template<
 		class OtherT,
-		std::enable_if_t<
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)
 			, int
 		> =0

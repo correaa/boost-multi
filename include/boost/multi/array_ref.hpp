@@ -1175,12 +1175,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
+	// NOLINTBEGIN(modernize-use-constraints) for C++20
 	template<class Nested = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<std::initializer_list<Nested> const&>())), ElementPtr>, int> =0>
 	explicit const_subarray(std::initializer_list<Nested> const& il) : const_subarray(multi::layout(il), multi::base(il)) { }
 	template<class Nested = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<std::initializer_list<Nested> const&>())), ElementPtr>, int> =0>
 	explicit const_subarray(std::initializer_list<std::initializer_list<Nested> > const& il) : const_subarray(multi::layout(il), multi::base(il)) { }
 	template<class Nested = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<std::initializer_list<Nested> const&>())), ElementPtr>, int> =0>
 	explicit const_subarray(std::initializer_list<std::initializer_list<std::initializer_list<Nested> > > const& il) : const_subarray(multi::layout(il), multi::base(il)) { }
+	// NOLINTEND(modernize-use-constraints) for C++20
 
 #if __cplusplus > 202302L
 #define BM_DELETE(ReasoN) delete(ReasoN)
