@@ -360,6 +360,16 @@ struct dynamic_array                                                            
 	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
+	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr dynamic_array(std::initializer_list<TT> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
+	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
+	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
+
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
 		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
@@ -596,13 +606,28 @@ struct dynamic_array                                                            
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
+	using dynamic_value_type = 
+		typename std::conditional<
+			(D != 1),
+			dynamic_array<T, D - 1, allocator_type>,
+			T
+		>::type;
+
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::value_type> values)
+	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
-	// template<class TT, std::enable_if_t<std::is_same_v<T, TT> || (D == 2), int> =0>
-	// constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> il)
-	// : dynamic_array{(il.size() == 0) ? array<T, D>() : array<T, D>(il.begin(), il.end())} {}  // construct all with default constructor and copy to special memory at the end
+	// using dynamic_reference = 
+	// 	typename std::conditional<
+	// 		(D != 1),
+	// 		const_subarray<T, D - 1>,
+	// 		T
+	// 	>::type;
+
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// template<class TT = void, std::enable_if_t<sizeof(TT*) && (D != 1), int> =0>
+	// constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_reference> values)
+	// : dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	dynamic_array(
 		std::initializer_list<typename dynamic_array<T, D>::value_type> values,
@@ -1290,27 +1315,43 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	// #if defined(_MSC_VER)
-	//  explicit array(typename array::extensions_type const& exts)  // NOTE(correaa) if you think you need to implement this for MSVC is because MSVC needs to be compiled in permissive- mode for C++17
-	//  : dynamic_array<T, D, Alloc>(exts) { }
-	// #endif
-
-	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::value_type> ilv)
+	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
 	: static_{
-		  (ilv.size() == 0) ? array<T, D>()
+		  (ilv.size() == 0) ? array<T, D>{}
 							: array<T, D>(ilv.begin(), ilv.end())
 	  } {
 	}
 
-#ifdef __CLING__
-	explicit array(std::tuple<long, long> const& exts)
-	: array(std::apply([](auto... sizes) { return typename array::extensions_type{sizes...}; }, exts)) {}
-#endif
+	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr array(std::initializer_list<T> ilv) : array{} {
+	// 	operator=(const_subarray<T, D>(ilv));
+	// }
+	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr array(std::initializer_list<std::initializer_list<T>> ilv) : array{} {
+	// 	operator=(const_subarray<T, D>(ilv));
+	// }
+	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
+	// // // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<T>>> ilv) {
+	// 	operator=(const_subarray<T, D>(ilv));
+	// }
+	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> ilv) {
+	// 	operator=(const_subarray<T, D>(ilv));
+	// }
+	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>>> ilv) {
+	// 	operator=(const_subarray<T, D>(ilv));
+	// }
 
 	template<
 		class OtherT,
-		class = std::enable_if_t<std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)>>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
+		std::enable_if_t<
+			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)
+			, int
+		> =0
+	>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                                       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{
 		  (ilv.size() == 0) ? array<T, D>()()

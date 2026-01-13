@@ -496,16 +496,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::initializer_list<int> const il = {1, 2, 3};
 
+		BOOST_TEST(*multi::base(il) == 1);
+
 		multi::const_subarray<int, 1> const csarr(il);
 
-		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	}
-	{
-		std::initializer_list<int> const il = {1, 2, 3};
+		BOOST_TEST( csarr.size() == 3 );
+		BOOST_TEST( csarr.num_elements() == 3 );
 
-		multi::const_subarray const csarr(il);
-
-		BOOST_TEST(*multi::base(il) == 1);
 		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #ifdef __clang__
@@ -516,10 +513,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		std::initializer_list<std::initializer_list<int>> const il = {
+		multi::layout_t<2> lyt(multi::extensions_t<2>(3, 2));
+		BOOST_TEST( lyt.num_elements() == 6 );
+	}
+	{
+		std::initializer_list<std::initializer_list<int>> il = {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
+
+		static_assert(std::is_same_v<multi::element_t<decltype(il)>, int>);
 
 		BOOST_TEST(*multi::base(il) == 1);
 
@@ -530,11 +533,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs(s1) >= 3 );
 		BOOST_TEST( s2 == 1 );
 
-		// multi::const_subarray<int, 2> const csarr(il);
+		BOOST_TEST( il_lyt.size() == 2);
+		BOOST_TEST( il_lyt.num_elements() == 6 );
 
-		// BOOST_TEST( csarr[1][1] == 5 );
+		multi::const_subarray<int, 2> const csarr(il);
 
-		// BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		using std::get;
+		BOOST_TEST( get<0>(csarr.sizes()) == 2 );
+		BOOST_TEST( get<1>(csarr.sizes()) == 3 );
+
+		BOOST_TEST( csarr[0][0] == 1);
+		BOOST_TEST( csarr[0][1] == 2);
+		BOOST_TEST( csarr[0][2] == 3);
+
+		BOOST_TEST( csarr[1][0] == 4);
+		BOOST_TEST( csarr[1][1] == 5);
+		BOOST_TEST( csarr[1][2] == 6);
+
+		multi::array<int, 2> const arr = csarr;
+
+		BOOST_TEST( arr == csarr );
+
+		multi::array<int, 2> arr2{multi::const_subarray<int, 2>(il)};
+
+		BOOST_TEST( arr == arr2 );
+
+		multi::array<int, 2> arr3 = multi::const_subarray<int, 2>(il);
+
+		BOOST_TEST( arr == arr3 );
+
+		// multi::dynamic_array<int, 2> arr4 = il;
+		// BOOST_TEST(false);
 	}
 
 	return boost::report_errors();
