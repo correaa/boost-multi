@@ -283,7 +283,7 @@ g++-sid:
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
 
-g++-trixie:
+g++-trixie-15:
   stage: build
   image: debian:trixie
   tags:
@@ -292,10 +292,10 @@ g++-trixie:
   allow_failure: false
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-15 pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
-    - g++ --version
-    - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug  # -DDISABLE_MPI=1
+    - g++-15 --version
+    - CXX=g++-15 cmake .. -DCMAKE_BUILD_TYPE=Debug  # -DDISABLE_MPI=1
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["g++-testing c++20"]
