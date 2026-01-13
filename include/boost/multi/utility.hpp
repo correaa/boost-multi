@@ -661,24 +661,24 @@ constexpr auto layout(std::array<T, N> const& arr) {
 #pragma clang diagnostic pop
 #endif
 
-
-
-template<class T> struct element_t_{};
-
-template<class T> using element_t = typename element_t_<T>::type;
+namespace detail {
+template<class T> struct element_t_impl{};
 
 template<class T> auto element_t_aux(T) -> T;
-template<class T> auto element_t_aux(std::initializer_list<T>) -> element_t<T>;
+template<class T> auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
 
-template<class T> struct element_t_<std::initializer_list<T>> {
+template<class T> struct element_t_impl<std::initializer_list<T>> {
 	using type = T;
 };
-template<class T> struct element_t_<std::initializer_list<std::initializer_list<T>>> {
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<T>>> {
 	using type = T;
 };
-template<class T> struct element_t_<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
 	using type = T;
 };
+}
+
+template<class T> using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
 auto base(std::initializer_list<T> const& il) -> T const* {
