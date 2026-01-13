@@ -618,27 +618,14 @@ struct dynamic_array                                                            
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> =0>
+	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<std::initializer_list<TT>>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 3, int> =0>
+	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<std::initializer_list<TT>>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 3, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
-
-
-	// using dynamic_reference = 
-	// 	typename std::conditional<
-	// 		(D != 1),
-	// 		const_subarray<T, D - 1>,
-	// 		T
-	// 	>::type;
-
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// template<class TT = void, std::enable_if_t<sizeof(TT*) && (D != 1), int> =0>
-	// constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_reference> values)
-	// : dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	dynamic_array(
 		std::initializer_list<typename dynamic_array<T, D>::value_type> values,
