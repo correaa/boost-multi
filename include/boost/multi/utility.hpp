@@ -707,7 +707,7 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"  // for clang 13
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span?
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"     // TODO(correaa) use checked span?
 #endif
 
 template<class T>
