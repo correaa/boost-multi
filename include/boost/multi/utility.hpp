@@ -662,7 +662,7 @@ constexpr auto layout(std::array<T, N> const& arr) {
 #endif
 
 namespace detail {
-template<class T> struct element_t_impl{};
+template<class T> struct element_t_impl {};
 
 template<class T> auto element_t_aux(T) -> T;
 template<class T> auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
@@ -676,7 +676,7 @@ template<class T> struct element_t_impl<std::initializer_list<std::initializer_l
 template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
 	using type = T;
 };
-}
+}  // namespace detail
 
 template<class T> using element_t = typename detail::element_t_impl<T>::type;
 
