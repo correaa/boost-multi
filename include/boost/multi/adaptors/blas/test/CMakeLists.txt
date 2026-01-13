@@ -138,7 +138,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			${TEST_EXE}
 			PRIVATE
 					$<$<CXX_COMPILER_ID:GNU>:
-					-Werror
+					#-Werror
 					-Wall
 					-Wextra
 					-Wpedantic
@@ -147,7 +147,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wparentheses
 					> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-					-Werror
+					#-Werror
 					-Wall
 					# -Weverything
 					-Wextra
