@@ -1,9 +1,9 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP_
-#define BOOST_MULTI_ADAPTORS_THRUST_HPP_
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP
+#define BOOST_MULTI_ADAPTORS_THRUST_HPP
 #pragma once
 
 #include "boost/multi/array.hpp"
@@ -283,4 +283,4 @@ constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::HICUP::tag, Q
 #undef HICUP
 #undef HICUP_
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_THRUST_HPP
