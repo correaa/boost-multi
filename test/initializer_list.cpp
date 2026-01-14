@@ -504,6 +504,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( csarr.num_elements() == 3 );
 
 		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+		multi::const_subarray const csarr2(il);
+
+		BOOST_TEST( csarr2 == csarr );
 	}
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -513,16 +517,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		multi::layout_t<2> lyt(multi::extensions_t<2>(3, 2));
+		multi::layout_t<2> const lyt(multi::extensions_t<2>(3, 2));
 		BOOST_TEST( lyt.num_elements() == 6 );
 	}
 	{
-		std::initializer_list<std::initializer_list<int>> il = {
+		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
 
-		static_assert(std::is_same_v<multi::element_t<decltype(il)>, int>);
+		static_assert(std::is_same_v<multi::element_t<std::decay_t<decltype(il)>>, int>);
 
 		BOOST_TEST(*multi::base(il) == 1);
 
@@ -554,16 +558,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr == csarr );
 
-		multi::array<int, 2> arr2{multi::const_subarray<int, 2>(il)};
+		multi::array<int, 2> const arr2{multi::const_subarray<int, 2>(il)};
 
 		BOOST_TEST( arr == arr2 );
 
-		multi::array<int, 2> arr3 = multi::const_subarray<int, 2>(il);
+		multi::array<int, 2> const arr3 = multi::const_subarray<int, 2>(il);
 
 		BOOST_TEST( arr == arr3 );
 
-		// multi::dynamic_array<int, 2> arr4 = il;
-		// BOOST_TEST(false);
+		multi::const_subarray const csarr2(il);
+
+		BOOST_TEST( csarr2 == csarr );
+
+		multi::array<int, 2> const arr4 = multi::const_subarray(il);
+
+		BOOST_TEST( arr == arr4 );
+
+		multi::array const arr5 = multi::const_subarray(il);
+
+		// BOOST_TEST( arr == arr5 );
 	}
 
 	return boost::report_errors();
