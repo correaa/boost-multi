@@ -617,12 +617,12 @@ struct dynamic_array                                                            
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<std::initializer_list<TT>>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 3, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<std::initializer_list<TT>>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 3, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
@@ -1344,12 +1344,9 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	template<
 		class OtherT,
-		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
-			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1)
-			, int
-		> =0
-	>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                                       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
+			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
+	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: static_{
 		  (ilv.size() == 0) ? array<T, D>()()
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
@@ -1686,6 +1683,9 @@ array(MatrixRef) -> array<T, D, Alloc>;
 
 template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v>
 array(MatValues) -> array<T, D>;
+
+template<class T, dimensionality_type D>
+array(const_subarray<T, D>) -> array<T, D>;
 
 template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>  /// , class Alloc = typename DT::allocator_type>
 array(MatValues, Alloc) -> array<T, D, Alloc>;
