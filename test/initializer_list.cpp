@@ -576,7 +576,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array const arr5 = multi::const_subarray(il);
 
-		// BOOST_TEST( arr == arr5 );
+		BOOST_TEST( arr == arr5 );
+
+		auto const arr6 = +multi::const_subarray(il);
+
+		BOOST_TEST( arr == arr6 );
+
+		using multi::operator+;
+		auto const arr7 = +il;
+
+		BOOST_TEST( arr == arr7 );
+
+		auto const arr8 = multi::operator+({
+			{1, 2, 3},
+			{4, 5, 6}
+		});
+
+		BOOST_TEST( arr == arr8 );
 	}
 
 	return boost::report_errors();
