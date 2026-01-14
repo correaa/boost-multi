@@ -314,6 +314,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
 	: Layout{other.layout()}, base_{other.base_} {}
 
+	// template<class, dimensionality_type, class> friend struct array;
+
 	template<
 		typename ElementPtr2,
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
@@ -1170,8 +1172,36 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto elements_aux_() const { return elements_range(this->base_, this->layout()); }
 
+	template<class TT> using il_ = std::initializer_list<TT>;
+
  public:
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+
+	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints) for C++20
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<TT> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<il_<TT>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<il_<il_<TT>>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
+	// NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints) for C++20
+
+#if defined(__cpp_deleted_function) && (__cpp_deleted_function >= 202403L) && (__cplusplus > 202302L)
+#define BM_DELETE(ReasoN) delete (ReasoN)
+#else
+#define BM_DELETE(ReasoN) delete
+#endif
+
+	// NOLINTBEGIN(google-explicit-constructor,modernize-use-constraints)
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<TT>&& il) = BM_DELETE("temporary init-list dangles");
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<il_<TT>>&& il) = BM_DELETE("temporary init-list dangles");
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	explicit const_subarray(il_<il_<il_<TT>>>&& il) = BM_DELETE("temporary init-list dangles");
+	// NOLINTEND(google-explicit-constructor,modernize-use-constraints)
+
+#undef BM_DELETE
 
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
