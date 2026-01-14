@@ -120,6 +120,9 @@ using sizes_t = typename extensions_t<D>::sizes_type;
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
+// template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
+// struct dynamic_array;
+
 namespace detail {
 struct non_copyable_base {
 	non_copyable_base(non_copyable_base const&) = delete;
@@ -147,14 +150,12 @@ struct copyable_base {
 }  // end namespace detail
 
 template<dimensionality_type D, class Proj>
-class restriction
-:
+class restriction :
 	std::conditional_t<
 		std::is_reference_v<Proj>,
 		detail::non_copyable_base,
 		detail::copyable_base
-	>
-{
+	> {
 	extensions_t<D> xs_;
 	Proj proj_;
 
@@ -1929,14 +1930,14 @@ struct layout_t
 	}
 
 	BOOST_MULTI_HD constexpr auto        num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
-	friend BOOST_MULTI_HD constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
+	// friend BOOST_MULTI_HD constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
 
 	BOOST_MULTI_HD constexpr auto        is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
-	friend BOOST_MULTI_HD constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
+	// friend BOOST_MULTI_HD constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
 
 	BOOST_MULTI_HD constexpr auto empty() const noexcept { return is_empty(); }
 
-	friend BOOST_MULTI_HD constexpr auto         size(layout_t const& self) noexcept -> size_type { return self.size(); }
+	// friend BOOST_MULTI_HD constexpr auto         size(layout_t const& self) noexcept -> size_type { return self.size(); }
 	BOOST_MULTI_HD constexpr  auto size() const noexcept -> size_type {
 		if(nelems_ == 0) {
 			return 0;
@@ -1951,14 +1952,15 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto stride() -> stride_type& { return stride_; }
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type const& { return stride_; }
 
-	friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
+	// friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
 
 	BOOST_MULTI_HD constexpr auto        strides() const -> strides_type { return strides_type{stride(), sub_.strides()}; }
-	friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type { return self.strides(); }
+	// friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type { return self.strides(); }
 
-	constexpr BOOST_MULTI_HD auto        offset(dimensionality_type dim) const -> index { return (dim != 0) ? sub_.offset(dim - 1) : offset_; }
+	// constexpr BOOST_MULTI_HD auto        offset(dimensionality_type dim) const -> index { return (dim != 0) ? sub_.offset(dim - 1) : offset_; }
 	BOOST_MULTI_HD constexpr auto        offset() const -> index { return offset_; }
-	friend BOOST_MULTI_HD constexpr auto offset(layout_t const& self) -> index { return self.offset(); }
+	// friend BOOST_MULTI_HD constexpr auto offset(layout_t const& self) -> index { return self.offset(); }
+
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 

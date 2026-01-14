@@ -656,9 +656,29 @@ template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
+namespace detail {
+template<class T> struct element_t_impl {};
+
+template<class T> auto element_t_aux(T) -> T;
+template<class T> auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
+
+template<class T> struct element_t_impl<std::initializer_list<T>> {
+	using type = T;
+};
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<T>>> {
+	using type = T;
+};
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
+	using type = T;
+};
+}  // namespace detail
+
+template<class T> using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
 auto base(std::initializer_list<T> const& il) -> T const* {
@@ -678,7 +698,7 @@ auto base(std::initializer_list<std::initializer_list<T>> const& il) -> T const*
 
 template<class T>
 auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) -> T const* {
-	if(il.empty()) {
+	if(il.size() == 0) {
 		return nullptr;
 	}
 	return base(*il.begin());
@@ -692,9 +712,11 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
+	auto stride = (il.begin() + 1) - (il.begin() + 0);
+	assert(stride == 1);
 	return multi::layout_t<1>{
-		{},
-		1,
+		multi::layout_t<0>(multi::extensions_t<0>{}),
+		stride,
 		0,
 		static_cast<multi::size_t>(il.size())
 	};
@@ -705,36 +727,42 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 	if(il.size() == 0) {
 		return multi::layout_t<2>{};
 	}
-	if(il.size() <= 1) {
+	if(il.size() == 1) {
 		return multi::layout_t<2>{
 			layout(*il.begin()),
 			static_cast<multi::size_t>(il.size()),
 			0,
-			static_cast<multi::size_t>(il.size())
+			static_cast<multi::size_t>(il.size() * il.begin()->size())
 		};
 	}
-	// TODO(correaa) add
+	auto stride =
+		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		base(*(il.begin() + 0));
+	// TODO(correaa) add check
+
 	return multi::layout_t<2>{
 		layout(*il.begin()),
-		base(*(il.begin() + 1)) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			base(*(il.begin() + 0)),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		stride,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		0,
+		static_cast<multi::size_t>(il.size()) * stride
+	};
+	// size (nelems2_ / stride2_) * (nelems1_ / stride1_);
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+	if(il.size() == 0) {
+		return multi::layout_t<3>(multi::extensions_t<3>{});
+	}
+	return multi::layout_t<3>{
+		layout(*il.begin()),
+		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
 		static_cast<multi::size_t>(il.size())
 	};
 }
 
-template<class T>
-constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	if(il.empty()) {
-		return multi::layout_t<2>{};
-	}
-	return multi::layout_t<2>{
-		layout(*il.begin()),
-		((il.begin() + 1)->begin()) - (il.begin()->begin()),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		0,
-		static_cast<multi::size_t>(il.size())
-	};
-}
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

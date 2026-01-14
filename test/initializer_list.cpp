@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -14,6 +14,7 @@
 #include <initializer_list>  // for initializer_list, begin, end
 #include <iterator>          // for size, begin, end
 #include <string>            // for basic_string, allocator, char_tr...
+#include <tuple>             // IWYU pragma: keep
 #include <type_traits>       // for is_same_v
 #include <vector>            // for vector
 
@@ -496,17 +497,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::initializer_list<int> const il = {1, 2, 3};
 
+		BOOST_TEST(*multi::base(il) == 1);
+
 		multi::const_subarray<int, 1> const csarr(il);
 
-		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	}
-	{
-		std::initializer_list<int> const il = {1, 2, 3};
+		BOOST_TEST( csarr.size() == 3 );
+		BOOST_TEST( csarr.num_elements() == 3 );
 
-		multi::const_subarray const csarr(il);
-
-		BOOST_TEST(*multi::base(il) == 1);
 		BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+		multi::const_subarray const csarr2(il);
+
+		BOOST_TEST( csarr2 == csarr );
 	}
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -516,10 +518,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
+		multi::layout_t<2> const lyt(multi::extensions_t<2>(3, 2));
+		BOOST_TEST( lyt.num_elements() == 6 );
+	}
+	{
 		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
+
+		static_assert(std::is_same_v<multi::element_t<std::decay_t<decltype(il)>>, int>);
 
 		BOOST_TEST(*multi::base(il) == 1);
 
@@ -530,11 +538,63 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs(s1) >= 3 );
 		BOOST_TEST( s2 == 1 );
 
-		// multi::const_subarray<int, 2> const csarr(il);
+		BOOST_TEST( il_lyt.size() == 2);
+		BOOST_TEST( il_lyt.num_elements() == 6 );
 
-		// BOOST_TEST( csarr[1][1] == 5 );
+		multi::const_subarray<int, 2> const csarr(il);
 
-		// BOOST_TEST( csarr[1] == il.begin()[1] );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		using std::get;
+		BOOST_TEST( get<0>(csarr.sizes()) == 2 );
+		BOOST_TEST( get<1>(csarr.sizes()) == 3 );
+
+		BOOST_TEST( csarr[0][0] == 1);
+		BOOST_TEST( csarr[0][1] == 2);
+		BOOST_TEST( csarr[0][2] == 3);
+
+		BOOST_TEST( csarr[1][0] == 4);
+		BOOST_TEST( csarr[1][1] == 5);
+		BOOST_TEST( csarr[1][2] == 6);
+
+		multi::array<int, 2> const arr = csarr;
+
+		BOOST_TEST( arr == csarr );
+
+		multi::array<int, 2> const arr2{multi::const_subarray<int, 2>(il)};
+
+		BOOST_TEST( arr == arr2 );
+
+		multi::array<int, 2> const arr3 = multi::const_subarray<int, 2>(il);
+
+		BOOST_TEST( arr == arr3 );
+
+		multi::const_subarray const csarr2(il);
+
+		BOOST_TEST( csarr2 == csarr );
+
+		multi::array<int, 2> const arr4 = multi::const_subarray(il);
+
+		BOOST_TEST( arr == arr4 );
+
+		multi::array const arr5 = multi::const_subarray(il);
+
+		BOOST_TEST( arr == arr5 );
+
+		auto const arr6 = +multi::const_subarray(il);
+
+		BOOST_TEST( arr == arr6 );
+
+		using multi::operator+;
+		auto const arr7 = +il;
+
+		BOOST_TEST( arr == arr7 );
+
+		// +{...} doesn't compile
+		auto const arr8 = operator+({
+			{1, 2, 3},
+			{4, 5, 6}
+		});
+
+		BOOST_TEST( arr == arr8 );
 	}
 
 	return boost::report_errors();
