@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -14,6 +14,7 @@
 #include <initializer_list>  // for initializer_list, begin, end
 #include <iterator>          // for size, begin, end
 #include <string>            // for basic_string, allocator, char_tr...
+#include <tuple>             // IWYU pragma: keep
 #include <type_traits>       // for is_same_v
 #include <vector>            // for vector
 
@@ -587,7 +588,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr == arr7 );
 
-		auto const arr8 = operator+({  // +{...} doesn't compile
+		// +{...} doesn't compile
+		auto const arr8 = operator+({
 			{1, 2, 3},
 			{4, 5, 6}
 		});
