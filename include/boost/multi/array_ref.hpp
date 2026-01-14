@@ -1,9 +1,9 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ARRAY_REF_HPP_
-#define BOOST_MULTI_ARRAY_REF_HPP_
+#ifndef BOOST_MULTI_ARRAY_REF_HPP
+#define BOOST_MULTI_ARRAY_REF_HPP
 // #pragma once
 
 #include "boost/multi/detail/tuple_zip.hpp"
@@ -3985,4 +3985,4 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_ARRAY_REF_HPP_
+#endif  // BOOST_MULTI_ARRAY_REF_HPP
