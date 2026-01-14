@@ -1367,6 +1367,8 @@ pages:
     - echo "" >> ../.public/boost-multi.hpp
     - cat boost-multi.hpp >> ../.public/boost-multi.hpp
     - cat boost-multi.hpp
+    - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
+    - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
     - cd ..
     - mv .public public
   artifacts:
