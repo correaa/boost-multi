@@ -1,9 +1,9 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP_
-#define BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP_
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP
+#define BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP
 #include <type_traits>
 #pragma once
 

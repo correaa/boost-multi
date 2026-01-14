@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
-#define BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
+#ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP
+#define BOOST_MULTI_DETAIL_SERIALIZATION_HPP
 // #pragma once
 
 #include <algorithm>    // for std::for_each  // IWYU pragma: keep  // bug in iwyu 0.18
@@ -136,4 +136,4 @@ using ::boost::serialization::make_nvp;
 
 }  // end namespace boost
 
-#endif  // BOOST_MULTI_DETAIL_SERIALIZATION_HPP_
+#endif  // BOOST_MULTI_DETAIL_SERIALIZATION_HPP
