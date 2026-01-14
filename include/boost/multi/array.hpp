@@ -606,12 +606,11 @@ struct dynamic_array                                                            
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
-	using dynamic_value_type = 
+	using dynamic_value_type =
 		std::conditional_t<
 			(D != 1),
 			dynamic_array<T, D - 1, allocator_type>,
-			T
-		>;
+			T>;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
