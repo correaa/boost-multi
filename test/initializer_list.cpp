@@ -587,7 +587,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr == arr7 );
 
-		auto const arr8 = multi::operator+({
+		auto const arr8 = operator+({  // +{...} doesn't compile
 			{1, 2, 3},
 			{4, 5, 6}
 		});
