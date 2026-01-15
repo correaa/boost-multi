@@ -14,12 +14,12 @@ Multidimensional array data structures are fundamental to several branches of co
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved  value semantics,
 
 ```
- 1D ┌─0──┬─1──┬─2──┐   2D  ┌─0──┬─1──┬─2──┐   3D  ┌─0──┬─1──┬─2──┐       4D, ... ND
-    │  a │  b │  c │       0  f │  g │  h │       0  m │  n │  o │2──┐
-    └────┴────┴────┘       ├────┼────┼────┤       ├────┼────┼────┤ u │
-                           1  i │  j │  k │       1  p │  q │  r │───┤
-                           └────┴────┴────┘       └────┴────┴────┘ x │
-                                                     └────┴─────┴────┘
+ 1D ┌─ 0 ─┬─ 1 ─┬─ 2 ─┐   2D  ┌─0──┬─1──┬─2──┐   3D  ┌─0──┬─1──┬─2──┐       4D, ... ND
+    │  a  │  b  │  c  │       0  f │  g │  h │       0  m │  n │  o │2──┐
+    └─────┴─────┴─────┘       ├────┼────┼────┤       ├────┼────┼────┤ u │
+                              1  i │  j │  k │       1  p │  q │  r │───┤
+                              └────┴────┴────┘       └────┴────┴────┘ x │
+                                                        └────┴─────┴────┘
 ```
 These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp

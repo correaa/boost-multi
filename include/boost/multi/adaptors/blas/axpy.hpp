@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -183,6 +183,13 @@ template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std
 }
 
 } // end namespace operators
+
+using operators::operator+;
+using operators::operator-;
+
+using operators::operator+=;
+using operators::operator-=;
+
 
 } // end namespace boost::multi::blas
 

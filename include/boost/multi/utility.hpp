@@ -712,11 +712,9 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
-	auto stride = (il.begin() + 1) - (il.begin() + 0);
-	assert(stride == 1);
 	return multi::layout_t<1>{
 		multi::layout_t<0>(multi::extensions_t<0>{}),
-		stride,
+		1,
 		0,
 		static_cast<multi::size_t>(il.size())
 	};
@@ -735,18 +733,19 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 			static_cast<multi::size_t>(il.size() * il.begin()->size())
 		};
 	}
-	auto stride =
+	auto strd =
 		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		base(*(il.begin() + 0));
-	// TODO(correaa) add check
+		base(*(il.begin() + 0))    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		;
+
+	assert(base(*(il.end() - 1)) - base(*il.begin()) == static_cast<std::ptrdiff_t>(il.size() - 1) * strd);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	return multi::layout_t<2>{
 		layout(*il.begin()),
-		stride,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size()) * stride
+		static_cast<multi::size_t>(il.size()) * strd
 	};
-	// size (nelems2_ / stride2_) * (nelems1_ / stride1_);
 }
 
 template<class T>
