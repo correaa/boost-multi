@@ -533,13 +533,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	gemv_broadcast();
 
 	{
-		multi::array const arr = {
+		multi::array<double, 2> const arr = {
 			{1.0, 2.0},
 			{3.0, 4.0}
 		};
-		multi::array const vec = {1.0, 2.0};
+		multi::array<double, 1> const vec = {1.0, 2.0};
 
-		multi::array vec2 = {0.0, 0.0};
+		multi::array<double, 1> vec2 = {0.0, 0.0};
 
 		vec2 = multi::blas::gemv(5.0, arr, vec);
 
