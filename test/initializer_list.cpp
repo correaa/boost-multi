@@ -531,6 +531,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::const_subarray<int, 2> const csarr(il);
 
+		BOOST_TEST( csarr.size() == 3 );
+		BOOST_TEST( csarr[0].size() == 1 );
+		BOOST_TEST( csarr[1].size() == 1 );
+		BOOST_TEST( csarr[2].size() == 1 );
+
 		BOOST_TEST( csarr[0][0] == 1 );
 		BOOST_TEST( csarr[1][0] == 2 );
 		BOOST_TEST( csarr[2][0] == 3 );
@@ -611,6 +616,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr == arr8 );
 	}
 	{
+		std::initializer_list<int> const il = {};
+		BOOST_TEST(il.begin() == nullptr);
+	}
+	{
 		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3}
 		};
@@ -618,7 +627,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( il.size() == 1 );
 		BOOST_TEST( il.begin()->size() == 3 );
 
-		BOOST_TEST(*multi::base(il) == 1);
+		BOOST_TEST(multi::base(il) != nullptr);
+		auto bas = multi::base(il);
+		if(bas != nullptr) {
+			BOOST_TEST(*bas == 1);
+		}
 		// std::cout << "size = " << multi::layout(il).size() << std::endl;
 		BOOST_TEST( multi::layout(il).size() == 1 );
 
