@@ -22,7 +22,7 @@
 #include <cassert>           // for assert
 
 #ifdef __HIP_PLATFORM_AMD__
-#include <hip/hip_runtime.h>  // it seems that AMD, HIP, ROCM, clang 21 needs this to have a working assert in host device functions
+#include <hip/hip_runtime.h>  // it seems that AMD, HIP, ROCM 6.4, clang 21 needs this to have a working assert in host device functions
 #endif
 
 #include <cstddef>           // for size_t, ptrdiff_t, __GLIBCXX__
