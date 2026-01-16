@@ -1052,6 +1052,34 @@ rocm-latest:
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++"]
 
+rocm-6.4.4:
+  stage: build
+  image: rocm/dev-ubuntu-24.04:6.4.4
+  allow_failure: false
+  tags:
+    - non-shared
+    - docker
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
+  interruptible: true
+  script:
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - /opt/rocm/bin/hipconfig --full
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - /opt/rocm/llvm/bin/clang++ --version
+    - cmake --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
+    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
+    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
+  needs: ["clang++"]
+
 circle:
   stage: build
   allow_failure: false
