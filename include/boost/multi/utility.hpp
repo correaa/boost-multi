@@ -730,7 +730,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 			layout(*il.begin()),
 			static_cast<multi::size_t>(il.size()),
 			0,
-			static_cast<multi::size_t>(il.size() * il.begin()->size())
+			static_cast<multi::size_t>(il.size())  // * il.begin()->size())
 		};
 	}
 	auto strd =

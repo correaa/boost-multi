@@ -521,6 +521,34 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::layout_t<2> const lyt(multi::extensions_t<2>(3, 2));
 		BOOST_TEST( lyt.num_elements() == 6 );
 	}
+	// {
+	// 	std::initializer_list<std::initializer_list<int>> const il = {
+	// 		{11}, {22}, {33},
+	// 	};
+
+	// 	auto bas = multi::base(il);
+
+	// 	BOOST_TEST(*bas == 11);
+	// 	BOOST_TEST( multi::layout(il).size() == 3 );
+
+	// 	multi::const_subarray<int, 2> const csarr(il);
+
+	// 	BOOST_TEST( csarr.size() == 3 );
+	// 	BOOST_TEST( csarr[0].size() == 1 );
+	// 	BOOST_TEST( csarr[1].size() == 1 );
+	// 	BOOST_TEST( csarr[2].size() == 1 );
+
+	// 	BOOST_TEST( csarr[0][0] == 11 );
+	// 	BOOST_TEST( csarr[1][0] == 22 );
+	// 	std::cout << "stride = " << csarr.stride() << std::endl;
+	// 	std::cout << "list = " << " *" << bas[0] << ' ' << bas[csarr.stride()] << ' ' << bas[2*csarr.stride()] << " " << bas[2*csarr.stride()] << std::endl;
+	// 	if(csarr[2][0] != 33) {
+	// 		for(int i = -32; i != 64; ++i) {
+	// 			std::cout << "bas[" << i << "] = " << bas[i] << std::endl;
+	// 		}
+	// 	}
+	// 	BOOST_TEST( csarr[2][0] == 33 );
+	// }
 	{
 		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3},
@@ -595,6 +623,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		});
 
 		BOOST_TEST( arr == arr8 );
+	}
+	{
+		std::initializer_list<int> const il = {};
+		// BOOST_TEST(il.begin() == nullptr);  // depends on the implementation
+		BOOST_TEST(il.size() == 0);  // depends on the implementation
+	}
+	{
+		std::initializer_list<std::initializer_list<int>> const il = {
+			{1, 2, 3}
+		};
+
+		BOOST_TEST( il.size() == 1 );
+		BOOST_TEST( il.begin()->size() == 3 );
+
+		BOOST_TEST(multi::base(il) != nullptr);
+		auto const* bas = multi::base(il);
+		if(bas != nullptr) {
+			BOOST_TEST(*bas == 1);
+		}
+		// std::cout << "size = " << multi::layout(il).size() << std::endl;
+		BOOST_TEST( multi::layout(il).size() == 1 );
+
+		multi::const_subarray<int, 2> const csarr(il);
+
+		BOOST_TEST( csarr.size() == 1 );
+		BOOST_TEST( csarr.num_elements() == 3 );
+
+		BOOST_TEST( csarr[0].size() == 3 );
+		BOOST_TEST( csarr[0][0] == 1 );
+		BOOST_TEST( csarr[0][1] == 2 );
+		BOOST_TEST( csarr[0][2] == 3 );
 	}
 
 	return boost::report_errors();
