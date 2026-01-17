@@ -1048,7 +1048,7 @@ rocm-latest:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
-    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
+    - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++"]
 
@@ -1076,7 +1076,7 @@ rocm-6.4.4:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
-    - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
+    - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
   needs: ["clang++"]
 
@@ -1209,7 +1209,7 @@ inq cuda:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=75  # =75  # =80
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -1253,7 +1253,7 @@ inq rocm:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
