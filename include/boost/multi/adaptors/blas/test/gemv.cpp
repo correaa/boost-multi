@@ -8,6 +8,7 @@
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
+#include <boost/multi/broadcast.hpp>           // for operations
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -16,7 +17,6 @@
 #include <complex>    // for complex, operator*
 // #include <cstdlib>    // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>  // for abs
-#include <iostream>  // for char_traits, basic_ost...
 #include <iterator>  // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
@@ -61,7 +61,6 @@ void gemv_broadcast() {
 		multi::array<double, 1> sum_by_rows({2}, 0.0);
 		blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
 
-		std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
 		BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
 		BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
 	}
@@ -532,6 +531,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	gemv_broadcast();
+
+	{
+		multi::array<double, 2> const arr = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
+		multi::array<double, 1> const vec = {1.0, 2.0};
+
+		multi::array<double, 1> vec2 = {0.0, 0.0};
+
+		vec2 = multi::blas::gemv(5.0, arr, vec);
+
+		BOOST_TEST( vec2[1] - 55.0 < 1e-7 );
+
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
+		using multi::blas::gemv;
+		using multi::broadcast::exp;
+		using multi::broadcast::log;
+
+		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
+
+		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
+	}
 
 	return boost::report_errors();
 }
