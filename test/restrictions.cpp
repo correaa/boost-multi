@@ -239,6 +239,20 @@ int main() {
 		BOOST_TEST( v2D_diag[2] == v2D[2][2] );
 	}
 	{
+		std::initializer_list<int> il = {1, 2, 3};
+
+		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::size_t>(il.size()));
+		BOOST_TEST( il_res[1] == 2 );
+	}
+	{
+		std::initializer_list<std::initializer_list<int>> il = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+		BOOST_TEST( il_res[1][1] == 5 );
+	}
+	{
 		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
 
 		multi::array<multi::index, 2> v2D_copy = v2D;
