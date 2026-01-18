@@ -665,7 +665,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( il.size() == 2 );
 		BOOST_TEST( il.begin()->size() == 3 );
 
-		multi::array<int, 2> arr = multi::make_restriction(il);
+		multi::array<int, 2> arr = multi::detail::make_restriction(il);
 		multi::const_subarray<int, 2> const csarr(il);
 
 		BOOST_TEST( arr.size() == 2 );
@@ -680,6 +680,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][0] == 4 );
 		BOOST_TEST( arr[1][1] == 5 );
 		BOOST_TEST( arr[1][2] == 6 );
+	}
+	{
+		std::initializer_list<std::initializer_list<int>> const il = {
+			{11},
+			{22},
+			{33},
+		};
+
+		multi::array<int, 2> const arr = multi::detail::make_restriction(il);
+
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[0].size() == 1 );
+		BOOST_TEST( arr[1].size() == 1 );
+		BOOST_TEST( arr[2].size() == 1 );
+
+		BOOST_TEST( arr[0][0] == 11 );
+		BOOST_TEST( arr[1][0] == 22 );
+
+		BOOST_TEST( arr[0][0] == 11 );
+		BOOST_TEST( arr[1][0] == 22 );
+		BOOST_TEST( arr[2][0] == 33 );
 	}
 
 	return boost::report_errors();
