@@ -59,15 +59,17 @@ The most useful functions work on the _concept_ of an array rather than on a con
 
 [source,cpp]
 ----
-template<class ArrayDouble2D>  // instead of the overspecific argument multi::array<double, 2>
-auto element_1_1(ArrayDouble2D const& m) -> double const& { return m[1][1]; }
+template<class SubarrayDouble2D>  // instead of the overspecific argument multi::array<double, 2> or multi::subarray<double, 2>
+auto element_1_1(SubarrayDouble2D const& m) -> double const& { return m[1][1]; }
 ...
 assert( &element_1_1(A) == &A[1][1] );
 ----
 
 The function expects any array or subarray of dimension 2 (or greater) and returns an element with type `double`.
+(Additional constrains can be applied through SFINAE, `std::enable_if` or with C++20's requirements.)
 
-The generic function template arguments that are not intended to be modified are passed by `const&`; otherwise, they are passed by forward-reference `&&`.
+The generic function template arguments that are not intended to be modified are passed by `const&`;
+otherwise, they are passed by forward-reference `&&`.
 In this way, the functions can be applied to subblocks of larger matrices.
 
 [source,cpp]
