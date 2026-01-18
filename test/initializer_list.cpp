@@ -4,6 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, dynamic_array, num_elements
+#include <boost/multi/restriction.hpp>  // for array, dynamic_array, num_elements
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -654,6 +655,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( csarr[0][0] == 1 );
 		BOOST_TEST( csarr[0][1] == 2 );
 		BOOST_TEST( csarr[0][2] == 3 );
+	}
+	{
+		std::initializer_list<std::initializer_list<int>> const il = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		BOOST_TEST( il.size() == 2 );
+		BOOST_TEST( il.begin()->size() == 3 );
+
+		multi::array<int, 2> arr = multi::make_restriction(il);
+		multi::const_subarray<int, 2> const csarr(il);
+
+		BOOST_TEST( arr.size() == 2 );
+		BOOST_TEST( arr.num_elements() == 6 );
+
+		BOOST_TEST( arr[0].size() == 3 );
+
+		BOOST_TEST( arr[0][0] == 1 );
+		BOOST_TEST( arr[0][1] == 2 );
+		BOOST_TEST( arr[0][2] == 3 );
+
+		BOOST_TEST( arr[1][0] == 4 );
+		BOOST_TEST( arr[1][1] == 5 );
+		BOOST_TEST( arr[1][2] == 6 );
 	}
 
 	return boost::report_errors();
