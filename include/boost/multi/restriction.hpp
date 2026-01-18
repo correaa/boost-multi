@@ -7,23 +7,23 @@
 
 #include <boost/multi/detail/layout.hpp>
 
-namespace boost::multi {
+namespace boost::multi::detail {
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i) { return il.begin()[i]; } ^ multi::extensions(il);
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);
 }
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& il) {
-	return [il](multi::index i, multi::index j) { return il.begin()[i].begin()[j]; } ^ multi::extensions(il);
+	return [il](multi::index i0, multi::index i1) { return il.begin()[i0].begin()[i1]; } ^ multi::extensions(il);
 }
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	return [il](multi::index i, multi::index j, multi::index k) { return il.begin()[i].begin()[j].begin()[k]; } ^ multi::extensions(il);
+	return [il](multi::index i0, multi::index i1, multi::index i2) { return il.begin()[i0].begin()[i1].begin()[i2]; } ^ multi::extensions(il);
 }
 
-}  // namespace boost::multi
+}  // namespace boost::multi::detail
 
 #endif  // BOOST_MULTI_RESTRICTION_HPP
