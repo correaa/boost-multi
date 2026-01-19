@@ -666,6 +666,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( il.begin()->size() == 3 );
 
 		multi::array<int, 2> arr = multi::detail::make_restriction(il);
+
 		multi::const_subarray<int, 2> const csarr(il);
 
 		BOOST_TEST( arr.size() == 2 );
