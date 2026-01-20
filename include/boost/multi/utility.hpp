@@ -711,6 +711,46 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 #endif
 
 template<class T>
+constexpr auto extensions(std::initializer_list<T> const& il) {
+	return multi::extensions_t<1>{static_cast<multi::size_t>(il.size())};
+}
+
+template<class T>
+constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const& il) {
+	if(il.size() == 0) {
+		return multi::extensions_t<2>{0, 0};
+	}
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	// for(std::size_t i = 1; i != il.size(); ++i) {
+	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	// }
+	return multi::extensions_t<2>{static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size())};
+}
+
+template<class T>
+constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+	if(il.size() == 0) {
+		return multi::extensions_t<3>{0, 0, 0};
+	}
+
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	// for(std::size_t i = 1; i != il.size(); ++i) {
+	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	// }
+
+	// if(il.begin()->size() == 0) {
+	// 	return multi::extensions_t<3>{il.size(), 0, 0};
+	// }
+
+	return static_cast<multi::size_t>(il.size()) * extensions(*il.begin());
+	// return multi::extensions_t<3>{
+	// 	static_cast<multi::size_t>(il.size()),
+	// 	static_cast<multi::size_t>(il.begin()->size()),
+	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
+	// };
+}
+
+template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
 	return multi::layout_t<1>{
 		multi::layout_t<0>(multi::extensions_t<0>{}),

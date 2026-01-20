@@ -23,8 +23,8 @@ multi::array<char, 1> A1D = ...;
 multi::array<char, 2> A2D = ...;
 multi::array<char, 3> A3D = ...;
 ```
-and the elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 'b'`, `A2D[1][0] == 'i'` and `A3D[1][0][2] == 'u'`
-Note that the depicted 3D case has only two planes, the first index `0` or `1` selects the plane `top` or `bottom`.)
+and the elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 'b'`, `A2D[1][0] == 'i'` and `A3D[1][0][2] == 'u'` (or, in C++23, `A2D[i, j]` and `A3D[1, 0, 2]`)
+(Note that the depicted 3D case has only two planes, the first index `0` or `1` selects the plane `top` or `bottom`.)
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
 The internal data structure layout (when mapped to computer memory) is stride-based, which makes it compatible with low-level C libraries.
