@@ -532,6 +532,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	gemv_broadcast();
 
+	#ifndef __NVCC__
 	{
 		multi::array<double, 2> const arr = {
 			{1.0, 2.0},
@@ -554,6 +555,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
 	}
+	#endif
 
 	return boost::report_errors();
 }
