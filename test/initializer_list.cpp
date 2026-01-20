@@ -3,7 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for array, dynamic_array, num_elements
+#include <boost/multi/array.hpp>        // for array, dynamic_array, num_elements
 #include <boost/multi/restriction.hpp>  // for array, dynamic_array, num_elements
 
 #include <boost/core/lightweight_test.hpp>
