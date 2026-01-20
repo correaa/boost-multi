@@ -873,8 +873,8 @@ cuda-12.6.3 cutensor:
     - nvidia-smi
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
-    - dpkg -i cuda-keyring_1.1-1_all.deb
+    # - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+    # - dpkg -i cuda-keyring_1.1-1_all.deb
     - apt-get update
     - apt-get -y install cutensor-cuda-12
     - cmake --version
