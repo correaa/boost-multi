@@ -861,26 +861,31 @@ cuda-12.6.3:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
-# cuda-12.9.0:
-#   stage: build
-#   allow_failure: false
-#   image: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
-#   tags:
-#     - non-shared
-#     - nvidia-gpu
-#   interruptible: true
-#   script:
-#     - nvidia-smi
-#     - apt-get -qq update
-#     - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#     - cmake --version
-#     - mkdir build && cd build
-#     - g++ --version
-#     - /usr/local/cuda/bin/nvcc --version
-#     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
-#     - cmake --build . --verbose --parallel 2 || cmake --build . --verbose
-#     - ctest || ctest --rerun-failed --output-on-failure
-#   needs: ["g++", "clang++", "cuda"]
+cuda-12.6.3 cutensor:
+  stage: build
+  allow_failure: true
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+    - dpkg -i cuda-keyring_1.1-1_all.deb
+    - apt-get update
+    - apt-get -y install cutensor-cuda-12
+    - cmake --version
+    - mkdir build && cd build
+    - g++ --version
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
+  needs: ["cuda"]
+
 
 cuda-13.0.1:
   stage: build
