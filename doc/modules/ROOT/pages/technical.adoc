@@ -71,12 +71,12 @@ A thorough description of the cases and workaround is beyond the scope of this s
 
 No, dimensionality cannot be set or changed dynamically, this is fundamental to this library.
 Dimensionality is part of the type of the array or subarray objects.
-This is a choice is make because it is useful to know the dimensionality of an object at compile-time rather than conditionally.
+This is a choice is made because it is useful to know the dimensionality of an object at compile-time rather than conditionally.
 The reason is that in general there are not many algorithms or uses that work in the same way in different dimensions.
 
 The library achieves a different kind of cross-dimensional flexibility by:
 a) Treating D-dimensional arrays as, for example, one-dimensional arrays arrays of (D-1)-dimensional subarrays.
-In fact, a D-dimensional array can be generated from an array of lower dimensionality
+A new D-dimensional array can be generated from an array of lower dimensionality
 
 [source,cpp]
 ----
@@ -104,10 +104,13 @@ std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {ele
 
 == Why is dimensionality static and the sizes are dynamic?
 
-Because this is a useful combination for medium to large arrays.
-Static sizes can be useful for two different orthogonal reason
-a) compile-time arrays,
-b) avoid allocations
+The main idea is that the extensions of an array doesn't need to be hard coded, for applications such as simulations the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
+This is a useful combination for medium to large arrays,
+therefore the library mainly provides arrays which sizes can be determined at run time.
+
+The alternative, static sizes (hard coded) can be useful for two different orthogonal reasons
+a) Compile-time sizes, to optimize access (unroll loops),
+b) Use stack, to avoid allocations
 
 Different features have different trade-off:
 
@@ -115,9 +118,9 @@ Different features have different trade-off:
 |                         | Pros                                     | Const                                                        
 
 | Dynamic dimensionality  | Avoids (dimension) templates/duck typing | Frequent runtime checks for dimensionality, layout and indices need to be dynamic themselves
-| Dynamics sizes          | Runtime adjust sizes              | Requires either allocations or sizes are compile-time bounded
-| Fixed sizes             | Can be stack-based/loop unrolling | No runtime choice, imposes small sizes                       
-| Stack-based             | Avoids allocations                | Sizes are fixed or 
+| Dynamics sizes          | Runtime adjust sizes                     | Requires either allocations or sizes are compile-time bounded
+| Fixed sizes             | Can be stack-based/loop unrolling        | No runtime choice, imposes small sizes                       
+| Stack-based             | Avoids allocations                       | Sizes are fixed or 
 |===
 
 Here is what the library provides:
@@ -132,9 +135,7 @@ Here is what the library provides:
 | `multi::inplace_array<T, D, ...>` | Static           | Dynamic/Mutable (bounded) | Stack                    | Yes, non-transferable (pinned)
 |===
 
-(note that dimensionality is static --compile-time--)
-
-Other cases can be handled by alternatives by other libraries or not provided directly by the library:
+Other cases with dynamic dimension and/or static sizes are not provided directly by this library, but can be handled by this alternatives:
 
 |===
 | Type                                                                                       | Dimensionality   | Sizes                          | Memory                   | Ownership
@@ -147,4 +148,6 @@ Other cases can be handled by alternatives by other libraries or not provided di
 | `std::array<std::array<T, S1>, S2, ...>`                                                   | Static           | Immutable                      | Stack (doesn't allocate) | No, (pinned)
 |===
 
+== Why is c++17 chosen as the minimum?
 
+The implementation use `if constexpr` intensively, if you really need C++14 please open an issue.
