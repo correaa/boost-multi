@@ -886,29 +886,6 @@ cuda-12.6.3 cutensor:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
-
-cuda-13.0.1:
-  stage: build
-  allow_failure: false
-  image: nvcr.io/nvidia/cuda:13.0.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
-  tags:
-    - non-shared
-    - nvidia-gpu
-    - arch75
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update
-    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - cmake --version
-    - mkdir build && cd build
-    - g++ --version
-    - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-ftemplate-backtrace-limit=0" -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --build . --verbose --parallel 2 || cmake --build . --verbose
-    - ctest || ctest --rerun-failed --output-on-failure
-  needs: ["g++", "clang++", "cuda"]
-
 cuda-13.1.0:
   stage: build
   allow_failure: false
@@ -986,7 +963,7 @@ culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
 
 rocm:
   stage: build
-  image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
+  image: rocm/dev-ubuntu-24.04
   allow_failure: false
   tags:
     - non-shared
@@ -1038,7 +1015,7 @@ rocm-latest:
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
-  needs: ["clang++"]
+  needs: ["clang++", "rocm"]
 
 rocm-6.4.4:
   stage: build
@@ -1066,7 +1043,7 @@ rocm-6.4.4:
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
-  needs: ["clang++"]
+  needs: ["clang++", "rocm"]
 
 circle:
   stage: build
