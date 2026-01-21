@@ -14,14 +14,16 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
+	find_package(cuTENSOR REQUIRED)
+
 	find_package(CUDAToolkit REQUIRED COMPONENTS cutensor)
 
-	add_library(cutensor::cutensor UNKNOWN IMPORTED)
+	# add_library(cutensor::cutensor UNKNOWN IMPORTED)
 
-	set_target_properties(cutensor::cutensor PROPERTIES
-		IMPORTED_LOCATION "${CUDAToolkit_LIBRARY_DIR}/libcutensor.so"
-		INTERFACE_INCLUDE_DIRECTORIES "${CUDAToolkit_INCLUDE_DIRS}"
-	)
+	# set_target_properties(cutensor::cutensor PROPERTIES
+	# 	IMPORTED_LOCATION "${CUDAToolkit_LIBRARY_DIR}/libcutensor.so"
+	# 	INTERFACE_INCLUDE_DIRECTORIES "${CUDAToolkit_INCLUDE_DIRS}"
+	# )
 
 endif()
 
@@ -54,7 +56,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
-	target_link_libraries(${TEST_EXE} PRIVATE cutensor::cutensor CUDA::cudart)
+	target_link_libraries(${TEST_EXE} PRIVATE cuTENSOR::cuTENSOR CUDA::cudart)
 
 	add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 endforeach()

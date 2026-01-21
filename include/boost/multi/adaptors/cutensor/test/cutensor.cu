@@ -155,9 +155,9 @@ int main() {
 	/* ***************************** */
 
 	// Create vector of modes
-	std::vector<int> modeC{'m', 'u', 'n', 'v'};
-	std::vector<int> modeA{'m', 'h', 'k', 'n'};
-	std::vector<int> modeB{'u', 'k', 'v', 'h'};
+	std::array<int, 4> modeC{'m', 'u', 'n', 'v'};
+	std::array<int, 4> modeA{'m', 'h', 'k', 'n'};
+	std::array<int, 4> modeB{'u', 'k', 'v', 'h'};
 
 	// Extents
 	std::unordered_map<int, int64_t> extent = {
@@ -188,10 +188,6 @@ int main() {
 	multi::thrust::host::array<floatTypeA, 4> A_host({extent['m'], extent['h'], extent['k'], extent['n']});
 	multi::thrust::host::array<floatTypeA, 4> B_host({extent['u'], extent['k'], extent['v'], extent['h']});
 	multi::thrust::host::array<floatTypeA, 4> C_host({extent['m'], extent['u'], extent['n'], extent['v']});
-
-	// floatTypeA* A = A_host.data_elements();  // (floatTypeA*)malloc(sizeof(floatTypeA) * elementsA);
-	// floatTypeB* B = B_host.data_elements();  // (floatTypeB*)malloc(sizeof(floatTypeB) * elementsB);
-	// floatTypeC* C = C_host.data_elements();  // (floatTypeC*)malloc(sizeof(floatTypeC) * elementsC);
 
 	std::generate(A_host.elements().begin(), A_host.elements().end(), [] { return (((float)rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; });
 	std::generate(B_host.elements().begin(), B_host.elements().end(), [] { return (((float)rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; });
