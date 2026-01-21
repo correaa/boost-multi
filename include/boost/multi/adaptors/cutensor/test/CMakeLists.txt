@@ -14,7 +14,7 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
-	find_package(cuTENSOR REQUIRED)
+	# find_package(cuTENSOR REQUIRED)
 
 	find_package(CUDAToolkit REQUIRED COMPONENTS cutensor)
 
