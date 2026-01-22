@@ -245,7 +245,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		using blas::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
-
 	}
 
 	return boost::report_errors();

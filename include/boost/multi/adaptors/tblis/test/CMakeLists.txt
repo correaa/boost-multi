@@ -1,13 +1,4 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-#[=[Multi Test suite can be run like this:
-  mkdir -p build
-  cd build
-  cmake .. [-DENABLE_CUDA=1]
-  make -j
-  ctest -j --output-on-error [-T memcheck]
-  exit
-#]=]
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -19,28 +10,30 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+#find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 
-if(ENABLE_CUDA OR DEFINED CXXCUDA)
-	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-endif()
+#set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(CUDA QUIET)
+# if(ENABLE_CUDA OR DEFINED CXXCUDA)
+# 	enable_language(CUDA)
+# 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+# endif()
 
-if(CUDA_FOUND)
-	message("CUDA found")
-	include_directories(${CUDA_INCLUDE_DIRS})
-else()
-	message("CUDA not found")
-endif()
+# find_package(CUDA QUIET)
+
+# if(CUDA_FOUND)
+# 	message("CUDA found")
+# 	include_directories(${CUDA_INCLUDE_DIRS})
+# else()
+# 	message("CUDA not found")
+# endif()
 
 enable_testing()
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
+# list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
 include(CTest)
 
 # configure_file("config.hpp.in" ${CMAKE_BINARY_DIR}/config.hpp)
@@ -48,12 +41,29 @@ include(CTest)
 include_directories(${CMAKE_BINARY_DIR})
 
 include_directories(/home/correaa/include /home/correaa/tblis/src/external/tci)
-link_libraries(/home/correaa/lib/libtblis.so)
+#link_libraries(/home/correaa/lib/libtblis.so)
+
+set(OpenMP_C_FLAGS "-Xclang;-fopenmp" CACHE STRING "" FORCE)
+set(OpenMP_CXX_FLAGS "-Xclang;-fopenmp" CACHE STRING "" FORCE)
+
+set(OpenMP_C_LIB_NAMES "omp" CACHE STRING "" FORCE)
+set(OpenMP_CXX_LIB_NAMES "omp" CACHE STRING "" FORCE)
+
+#find_package(tblis REQUIRED)
+FetchContent_Declare(
+    tblis
+    GIT_REPOSITORY https://github.com/devinamatthews/tblis.git
+    GIT_TAG        master   # or a specific commit / tag
+)
+
+FetchContent_MakeAvailable(tblis)
+
+target_link_libraries(tblis PRIVATE $<$<CXX_COMPILER_ID:GNU>:atomic>)  # for macos
 
 # /home/correaa/lib/libtci.a libhwloc.a) find_library(TBLIS_LIBRARY NAMES tblis HINTS) ink_libraries(TBLIS_LIBRARY::CC)
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-set(TEST_SRCS matrix.cpp)
+set(TEST_SRCS tensor.cpp)
 
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
@@ -66,8 +76,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+
+	target_link_libraries(${TEST_EXE} PRIVATE multi)
+	target_link_libraries(${TEST_EXE} SYSTEM PRIVATE tblis)
+
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+
 	if(NOT ENABLE_CUDA)
 		target_compile_options(
 			${TEST_EXE}
