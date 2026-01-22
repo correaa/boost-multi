@@ -198,6 +198,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 | Member functions  | same as for `subarray` plus ...
 
 | (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed.
+| `elements`        | a flatten random-access and contiguous view of all the elements in the array in canonical order. (This is overwritten from the base class, to provide contiguous access)
 |===
 
 |===
