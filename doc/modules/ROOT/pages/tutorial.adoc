@@ -354,8 +354,8 @@ Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-b
 Since these iterators are categorized as random-access, arithmetic can be performed on them, for example `it += n;` and `++it` will advance `it` by `n` positions or by one position respectively.
 
 As an alternative, the elements can be iterated in a flat manner, using the `.elements()` member.
-This flattening is done in a canonical order (rightmost index changes fastest), and it is provided whether the elements are contiguous or not in memory.
-These "elements" range also provides the `begin` and `end` iterators (`.elements().begin()`).
+This "elements" range also provides the `begin` and `end` iterators (`.elements().begin()`) and indexing, in the canonical order of the original arrays (rightmost index changes fastest).
+The elements range is always random-access, but it can be also contiguous depending on the original array (`multi::array` generally give contiguous element ranges.)
 
 Other non-leading dimensions can be obtained by "rotating" indices first.
 `A.rotated().begin()/.end()` gives access to a range of subarrays in the second dimension number (the first dimension is put at the end).
