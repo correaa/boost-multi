@@ -198,6 +198,7 @@ if(MULTI_BUILD_TESTS)
     #  add_subdirectory(include/boost/multi/adaptors/hipthrust/test)
     endif()
 
+    add_subdirectory(include/boost/multi/adaptors/tblis)
     add_subdirectory(include/boost/multi/adaptors)
   endif()
 endif()
