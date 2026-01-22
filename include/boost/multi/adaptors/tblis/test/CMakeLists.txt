@@ -10,6 +10,10 @@ project(
 	LANGUAGES CXX
 )
 
+if(DISABLE_TBLIS)
+	return()
+endif()
+
 include(FetchContent)
 
 #find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
@@ -40,7 +44,7 @@ include(CTest)
 
 include_directories(${CMAKE_BINARY_DIR})
 
-include_directories(/home/correaa/include /home/correaa/tblis/src/external/tci)
+#include_directories(/home/correaa/include /home/correaa/tblis/src/external/tci)
 #link_libraries(/home/correaa/lib/libtblis.so)
 
 set(OpenMP_C_FLAGS "-Xclang;-fopenmp" CACHE STRING "" FORCE)
@@ -49,16 +53,55 @@ set(OpenMP_CXX_FLAGS "-Xclang;-fopenmp" CACHE STRING "" FORCE)
 set(OpenMP_C_LIB_NAMES "omp" CACHE STRING "" FORCE)
 set(OpenMP_CXX_LIB_NAMES "omp" CACHE STRING "" FORCE)
 
-#find_package(tblis REQUIRED)
-FetchContent_Declare(
-    tblis
+include(ExternalProject)
+
+# Where all externals are installed
+set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
+
+# --- CRITICAL: make directories exist at configure time ---
+file(MAKE_DIRECTORY ${EXTERNAL_INSTALL_DIR})
+file(MAKE_DIRECTORY ${EXTERNAL_INSTALL_DIR}/include)
+file(MAKE_DIRECTORY ${EXTERNAL_INSTALL_DIR}/lib)
+
+# ------------------------------------------------------------------------------
+# TBLIS external project
+# ------------------------------------------------------------------------------
+
+ExternalProject_Add(tblis_ep
     GIT_REPOSITORY https://github.com/devinamatthews/tblis.git
-    GIT_TAG        master   # or a specific commit / tag
+    GIT_TAG v2.0-beta2  # master   # pin to a commit/tag in real projects
+    GIT_SHALLOW TRUE
+
+    PREFIX ${CMAKE_BINARY_DIR}/tblis
+
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
+        -DCMAKE_BUILD_TYPE=Release
+
+    BUILD_BYPRODUCTS
+        ${EXTERNAL_INSTALL_DIR}/lib/libtblis${CMAKE_SHARED_LIBRARY_SUFFIX}
+
+	BUILD_COMMAND ${CMAKE_COMMAND} --build . --parallel ${PROCESSOR_COUNT}
 )
 
-FetchContent_MakeAvailable(tblis)
+# Paths *after* installation
+set(TBLIS_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
+set(TBLIS_LIBRARY
+    ${EXTERNAL_INSTALL_DIR}/lib/libtblis${CMAKE_SHARED_LIBRARY_SUFFIX}
+)
 
-target_link_libraries(tblis PRIVATE $<$<CXX_COMPILER_ID:GNU>:atomic>)  # for macos
+add_library(tblis::tblis SHARED IMPORTED GLOBAL)
+
+set_target_properties(tblis::tblis PROPERTIES
+    IMPORTED_LOCATION ${TBLIS_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${TBLIS_INCLUDE_DIR}>
+)
+
+# Ensure build order
+add_dependencies(tblis::tblis tblis_ep)
+
+#target_link_libraries(tblis::tblis PRIVATE $<$<CXX_COMPILER_ID:GNU>:atomic>)  # for macos
 
 # /home/correaa/lib/libtci.a libhwloc.a) find_library(TBLIS_LIBRARY NAMES tblis HINTS) ink_libraries(TBLIS_LIBRARY::CC)
 
@@ -77,8 +120,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
-	target_link_libraries(${TEST_EXE} PRIVATE multi)
-	target_link_libraries(${TEST_EXE} SYSTEM PRIVATE tblis)
+	# target_link_libraries(${TEST_EXE} PRIVATE multi)
+	target_link_libraries(${TEST_EXE} PRIVATE tblis::tblis multi)
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
