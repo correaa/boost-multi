@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 find_package(MPI)
 
-if(DEFINED DISABLE_MPI)
+if(DISABLE_MPI)
   message(WARNING "MPI disabled, MPI adaptor will not be tested.")
 else()
   if(MPI_FOUND)
