@@ -80,6 +80,7 @@ ExternalProject_Add(tblis_ep
         -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_C_COMPILER=gcc
+		-DTBLIS_ARCH=generic
 
 	BUILD_ENVIRONMENT
         CC=gcc
