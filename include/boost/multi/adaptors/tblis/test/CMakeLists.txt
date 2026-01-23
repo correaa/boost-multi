@@ -10,6 +10,9 @@ project(
 
 option(DISABLE_TBLIS "Disable TBLIS support" OFF)
 
+message(STATUS "DISABLE_TBLIS value='${DISABLE_TBLIS}'")
+message(STATUS "DISABLE_TBLIS cache='$CACHE{DISABLE_TBLIS}'")
+
 if(DISABLE_TBLIS)
 	message(WARNING "TBLIS disabled, will not be tested")
 	return()
