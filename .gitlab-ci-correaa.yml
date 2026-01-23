@@ -96,7 +96,7 @@ g++-m32 sanitize:
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
