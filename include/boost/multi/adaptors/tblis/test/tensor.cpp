@@ -12,6 +12,26 @@
 // namespace multi = boost::multi;
 
 int main() {
+double data_A[10*9*2*5];
+	tblis::tblis_tensor A;
+	tblis::tblis_init_tensor_d(&A, 4, (tblis::len_type[]){10, 9, 2, 5},
+                    data_A, (tblis::stride_type[]){1, 10, 90, 180});
+
+	double data_B[7*5*9*8];
+	tblis::tblis_tensor B;
+	tblis::tblis_init_tensor_d(&B, 4, (tblis::len_type[]){7, 5, 9, 8},
+						data_B, (tblis::stride_type[]){1, 7, 35, 315});
+
+	double data_C[7*2*10*8];
+	tblis::tblis_tensor C;
+	tblis::tblis_init_tensor_d(&C, 4, (tblis::len_type[]){7, 2, 10, 8},
+						data_C, (tblis::stride_type[]){1, 7, 14, 140});
+
+	// initialize data_A and data_B...
+
+	// this computes C[abcd] += A[cebf] B[afed]
+	tblis::tblis_tensor_mult(NULL, NULL, &A, "cebf", &B, "afed", &C, "abcd");
+
 	auto fun = &tblis::tblis_init_tensor_scaled_z;
 	(void)fun;
 	// BOOST_AUTO_TEST_CASE(blis_matrix)
