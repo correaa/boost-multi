@@ -11,6 +11,8 @@ project(
 if(DEFINED DISABLE_TBLIS)
 	message(WARNING "TBLIS disabled, will not be tested")
 	return()
+else()
+	message(WARNING "TBLIS enabled, will be tested")
 endif()
 
 include(FetchContent)
