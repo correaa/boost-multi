@@ -9,31 +9,76 @@
 #include <boost/core/lightweight_test.hpp>
 // #include <boost/multi/adaptors/tblis.hpp>
 
-// namespace multi = boost::multi;
+namespace boost::multi::tblis {
+	class tensor {
+		::tblis::tblis_tensor impl_;
+
+	 public:
+		template<class Array>
+		tensor(Array&& arr) {
+			auto lens = apply([](auto... el) { return std::array{static_cast<::tblis::len_type>(el)...}; }, arr.sizes());
+			auto strides = apply([](auto... el) { return std::array{static_cast<::tblis::stride_type>(el)...}; }, arr.strides());
+			::tblis::tblis_init_tensor_d(&impl_, arr.dimensionality, lens.data(), arr.base(), strides.data());
+		}
+	};
+}
+
+namespace multi = boost::multi;
 
 int main() {
-double data_A[10*9*2*5];
+	std::unordered_map<char, multi::extension_t<>> ext = {
+		{'a', 8},
+		{'b', 10},
+		{'c', 2},
+		{'d', 7}
+	};
+
+	multi::array<double, 4> Aarr({10, 9, 2, 5});
+
+	double data_A[10 * 9 * 2 * 5];
+
 	tblis::tblis_tensor A;
-	tblis::tblis_init_tensor_d(&A, 4, (tblis::len_type[]){10, 9, 2, 5},
-                    data_A, (tblis::stride_type[]){1, 10, 90, 180});
+	tblis::tblis_init_tensor_d(&A, 4, (tblis::len_type[]){10, 9, 2, 5}, data_A, (tblis::stride_type[]){1, 10, 90, 180});
 
-	double data_B[7*5*9*8];
+	double data_B[7 * 5 * 9 * 8];
+
 	tblis::tblis_tensor B;
-	tblis::tblis_init_tensor_d(&B, 4, (tblis::len_type[]){7, 5, 9, 8},
-						data_B, (tblis::stride_type[]){1, 7, 35, 315});
+	tblis::tblis_init_tensor_d(&B, 4, (tblis::len_type[]){7, 5, 9, 8}, data_B, (tblis::stride_type[]){1, 7, 35, 315});
 
-	double data_C[7*2*10*8];
+	double data_C[7 * 2 * 10 * 8];
+
 	tblis::tblis_tensor C;
-	tblis::tblis_init_tensor_d(&C, 4, (tblis::len_type[]){7, 2, 10, 8},
-						data_C, (tblis::stride_type[]){1, 7, 14, 140});
+	tblis::tblis_init_tensor_d(&C, 4, (tblis::len_type[]){7, 2, 10, 8}, data_C, (tblis::stride_type[]){1, 7, 14, 140});
+
+	multi::array<double, 4> Carr({ext['a'], ext['b'], ext['c'], ext['d']}, 0.0);
 
 	// initialize data_A and data_B...
 
 	// this computes C[abcd] += A[cebf] B[afed]
 	tblis::tblis_tensor_mult(NULL, NULL, &A, "cebf", &B, "afed", &C, "abcd");
 
-	auto fun = &tblis::tblis_init_tensor_scaled_z;
-	(void)fun;
+	// auto const C_gold = [&A, &B]{
+	// 	multi::array<double, 4> _({8, 10, 2, 7}, 0.);
+	// 	// this computers C_check[abcd] += A[cebf] B[afed]
+	// 	for(auto a = 0; a != 8; ++a){
+	// 		for(auto b = 0; b != 10; ++b){
+	// 			for(auto c = 0; c != 2; ++c){
+	// 				for(auto d = 0; d != 7; ++d){
+
+	// 					for(auto e = 0; e != 5; ++e){
+	// 						for(auto f = 0; f != 9; ++f){
+	// 							_[a][b][c][d] += A[c][e][b][f]*B[a][f][e][d];
+	// 						}
+	// 					}
+
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	return _;
+	// }();
+
+
 	// BOOST_AUTO_TEST_CASE(blis_matrix)
 	// {
 	// 	namespace tblis = multi::tblis;
