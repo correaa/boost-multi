@@ -8,7 +8,9 @@ project(
 	LANGUAGES CXX
 )
 
-if(NOT DEFINED DISABLE_TBLIS)
+if(NOT DISABLE_TBLIS)
+	message(WARNING "TBLIS enabled, will be installed and tested")
+
 	include(FetchContent)
 
 	#find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
