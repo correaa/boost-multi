@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 project(
 	boost-multi-adaptors-blis-test
 	VERSION 0.1
@@ -11,6 +9,7 @@ project(
 )
 
 if(DEFINED DISABLE_TBLIS)
+	message(WARNING "TBLIS disabled, will not be tested")
 	return()
 endif()
 
