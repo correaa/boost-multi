@@ -8,7 +8,7 @@ project(
 	LANGUAGES CXX
 )
 
-cmake_policy(SET CMP0077 NEW)
+cmake_policy(SET CMP0077 NEW)  # brings sanity to option
 
 option(DISABLE_TBLIS "Disable TBLIS support" OFF)
 
