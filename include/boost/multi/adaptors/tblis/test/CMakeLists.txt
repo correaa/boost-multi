@@ -8,6 +8,8 @@ project(
 	LANGUAGES CXX
 )
 
+option(DISABLE_TBLIS "Disable TBLIS support" OFF)
+
 if(NOT DISABLE_TBLIS)
 	message(WARNING "TBLIS enabled, will be installed and tested")
 
