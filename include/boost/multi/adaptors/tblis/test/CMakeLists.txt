@@ -10,7 +10,10 @@ project(
 
 option(DISABLE_TBLIS "Disable TBLIS support" OFF)
 
-if(NOT DISABLE_TBLIS)
+if(DISABLE_TBLIS)
+	message(WARNING "TBLIS disabled, will not be tested")
+	return()
+else()
 	message(WARNING "TBLIS enabled, will be installed and tested")
 
 	include(FetchContent)
@@ -172,8 +175,5 @@ if(NOT DISABLE_TBLIS)
 		endif()
 		add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 	endforeach()
-
-else()
-	message(WARNING "TBLIS disabled, will not be tested")
 endif()
 
