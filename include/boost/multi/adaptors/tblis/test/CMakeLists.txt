@@ -10,7 +10,7 @@ project(
 	LANGUAGES CXX
 )
 
-if(DISABLE_TBLIS)
+if(DEFINED DISABLE_TBLIS)
 	return()
 endif()
 
