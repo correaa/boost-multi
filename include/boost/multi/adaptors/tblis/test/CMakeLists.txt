@@ -8,11 +8,7 @@ project(
 	LANGUAGES CXX
 )
 
-cmake_policy(SET CMP0077 NEW)  # brings sanity to option
-
 option(DISABLE_TBLIS "Disable TBLIS support" OFF)
-
-message(STATUS "DISABLE_TBLIS='${DISABLE_TBLIS}' (cache=$CACHE{DISABLE_TBLIS})")
 
 if(DISABLE_TBLIS)
 	message(WARNING "TBLIS disabled, will not be tested")
