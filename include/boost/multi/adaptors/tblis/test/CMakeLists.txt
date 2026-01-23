@@ -72,7 +72,7 @@ ExternalProject_Add(tblis_ep
 	# PATCH_COMMAND git submodule update --init --recursive
     GIT_REPOSITORY https://github.com/devinamatthews/tblis.git
     GIT_TAG master  # v2.0-beta2  # pin to a commit/tag in real projects
-    GIT_SHALLOW TRUE
+    # GIT_SHALLOW TRUE
 
     PREFIX ${CMAKE_BINARY_DIR}/tblis
 
