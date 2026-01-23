@@ -487,7 +487,7 @@ this example code implements Gauss Jordan Elimination without pivoting:
 [source,cpp]
 ----
 template<class Matrix, class Vector>
-auto gj_solve(Matrix&& A, Vector&& y) -> decltype(y[0]/=A[0][0], y) {
+auto gj_solve(Matrix&& A, Vector&& y) -> Vector&& {
 	std::ptrdiff_t Asize = size(A);
 	for(std::ptrdiff_t r = 0; r != Asize; ++r) {
 		auto&& Ar = A[r];
@@ -505,7 +505,7 @@ auto gj_solve(Matrix&& A, Vector&& y) -> decltype(y[0]/=A[0][0], y) {
 		auto const& yr = y[r];
 		for(std::ptrdiff_t r2 = r-1; r2 >=0; --r2) {y[r2] -= yr*A[r2][r];}
 	}
-	return y;
+	return std::forward<Vector>(y);
 }
 ----
 
@@ -522,7 +522,7 @@ and also to a combination of `MultiArrayView`-type objects (including standard v
 
 [source,cpp]
 ----
-multi::array<double, 2> A({6000, 7000}); std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.1);
+multi::array<double, 2> A({6000, 7000}); std::iota(A.elements().begin(), A.elements().end(), 0.1);
 std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);  // could be also a multi::array<double, 1> y({3000});
 gj_solve(A({1000, 4000}, {0, 3000}), y);
 ----
