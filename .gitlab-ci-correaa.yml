@@ -294,7 +294,7 @@ clang++:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake git python3 make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1" -DDISABLE_TBLIS=1
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
