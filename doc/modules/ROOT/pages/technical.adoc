@@ -67,6 +67,7 @@ This underscores the need for caution when using such operations in your code.
 
 A thorough description of the cases and workaround is beyond the scope of this section.
 
+[#technical_change_dimensionality]
 == Can I change the dimensionality of an array dynamically?
 
 No, dimensionality cannot be set or changed dynamically, this is fundamental to this library.
@@ -102,6 +103,7 @@ std::for_each(A1D.elements().begin(), A1D.elements().end(), [](auto&& elem) {ele
 std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {elem *= 2;} );
 ----
 
+[#technical_dimensionality_static]
 == Why is dimensionality static and the sizes are dynamic?
 
 The main idea is that the extensions of an array doesn't need to be hard coded, for applications such as simulations the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
@@ -148,6 +150,7 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 | `std::array<std::array<T, S1>, S2, ...>`                                                   | Static           | Immutable                      | Stack (doesn't allocate) | No, (pinned)
 |===
 
+[#technical_cpp17_minimum]
 == Why is c++17 chosen as the minimum?
 
 The implementation use `if constexpr` intensively, if you really need C++14 please open an issue.
