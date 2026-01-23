@@ -395,7 +395,7 @@ clang++-16 std-20:
     - mkdir build && cd build
     - clang-16 --version
     - clang++-16 --version
-    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DDISABLE_TBLIS=1
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DDISABLE_TBLIS=ON
     - cmake --build .
     - ctest -j 2 --output-on-failure
   needs: ["clang++"]
