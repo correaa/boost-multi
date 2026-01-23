@@ -8,7 +8,7 @@ project(
 	LANGUAGES CXX
 )
 
-option(DISABLE_TBLIS "Disable TBLIS support" OFF)
+#option(DISABLE_TBLIS "Disable TBLIS support" OFF)
 
 message(STATUS "DISABLE_TBLIS value='${DISABLE_TBLIS}'")
 message(STATUS "DISABLE_TBLIS cache='$CACHE{DISABLE_TBLIS}'")
