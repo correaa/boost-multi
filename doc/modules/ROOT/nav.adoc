@@ -30,6 +30,7 @@
 * xref:technical.adoc[]
 ** xref:technical.adoc#technical_indexing[Indexing]
 ** xref:technical.adoc#technical_iteration[Iteration]
+** xref:technical.adoc#technical_cpp17_minimum[Minimum C++ version]
 * xref:reference.adoc[]
 ** xref:reference.adoc#ref_types[Fundamental types and concepts]
 *** xref:reference.adoc#ref_subarray[Subarrays]
