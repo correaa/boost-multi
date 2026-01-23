@@ -79,6 +79,7 @@ ExternalProject_Add(tblis_ep
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
         -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_C_COMPILER=gcc
 
     BUILD_BYPRODUCTS
         ${EXTERNAL_INSTALL_DIR}/lib/libtblis${CMAKE_SHARED_LIBRARY_SUFFIX}
