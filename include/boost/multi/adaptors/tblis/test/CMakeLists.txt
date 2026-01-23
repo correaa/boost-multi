@@ -79,8 +79,7 @@ ExternalProject_Add(tblis_ep
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
         -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_C_COMPILER=gcc
-		-DTBLIS_ARCH=generic  # prevents bus error on mac arm
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 
 	BUILD_ENVIRONMENT
         CC=gcc
