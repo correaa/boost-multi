@@ -68,8 +68,10 @@ file(MAKE_DIRECTORY ${EXTERNAL_INSTALL_DIR}/lib)
 # ------------------------------------------------------------------------------
 
 ExternalProject_Add(tblis_ep
+	# URL https://github.com/MatthewsResearchGroup/tblis/archive/refs/tags/v2.0-beta2.tar.gz
+	# PATCH_COMMAND git submodule update --init --recursive
     GIT_REPOSITORY https://github.com/devinamatthews/tblis.git
-    GIT_TAG v2.0-beta2  # master   # pin to a commit/tag in real projects
+    GIT_TAG master  # v2.0-beta2  # pin to a commit/tag in real projects
     GIT_SHALLOW TRUE
 
     PREFIX ${CMAKE_BINARY_DIR}/tblis
