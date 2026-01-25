@@ -494,6 +494,19 @@ class restriction :
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
+#ifdef __cpp_deduction_guides
+template<dimensionality_type D, typename Fun>
+restriction(multi::extensions_t<D>, Fun) -> restriction<D, Fun>;
+
+template<typename Fun> restriction(extensions_t<0>, Fun) -> restriction<0, Fun>;
+template<typename Fun> restriction(extensions_t<1>, Fun) -> restriction<1, Fun>;
+template<typename Fun> restriction(extensions_t<2>, Fun) -> restriction<2, Fun>;
+template<typename Fun> restriction(extensions_t<3>, Fun) -> restriction<3, Fun>;
+template<typename Fun> restriction(extensions_t<4>, Fun) -> restriction<4, Fun>;
+template<typename Fun> restriction(extensions_t<5>, Fun) -> restriction<5, Fun>;
+template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
+#endif
+
 template<dimensionality_type D>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
@@ -620,10 +633,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	using index        = multi::index;
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extensions_t<D - 1>::indices_type>;
 
-	template<class Func>
-	friend BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t const& xs) {
-		return restriction<D, Func>(xs, std::move(fun));
-	}
+	// template<class Func>
+	// friend BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t const& xs) {
+	// 	return restriction<D, Func>(xs, std::move(fun));
+	// }
 	template<class Func>
 	friend constexpr auto operator->*(extensions_t const& xs, Func fun) {
 		return restriction<D, Func>(xs, std::move(fun));
@@ -1046,10 +1059,10 @@ template<> struct extensions_t<0> : tuple<> {
 		return get<Index>(this->base());
 	}
 
-	template<class Fun>
-	friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
-		return restriction<0, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
-	}
+	// template<class Fun>
+	// friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+	// 	return restriction<0, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
+	// }
 };
 
 template<> struct extensions_t<1> : tuple<multi::index_extension> {
@@ -1221,10 +1234,10 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return elements_t{get<0>(static_cast<tuple<multi::index_extension> const&>(*this))};
 	}
 
-	template<class Fun>
-	friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
-		return restriction<1, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
-	}
+	// template<class Fun>
+	// friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
+	// 	return restriction<1, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
+	// }
 
 	using nelems_type = index;
 
@@ -1335,6 +1348,16 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return get<Index>(self.base());
 	}
 };
+
+template<class Func, dimensionality_type D>
+BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t<D> const& xs) {
+	return restriction<D, Func>(xs, std::move(fun));
+}
+// these overload do not help because operators cannot be used use with braces-only operands
+// template<class Func>
+// constexpr auto operator^(Func fun, extensions_t<2> const& xs) {
+// 	return restriction<2, Func>(xs, std::move(fun));
+// }
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
