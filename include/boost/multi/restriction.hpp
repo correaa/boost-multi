@@ -6,6 +6,7 @@
 #define BOOST_MULTI_RESTRICTION_HPP
 
 #include <boost/multi/detail/layout.hpp>
+#include <boost/multi/utility.hpp>
 
 namespace boost::multi::detail {
 
@@ -35,5 +36,27 @@ constexpr auto make_restriction(std::initializer_list<std::initializer_list<std:
 #endif
 
 }  // namespace boost::multi::detail
+
+namespace boost::multi {
+
+template<dimensionality_type D, typename Fun>
+auto restrict(Fun&& fun, extensions_t<D> const& ext) {
+	return restriction<D, Fun>(ext, std::forward<Fun>(fun));
+}
+
+template<typename Fun>
+auto restrict(Fun&& fun, extensions_t<0> const& ext) {
+	return restriction<0, Fun>(ext, std::forward<Fun>(fun));
+}
+template<typename Fun>
+auto restrict(Fun&& fun, extensions_t<1> const& ext) {
+	return restriction<1, Fun>(ext, std::forward<Fun>(fun));
+}
+template<typename Fun>
+auto restrict(Fun&& fun, extensions_t<2> const& ext) {
+	return restriction<2, Fun>(ext, std::forward<Fun>(fun));
+}
+
+}  // namespace boost::multi
 
 #endif  // BOOST_MULTI_RESTRICTION_HPP

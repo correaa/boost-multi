@@ -6,6 +6,8 @@
 #define BOOST_MULTI_DETAIL_WHAT_HPP
 // #pragma once
 
+#include <tuple>
+
 namespace boost::multi::detail {
 template<class T> auto              what(T&&) -> T&&                     = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
 template<class... Ts> auto          what(Ts&&...) -> std::tuple<Ts&&...> = delete;  // NOLINT(cppcoreguidelines-missing-std-forward)
