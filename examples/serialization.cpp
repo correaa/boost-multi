@@ -16,6 +16,7 @@ exit
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/multi_array.hpp>
+
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -383,7 +384,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0},
 		};
 		multi::array_ref<double, 2>       marr(&carr[0][0], {3, 10});
-		boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
+//		boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
 
 		namespace arxiv = boost::archive;
 		{
