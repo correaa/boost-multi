@@ -43,8 +43,8 @@ auto operator+(std::initializer_list<std::initializer_list<T>> il) {  // NOLINT(
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
-		auto R1 = multi::restriction({2, 3}, [](auto i, auto j) { return i + j; });
-		auto R2 = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{2, 3};
+		auto R1 = multi::restriction({2, 3}, [](auto ii, auto jj) { return ii + jj; });
+		auto R2 = [](auto ii, auto jj) { return ii + jj; } ^ multi::extensions_t{2, 3};
 
 		BOOST_TEST( R1[1][1] == 2 );
 		BOOST_TEST( R2[1][1] == 2 );
