@@ -4,11 +4,12 @@
 
 #include <boost/multi/array.hpp>
 
-#include <tblis/tblis.h>
 
 #include <boost/core/lightweight_test.hpp>
 // #include <boost/multi/adaptors/tblis.hpp>
 
+#if __cplusplus >= 202002L
+#include <tblis/tblis.h>
 namespace boost::multi::tblis {
 	class tensor {
 		::tblis::tblis_tensor impl_;
@@ -211,3 +212,6 @@ int main() {
 	// }
 	return boost::report_errors();
 }
+#else
+int main() {}
+#endif
