@@ -494,6 +494,19 @@ class restriction :
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
+#ifdef __cpp_deduction_guides
+template<dimensionality_type D, typename Fun>
+restriction(multi::extensions_t<D>, Fun) -> restriction<D, Fun>;
+
+template<typename Fun> restriction(extensions_t<0>, Fun) -> restriction<0, Fun>;
+template<typename Fun> restriction(extensions_t<1>, Fun) -> restriction<1, Fun>;
+template<typename Fun> restriction(extensions_t<2>, Fun) -> restriction<2, Fun>;
+template<typename Fun> restriction(extensions_t<3>, Fun) -> restriction<3, Fun>;
+template<typename Fun> restriction(extensions_t<4>, Fun) -> restriction<4, Fun>;
+template<typename Fun> restriction(extensions_t<5>, Fun) -> restriction<5, Fun>;
+template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
+#endif
+
 template<dimensionality_type D>
 struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_>;
