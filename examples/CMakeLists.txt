@@ -42,4 +42,15 @@ if(TBB_FOUND)
 	target_compile_definitions(redux.cpp.x PUBLIC  TBB_FOUND=1)
 endif()
 
+# Boost (header-only for what we use)
+find_package(Boost REQUIRED)
+
+# libpng (required by Boost.GIL PNG backend)
+find_package(PNG REQUIRED)
+
+add_executable(gil_grayscale.cpp.x gil_grayscale.cpp)
+target_link_libraries(gil_grayscale.cpp.x     PRIVATE
+        Boost::boost
+        PNG::PNG)
+
 add_test(NAME redux.cpp.x COMMAND redux.cpp.x)
