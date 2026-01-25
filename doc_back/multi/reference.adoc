@@ -30,6 +30,8 @@ The whole object can be invalidated if the original array is destroyed.
 
 (Additionally, `multi::const_subarray` provides a similar interface to `multi::subarray` but it protects referenced elements from being modified.)
 
+To use these types use `#include <boost/multi/array_ref.hpp>`.
+
 #### `multi::subarray<T, D, P = T*>` member types
 
 |===
@@ -217,6 +219,8 @@ It supports stateful and polymorphic allocators, which are the default for the s
 
 For most uses, a `multi::array` should be preferred instead.
 
+To use this and derived types use `#include <boost/multi/array.hpp>`.
+
 The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
 It can be useful for scoped uses of arrays and multi-threaded programming and to ensure that assignments do not incur allocations.
@@ -314,7 +318,6 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 | `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
 |===
 
-
 ### Iterators
 
 The library offers random-access iterator to subarrays of dimension `D - 1`. and they are represented by types of the form `multi::[sub]array<T, D, P>::(const_)iterator`.
@@ -325,6 +328,29 @@ Note that this is the same type for all related arrays, for example, `multi::arr
 
 `iterator` can be invalidated when its original array is invalidated, destroyed or resized.
 An `iterator` that stems from `static_array` becomes invalid only if the original array was destroyed or out-of-scope.
+
+### Restrictions (lazy arrays)
+
+Restrictions are array that lazily generate its elements on the fly, based on some function or function object.
+The do not in general allocate or manage any memory, and elements are immutable.
+
+The interface is the same as `subarray` except that there is no `.base()` member and indexing operators return element values, rather than references.
+
+To use this type, `#include <boost/multi/restriction.hpp>`
+
+|===
+| Member types      |
+
+| ...
+|===
+
+|===
+| Member fuctions   |
+
+| (constructors)    | `restriction::restriction(extensions_t<D> xs, F fun)` constructs a D-dimensional lazy array. The array elements `rest[i][j]` are simply `fun(i, j)` if both indices are widthin the valid range.
+| (destructor)      | implictly destroys the internal copy of `fun`
+| ...               |
+|===
 
 ## Type Requirements
 
