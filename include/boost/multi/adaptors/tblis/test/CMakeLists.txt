@@ -73,6 +73,7 @@ else()
 	)
 
 	add_library(tblis::tblis SHARED IMPORTED GLOBAL)
+	#target_compile_features(tblis::tblis PUBLIC cxx_std_20)
 
 	set_target_properties(tblis::tblis PROPERTIES
 		IMPORTED_LOCATION ${TBLIS_LIBRARY}

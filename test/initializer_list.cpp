@@ -42,6 +42,14 @@ auto operator+(std::initializer_list<std::initializer_list<T>> il) {  // NOLINT(
 }  // end namespace boost::multi
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		auto R1 = multi::restriction({2, 3}, [](auto ii, auto jj) { return ii + jj; });
+		auto R2 = [](auto ii, auto jj) { return ii + jj; } ^ multi::extensions_t{2, 3};
+
+		BOOST_TEST( R1[1][1] == 2 );
+		BOOST_TEST( R2[1][1] == 2 );
+	}
+
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
 		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
