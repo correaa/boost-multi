@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
+#include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
