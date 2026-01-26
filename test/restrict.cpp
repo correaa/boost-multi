@@ -17,14 +17,14 @@ auto main() -> int {
 		auto const R4 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, multi::extensions_t{2, 3});
 		auto const R5 = multi::restrict<2>([](auto ii, auto jj) { return ii + jj; }, {2, 3});
 
-		auto const R6 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, {2, 3});
+		// auto const R6 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, {2, 3});
 
 		BOOST_TEST( R1[1][1] == 2 );
 		BOOST_TEST( R2[1][1] == 2 );
 		BOOST_TEST( R3[1][1] == 2 );
 		BOOST_TEST( R4[1][1] == 2 );
 		BOOST_TEST( R5[1][1] == 2 );
-		BOOST_TEST( R6[1][1] == 2 );
+		// BOOST_TEST( R6[1][1] == 2 );
 	}
 
 	return boost::report_errors();

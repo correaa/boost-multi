@@ -429,32 +429,32 @@ template<typename Fun> restriction(extensions_t<5>, Fun) -> restriction<5, Fun>;
 template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
 #endif
 
-template<dimensionality_type D, typename Fun>
-auto restrict(Fun&& fun, extensions_t<D> const& ext) {
-	return restriction<D, Fun>(ext, std::forward<Fun>(fun));
+template<dimensionality_type D, typename F>
+auto restrict(F&& fun, extensions_t<D> const& ext) {
+	return restriction<D, F>(ext, std::forward<F>(fun));
 }
 
-template<typename Fun>
-auto restrict(Fun&& fun, extensions_t<0> const& ext) {
-	return restriction<0, Fun>(ext, std::forward<Fun>(fun));
-}
-template<typename Fun>
-auto restrict(Fun&& fun, extensions_t<1> const& ext) {
-	return restriction<1, Fun>(ext, std::forward<Fun>(fun));
-}
-template<typename Fun>
-auto restrict(Fun&& fun, extensions_t<2> const& ext) {
-	return restriction<2, Fun>(ext, std::forward<Fun>(fun));
+// template<typename Fun>
+// auto restrict(Fun&& fun, extensions_t<0> const& ext) {
+// 	return restriction<0, Fun>(ext, std::forward<Fun>(fun));
+// }
+// template<typename Fun>
+// auto restrict(Fun&& fun, extensions_t<1> const& ext) {
+// 	return restriction<1, Fun>(ext, std::forward<Fun>(fun));
+// }
+// template<typename Fun>
+// auto restrict(Fun&& fun, extensions_t<2> const& ext) {
+// 	return restriction<2, Fun>(ext, std::forward<Fun>(fun));
+// }
+
+template<class F, dimensionality_type D>
+BOOST_MULTI_HD constexpr auto operator^(F fun, extensions_t<D> const& xs) {
+	return restriction<D, F>(xs, std::move(fun));
 }
 
-template<class Func, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t<D> const& xs) {
-	return restriction<D, Func>(xs, std::move(fun));
-}
-
-template<class Func, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator->*(extensions_t<D> const& xs, Func fun) {
-	return restriction<D, Func>(xs, std::move(fun));
+template<class F, dimensionality_type D>
+BOOST_MULTI_HD constexpr auto operator->*(extensions_t<D> const& xs, F fun) {
+	return restriction<D, F>(xs, std::move(fun));
 }
 
 }  // namespace boost::multi

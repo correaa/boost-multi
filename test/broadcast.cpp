@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/broadcast.hpp>
+#include <boost/multi/restriction.hpp>  // for restriction, operator!=
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
@@ -14,6 +15,7 @@
 #include <iterator>  // IWYU pragma: keep
 #include <limits>    // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <numeric>
+// IWYU pragma: no_include <tuple>    // for apply
 #include <utility>  // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 
 namespace multi = boost::multi;
