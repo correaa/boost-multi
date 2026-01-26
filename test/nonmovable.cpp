@@ -5,10 +5,13 @@
 
 #include <boost/multi/array.hpp>  // for subarray, array, range, operator!=
 
+#include "boost/multi/restriction.hpp"  // for operator^
+
 #include <boost/core/lightweight_test.hpp>
 
 #include <array>
 #include <new>  // IWYU pragma: keep
+// IWYU pragma: no_include <utility>  // for declval, forward, move
 
 namespace multi = boost::multi;
 
