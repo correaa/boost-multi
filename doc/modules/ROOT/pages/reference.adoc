@@ -48,6 +48,8 @@ The whole object can be invalidated if the original array is destroyed.
 
 (Additionally, `multi::const_subarray` provides a similar interface to `multi::subarray` but it protects referenced elements from being modified.)
 
+All member functions are `constexpr` unless specified otherwise.
+
 ==== `multi::subarray<T, D, P = T*>` member types
 
 |===
@@ -158,13 +160,13 @@ These operations generate different ways to view the elements of a (sub)array, b
 | `chunked`                                   | a view of higher dimensionality resulting from partitioning the original into subarrays of a certain length
 | `dropped`                                   | (takes one integer argument `n`) returns a subarray with the first n-elements (in the first dimension) dropped from the original subarray. This doesn't remove or destroy elements or resize the original array 
 | `element_transformed`                       | creates a view of the array, where each element is transformed according to a function (first and only argument)
-| `elements`                                  | a flatted view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of range. Takes no argument.
+| `elements`                                  | a flatted random-access view of all the elements rearranged canonically. `A.elements()[0] -> A[0][0]`, `A.elements()[1] -> A[0][1]`, etc. The type of the result is not a subarray but a special kind of random-access range. Takes no arguments.
 | `rotated/unrotated`                         | a view (`subarray`) of the original array with indices (un)rotated from right to left (left to right), for `D = 1` returns the same `subarray`. For given `i`, `j`, `k`, `A[i][j][k]` gives the same element as `A.rotated()[j][k][i]` and, in turn the same as `A.unrotated()[k][i][j]`. Preserves dimension. The function is cyclic; `D` applications will give the original view. Takes no argument.
-| `taked`                                     | a view of the original array with the first elements
+| `taked`                                     | a view of the original array with the first `n` values in the leading dimension
 | `transposed` (same as prefix `operator~`)   | a view (`subarray`) of the original array with the first two indices exchanged, only available for `D > 1`; for `D = 2`, `rotated`, `unrotated` and `transposed` give same view. Takes no argument.
 | `partitioned`                               | a view of higher dimensionality resulting by splitting the original range in a certain number of parts (complementary to `.chunked`)
-| `sliced`                                    | (takes two index arguments `a` and `b`) returns a subarray with elements from index `a` to index `b` (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
-| `strided`                                   | (takes one integer argument `s`) returns a subarray skipping `s` elements. Preserves the dimension.
+| `sliced`                                    | (takes two index arguments `a` and `b`) returns a subarray with values from index `a` to index `b` in the leading dimension (non-inclusive) `{S[a], ... S[b-1]}`. Preserves the dimension.
+| `strided`                                   | (takes one integer argument `s`) returns a subarray skipping `s` values. Preserves the dimension.
 | `dynamic_array_cast<T2, P2 = T2*>(args...)` | produces a view where the underlying pointer constructed by `P2{A.base(), args...}`. Usually, `args...` is empty. Non-empty arguments are useful for stateful fancy pointers, such as transformer iterators.
 | `reinterpret_cast_array<T2>`                | with no arguments: underlying elements are reinterpreted as type T2, element sizes (`sizeof`) have to be equal; with one `count` argument: produces a view where the underlying elements are interpreted as an array of `count` elements of type `T2`.
 |===
@@ -196,6 +198,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 | Member functions  | same as for `subarray` plus ...
 
 | (constructors)    | `array_ref::array_ref({e1, e2, ...}, p)` constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes). The default constructor and copy constructor are not exposed. Destructor is trivial since elements are not owned or managed.
+| `elements`        | a flatten random-access and contiguous view of all the elements in the array in canonical order. (This is overwritten from the base class, to provide contiguous access)
 |===
 
 |===
@@ -253,6 +256,7 @@ The C++ core guidelines proposed a similar (albeit one-dimensional) class, calle
 | (constructors)    | `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements
 | `operator=`       | assigns the elements from the source, sizes must match.
+| `elements`        | A flatten random-access and contiguous view of all the elements in the array in canonical order. (This is overwritten from the base class, to provide contiguous access)
 |===
 
 |===
@@ -337,6 +341,43 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 | `clear`           | Erases all elements from the container. The array is resized to zero size.
 | `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
 |===
+
+[#ref_restriction]
+=== Subarrays
+
+A restriction is an array to generates its elements on the fly.
+It is defined by combining a D-dimensional function with an D-dimensinal extensions.
+The function is therefore now restricted to this cartesian grid.
+The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
+This includes the iteration and element access interface, although pointer access and layout access is not since there is no actual memory as its elements are not stored.
+
+All member functions are `constexpr` unless specified otherwise.
+
+==== `multi::restriction<D, F>` member types
+
+|===
+|`restriction::...`   | Description
+
+| (constructor)    | takes extensions of dimension `D` and a function that takes `D` arguments
+|`value_type`      | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F` (decayed into a value if necessary, the element type)
+|`reference`       | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F`
+|`const_reference` | Same as `reference` in general
+|`index`           | indexing type in the leading dimension (usually `std::ptrdiff_t`)
+|`size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually std::diffptr_t)
+|`index_range`     | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
+|`extension_type`  | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
+|`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::ptrdiff_t`)
+|`operator[]`      | access with an index value in the leading dimension (by binding the underlying function in the first argument), it returns an object of type `reference`.
+|`iterator`        | describe a random-access iterator in the leading dimension (immutable)
+|`const_iterator`  | describe a random-access iterator in the leading dimension (immutable)
+|`elements`        | returns a flat range that generates the elements in the canonical order, take no argument.
+|`begin`           | returns an `iterator` to the start of the sequence in the leading dimension
+|`end`             | returns an `iterator` to the start of the sequence in the leading dimension
+|`home`            | returns an indexable cursor
+|===
+
+A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate this restriction objects.
+`fun` must be a function that returns deterministically (e.g. doesn't depend on the order of evaluation), `F` must be "regular invokable" (`std::regular_invokable<F, Args...>` is `true` and `sizeof...(Args)` the number of dimensions `D`.)
 
 [#ref_iterators]
 === Iterators

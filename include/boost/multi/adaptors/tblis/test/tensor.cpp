@@ -5,7 +5,6 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/io.hpp>
 
-#include <tblis/tblis.h>
 
 #include <boost/core/lightweight_test.hpp>
 // #include <boost/multi/adaptors/tblis.hpp>
@@ -247,3 +246,6 @@ int main() {
 	// }
 	return boost::report_errors();
 }
+#else
+int main() {}
+#endif
