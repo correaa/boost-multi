@@ -1,14 +1,17 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+
+#include "boost/multi/restriction.hpp"  // for restriction, operator==
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iterator>   // IWYU pragma: keep
 #include <tuple>      // IWYU pragma: keep  // for std::tuple  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <utility>  // for declval, forward, move
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 #include <concepts>     // for constructible_from, defau...
