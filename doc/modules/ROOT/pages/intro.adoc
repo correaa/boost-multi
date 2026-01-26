@@ -4,6 +4,9 @@
 
 Alfredo A. Correa (last modified: {docdatetime})
 
+link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa/boost--multi-blue?logo=github[GH]]
+link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa/boost--multi-orange?logo=gitlab[GL]]
+
 == Introduction
 
 :idprefix: intro_
