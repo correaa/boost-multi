@@ -342,6 +342,43 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 | `reextent`        | Changes the size of the array to new extensions. `reextent({e1, e2, ...})` elements are preserved when possible. New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`. The first argument is of `extensions_type`, and the second is optional for element types with a default constructor. 
 |===
 
+[#ref_restriction]
+=== Subarrays
+
+A restriction is an array to generates its elements on the fly.
+It is defined by combining a D-dimensional function with an D-dimensinal extensions.
+The function is therefore now restricted to this cartesian grid.
+The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
+This includes the iteration and element access interface, although pointer access and layout access is not since there is no actual memory as its elements are not stored.
+
+All member functions are `constexpr` unless specified otherwise.
+
+==== `multi::restriction<D, F>` member types
+
+|===
+|`restriction::...`   | Description
+
+| (constructor)    | takes extensions of dimension `D` and a function that takes `D` arguments
+|`value_type`      | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F` (decayed into a value if necessary, the element type)
+|`reference`       | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F`
+|`const_reference` | Same as `reference` in general
+|`index`           | indexing type in the leading dimension (usually `std::ptrdiff_t`)
+|`size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually std::diffptr_t)
+|`index_range`     | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
+|`extension_type`  | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
+|`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::ptrdiff_t`)
+|`operator[]`      | access with an index value in the leading dimension (by binding the underlying function in the first argument), it returns an object of type `reference`.
+|`iterator`        | describe a random-access iterator in the leading dimension (immutable)
+|`const_iterator`  | describe a random-access iterator in the leading dimension (immutable)
+|`elements`        | returns a flat range that generates the elements in the canonical order, take no argument.
+|`begin`           | returns an `iterator` to the start of the sequence in the leading dimension
+|`end`             | returns an `iterator` to the start of the sequence in the leading dimension
+|`home`            | returns an indexable cursor
+|===
+
+A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate this restriction objects.
+`fun` must be a function that returns deterministically (e.g. doesn't depend on the order of evaluation), `F` must be "regular invokable" (`std::regular_invokable<F, Args...>` is `true` and `sizeof...(Args)` the number of dimensions `D`.)
+
 [#ref_iterators]
 === Iterators
 
