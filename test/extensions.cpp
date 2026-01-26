@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
+#include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
@@ -17,7 +18,8 @@
 
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
-// IWYU pragma: no_include <variant>        // for get, iwyu bug
+// IWYU pragma: no_include <utility>  // for declval, forward, move
+// IWYU pragma: no_include <variant>  // for get, iwyu bug
 
 namespace multi = boost::multi;
 
