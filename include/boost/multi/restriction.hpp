@@ -430,22 +430,9 @@ template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
 #endif
 
 template<dimensionality_type D, typename F>
-auto restrict(F&& fun, extensions_t<D> const& ext) {
+auto restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
 	return restriction<D, F>(ext, std::forward<F>(fun));
 }
-
-// template<typename Fun>
-// auto restrict(Fun&& fun, extensions_t<0> const& ext) {
-// 	return restriction<0, Fun>(ext, std::forward<Fun>(fun));
-// }
-// template<typename Fun>
-// auto restrict(Fun&& fun, extensions_t<1> const& ext) {
-// 	return restriction<1, Fun>(ext, std::forward<Fun>(fun));
-// }
-// template<typename Fun>
-// auto restrict(Fun&& fun, extensions_t<2> const& ext) {
-// 	return restriction<2, Fun>(ext, std::forward<Fun>(fun));
-// }
 
 template<class F, dimensionality_type D>
 BOOST_MULTI_HD constexpr auto operator^(F fun, extensions_t<D> const& xs) {

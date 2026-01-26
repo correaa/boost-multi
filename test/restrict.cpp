@@ -13,9 +13,9 @@ auto main() -> int {
 		auto const R1 = multi::restriction({2, 3}, [](auto ii, auto jj) { return ii + jj; });
 		auto const R2 = [](auto ii, auto jj) { return ii + jj; } ^ multi::extensions_t{2, 3};
 
-		auto const R3 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, multi::extensions_t<2>{2, 3});
-		auto const R4 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, multi::extensions_t{2, 3});
-		auto const R5 = multi::restrict<2>([](auto ii, auto jj) { return ii + jj; }, {2, 3});
+		auto const R3 = multi::restricted([](auto ii, auto jj) { return ii + jj; }, multi::extensions_t<2>{2, 3});
+		auto const R4 = multi::restricted([](auto ii, auto jj) { return ii + jj; }, multi::extensions_t{2, 3});
+		auto const R5 = multi::restricted<2>([](auto ii, auto jj) { return ii + jj; }, {2, 3});
 
 		// auto const R6 = multi::restrict([](auto ii, auto jj) { return ii + jj; }, {2, 3});
 
