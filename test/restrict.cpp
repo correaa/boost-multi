@@ -6,6 +6,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+// IWYU pragma: no_include <utility>  // for forward, declval, move
+
 namespace multi = boost::multi;
 
 auto main() -> int {

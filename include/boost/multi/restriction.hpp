@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_RESTRICTION_HPP
 #define BOOST_MULTI_RESTRICTION_HPP
 
-#include <boost/multi/detail/layout.hpp>  // IWYU pragma: export
-#include <boost/multi/utility.hpp>
+#include "boost/multi/detail/layout.hpp"  // IWYU pragma: export
+#include "boost/multi/utility.hpp"
 
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
