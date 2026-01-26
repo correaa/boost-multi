@@ -343,9 +343,9 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 |===
 
 [#ref_restriction]
-=== Subarrays
+=== Restriction
 
-A restriction is an array to generates its elements on the fly.
+A restriction is an array to generates its elements lazily on the fly.
 It is defined by combining a D-dimensional function with an D-dimensinal extensions.
 The function is therefore now restricted to this cartesian grid.
 The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
