@@ -22,7 +22,6 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	{
 #ifdef __NVCC__
 		auto fun = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); };
 		auto rst = fun ^ multi::extensions_t(5, 5);
@@ -73,7 +72,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( rstTR2[3][4] == rstTR[3][4] );
 #endif
-	}
 
 	return boost::report_errors();
 }
