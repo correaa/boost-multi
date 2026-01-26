@@ -16,6 +16,7 @@
 
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
 #include <boost/multi/broadcast.hpp>
+#include <boost/multi/restriction.hpp>  // for operator^, restriction
 
 #include <algorithm>  // for max
 #include <cmath>      // for exp, __cpp_lib_ranges
