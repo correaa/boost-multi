@@ -11,7 +11,7 @@ The library interface presents several closely related types (C++ classes) repre
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `dynamic_array`).
 
-==== Summary (cheat sheet) ====
+=== Summary (cheat sheet) ===
 
 Here is table to summarize the semantic properties of each class.
 The main array type to reach for is `multi::array`, the other types are for special uses.
