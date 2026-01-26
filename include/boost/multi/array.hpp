@@ -12,6 +12,7 @@
 #include "boost/multi/detail/is_trivial.hpp"
 #include "boost/multi/detail/memory.hpp"
 #include "boost/multi/detail/static_allocator.hpp"  // TODO(correaa) export IWYU
+#include "boost/multi/restriction.hpp"
 
 #include <iterator>  // for std::sentinel_for
 #include <memory>    // for std::allocator_traits

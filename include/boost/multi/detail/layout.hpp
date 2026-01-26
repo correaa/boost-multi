@@ -283,10 +283,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	// friend BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t const& xs) {
 	// 	return restriction<D, Func>(xs, std::move(fun));
 	// }
-	template<class Func>
-	friend constexpr auto operator->*(extensions_t const& xs, Func fun) {
-		return restriction<D, Func>(xs, std::move(fun));
-	}
+	// template<class Func>
+	// friend constexpr auto operator->*(extensions_t const& xs, Func fun) {
+	// 	return restriction<D, Func>(xs, std::move(fun));
+	// }
 
 	BOOST_MULTI_HD constexpr auto sub() const {
 		return extensions_t<D - 1>{static_cast<base_ const&>(*this).tail()};
@@ -994,16 +994,6 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		return get<Index>(self.base());
 	}
 };
-
-template<class Func, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator^(Func fun, extensions_t<D> const& xs) {
-	return restriction<D, Func>(xs, std::move(fun));
-}
-// these overload do not help because operators cannot be used use with braces-only operands
-// template<class Func>
-// constexpr auto operator^(Func fun, extensions_t<2> const& xs) {
-// 	return restriction<2, Func>(xs, std::move(fun));
-// }
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
@@ -2055,9 +2045,6 @@ template<class Array> struct std::tuple_size<boost::multi::detail::decaying_arra
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extensions_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
-
-template<class Fun, ::boost::multi::dimensionality_type D>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::restriction<D, Fun> > = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
