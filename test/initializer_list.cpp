@@ -17,7 +17,8 @@
 #include <string>            // for basic_string, allocator, char_tr...
 #include <tuple>             // IWYU pragma: keep
 #include <type_traits>       // for is_same_v
-#include <vector>            // for vector
+// IWYU pragma: no_include <utility>           // for declval, forward, move
+#include <vector>  // for vector
 
 namespace multi = boost::multi;
 
