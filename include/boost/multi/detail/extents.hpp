@@ -30,7 +30,7 @@
 // #include <initializer_list>  // for initializer_list
 // #include <iterator>
 // #include <memory>       // for swap
-// #include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
+#include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
 // #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
 // #include <utility>      // for forward
 
@@ -65,7 +65,7 @@ template<class... Exts>
 class extents;
 
 template<class... Exts>
-class extents : std::tuple<Exts...> { // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
+class extents : public std::tuple<Exts...> { // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
 	using base_ = std::tuple<Exts...>;
  public:
 	static constexpr dimensionality_type dimensionality = 1 + extents<Exts...>::dimensionality;
@@ -83,9 +83,28 @@ class extents : std::tuple<Exts...> { // TODO(correaa) use libcuda++ in the futu
 
 	auto extension() const -> extension_type { using std::get; return get<0>(static_cast<std::tuple<Exts...> const&>(*this)); }
 	auto size() const -> size_type { return extension().size(); }
+
+	template<std::size_t I>
+	friend auto get(extents const& self) {
+	using std::get;
+	return get<I>(static_cast<std::tuple<Exts...> const&>(self));
+	}
 };
 
 template<class... Exts> extents(Exts...) -> extents<decltype(multi::extension_t(std::declval<Exts>()))...>;
+
+}  // end namespace boost::multi
+
+template<class... Exts>
+struct std::tuple_size<::boost::multi::extents<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+	static constexpr std::size_t value = sizeof...(Exts);
+};
+
+template<std::size_t I, class... Exts>
+struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
+};
+
 
 // template<dimensionality_type D>
 // struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
@@ -1989,7 +2008,6 @@ template<class... Exts> extents(Exts...) -> extents<decltype(multi::extension_t(
 // #ifdef _MSC_VER
 // #pragma warning(pop)
 // #endif
-}  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
 
