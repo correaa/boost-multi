@@ -1,4 +1,4 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -9,6 +9,7 @@
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 #include <boost/multi/broadcast.hpp>           // for operations
+#include <boost/multi/restriction.hpp>         // for restriction
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -532,7 +533,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	gemv_broadcast();
 
-	#ifndef __NVCC__
+#ifndef __NVCC__
 	{
 		multi::array<double, 2> const arr = {
 			{1.0, 2.0},
@@ -555,7 +556,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
 	}
-	#endif
+#endif
 
 	return boost::report_errors();
 }
