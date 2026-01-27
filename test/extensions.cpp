@@ -4,6 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
+#include <boost/multi/detail/extents.hpp>
 #include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
@@ -24,7 +25,8 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	auto       A2D  = multi::array<int, 2>({5, 7}, 1);
+	auto const A2D = multi::array<int, 2>({5, 7}, 1);
+
 	auto const A2Dx = A2D.extension();
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
@@ -116,6 +118,14 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().begin() < x1d.elements().end() );
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().end() );
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
+	}
+	{
+		multi::array<int, 1> const arr1d(3);
+		auto const                 x1d = multi::extents(arr1d.extension());
+		BOOST_TEST( x1d.size() == 3 );
+
+		auto const y1d = multi::extents(3);
+		BOOST_TEST( y1d.size() == 3 );
 	}
 	{
 		auto x1d = multi::extensions_t<1>(3);
