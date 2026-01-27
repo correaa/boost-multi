@@ -1,4 +1,4 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -24,7 +24,8 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	auto       A2D  = multi::array<int, 2>({5, 7}, 1);
+	auto const A2D = multi::array<int, 2>({5, 7}, 1);
+
 	auto const A2Dx = A2D.extension();
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
