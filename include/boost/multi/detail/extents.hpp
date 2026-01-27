@@ -68,8 +68,8 @@ template<class... Exts>
 class extents : public std::tuple<Exts...> { // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
 	using base_ = std::tuple<Exts...>;
  public:
-	static constexpr dimensionality_type dimensionality = 1 + extents<Exts...>::dimensionality;
-	// static constexpr static dimensionality_type rank_v = D;
+	static constexpr dimensionality_type dimensionality = sizeof...(Exts);
+	// static constexpr static dimensionality_type rank_v = sizeof...(Exts);
 	
 	using element = std::tuple<typename Exts::value_type...>;
 
