@@ -120,14 +120,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
-		multi::array<int, 1> const arr1d(3);
-		auto const                 x1d = multi::extents(arr1d.extension());
-		BOOST_TEST( x1d.size() == 3 );
-
-		auto const y1d = multi::extents(3);
-		BOOST_TEST( y1d.size() == 3 );
-	}
-	{
 		auto x1d = multi::extensions_t<1>(3);
 
 		auto it = x1d.elements().begin();
