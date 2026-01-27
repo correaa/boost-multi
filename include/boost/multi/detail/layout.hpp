@@ -1121,7 +1121,7 @@ class contiguous_stride_t {
 #endif
 };
 
-using multi::detail::tuple;
+// using multi::detail::tuple;
 
 template<typename SSize = multi::index>
 class contiguous_layout {
