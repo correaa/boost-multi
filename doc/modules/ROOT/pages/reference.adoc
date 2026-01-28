@@ -358,7 +358,7 @@ All member functions are `constexpr` unless specified otherwise.
 |===
 |`restriction::...`   | Description
 
-| (constructor)    | takes extensions of dimension `D` and a function that takes `D` arguments
+| (constructor)    | takes 2 arguments, a extensions type of dimension `D` and a function that takes `D` arguments
 |`value_type`      | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F` (decayed into a value if necessary, the element type)
 |`reference`       | `multi::restriction<D - 1, FrontBindedF>` or, for `D == 1`, the return type of `F`
 |`const_reference` | Same as `reference` in general
@@ -376,8 +376,10 @@ All member functions are `constexpr` unless specified otherwise.
 |`home`            | returns an indexable cursor
 |===
 
-A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate this restriction objects.
-`fun` must be a function that returns deterministically (e.g. doesn't depend on the order of evaluation), `F` must be "regular invokable" (`std::regular_invokable<F, Args...>` is `true` and `sizeof...(Args)` the number of dimensions `D`.)
+
+A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate a restriction object. 
+`fun` must be a function that returns deterministically (e.g. doesn’t depend on the order of evaluation);
+this is guaranteed if`F` fulfills the "regular invokable" concept (`std::regular_invokable<F, Args…​>` is `true` and `sizeof…​(Args)` is the number of dimensions `D`.)
 
 [#ref_iterators]
 === Iterators
