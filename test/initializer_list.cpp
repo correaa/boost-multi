@@ -717,5 +717,60 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[2][0] == 33 );
 	}
 
+	// NOLINTBEGIN(readability-identifier-length,misc-const-correctness)
+	// Andrzej examples
+	{
+		{
+			// multi::array A = {2, 3};  // doesn't compile anymore (Jan 19 2026)
+			// multi::array B = {{2, 3}, {4, 5}};  // doesn't compile anymore (Jan 19 2026)
+		}
+		{
+			multi::array<int, 2> A({2, 3});
+			multi::array<int, 2> B{
+				{2, 3}
+			};
+
+			using std::get;
+			BOOST_TEST( get<0>(A.sizes()) == 2 );
+			BOOST_TEST( get<1>(A.sizes()) == 3 );
+
+			BOOST_TEST( get<0>(B.sizes()) == 1 );
+			BOOST_TEST( get<1>(B.sizes()) == 2 );
+			BOOST_TEST( B[0][0] == 2 );
+			BOOST_TEST( B[0][1] == 3 );
+		}
+		{
+			// multi::array A1 ({2, 3});  // doesn't compile as of Jan 29
+			// multi::array B2 {{2, 3}};  // doesn't compile as of Jan 29
+		}
+		{
+			multi::array<int, 1> C(2);
+			multi::array<int, 1> D{2};
+
+			BOOST_TEST( C.size() == 2);
+			BOOST_TEST( D.size() == 1);
+			BOOST_TEST( D[0] == 2 );
+		}
+		{
+			multi::array<int, 2> A1({2, 3});  // argument interpreted as extents
+			// multi::array         A2 ( {2, 3} );  // doesn't compile as of Jan 29
+
+			using std::get;
+			BOOST_TEST( get<0>(A1.sizes()) == 2 );
+			BOOST_TEST( get<1>(A1.sizes()) == 3 );
+		}
+		{
+			multi::array<int, 1> A1({3}, 11);
+			multi::array<int, 1> A2({3});
+
+			BOOST_TEST( A1.size() == 3 );
+			BOOST_TEST( A1[0] == 11 );
+
+			BOOST_TEST( A2.size() == 1 );
+			BOOST_TEST( A2[0] == 3 );
+		}
+	}
+	// NOLINTEND(readability-identifier-length,misc-const-correctness)
+
 	return boost::report_errors();
 }
