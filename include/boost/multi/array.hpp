@@ -601,7 +601,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extensions_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
-	dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
+	explicit dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
 	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		assert(this->stride() != 0);
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
@@ -627,7 +627,7 @@ struct dynamic_array                                                            
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
-	dynamic_array(
+	explicit dynamic_array(
 		std::initializer_list<typename dynamic_array<T, D>::value_type> values,
 		allocator_type const&                                           alloc
 	)
@@ -880,7 +880,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	using ref::operator==;
 	using ref::operator!=;
 
-	dynamic_array(
+	explicit dynamic_array(
 		typename dynamic_array::extensions_type const& extensions,
 		typename dynamic_array::element const& elem, allocator_type const& alloc
 	)
@@ -894,7 +894,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		uninitialized_fill(elem);
 	}
 
-	dynamic_array(typename dynamic_array::element_type const& elem, allocator_type const& alloc)
+	explicit dynamic_array(typename dynamic_array::element_type const& elem, allocator_type const& alloc)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
 	template<typename OtherT, typename OtherEPtr, class OtherLayout>
@@ -944,7 +944,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		return *this;
 	}
 
-	dynamic_array(
+	explicit dynamic_array(
 		typename dynamic_array::extensions_type const& extensions,
 		typename dynamic_array::element_type const&    elem
 	)  // 2
@@ -1321,28 +1321,6 @@ struct array : dynamic_array<T, D, Alloc> {
 	  } {
 	}
 
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<T> ilv) : array{} {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<std::initializer_list<T>> ilv) : array{} {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
-	// // // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<T>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-
 	template<
 		class OtherT,
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
@@ -1385,15 +1363,9 @@ struct array : dynamic_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 	}
 
-	// BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
-	// 	assert(this->stride() != 0);
-	// }
-
 	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
-
-	// friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
 	void swap(array& other) noexcept {
 		using std::swap;
