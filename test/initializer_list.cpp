@@ -123,10 +123,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #endif
 
 		{
-			multi::dynamic_array const arr = {12, 34, 56};
+			// multi::dynamic_array const arr = {12, 34, 56};
+			multi::dynamic_array<int, 1> const arr = {12, 34, 56};
+
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::dynamic_array{12, 34, 56} ));
+			BOOST_TEST(( arr == multi::dynamic_array<int, 1>{12, 34, 56} ));
 		}
 		{
 			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
@@ -356,7 +358,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_static)
 	{
-		multi::dynamic_array arr({10, 20, 30});
+		// multi::dynamic_array arr({10, 20, 30});
+		multi::dynamic_array<int, 1> arr({10, 20, 30});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -442,10 +445,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(initializer_list_2d)
 	{
 		{
-			multi::dynamic_array const arr({
+			// multi::dynamic_array const arr({
+			// 	{1.0, 2.0, 3.0},
+			// 	{4.0, 5.0, 6.0},
+			// });
+			multi::dynamic_array<double, 2> const arr({
 				{1.0, 2.0, 3.0},
 				{4.0, 5.0, 6.0},
 			});
+
 			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
