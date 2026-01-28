@@ -38,7 +38,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto it = x2d.begin();
 		++it;
 
-#if (__cpp_concepts >= 201907L)
+#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
 		static_assert(std::incrementable<decltype(it)>);
 #endif
 		// BOOST_TEST( *it == xs[1] );
