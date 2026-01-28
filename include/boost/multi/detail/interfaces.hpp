@@ -60,6 +60,41 @@ class incrementable_facade : public regular<Self>, public weakly_incrementable_f
 	}
 };
 
+template< class I >
+class input_or_output_iterator_facade :
+        // requires(I i) {
+        //     { *i } -> /*can-reference*/;
+        // } &&
+        weakly_incrementable_facade<I>
+{
+ protected:
+	input_or_output_iterator_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+};
+
+
+template< class I >
+class input_iterator_facade
+	: input_or_output_iterator_facade<I>
+        // std::input_or_output_iterator<I> &&
+        // std::indirectly_readable<I> &&
+        // requires { typename /*ITER_CONCEPT*/<I>; } &&
+        // std::derived_from</*ITER_CONCEPT*/<I>, std::input_iterator_tag>;
+{
+ protected:
+	input_iterator_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+};
+
+template< class I >
+class forward_iterator_facade : 
+	public input_iterator_facade<I>,
+	// std::derived_from</*ITER_CONCEPT*/<I>, std::forward_iterator_tag> &&
+    public incrementable_facade<I>  // std::incrementable<I> &&
+    //    std::sentinel_for<I, I>;
+{
+	protected:
+	forward_iterator_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
+};
+
 }  // end namespace boost::multi::detail
 
 #undef BOOST_MULTI_HD
