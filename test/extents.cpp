@@ -7,7 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <tuple>  // IWYU pragma: keep
+#include <iterator>  // IWYU pragma: keep  // for incrementable
+#include <tuple>     // IWYU pragma: keep
+// IWYU pragma: no_include <type_traits>  // for integral_constant
 
 namespace multi = boost::multi;
 
@@ -33,6 +35,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		using std::get;
 		BOOST_TEST( x0 == get<0>(x2d) );
 		BOOST_TEST( x1 == get<1>(x2d) );
+
+		auto it = x2d.begin();
+		++it;
+
+#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+		static_assert(std::incrementable<decltype(it)>);
+#endif
+		*it;
+		x2d.begin()[1];
+		// BOOST_TEST( *it == xs[1] );
 	}
 
 	return boost::report_errors();
