@@ -89,7 +89,7 @@ int main() {
 		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
 		{
-						// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 			multi::thrust::cuda::array<complex, 2> const a = {
 				{1.0 - 2.0 * I, 9.0 - 1.0 * I},
 				{2.0 + 3.0 * I, 1.0 - 2.0 * I},
