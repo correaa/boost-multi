@@ -7,7 +7,8 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <tuple>  // IWYU pragma: keep
+#include <iterator>  // IWYU pragma: keep  // for incrementable
+#include <tuple>     // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for integral_constant
 
 namespace multi = boost::multi;

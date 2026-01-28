@@ -41,22 +41,21 @@ class weakly_incrementable_facade {
 	using self_type = Self;
  protected:
 	weakly_incrementable_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
-	using difference_type = typename self_type::difference_type;
+	// using difference_type = typename self_type::difference_type;
 
  public:
-	friend auto operator++(self_type& self, int) {
-		auto ret{self}; ++self; return ret;
-	}
+	template<int = 0>
+	friend auto operator++(self_type& self, int) { ++self; }
 };
 
 template<class Self>
-class incrementable_facade : regular<Self> {
+class incrementable_facade : public regular<Self>, public weakly_incrementable_facade<Self> {
 	using self_type = Self;
  protected:
 	incrementable_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
 	
  public:
-	friend auto operator++(self_type& self, int) {
+	friend auto operator++(self_type& self, int) {  // cppcheck-suppress duplInheritedMember;
 		auto ret{self}; ++self; return ret;
 	}
 };
