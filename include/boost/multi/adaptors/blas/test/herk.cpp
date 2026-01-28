@@ -20,7 +20,6 @@
 // #include <iostream>     // for operator<<, basi...
 #include <iterator>     // for size
 #include <limits>       // for numeric_limits
-#include <string>       // for char_traits, bas...
 #include <type_traits>  // for is_same
 // IWYU pragma: no_include <utility>                                   // for forward
 
