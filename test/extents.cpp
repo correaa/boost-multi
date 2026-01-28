@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <tuple>  // IWYU pragma: keep
+// IWYU pragma: no_include <type_traits>  // for integral_constant
 
 namespace multi = boost::multi;
 
@@ -36,6 +37,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto it = x2d.begin();
 		++it;
+
+#if (__cpp_concepts >= 201907L)
+		static_assert(std::incrementable<decltype(it)>);
+#endif
 		// BOOST_TEST( *it == xs[1] );
 	}
 
