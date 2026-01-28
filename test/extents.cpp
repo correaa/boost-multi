@@ -33,6 +33,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		using std::get;
 		BOOST_TEST( x0 == get<0>(x2d) );
 		BOOST_TEST( x1 == get<1>(x2d) );
+
+		auto it = x2d.begin();
+		++it;
+		// BOOST_TEST( *it == xs[1] );
 	}
 
 	return boost::report_errors();

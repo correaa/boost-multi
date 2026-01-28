@@ -358,6 +358,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// >
 	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
 	// : extension_t{other.first(), other.last()} {}
+	using index = IndexTypeLast;
 
 	template<class OtherExtension>
 	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
