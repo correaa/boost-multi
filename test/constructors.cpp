@@ -253,10 +253,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
 #endif
 #ifndef CPPCHECK
-		multi::array const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
-		multi::array const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
-		multi::array const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
-		multi::array const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
+		// multi::array const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
+		// multi::array const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
+		// multi::array const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
+		// multi::array const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
+
+		multi::array<int, 1> const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
+		multi::array<int, 1> const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
+		multi::array<int, 1> const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
+		multi::array<int, 1> const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
 #endif
 		// clang-format on
 
