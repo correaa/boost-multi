@@ -6,16 +6,15 @@
 #ifndef BOOST_MULTI_DETAIL_EXTENTS_HPP
 #define BOOST_MULTI_DETAIL_EXTENTS_HPP
 
-#include "boost/multi/detail/what.hpp"
-
 #include "boost/multi/detail/config/NODISCARD.hpp"
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
-
-#include "boost/multi/detail/index_range.hpp"    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include "boost/multi/detail/index_range.hpp"  // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include "boost/multi/detail/interfaces.hpp"
 #include "boost/multi/detail/operators.hpp"      // IWYU pragma: export  // for equality_comparable
 #include "boost/multi/detail/serialization.hpp"  // IWYU pragma: export  // for archive_traits
 #include "boost/multi/detail/tuple_zip.hpp"      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include "boost/multi/detail/types.hpp"          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
+#include "boost/multi/detail/what.hpp"
 
 // #include <algorithm>         // for max
 // #include <array>             // for array
@@ -30,7 +29,7 @@
 // #include <initializer_list>  // for initializer_list
 // #include <iterator>
 // #include <memory>       // for swap
-#include <tuple>        // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
+#include <tuple>  // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
 // #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
 // #include <utility>      // for forward
 
@@ -61,33 +60,151 @@ namespace boost::multi {
 
 // template<class... Args> using tuple = ::std::tuple<Args...>;  // TODO(correaa) use libcuda++ in the future
 
+namespace stdx {
+template<class Tuple> auto tail(Tuple const& tup) noexcept {
+	return std::apply([](auto const& /*head*/, auto const&... rest) noexcept { return std::make_tuple(rest...); }, tup);
+}
+template<class Tuple> auto head(Tuple const& tup) noexcept {
+	return std::apply([](auto const& head, auto const&... /*rest*/) noexcept { return head; }, tup);
+}
+
+template<class T, class Tuple> auto append_front(T const& value, Tuple const& tup) noexcept {
+	return std::apply([&](auto const&... rest) noexcept { return std::make_tuple(value, rest...); }, tup);
+}
+
+template<class Tuple> struct tuple_tail;
+template<class T, class... Ts> struct tuple_tail<std::tuple<T, Ts...>> {
+	using type = std::tuple<Ts...>;
+};
+
+template<class Tuple> using tuple_type_t = typename tuple_tail<Tuple>::type;
+}  // end namespace stdx
+
+// namespace detail {
+// template<typename... Ts>
+// struct TailTuple {};
+
+// template<typename Head, typename... Tail>
+// struct TailTuple<Head, Tail...> : TailTuple<Tail...> {
+//     using TailType = TailTuple<Tail...>;
+// };
+
+// // Base case for the empty pack
+// template<>
+// struct TailTuple<> {};
+
+// }  // end namespace detail
+
 template<class... Exts>
 class extents;
 
-template<class... Exts>
-class extents : public std::tuple<Exts...> { // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
-	using base_ = std::tuple<Exts...>;
+template<class Ext, class... Exts>
+class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
+	using base_ = std::tuple<Ext, Exts...>;
+
  public:
 	static constexpr dimensionality_type dimensionality = sizeof...(Exts);
 	// static constexpr static dimensionality_type rank_v = sizeof...(Exts);
-	
-	using element = std::tuple<typename Exts::value_type...>;
 
-	using extension_type = std::tuple_element_t<0, std::tuple<Exts...>>;
+	using element = std::tuple<Ext, Exts...>;
+	// using element = std::tuple<typename Exts::value_type...>;
+
+	using extension_type  = Ext;  // std::tuple_element_t<0, std::tuple<Exts...>>;
 	using difference_type = typename extension_type::difference_type;
-	using size_type = typename extension_type::size_type;
+	using size_type       = typename extension_type::size_type;
+	using index           = typename extension_type::index;
 
 	extents() = default;
-	using std::tuple<Exts...>::tuple;
-	// extents(Exts... xs) : std::tuple<Exts...>{xs...} {}
+	// using std::tuple<Exts...>::tuple;
+	explicit extents(Ext ext, Exts... xs) : std::tuple<Ext, Exts...>{std::move(ext), std::move(xs)...} {}
 
-	auto extension() const -> extension_type { using std::get; return get<0>(static_cast<std::tuple<Exts...> const&>(*this)); }
+	auto extension() const -> extension_type {
+		using std::get;
+		return get<0>(static_cast<std::tuple<Ext, Exts...> const&>(*this));
+	}
+
 	auto size() const -> size_type { return extension().size(); }
+
+	using sub_type = extents<>;
+
+	class iterator : public detail::forward_iterator_facade<iterator> {
+		friend class extents;
+
+		typename extension_type::iterator idx_;
+		extents<Exts...>                  rest_;
+
+		constexpr explicit iterator(typename extension_type::iterator idx, extents<Exts...> rest)
+		: idx_{idx}, rest_{std::move(rest)} {}
+
+	 public:
+		iterator() = default;
+
+		constexpr auto operator++() -> iterator& {
+			++idx_;
+			return *this;
+		}
+		constexpr auto operator--() -> iterator& {
+			--idx_;
+			return *this;
+		}
+		bool operator==(iterator const& other) const {
+			assert( rest_ == other.rest_ );
+			return idx_ == other.idx_;
+		}
+
+		using difference_type   = typename extension_type::iterator::difference_type;
+		using value_type        = void;
+		using reference_type    = value_type;
+		using pointer           = void;
+		using iterator_category = std::random_access_iterator_tag;
+
+		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
+		constexpr auto operator+(difference_type d) const { auto ret{*this}; ret += d; return ret; }
+		// constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+
+		constexpr auto operator*() const {
+			return stdx::append_front(*idx_, static_cast<std::tuple<Exts...> const&>(rest_));
+		}
+
+		constexpr auto operator[](index idx) const { return *((*this) + idx); }
+
+		// 	 public:
+
+
+		// 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
+		// 		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
+
+		// 		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
+		// 		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
+
+		// 		constexpr auto operator--() -> iterator& { --idx_; return *this; }
+
+		// 		constexpr auto operator++(int) -> iterator { iterator ret{*this}; operator++(); return ret; }  // NOLINT(cert-dcl21-cpp)
+		// 		constexpr auto operator--(int) -> iterator { iterator ret{*this}; operator--(); return ret; }  // NOLINT(cert-dcl21-cpp)
+
+
+		// 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
+		// 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
+
+		// 		friend constexpr auto operator<(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ < other.idx_; }
+		// 		friend constexpr auto operator>(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ > other.idx_; }
+
+		// 		friend constexpr auto operator<=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ <= other.idx_; }
+		// 		friend constexpr auto operator>=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ >= other.idx_; }
+		// 	};
+	};
+
+	constexpr auto begin() const {
+		return iterator{
+			stdx::head(static_cast<std::tuple<Ext, Exts...> const&>(*this)).begin(),
+			std::apply([](auto... xs) { return extents<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
+		};
+	}
 
 	template<std::size_t I>
 	friend auto get(extents const& self) {
-	using std::get;
-	return get<I>(static_cast<std::tuple<Exts...> const&>(self));
+		using std::get;
+		return get<I>(static_cast<std::tuple<Ext, Exts...> const&>(self));
 	}
 };
 
@@ -104,7 +221,6 @@ template<std::size_t I, class... Exts>
 struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
 };
-
 
 // template<dimensionality_type D>
 // struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extensions_t<D - 1>::base_> {
@@ -277,17 +393,17 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 // 	 public:
 // 		cursor_t() = default;
 // 		explicit cursor_t(Before const& bef) : bef_{bef} {}
-		
+
 // 		static constexpr dimensionality_type dimensionality = DD;
 
 // 		constexpr auto operator[](difference_type n) const {
 // 			using std::apply;
 // 			if constexpr(DD != 1) {
 // 				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> {
-// 					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
+// 					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_)
 // 				};
 // 			} else {
-// 				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
+// 				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_);
 // 			}
 // 		}
 // 	};
@@ -300,7 +416,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 // 		index idx_;
 // 		extensions_t<D - 1> rest_;
 // 		friend extensions_t;
-	
+
 // 		constexpr iterator(index idx, extensions_t<D - 1> rest) : idx_{idx}, rest_{rest} {}
 
 // 	 public:
@@ -401,7 +517,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 
 // 			friend class elements_t;
 
-// 		 public:		
+// 		 public:
 // 			using difference_type   = elements_t::difference_type;
 // 			using value_type        = indices_type;
 // 			using pointer           = void;
@@ -422,7 +538,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 // 				// printf("op* %ld ...\n", *curr_);
 // 				using std::apply;
 // 				return apply(mk_tup<decltype(*curr_)>{*curr_}, *rest_it_);
-// 				// return apply([cu = *curr_] BOOST_MULTI_HD (auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_); 
+// 				// return apply([cu = *curr_] BOOST_MULTI_HD (auto... es) {return detail::mk_tuple(cu, es...);}, *rest_it_);
 // 			}
 
 // 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
@@ -705,7 +821,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 // 		index idx_;
 // 		extensions_t<0> rest_;
 // 		friend extensions_t;
-	
+
 // 		constexpr iterator(index idx, extensions_t<0> rest) : idx_{idx}, rest_{rest} {}
 
 // 	 public:
@@ -1900,7 +2016,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 
 // 	//  friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 // 	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) {
-// 		return 
+// 		return
 // 			self.sub_ == other.sub_ &&
 // 			self.stride_ == other.stride_ &&
 // 			self.nelems_ == other.nelems_
