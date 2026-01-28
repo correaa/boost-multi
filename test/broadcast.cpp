@@ -23,7 +23,8 @@ namespace multi = boost::multi;
 // NOLINTBEGIN(readability-identifier-length)
 int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
-		multi::array const a = {1.0, 2.0, 3.0};
+		// multi::array const a = {1.0, 2.0, 3.0};
+		multi::array<double, 1> const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a);
@@ -33,7 +34,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
 	{
-		multi::array const a = {1.0, 2.0, 3.0};
+		multi::array<double, 1> const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a);
@@ -43,7 +44,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
 	{
-		multi::array const a = {1.0, 2.0, 3.0};
+		multi::array<double, 1> const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a);
@@ -53,7 +54,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
 	{
-		multi::array const a = {1.0, 2.0, 3.0};
+		multi::array<double, 1> const a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a);
@@ -63,7 +64,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
 	{
-		multi::array a = {1.0, 2.0, 3.0};
+		multi::array<double, 1> a = {1.0, 2.0, 3.0};
 
 		using multi::broadcast::exp;
 		auto c = exp(a());
@@ -122,7 +123,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// 	BOOST_TEST( std::abs(c[1][2] - std::exp(6.0)) < 1e-4 );
 	// }
 	{
-		multi::array const a = {-1, -2, 3};
+		multi::array<int, 1> const a = {-1, -2, 3};
 
 		using multi::broadcast::abs;
 		auto c = abs(a);
@@ -132,22 +133,22 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( c[2] == 3 );
 	}
 	{
-		multi::array const a = {1, 2, 3};
-		multi::array const b = {4, 5, 6};
+		multi::array<int, 1> const a = {1, 2, 3};
+		multi::array<int, 1> const b = {4, 5, 6};
 
 		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
 		auto c = a + b;
 
-		BOOST_TEST(( c == multi::array{5, 7, 9} ));
+		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
 	}
 	{
-		multi::array const a = {1, 2, 3};
-		multi::array const b = {4, 5, 6};
+		multi::array<int, 1> const a = {1, 2, 3};
+		multi::array<int, 1> const b = {4, 5, 6};
 
 		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
 		auto const& c = a + b;
 
-		BOOST_TEST(( c == multi::array{5, 7, 9} ));
+		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
 	}
 	{
 		auto const A = multi::array<int, 2>{
@@ -248,7 +249,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( C[1][1] == A[1][1] + (A[1][1] * B[1][1]) );
 	}
 	{
-		multi::array const a = {1, 2, 3};
+		multi::array<int, 1> const a = {1, 2, 3};
 
 		auto f1d = [](auto) { return 1; } ^ multi::extensions_t<1>{3};
 
@@ -256,11 +257,11 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto const& c = a + f1d;
 
-		BOOST_TEST(( multi::array{2, 3, 4} == c ));
-		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
-		multi::array const a = {1, 2, 3};
+		multi::array<int, 1> const a = {1, 2, 3};
 
 		auto f = []() { return 1; } ^ multi::extensions_t<0>{};
 
@@ -268,8 +269,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto const& c = a + f;
 
-		BOOST_TEST(( multi::array{2, 3, 4} == c ));
-		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
@@ -278,8 +279,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
 
-		BOOST_TEST(( multi::array{2, 3, 4} == c ));
-		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
@@ -287,8 +288,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		using multi::broadcast::operator+;  // cppcheck-suppress constStatement;
 
 		std::cout << (a + 1)[1] << '\n';
-		BOOST_TEST(( multi::array{2, 3, 4} == a + 1 ));
-		BOOST_TEST(( a + 1 == multi::array{2, 3, 4} ));
+		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == a + 1 ));
+		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
@@ -297,8 +298,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto c = a + 1;
 
-		BOOST_TEST(( multi::array{2, 3, 4} == c ));
-		BOOST_TEST(( c == multi::array{2, 3, 4} ));
+		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
+		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
 		multi::array<int, 2> const A = {

@@ -142,10 +142,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 #if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 		{
-			multi::array arr({12, 34, 56});
+			// multi::array arr({12, 34, 56});
+			multi::array<int, 1> arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+			BOOST_TEST(( arr == multi::array<int, 1>({12, 34, 56}) ));
 		}
 #endif
 #endif
@@ -370,7 +371,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_a)
 	{
-		multi::array arr({10, 20, 30});
+		multi::array<int, 1> arr({10, 20, 30});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -385,10 +386,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_b)
 	{
-		multi::array arr({10, 20});
+		multi::array<int, 1> arr({10, 20});
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-		BOOST_TEST( size(arr) == 2 );
+		BOOST_TEST( arr.size() == 2 );
 		BOOST_TEST( num_elements(arr) == 2 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 		BOOST_TEST( num_elements(arr) == 2 );
@@ -398,7 +399,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_c)
 	{
-		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
+		// multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
+		multi::array<int, 1> arr({0, 2});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -412,7 +414,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_d)
 	{
-		multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -424,7 +427,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_e)
 	{
-		multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -445,14 +449,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
-		{
-			multi::array const arr({
-				{1.0, 2.0, 3.0},
-				{4.0, 5.0, 6.0},
-			});
-			BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
-			BOOST_TEST( num_elements(arr) == 6 );
-		}
+		// {
+		// 	multi::array const arr({
+		// 		{1.0, 2.0, 3.0},
+		// 		{4.0, 5.0, 6.0},
+		// 	});
+		// 	BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
+		// 	BOOST_TEST( num_elements(arr) == 6 );
+		// }
 	}
 #endif
 #endif
@@ -613,18 +617,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr == arr6 );
 
-		using multi::operator+;
-		auto const arr7 = +il;
+		// using multi::operator+;
+		// auto const arr7 = +il;
 
-		BOOST_TEST( arr == arr7 );
+		// BOOST_TEST( arr == arr7 );
 
-		// +{...} doesn't compile
-		auto const arr8 = operator+({
-			{1, 2, 3},
-			{4, 5, 6}
-		});
+		// // +{...} doesn't compile
+		// auto const arr8 = operator+({
+		// 	{1, 2, 3},
+		// 	{4, 5, 6}
+		// });
 
-		BOOST_TEST( arr == arr8 );
+		// BOOST_TEST( arr == arr8 );
 	}
 	{
 		std::initializer_list<int> const il = {};
