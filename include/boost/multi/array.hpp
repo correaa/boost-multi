@@ -1650,18 +1650,18 @@ struct array : dynamic_array<T, D, Alloc> {
 #define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing, TODO(correaa) use template typedef instead of macro
 
 // vvv MSVC 14.3 in c++17 mode needs paranthesis in dimensionality_type(d)
-template<class T> dynamic_array(BOOST_MULTI_IL<T>) -> dynamic_array<T, static_cast<dimensionality_type>(1U), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::dynamic_array': use of class template requires template argument list
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> dynamic_array<T, static_cast<dimensionality_type>(2U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> dynamic_array<T, static_cast<dimensionality_type>(3U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(4U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(5U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<T>) -> dynamic_array<T, static_cast<dimensionality_type>(1U), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::dynamic_array': use of class template requires template argument list
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> dynamic_array<T, static_cast<dimensionality_type>(2U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> dynamic_array<T, static_cast<dimensionality_type>(3U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(4U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(5U), std::allocator<T>>;
 
 // TODO(correaa) add zero dimensional case?
 // template<class T> array(BOOST_MULTI_IL<T>) -> array<T, static_cast<dimensionality_type>(1U)>;
 // template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, static_cast<dimensionality_type>(2U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, static_cast<dimensionality_type>(3U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, static_cast<dimensionality_type>(3U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
 
 #undef BOOST_MULTI_IL
 
