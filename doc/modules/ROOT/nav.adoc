@@ -37,6 +37,7 @@
 *** xref:reference.adoc#ref_array_ref[Array references]
 *** xref:reference.adoc#ref_static_array[Static arrays]
 *** xref:reference.adoc#ref_array[Arrays]
+*** xref:reference.adoc#ref_restriction[Restrictions]
 *** xref:reference.adoc#ref_iterators[Iterators]
 ** xref:reference.adoc#ref_reqs[Type requirements]
 *** xref:reference.adoc#ref_linear_seq[Linear Sequences: Pointers]
