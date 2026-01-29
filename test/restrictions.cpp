@@ -272,6 +272,14 @@ int main() {
 		// v2D_copy4() = v2D;  // this fails with an assert because sizes do not match
 		// BOOST_TEST( v2D_copy4 == v2D_copy );
 	}
+	{
+		multi::iextension m(96);
+		multi::iextension h(64);
+		multi::iextension k(64);
+		multi::iextension n(96);
+
+		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n});
+	}
 
 	return boost::report_errors();
 }

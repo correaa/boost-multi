@@ -357,19 +357,9 @@ struct dynamic_array                                                            
 		class = decltype(std::declval<Range const&>().end()),
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
-	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
-
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<TT> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
+																	  // cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
+	/*explicit*/ dynamic_array(Range const& rng)                      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	: dynamic_array(std::begin(rng), std::end(rng)) {}                // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -601,7 +591,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extensions_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
-	dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
+	explicit dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
 	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
 		assert(this->stride() != 0);
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
@@ -627,7 +617,7 @@ struct dynamic_array                                                            
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> values)
 	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
-	dynamic_array(
+	explicit dynamic_array(
 		std::initializer_list<typename dynamic_array<T, D>::value_type> values,
 		allocator_type const&                                           alloc
 	)
@@ -880,7 +870,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	using ref::operator==;
 	using ref::operator!=;
 
-	dynamic_array(
+	explicit dynamic_array(
 		typename dynamic_array::extensions_type const& extensions,
 		typename dynamic_array::element const& elem, allocator_type const& alloc
 	)
@@ -894,7 +884,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		uninitialized_fill(elem);
 	}
 
-	dynamic_array(typename dynamic_array::element_type const& elem, allocator_type const& alloc)
+	explicit dynamic_array(typename dynamic_array::element_type const& elem, allocator_type const& alloc)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
 	template<typename OtherT, typename OtherEPtr, class OtherLayout>
@@ -944,7 +934,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		return *this;
 	}
 
-	dynamic_array(
+	explicit dynamic_array(
 		typename dynamic_array::extensions_type const& extensions,
 		typename dynamic_array::element_type const&    elem
 	)  // 2
@@ -1321,28 +1311,6 @@ struct array : dynamic_array<T, D, Alloc> {
 	  } {
 	}
 
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<T> ilv) : array{} {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<std::initializer_list<T>> ilv) : array{} {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// // template<class TT = void, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
-	// // // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<T>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-	// constexpr array(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>>> ilv) {
-	// 	operator=(const_subarray<T, D>(ilv));
-	// }
-
 	template<
 		class OtherT,
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
@@ -1385,15 +1353,9 @@ struct array : dynamic_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 	}
 
-	// BOOST_MULTI_HD constexpr array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {
-	// 	assert(this->stride() != 0);
-	// }
-
 	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
-
-	// friend auto get_allocator(array const& self) -> typename array::allocator_type { return self.get_allocator(); }
 
 	void swap(array& other) noexcept {
 		using std::swap;
@@ -1650,18 +1612,18 @@ struct array : dynamic_array<T, D, Alloc> {
 #define BOOST_MULTI_IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing, TODO(correaa) use template typedef instead of macro
 
 // vvv MSVC 14.3 in c++17 mode needs paranthesis in dimensionality_type(d)
-template<class T> dynamic_array(BOOST_MULTI_IL<T>) -> dynamic_array<T, static_cast<dimensionality_type>(1U), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::dynamic_array': use of class template requires template argument list
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> dynamic_array<T, static_cast<dimensionality_type>(2U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> dynamic_array<T, static_cast<dimensionality_type>(3U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(4U), std::allocator<T>>;
-template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(5U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<T>) -> dynamic_array<T, static_cast<dimensionality_type>(1U), std::allocator<T>>;  // MSVC needs the allocator argument error C2955: 'boost::multi::dynamic_array': use of class template requires template argument list
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> dynamic_array<T, static_cast<dimensionality_type>(2U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> dynamic_array<T, static_cast<dimensionality_type>(3U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(4U), std::allocator<T>>;
+// template<class T> dynamic_array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> dynamic_array<T, static_cast<dimensionality_type>(5U), std::allocator<T>>;
 
 // TODO(correaa) add zero dimensional case?
-template<class T> array(BOOST_MULTI_IL<T>) -> array<T, static_cast<dimensionality_type>(1U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, static_cast<dimensionality_type>(2U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, static_cast<dimensionality_type>(3U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
-template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
+// template<class T> array(BOOST_MULTI_IL<T>) -> array<T, static_cast<dimensionality_type>(1U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<T>>) -> array<T, static_cast<dimensionality_type>(2U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>) -> array<T, static_cast<dimensionality_type>(3U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>) -> array<T, static_cast<dimensionality_type>(4U)>;
+// template<class T> array(BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<BOOST_MULTI_IL<T>>>>>) -> array<T, static_cast<dimensionality_type>(5U)>;
 
 #undef BOOST_MULTI_IL
 
@@ -1701,8 +1663,8 @@ template<
 array(Range) -> array<V, 1>;
 
 template<class Reference>
-auto operator+(Reference&& ref) -> decltype(array(std::forward<Reference>(ref))) {
-	return array(std::forward<Reference>(ref));
+auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref))) {
+	return array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref));
 }
 
 #endif  // ends defined(__cpp_deduction_guides)

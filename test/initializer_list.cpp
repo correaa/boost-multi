@@ -123,10 +123,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #endif
 
 		{
-			multi::dynamic_array const arr = {12, 34, 56};
+			// multi::dynamic_array const arr = {12, 34, 56};
+			multi::dynamic_array<int, 1> const arr = {12, 34, 56};
+
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::dynamic_array{12, 34, 56} ));
+			BOOST_TEST(( arr == multi::dynamic_array<int, 1>{12, 34, 56} ));
 		}
 		{
 			multi::array<int, 1> arr(std::initializer_list<int>{12, 34, 56});
@@ -142,10 +144,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 #if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 		{
-			multi::array arr({12, 34, 56});
+			// multi::array arr({12, 34, 56});
+			multi::array<int, 1> arr({12, 34, 56});
 			BOOST_TEST( size(arr) == 3 );
 			BOOST_TEST( arr[2] == 56 );
-			BOOST_TEST(( arr == multi::array({12, 34, 56}) ));
+			BOOST_TEST(( arr == multi::array<int, 1>({12, 34, 56}) ));
 		}
 #endif
 #endif
@@ -162,7 +165,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{[8] = 8.0, 9.0, 10.0},
 			};
 #pragma GCC diagnostic pop
-			multi::array<double, 1> arr = stdarr;
+			multi::array<double, 1> arr(stdarr);
 			BOOST_TEST( arr.size() == 11 );
 			BOOST_TEST( arr[9] == 9.0 );
 		}
@@ -355,7 +358,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_static)
 	{
-		multi::dynamic_array arr({10, 20, 30});
+		// multi::dynamic_array arr({10, 20, 30});
+		multi::dynamic_array<int, 1> arr({10, 20, 30});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -370,7 +374,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_a)
 	{
-		multi::array arr({10, 20, 30});
+		multi::array<int, 1> arr({10, 20, 30});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -385,10 +389,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_b)
 	{
-		multi::array arr({10, 20});
+		multi::array<int, 1> arr({10, 20});
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-		BOOST_TEST( size(arr) == 2 );
+		BOOST_TEST( arr.size() == 2 );
 		BOOST_TEST( num_elements(arr) == 2 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 		BOOST_TEST( num_elements(arr) == 2 );
@@ -398,7 +402,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_c)
 	{
-		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
+		// multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
+		multi::array<int, 1> arr({0, 2});
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -412,7 +417,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_d)
 	{
-		multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -424,7 +430,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_e)
 	{
-		multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
+		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
@@ -438,21 +445,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(initializer_list_2d)
 	{
 		{
-			multi::dynamic_array const arr({
+			// multi::dynamic_array const arr({
+			// 	{1.0, 2.0, 3.0},
+			// 	{4.0, 5.0, 6.0},
+			// });
+			multi::dynamic_array<double, 2> const arr({
 				{1.0, 2.0, 3.0},
 				{4.0, 5.0, 6.0},
 			});
+
 			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
 			BOOST_TEST( num_elements(arr) == 6 );
 		}
-		{
-			multi::array const arr({
-				{1.0, 2.0, 3.0},
-				{4.0, 5.0, 6.0},
-			});
-			BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
-			BOOST_TEST( num_elements(arr) == 6 );
-		}
+		// {
+		// 	multi::array const arr({
+		// 		{1.0, 2.0, 3.0},
+		// 		{4.0, 5.0, 6.0},
+		// 	});
+		// 	BOOST_TEST( multi::rank<decltype(arr)>::value == 2 );
+		// 	BOOST_TEST( num_elements(arr) == 6 );
+		// }
 	}
 #endif
 #endif
@@ -613,18 +625,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr == arr6 );
 
-		using multi::operator+;
-		auto const arr7 = +il;
+		// using multi::operator+;
+		// auto const arr7 = +il;
 
-		BOOST_TEST( arr == arr7 );
+		// BOOST_TEST( arr == arr7 );
 
-		// +{...} doesn't compile
-		auto const arr8 = operator+({
-			{1, 2, 3},
-			{4, 5, 6}
-		});
+		// // +{...} doesn't compile
+		// auto const arr8 = operator+({
+		// 	{1, 2, 3},
+		// 	{4, 5, 6}
+		// });
 
-		BOOST_TEST( arr == arr8 );
+		// BOOST_TEST( arr == arr8 );
 	}
 	{
 		std::initializer_list<int> const il = {};
@@ -704,6 +716,61 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][0] == 22 );
 		BOOST_TEST( arr[2][0] == 33 );
 	}
+
+	// NOLINTBEGIN(readability-identifier-length,misc-const-correctness)
+	// Andrzej examples
+	{
+		{
+			// multi::array A = {2, 3};  // doesn't compile anymore (Jan 19 2026)
+			// multi::array B = {{2, 3}, {4, 5}};  // doesn't compile anymore (Jan 19 2026)
+		}
+		{
+			multi::array<int, 2> A({2, 3});
+			multi::array<int, 2> B{
+				{2, 3}
+			};
+
+			using std::get;
+			BOOST_TEST( get<0>(A.sizes()) == 2 );
+			BOOST_TEST( get<1>(A.sizes()) == 3 );
+
+			BOOST_TEST( get<0>(B.sizes()) == 1 );
+			BOOST_TEST( get<1>(B.sizes()) == 2 );
+			BOOST_TEST( B[0][0] == 2 );
+			BOOST_TEST( B[0][1] == 3 );
+		}
+		{
+			// multi::array A1 ({2, 3});  // doesn't compile as of Jan 29
+			// multi::array B2 {{2, 3}};  // doesn't compile as of Jan 29
+		}
+		{
+			multi::array<int, 1> C(2);
+			multi::array<int, 1> D{2};
+
+			BOOST_TEST( C.size() == 2);
+			BOOST_TEST( D.size() == 1);
+			BOOST_TEST( D[0] == 2 );
+		}
+		{
+			multi::array<int, 2> A1({2, 3});  // argument interpreted as extents
+			// multi::array         A2 ( {2, 3} );  // doesn't compile as of Jan 29
+
+			using std::get;
+			BOOST_TEST( get<0>(A1.sizes()) == 2 );
+			BOOST_TEST( get<1>(A1.sizes()) == 3 );
+		}
+		{
+			multi::array<int, 1> A1({3}, 11);
+			multi::array<int, 1> A2({3});
+
+			BOOST_TEST( A1.size() == 3 );
+			BOOST_TEST( A1[0] == 11 );
+
+			BOOST_TEST( A2.size() == 1 );
+			BOOST_TEST( A2[0] == 3 );
+		}
+	}
+	// NOLINTEND(readability-identifier-length,misc-const-correctness)
 
 	return boost::report_errors();
 }
