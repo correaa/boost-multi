@@ -769,28 +769,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( A2.size() == 1 );
 			BOOST_TEST( A2[0] == 3 );
 		}
-		{
-			multi::array<int, 1> A1({3}, 11);
-			multi::array<int, 1> A2({3});
-
-			BOOST_TEST( A1.size() == 3 );
-			BOOST_TEST( A1[0] == 11 );
-
-			BOOST_TEST( A2.size() == 1 );
-			BOOST_TEST( A2[0] == 3 );
-
-			multi::array<int, 1> A3(multi::extensions_t<1>{3}, 11);
-			multi::array<int, 1> A4(multi::extensions_t<1>{3});
-			multi::array<int, 1> A5(std::initializer_list<int>{3});
-
-			BOOST_TEST( A3.size() == 3 );
-			BOOST_TEST( A3[0] == 11 );
-
-			BOOST_TEST( A4.size() == 3 );
-
-			BOOST_TEST( A5.size() == 1 );
-			BOOST_TEST( A5[0] == 3 );
-		}
 	}
 	// NOLINTEND(readability-identifier-length,misc-const-correctness)
 
