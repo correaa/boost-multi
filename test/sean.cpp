@@ -34,7 +34,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( AA.extensions() == rst.extensions() );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-	multi::array<int, 2> const BB = rst | std::ranges::views::reverse;
+	multi::array<int, 2> const BB(rst | std::ranges::views::reverse);
 
 	BOOST_TEST( AA[0] == BB[4] );  // as A[0][0] == B[4][0] && A[0][1] == B[4][1] ...
 	BOOST_TEST( AA[1] == BB[3] );  // as A[1][0] == B[3][0] && A[1][1] == B[3][1] ...

@@ -165,7 +165,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{[8] = 8.0, 9.0, 10.0},
 			};
 #pragma GCC diagnostic pop
-			multi::array<double, 1> arr = stdarr;
+			multi::array<double, 1> arr(stdarr);
 			BOOST_TEST( arr.size() == 11 );
 			BOOST_TEST( arr[9] == 9.0 );
 		}

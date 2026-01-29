@@ -358,18 +358,8 @@ struct dynamic_array                                                            
 		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	/*explicit*/ dynamic_array(Range const& rng)                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
-
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 1), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<TT> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 2), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
-	// template<class TT = T, std::enable_if_t<sizeof(TT*) && (D == 3), int> =0>
-	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// constexpr dynamic_array(std::initializer_list<std::initializer_list<std::initializer_list<TT>>> ilv) : dynamic_array{const_subarray<TT, D>(ilv)} {}
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
