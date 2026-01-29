@@ -336,8 +336,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
 	{
-		auto const x = multi::array{1, 2, 3};
-		auto const y = multi::array{1, 2, 3, 4, 5};
+		auto const x = multi::array<int, 1>{1, 2, 3};
+		auto const y = multi::array<int, 1>{1, 2, 3, 4, 5};
 
 		auto const& [X, Y] = meshgrid(x, y);
 

@@ -110,7 +110,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		}
 	}
 
-	constexpr auto operator+() const { return multi::array<element, D>{*this}; }
+	constexpr auto operator+() const { return multi::array<element, D>(*this); }
 
 	struct bind_transposed_t {
 		Proj proj_;

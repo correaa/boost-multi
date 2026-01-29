@@ -1,4 +1,4 @@
-// Copyright 2023-2025 Alfredo A. Correa
+// Copyright 2023-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -78,7 +78,7 @@ int main() {
 		multi::array<T, 1> const Y_copy = Y_gpu;
 
 		using blas::operators::operator-;
-		BOOST_TEST(+blas::nrm2(Y_copy - multi::array{214.02, 106.43, 188.37}) < 1e-13);
+		BOOST_TEST(+blas::nrm2(Y_copy - multi::array<double, 1>{214.02, 106.43, 188.37}) < 1e-13);
 	}
 
 	// BOOST_AUTO_TEST_CASE(cublas_gemm_nh)
@@ -89,7 +89,7 @@ int main() {
 		complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
 		{
-						// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 			multi::thrust::cuda::array<complex, 2> const a = {
 				{1.0 - 2.0 * I, 9.0 - 1.0 * I},
 				{2.0 + 3.0 * I, 1.0 - 2.0 * I},
