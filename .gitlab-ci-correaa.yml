@@ -101,7 +101,7 @@ g++-m32 sanitize:
     - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="-m32 -DCCCL_DISABLE_LONG_DOUBLE=1 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-m32 -DCCCL_DISABLE_LONG_DOUBLE_SUPPORT=1 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
