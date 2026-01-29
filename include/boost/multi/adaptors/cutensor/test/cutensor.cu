@@ -306,7 +306,8 @@ int main() {
 	multi::thrust::cuda::array<float, 4>
 		A_dev = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; } ^ multi::extensions_t<4>{extent['m'], extent['h'], extent['k'], extent['n']}),
 		B_dev = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; } ^ multi::extensions_t<4>{extent['u'], extent['k'], extent['v'], extent['h']}),
-		C_dev = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; } ^ multi::extensions_t<4>{extent['m'], extent['u'], extent['n'], extent['v']});
+		C_dev = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5) * 100; } ^ multi::extensions_t<4>{extent['m'], extent['u'], extent['n'], extent['v']})
+	;
 
 	multi::cutensor::descriptor<decltype(A_dev)::element, decltype(A_dev)::dimensionality> descA(A_dev.layout());
 	multi::cutensor::descriptor<decltype(B_dev)::element, decltype(B_dev)::dimensionality> descB(B_dev.layout());
