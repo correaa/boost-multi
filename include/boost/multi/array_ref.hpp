@@ -861,6 +861,9 @@ struct elements_iterator_t
 		return *this;
 	}
 
+	BOOST_MULTI_HD constexpr auto operator++(int) { auto ret{this}; ++(*this); return ret; }
+	BOOST_MULTI_HD constexpr auto operator--(int) { auto ret{this}; --(*this); return ret; }
+
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
 		auto const nn = apply(xs_, ns_);
 		ns_           = xs_.from_linear(nn + n);
@@ -4006,6 +4009,10 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+
+template<typename Element, class... Rest>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::elements_range_t<Element, Rest...> > = true;  // NOLINT(misc-definitions-in-headers)
+
 }  // end namespace std::ranges
 #endif
 
