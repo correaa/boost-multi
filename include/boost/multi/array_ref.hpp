@@ -4018,7 +4018,9 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
-// TODO(correaa) consider enabling borrowed for iterator_range
+template<typename Element, class... Rest>
+[[maybe_unused]] constexpr bool std::ranges::enable_borrowed_range<::boost::multi::elements_range_t<Element, Rest...> > = true;
+
 }  // end namespace std::ranges
 #endif
 
