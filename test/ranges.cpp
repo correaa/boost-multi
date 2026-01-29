@@ -196,9 +196,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{2, 2, 2, 2}
 		};
 
+		// auto b = std::ranges::begin(A({1, 3}, {1, 3}).elements());
+		// *(++b) = 1;
+
 		std::ranges::fill(A({1, 3}, {1, 3}).elements(), 1);
 
-		// BOOST_TEST( );
+		BOOST_TEST( A[1][1] == 1 );
+		BOOST_TEST( A[2][2] == 1 );
 	}
 #endif
 
