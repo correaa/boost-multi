@@ -1672,10 +1672,10 @@ template<
 	>
 array(Range) -> array<V, 1>;
 
-// template<class Reference>
-// auto operator+(Reference&& ref) -> decltype(array(std::forward<Reference>(ref))) {
-// 	return array(std::forward<Reference>(ref));
-// }
+template<class Reference>
+auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref))) {
+	return array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref));
+}
 
 #endif  // ends defined(__cpp_deduction_guides)
 
