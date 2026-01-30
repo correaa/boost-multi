@@ -863,13 +863,13 @@ struct elements_iterator_t
 		return *this;
 	}
 
-	template<class = void>
+	template<class = void>  // TODO(correaa) lazy instantion to workaround MSVC linking limitations iterator copy for restrictions
 	BOOST_MULTI_HD constexpr auto operator++(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
 		++(*this);
 		return ret;
 	}
-	template<class = void>
+	template<class = void>  // TODO(correaa) lazy instantion to workaround MSVC linking limitations iterator copy for restrictions
 	BOOST_MULTI_HD constexpr auto operator--(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
 		--(*this);
