@@ -131,7 +131,14 @@ struct transform_ptr {
 #if defined(__NVCC__) || defined(__NVCOMPILER)  // TODO(correaa) maybe needs to skip this for MSVC
 	constexpr transform_ptr() {}
 #else
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 5046)  // 'boost::multi::transform_ptr<std::complex<double>,UF,Ptr,const std::complex<double>>::transform_ptr': Symbol involving type with internal linkage not defined
+#endif
 	constexpr transform_ptr();  // : p_{}, f_{} {}
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #endif
 	template<class UFF>
 	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}
