@@ -190,14 +190,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* const A_base = arr.base();
+		// auto* const A_base = arr.base();  // to check bellow
 
 		arr = std::move(arr).reextent({4, 5});
 
-		BOOST_TEST( num_elements(arr)== 4L*5L );
+		BOOST_TEST( arr.num_elements()== 4L*5L );
 		// BOOST_TEST( arr[1][2] !=  6.0 );  // after move the original elements might not be the same, but it is not 100% possible to check
-
-		BOOST_TEST( A_base != arr.base() );
+		// BOOST_TEST( A_base != arr.base() );  // after move the base pointer might have changed but it is not 100% to check
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_move_clear)

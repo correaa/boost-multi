@@ -71,6 +71,7 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 #include <iterator>    // for std::next
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
+// #include <vector>      // for std::vector (for conversion)
 
 #if __has_include(<span>)
 #if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
@@ -867,6 +868,7 @@ struct elements_iterator_t
 		n_ += n;
 		return *this;
 	}
+
 	BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> elements_iterator_t& {
 		// auto const nn = std::apply(xs_, ns_);
 		// ns_ = xs_.from_linear(nn - n);
