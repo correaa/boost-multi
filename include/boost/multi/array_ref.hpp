@@ -14,6 +14,7 @@
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
+#include <vector>  // for .to conversion
 #endif
 
 #ifdef _MSC_VER
