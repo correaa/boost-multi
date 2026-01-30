@@ -1416,6 +1416,29 @@ pages:
     - public
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
+
+pages-single-page:
+  stage: basic
+  allow_failure: true
+  only:
+    refs:
+      - master
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv
+    - cd doc
+    - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi-single-page.adoc
+    # - cd ..
+    # - cp -r doc_back/multi.html .public
+    # - cp -r doc/multi.adoc .public
+    # - cd ..
+    # - mv .public public
+  artifacts:
+    paths:
+    - public
+
 headers:
   stage: basic
   allow_failure: true
