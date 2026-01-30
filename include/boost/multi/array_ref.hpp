@@ -861,17 +861,18 @@ struct elements_iterator_t
 		return *this;
 	}
 
+	template<class = void>
 	BOOST_MULTI_HD constexpr auto operator++(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
 		++(*this);
 		return ret;
 	}
+	template<class = void>
 	BOOST_MULTI_HD constexpr auto operator--(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
 		--(*this);
 		return ret;
 	}
-
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
 		auto const nn = apply(xs_, ns_);
