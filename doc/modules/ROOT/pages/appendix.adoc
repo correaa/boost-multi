@@ -163,9 +163,68 @@ do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
 end do              ! }
 -----
 
-link:https://godbolt.org/z/77onne46W[(live)]
+link:https://godbolt.org/z/77onne46W[(online)]
 
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
+[#appendix_fortran]
+== HOW-TO
+
+=== How to fill elements of an array with a constant value?
+
+Use a standard algorithm, `fill` for example.
+If you have an array:
+
+[source,cpp]
+-----
+#include<ranges>
+...
+  multi::array<double, 2> arr = ...
+
+  std::ranges::fill(arr.elements(), 0);
+...
+-----
+
+or a subarray:
+
+[source,cpp]
+-----
+...
+  std::ranges::fill(arr({1, 3}, {1, 3}).elements(), 1);
+-----
+
+If you don't have access to the ranges library (C++20) or if you want to control parallelism use:
+[source,cpp]
+-----
+#include<algorithm>
+#include<execution>
+...
+  std::fill(std::execution::par, arr.elements().begin(), arr.elements().end(), 0);
+...
+-----
+link:https://godbolt.org/z/sn8MqPEP5[(online)]
+
+If the data is in the GPU, you can use Thrust algorithms (which detects the memory space automatically, and it is parallel by default)
+
+[source,cpp]
+-----
+#include <multi/adaptors/thrust.hpp>
+#include <thrust/fill.h>
+...
+  thrust::fill(arr.elements().begin(), arr.elements().end(), 0);
+...
+-----
+
+or more explicitly as,
+[source,cpp]
+-----
+#include <thrust/execution_policy.h>
+...
+  thrust::fill(thrust::device, arr.elements().begin(), arr.elements().end(), 0);
+...
+-----
+link:https://godbolt.org/z/55vd7v8xf[(online)]
+
 > **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help to integrate the Boost infrastructure to the unit tests, and for the formatting of the documentation.
+
