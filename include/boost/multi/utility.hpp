@@ -128,7 +128,7 @@ struct transform_ptr {
 #if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 #endif
-#if defined(__NVCC__) || defined(__NVCOMPILER)  // TODO(correaa) maybe needs to skip this for MSVC
+#if defined(__NVCC__) || defined(__NVCOMPILER) || !defined(_MSC_VER) // TODO(correaa) maybe needs to skip this for MSVC
 	constexpr transform_ptr() {}
 #else
 #ifdef _MSC_VER
