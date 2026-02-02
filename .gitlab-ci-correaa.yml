@@ -440,7 +440,7 @@ vs2022-shell:
     # - winget install Git.Git
     # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
     # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
-    - winget install Ninja-build.Ninja
+    # - winget install Ninja-build.Ninja
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
     # - winget install Microsoft.VisualStudio.2022.BuildTools
     # - winget install Git.Git Kitware.CMake Microsoft.PowerShell Microsoft.msmpi Microsoft.msmpisdk
