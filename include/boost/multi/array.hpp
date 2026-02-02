@@ -584,8 +584,8 @@ struct dynamic_array                                                            
 		  multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
 	  ),
 	  ref(
-		array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
-		other.extensions()
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+		  other.extensions()
 	  ) {
 		assert(this->stride() != 0);
 		uninitialized_copy_elements(other.data_elements());
@@ -1309,7 +1309,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	: static_(
 		  (ilv.size() == 0) ? array<T, D>{}
 							: array<T, D>(ilv.begin(), ilv.end())
-	 ) {
+	  ) {
 	}
 
 	template<
@@ -1320,7 +1320,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	: static_(
 		  (ilv.size() == 0) ? array<T, D>()()
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
-	 ) {}
+	  ) {}
 
 	array()             = default;
 	array(array const&) = default;
