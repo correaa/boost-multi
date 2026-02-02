@@ -313,8 +313,8 @@ jobs:
             cxxstd: "03,11,14,17,20,2b"
             os: macos-15
           - toolset: clang
-            cxxstd: "03,11,14,17,20,23"
-            os: macos-26  # yes, 26, apple unified names
+            cxxstd: "03,11,14,17,20,23,2c"
+            os: macos-26  # yes, 26, Apple unified naming
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
