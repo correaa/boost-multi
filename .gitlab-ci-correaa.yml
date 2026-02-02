@@ -1,4 +1,4 @@
-listp# Copyright 2020-2026 Alfredo A. Correa
+# Copyright 2020-2026 Alfredo A. Correa
 
 # Install docker (for local CI or to set up CI machine)
 #   sudo apt install docker.io
