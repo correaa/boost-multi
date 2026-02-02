@@ -453,7 +453,7 @@ vs2022-shell:
     - $Env:Path -split ';'
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="${CI_PROJECT_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
