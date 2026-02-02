@@ -437,6 +437,7 @@ vs2022-shell:
   interruptible: true
   script:
     - pwd
+    # - wsl install
     # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop
     # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
     # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
