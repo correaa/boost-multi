@@ -437,7 +437,7 @@ vs2022-shell:
   interruptible: true
   script:
     # - winget install Git.Git
-    - winget install Kitware.CMake
+    - winget install Kitware.CMake --silent
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
     # - winget install Microsoft.VisualStudio.2022.BuildTools
     # - winget install Git.Git Kitware.CMake Microsoft.PowerShell Microsoft.msmpi Microsoft.msmpisdk
