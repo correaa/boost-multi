@@ -432,7 +432,7 @@ vs2019-windows:
   timeout: 30 minutes
 
 vs2022-shell:
-  stage: build
+  stage: basic  # build
   allow_failure: false
   interruptible: true
   script:
