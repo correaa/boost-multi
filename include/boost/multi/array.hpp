@@ -217,10 +217,10 @@ struct dynamic_array                                                            
 	// dynamic_array(dynamic_array&&) = delete;
 	constexpr dynamic_array(dynamic_array&& other) noexcept(false)  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor)
 	: array_alloc{other.alloc()},
-	  ref{
+	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
 		  other.extensions()
-	  } {
+	  ) {
 		adl_alloc_uninitialized_move_n(
 			this->alloc(),
 			other.data_elements(),
@@ -369,10 +369,10 @@ struct dynamic_array                                                            
 	template<class TT, class... As>
 	dynamic_array(array_ref<TT, D, As...> const& other, allocator_type const& alloc)
 	: array_alloc{alloc},
-	  ref{
+	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename)
 		  other.extensions()
-	  } {
+	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type> && !multi::force_element_trivial_default_construction<typename dynamic_array::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
@@ -580,12 +580,13 @@ struct dynamic_array                                                            
 	}
 
 	constexpr dynamic_array(dynamic_array const& other)  // 5b
-	: array_alloc{
+	: array_alloc(
 		  multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
-	  },
-	  ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())  //,
-		  ),
-		  other.extensions()} {
+	  ),
+	  ref(
+		array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+		other.extensions()
+	  ) {
 		assert(this->stride() != 0);
 		uninitialized_copy_elements(other.data_elements());
 	}
@@ -1305,10 +1306,10 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
-	: static_{
+	: static_(
 		  (ilv.size() == 0) ? array<T, D>{}
 							: array<T, D>(ilv.begin(), ilv.end())
-	  } {
+	 ) {
 	}
 
 	template<
@@ -1316,10 +1317,10 @@ struct array : dynamic_array<T, D, Alloc> {
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
-	: static_{
+	: static_(
 		  (ilv.size() == 0) ? array<T, D>()()
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
-	  } {}
+	 ) {}
 
 	array()             = default;
 	array(array const&) = default;
