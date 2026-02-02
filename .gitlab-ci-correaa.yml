@@ -413,12 +413,21 @@ visual-studio-windows:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
+    VCPKG_ROOT: ${CI_PROJECT_DIR}/vcpkg
+    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+
+  cache:
+    key: vcpkg-windows
+    paths:
+      - vcpkg/
+
   script:
     # vvv saas-windows-medium-amd64 runner comes with all this
     # - choco --version
     # - choco install poshgit -y
     # - choco install visualstudio2019community -y --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
-    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    - if (!(Test-Path vcpkg)) { git clone --depth=1 https://github.com/microsoft/vcpkg.git }
     - .\vcpkg\bootstrap-vcpkg.bat
     - .\vcpkg\vcpkg install boost-core  # boost-multi-array boost-timer pkgconf
     - mkdir build
