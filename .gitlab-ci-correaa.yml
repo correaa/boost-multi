@@ -438,7 +438,7 @@ vs2022-shell:
   script:
     - pwd
     # - winget install Git.Git
-    - winget install Kitware.CMake --silent --disable-interactivity --accept-source-agreements --accept-package-agreements
+    # - winget install Kitware.CMake --disable-interactivity
     # - winget install --id=Microsoft.VisualStudio.2022.Community -e
     # - winget install Microsoft.VisualStudio.2022.BuildTools
     # - winget install Git.Git Kitware.CMake Microsoft.PowerShell Microsoft.msmpi Microsoft.msmpisdk
