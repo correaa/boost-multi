@@ -231,7 +231,7 @@ To create the array it is easier to directly construct (allocate and initialize)
 
 [source,cpp]
 -----
-  multi::array<double, 2> arr({10, 10}, 1);  // generate a 10x10 array with all elements equal to 1
+  multi::array<double, 2> arr({4, 4}, 1);  // generate a 4x4 array; all its elements equal to 1
 -----
 
 
