@@ -46,3 +46,5 @@
 * xref:appendix.adoc[]
 ** xref:appendix.adoc#appendix_comparison[Comparison to other array libraries]
 ** xref:appendix.adoc#appendix_fortran[Multi for FORTRAN programmers]
+** xref:appendix.adoc#appendix_howtos[How-tos]
+*** xref:appendix.adoc#appendix_howto_fill[How to fill elements?]
