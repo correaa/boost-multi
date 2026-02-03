@@ -128,10 +128,17 @@ struct transform_ptr {
 #if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 #endif
-#if defined(__NVCC__) || defined(__NVCOMPILER)  // TODO(correaa) maybe needs to skip this for MSVC
-	constexpr transform_ptr() {}
+#if (defined(__NVCC__) || defined(__NVCOMPILER)) && !defined(_MSC_VER) // TODO(correaa) maybe needs to skip this for MSVC
+	constexpr transform_ptr() : p_{}, f_{reinterpret_cast<UF&>(p_)} { assert(0); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) should never be called, this is to fulfil a concept
 #else
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 5046)  // 'boost::multi::transform_ptr<std::complex<double>,UF,Ptr,const std::complex<double>>::transform_ptr': Symbol involving type with internal linkage not defined
+#endif
 	constexpr transform_ptr();  // : p_{}, f_{} {}
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #endif
 	template<class UFF>
 	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}

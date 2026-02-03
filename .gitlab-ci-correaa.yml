@@ -442,7 +442,7 @@ visual-studio-windows:
   timeout: 30 minutes
 
 vs2022-shell:
-  stage: basic  # build
+  stage: build
   allow_failure: false
   interruptible: true
   before_script:
