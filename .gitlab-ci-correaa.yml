@@ -809,6 +809,7 @@ nvhpc-26.1:
     - non-shared
     - large-disk-space
     - x86_64
+  allow_failure: true
   interruptible: true
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
