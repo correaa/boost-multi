@@ -188,6 +188,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 	}
+	{
+		multi::array<int, 2> A = {
+			{2, 2, 2, 2},
+			{2, 0, 0, 2},
+			{2, 0, 0, 2},
+			{2, 2, 2, 2}
+		};
+
+		std::ranges::fill(A({1, 3}, {1, 3}).elements(), 1);
+
+		BOOST_TEST( A[1][1] == 1 );
+		BOOST_TEST( A[2][2] == 1 );
+	}
 #endif
 
 	return boost::report_errors();

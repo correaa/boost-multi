@@ -168,9 +168,10 @@ link:https://godbolt.org/z/77onne46W[(online)]
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
-[#appendix_fortran]
-== HOW-TO
+[#appendix_howtos]
+== How-Tos
 
+[#appendix_howto_fill]
 === How to fill elements of an array with a constant value?
 
 Use a standard algorithm, `fill` for example.
@@ -225,6 +226,13 @@ or more explicitly as,
 ...
 -----
 link:https://godbolt.org/z/55vd7v8xf[(online)]
+
+If you want are creating the array it is easier to just construct it with a given value.
+
+[source,cpp]
+-----
+  multi::array<double, 2> arr({10, 10}, 1);  // generate a 10x10 array with all elements equal to 1
+-----
 
 > **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help to integrate the Boost infrastructure to the unit tests, and for the formatting of the documentation.
 
