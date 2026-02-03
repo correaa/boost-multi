@@ -174,7 +174,7 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 [#appendix_howto_fill]
 === How to fill elements of an array with a constant value?
 
-Use a standard algorithm, `fill` for example.
+Use a standard fill algorithm, `std::ranges::fill` for example.
 If you have an array:
 
 [source,cpp]
@@ -201,7 +201,7 @@ If you don't have access to the ranges library (C++20) or if you want to control
 #include<algorithm>
 #include<execution>
 ...
-  std::fill(std::execution::par, arr.elements().begin(), arr.elements().end(), 0);
+  std::fill(std::execution::par, arr.elements().begin(), arr.elements().end(), 1);
 ...
 -----
 link:https://godbolt.org/z/sn8MqPEP5[(online)]
@@ -213,7 +213,7 @@ If the data is in the GPU, you can use Thrust algorithms (which detects the memo
 #include <multi/adaptors/thrust.hpp>
 #include <thrust/fill.h>
 ...
-  thrust::fill(arr.elements().begin(), arr.elements().end(), 0);
+  thrust::fill(arr.elements().begin(), arr.elements().end(), 1);
 ...
 -----
 
@@ -222,18 +222,17 @@ or more explicitly as,
 -----
 #include <thrust/execution_policy.h>
 ...
-  thrust::fill(thrust::device, arr.elements().begin(), arr.elements().end(), 0);
+  thrust::fill(thrust::device, arr.elements().begin(), arr.elements().end(), 1);
 ...
 -----
 link:https://godbolt.org/z/55vd7v8xf[(online)]
 
-To create the array it is easier to directly construct (allocate and initialize) it with a given value:
+To create new array with a constant value, it is easier to directly construct it:
 
 [source,cpp]
 -----
   multi::array<double, 2> arr({4, 4}, 1);  // generate a 4x4 array; all its elements equal to 1
 -----
-
 
 > **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help to integrate the Boost infrastructure to the unit tests, and for the formatting of the documentation.
 
