@@ -100,7 +100,16 @@ auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensio
 }  // namespace elementwise
 }  // namespace lazy
 
+struct re {
+	void restrict() const {}
+	// friend void restrict(re const&) {}
+};
+
 int main() {
+	re R;
+	R.restrict();
+	// restrict(re);
+
 	// test repeat
 	{
 		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
