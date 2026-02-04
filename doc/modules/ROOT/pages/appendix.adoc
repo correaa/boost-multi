@@ -234,5 +234,13 @@ To create new array with a constant value, it is easier to directly construct it
   multi::array<double, 2> arr({4, 4}, 1);  // generate a 4x4 array; all its elements equal to 1
 -----
 
+But be aware that creating a new array to assign is inefficient, because it will allocate memory:
+
+[source,cpp]
+-----
+  arr = multi::array<double, 2>(arr.extensions(), 2);  // allocates here, inefficient, not recommended
+-----
+
+
 > **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help to integrate the Boost infrastructure to the unit tests, and for the formatting of the documentation.
 

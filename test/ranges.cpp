@@ -196,10 +196,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{2, 2, 2, 2}
 		};
 
-		std::ranges::fill(A({1, 3}, {1, 3}).elements(), 1);
+		{
+			auto end = std::ranges::fill(A.elements(), 3);
+			BOOST_TEST( end == A.elements().end() );
+		}
 
+		{
+			auto end = std::ranges::fill(A({1, 3}, {1, 3}).elements(), 1);
+			BOOST_TEST( end == A({1, 3}, {1, 3}).elements().end() );
+		}
+
+		BOOST_TEST( A[0][0] == 3 );
 		BOOST_TEST( A[1][1] == 1 );
 		BOOST_TEST( A[2][2] == 1 );
+		BOOST_TEST( A[3][3] == 3 );
 	}
 #endif
 
