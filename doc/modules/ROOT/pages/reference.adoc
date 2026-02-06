@@ -28,8 +28,8 @@ The main array type to reach for is `multi::array`, the other types are for spec
 |===
 
 When using the library, it is simpler to start from `array`, and other types are rarely explicitly used, especially if using the `auto` language feature;
-however, it is convenient for documentation to present the classes in a different order since the classes `subarray`, `array_ref`, `dynamic_array`, and `array` have an *is-a* relationship (from left to right). 
-For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref` (and more).
+however, it is convenient for documentation to present the classes in a different order since the classes `array`, `dynamic_array`, `array_ref`, and `subarray` have an *is-a* relationship (from left to right), through C++ public inheritance.
+For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref, etc.
 
 [#ref_subarray]
 === Subarrays
@@ -52,6 +52,10 @@ All member functions are `constexpr` unless specified otherwise.
 
 ==== `multi::subarray<T, D, P = T*>` member types
 
+A subarray-reference of type `T` and non-negative dimension `D`.
+There are no special requirements over type `T`.
+The type `P` must be pointer-like.
+
 |===
 |`subarray::...`   | Description
 
@@ -62,6 +66,9 @@ All member functions are `constexpr` unless specified otherwise.
 |`size_type`       | describe size (number of subarrays) in the leading dimension (signed version of pointer size type, usually std::diffptr_t)
 |`index_range`     | describe ranges of indices, constructible from braced indices types or from an extension_type. Can be continuous (e.g. {2, 14}) or strided (e.g. {2, 14, /*every*/ 3})
 |`extension_type`  | describe a contiguous range of indices, constructible from braced index (e.g. `{0, 10}`) or from a single integer size (e.g. 10, equivalent to {0, 10}).
+|`element`         | Element type `T`
+|`element_ref`     | Reference to element type, deduced from pointer type, typically `T&`
+|`element_ref`     | Constant reference to element type, deduced from pointer type, typically `T const&`
 |`difference_type` | describe index differences in leading dimension (signed version of pointer size type, usually `std::ptrdiff_t`)
 |`pointer`         | `multi::subarray_ptr<T, D-1, P >` or, for `D == 1`, `P` (the element pointer type, usually `T*`)
 |`const_pointer`   | `multi::const_subarray_ptr<T, D-1, P >` or, for `D == 1`, `pointer_traits<P>::rebind<T const>` (usually `T const*`)
@@ -100,6 +107,7 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 ==== `multi::subarray<T, D, P = T*>` shape access
 
 |===
+| `dimensionality`  | static constant member, dimensionality of array `D`
 | `sizes`           | returns a tuple with the sizes in each dimension
 | `extensions`      | returns a tuple with the extensions in each dimension
 | `size`            | returns the number of subarrays contained in the first dimension
