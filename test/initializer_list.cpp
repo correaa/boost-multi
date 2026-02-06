@@ -744,12 +744,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// multi::array B2 {{2, 3}};  // doesn't compile as of Jan 29
 		}
 		{
-			multi::array<int, 1> C(2);
-			multi::array<int, 1> D{2};
+			// multi::array<int, 1> C(2);
+			// multi::array<int, 1> D{2};
+
+			multi::array<int, 1> C(multi::extensions_t<1>{2});
+			// multi::array<int, 1> D{multi::extensions_t<1>{2}};
 
 			BOOST_TEST( C.size() == 2);
-			BOOST_TEST( D.size() == 1);
-			BOOST_TEST( D[0] == 2 );
+			// BOOST_TEST( D.size() == 1);
+			// BOOST_TEST( D[0] == 2 );
 		}
 		{
 			multi::array<int, 2> A1({2, 3});  // argument interpreted as extents

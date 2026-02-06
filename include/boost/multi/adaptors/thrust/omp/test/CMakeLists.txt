@@ -38,11 +38,16 @@ else()
             endif()
 
             include(FetchContent)
+            # set(FETCHCONTENT_QUIET OFF)
+            # FetchContent_Declare(
+            #     cccl-cmake GIT_REPOSITORY https://github.com/NVIDIA/cccl.git  GIT_TAG main  # v3.1.0
+            #     GIT_SHALLOW ON  GIT_PROGRESS TRUE  USES_TERMINAL_DOWNLOAD TRUE
+            # )
             FetchContent_Declare(
-                cccl-cmake
-                GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-                GIT_TAG main  # v3.1.0
-                GIT_SHALLOW ON
+               cccl-cmake
+                URL https://github.com/NVIDIA/cccl/archive/refs/tags/v3.1.0.zip
+                # URL https://github.com/NVIDIA/cccl/archive/refs/heads/main.zip
+                DOWNLOAD_EXTRACT_TIMESTAMP TRUE
             )
             FetchContent_MakeAvailable(cccl-cmake)
         endif()

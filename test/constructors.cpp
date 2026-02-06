@@ -269,5 +269,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #pragma clang diagnostic pop
 		// #endif
 	}
+
 	return boost::report_errors();
 }

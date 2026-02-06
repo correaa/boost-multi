@@ -598,12 +598,9 @@ struct dynamic_array                                                            
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
-	using dynamic_value_type =
-		std::conditional_t<
-			(D != 1),
-			dynamic_array<T, D - 1, allocator_type>,
-			T>;
+	using dynamic_value_type = std::conditional_t<(D != 1), dynamic_array<T, D - 1, allocator_type>, T>;
 
+	template<class = void>
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
@@ -1304,13 +1301,18 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
-	: static_(
-		  (ilv.size() == 0) ? array<T, D>{}
-							: array<T, D>(ilv.begin(), ilv.end())
-	  ) {
-	}
+	// template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && (D == 1), int> =0>
+	// constexpr array(std::initializer_list<int> /*unused*/) {}
+	// constexpr array(std::initializer_list<long> /*unused*/) {}
+
+	// template<class = void>
+	// /// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
+	// : static_(
+	// 	  (ilv.size() == 0) ? array<T, D>{}
+	// 						: array<T, D>(ilv.begin(), ilv.end())
+	//   ) {
+	// }
 
 	template<
 		class OtherT,

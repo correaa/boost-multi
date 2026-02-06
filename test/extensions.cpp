@@ -314,7 +314,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it3 == it );
 	}
 	{
-		multi::array<int, 1> const arr(10);
+		multi::array<int, 1> const arr({10});
 
 		auto xn = decltype(arr.extension())(10);
 		BOOST_TEST( xn. size() == 10 );

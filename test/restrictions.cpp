@@ -258,7 +258,9 @@ int main() {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
-		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+		auto il_res = [il](auto ii, auto jj) {
+			return il.begin()[ii].begin()[jj];
+		} ^ multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
 		BOOST_TEST( il_res[1][1] == 5 );
 	}
 	{
