@@ -693,7 +693,7 @@ class adl_alloc_uninitialized_copy_n_t {
 	// BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<Alloc>(alloc), first, count, dest))  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 	{
 	#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename std::allocator_traits<Alloc>::value_type> && !multi::force_element_trivial_default_construction<typename std::allocator_traits<Alloc>::value_type>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::allocator_traits<std::decay_t<Alloc>>::value_type> && !multi::force_element_trivial_default_construction<typename std::allocator_traits<std::decay_t<Alloc>>::value_type>) {
 			adl_alloc_uninitialized_default_construct_n(std::forward<Alloc>(alloc), count, dest);
 		}
 		return adl_copy_n(first, count, dest);

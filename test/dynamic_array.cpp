@@ -30,14 +30,14 @@ namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
-		multi::dynamic_array<copyable, 2> arr({2, 2});
+		multi::dynamic_array<copyable, 2> const arr({2, 2});
 
 		auto barr = arr;
 
 		BOOST_TEST( barr.size() == 2 );
 	}
 	{
-		multi::dynamic_array<non_copyable, 2> arr({2, 2});
+		multi::dynamic_array<non_copyable, 2> const arr({2, 2});
 		// auto barr = arr;  // doesn't work (ok) because arr is not copy constructible
 		// auto barr = std::move(arr);  // doesn't work (ok) because arr is not copy constructible
 
