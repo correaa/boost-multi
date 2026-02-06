@@ -52,7 +52,7 @@ All member functions are `constexpr` unless specified otherwise.
 
 ==== `multi::subarray<T, D, P = T*>` member types
 
-A subarray-reference of type `T` and non-negative dimension `D`.
+A subarray-reference of type `T` and non-negative dimension `D` (`>= 0`).
 There are no special requirements over type `T`.
 The type `P` must be pointer-like.
 
@@ -242,12 +242,13 @@ An `array_ref` can be invalidated if the original buffer is deallocated.
 [#ref_dynamic_array]
 === Dynamic arrays
 
-A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
+A dynamic array is a _D_-dimensional array that manages an internal memory buffer,and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
 This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
 Memory is requested by an allocator of type Alloc (standard allocator by default).
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::dynamic_array`.
 
 For most uses, a `multi::array` should be preferred instead.
+If `T` is copyable/default-constructible then `multi::dynamic_array<T, D>` is also copyable/default-constructible.
 
 The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
@@ -543,6 +544,6 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 |===
 | Assignment   | Allocation of `T`s | Initialization (of `T`s) | Evaluation (of `fun`) | Notes
 
-| `B = A.element_transformed(fun);`           | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred
+| `B = A.element_transformed(fun);`             | No, if sizes match | Possibly (when `B` was initialized)  | Yes | `B` can't be declared `const`, it can be a writable subarray, preferred
 | `B = + A.element_transformed(fun);`           | Yes | Possibly (when `B` was initialized)  | Yes | Not recommended.
 |===
