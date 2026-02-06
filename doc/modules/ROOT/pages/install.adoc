@@ -4,7 +4,8 @@
 
 :idprefix: install_
 
-Before using the library, you can try it https://godbolt.org/z/dvacqK8jE[online].
+Before using the library, you can try it https://godbolt.org/z/dvacqK8jE[online],
+or you can download the core library as a https://correaa.gitlab.io/boost-multi/boost-multi.hpp[single header].
 
 _Multi_ has no external dependencies and can be used immediately after downloading.
 
