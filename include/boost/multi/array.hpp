@@ -81,14 +81,14 @@ struct array_allocator {
 
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
-#if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
-			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
-		}
-		return adl_copy_n(first, count, d_first);
-#else
+// #if defined(__clang__) && defined(__CUDACC__)
+// 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
+// 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
+// 		}
+// 		return adl_copy_n(first, count, d_first);
+// #else
 		return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
-#endif
+// #endif
 	}
 
 	template<typename It>
@@ -422,10 +422,14 @@ struct dynamic_array                                                            
 		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                            // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
 	}
 
-	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()),std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)                                                                              // fill constructor
 	: dynamic_array(extension, value, allocator_type{}) {}
 
+
+	// template<class Dummy = void,
+	// 	std::enable_if_t<sizeof(Dummy*) && std::is_default_constructible_v<typename dynamic_array::element>,int> =0
+	// >
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_default_construct();
@@ -437,7 +441,9 @@ struct dynamic_array                                                            
 	}
 
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& exts)
-	: dynamic_array(exts, allocator_type{}) {}
+	: dynamic_array(exts, allocator_type{}) {
+		// static_assert(std::is_default_constructible_v<typename dynamic_array::element>);
+	}
 
 	// to make cling cppyy overload resolution easier
 	template<class = void>  // gives low priority
