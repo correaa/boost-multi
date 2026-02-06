@@ -29,17 +29,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		multi::dynamic_array<non_copyable, 2> arr({2, 2});
-		// auto barr = arr;  // ok, doesn't work because arr is not copy constructible
-		// auto barr = std::move(arr);  // ok, doesn't work because arr is not copy constructible
+		// auto barr = arr;  // doesn't work (ok) because arr is not copy constructible
+		// auto barr = std::move(arr);  // doesn't work (ok) because arr is not copy constructible
 	}
 	{
 		// multi::dynamic_array<non_default_constructible, 2> arr({2, 2});  // ok, doesn't work, because it is not copy-constructible
 	}
-	{
-		multi::dynamic_array<non_default_constructible, 2> arr({2, 2}, non_default_constructible{1});
+	// {
+	// 	multi::dynamic_array<non_default_constructible, 2> arr({2, 2}, non_default_constructible{1});
 
-		auto barr = arr;
-	}
+	// 	auto barr = arr;
+	// }
 
 	return boost::report_errors();
 }

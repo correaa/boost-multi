@@ -619,7 +619,7 @@ class adl_alloc_uninitialized_default_construct_n_t {
 
  public:
 	template<class Alloc, class... As
-		, std::enable_if_t<std::is_default_constructible_v<typename std::allocator_traits<std::decay_t<Alloc>>::value_type>,int> =0
+		, std::enable_if_t<std::is_default_constructible_v<typename std::allocator_traits<std::decay_t<Alloc>>::value_type>,int> =0  // NOLINT(modernize-use-constraints) for C++20
 	> constexpr auto operator()(Alloc&& alloc, As&&... args) const {return (_(priority<6>{}, std::forward<Alloc>(alloc), std::forward<As>(args)...));}
 };
 inline constexpr adl_alloc_uninitialized_default_construct_n_t adl_alloc_uninitialized_default_construct_n;
@@ -658,7 +658,20 @@ class adl_alloc_uninitialized_copy_t {
 	template<class Alloc, class... As> constexpr auto _(priority<5>/**/, Alloc&& alloc, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<Alloc>(alloc).alloc_uninitialized_copy(                            std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
+	template<class Alloc, class It, class ItDest> constexpr auto operator()(Alloc&& alloc, It first, It last, ItDest dest) const
+	// BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<Alloc>(alloc), std::forward<As>(args)...))
+	{
+		#if defined(__clang__) && defined(__CUDACC__)
+		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::iterator_traits<ItDest>::value_type> && !multi::force_element_trivial_default_construction<typename std::iterator_traits<ItDest>::value_type>) {
+			adl_alloc_uninitialized_default_construct_n(alloc, dest, last - first);
+		}
+		return adl_copy_n(first, last - first, dest);
+		#else
+		return _(priority<5>{}, std::forward<Alloc>(alloc), first, last, dest);
+		// adl_alloc_uninitialized_copy(dynamic_array::alloc(), first, last, ref::begin());
+		#endif
+	}
 };
 inline constexpr adl_alloc_uninitialized_copy_t adl_alloc_uninitialized_copy;
 
@@ -673,7 +686,20 @@ class adl_alloc_uninitialized_copy_n_t {
 	template<class T, class... As>     constexpr auto _(priority<6>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}
+	// template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}
+ 	template<class Alloc, typename It, typename Size, typename ItD>
+	constexpr auto operator()(Alloc&& alloc, It first, Size count, ItD dest) const
+	// BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<Alloc>(alloc), first, count, dest))  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
+	{
+	#if defined(__clang__) && defined(__CUDACC__)
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::allocator_traits<Alloc>::value_type> && !multi::force_element_trivial_default_construction<typename std::allocator_traits<Alloc>::value_type>) {
+			adl_alloc_uninitialized_default_construct_n(std::forward<Alloc>(alloc), count, dest);
+		}
+		return adl_copy_n(first, count, dest);
+	#else
+		return _(priority<6>{}, std::forward<Alloc>(alloc), first, count, dest);
+	#endif
+	}
 };
 inline constexpr adl_alloc_uninitialized_copy_n_t adl_alloc_uninitialized_copy_n;
 
