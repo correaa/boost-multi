@@ -11,12 +11,19 @@ class copyable {
 
 struct non_copyable {
 	non_copyable()                    = default;
+
 	non_copyable(non_copyable const&) = delete;
+	non_copyable(non_copyable&&) = default;
+
+	auto operator=(non_copyable const&) -> non_copyable& = default;
+	auto operator=(non_copyable&&) -> non_copyable& = default;
+
+	~non_copyable() = default;
 };
 
 struct non_default_constructible {
 	non_default_constructible(int /*unused*/) {}
-	non_default_constructible() = delete;
+	non_default_constructible() = delete;	
 };
 
 namespace multi = boost::multi;

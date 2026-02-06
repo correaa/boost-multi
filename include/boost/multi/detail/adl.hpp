@@ -658,12 +658,13 @@ class adl_alloc_uninitialized_copy_t {
 	template<class Alloc, class... As> constexpr auto _(priority<5>/**/, Alloc&& alloc, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<Alloc>(alloc).alloc_uninitialized_copy(                            std::forward<As>(args)...))
 
  public:
-	template<class Alloc, class It, class ItDest> constexpr auto operator()(Alloc&& alloc, It first, It last, ItDest dest) const
+	template<class Alloc, class It, class ItD>
+	constexpr auto operator()(Alloc&& alloc, It const& first, It const& last, ItD const& dest) const
 	// BOOST_MULTI_DECLRETURN(_(priority<5>{}, std::forward<Alloc>(alloc), std::forward<As>(args)...))
 	{
 		#if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
-		if constexpr(!std::is_trivially_default_constructible_v<typename std::iterator_traits<ItDest>::value_type> && !multi::force_element_trivial_default_construction<typename std::iterator_traits<ItDest>::value_type>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::iterator_traits<ItD>::value_type> && !multi::force_element_trivial_default_construction<typename std::iterator_traits<ItD>::value_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc, dest, last - first);
 		}
 		return adl_copy_n(first, last - first, dest);
