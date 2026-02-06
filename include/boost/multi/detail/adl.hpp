@@ -688,7 +688,7 @@ class adl_alloc_uninitialized_copy_n_t {
  public:
 	// template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}
  	template<class Alloc, typename It, typename Size, typename ItD>
-	constexpr auto operator()(Alloc&& alloc, It first, Size count, ItD dest) const
+	constexpr auto operator()(Alloc&& alloc, It const& first, Size count, ItD const& dest) const
 	// BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<Alloc>(alloc), first, count, dest))  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 	{
 	#if defined(__clang__) && defined(__CUDACC__)
