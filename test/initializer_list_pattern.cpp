@@ -8,8 +8,31 @@
 
 namespace multi = boost::multi;
 
+struct dummy {
+    dummy(int) {}
+};
+
+
+namespace {
+template<class T>
+class indirect_initializer_list {
+    std::initializer_list<T> impl_;
+
+  public:
+    indirect_initializer_list(std::initializer_list<T> impl) : impl_{impl} {}
+};
+
+// [[maybe_unused]] int fun(std::initializer_list<int>) { return 33; }
+[[maybe_unused]] int fun(indirect_initializer_list<int>) { return 33; }
+[[maybe_unused]] int fun(dummy const&) { return 44; }
+}
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// clang-format off
+    auto res = fun({1, 2});
+
+    BOOST_TEST( res == 44 );
+
+    // clang-format off
 	{
 		{ multi::array<int, 1> const arr({9, 9, 9}); BOOST_TEST(arr.num_elements() == 3); }
 		{ multi::array<int, 1> const arr({9, 9});    BOOST_TEST(arr.num_elements() == 2); }
