@@ -41,9 +41,35 @@ constexpr auto make_restriction(std::initializer_list<std::initializer_list<std:
 #pragma clang diagnostic pop
 #endif
 
+template<class T, dimensionality_type D>
+struct init_list {
+	using type = std::initializer_list<typename init_list<T, D-1>::type>;
+};
+
+template<class T>
+struct init_list<T, 1> {
+	using type = std::initializer_list<T>;
+};
+
+template<class T>
+struct init_list<T, 0> {
+	using type = T;
+};
+
+template<class T, dimensionality_type D>
+using init_list_t = typename init_list<T, D>::type;
+
 }  // namespace boost::multi::detail
 
 namespace boost::multi {
+
+template<class T, dimensionality_type D>
+class initializer_array : public decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>())) {
+	// detail::init_list_t<T, D> ild_;
+ public:
+	initializer_array(detail::init_list_t<T, D> ild)
+	: decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>()))(detail::make_restriction(ild)) {}
+};
 
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
