@@ -18,7 +18,7 @@ namespace boost::multi::detail {
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 #ifdef __clang__
@@ -43,7 +43,7 @@ constexpr auto make_restriction(std::initializer_list<std::initializer_list<std:
 
 template<class T, dimensionality_type D>
 struct init_list {
-	using type = std::initializer_list<typename init_list<T, D-1>::type>;
+	using type = std::initializer_list<typename init_list<T, D - 1>::type>;
 };
 
 template<class T>
@@ -68,11 +68,12 @@ using restriction_idl = decltype(detail::make_restriction(std::declval<detail::i
 
 template<class T, dimensionality_type D>
 class initializer_array : public restriction_idl<T, D> {
+	using base_ = restriction_idl<T, D>;
 	// detail::init_list_t<T, D> ild_;
  public:
 	// cppcheck-suppress noExplicitConstructor ;
 	constexpr initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: restriction_idl<T, D>(detail::make_restriction(ild)) {}
+	: base_(detail::make_restriction(ild)) {}
 };
 
 template<dimensionality_type D, class Proj>
