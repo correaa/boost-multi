@@ -28,24 +28,6 @@
 
 namespace boost::multi {
 
-template<class T, dimensionality_type D>
-class init_list {
-	using type = std::initializer_list<typename init_list<T, D-1>::type>;
-};
-
-template<class T>
-class init_list<T, 1> {
-	using type = std::initializer_list<T>;
-};
-
-template<class T>
-class init_list<T, 0> {
-	using type = T;
-};
-
-template<class T, dimensionality_type D>
-using init_list_t = typename init_list<T, D>::type;
-
 struct uninitialized_elements_t {
 	explicit uninitialized_elements_t() = default;
 };

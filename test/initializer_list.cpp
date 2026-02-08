@@ -772,5 +772,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	// NOLINTEND(readability-identifier-length,misc-const-correctness)
 
+	{
+		multi::initializer_array<double, 2> ild = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+		BOOST_TEST( ild[1][1] == 5 );
+	}
+	{
+		multi::initializer_array<int, 1> ild = {1, 2, 3};
+		BOOST_TEST( ild[1] == 2 );
+	}
+
 	return boost::report_errors();
 }
