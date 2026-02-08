@@ -161,6 +161,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v = D;
 
+	void restrict(int /*unused*/) const {}
+
 	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
 

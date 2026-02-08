@@ -282,6 +282,30 @@ int main() {
 		// BOOST_TEST( v2D_copy4 == v2D_copy );
 	}
 	{
+		auto xs = multi::extensions_t<2>(3, 5);
+		xs.restrict(4);
+	}
+	{
+		auto v2D = multi::restricted([](auto ii, auto jj) { return (ii * ii) + (jj * jj); }, multi::extensions_t<2>(3, 5));
+
+		multi::array<multi::index, 2> v2D_copy = v2D;
+
+		multi::array<multi::index, 2> v2D_copy2(v2D.extensions());
+
+		v2D_copy2() = v2D;
+		BOOST_TEST( v2D_copy2 == v2D_copy );
+
+		multi::array<multi::index, 2> v2D_copy3;
+		v2D_copy3 = v2D;
+
+		BOOST_TEST( v2D_copy3 == v2D_copy );
+
+		// multi::array<multi::index, 2> v2D_copy4;
+
+		// v2D_copy4() = v2D;  // this fails with an assert because sizes do not match
+		// BOOST_TEST( v2D_copy4 == v2D_copy );
+	}
+	{
 		multi::iextension m(96);
 		multi::iextension h(64);
 		multi::iextension k(64);
