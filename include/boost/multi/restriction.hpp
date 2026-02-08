@@ -71,7 +71,7 @@ class initializer_array : public restriction_idl<T, D> {
 	// detail::init_list_t<T, D> ild_;
  public:
 	// cppcheck-suppress noExplicitConstructor ;
-	initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: restriction_idl<T, D>(detail::make_restriction(ild)) {}
 };
 
