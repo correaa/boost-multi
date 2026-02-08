@@ -64,11 +64,15 @@ using init_list_t = typename init_list<T, D>::type;
 namespace boost::multi {
 
 template<class T, dimensionality_type D>
-class initializer_array : public decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>())) {
+using restriction_idl = decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>()));
+
+template<class T, dimensionality_type D>
+class initializer_array : public restriction_idl<T, D> {
 	// detail::init_list_t<T, D> ild_;
  public:
-	initializer_array(detail::init_list_t<T, D> ild)
-	: decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>()))(detail::make_restriction(ild)) {}
+	// cppcheck-suppress noExplicitConstructor ;
+	initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: restriction_idl<T, D>(detail::make_restriction(ild)) {}
 };
 
 template<dimensionality_type D, class Proj>
