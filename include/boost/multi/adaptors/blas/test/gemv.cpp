@@ -237,7 +237,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<T, 1> const x_shadow = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 1> const y        = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
+			// multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
+			multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({{1.0, 2.0, 3.0}, }), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 				BOOST_TEST( std::abs( dot[0] - blas::dot(x_shadow, y) ) < 1e-10 );
 			}
@@ -283,7 +284,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<T, 1> const x_shadow = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 1> const y        = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
-			multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
+			multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({{1.0, 2.0, 3.0}, }), y);
+			// multi::array<T, 1> const dot      = blas::gemv(1.0, multi::array<T, 2>({x_shadow}), y);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
 				BOOST_TEST( std::abs( dot[0] - +blas::dot(x_shadow, y) ) < 1e-10F );
 			}
