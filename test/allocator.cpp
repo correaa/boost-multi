@@ -412,7 +412,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	  |                                ^
 2 errors generated.
 */
-#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ != 20)
+#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ < 20)
 	auto f = []() {
 		std::vector<int> v = {1, 2, 3};
 		return v.size();
