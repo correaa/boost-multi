@@ -37,6 +37,24 @@ constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& { return std::
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		using complex = std::complex<double>;
+
+		multi::initializer_array<complex, 2> init({
+			{complex{150.0, 0.0}, complex{16.0, 0.0}, complex{17.0, 0.0}, complex{18.0, 0.0}, complex{19.0, 0.0}},
+			{complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}},
+			{complex{100.0, 0.0}, complex{11.0, 0.0}, complex{12.0, 0.0}, complex{13.0, 0.0}, complex{14.0, 0.0}},
+			{complex{50.0, 0.0}, complex{6.0, 0.0}, complex{7.0, 0.0}, complex{8.0, 0.0}, complex{9.0, 0.0}},
+		});
+
+		multi::array<complex, 2> const in = {
+			{complex{150.0, 0.0}, complex{16.0, 0.0}, complex{17.0, 0.0}, complex{18.0, 0.0}, complex{19.0, 0.0}},
+			{complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}, complex{5.0, 0.0}},
+			{complex{100.0, 0.0}, complex{11.0, 0.0}, complex{12.0, 0.0}, complex{13.0, 0.0}, complex{14.0, 0.0}},
+			{complex{50.0, 0.0}, complex{6.0, 0.0}, complex{7.0, 0.0}, complex{8.0, 0.0}, complex{9.0, 0.0}},
+		};
+	}
+
 	// BOOST_AUTO_TEST_CASE(array_legacy_c)
 	{
 		using complex = std::complex<double>;
