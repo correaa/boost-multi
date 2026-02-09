@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	move_element_1d_total_array();
 
 	{
-		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>(10));
 		arr[1] = std::make_unique<int>(42);
 
 		multi::array<std::unique_ptr<int>, 1> arr2(multi::extensions_t<1>{10});
