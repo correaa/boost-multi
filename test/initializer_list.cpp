@@ -772,6 +772,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	// NOLINTEND(readability-identifier-length,misc-const-correctness)
 
+#ifndef __circle_build__
 	{
 		BOOST_TEST( (multi::initializer_array<int, 2>{
 			{1, 2, 3},
@@ -781,6 +782,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		BOOST_TEST( (multi::initializer_array<int, 1>{1, 2, 3})[1] == 2 );
 	}
+#endif
 
 	return boost::report_errors();
 }
