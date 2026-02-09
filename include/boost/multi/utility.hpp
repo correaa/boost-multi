@@ -736,7 +736,9 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const&
 }
 
 template<class T>
-constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il)
+-> multi::extensions_t<3>
+{
 	if(il.size() == 0) {
 		return multi::extensions_t<3>{0, 0, 0};
 	}
@@ -757,6 +759,20 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<std::initi
 	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
 	// };
 }
+
+template<class T>
+constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> const& il)
+-> multi::extensions_t<4>
+{
+	if(il.size() == 0) {
+		return multi::extensions_t<4>{0, 0, 0, 0};
+	}
+
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+
+	return static_cast<multi::size_t>(il.size()) * extensions(*il.begin());
+}
+
 
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
