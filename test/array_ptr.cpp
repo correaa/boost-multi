@@ -24,21 +24,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ptr_equality)
 	{
-		multi::initializer_array<int, 2> init_arr({
+		multi::array<int, 2> arr = {
 			{10, 20, 30},
 			{40, 50, 60},
 			{70, 80, 90},
 			{10, 20, 30},
-		});
-
-		multi::array<int, 2> arr = init_arr;
-
-		// multi::array<int, 2> arr = {
-		// 	{10, 20, 30},
-		// 	{40, 50, 60},
-		// 	{70, 80, 90},
-		// 	{10, 20, 30},
-		// };
+		};
 
 		BOOST_TEST(  arr[2] ==  arr[2] );
 		BOOST_TEST( &arr[2] == &arr[2] );

@@ -593,25 +593,45 @@ struct dynamic_array                                                            
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extensions_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
 	explicit dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
-	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other)} {
+	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}
+	, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other))
+	{
 		assert(this->stride() != 0);
 		uninitialized_copy_elements(std::forward<ExecutionPolicy>(policy), other.data_elements());
 	}
 
-	using dynamic_value_type =
-		std::conditional_t<
-			(D != 1),
-			dynamic_array<T, D - 1, allocator_type>,
-			T>;
+	// template<class = void>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr dynamic_array(multi::initializer_array<T, D> values)
+	// // , ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extensions(other))
+	// : ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(values.num_elements()), nullptr             ), values.extensions()}
+	// {
+	// 	uninitialized_copy_elements(values.elements().begin());
+	// }
 
+	// template<class = void>
+	// // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// constexpr dynamic_array(multi::detail::init_list_t<T, D> values)
+	// : dynamic_array(multi::initializer_array<T, D>(values)) {}
+
+	constexpr dynamic_array(multi::detail::init_list_t<T, D> values)
+	: dynamic_array(multi::initializer_array<T, D>(values)) {}
+
+	using dynamic_value_type =
+	std::conditional_t<
+		(D != 1),
+		dynamic_array<T, D - 1, allocator_type>,
+		T>;
+
+	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*), int> =0>
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> values)
-	: dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
+	// template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> values)
+	// : dynamic_array{const_subarray<TT, D>(values)} {}  // construct all with default constructor and copy to special memory at the end
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<std::initializer_list<TT>>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 3, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
@@ -1304,13 +1324,19 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
+	// explicit constexpr array(multi::initializer_array<T, D> const& values)
+	// : static_(values) {}
+
+	constexpr array(multi::detail::init_list_t<T, D> values)
+	: static_(multi::initializer_array<T, D>(values)) {}
+
 	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
-	: static_(
-		  (ilv.size() == 0) ? array<T, D>{}
-							: array<T, D>(ilv.begin(), ilv.end())
-	  ) {
-	}
+	// constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
+	// : static_(
+	// 	  (ilv.size() == 0) ? array<T, D>{}
+	// 						: array<T, D>(ilv.begin(), ilv.end())
+	//   ) {
+	// }
 
 	template<
 		class OtherT,
