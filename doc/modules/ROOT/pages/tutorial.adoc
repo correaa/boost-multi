@@ -115,11 +115,11 @@ An `array` is initialized by specifying the index extensions and, optionally, a 
 ----
 #include <boost/multi/array.hpp>  // for array value containers (owning memory)
 
-multi::array<int, 1> A1({3}      , 11);  // {11, 11, 11}
+auto A1 = multi::array<int, 1>({3}      , 11);  // {11, 11, 11}
 
-multi::array<int, 2> A2({2, 3}   , 22);  // { {22, 22, 22}, {22, 22, 22} }
+auto A2 = multi::array<int, 2>({2, 3}   , 22);  // { {22, 22, 22}, {22, 22, 22} }
 
-multi::array<int, 3> A3({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
+auto A3 = multi::array<int, 3>({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
 ----
 ... or alternatively from a rectangular list.
 
@@ -128,7 +128,7 @@ multi::array<int, 3> A3({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
 multi::array<int, 1> A1 = {1, 2, 3};
 assert( A1.elements().size() == 3 );  // or A1.num_elements()
 
-multi::array<int, 2> A2 {
+multi::array<int, 2> A2 = {
 	{ 1, 2, 3},
 	{ 4, 5, 6}
 };
