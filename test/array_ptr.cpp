@@ -24,12 +24,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ptr_equality)
 	{
-		multi::array<int, 2> arr = {
+		multi::initializer_array<int, 2> init_arr({
 			{10, 20, 30},
 			{40, 50, 60},
 			{70, 80, 90},
 			{10, 20, 30},
-		};
+		});
+
+		multi::array<int, 2> arr = init_arr;
+
+		// multi::array<int, 2> arr = {
+		// 	{10, 20, 30},
+		// 	{40, 50, 60},
+		// 	{70, 80, 90},
+		// 	{10, 20, 30},
+		// };
+
 		BOOST_TEST(  arr[2] ==  arr[2] );
 		BOOST_TEST( &arr[2] == &arr[2] );
 		BOOST_TEST( !(&arr[2] == &(arr[2]({0, 2}))) );
@@ -226,12 +236,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment)
 	{
-		multi::array<double, 2> arr = {
+		multi::detail::init_list_t<double, 2> init = {
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0},
 			{7.0, 8.0, 9.0},
 			{1.0, 2.0, 3.0},
 		};
+
+		multi::array<double, 2> arr = init;
+
+		// multi::array<double, 2> arr = {
+		// 	{1.0, 2.0, 3.0},
+		// 	{4.0, 5.0, 6.0},
+		// 	{7.0, 8.0, 9.0},
+		// 	{1.0, 2.0, 3.0},
+		// };
 		{
 			auto rowP = &arr[2];
 
