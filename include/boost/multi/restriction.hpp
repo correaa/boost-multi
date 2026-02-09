@@ -37,6 +37,11 @@ constexpr auto make_restriction(std::initializer_list<std::initializer_list<std:
 	return [il](multi::index i0, multi::index i1, multi::index i2) { return il.begin()[i0].begin()[i1].begin()[i2]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
+template<class T>
+constexpr auto make_restriction(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> const& il) {
+	return [il](multi::index i0, multi::index i1, multi::index i2, multi::index i3) { return il.begin()[i0].begin()[i1].begin()[i2].begin()[i3]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+}
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
