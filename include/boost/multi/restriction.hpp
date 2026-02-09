@@ -18,7 +18,7 @@ namespace boost::multi::detail {
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 #ifdef __clang__
@@ -41,9 +41,40 @@ constexpr auto make_restriction(std::initializer_list<std::initializer_list<std:
 #pragma clang diagnostic pop
 #endif
 
+template<class T, dimensionality_type D>
+struct init_list {
+	using type = std::initializer_list<typename init_list<T, D - 1>::type>;
+};
+
+template<class T>
+struct init_list<T, 1> {
+	using type = std::initializer_list<T>;
+};
+
+template<class T>
+struct init_list<T, 0> {
+	using type = T;
+};
+
+template<class T, dimensionality_type D>
+using init_list_t = typename init_list<T, D>::type;
+
 }  // namespace boost::multi::detail
 
 namespace boost::multi {
+
+template<class T, dimensionality_type D>
+using restriction_idl = decltype(detail::make_restriction(std::declval<detail::init_list_t<T, D>>()));
+
+template<class T, dimensionality_type D>
+class initializer_array : public restriction_idl<T, D> {
+	using base_ = restriction_idl<T, D>;
+	// detail::init_list_t<T, D> ild_;
+ public:
+	// cppcheck-suppress noExplicitConstructor ;
+	constexpr initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: base_(detail::make_restriction(ild)) {}
+};
 
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
