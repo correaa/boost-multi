@@ -273,11 +273,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::dynamic_array<int, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_TEST((
-			arr == multi::array<int, 2> {{
-				{{ 12,  24}},
-				{{112, 344}},
-				{{152, 324}}
-			}}
+			arr == multi::array<int, 2>({
+				{ 12,  24},
+				{112, 344},
+				{152, 324}
+			})
 		));
 
 		BOOST_TEST(!( arr != multi::array<int, 2>{
