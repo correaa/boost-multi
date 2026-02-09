@@ -43,6 +43,20 @@ auto operator+(std::initializer_list<std::initializer_list<T>> il) {  // NOLINT(
 }  // end namespace boost::multi
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	// clang-format off
+    { multi::array<int, 1> const arr({9, 9, 9}); BOOST_TEST(arr.num_elements() == 3); }
+    { multi::array<int, 1> const arr({9, 9});    BOOST_TEST(arr.num_elements() == 2); }
+    { multi::array<int, 1> const arr({9});       BOOST_TEST(arr.num_elements() == 1); }
+
+    { multi::array<int, 3> const arr({9, 9, 9}); BOOST_TEST(arr.num_elements() == 9L*9L*9L ); }
+    { multi::array<int, 2> const arr({9, 9});    BOOST_TEST(arr.num_elements() == 9L*9L); }
+    { multi::array<int, 1> const arr({9});       BOOST_TEST(arr.num_elements() != 9L ); }
+
+    { multi::array<int, 3> const arr({{9, 9, 9}}); BOOST_TEST(arr.num_elements() == 9L*9L*9L ); }
+    { multi::array<int, 2> const arr({{9, 9}});    BOOST_TEST(arr.num_elements() != 9L*9L); }
+    // { multi::array<int, 1> arr({{9}});       assert(arr.num_elements() != 9 ); }
+	// clang-format on
+
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
 		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
