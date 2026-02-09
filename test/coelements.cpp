@@ -47,6 +47,13 @@ co_celements(Arr2D const& arr2d) {
 #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	{
+		multi::dynamic_array<int, 2> const arr = {
+			{0, 1, 2},
+			{3, 4, 5}
+		};
+	}
+
 	multi::array<int, 2> const arr = {
 		{0, 1, 2},
 		{3, 4, 5}
