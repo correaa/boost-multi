@@ -269,5 +269,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #pragma clang diagnostic pop
 		// #endif
 	}
+	{
+		std::vector<int> const vec = {1, 2, 3, 4, 5, 6};
+
+		multi::array<int, 2> arr({2, 3}, vec.begin());
+		BOOST_TEST( arr[1][0] == 4 );
+	}
 	return boost::report_errors();
 }
