@@ -396,6 +396,22 @@ struct dynamic_array                                                            
 	)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
+	template<
+		class It,
+		std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<It>::value_type, T>, int> = 0>
+	// NOLINT(readability-redundant-typename)
+	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
+		typename dynamic_array::extensions_type exts, It elements_first
+	)
+	: array_alloc{},
+	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
+		  exts,
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(exts).num_elements()),  // NOLINT(readability-redundant-typename)
+								nullptr)
+	  ) {
+		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), elements_first, this->num_elements(), this->elements().begin());
+	}
+
 	// NOLINT(readability-redundant-typename)
 	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
 		typename dynamic_array::extensions_type exts, typename dynamic_array::element_type const& elem
