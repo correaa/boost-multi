@@ -1268,7 +1268,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
 		auto extensions_ = this->extensions();
 
-		arxiv & ArTraits::make_nvp("extensions", extensions_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
+		arxiv& ArTraits::make_nvp("extensions", extensions_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
 		if(this->extensions() != extensions_) {
 			clear();
 			this->reextent(extensions_);
