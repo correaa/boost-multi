@@ -398,7 +398,7 @@ struct dynamic_array                                                            
 
 	template<
 		class It,
-		std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<It>::value_type, T>, int> = 0>
+		std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<It>::value_type, T>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// NOLINT(readability-redundant-typename)
 	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
 		typename dynamic_array::extensions_type exts, It elements_first
