@@ -108,13 +108,18 @@ class range {
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
-		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+		arxiv
+			& multi::archive_traits<Archive>::make_nvp("first", first_)
+			& multi::archive_traits<Archive>::make_nvp("last", last_)
+		;
+
+		// arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
 		// arxiv &               BOOST_SERIALIZATION_NVP(         first_);
 		// arxiv &                     cereal:: make_nvp("first", first_);
 		// arxiv &                            CEREAL_NVP(         first_);
 		// arxiv &                                                first_ ;
 
-		arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
+		// arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
 		// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
 		// arxiv &                        cereal:: make_nvp("last" , last_ );
 		// arxiv &                               CEREAL_NVP(         last_ );
