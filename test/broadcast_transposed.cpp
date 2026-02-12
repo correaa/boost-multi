@@ -9,7 +9,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <numeric>
-#include <utility>
+// #include <utility>
 
 // #include <algorithm>   // IWYU pragma: keep  // for std::equal
 // #include <cmath>       // for std::abs
@@ -52,7 +52,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
 	// auto        BT0r4 = (~B)[0].repeated(4);
-	auto const& C   = ~A + b;  // (~B)[0].repeated(4);  // std::move(BT0);
+	auto const& C = ~A + b;  // (~B)[0].repeated(4);  // std::move(BT0);
 
 	std::cout << "A + B" << C << '\n';
 
