@@ -5,21 +5,12 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/broadcast.hpp>
 #include <boost/multi/io.hpp>
-// #include <boost/multi/restriction.hpp>  // for restriction, operator!=
+//IWYU pragma: no_include <boost/multi/restriction.hpp>  // for restriction, operator!=
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <numeric>
-// #include <utility>
-
-// #include <algorithm>   // IWYU pragma: keep  // for std::equal
-// #include <cmath>       // for std::abs
-// #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>
-// #include <iterator>  // IWYU pragma: keep
-// #include <limits>    // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-// #include <numeric>
-// IWYU pragma: no_include <tuple>    // for apply
-// #include <utility>  //  for forward  //  NOLINT(misc-include-cleaner)  //  IWYU pragma: keep
+#include <numeric>
+//IWYU pragma: no_include <utility>  // for forward
 
 namespace multi = boost::multi;
 
