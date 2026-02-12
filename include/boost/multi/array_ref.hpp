@@ -747,13 +747,10 @@ struct cursor_t {
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
-			return cursor_t<
-				ElementPtr,
-				D - 1,
-				std::decay_t<decltype(strides_.tail())>>{
+			return cursor_t<ElementPtr, D - 1, std::decay_t<decltype(strides_.tail())>>(
 				base_ + get<0>(strides_) * n,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				strides_.tail()
-			};
+			);
 		} else {
 			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
@@ -1367,12 +1364,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto dropped_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT(n <= this->size());
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride() * (this->size() - n)
-		};
+		);
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
