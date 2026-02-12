@@ -47,22 +47,22 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		}
 	));
 
-	multi::array<int, 1> b(3);
+	using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
+	auto const& C1 = ~(~A + (~B)[0]);
+
+	std::cout << "C1 = " << C1 << '\n';
+
+	multi::array<int, 1> b({3}, 0);
 	std::iota(b.elements().begin(), b.elements().end(), 100);
 
+	BOOST_TEST((
+		b == multi::array<int, 1>{100, 101, 102}
+	));
+
 	using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
-	// auto        BT0r4 = (~B)[0].repeated(4);
-	auto const& C = ~A + b;  // (~B)[0].repeated(4);  // std::move(BT0);
+	auto const& C2 = ~(~A + b);
 
-	std::cout << "A + B" << C << '\n';
-
-	// BOOST_TEST((
-	// 	+C == multi::array<int, 2>{
-	// 		{100, 1, 2, 3},
-	// 		{105, 5, 6, 7},
-	// 		{110, 9, 10, 11}
-	// 	}
-	// ));
+	std::cout << "C2 = " << C2 << '\n';
 
 	return boost::report_errors();
 }
