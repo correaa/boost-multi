@@ -5,7 +5,7 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/broadcast.hpp>
 #include <boost/multi/io.hpp>
-// IWYU pragma: no_include <boost/multi/restriction.hpp>  // for restriction, operator!=
+// IWYU pragma: no_include "boost/multi/restriction.hpp"  // for restriction, operator!=
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <iostream>
