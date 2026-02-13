@@ -51,8 +51,6 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	std::cout << "M3 = " << M3 << '\n';
 	BOOST_TEST( M3[5][7] == 5*7 );
-#endif
-#endif
 
 	// if one insists in using row and column 2D arrays (assignments are for brevity)
 	multi::array<int, 2> A({a.size(), 1});
@@ -65,6 +63,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	std::cout << "M4 = " << M4 << '\n';
 	BOOST_TEST( M4[5][7] == 5*7 );
+#endif
+#endif
 
 	return boost::report_errors();
 }
