@@ -93,7 +93,7 @@ template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	auto const xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extensions()) && ...));
-	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
+	return multi::restricted(apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
 }
 
 template<class T>

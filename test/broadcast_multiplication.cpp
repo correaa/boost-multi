@@ -36,12 +36,14 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	std::cout << "M1 = " << M1 << '\n';
 	BOOST_TEST( M1[5][7] == 5*7 );
 
+	// #if __CUDACC_VER_MAJOR__ > 11
 	// this method brings both arrays to the right (final) dimensionality and then does elementwise mult
 	using multi::broadcast::operator*;  // cppcheck-suppress constStatement
 	auto const& M2 = (~a.repeated(b.size())) * b.repeated(a.size());
 
 	std::cout << "M2 = " << M2 << '\n';
 	BOOST_TEST( M2[5][7] == 5*7 );
+	// #endif
 
 	// it is actually only necessary to bring one to the final dimension
 	using multi::broadcast::operator*;  // cppcheck-suppress constStatement
