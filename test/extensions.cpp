@@ -618,6 +618,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<1>(p3D).size() == 3 );
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
+	{
+		auto exts = multi::extensions_t<2>(3, 4);
+		BOOST_TEST( exts.extensions() == exts );
+	}
 
 	return boost::report_errors();
 }
