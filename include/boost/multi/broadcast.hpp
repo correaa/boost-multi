@@ -188,6 +188,27 @@ constexpr auto eye(multi::size_t size) {
 	return eye(size, T{1});
 }
 
+template<class Array, class DefaultZero>
+constexpr auto zeros(Array&& arr, DefaultZero df) {
+	auto exts = arr.extensions();
+	return restricted([arr = std::forward<Array>(arr), df](auto... ijk) { return df(arr(ijk...)); }, exts);
+}
+
+template<typename Element = int, class Array, class DefaultZero = default_zero_f<Element>>
+constexpr auto zeros(Array&& arr) {
+	return zeros(std::forward<Array>(arr), DefaultZero{});
+}
+
+template<typename Element, dimensionality_type D>
+constexpr auto zeros(multi::extensions_t<D> const& exts) {
+	return zeros<Element, multi::extensions_t<D> const&>(exts);
+}
+
+template<dimensionality_type D>
+constexpr auto zeros(multi::extensions_t<D> const& exts) {
+	return zeros<int, D>(exts);
+}
+
 template<class A, class B>
 constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 

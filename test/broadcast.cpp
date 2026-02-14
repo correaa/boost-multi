@@ -367,6 +367,12 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( arr.size() == 5 );
 		BOOST_TEST( arr[2][2] == 1 );
 	}
+	{
+		using multi::broadcast::zeros;
+		auto arr = +zeros<2>({3, 4});
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[2][2] == 0 );
+	}
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 

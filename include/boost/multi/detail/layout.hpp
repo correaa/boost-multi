@@ -578,6 +578,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
 
+	BOOST_MULTI_HD constexpr auto extensions() const {
+		using std::apply;
+		return apply([](auto... sizes) { return extensions_t(sizes...); }, sizes());
+	}
+
 	using sizes_type = boost::multi::detail::tuple_prepend_t<size_type, typename extensions_t<D - 1>::sizes_type>;
 
  private:
