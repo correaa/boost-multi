@@ -167,6 +167,27 @@ constexpr auto operator/(A&& alpha, B&& omega) {
 	return broadcast::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
+template<class T = void>
+struct default_zero_f {
+	template<class TT = T>
+	auto operator()(TT const& /*unused*/) const { return TT{}; }
+};
+
+template<class T, class ZF>
+constexpr auto eye(multi::size_t size, T unit, ZF zero_f) {
+	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extensions_t<2>({size, size}));
+}
+
+template<class T, class ZF = default_zero_f<T>>
+constexpr auto eye(multi::size_t size, T unit) {
+	return eye(size, unit, default_zero_f<T>{});
+}
+
+template<class T = int>
+constexpr auto eye(multi::size_t size) {
+	return eye(size, T{1});
+}
+
 template<class A, class B>
 constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 

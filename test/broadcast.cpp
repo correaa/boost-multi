@@ -361,6 +361,12 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
+	{
+		using multi::broadcast::eye;
+		auto arr = +eye(5);
+		BOOST_TEST( arr.size() == 5 );
+		BOOST_TEST( arr[2][2] == 1 );
+	}
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 
