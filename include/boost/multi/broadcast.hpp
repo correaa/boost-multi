@@ -191,7 +191,7 @@ constexpr auto eye(multi::size_t size) {
 template<class Array, class DefaultZero>
 constexpr auto zeros(Array&& arr, DefaultZero df) {
 	auto exts = arr.extensions();
-	return restricted([arr = std::forward<Array>(arr), df](auto... ijk) { return df(arr(ijk...)); }, exts);
+	return restricted([marr = std::forward<Array>(arr), df](auto... ijk) { return df(marr(ijk...)); }, exts);
 }
 
 template<typename Element = int, class Array, class DefaultZero = default_zero_f<Element>>

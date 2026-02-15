@@ -16,16 +16,16 @@
 
 namespace boost::multi::detail {
 
-template<class T>
-constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-}
-
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
+
+template<class T>
+constexpr auto make_restriction(std::initializer_list<T> const& il) {
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+}
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& il) {
