@@ -10,8 +10,10 @@
 
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
+#define BOOST_MULTI_HD_LAMBDA(BodY) { return [=] __host__ __device__ BodY ; }()
 #else
 #define BOOST_MULTI_HD
+#define BOOST_MULTI_HD_LAMBDA(BodY) { return [=]                     BodY ; }()
 #endif
 
 namespace boost::multi::detail {
