@@ -13,8 +13,9 @@
 #define BOOST_MULTI_HD_LAMBDA(BodY) { return [=] __host__ __device__ BodY ; }()  // NOLINT(bugprone-macro-parentheses)
 #else
 #define BOOST_MULTI_HD
-#define BOOST_MULTI_HD_LAMBDA(BodY) { return [=]                     BodY ; }()  // NOLINT(bugprone-macro-parentheses)
+#define BOOST_MULTI_HD_LAMBDA(BodY) { return [=] /*__host__ __device__*/ BodY ; }()  // NOLINT(bugprone-macro-parentheses)
 #endif
+
 
 namespace boost::multi::detail {
 

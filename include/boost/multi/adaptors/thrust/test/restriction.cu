@@ -47,17 +47,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		int state = 3;
+
 		multi::array<multi::index, 1, thrust::cuda::allocator<multi::index>> const arr = multi::restricted(
 			[state2 = state + 1] BOOST_MULTI_HD_LAMBDA( (int i) { return i; } ),
-			multi::extensions_t(10)
-		);
-		BOOST_TEST( arr[3] == 3 );
-	}
-	{
-		#define BOOST_MULTI_HD_LAMBDA2(arg1, body) { return [=] __host__ __device__ (multi::index arg1) body ; }()
-		int state = 3;
-		multi::array<multi::index, 1, thrust::cuda::allocator<multi::index>> const arr = multi::restricted(
-			[state2 = state + 1] BOOST_MULTI_HD_LAMBDA2(i, { return i; } ),
 			multi::extensions_t(10)
 		);
 		BOOST_TEST( arr[3] == 3 );
