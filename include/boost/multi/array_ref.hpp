@@ -509,8 +509,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
-, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
-, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>>
+, multi::decrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
+, multi::incrementable<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride> >
 , multi::affine<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, multi::difference_type>
 , multi::totally_ordered2<array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void> {
 	~array_iterator() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
@@ -2601,7 +2601,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma warning(push)
 #pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
 #endif
-	BOOST_MULTI_NO_UNIQUE_ADDRESS
+	// BOOST_MULTI_NO_UNIQUE_ADDRESS, testing removing this for MSVC-CUDA on Windows
 	stride_type stride_;
 #ifdef _MSC_VER
 #pragma warning(pop)
