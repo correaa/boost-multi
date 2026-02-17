@@ -806,7 +806,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<std::initializ
 		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size())
+		static_cast<multi::size_t>(il.size()),
 	};
 }
 
