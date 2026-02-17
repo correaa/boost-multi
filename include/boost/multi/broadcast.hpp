@@ -2,9 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_BROADCAST_HPP
+#ifndef BOOST_MULTI_BROADCAST_HPP  // NOLINT(llvm-header-guard) this links from elementwise.hpp
 #define BOOST_MULTI_BROADCAST_HPP
-// #pragma once
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/restriction.hpp"
@@ -313,6 +312,9 @@ template<class T> constexpr auto abs(std::initializer_list<std::initializer_list
 
 // #endif
 }  // end namespace broadcast
+
+namespace elementwise = broadcast;
+
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
