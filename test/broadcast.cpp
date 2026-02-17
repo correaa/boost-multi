@@ -373,6 +373,19 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( arr.size() == 3 );
 		BOOST_TEST( arr[2][2] == 0 );
 	}
+	// clang-format off
+	{
+		using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
+		
+		using T = multi::array<int, 2>;
+		multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
+		multi::array<T, 2> YT({2, 3}, T({{1, 0}, {0, 1}}));
+
+		auto xy = XT[0][0] + YT[0][0];  // ok
+		auto XY = XT + YT;  // error
+	}
+	// clang-format on
+
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 
