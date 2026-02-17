@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -6,7 +6,7 @@
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
-#include <boost/multi/broadcast.hpp>
+#include <boost/multi/elementwise.hpp>
 
 #include <boost/multi/adaptors/thrust.hpp>
 
@@ -66,8 +66,8 @@ class ret_t {
 	BOOST_MULTI_HD constexpr explicit ret_t(MM&& mat) : mat_{std::forward<MM>(mat)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()(multi::index irow) const {
-		using multi::broadcast::operator-;
-		using multi::broadcast::exp;
+		using multi::elementwise::operator-;
+		using multi::elementwise::exp;
 
 		auto mati = mat_[irow];
 		return exp(std::move(mati) - maxR1(mati));
@@ -75,9 +75,9 @@ class ret_t {
 };
 
 auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
-	using multi::broadcast::operator-;
-	using multi::broadcast::exp;
-	using multi::broadcast::operator/;
+	using multi::elementwise::operator-;
+	using multi::elementwise::exp;
+	using multi::elementwise::operator/;
 
 	auto ret = [mat = FWD(mat)](multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
 

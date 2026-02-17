@@ -29,7 +29,7 @@
 #endif
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/broadcast.hpp>
+#include <boost/multi/elementwise.hpp>
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -162,7 +162,7 @@ int main() {
 
 		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
 
-		using multi::broadcast::operator-;
+		using multi::elementwise::operator-;
 		auto subtract = mat - max_per_row_repeat_T;
 		BOOST_TEST( subtract[0][0] == -2 );
 		BOOST_TEST( subtract[0][1] == -1 );
@@ -172,7 +172,7 @@ int main() {
 		BOOST_TEST( subtract[1][1] == -1 );
 		BOOST_TEST( subtract[1][2] ==  0 );
 
-		using multi::broadcast::exp;
+		using multi::elementwise::exp;
 		auto subtract_exp = exp(subtract);
 
 		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
@@ -184,8 +184,8 @@ int main() {
 
 		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
 		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
-		using multi::broadcast::operator/;
-		using multi::broadcast::operator|;
+		using multi::elementwise::operator/;
+		using multi::elementwise::operator|;
 		auto x = exp(~mat - (mat | maxR1));
 		printR2("final", ~(x / ((~x) | sumR1)));
 
