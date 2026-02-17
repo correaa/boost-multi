@@ -143,10 +143,23 @@ class apply_plus_t {
 	}
 };
 
-template<class A, class B>
+template<class = void>
+struct bcast_plus;
+
+template<class A, class B, class V = void>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	// return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return broadcast::map(bcast_plus<V>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
+
+template<class>
+struct bcast_plus {
+	template<class T1, class T2>
+	constexpr auto operator()(T1&& a, T2&& b) const {
+		using broadcast::operator+;  // cppcheck-suppress constStatement ;
+		return std::forward<T1>(a) + std::forward<T2>(b);
+	}
+};
 
 template<class A, class B>
 constexpr auto add(A&& alpha, B&& omega) noexcept {
