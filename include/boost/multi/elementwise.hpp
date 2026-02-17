@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_BROADCAST_HPP  // NOLINT(llvm-header-guard) this links from elementwise.hpp
-#define BOOST_MULTI_BROADCAST_HPP
+#ifndef BOOST_MULTI_ELEMENTWISE_HPP
+#define BOOST_MULTI_ELEMENTWISE_HPP
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/restriction.hpp"
@@ -319,4 +319,4 @@ namespace elementwise = broadcast;
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_BROADCAST_HPP
+#endif  // BOOST_MULTI_ELEMENTWISE_HPP
