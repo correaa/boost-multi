@@ -286,10 +286,10 @@ class intersecting_range {
 	range<IndexType> impl_;
 	
 	constexpr intersecting_range() noexcept :  // MSVC 19.07 needs constexpr to initialize ALL later
-		impl_{
+		impl_(
 			(std::numeric_limits<IndexType>::min)(),  // NOLINT(readability-redundant-parentheses) for MSVC min macros
 			(std::numeric_limits<IndexType>::max)()   // NOLINT(readability-redundant-parentheses) for MSVC max macros
-		}
+		)
 	{}
 
 	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {

@@ -330,9 +330,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		constexpr auto operator[](difference_type n) const {
 			using std::apply;
 			if constexpr(DD != 1) {
-				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> {
+				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
 					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
-				};
+				);
 			} else {
 				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
 			}
@@ -622,7 +622,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		using boost::multi::detail::get;
 		return extensions_t{
 			multi::detail::ht_tuple(
-				index_extension{intersection(get<0>(self.base()), get<0>(other.base()))},
+				index_extension(intersection(get<0>(self.base()), get<0>(other.base()))),
 				intersection(extensions_t<D - 1>{self.base().tail()}, extensions_t<D - 1>{other.base().tail()}).base()
 			)
 		};
@@ -1221,21 +1221,21 @@ class contiguous_layout {
 	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
 		assert(count <= this->size());
 
-		return contiguous_layout{
+		return contiguous_layout(
 			/*this->*/sub(),
 			/*this->*/stride(),
 			/*this->*/offset(),
 			/*this->*/stride() * (this->size() - count)
-		};
+		);
 	}
 
 	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
-		return contiguous_layout{
+		return contiguous_layout(
 			/*this->*/sub(),
 			/*this->*/stride(),
 			/*this->*/offset(),
 			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
-		};
+		);
 	}
 };
 
@@ -1424,14 +1424,14 @@ struct layout_t
 	: multi::equality_comparable<layout_t<D, SSize>> {
 	template<class Ptr = void*>
 	auto flatten(Ptr ptr) const {
-		return bilayout<D - 1>{
+		return bilayout<D - 1>(
 			stride(),
 			nelems(),
 			sub().stride(),
 			sub().nelems(),
 			sub().sub(),
 			ptr
-		};
+		);
 	}
 
 	using dimensionality_type = multi::dimensionality_type;
@@ -1585,12 +1585,12 @@ struct layout_t
 
 	constexpr auto reindex() const { return *this; }
 	constexpr auto reindex(index idx) const {
-		return layout_t{
+		return layout_t(
 			sub(),
 			stride(),
 			idx * stride(),
 			nelems()
-		};
+		);
 	}
 	template<class... Indexes>
 	constexpr auto reindexed(index first, Indexes... idxs) const {
@@ -1686,7 +1686,7 @@ struct layout_t
 			this->sub(),
 			this->stride(),
 			this->offset(),
-			this->stride() * (this->size() - count)
+			this->stride() * (this->size() - count),
 		};
 	}
 
@@ -1717,11 +1717,11 @@ struct layout_t
 				this->sub(),
 				this->stride(),
 				this->offset(),
-				this->nelems() / n  // mull-ignore: cxx_div_to_mul
+				this->nelems() / n,  // mull-ignore: cxx_div_to_mul
 			},
 			this->nelems() / n,  // mull-ignore: cxx_div_to_mul
 			0,
-			this->nelems()
+			this->nelems(),
 		};
 		// new_layout.sub().nelems() /= n;
 	}
