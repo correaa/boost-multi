@@ -150,7 +150,7 @@ struct plus {
 };
 }  // end namespace detail
 
-template<class A, class B, class V = void>
+template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
 	return broadcast::map(broadcast::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
@@ -168,7 +168,7 @@ struct minus {
 };
 }  // end namespace detail
 
-template<class A, class B, class V = void>
+template<class A, class B>
 constexpr auto operator-(A&& alpha, B&& omega) noexcept {
 	return broadcast::map(broadcast::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
