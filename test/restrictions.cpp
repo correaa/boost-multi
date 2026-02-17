@@ -258,7 +258,9 @@ int main() {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
-		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions(il);
+		// multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+
 		BOOST_TEST( il_res[1][1] == 5 );
 	}
 	{
@@ -287,6 +289,7 @@ int main() {
 		multi::iextension k(64);
 		multi::iextension n(96);
 
+		// NOLINTNEXTLINE(runtime/threadsafe_f)
 		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n});
 	}
 
