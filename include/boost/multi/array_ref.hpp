@@ -1246,15 +1246,15 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using decay_type =
 		array<
-			typename decay_trait<typename types::element_type>::type, D, 
-			typename std::allocator_traits<typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>::template rebind_alloc<typename decay_trait<typename types::element_type>::type>
-		>
-	;
+			typename decay_trait<typename types::element_type>::type, D,
+			typename std::allocator_traits<
+				typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>::template rebind_alloc<typename decay_trait<typename types::element_type>::type>>;
 
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};
 		return ret;
 	}
+
 	friend constexpr auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
 
 	constexpr auto operator+() const -> decay_type { return decay(); }
