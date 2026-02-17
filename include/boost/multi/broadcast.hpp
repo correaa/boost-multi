@@ -143,31 +143,41 @@ class apply_plus_t {
 	}
 };
 
-template<class = void>
-struct bcast_plus;
+namespace detail {
+struct plus {
+	template<class T1, class T2>
+	constexpr auto operator()(T1&& a, T2&& b) const;
+};
+}  // end namespace detail
 
 template<class A, class B, class V = void>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
-	// return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
-	return broadcast::map(bcast_plus<V>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return broadcast::map(broadcast::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
-template<class>
-struct bcast_plus {
+template<class T1, class T2>
+constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
+	using broadcast::operator+;  // cppcheck-suppress constStatement ;
+	return std::forward<T1>(a) + std::forward<T2>(b);
+}
+
+namespace detail {
+struct minus {
 	template<class T1, class T2>
-	constexpr auto operator()(T1&& a, T2&& b) const {
-		using broadcast::operator+;  // cppcheck-suppress constStatement ;
-		return std::forward<T1>(a) + std::forward<T2>(b);
-	}
+	constexpr auto operator()(T1&& a, T2&& b) const;
 };
+}  // end namespace detail
 
-template<class A, class B>
-constexpr auto add(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+template<class A, class B, class V = void>
+constexpr auto operator-(A&& alpha, B&& omega) noexcept {
+	return broadcast::map(broadcast::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
-template<class A, class B>
-constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::map(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+template<class T1, class T2>
+constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
+	using broadcast::operator-;  // cppcheck-suppress constStatement ;
+	return std::forward<T1>(a) - std::forward<T2>(b);
+}
 
 template<class A>
 constexpr auto operator-(A&& alpha) { return broadcast::apply(std::negate<>{}, std::forward<A>(alpha)); }
