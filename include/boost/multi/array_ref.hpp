@@ -1244,7 +1244,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
-	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+	using decay_type =
+		array<
+			typename decay_trait<typename types::element_type>::type, D, 
+			typename std::allocator_traits<typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>::template rebind_alloc<typename decay_trait<typename types::element_type>::type>
+		>
+	;
 
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};

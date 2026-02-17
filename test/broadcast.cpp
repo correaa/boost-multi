@@ -376,13 +376,22 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// clang-format off
 	{
 		using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
-		
+
 		using T = multi::array<int, 2>;
 		multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
 		multi::array<T, 2> YT({2, 3}, T({{1, 0}, {0, 1}}));
 
-		auto xy = XT[0][0] + YT[0][0];  // ok
-		auto XY = XT + YT;  // error
+		auto xy = +( XT[0][0] + YT[0][0] );  // ok
+
+		BOOST_TEST(( xy == multi::array<int, 2>({{2, 0}, {0, 2}}) ));
+
+		multi::array<T, 2> XY = XT + YT;  // error
+
+		BOOST_TEST(( XY[0][0] == multi::array<int, 2>({{2, 0}, {0, 2}}) ));
+
+		// auto XY2 = (XT + YT).decay();  // error
+
+		// BOOST_TEST(( XY2[0][0] == multi::array<int, 2>({{2, 0}, {0, 2}}) ));
 	}
 	// clang-format on
 

@@ -456,6 +456,25 @@ auto        has_extension_aux(T const&) -> std::true_type;
 inline auto has_extension_aux(...) -> std::false_type;
 template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
+template<class T, typename = decltype(+std::declval<T>())>
+auto        has_unary_plus_aux(T const&) -> std::true_type;
+inline auto has_unary_plus_aux(...) -> std::false_type;
+template<class T> struct has_unary_plus : decltype(has_unary_plus_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
+template<class T, typename = typename T::decay_type>
+auto        has_decay_type_aux(T const&) -> std::true_type;
+inline auto has_decay_type_aux(...) -> std::false_type;
+template<class T> struct has_decay_type : decltype(has_decay_type_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
+template<class T, std::enable_if_t<has_decay_type<T>::value, int> =0>
+auto decay_aux(T const&) -> typename T::decay_type;
+template<class T, std::enable_if_t<!has_decay_type<T>::value, int> =0>
+auto decay_aux(T const&) -> T;
+
+template<class T> struct decay_trait {
+	using type = decltype(decay_aux(std::declval<T>()));
+};
+
 template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto extension(Container const& cont)                                                  // TODO(correaa) consider "extent"
 	-> decltype(multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
