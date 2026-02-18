@@ -956,7 +956,7 @@ In the example below, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}
 ----
 multi::array<int, 1> const a = {1, 2, 3};
 
-using multi::broadcast::operator+;
+using multi::elementwise::operator+;
 assert(( a + 1 == multi::array<int, 1>({2, 3, 4}) ));
 ----
 

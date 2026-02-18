@@ -113,7 +113,7 @@ For example, a FORTRAN statement like `C = A + B` or `C = C + A` is translated a
 
 [source,cpp]
 ----
-using multi::broadcast::operator+;
+using multi::elementwise::operator+;
 
 multi::array C = A + B;
 C = C + A;  // assigning to itself is ok for elementwise operations
@@ -146,7 +146,7 @@ A FORTRAN statement like `C = 2.0*C` is rewritten as
 
 [source,cpp]
 ----
-using multi::broadcast::operator*;
+using multi::elementwise::operator*;
 
 C = 2.0*C;  // self-assignment is ok because this an elementwise operation
 ----
