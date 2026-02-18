@@ -1586,10 +1586,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 			const_subarray<T, D + 1, element_ptr> quotient;
 			const_subarray<T, D, element_ptr>     remainder;
 		};
-		return divided_type{
+		return divided_type(
 			this->taked(this->size() - (this->size() % count)).chunked(count),
 			this->dropped(this->size() - (this->size() % count))
-		};
+		);
 	}
 
  private:
@@ -1903,10 +1903,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		// static_assert( sizeof(T)%sizeof(T2) == 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
-		return {
+		return rebind<T2, P2>(
 			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
 			reinterpret_pointer_cast<P2>(this->base_)     // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
-		};
+		);
 	}
 
  public:
@@ -2812,10 +2812,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
 	constexpr auto reinterpret_array_cast() const& {
-		return const_subarray<T2, 0, P2>{
+		return const_subarray<T2, 0, P2>(
 			typename const_subarray::layout_type{this->layout()},
 			reinterpret_pointer_cast<P2>(this->base_)
-		};
+		);
 	}
 
 	constexpr auto broadcasted() const& {
@@ -3096,12 +3096,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  private:
 	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
 		BOOST_MULTI_ASSERT(count <= this->size());  // calculating size is expensive that is why
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride() * count
-		};
+		);
 		return const_subarray{new_layout, this->base_};
 	}
 
@@ -3265,7 +3265,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto reversed_aux_() const -> const_subarray {
 		auto new_layout = this->layout();
 		new_layout.reverse();
-		return {new_layout, types::base_};
+		return const_subarray(new_layout, types::base_);
 	}
 
  public:
@@ -3402,9 +3402,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
-		return {
+		return subarray<T2, 1, P2, Layout>(
 			this->layout(), P2{this->base_, std::forward<Args>(args)...}
-		};
+		);
 	}
 
 	template<class UF>
@@ -3452,20 +3452,20 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto reinterpret_array_cast() const& {
 		BOOST_MULTI_ASSERT(this->layout().stride() * static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0);
 
-		return const_subarray<T2, 1, P2>{
+		return const_subarray<T2, 1, P2>(
 			layout_type{this->layout().sub(), this->layout().stride() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().offset() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().nelems() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2))},
 			reinterpret_pointer_cast<P2>(this->base_)
-		};
+		);
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast(size_type n) const& -> subarray<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert(sizeof(T) % sizeof(T2) == 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
-			reinterpret_pointer_cast<P2>(this->base())
-		}
+		return subarray<std::decay_t<T2>, 2, P2>(
+				   layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
+				   reinterpret_pointer_cast<P2>(this->base())
+		)
 			.rotated();
 	}
 
