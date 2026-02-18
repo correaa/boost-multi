@@ -8,7 +8,7 @@
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
-#include <boost/multi/broadcast.hpp>           // for operations
+#include <boost/multi/elementwise.hpp>         // for operations
 #include <boost/multi/restriction.hpp>         // for restriction
 
 #include <boost/core/lightweight_test.hpp>
@@ -547,10 +547,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( vec2[1] - 55.0 < 1e-7 );
 
-		using multi::broadcast::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
 		using multi::blas::gemv;
-		using multi::broadcast::exp;
-		using multi::broadcast::log;
+		using multi::elementwise::exp;
+		using multi::elementwise::log;
 
 		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
 
