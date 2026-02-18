@@ -921,12 +921,11 @@ These operations include summation and elementwise multiplication, along with mo
 ----
 #include <boost/multi/broadcast.hpp>  // brings operators, expressions
 ...
-
-multi::array<int, 2> D = ...;
-
 multi::array<int, 2> const A = {{...}};
 multi::array<int, 2> const B = {{...}};
 multi::array<int, 2> const C = {{...}};
+
+multi::array<int, 2> D = ...;
 
 using multi::broadcast::operator+;  // import elementwise lazy addition
 using multi::broadcast::operator*;  // import elementwise lazy multiplication
@@ -935,18 +934,18 @@ D = A + B + 2*C + A*B;  // will not generate intermediate arrays and will not al
 ----
 link:https://godbolt.org/z/dsTe6a4T1[(live)]
 
-A key feature of these operations is automatic "broadcasting", which simplifies notation and is common in modern array languages.
-So-called broadcasting (in Numpy or Matlab) or scalar extension (in APL) allows binary operations on data of different dimensionality.
-Dimensionality mismatches are handled by broadcasting, but size mismatches are not (assertions catch these in debug mode).
+A key feature of the binary operator is that they perform automatic broadcasting and can operate recursively (e.g. for arrays of arrays),
+which simplifies notation and is common in modern array languages.
+Composition of operators form lazy expressions.
 
-In this example brew, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
+In the example below, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
 
 [source,cpp]
 ----
 multi::array<int, 1> const a = {1, 2, 3};
 
 using multi::broadcast::operator+;
-assert( a + 1 == multi::array<int, 1>{2, 3, 4} );
+assert(( a + 1 == multi::array<int, 1>({2, 3, 4}) ));
 ----
 
 Similarly, such a scalar can also be promoted into higher dimensionality if necessary:
@@ -1003,7 +1002,9 @@ auto const& expr = 2*b + A / exp(B);
 assert( expr[2][1] == 2*b[2] + A[2][1] / std::exp(B[2][1]) );
 ----
 
-Expressions can be named (e.g., `expr` above), but they generally do not own the objects used in the expression.
+Mappings, broadcast and complex expressions can be combined since all of them are specific instances of restrictions.
+
+Expressions can be named variables (e.g., `expr` above), but they generally do not own the objects used in the expression.
 Most arrays used in the expression are taken by reference, and array elements are neither copied nor allocated.
 Therefore, we should treat expressions as references to arrays, since they do not have independent value semantics.
 
