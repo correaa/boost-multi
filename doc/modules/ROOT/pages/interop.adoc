@@ -467,6 +467,71 @@ Finally, the element type of the device array has to be device-friendly to work 
 this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
 They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
 
+Thrust algorithms can be used to gain a high degree of parallelism.
+For example, for reduction by index (sum over rows) over a big array in the CUDA array, a generic implementation can be:
+
+[source,cpp]
+----
+template<class In2D, class OutputIt>
+void reduce_by_index(In2D const& in, OutputIt d_first) {
+	using index = typename In2D::index;
+	auto const& row_id = multi::restricted(
+		[] __host__ __device__ (index i, index j) { return i; },
+		in.extensions()
+	);  // or use "fun ^ ext" notation
+
+	::thrust::reduce_by_key(
+		row_id.elements().begin(), row_id.elements().end(),
+		in.elements().begin(),
+		::thrust::make_discard_iterator(),
+		d_first,
+		::thrust::equal_to<multi::index>{}  //, thrust::plus<>{}
+	);
+};
+----
+
+This algorithm can be applied to a 2D array, using a second 1D array to store the sums:
+
+[source,cpp]
+----
+multi::array<double, 2, thrust::device_allocator<double>> A_in = ...;
+
+multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A.size()});
+
+reduce_by_index(A_in, sums_out.begin());
+---
+
+Interestingly, we can apply this same algorithm to a pure function and still get the benefits of parallelism.
+That is, without the need to store data in memory and whose elements are evaluated on the fly (in the GPU).
+
+[source,cpp]
+----
+using multi::index;
+auto const& hankel =  // a restriction object
+	[] __host__ __device__ (index i, index j) { return i + j; }
+	^ multi::extensions_t<2>({N, M})
+;
+
+reduce_by_index(hankel, sums_out.begin());
+----
+link:https://godbolt.org/z/xndjsMs3v[(live)]
+
+Lambdas that are mean to be executed in the GPU need to be declared `__host__ __device__`.
+Take into account that lambdas executed in the device cannot take captures by reference.
+Library's restrictions do not work on `__device__`-only functions due to limitations of the CUDA language.
+Again, due to CUDA language limitations `__host__ __device__` cannot take initializing captures (e.g. `[var = ...]`),
+or `auto` arguments.
+As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parenthesis).
+
+```
+	int base = 4;
+	auto const& hankel2 =  // a restriction object of a lambda with captures
+		[var = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return base + i + j; } )
+		^ multi::extensions_t<2>({N, M})
+```
+
+(Alternatively the functions can be defined as separate class).
+
 [#interop_openmp]
 === OpenMP via Thrust
 

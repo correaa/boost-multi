@@ -847,7 +847,7 @@ As a simple example, the sum of all the elements of `R` is `std::reduce(R.elemen
 
 A key difference with concrete arrays is that their elements cannot be changed after creation (i.e., they are immutable). Additionally, concrete arrays do not use internal pointers—addresses that indicate where data is stored—or internal layouts—formats describing the structure of the array—to extract information (e.g., through functions like `.data_elements()`, `.base()`, `.layout()`, or `.stride()`).
 
-An elemental use for restrictions is for generating concrete arrays from coordinates, replacing common nested initialization loops:
+An straight forward use for restrictions is for generating concrete arrays from coordinates, replacing common nested initialization loops:
 
 [source,cpp]
 ----
@@ -910,6 +910,17 @@ multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ----
 link:https://godbolt.org/z/qK9cYzrzv[(live)]
 
+Another legitimate and practical use is to leverage the application of standard algorithms on functions (instead of on stored data),
+taking advantage of execution in parallel (`std::execution::par` in this example) or on GPU devices (see example in the Interoperability section).
+
+[source,cpp]
+----
+auto hankel = [](auto i, auto j) { return i + j; }^multi::extensions_t<2>{20, 100};  // or more complicated
+auto sum = std::reduce(std::execution::par, hankel[5].begin(), hankel[5].end(), 0);
+assert( sum == 100*5 + 100*(100 - 1)/2 );
+----
+link:https://godbolt.org/z/8bhrjrxGG[(live)]
+
 [#tutorial_broadcast]
 == Broadcast (lazy expressions)
 
@@ -927,18 +938,19 @@ multi::array<int, 2> const C = {{...}};
 
 multi::array<int, 2> D = ...;
 
-using multi::broadcast::operator+;  // import elementwise lazy addition
-using multi::broadcast::operator*;  // import elementwise lazy multiplication
+using multi::elementwise::operator+;  // import elementwise lazy addition
+using multi::elementwise::operator*;  // import elementwise lazy multiplication
 
 D = A + B + 2*C + A*B;  // will not generate intermediate arrays and will not allocate if D has already the correct sizes
 ----
 link:https://godbolt.org/z/dsTe6a4T1[(live)]
 
-A key feature of the binary operator is that they perform automatic broadcasting and can operate recursively (e.g. for arrays of arrays),
-which simplifies notation and is common in modern array languages.
 Composition of operators form lazy expressions.
 
-In the example below, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
+A key feature of binary operators is that they perform automatic broadcasting and can operate recursively (e.g. for arrays of arrays),
+which simplifies notation and is common in modern array languages.
+The broadcasting include scalar values, which are promoted to high dimensions as necessary.
+In the example below, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without making copies) to match the left operand's (`a`) dimensions.
 
 [source,cpp]
 ----
@@ -957,7 +969,7 @@ multi::array<int, 2> const A = {
 	{4, 5, 6}
 };
 
-using multi::broadcast::operator+;
+using multi::elementwise::operator+;
 
 assert( A + 1 == multi::array<int, 2>{{2, 3, 4}, {5, 6, 7}} );
 ----
@@ -970,7 +982,7 @@ The same behavior applies to arrays, on either side of the operation:
 
     multi::array<int, 1> const b = {1, 2, 3};
 
-    using multi::broadcast::operator+;
+    using multi::elementwise::operator+;
 
     assert(( +(b + A) == multi::array<int, 2>{{2, 4, 6}, {5, 7, 9}} ));
 ----
@@ -992,10 +1004,10 @@ multi::array<int, 2> const B = {
 
 multi::array<int, 2> const b = {1, 2, 3};
 
-using multi::broadcast::operator+;
-using multi::broadcast::operator*;
-using multi::broadcast::operator/;  // import elementwise lazy division
-using multi::broadcast::exp;        // import elementwise exponentiation
+using multi::elementwise::operator+;
+using multi::elementwise::operator*;
+using multi::elementwise::operator/;  // import elementwise lazy division
+using multi::elementwise::exp;        // import elementwise exponentiation
 
 auto const& expr = 2*b + A / exp(B);
 
@@ -1048,18 +1060,18 @@ multi::array<double, 2> const A = {
 
 assert( trace(A) == 1.0 + 4.0 );  // approximately
 
-using multi::broadcast::exp;
+using multi::elementwise::exp;
 assert( trace(exp(A)) == std::exp(1.0) + std::exp(4.0) ); // approximately
 ----
 
-Custom functions can be applied by using the `invoke` function:
+Custom functions can be applied by using the `multi::elementwise::mapping` function:
 
 [source,cpp]
 ----
-auto const& AVE = multi::broadcast::invoke([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
+auto const& AVE = multi::elementwise::mapping([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
 ----
 
-Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms.
+Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms (or used as part of other expressions)
 (e.g. https://godbolt.org/z/Ee1ohKxhW)
 
 // == Broadcast (infinite views)
