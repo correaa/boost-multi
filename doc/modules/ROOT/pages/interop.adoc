@@ -473,7 +473,7 @@ For example, for reduction by index (sum over rows) over a big array in the CUDA
 [source,cpp]
 ----
 template<class In2D, class OutputIt>
-void reduce_by_index(In2D const& in, OutputIt d_first) {
+void reduce_by_row(In2D const& in, OutputIt d_first) {
 	using index = typename In2D::index;
 	auto const& row_id = multi::restricted(
 		[] __host__ __device__ (index i, index j) { return i; },
@@ -498,7 +498,7 @@ multi::array<double, 2, thrust::device_allocator<double>> A_in = ...;
 
 multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A.size()});
 
-reduce_by_index(A_in, sums_out.begin());
+reduce_by_row(A_in, sums_out.begin());
 ----
 
 Interestingly, we can apply this same algorithm to a pure function and still get the benefits of parallelism.
@@ -512,7 +512,7 @@ auto const& hankel =  // a restriction object
 	^ multi::extensions_t<2>({N, M})
 ;
 
-reduce_by_index(hankel, sums_out.begin());
+reduce_by_row(hankel, sums_out.begin());
 ----
 link:https://godbolt.org/z/xndjsMs3v[(live)]
 
@@ -530,7 +530,7 @@ As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (n
 		^ multi::extensions_t<2>({N, M})
 ```
 
-(Alternatively the functions can be defined as separate class).
+(Alternatively the functions can be defined as separate class with a `__host__ __device__ operator()`).
 
 [#interop_openmp]
 === OpenMP via Thrust
