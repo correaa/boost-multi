@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/broadcast.hpp>
+#include <boost/multi/elementwise.hpp>
 #include <boost/multi/io.hpp>
 // IWYU pragma: no_include "boost/multi/restriction.hpp"  // for restriction, operator!=
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
@@ -38,7 +38,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		}
 	));
 
-	using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
+	using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
 	auto const& C1 = ~(~A + (~B)[0]);
 
 	std::cout << "C1 = " << C1 << '\n';
@@ -50,7 +50,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		b == multi::array<int, 1>{100, 101, 102}
 	));
 
-	using multi::broadcast::operator+;  // cppcheck-suppress constStatement ;
+	using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
 	auto const& C2 = ~(~A + b);
 
 	std::cout << "C2 = " << C2 << '\n';

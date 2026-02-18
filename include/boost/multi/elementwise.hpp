@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_BROADCAST_HPP  // NOLINT(llvm-header-guard) this links from elementwise.hpp
-#define BOOST_MULTI_BROADCAST_HPP
+#ifndef BOOST_MULTI_ELEMENTWISE_HPP
+#define BOOST_MULTI_ELEMENTWISE_HPP
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/restriction.hpp"
@@ -53,7 +53,7 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 	using type = ::boost::multi::subarray<T, D, Ts...> const&;
 };
 
-namespace broadcast {
+namespace elementwise {
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
 constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
@@ -124,23 +124,23 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	}
 }
 
-template<class A, class B>
-class apply_plus_t {
-	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+// template<class A, class B>
+// class apply_plus_t {
+// 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+// 	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
- public:
-	template<class AA, class BB>
-	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
+//  public:
+// 	template<class AA, class BB>
+// 	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
 
-	template<class... Is>
-	constexpr auto operator()(Is... is) const {
-		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
-			 +
-			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
-			;
-	}
-};
+// 	template<class... Is>
+// 	constexpr auto operator()(Is... is) const {
+// 		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
+// 			 +
+// 			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
+// 			;
+// 	}
+// };
 
 namespace detail {
 struct plus {
@@ -151,12 +151,12 @@ struct plus {
 
 template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(broadcast::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class T1, class T2>
 constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
-	using broadcast::operator+;  // cppcheck-suppress constStatement ;
+	using elementwise::operator+;  // cppcheck-suppress constStatement ;
 	return std::forward<T1>(a) + std::forward<T2>(b);
 }
 
@@ -169,24 +169,24 @@ struct minus {
 
 template<class A, class B>
 constexpr auto operator-(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(broadcast::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class T1, class T2>
 constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
-	using broadcast::operator-;  // cppcheck-suppress constStatement ;
+	using elementwise::operator-;  // cppcheck-suppress constStatement ;
 	return std::forward<T1>(a) - std::forward<T2>(b);
 }
 
 template<class A>
-constexpr auto operator-(A&& alpha) { return broadcast::apply(std::negate<>{}, std::forward<A>(alpha)); }
+constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
 template<class A, class B>
-constexpr auto operator*(A&& alpha, B&& omega) { return broadcast::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
 constexpr auto operator/(A&& alpha, B&& omega) {
-	return broadcast::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class T = void>
@@ -232,14 +232,14 @@ constexpr auto zeros(multi::extensions_t<D> const& exts) {
 }
 
 template<class A, class B>
-constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
-constexpr auto operator||(A&& a, B&& b) { return broadcast::map(std::logical_or<>{}, std::forward<A>(a), std::forward<B>(b)); }
+constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
-constexpr auto operator|(A&& a, F fun) {
-	return std::forward<A>(a).element_transformed(fun);
+constexpr auto operator|(A&& alpha, F fun) {
+	return std::forward<A>(alpha).element_transformed(fun);
 }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std::declval<typename std::decay_t<A>::reference>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
@@ -311,12 +311,12 @@ template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(m
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
 
 // #endif
-}  // end namespace broadcast
+}  // end namespace elementwise
 
-namespace elementwise = broadcast;
+namespace broadcast = elementwise;
 
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_BROADCAST_HPP
+#endif  // BOOST_MULTI_ELEMENTWISE_HPP
