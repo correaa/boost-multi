@@ -499,7 +499,7 @@ multi::array<double, 2, thrust::device_allocator<double>> A_in = ...;
 multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A.size()});
 
 reduce_by_index(A_in, sums_out.begin());
----
+----
 
 Interestingly, we can apply this same algorithm to a pure function and still get the benefits of parallelism.
 That is, without the need to store data in memory and whose elements are evaluated on the fly (in the GPU).
