@@ -922,7 +922,7 @@ assert( sum == 100*5 + 100*(100 - 1)/2 );
 link:https://godbolt.org/z/8bhrjrxGG[(live)]
 
 [#tutorial_broadcast]
-== Broadcast (lazy expressions)
+== Elementwise lazy expressions
 
 The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.
 Lazy expressions are useful for generating complex array expressions that are evaluated element-wise without the need for temporary arrays or storage.
@@ -1014,14 +1014,14 @@ auto const& expr = 2*b + A / exp(B);
 assert( expr[2][1] == 2*b[2] + A[2][1] / std::exp(B[2][1]) );
 ----
 
-Mappings, broadcast and complex expressions can be combined since all of them are specific instances of restrictions.
+Mappings and expressions can be combined since all of them are specific instances of restrictions.
 
 Expressions can be named variables (e.g., `expr` above), but they generally do not own the objects used in the expression.
 Most arrays used in the expression are taken by reference, and array elements are neither copied nor allocated.
 Therefore, we should treat expressions as references to arrays, since they do not have independent value semantics.
 
-To use operators, you need to explicitly import them into your current namespace, as shown in the examples -- using `using namespace multi::broadcast` is possible but not recommended.
-This is to avoid surprises by confusing broadcast elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
+To use operators, you need to explicitly import them into your current namespace, as shown in the examples -- using a global `using namespace multi::elementwise` is possible but not recommended.
+This is to avoid surprises by confusing elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
 Also as a reminder that these operations return expression objects with referential semantics, not concrete arrays.
 For example, returning expressions that refer to local array variables from a C++ function generally will produce dangling references.
 
