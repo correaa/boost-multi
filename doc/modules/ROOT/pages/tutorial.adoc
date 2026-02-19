@@ -921,7 +921,7 @@ assert( sum == 100*5 + 100*(100 - 1)/2 );
 ----
 link:https://godbolt.org/z/8bhrjrxGG[(live)]
 
-[#tutorial_broadcast]
+[#tutorial_elementwise]
 == Elementwise lazy expressions
 
 The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.

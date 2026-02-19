@@ -14,7 +14,7 @@
 ** xref:tutorial.adoc#tutorial_uninit_v_init[Uninitialized vs. initialized elements]
 ** xref:tutorial.adoc#tutorial_constexpr[Compile-time evaluation (constexpr)]
 ** xref:tutorial.adoc#tutorial_restrictions[Restrictions (lazy arrays)]
-** xref:tutorial.adoc#tutorial_broadcast[Broadcast (lazy expressions)]
+** xref:tutorial.adoc#tutorial_elementwise[Broadcast (lazy expressions)]
 * xref:interop.adoc[]
 ** xref:interop.adoc#interop_stl[STL Algorithms]
 ** xref:interop.adoc#interop_range_v3[Range-v3]
