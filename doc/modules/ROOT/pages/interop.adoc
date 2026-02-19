@@ -506,6 +506,8 @@ That is, without the need to store data in memory and whose elements are evaluat
 
 [source,cpp]
 ----
+multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{N});
+
 using multi::index;
 auto const& hankel =  // a restriction object
 	[] __host__ __device__ (index i, index j) { return i + j; }
@@ -514,19 +516,19 @@ auto const& hankel =  // a restriction object
 
 reduce_by_row(hankel, sums_out.begin());
 ----
-link:https://godbolt.org/z/xndjsMs3v[(live)]
+link:https://godbolt.org/z/KzqjGfc3v[(live)]
 
-Lambdas that are mean to be executed in the GPU need to be declared `__host__ __device__`.
+Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
 Take into account that lambdas executed in the device cannot take captures by reference.
 Library's restrictions do not work on `__device__`-only functions due to limitations of the CUDA language.
-Again, due to CUDA language limitations `__host__ __device__` cannot take initializing captures (e.g. `[var = ...]`),
+In addition, `__host__ __device__` cannot take initializing captures (e.g. `[var = ...]`),
 or `auto` arguments.
 As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parenthesis).
 
 ```
 	int base = 4;
 	auto const& hankel2 =  // a restriction object of a lambda with captures
-		[var = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return base + i + j; } )
+		[initval = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return initval + i + j; } )
 		^ multi::extensions_t<2>({N, M})
 ```
 
