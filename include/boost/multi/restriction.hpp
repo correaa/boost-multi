@@ -13,6 +13,7 @@
 #else
 #define BOOST_MULTI_HD
 #endif
+#define BOOST_MULTI_HD_LAMBDA(BodY) { return [=] BOOST_MULTI_HD BodY ; }()  // NOLINT(bugprone-macro-parentheses)
 
 namespace boost::multi::detail {
 
