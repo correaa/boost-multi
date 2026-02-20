@@ -516,7 +516,7 @@ auto const& hankel =  // a restriction object
 
 reduce_by_row(hankel, sums_out.begin());
 ----
-link:https://godbolt.org/z/KzqjGfc3v[(live)]
+link:https://godbolt.org/z/v86bxKnK8[(live)]
 
 Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
 Take into account that lambdas executed in the device cannot take captures by reference.
