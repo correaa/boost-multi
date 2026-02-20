@@ -1039,7 +1039,7 @@ multi::array<int, 2> expr_copy2({2, 3});
 expr_copy2 = 2*b + A / exp(B);  // allocation not expected because expr_copy2 has the "right" size, elements are assigned from the expression evaluation
 ----
 
-Expressions generate special unspecified types, they are internally based on parameterized `multi::restriction` types.
+The expressions generate special instances of `multi::restriction` types.
 In other C++ libraries, these are know as link:https://en.wikipedia.org/wiki/Expression_templates[Expression Templates] because they leverage heavy templated types.
 Unlike other expression-libraries, Multi's lazy expressions are fully integrated with the rest of the library, meaning that they can be utilized generically in the same way as immutable concrete arrays.
 (Although they don't have a layout or an internal pointer.)
