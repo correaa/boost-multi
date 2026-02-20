@@ -22,16 +22,27 @@
 
 namespace boost::multi::detail {
 
-template<class T>
-constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-}
+#ifdef __NVCC__
+template<class Fun>
+struct device : Fun {
+	using Fun::operator();
+};
+#endif
+
+template<class Fun> struct function_system {
+	using type = void;
+};
 
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
+
+template<class T>
+constexpr auto make_restriction(std::initializer_list<T> const& il) {
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+}
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& il) {
@@ -104,6 +115,8 @@ template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
 	extensions_t<D> xs_;
 	Proj            proj_;
+
+	using system = typename multi::detail::function_system<std::decay_t<Proj>>::type;
 
 	template<class Fun, class Tup>
 	static BOOST_MULTI_HD constexpr auto std_apply_(Fun&& fun, Tup&& tup) -> decltype(auto) {
@@ -309,6 +322,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	class iterator {
 		typename extensions_t<D>::iterator it_;
 		Proj const*                        Pproj_;
+
+		using system = typename multi::detail::function_system<Proj>::type;
 
 		iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
 
