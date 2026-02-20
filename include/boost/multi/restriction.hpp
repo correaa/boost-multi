@@ -115,7 +115,7 @@ template<dimensionality_type D, class Proj>
 class restriction;
 
 template<class Fun, class... Args>
-BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {
+BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
 	using std::apply;
 	return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
 }
