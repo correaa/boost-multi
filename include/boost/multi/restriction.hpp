@@ -130,16 +130,6 @@ class restriction_iterator {
 	template<dimensionality_type, class>
 	friend class restriction;
 
-	struct bind_front_t {
-		multi::index idx_;
-		Proj         proj_;
-
-		using system = typename multi::detail::function_system<Proj>::type;
-
-		template<class... Args>
-		BOOST_MULTI_HD /*BOOST_MULTI_DEV*/ constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
-	};
-
  public:
 	constexpr restriction_iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
 	// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
@@ -155,11 +145,11 @@ class restriction_iterator {
 	using system = typename multi::detail::function_system<Proj>::type;
 
 	using difference_type = std::ptrdiff_t;
-	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
+	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
 
 	using pointer = void;
 
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -216,7 +206,7 @@ class restriction_iterator {
 		if constexpr(D != 1) {
 			using std::get;
 			// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-			return restriction<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), *Pproj_});
+			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
 		} else {
 			using std::get;
 			return (*Pproj_)(get<0>(*it_));
@@ -255,19 +245,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		element,
 		array<element, D - 1>>;
 
- private:
-	// struct bind_front_t {
-	// 	multi::index idx_;
-	// 	Proj         proj_;
-
-	// 	// bind_front_t(multi::index idx, Proj& proj) : idx_{idx}, proj_{proj} {}
-	// 	template<class... Args>
-	// 	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
-	// };
-
- public:
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj const&>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))  // (std::declval<index>()))
-										 >;
+	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj const&>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
@@ -427,111 +405,100 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		auto cur = extensions().home();
 		return cursor_t<decltype(cur), D>{&proj_, cur};
 	}
+	
+	class iterator {
+		typename extensions_t<D>::iterator it_;
+		Proj const*                        Pproj_;
 
-	using iterator = restriction_iterator<D, Proj>;
-	// class iterator {
-	// 	typename extensions_t<D>::iterator it_;
-	// 	Proj const*                        Pproj_;
+		iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
 
-	// 	iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
+		friend restriction;
 
-	// 	friend restriction;
+	 public:
+		constexpr iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
+		// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
-	// 	struct bind_front_t {
-	// 		multi::index idx_;
-	// 		Proj         proj_;
+		iterator(iterator const& other) = default;
+		iterator(iterator&&) noexcept   = default;
 
-	// 		using system = typename multi::detail::function_system<Proj>::type;
+		auto operator=(iterator&&) noexcept -> iterator& = default;
+		auto operator=(iterator const&) -> iterator&     = default;
 
-	// 		template<class... Args>
-	// 		BOOST_MULTI_HD /*BOOST_MULTI_DEV*/ constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
-	// 	};
+		~iterator() = default;
 
-	//  public:
-	// 	constexpr iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
-	// 	// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+		using system = typename multi::detail::function_system<Proj>::type;
 
-	// 	iterator(iterator const& other) = default;
-	// 	iterator(iterator&&) noexcept   = default;
+		using difference_type = std::ptrdiff_t;
+		using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
 
-	// 	auto operator=(iterator&&) noexcept -> iterator& = default;
-	// 	auto operator=(iterator const&) -> iterator&     = default;
+		using pointer = void;
 
-	// 	~iterator() = default;
+		using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
 
-	// 	using system = typename multi::detail::function_system<Proj>::type;
+		using iterator_category = std::random_access_iterator_tag;
 
-	// 	using difference_type = std::ptrdiff_t;
-	// 	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
+		constexpr auto operator++() -> auto& {
+			++it_;
+			return *this;
+		}
+		constexpr auto operator--() -> auto& {
+			--it_;
+			return *this;
+		}
 
-	// 	using pointer = void;
+		constexpr auto operator+=(difference_type dd) -> auto& {
+			it_ += dd;
+			return *this;
+		}
+		constexpr auto operator-=(difference_type dd) -> auto& {
+			it_ -= dd;
+			return *this;
+		}
 
-	// 	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+		constexpr auto operator++(int) -> iterator {
+			iterator ret{*this};
+			++(*this);
+			return ret;
+		}
+		constexpr auto operator--(int) -> iterator {
+			iterator ret{*this};
+			--(*this);
+			return ret;
+		}
 
-	// 	using iterator_category = std::random_access_iterator_tag;
+		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+		friend constexpr auto operator+(iterator const& self, difference_type n) {
+			iterator ret{self};
+			return ret += n;
+		}
+		friend constexpr auto operator-(iterator const& self, difference_type n) {
+			iterator ret{self};
+			return ret -= n;
+		}
 
-	// 	constexpr auto operator++() -> auto& {
-	// 		++it_;
-	// 		return *this;
-	// 	}
-	// 	constexpr auto operator--() -> auto& {
-	// 		--it_;
-	// 		return *this;
-	// 	}
+		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
-	// 	constexpr auto operator+=(difference_type dd) -> auto& {
-	// 		it_ += dd;
-	// 		return *this;
-	// 	}
-	// 	constexpr auto operator-=(difference_type dd) -> auto& {
-	// 		it_ -= dd;
-	// 		return *this;
-	// 	}
+		friend constexpr auto operator==(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ == other.it_; }
+		friend constexpr auto operator!=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ != other.it_; }
 
-	// 	constexpr auto operator++(int) -> iterator {
-	// 		iterator ret{*this};
-	// 		++(*this);
-	// 		return ret;
-	// 	}
-	// 	constexpr auto operator--(int) -> iterator {
-	// 		iterator ret{*this};
-	// 		--(*this);
-	// 		return ret;
-	// 	}
+		friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
+		friend auto operator<(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
+		friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
-	// 	friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
-	// 	friend constexpr auto operator+(iterator const& self, difference_type n) {
-	// 		iterator ret{self};
-	// 		return ret += n;
-	// 	}
-	// 	friend constexpr auto operator-(iterator const& self, difference_type n) {
-	// 		iterator ret{self};
-	// 		return ret -= n;
-	// 	}
+		BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
+			if constexpr(D != 1) {
+				using std::get;
+				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
+				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			} else {
+				using std::get;
+				return (*Pproj_)(get<0>(*it_));
+			}
+		}
 
-	// 	friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
-
-	// 	friend constexpr auto operator==(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ == other.it_; }
-	// 	friend constexpr auto operator!=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ != other.it_; }
-
-	// 	friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
-	// 	friend auto operator<(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
-	// 	friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-	// 	friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-
-	// 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
-	// 		if constexpr(D != 1) {
-	// 			using std::get;
-	// 			// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-	// 			return restriction<D - 1, bind_front_t>(extensions_t<D - 1>((*it_).tail()), bind_front_t{get<0>(*it_), *Pproj_});
-	// 		} else {
-	// 			using std::get;
-	// 			return (*Pproj_)(get<0>(*it_));
-	// 		}
-	// 	}
-
-	// 	BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
-	// };
+		BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	};
 
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
@@ -560,6 +527,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		using difference_type = restriction::difference_type;
 
+		// using iterator = restriction_elements_iterator<D, Proj>;
+
 		class iterator : ra_iterable<iterator> {
 			typename extensions_t<D>::elements_t::iterator it_;
 			BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
@@ -568,20 +537,20 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 			auto operator++() -> auto& {
-				++it_;
+				++this->it_;
 				return *this;
 			}
 			auto operator--() -> auto& {
-				--it_;
+				--this->it_;
 				return *this;
 			}
 
 			constexpr auto operator+=(difference_type dd) -> auto& {
-				it_ += dd;
+				this->it_ += dd;
 				return *this;
 			}
 			constexpr auto operator-=(difference_type dd) -> auto& {
-				it_ -= dd;
+				this->it_ -= dd;
 				return *this;
 			}
 
@@ -589,7 +558,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 			constexpr auto operator*() const -> decltype(auto) {
 				using std::apply;
-				return apply(proj_, *it_);
+				return apply(proj_, *this->it_);
 			}
 
 			using system = typename detail::function_system<std::decay_t<Proj>>::type;
@@ -606,7 +575,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
 			friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
 
-			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 		};
 
 		auto begin() const { return iterator{elems_.begin(), proj_}; }
