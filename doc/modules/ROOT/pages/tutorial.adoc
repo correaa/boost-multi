@@ -930,7 +930,7 @@ These operations include summation and elementwise multiplication, along with mo
 
 [source,cpp]
 ----
-#include <boost/multi/broadcast.hpp>  // brings operators, expressions
+#include <boost/multi/elementwise.hpp>  // brings operators, expressions
 ...
 multi::array<int, 2> const A = {{...}};
 multi::array<int, 2> const B = {{...}};
