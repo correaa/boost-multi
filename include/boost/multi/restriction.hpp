@@ -285,12 +285,16 @@ template<dimensionality_type D, class Proj>
 
 		// using iterator = restriction_elements_iterator<D, Proj>;
 
-		class iterator : ra_iterable<iterator> {
-			typename extensions_t<D>::elements_t::iterator it_;
+		using reference = decltype(apply_(std::declval<Proj const&>(), std::declval<typename extensions_t<D>::element const&>()));
+
+		// template<dimensionality_type DD, class PProj, class Ret>
+		template<dimensionality_type DD, class Ret>
+		class iterator_t : ra_iterable<iterator_t<DD, Ret>> {
+			typename extensions_t<DD>::elements_t::iterator it_;
 			BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
 
 		 public:
-			iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+			iterator_t(typename extensions_t<DD>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 			auto operator++() -> auto& {
 				++this->it_;
@@ -310,21 +314,21 @@ template<dimensionality_type D, class Proj>
 				return *this;
 			}
 
-			friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+			friend constexpr auto operator-(iterator_t const& self, iterator_t const& other) { return self.it_ - other.it_; }
 
 			using system = typename detail::function_system<std::decay_t<Proj>>::type;
 
 			using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
-			using value_type        = decltype(apply_(std::declval<Proj&&>(), std::declval<typename extensions_t<D>::elements_t::iterator::value_type>()));  // (std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...));  // difference_type;
+			using value_type        = typename restriction_elements_t::reference;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));  // (std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...));  // difference_type;
 			using pointer           = void;
-			using reference         = decltype(apply_(std::declval<Proj&&>(), std::declval<typename extensions_t<D>::elements_t::iterator::value_type>()));
+			using reference         = typename restriction_elements_t::reference;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));
 			using iterator_category = std::random_access_iterator_tag;
 
-			friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-			friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+			friend auto operator==(iterator_t const& self, iterator_t const& other) -> bool { return self.it_ == other.it_; }
+			friend auto operator!=(iterator_t const& self, iterator_t const& other) -> bool { return self.it_ != other.it_; }
 
-			friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-			friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
+			friend auto operator<=(iterator_t const& self, iterator_t const& other) -> bool { return self.it_ <= other.it_; }
+			friend auto operator<(iterator_t const& self, iterator_t const& other) -> bool { return self.it_ < other.it_; }
 
 			BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 				// using std::apply;
@@ -333,6 +337,8 @@ template<dimensionality_type D, class Proj>
 
 			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> reference { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 		};
+
+		using iterator = iterator_t<D, reference>;  // <D, Proj, reference>;
 
 		auto begin() const { return iterator{elems_.begin(), proj_}; }
 		auto end() const { return iterator{elems_.end(), proj_}; }
