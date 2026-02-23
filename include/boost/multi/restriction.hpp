@@ -296,20 +296,20 @@ template<dimensionality_type D, class Proj>
 		 public:
 			iterator_t(typename extensions_t<DD>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
-			auto operator++() -> auto& {
+			auto operator++() -> iterator_t& {
 				++this->it_;
 				return *this;
 			}
-			auto operator--() -> auto& {
+			auto operator--() -> iterator_t& {
 				--this->it_;
 				return *this;
 			}
 
-			constexpr auto operator+=(difference_type dd) -> auto& {
+			constexpr auto operator+=(difference_type dd) -> iterator_t& {
 				this->it_ += dd;
 				return *this;
 			}
-			constexpr auto operator-=(difference_type dd) -> auto& {
+			constexpr auto operator-=(difference_type dd) -> iterator_t& {
 				this->it_ -= dd;
 				return *this;
 			}
@@ -319,9 +319,9 @@ template<dimensionality_type D, class Proj>
 			using system = typename detail::function_system<std::decay_t<Proj>>::type;
 
 			using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
-			using value_type        = typename restriction_elements_t::reference;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));  // (std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...));  // difference_type;
+			using value_type        = Ret;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));  // (std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...));  // difference_type;
 			using pointer           = void;
-			using reference         = typename restriction_elements_t::reference;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));
+			using reference         = Ret;  // decltype(apply_(std::declval<PProj&&>(), std::declval<typename extensions_t<DD>::elements_t::iterator::value_type>()));
 			using iterator_category = std::random_access_iterator_tag;
 
 			friend auto operator==(iterator_t const& self, iterator_t const& other) -> bool { return self.it_ == other.it_; }
