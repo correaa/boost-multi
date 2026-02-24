@@ -107,7 +107,6 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( c_copy3 == c_copy1 );
 		BOOST_TEST( c_copy3.base() != nullptr );
 	}
-#if 1
 	// {
 	// 	using multi::elementwise::exp;
 	// 	auto c = exp(
@@ -425,7 +424,6 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// array([[11, 22, 33],
 	//        [14, 25, 36],
 	//        [17, 28, 39]])
-#endif
 
 	return boost::report_errors();
 }
