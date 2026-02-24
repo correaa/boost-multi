@@ -39,9 +39,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement ;
 	auto const& C1 = ~(~A + (~B)[0]);
-
 	(void)C1;
-	// std::cout << "C1 = " << C1 << '\n';
 
 	multi::array<int, 1> b({3}, 0);
 	std::iota(b.elements().begin(), b.elements().end(), 100);
