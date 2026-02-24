@@ -202,8 +202,6 @@ struct iterator_system<::boost::multi::restriction_elements_iterator<D, ::boost:
 	using type = typename ::thrust::iterator_system<::thrust::device_ptr<void>>::type;
 };
 
-namespace detail {
-
 template<class T>
 struct type_ident { using type = T; };
 
@@ -215,11 +213,10 @@ auto it_sys_aux_(Fun const&)
 	::thrust::any_system_tag  // type_ident<typename Fun::system>
 >::type::type;
 auto it_sys_aux_(...) -> ::thrust::iterator_system<void*>::type;  // ::thrust::iterator_system<void*>::type;
-}
 
 template<::boost::multi::dimensionality_type D, class Fun, class Ret>
 struct iterator_system<::boost::multi::restriction_elements_iterator<D, Fun, Ret> > {
-	using type = decltype(detail::it_sys_aux_(std::declval<Fun const&>()));
+	using type = decltype(it_sys_aux_(std::declval<Fun const&>()));
 };
 
 // namespace detail {
