@@ -7,9 +7,10 @@
 [#tutorial_manip]
 == Manipulation of non-managed memory
 
-In this first example, we are going to use memory that is not managed by the library and manipulate the elements.
-This is to show that the library can operate on raw memory that is already available through other libraries or part of the code;
-in the next section instead we will see an example of arrays owned by the library.
+In this first example, we use memory that is not managed by the library and manipulate the stored elements.
+This is to show that the library can operate on raw memory that is available already through other libraries or through other part of a code.
+In the next section instead we will see an example of arrays owned by the library.
+
 We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 (This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
@@ -31,11 +32,11 @@ int main() {
 	...
 ----
 
-Because this array is not controled by the library, this type of object is refered to as an array-reference.
+Because this array is not controled by the library, this type of object is called an array-reference.
 
-Next, as an illustration, we print the elements in a way that corresponds to the logical arrangement.
-(Also generic printing can be done in other ways described in the reference section.)
-To do that, first, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
+Next, just as an illustration, we print the elements in a way that corresponds to the logical arrangement.
+(Generic printing can be done in other ways described in the reference section.)
+First, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
 then we decompose it as the cartesian product of two 1-dimensional ranges of integer indices.
 
 [source,cpp]
