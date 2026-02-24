@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -107,6 +107,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		BOOST_TEST( c_copy3 == c_copy1 );
 		BOOST_TEST( c_copy3.base() != nullptr );
 	}
+#if 1
 	// {
 	// 	using multi::elementwise::exp;
 	// 	auto c = exp(
@@ -136,7 +137,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const a = {1, 2, 3};
 		multi::array<int, 1> const b = {4, 5, 6};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 		auto c = a + b;
 
 		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
@@ -145,7 +146,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const a = {1, 2, 3};
 		multi::array<int, 1> const b = {4, 5, 6};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 		auto const& c = a + b;
 
 		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
@@ -160,7 +161,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 50}
 		};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + B;
 
@@ -170,8 +171,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		auto const A = multi::array<int, 1>{0, 1, 2};
 		auto const B = multi::array<int, 1>{0, 10, 20};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 1> const C = A + (2 * B);
 
@@ -187,8 +188,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{20, 30}
 		};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (2 * B);
 
@@ -204,8 +205,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 55}
 		};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (2 * B);
 
@@ -225,7 +226,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{300, 400, 500}
 		};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const D = A + B + C;
 
@@ -241,8 +242,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{30, 40, 50}
 		};
 
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator*;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const C = A + (A * B);
 
@@ -253,7 +254,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto f1d = [](auto) { return 1; } ^ multi::extensions_t<1>{3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 
 		auto const& c = a + f1d;
 
@@ -265,7 +266,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto f = []() { return 1; } ^ multi::extensions_t<0>{};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 
 		auto const& c = a + f;
 
@@ -275,7 +276,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 
 		auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
 
@@ -285,7 +286,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 
 		std::cout << (a + 1)[1] << '\n';
 		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == a + 1 ));
@@ -294,7 +295,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement;
 
 		auto c = a + 1;
 
@@ -309,7 +310,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		multi::array<int, 1> const b = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 		multi::array<int, 2> const C = A + b;
 
 		BOOST_TEST((
@@ -323,7 +324,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 		multi::array<int, 1> const b = a + 1;
 
 		BOOST_TEST(( b == multi::array<int, 1>{2, 3, 4} ));
@@ -331,7 +332,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
 	{
@@ -348,8 +349,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 			{3, 4, 5}
 		};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operators::operator*;  // cppcheck-suppress [constStatement];
 
 		multi::array<int, 2> const D = A + A * B + 2 * C;
 
@@ -375,7 +376,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	}
 	// clang-format off
 	{
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement ;
 
 		using T = multi::array<int, 2>;
 		multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
@@ -389,7 +390,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 
-	// 	using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+	// 	multi::elementwise::operators::operatorator+;  // cppcheck-suppress constStatement;
 
 	// 	auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
 
@@ -399,7 +400,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};
 
-	// 	using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+	// 	multi::elementwise::operators::operatorator+;  // cppcheck-suppress constStatement;
 
 	// 	auto const& c = a + 1;
 
@@ -414,8 +415,8 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	// 	// multi::array<int, 1> B = {10, 11, 12};
 
-	// 	using multi::elementwise::operator+;     // cppcheck-suppress constStatement;
-	// 	using multi::elementwise::operator*;     // cppcheck-suppress constStatement;
+	// 	multi::elementwise::operators::operatorator+;     // cppcheck-suppress constStatement;
+	// 	multi::elementwise::operators::operatorator*;     // cppcheck-suppress constStatement;
 	// 	multi::array const D = A + B + 2 * C;  // NOLINT(llvm-header-guard)
 
 	// 	BOOST_TEST( D[2] == A[2] + B[2] + (2 * C[2]) );
@@ -424,6 +425,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	// array([[11, 22, 33],
 	//        [14, 25, 36],
 	//        [17, 28, 39]])
+#endif
 
 	return boost::report_errors();
 }

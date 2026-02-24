@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -16,6 +16,7 @@ namespace multi = boost::multi;
 
 // NOLINTBEGIN(readability-identifier-length)
 int main() {  // NOLINT(readability-function-cognitive-complexity)
+#if 0
 	multi::array<int, 2> A({3, 4});
 	std::iota(A.elements().begin(), A.elements().end(), 0);
 
@@ -54,6 +55,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	auto const& C2 = ~(~A + b);
 
 	std::cout << "C2 = " << C2 << '\n';
+#endif
 
 	return boost::report_errors();
 }

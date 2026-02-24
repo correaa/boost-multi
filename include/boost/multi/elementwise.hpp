@@ -149,14 +149,16 @@ struct plus {
 };
 }  // end namespace detail
 
+namespace operators {
 template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
+}  // namespace operators
 
 template<class T1, class T2>
 constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
-	using elementwise::operator+;  // cppcheck-suppress constStatement ;
+	using elementwise::operators::operator+;  // cppcheck-suppress constStatement ;
 	return std::forward<T1>(a) + std::forward<T2>(b);
 }
 
@@ -167,27 +169,35 @@ struct minus {
 };
 }  // end namespace detail
 
+namespace operators {
+
 template<class A, class B>
 constexpr auto operator-(A&& alpha, B&& omega) noexcept {
 	return elementwise::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
+}  // namespace operators
+
 template<class T1, class T2>
 constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
-	using elementwise::operator-;  // cppcheck-suppress constStatement ;
+	using elementwise::operators::operator-;  // cppcheck-suppress constStatement ;
 	return std::forward<T1>(a) - std::forward<T2>(b);
 }
 
 template<class A>
 constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
+namespace operators {
 template<class A, class B>
 constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+}  // namespace operators
 
+namespace operators {
 template<class A, class B>
 constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
+}  // end namespace operators
 
 template<class T = void>
 struct default_zero_f {

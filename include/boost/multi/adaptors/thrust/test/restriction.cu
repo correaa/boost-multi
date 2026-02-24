@@ -4,6 +4,7 @@
 
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
+#include <boost/multi/restriction.hpp>
 
 #include <thrust/complex.h>
 
@@ -101,6 +102,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// 	multi::extensions_t<2>({50, 70});
 
 	// BOOST_TEST( arr == arr_gold );
+
+	{
+		auto dev_restr =
+			boost::multi::thrust::device_function([](multi::index i, multi::index j) { return i + j; }) ^ multi::extensions_t(10, 10);
+
+		BOOST_TEST( dev_restr.elements().begin() != dev_restr.elements().end() );
+
+		BOOST_TEST( dev_restr.begin() != dev_restr.end() );
+	}
 
 	return boost::report_errors();
 }

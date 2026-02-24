@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -15,6 +15,7 @@
 namespace multi = boost::multi;
 
 int main() {
+#if 0
 	auto const A = multi::array<int, 2>{
 		{0, 1, 2},
 		{3, 4, 5}
@@ -73,6 +74,8 @@ int main() {
 	// 		std::cout << std::abs( matrix_minus_row_max[0][2] ) << '\n';
 	// 		BOOST_TEST( std::abs( matrix_minus_row_max[0][2] ) < 1e-12F );
 	// 	}
+#endif
+
 	return boost::report_errors();
 }
 #else

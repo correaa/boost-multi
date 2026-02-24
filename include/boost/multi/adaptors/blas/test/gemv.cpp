@@ -547,7 +547,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( vec2[1] - 55.0 < 1e-7 );
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
+		using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
 		using multi::blas::gemv;
 		using multi::elementwise::exp;
 		using multi::elementwise::log;

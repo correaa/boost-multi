@@ -75,9 +75,9 @@ class ret_t {
 };
 
 auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
-	using multi::elementwise::operator-;
+	using multi::elementwise::operators::operator-;
 	using multi::elementwise::exp;
-	using multi::elementwise::operator/;
+	using multi::elementwise::operators::operator/;
 
 	auto ret = [mat = FWD(mat)](multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
 

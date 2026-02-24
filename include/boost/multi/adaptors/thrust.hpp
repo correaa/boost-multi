@@ -7,8 +7,10 @@
 #pragma once
 
 #include "boost/multi/array.hpp"
+#include "boost/multi/restriction.hpp"
 
 #include <thrust/device_allocator.h>
+#include <thrust/device_ptr.h>
 
 #include <thrust/universal_allocator.h>
 
@@ -155,6 +157,26 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 }  // end namespace boost::multi
 
+namespace boost {
+namespace multi {
+namespace thrust {
+// #ifdef __NVCC__
+template<class Fun>
+struct device_function : Fun {
+	using Fun::operator();
+
+	template<class FF> device_function(FF&& fun) : Fun{std::forward<FF>(fun)} {}
+};
+
+#ifdef __cpp_deduction_guides
+template<class Fun> device_function(Fun) -> device_function<Fun>;
+#endif
+
+// #endif
+}  // namespace thrust
+}  // namespace multi
+}  // namespace boost
+
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
 
@@ -173,6 +195,31 @@ struct iterator_system<::boost::multi::elements_iterator_t<Pointer, LayoutType> 
 template<class T, class UF, class Ptr, class Ref>
 struct iterator_system<::boost::multi::transform_ptr<T, UF, Ptr, Ref> > {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<Ptr>::type;
+};
+
+template<::boost::multi::dimensionality_type D, class Fun, class Ret>
+struct iterator_system<::boost::multi::restriction_elements_iterator<D, ::boost::multi::thrust::device_function<Fun>, Ret> > {
+	using type = typename ::thrust::iterator_system<::thrust::device_ptr<void>>::type;
+};
+
+namespace detail {
+
+template<class T>
+struct type_ident { using type = T; };
+
+template<class Fun, class = typename Fun::system>
+auto it_sys_aux_(Fun const&)
+-> typename std::conditional<
+	std::is_same_v<typename Fun::system, void>,
+	::thrust::iterator_system<void*>,
+	::thrust::any_system_tag  // type_ident<typename Fun::system>
+>::type::type;
+auto it_sys_aux_(...) -> ::thrust::iterator_system<void*>::type;  // ::thrust::iterator_system<void*>::type;
+}
+
+template<::boost::multi::dimensionality_type D, class Fun, class Ret>
+struct iterator_system<::boost::multi::restriction_elements_iterator<D, Fun, Ret> > {
+	using type = decltype(detail::it_sys_aux_(std::declval<Fun const&>()));
 };
 
 // namespace detail {

@@ -162,7 +162,7 @@ int main() {
 
 		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
 
-		using multi::elementwise::operator-;
+		using multi::elementwise::operators::operator-;
 		auto subtract = mat - max_per_row_repeat_T;
 		BOOST_TEST( subtract[0][0] == -2 );
 		BOOST_TEST( subtract[0][1] == -1 );
@@ -184,7 +184,7 @@ int main() {
 
 		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
 		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
-		using multi::elementwise::operator/;
+		using multi::elementwise::operators::operator/;
 		using multi::elementwise::operator|;
 		auto x = exp(~mat - (mat | maxR1));
 		printR2("final", ~(x / ((~x) | sumR1)));
