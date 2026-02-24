@@ -4,7 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
-#include <boost/multi/io.hpp>
+// #include <boost/multi/io.hpp>
 // IWYU pragma: no_include "boost/multi/restriction.hpp"  // for restriction, operator!=
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
@@ -50,8 +50,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement ;
 	auto const& C2 = ~(~A + b);
-
-	std::cout << "C2 = " << C2 << '\n';
+    (void)C2;
 
 	return boost::report_errors();
 }
