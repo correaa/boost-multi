@@ -50,7 +50,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	using multi::elementwise::operators::operator+;  // cppcheck-suppress constStatement ;
 	auto const& C2 = ~(~A + b);
-    (void)C2;
+	(void)C2;
 
 	return boost::report_errors();
 }
