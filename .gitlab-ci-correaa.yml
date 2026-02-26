@@ -1399,9 +1399,10 @@ pages-presentation:
     - non-shared
     - docker
   script:
+    - mkdir public
     - cd pres
     - pdflatex presentation.tex
-    - cp presentation.pdf ../public
+    - cp presentation.pdf ../public/
   artifacts:
     paths:
       - public
