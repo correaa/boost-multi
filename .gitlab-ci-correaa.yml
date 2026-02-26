@@ -1451,7 +1451,15 @@ pages:
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
 pages-presentation:
+  stage: basic
+  allow_failure: true
+  only:
+    refs:
+      - master
   image: texlive/texlive:latest
+  tags:
+    - non-shared
+    - docker
   script:
     - cd pres
     - pdflatex presentation.tex
