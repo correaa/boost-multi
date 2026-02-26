@@ -162,10 +162,25 @@ namespace multi {
 namespace thrust {
 // #ifdef __NVCC__
 template<class Fun>
-struct device_function : Fun {
-	using Fun::operator();
+struct device_function {  // }: Fun {
+	Fun* Pfun_;
+	// using Fun::operator();
+	template<class... Ts> __host__ __device__ auto operator()(Ts&&... ts) const -> decltype((*Pfun_)(std::forward<Ts>(ts)...)) {
+		return (*Pfun_)(std::forward<Ts>(ts)...);
+	}
 
-	template<class FF> device_function(FF&& fun) : Fun{std::forward<FF>(fun)} {}
+	template<class FF> __host__ __device__ device_function(FF&& fun) {  //}: fun_{std::forward<FF>(fun)} {
+		cudaMalloc(&Pfun_, sizeof(Fun));
+		#ifndef __CUDA_ARCH__
+		cudaMemcpy(Pfun_, &fun, sizeof(Fun), cudaMemcpyHostToDevice);
+		#endif
+	}
+
+	auto operator&() const { return Pfun_; }
+
+	__host__ __device__ ~device_function() {
+		cudaFree(Pfun_);
+	}
 };
 
 #ifdef __cpp_deduction_guides

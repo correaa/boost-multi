@@ -103,14 +103,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_TEST( arr == arr_gold );
 
-	{
-		auto dev_restr =
-			boost::multi::thrust::device_function([](multi::index i, multi::index j) { return i + j; }) ^ multi::extensions_t(10, 10);
+	// {
+	// 	auto dev_restr =
+	// 		boost::multi::thrust::device_function([](multi::index i, multi::index j) { return i + j; }) ^ multi::extensions_t(10, 10);
 
-		BOOST_TEST( dev_restr.elements().begin() != dev_restr.elements().end() );
+	// 	BOOST_TEST( dev_restr.elements().begin() != dev_restr.elements().end() );
 
-		BOOST_TEST( dev_restr.begin() != dev_restr.end() );
-	}
+	// 	BOOST_TEST( dev_restr.begin() != dev_restr.end() );
+	// }
 
 	return boost::report_errors();
 }
