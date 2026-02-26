@@ -1459,7 +1459,7 @@ pages-presentation:
   script:
     - cd pres
     - pdflatex presentation.tex
-    - cp presentations.pdf ../public
+    - cp presentation.pdf ../public
   artifacts:
     paths:
       - public
