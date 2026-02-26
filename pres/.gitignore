@@ -1,0 +1,14 @@
+echo "*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.pdf" >> .gitignore
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.pdf
