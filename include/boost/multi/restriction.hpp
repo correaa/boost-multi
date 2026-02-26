@@ -337,11 +337,8 @@ class restriction_elements_t {
 		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
-	auto begin() const {
-		iterator ret(elems_.begin(), proj_);
-		return ret;
-	}
-	auto end() const { return iterator(elems_.end(), proj_); }
+	auto begin() const { return iterator{elems_.begin(), proj_}; }
+	auto end() const { return iterator{elems_.end(), proj_}; }
 
 	auto size() const { return elems_.size(); }
 };
