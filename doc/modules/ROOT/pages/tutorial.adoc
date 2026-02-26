@@ -4,14 +4,54 @@
 
 :idprefix: tutorial_
 
+[#tutorial_motivation]
+== Motivation
+
+In many domains of computing, data is inherently multidimensional; individual elements have logical position such an certain discretized space.
+Without the help of specialized libraries, low level languages traditionally force programmers to represent it as a flat 1D buffer with manually computed indices.
+
+For example, consider a two-dimensional matrix of sizes M × N stored in a buffer.
+
+```cpp
+int N = 2;
+int M = 3;
+std::vector<int> data( N * M );  // 6 elements
+```
+
+Reading or writting into the element at position (i, j) requires computation of the position offset in the linear buffer.
+
+```
+data[i * M + j] = 99;  // interpreted as array element (i, j)
+```
+
+This approach works for simple applications.
+However there are several problems with this encoding of the multidimensional data structure.
+First, the buffer `data` needs to be propagated toghether with the stride `M` for data access, (and with `N` to know the logical dimensions of the 2D array).
+These are in principle separate variables.
+
+Second, information about the order is implicit and has to be agreed upon consistently across the whole code;
+in this case an equally acceptable encoding for a N x M array could be `data[i + j*M]`.
+Any change in layout (column-major, padded rows, subviews, GPU memory, etc.) forces a rewrite of indexing logic and increases the risk of subtle bugs.
+
+Third, manipulating subarrays requires the propagation of different stride layout information and a different sub-set of the buffer.
+
+Finally, each dimension (e.g. 1D, 2D, 3D) would need to be explicitly code and the relation between subarray of lower dimensionality and the main array would be opaque.
+
+A proper multidimensional array abstraction encapsulates shape and stride information, allowing users to write `A(i, j)` instead of manually computing offsets.
+This improves readability, safety, and maintainability, while still enabling zero-overhead access and layout flexibility.
+In short, a multidimensional array type expresses intent directly and separates algorithmic logic from memory layout details—something manual indexing simply cannot do cleanly at scale.
+
+There are several libraries for multidimensional arrays in C++ (see section comparison with other libraries) and all solve this abstraction problem with different levels of generality.
+Multi aims to be general in several aspects, by controlling memory, index access, subarray access, index access, iteration, etc.
+
 [#tutorial_manip]
 == Manipulation of non-managed memory
 
-In this first example, we use memory that is not managed by the library and manipulate the stored elements.
-This is to show that the library can operate on raw memory that is available already through other libraries or through other part of a code.
+Based on the motivation section, in this first example, we use memory that is not managed by the library and manipulate the stored elements.
+This is to show that the library can operate on raw memory that is available already through other libraries or through other parts of a code.
 In the next section instead we will see an example of arrays owned by the library.
 
-We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+We can create a static C-array of ``double``s, and refer to it via a two-dimensional (2D) array `multi::array_ref<double, 2>`.
 
 (This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
 
@@ -22,13 +62,14 @@ We can create a static C-array of ``double``s, and refer to it via a bidimension
 namespace multi = boost::multi;
 
 int main() {
-	double d_data[20] = {
+	int data[20] = {
 		150.0, 16.0, 17.0, 18.0, 19.0,
 		 30.0,  1.0,  2.0,  3.0,  4.0,
 		100.0, 11.0, 12.0, 13.0, 14.0,
 		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
-	multi::array_ref<double, 2> d2D_ref({4, 5}, &d_data[0]);  // .. interpreted as a 4 by 5 array
+
+	multi::array_ref<double, 2> d2D_ref({4, 5}, &data[0]);  // .. interpreted as a 4 by 5 array
 	...
 ----
 
