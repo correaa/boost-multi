@@ -1440,10 +1440,6 @@ pages:
     - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
     - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
     - cd ..
-    - cd pres
-    - pdflatex presentation
-    - cp presentation.pdf ../.public/
-    - cd ..
     - mv .public public
   artifacts:
     paths:
@@ -1453,9 +1449,9 @@ pages:
 pages-presentation:
   stage: basic
   allow_failure: true
-  only:
-    refs:
-      - master
+  # only:
+  #   refs:
+  #     - master
   image: texlive/texlive:latest
   tags:
     - non-shared
@@ -1463,9 +1459,10 @@ pages-presentation:
   script:
     - cd pres
     - pdflatex presentation.tex
+    - cp presentations.pdf ../public
   artifacts:
     paths:
-      - pres/presentation.pdf
+      - public
 
 pages-single-page:
   stage: basic
