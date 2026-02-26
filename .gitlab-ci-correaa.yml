@@ -1388,6 +1388,7 @@ sonar:
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.python.version=3.12.3 -Dsonar.cfamily.compile-commands=build/compile_commands.json `#-Dsonar.cfamily.build-wrapper-output=bw-output` -Dsonar.cfamily.gcov.reportsPath="build/"
   needs: ["g++"]
 
+# this is a specially named workflow to populates the pages site
 pages:
   stage: basic
   allow_failure: true
@@ -1439,12 +1440,24 @@ pages:
     - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
     - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
     - cd ..
+    - cd pres
+    - pdflatex presentation
+    - cp presentation.pdf ../.public/
+    - cd ..
     - mv .public public
   artifacts:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
+pages-presentation:
+  image: texlive/texlive:latest
+  script:
+    - cd pres
+    - pdflatex presentation.tex
+  artifacts:
+    paths:
+      - pres/presentation.pdf
 
 pages-single-page:
   stage: basic
