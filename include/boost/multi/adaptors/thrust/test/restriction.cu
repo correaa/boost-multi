@@ -81,6 +81,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			= [](multi::index i, multi::index j) constexpr { return i + j; } ^ multi::extensions_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
 	}
+	{
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr
+			= multi::restricted<2>([] __host__ __device__ (multi::index i, multi::index j) { return i + j; }, {10, 10});
+		BOOST_TEST( arr[3][4] == 3 + 4 );
+	}
+
 	// {
 	// 	multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) { return i + j; } ^ multi::extensions_t(10, 10);
 	// 	BOOST_TEST( arr[3][4] == 3 + 4 );
