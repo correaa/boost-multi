@@ -33,8 +33,10 @@ set(TEST_SRCS
 	broadcast_softmax.cu
 	by_key.cu
 	diffusion3d_kernel.cu
+	equal_device.cu
 	memory_resource.cu
 	neighbor_list.cu
+	reduce_by_row.cu
 	restriction.cu
 	run_reduce.cu
 	set_identity_kernel.cu
