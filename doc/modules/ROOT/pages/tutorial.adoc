@@ -18,7 +18,7 @@ int N = 2;
 int M = 3;
 std::vector<int> data( N * M );  // 6 elements
 ...
----
+----
 
 Reading or writing into the element at position (i, j) requires computation of the position offset in the linear buffer.
 
