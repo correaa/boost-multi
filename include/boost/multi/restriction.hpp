@@ -530,7 +530,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	class iterator {
 		typename extensions_t<D>::iterator it_;
-		Proj const*                        Pproj_;
+		// decltype(&std::declval<Proj const&>())
+		Proj const* Pproj_;
 
 		iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
 
