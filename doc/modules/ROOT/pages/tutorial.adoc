@@ -25,7 +25,7 @@ Reading or writing into the element at position (i, j) requires computation of t
 [source,cpp]
 ----
 ...
-data[i * M + j] = 99;  // interpreted as array element (i, j)
+data[i * M + j] = 99;  // assignment to array element interpreted as (i, j)
 ----
 
 This approach works for simple applications.
@@ -33,7 +33,7 @@ However, several problems arise with this encoding of the multidimensional data 
 First, the buffer data needs to be propagated along with the stride M for data access (and N to determine the logical dimensions of the 2D array),
 stored as separate C++ variables.
 Second, information about the order is implicit and has to be agreed upon consistently across the whole code;
-an equally acceptable encoding for a N x M array could be `data[i + j*M]``.
+an equally acceptable encoding for a N x M array could be `data[i + j*M]`.
 Any change in layout (column-major order, padded rows, subviews, GPU memory, etc.) requires a rewrite of the indexing logic and increases the risk of subtle bugs.
 Third, manipulating subarrays requires propagating different stride layout information and a different subset of the buffer.
 Finally, each dimension (e.g., 1D, 2D, 3D) would need to be explicitly coded and the relation between a subarray of lower dimensionality with respect to the main array would be opaque.
