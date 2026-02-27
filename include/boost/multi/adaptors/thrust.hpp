@@ -153,6 +153,132 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	}
 };
 
+namespace thrust {
+
+template<dimensionality_type D, class Proj>
+class device_restriction_iterator {
+	typename extensions_t<D>::iterator it_;
+	Proj                        proj_;
+
+	device_restriction_iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, proj_{*Pproj} {}
+
+	template<dimensionality_type, class>
+	friend class device_restriction;
+
+ public:
+	constexpr device_restriction_iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
+	// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
+
+	device_restriction_iterator(device_restriction_iterator const& other) = default;
+	device_restriction_iterator(device_restriction_iterator&&) noexcept   = default;
+
+	auto operator=(device_restriction_iterator&&) noexcept -> device_restriction_iterator& = default;
+	auto operator=(device_restriction_iterator const&) -> device_restriction_iterator&     = default;
+
+	~device_restriction_iterator() = default;
+
+	using system = typename multi::detail::function_system<Proj>::type;
+
+	using difference_type = std::ptrdiff_t;
+	using value_type      = int;
+	//	std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>
+	;
+
+	using pointer = void;
+
+	using reference = int;  // std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+
+	using iterator_category = std::random_access_iterator_tag;
+
+	constexpr auto operator++() -> auto& {
+		++it_;
+		return *this;
+	}
+	constexpr auto operator--() -> auto& {
+		--it_;
+		return *this;
+	}
+
+	constexpr auto operator+=(difference_type dd) -> auto& {
+		it_ += dd;
+		return *this;
+	}
+	constexpr auto operator-=(difference_type dd) -> auto& {
+		it_ -= dd;
+		return *this;
+	}
+
+	constexpr auto operator++(int) {
+		device_restriction_iterator ret{*this};
+		++(*this);
+		return ret;
+	}
+	constexpr auto operator--(int) {
+		device_restriction_iterator ret{*this};
+		--(*this);
+		return ret;
+	}
+
+	friend constexpr auto operator-(device_restriction_iterator const& self, device_restriction_iterator const& other) { return self.it_ - other.it_; }
+	friend constexpr auto operator+(device_restriction_iterator const& self, difference_type n) {
+		device_restriction_iterator ret{self};
+		return ret += n;
+	}
+	friend constexpr auto operator-(device_restriction_iterator const& self, difference_type n) {
+		device_restriction_iterator ret{self};
+		return ret -= n;
+	}
+
+	friend constexpr auto operator+(difference_type n, device_restriction_iterator const& self) { return self + n; }
+
+	friend constexpr auto operator==(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ == other.it_; }
+	friend constexpr auto operator!=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ != other.it_; }
+
+	friend auto operator<=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
+	friend auto operator<(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
+	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+
+	__device__ constexpr auto operator*() const -> decltype(auto) {
+		// if constexpr(D != 1) {
+		// 	using std::get;
+		// 	// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
+		// 	return device_restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+		// } else {
+			using std::get;
+			return const_cast<std::decay_t<decltype(proj_)> &>(proj_)(get<0>(*it_));
+		// }
+	}
+
+	// BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+};
+
+template<dimensionality_type D, class Proj>
+struct device_restriction { //: restriction<D, Proj, int> {
+	multi::extensions_t<D> exts_;
+	Proj proj_;
+
+ public:
+	using iterator = device_restriction_iterator<D, Proj>;
+
+	auto begin() const -> iterator {
+		return iterator{exts_.begin(), &proj_};
+	}
+	auto end() const -> iterator {
+		return iterator{exts_.end(), &proj_};
+	}
+};
+
+#ifdef __cpp_deduction_guides
+template<dimensionality_type D, typename Fun>
+device_restriction(multi::extensions_t<D>, Fun) -> device_restriction<D, Fun>;
+
+template<typename Fun> device_restriction(extensions_t<0>, Fun) -> device_restriction<0, Fun>;
+template<typename Fun> device_restriction(extensions_t<1>, Fun) -> device_restriction<1, Fun>;
+#endif
+
+}
+
 }  // end namespace boost::multi
 
 // this is important for algorithms to dispatch to the right thrust executor
