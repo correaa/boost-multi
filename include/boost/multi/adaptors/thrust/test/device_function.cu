@@ -3,11 +3,14 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/adaptors/thrust.hpp>
+
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/system/cuda/execution_policy.h>
 #include <thrust/transform.h>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <iostream>
 
@@ -48,14 +51,16 @@ int main() {
 		[] DEV(int x) { return x * x; }
 	);
 
-	// auto c2 = multi::restricted<1>( [] DEV (int x) { return x * x; } ,  {N} );
+	auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), [] DEV (int x) { return x * x; });
 
-	// thrust::copy(
-
-	// );
+    thrust::copy(
+        c2.begin(), c2.end(), d_out.begin()
+    );
 
 	multi::thrust::host_array<int, 1> h_out = d_out;
 
-	for(int v : h_out)
-		std::cout << v << " ";
+    BOOST_TEST( h_out[2] == 4 );
+
+	// for(int v : h_out)
+	// 	std::cout << v << " ";
 }
