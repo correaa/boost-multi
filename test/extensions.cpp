@@ -621,6 +621,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto exts = multi::extensions_t<2>(3, 4);
 		BOOST_TEST( exts.extensions() == exts );
+
+		static_assert(std::is_default_constructible_v<decltype(exts.elements())::iterator>);
 	}
 
 	return boost::report_errors();

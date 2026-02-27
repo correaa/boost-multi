@@ -222,6 +222,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
 
  public:
+	restriction_elements_iterator() = default;
 	restriction_elements_iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 	auto operator++() -> auto& {
@@ -290,6 +291,8 @@ class restriction_elements_t {
 		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
 
 	 public:
+		iterator() = default;
+
 		iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 		auto operator++() -> auto& {

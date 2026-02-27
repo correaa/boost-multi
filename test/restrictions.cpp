@@ -282,6 +282,10 @@ int main() {
 
 		// v2D_copy4() = v2D;  // this fails with an assert because sizes do not match
 		// BOOST_TEST( v2D_copy4 == v2D_copy );
+
+		static_assert(std::is_default_constructible_v<decltype(v2D)::iterator>);
+
+		static_assert(std::is_default_constructible_v<decltype(v2D.elements())::iterator>);
 	}
 	{
 		multi::iextension m(96);
