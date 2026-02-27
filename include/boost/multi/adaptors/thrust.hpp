@@ -172,7 +172,7 @@ struct device_function {  // }: Fun {
 	template<class FF> __host__ __device__ device_function(FF&& fun) {  //}: fun_{std::forward<FF>(fun)} {
 		cudaMalloc(&Pfun_, sizeof(Fun));
 		#ifndef __CUDA_ARCH__
-		cudaMemcpy(Pfun_, &fun, sizeof(Fun), cudaMemcpyHostToDevice);
+		cudaMemcpy(Pfun_, &fun, sizeof(Fun), HICUP_(MemcpyHostToDevice));
 		#endif
 	}
 
