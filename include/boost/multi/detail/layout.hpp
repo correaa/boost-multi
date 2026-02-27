@@ -431,8 +431,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	 public:
 		using difference_type = extensions_t::difference_type;
 
-		class iterator {
+		class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) TODO(correaa) investigate
 			index_extension::iterator curr_;
+
+			static_assert( std::is_default_constructible_v<index_extension::iterator> );
 
 			typename extensions_t<D - 1>::elements_t::iterator rest_it_;
 			typename extensions_t<D - 1>::elements_t::iterator rest_begin_;
@@ -454,6 +456,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using pointer           = void;
 			using reference         = value_type;
 			using iterator_category = std::random_access_iterator_tag;
+
+			iterator() = default;
 
 			template<class CUT>
 			class mk_tup {
@@ -822,6 +826,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			using reference = value_type;
 			// using pointer = void;
 			// using reference = value_type;
+
+			iterator() = default;
 
 			BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *base_(); }
 
