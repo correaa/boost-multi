@@ -1399,9 +1399,10 @@ pages-presentation:
     - non-shared
     - docker
   script:
+    - mkdir public
     - cd pres
     - pdflatex presentation.tex
-    - cp presentation.pdf ../public
+    - cp presentation.pdf ../public/
   artifacts:
     paths:
       - public
@@ -1461,7 +1462,8 @@ pages:
     - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
     - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
     - cd ..
-    - mv .public public
+    - mkdir -p public
+    - mv .public/* public/
     - ls public/
   artifacts:
     paths:
