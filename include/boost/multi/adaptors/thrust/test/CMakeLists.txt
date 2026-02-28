@@ -32,6 +32,7 @@ set(TEST_SRCS
 	array.cu
 	broadcast_softmax.cu
 	by_key.cu
+	device_function.cu
 	diffusion3d_kernel.cu
 	memory_resource.cu
 	neighbor_list.cu
