@@ -183,14 +183,14 @@ auto device_function(F&& other) {
 #define BOOST_MULTI_CAPTURE(...) [__VA_ARGS__]
 
 #define BOOST_MULTI_DEVICE_LAMBDA_LEGACY(Cap, ...) ([=] () { \
-			[[maybe_unused]] auto fff = (Cap __host__ __VA_ARGS__); \
-			using result_type = typename multi::thrust::result_helper<decltype(fff)>::type; \
+			[[maybe_unused]] auto host_dummy = (Cap __host__ __VA_ARGS__); \
+			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
 			return multi::thrust::device_function<result_type>(Cap __device__ __VA_ARGS__ ); \
 		}()) \
 
 #define BOOST_MULTI_DEVICE_LAMBDA(...) () { \
-			[[maybe_unused]] auto fff = ([=] __host__ __VA_ARGS__); \
-			using result_type = typename multi::thrust::result_helper<decltype(fff)>::type; \
+			[[maybe_unused]] auto host_dummy = ([=] __host__ __VA_ARGS__); \
+			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
 			return multi::thrust::device_function<result_type>([=] __device__ __VA_ARGS__ ); \
 		}() \
 
