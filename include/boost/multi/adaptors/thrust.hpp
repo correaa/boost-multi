@@ -154,8 +154,22 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 namespace thrust {
 
+template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
+
+template<class FF>
+class result_helper{
+	template<class F> static constexpr auto _(priority<0>/**/, F const& fun) -> void;
+	template<class F> static constexpr auto _(priority<1>/**/, F const& fun) -> decltype(fun());
+	template<class F> static constexpr auto _(priority<2>/**/, F const& fun) -> decltype(fun(multi::index{}));
+	template<class F> static constexpr auto _(priority<3>/**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}));
+	template<class F> static constexpr auto _(priority<4>/**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}, multi::index{}));
+
+ public:
+	using type = decltype(_(priority<4>{}, std::declval<FF>()));
+};
+
 template<class F, class R = void>
-class device_function_t : F {
+struct device_function_t : F {
 	using F::operator();
 
 	using result_type = R;
@@ -163,10 +177,22 @@ class device_function_t : F {
 
 template<class R = void, class F>
 auto device_function(F&& other) {
-	return device_function_t<R, F>{std::forward<F>(other)};
+	return device_function_t<F, R>{std::forward<F>(other)};
 }
 
-// #define BOOST_MULTI_DEVICE(Expr) () { return device_function{[=] Expr}; }
+#define BOOST_MULTI_CAPTURE(...) [__VA_ARGS__]
+
+#define BOOST_MULTI_DEVICE_LAMBDA_LEGACY(Cap, ...) ([=] () { \
+			[[maybe_unused]] auto host_dummy = (Cap __host__ __VA_ARGS__); \
+			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
+			return multi::thrust::device_function<result_type>(Cap __device__ __VA_ARGS__ ); \
+		}()) \
+
+#define BOOST_MULTI_DEVICE_LAMBDA(...) () { \
+			[[maybe_unused]] auto host_dummy = ([=] __host__ __VA_ARGS__); \
+			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
+			return multi::thrust::device_function<result_type>([=] __device__ __VA_ARGS__ ); \
+		}() \
 
 template<dimensionality_type D, class Proj>
 class device_restriction_iterator {
@@ -262,21 +288,15 @@ class device_restriction_iterator {
 	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
-	__device__ constexpr auto operator*() -> int {  // decltype(auto) {
-													// if constexpr(D != 1) {
-													// 	using std::get;
-													// 	// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-													// 	return device_restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
-													// } else {
+	__device__ constexpr auto operator*() -> int {
+		// decltype(auto) {
+		// if constexpr(D != 1) {
+		// 	using std::get;
+		// 	// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
+		// 	return device_restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+		// } else {
 		using std::get;
-		// return const_cast<std::decay_t<decltype(proj_)> &>(proj_)(get<0>(*it_));
-		// assert(0);
-		auto ret = (proj_)(get<0>(*it_));
-		printf("idx = %ld, ret = %d ", get<0>(*it_), ret);
-		// assert(0);
-		// return proj_(get<0>(*it_));
-		return ret;
-		// }
+		return proj_(get<0>(*it_));
 	}
 
 	__device__ auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
