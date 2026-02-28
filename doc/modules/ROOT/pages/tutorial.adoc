@@ -861,7 +861,7 @@ link:https://godbolt.org/z/Porre3z8s[(live)]
 
 So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
 In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
-These are called "restrictions arrays" here, also commonly "lazy arrays", and enable delayed evaluation.
+These are called "restrictions arrays" here, also commonly known "lazy arrays", and they enable delayed evaluation.
 
 Multi's restriction arrays are functions wrapped in a multidimensional array interface.
 These functions are restricted (in the mathematical sense) to a discrete range of values in a multidimensional Cartesian grid.
@@ -963,6 +963,8 @@ auto sum = std::reduce(std::execution::par, hankel[5].begin(), hankel[5].end(), 
 assert( sum == 100*5 + 100*(100 - 1)/2 );
 ----
 link:https://godbolt.org/z/8bhrjrxGG[(live)]
+
+The main constrain of the function is that it needs to return values independently of the order of evaluation in which elements are probed; more formally it has to be link:https://eel.is/c++draft/res.on.requirements#3[equality preserving] in the context in which it is used.
 
 [#tutorial_elementwise]
 == Elementwise lazy expressions
