@@ -842,6 +842,31 @@ cuda:
 cuda-11.5.2:
   stage: build
   image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04  # 11.4.3-devel-ubuntu20.04
+  allow_failure: true
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - x86_64
+  interruptible: true
+  script:
+    - nvidia-smi
+    # - export CUDA_VISIBLE_DEVICES=2
+    - apt-get -qq update
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
+    - sh ./cmake-install.sh --skip-license --prefix=/usr
+    - cmake --version
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest -j 2 --output-on-failure
+  needs: ["cuda"]
+
+cuda-11.6.1:
+  stage: build
+  image: nvcr.io/nvidia/cuda:11.6.1-devel-ubuntu20.04  # 11.4.3-devel-ubuntu20.04
+  allow_failure: false
   tags:
     - non-shared
     - nvidia-gpu
