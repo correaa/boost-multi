@@ -5,6 +5,7 @@
 #include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
 #include <thrust/host_vector.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/system/cuda/execution_policy.h>
@@ -45,22 +46,27 @@ int main() {
 	auto last  = first + N;
 
 	thrust::transform(
+		thrust::device,
 		first,
 		last,
 		d_out.begin(),
 		[] DEV(int x) { return x * x; }
 	);
 
-	auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), [] DEV (int x) { return x * x; });
+	auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), [a = 5] __device__(int x) { return x * x + a; });
 
-    thrust::copy(
-        c2.begin(), c2.end(), d_out.begin()
-    );
+	auto it = c2.begin();
+	static_assert(std::is_default_constructible_v<multi::extensions_t<1>::iterator>);
+	static_assert(std::is_default_constructible_v<decltype(it)>);
+
+	// decltype(it) dc;
+
+	thrust::copy(c2.begin(), c2.end(), d_out.begin());
 
 	multi::thrust::host_array<int, 1> h_out = d_out;
 
-    BOOST_TEST( h_out[2] == 4 );
+	BOOST_TEST( h_out[1] == 6 );
+	BOOST_TEST( h_out[2] == 9 );
 
-	// for(int v : h_out)
-	// 	std::cout << v << " ";
+	return boost::report_errors();
 }
