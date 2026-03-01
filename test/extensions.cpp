@@ -650,7 +650,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		auto exts = multi::extensions_t<1>(10);
-		
+
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 	}
