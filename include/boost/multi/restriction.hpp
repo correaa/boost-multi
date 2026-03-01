@@ -604,7 +604,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 		friend constexpr auto operator+(iterator const& self, difference_type n) {
-			iterator ret{self};
+			iterator ret{self};  // mull-ignore: cxx_init_const
 			return ret += n;
 		}
 		friend constexpr auto operator-(iterator const& self, difference_type n) {
