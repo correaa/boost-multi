@@ -114,6 +114,15 @@ struct bind_front_t {
 template<dimensionality_type D, class Proj>
 class restriction;
 
+template<class F, class TupleLike>
+struct invoke_result_from_tuple;
+
+template<class F, template<class...> class TupleLike, class... Args>
+struct invoke_result_from_tuple<F, TupleLike<Args...>> {
+	using type =
+		std::invoke_result_t<F, std::decay_t<Args>...>;
+};
+
 template<class Fun, class... Args>
 BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
 	using std::apply;
