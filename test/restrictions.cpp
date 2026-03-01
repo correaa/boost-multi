@@ -289,8 +289,11 @@ int main() {
 
 		static_assert(std::is_default_constructible_v<decltype(v2D)::iterator>);
 		static_assert(std::is_default_constructible_v<decltype(v2D.elements())::iterator>);
-
+	}
+	{
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(5, 7);
 		BOOST_TEST( (v2D.begin() + 3) - v2D.begin() == 3 );
+		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
 	}
 	{
 		multi::iextension m(96);
