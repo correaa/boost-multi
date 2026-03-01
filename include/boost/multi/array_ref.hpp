@@ -3020,7 +3020,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
 	constexpr auto repeated(multi::size_t n) && {
-		auto exts = this->extensions();
+		auto exts = this->extensions();  // mull-ignore: cxx_init_const
 		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * exts);
 	}
 
