@@ -383,13 +383,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj const&>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
 
-	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator[](index idx, Indices... rest) const {
 		return operator[](idx)[rest...];
 	}
 	BOOST_MULTI_HD constexpr auto operator[]() const -> decltype(auto) { return proj_(); }
-	#endif
+#endif
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		// assert( extension().contains(idx) );
