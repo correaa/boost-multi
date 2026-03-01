@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <numeric>
-// IWYU pragma: no_include <utility>  // for forward
+#include <utility>  // for move
 
 namespace multi = boost::multi;
 
