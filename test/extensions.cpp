@@ -641,11 +641,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto it3 = it2 + 3;
 		auto it4 = it3 + 2;
 
+		BOOST_TEST( it4 == exts.begin() + 5 );
 		BOOST_TEST( *it4 == 5 );
 
 		auto it5 = it4 - 3;
+		BOOST_TEST( it5 == exts.begin() + 2 );
 		BOOST_TEST( *it5 == 2 );
 	}
-
+	{
+		auto exts = multi::extensions_t<1>(10);
+		
+		BOOST_TEST( exts.size() == 10 );
+		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
+	}
 	return boost::report_errors();
 }
