@@ -266,6 +266,10 @@ int main() {
 	{
 		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
 
+		auto it = v2D.begin();
+		it++;
+		BOOST_TEST( it == v2D.begin() + 1 );
+
 		multi::array<multi::index, 2> v2D_copy = v2D;
 
 		multi::array<multi::index, 2> v2D_copy2(v2D.extensions());
