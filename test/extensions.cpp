@@ -642,6 +642,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto it4 = it3 + 2;
 
 		BOOST_TEST( *it4 == 5 );
+
+		auto it5 = it4 - 3;
+		BOOST_TEST( *it5 == 2 );
 	}
 
 	return boost::report_errors();
