@@ -288,8 +288,11 @@ int main() {
 		// BOOST_TEST( v2D_copy4 == v2D_copy );
 
 		static_assert(std::is_default_constructible_v<decltype(v2D)::iterator>);
-
 		static_assert(std::is_default_constructible_v<decltype(v2D.elements())::iterator>);
+
+		auto beg = v2D.begin();
+		auto beg_plus_3 = beg + 3;
+		BOOST_TEST( beg_plus_3 - v2D.begin() == 3 );
 	}
 	{
 		multi::iextension m(96);
