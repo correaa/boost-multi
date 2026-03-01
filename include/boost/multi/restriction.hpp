@@ -114,6 +114,14 @@ struct bind_front_t {
 template<dimensionality_type D, class Proj>
 class restriction;
 
+template<class F, class TupleLike>
+struct invoke_result_from_tuple;
+
+template<class F, template<class...> class TupleLike, class... Args>
+struct invoke_result_from_tuple<F, TupleLike<Args...>> {
+	using type = std::invoke_result_t<F, std::decay_t<Args>...>;
+};
+
 template<class Fun, class... Args>
 BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
 	using std::apply;
@@ -365,7 +373,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
-	using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
+	using element = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+	// using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
 
 	using value_type = std::conditional_t<
 		(D == 1),
