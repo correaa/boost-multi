@@ -1304,7 +1304,8 @@ class bistride {
 		auto dist = ptr - base;
 		auto i = dist / self.stride1_;
 
-		auto j = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul  TODO(correaa) Survived: Replaced / with *
+		// vvv TODO(correaa) Survived: Replaced / with *
+		auto j = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul
 
 		auto shift = j + self.n_;
 		auto size2 = self.nelems2_ / self.stride2_;
