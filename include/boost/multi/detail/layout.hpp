@@ -1284,15 +1284,16 @@ class bistride {
 
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+=(Ptr& ptr, bistride& self) -> Ptr& {
-		if(self.n_ == 1) {
-			ptr += self.stride2_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			if(ptr == static_cast<Ptr>(self.ptr_) + self.nelems2_) {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-				self.ptr_ = static_cast<Ptr>(self.ptr_) + self.stride1_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-				ptr = static_cast<Ptr>(self.ptr_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			}
-		} else {
+		assert(self.n_ == 1);
+		// if(self.n_ == 1) {
+		// 	ptr += self.stride2_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// 	if(ptr == static_cast<Ptr>(self.ptr_) + self.nelems2_) {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// 		self.ptr_ = static_cast<Ptr>(self.ptr_) + self.stride1_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// 		ptr = static_cast<Ptr>(self.ptr_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		// 	}
+		// } else {
 			ptr = ptr + self;
-		}
+		// }
 		return ptr;
 	}
 
@@ -1302,10 +1303,11 @@ class bistride {
 		auto base = static_cast<Ptr>(self.ptr_);
 		auto dist = ptr - base;
 		auto i = dist / self.stride1_;
+
 		auto j = (dist % self.stride1_) / self.stride2_;
 
 		auto shift = j + self.n_;
-		auto size2 = self.nelems2_/self.stride2_;
+		auto size2 = self.nelems2_ / self.stride2_;
 
 		auto j0 = shift % size2;
 		auto i0 = (shift / size2) + i;
