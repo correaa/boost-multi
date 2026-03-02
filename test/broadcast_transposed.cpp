@@ -62,6 +62,10 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 		auto rep2 = std::move(A).repeated(2);
 		BOOST_TEST( rep2.num_elements() == 8 );
+
+		auto [rep2n, rep2m] = rep2.sizes();
+		BOOST_TEST( rep2n == 2 );
+		BOOST_TEST( rep2m == 4 );
 	}
 
 	return boost::report_errors();
