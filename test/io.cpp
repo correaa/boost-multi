@@ -7,7 +7,6 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <fstream>
 #include <iostream>
 #include <sstream>
 // IWYU pragma: no_include <string>                           // for allocator, operator<<

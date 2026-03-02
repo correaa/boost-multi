@@ -45,6 +45,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		*it;
 		x2d.begin()[1];
 		// BOOST_TEST( *it == xs[1] );
+
+		auto x2d_it  = x2d.begin();
+		auto x2d_it2 = x2d_it + 2;
+		auto x2d_it3 = x2d_it2 + 1;
+		BOOST_TEST( x2d_it3 == x2d.begin() + 3 );
 	}
 
 	return boost::report_errors();
