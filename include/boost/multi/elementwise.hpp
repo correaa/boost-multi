@@ -266,7 +266,8 @@ template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
 template<class A, std::enable_if_t<multi::has_extensions<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
-	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
+	// shouldn't get to this point for scalars
+	auto xs = alpha.extensions();  // mull-ignore: cxx_init_const
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 

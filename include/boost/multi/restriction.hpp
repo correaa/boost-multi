@@ -604,7 +604,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 		friend constexpr auto operator+(iterator const& self, difference_type n) {
-			iterator ret{self};
+			iterator ret{self};  // mull-ignore: cxx_init_const
 			return ret += n;
 		}
 		friend constexpr auto operator-(iterator const& self, difference_type n) {
@@ -649,78 +649,6 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto back() const { return *(begin() + (size() - 1)); }
 
 	using elements_t = restriction_elements_t<D, Proj>;
-
-	// class elements_t {
-	// 	typename extensions_t<D>::elements_t elems_;
-	// 	Proj                                 proj_;
-
-	// 	elements_t(typename extensions_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
-	// 	friend class restriction;
-
-	//  public:
-	// 	BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) {
-	// 		using std::apply;
-	// 		return apply(proj_, elems_[idx]);
-	// 	}
-
-	// 	using difference_type = restriction::difference_type;
-
-	// 	// using iterator = restriction_elements_iterator<D, Proj>;
-
-	// 	class iterator : ra_iterable<iterator> {
-	// 		typename extensions_t<D>::elements_t::iterator it_;
-	// 		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
-
-	// 	 public:
-	// 		iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
-
-	// 		auto operator++() -> auto& {
-	// 			++this->it_;
-	// 			return *this;
-	// 		}
-	// 		auto operator--() -> auto& {
-	// 			--this->it_;
-	// 			return *this;
-	// 		}
-
-	// 		constexpr auto operator+=(difference_type dd) -> auto& {
-	// 			this->it_ += dd;
-	// 			return *this;
-	// 		}
-	// 		constexpr auto operator-=(difference_type dd) -> auto& {
-	// 			this->it_ -= dd;
-	// 			return *this;
-	// 		}
-
-	// 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
-
-	// 		constexpr auto operator*() const -> decltype(auto) {
-	// 			using std::apply;
-	// 			return apply(proj_, *this->it_);
-	// 		}
-
-	// 		using system = typename detail::function_system<std::decay_t<Proj>>::type;
-
-	// 		using difference_type   = elements_t::difference_type;
-	// 		using value_type        = difference_type;
-	// 		using pointer           = void;
-	// 		using reference         = value_type;
-	// 		using iterator_category = std::random_access_iterator_tag;
-
-	// 		friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-	// 		friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
-
-	// 		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-	// 		friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
-
-	// 		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
-	// 	};
-
-	// 	auto begin() const { return iterator{elems_.begin(), proj_}; }
-	// 	auto end() const { return iterator{elems_.end(), proj_}; }
-
-	// 	auto size() const { return elems_.size(); }
-	// };
 
 	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
 	constexpr auto num_elements() const { return xs_.num_elements(); }

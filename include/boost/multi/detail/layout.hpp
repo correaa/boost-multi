@@ -852,7 +852,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { iterator ret{*this}; return ret += n; }  // mull-ignore: cxx_init_const
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { iterator ret{} /**this}*/; return ret += n; }  // mull-ignore: cxx_init_const
 			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { iterator ret{*this}; return ret -= n; }  // mull-ignore: cxx_init_const
 
 			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
@@ -1267,7 +1267,10 @@ class bistride {
 	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, size_type size, Pointer ptr, std::ptrdiff_t n)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{n} {}
 
-	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const { return bistride{stride1_, stride2_, nelems2_, ptr_, nn*n_}; }
+	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const {
+		assert(n_ == 1);  // TODO(correaa) test n_ != 1
+		return bistride{stride1_, stride2_, nelems2_, ptr_, nn /**n_*/};
+	}
 
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic push
