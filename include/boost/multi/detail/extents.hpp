@@ -160,7 +160,7 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 
 		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
 		constexpr auto operator+(difference_type d) const {
-			iterator ret{*this};  // auto ret{*this};
+			iterator ret{*this};  // mull-ignore: cxx_init_const
 			ret += d;
 			return ret;
 		}
