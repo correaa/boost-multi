@@ -230,6 +230,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(multi::detail::valid_mull(22));
 		}
 	}
+	{
+		auto vfun = multi::detail::val([a = 5](auto i, auto j) { return i*j + a;});
+		auto pvfun = &vfun;
+		BOOST_TEST( (*pvfun)(2, 3) == 2*3 + 5 );
+	}
 
 	return boost::report_errors();
 }

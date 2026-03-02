@@ -842,6 +842,85 @@ BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -
 
 }  // end namespace boost::multi::detail
 
+namespace boost::multi::detail {
+
+template<class F>
+class ptr_wrapper;
+
+template<class F>
+class value_wrapper : F {
+ public:
+	// using F::operator();
+	template<class... As> auto operator()(As&&... as) const
+	-> decltype(std::declval<F const&>()(std::forward<As>(as)...))
+	{ return static_cast<F const&>(*this)(std::forward<As>(as)...); }
+
+	explicit value_wrapper(F const& fun) : F(fun) {}
+
+	auto operator&() const { return ptr_wrapper<F>(static_cast<F const&>(*this)); }
+};
+
+template<class F>
+auto val(F fun) { return boost::multi::detail::value_wrapper<F>(fun); }
+
+template<class T, bool = std::is_default_constructible_v<T>>
+struct ptr_wrapper_impl;
+
+template<class F>
+struct ptr_wrapper_impl<F, true> : value_wrapper<F> {
+	using value_wrapper<F>::value_wrapper;
+	ptr_wrapper_impl() = default;
+};
+
+template<class F>
+struct ptr_wrapper_impl<F, false> : value_wrapper<F> {
+	using value_wrapper<F>::value_wrapper;
+	ptr_wrapper_impl() : value_wrapper<F>{static_cast<F const&>(*this)} {}
+};
+
+template<class F>
+class ptr_wrapper : ptr_wrapper_impl<F> {
+//  public:
+// 	using F::operator();
+
+// 	ptr_wrapper() = default;
+	explicit ptr_wrapper(F const& fun) : ptr_wrapper_impl<F>(fun) {}
+	template<class>
+	friend class value_wrapper;
+ public:
+	auto operator*() const { return reinterpret_cast<value_wrapper<F> const&>(*this); }
+	auto operator->() const { return reinterpret_cast<value_wrapper<F> const*>(*this); }
+// 	auto operator->() const { return static_cast<value_wrapper<F> const*>(this); }
+};
+
+// templatel<class F, bool default_ctor = std::is_default_constructible_v<F>>
+// class ptr_wrapper;
+
+// template<class F, true>
+// class ptr_wrapper : value_wrapper<F> {
+//  public:
+// 	using F::operator();
+
+// 	ptr_wrapper() = default;
+// 	ptr_wrapper(F const& fun) : value_wrapper<F>(fun) {}
+// 	auto operator*() const { return static_cast<value_wrapper<F> const&>(*this); }
+// 	auto operator->() const { return static_cast<value_wrapper<F> const*>(this); }
+// };
+
+// template<class F, false>
+// class ptr_wrapper : value_wrapper<F> {
+//  public:
+// 	using F::operator();
+
+// //	ptr_wrapper() = default;
+// 	ptr_wrapper(F const& fun) : value_wrapper<F>(fun) {}
+// 	auto operator*() const { return static_cast<value_wrapper<F> const&>(*this); }
+// 	auto operator->() const { return static_cast<value_wrapper<F> const*>(this); }
+// };
+
+}  // end namespace boost::multi::detail
+
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
