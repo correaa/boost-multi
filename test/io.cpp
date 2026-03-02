@@ -100,6 +100,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0}
 		};
+		std::ostringstream oss;
+		oss << "A2D = " << arr;
+		BOOST_TEST( oss.str() == "A2D = {\n"
+			"\t{1, 2, 3},\n"
+			"\t{4, 5, 6}, \n"
+			"}"
+		);
 
 		std::cout << "A2D = " << arr << "; no more, no less\n";
 	}

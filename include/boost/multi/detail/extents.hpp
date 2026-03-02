@@ -159,7 +159,11 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 		using iterator_category = std::random_access_iterator_tag;
 
 		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
-		constexpr auto operator+(difference_type d) const { auto ret{*this}; ret += d; return ret; }
+		constexpr auto operator+(difference_type d) const {
+			iterator ret{*this};  // mull-ignore: cxx_init_const
+			ret += d;
+			return ret;
+		}
 		// constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
 		constexpr auto operator*() const {
