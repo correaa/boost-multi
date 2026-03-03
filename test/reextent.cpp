@@ -185,7 +185,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -197,6 +197,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.num_elements()== 4L*5L );
 		// BOOST_TEST( arr[1][2] !=  6.0 );  // after move the original elements might not be the same, but it is not 100% possible to check
 		// BOOST_TEST( A_base != arr.base() );  // after move the base pointer might have changed but it is not 100% to check
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+		BOOST_TEST( arr.num_elements() == 6 );
+
+		arr = arr.reextent({3, 2});
+
+		BOOST_TEST( arr.num_elements() == 6 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_move_clear)
