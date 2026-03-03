@@ -7,7 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// IWYU pragma: no_include <algorithm>                        // for fill_n  // bug in iwyu 14.0.6? with GNU stdlib
+#include <algorithm>
 #include <initializer_list>  // for initializer_list
 #include <iterator>          // for size
 #include <tuple>             // for get  // NOLINT(misc-include-cleaner)
@@ -202,7 +202,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({2, 3});
 		BOOST_TEST( arr.num_elements() == 6 );
 
-		arr = arr.reextent({3, 2});
+		arr.reextent({3, 2});
+
+		BOOST_TEST( arr.num_elements() == 6 );
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+		BOOST_TEST( arr.num_elements() == 6 );
+
+		arr = std::move(arr).reextent({3, 2});
+
+		BOOST_TEST( arr.num_elements() == 6 );
+	}
+	{
+		multi::array<int, 2> arr({2, 3});
+		BOOST_TEST( arr.num_elements() == 6 );
+
+		arr = std::move(arr).reextent({30, 20});
+		std::fill_n(arr.elements().begin(), arr.num_elements(), 99);
+
+		BOOST_TEST( arr.num_elements() == 600 );
+	}
+	{
+		multi::array<int, 2> arr({20, 30});
+		BOOST_TEST( arr.num_elements() == 600 );
+
+		arr = std::move(arr).reextent({3, 2});
+		std::fill_n(arr.elements().begin(), arr.num_elements(), 99);
 
 		BOOST_TEST( arr.num_elements() == 6 );
 	}
