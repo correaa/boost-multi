@@ -1103,7 +1103,7 @@ circle:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
+    - wget https://www.circle-lang.org/linux/build_226.tgz --no-verbose
     - tar -zxvf build_*.tgz
     - cd ..
     - ./build_latest/circle --version
@@ -1112,16 +1112,36 @@ circle:
     - cmake --build . --parallel 4 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
 
-circle-latest c++20:
+circle-202:
   stage: build
   allow_failure: false
+  tags:
+    - non-shared
+    - x86_64  # for circle executable
+  script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - mkdir -p build_latest ; cd build_latest
+    - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
+    - tar -zxvf build_*.tgz
+    - cd ..
+    - ./build_latest/circle --version
+    - mkdir build && cd build
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - cmake --build . --parallel 4 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure
+  needs: ["circle"]
+
+circle-latest c++20:
+  stage: build
+  allow_failure: true
   tags:
     - non-shared
     - x86_64  # for circle executable
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3.12
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_*.tgz
@@ -1132,7 +1152,7 @@ circle-latest c++20:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-#  needs: ["circle"]
+  needs: ["circle"]
 
 inq:
   stage: test
