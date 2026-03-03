@@ -76,9 +76,9 @@ auto operator<<(std::ostream& os, extension_t<Integer> const& ext) -> std::ostre
 	if(ext.empty()) {
 		return os << "[)";
 	}
-	if(ext.front() != 0) {
-		return os << "[" << ext.front() << ", " << ext.back() + 1 << ")";
-	}
+	// if(ext.front() != 0) {
+	// 	return os << "[" << ext.front() << ", " << ext.back() + 1 << ")";
+	// }
 	return os << "[" << ext.front() << ", " << ext.back() + 1 << ")";
 }
 
