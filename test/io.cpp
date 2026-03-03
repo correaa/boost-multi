@@ -50,6 +50,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::detail::print(oss, arr, "\t", "\t", "\a", "\a", 0);
 		std::cout << "arr = " << oss.str() << "; end\n";
 	}
+	{
+		std::ostringstream oss;
+		oss << multi::array<int, 3>({3, 4, 5}, int{}).extension();
+		BOOST_TEST( oss.str() == "[0, 3)" );
+	}
 	// fortran 2d
 	{
 		multi::array<double, 2> const arr = {
