@@ -480,7 +480,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
-				} else if(n < 0) {
+				} else if(n < 0) {  // mull-ignore: cxx_lt_to_le
 					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
 					if(rest_it_ == rest_end_) {
@@ -499,7 +499,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 						rest_it_ = rest_begin_;
 						++curr_;
 					}
-				} else if(n < 0) {
+				} else if(n < 0) {  // mull-ignore: cxx_lt_to_le
 					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_));
 				}
