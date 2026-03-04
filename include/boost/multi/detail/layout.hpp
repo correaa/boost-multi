@@ -480,7 +480,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				if(n > 0) {  // mull-ignore: cxx_gt_to_ge
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
-				} else if(n < 0) {  // mull-ignore
+				} else if(n < 0) {
 					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
 					if(rest_it_ == rest_end_) {
@@ -499,7 +499,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 						rest_it_ = rest_begin_;
 						++curr_;
 					}
-				} else if(n < 0) {  // mull-ignore
+				} else if(n < 0) {
 					curr_ += (rest_it_ - rest_begin_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ - n) % (rest_end_ - rest_begin_));
 				}
@@ -519,7 +519,6 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator++() -> auto& {
-				// printf("++\n");
 				++rest_it_;
 				if( rest_it_ == rest_end_ ) {
 					rest_it_ = rest_begin_;
@@ -529,8 +528,6 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator--() -> auto& {
-				// assert(0);
-				// printf("--\n");
 				if( rest_it_ == rest_begin_ ) {
 					rest_it_ = rest_end_;
 					--curr_;
@@ -852,8 +849,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { iterator ret{} /**this}*/; return ret += n; }  // mull-ignore: cxx_init_const
-			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { iterator ret{*this}; return ret -= n; }  // mull-ignore: cxx_init_const
+			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const -> iterator { iterator ret{*this}; return ret += n; }
+			BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> iterator { iterator ret{*this}; return ret -= n; }
 
 			friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type {
 				return self.base_() - other.base_();
