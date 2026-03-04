@@ -477,10 +477,12 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
-				if(n > 0) {  // TODO(correaa) I don't know how to overcome this mutation:  // mull-ignore: cxx_gt_to_ge
+				if(n == 0) {
+					return *this;
+				} else if(n > 0) {
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
-				} else if(n < 0) {  // TODO(correaa) I don't know how to overcome this mutation:  // mull-ignore: cxx_lt_to_le
+				} else {
 					curr_ -= (rest_end_ - rest_it_ - n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_end_ - ((rest_end_ - rest_it_ - n) % (rest_end_ - rest_begin_));
 					if(rest_it_ == rest_end_) {
