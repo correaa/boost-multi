@@ -626,6 +626,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		auto it = exts.elements().begin() + 8;
 		BOOST_TEST( it + 0 == it );  // cppcheck-suppress knownConditionTrueFalse
+
+		it += -6;
+		BOOST_TEST( it == exts.elements().begin() + 2 );
 	}
 	{
 		auto exts = multi::extensions_t<1>(10);
