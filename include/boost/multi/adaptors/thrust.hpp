@@ -325,7 +325,15 @@ device_restriction(multi::extensions_t<D>, Fun) -> device_restriction<D, Fun>;
 
 template<typename Fun> device_restriction(extensions_t<0>, Fun) -> device_restriction<0, Fun>;
 template<typename Fun> device_restriction(extensions_t<1>, Fun) -> device_restriction<1, Fun>;
+template<typename Fun> device_restriction(extensions_t<2>, Fun) -> device_restriction<2, Fun>;
+template<typename Fun> device_restriction(extensions_t<3>, Fun) -> device_restriction<3, Fun>;
 #endif
+
+template<dimensionality_type D, typename F>
+auto device_restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
+	return device_restriction<D, F>(ext, std::forward<F>(fun));
+}
+
 
 }  // namespace thrust
 
