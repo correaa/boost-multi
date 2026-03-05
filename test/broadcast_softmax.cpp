@@ -140,7 +140,6 @@ constexpr iden_t iden;
 
 int main() {
 
-#if 1
 	auto const lazy_matrix =
 		(iden ^ multi::extensions_t(6))
 			.partitioned(2);
@@ -164,7 +163,6 @@ int main() {
 	// printR2("materialized softmax", sofmax_copy);
 
 	//    assert(std::abs(sumR1(sofmax_copy[1]) - 1.0F) < 1e-12F);
-#endif
 
 	return boost::report_errors();
 }
