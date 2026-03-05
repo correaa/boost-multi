@@ -183,6 +183,10 @@ int main() {
 		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
 		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
 	}
+    {
+        thrust::host_vector<int> vec(10);
+        
+    }
 
 	return boost::report_errors();
 }
