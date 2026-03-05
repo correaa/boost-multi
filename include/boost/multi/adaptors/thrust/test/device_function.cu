@@ -94,11 +94,11 @@ int main() {
 	// );
 
 	[[maybe_unused]] auto fdev = [] __device__(int x) { return x * x + 1.9; };
-    using rt1 = std::invoke_result<decltype(fdev), int>::type;
-	using rt2 = typename multi::thrust::result_helper<decltype(fdev)>::type;
-    // multi::detail::what<rt>();
-    static_assert( std::is_same_v<rt1, double> );
-    static_assert( std::is_same_v<rt2, double> );
+	using rt1                  = std::invoke_result<decltype(fdev), int>::type;
+	using rt2                  = typename multi::thrust::result_helper<decltype(fdev)>::type;
+	// multi::detail::what<rt>();
+	static_assert(std::is_same_v<rt1, double>);
+	static_assert(std::is_same_v<rt2, double>);
 
 #if defined(__CUDACC__) &&        \
 	(__CUDACC_VER_MAJOR__ < 12 || \
@@ -118,19 +118,71 @@ int main() {
 
 #endif
 
-	// auto it = c2.begin();
-	// static_assert(std::is_default_constructible_v<multi::extensions_t<1>::iterator>);
-	// static_assert(std::is_trivially_copyable_v<multi::extensions_t<1>::iterator>);
-	// static_assert(std::is_default_constructible_v<decltype(it)>);
+	auto it = c2.begin();
 
-	// // decltype(it) dc;
+	thrust::copy(c2.begin(), c2.end(), d_out.begin());
 
-	// thrust::copy(c2.begin(), c2.end(), d_out.begin());
+	multi::thrust::host_array<int, 1> h_out = d_out;
 
-	// multi::thrust::host_array<int, 1> h_out = d_out;
+	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
 
-	// BOOST_TEST( h_out[1] == 6 );
-	// BOOST_TEST( h_out[2] == 9 );
+	// CPU memory and execution, iterator holds function by POINTER semantics
+	{
+		auto restr = multi::restricted<1>(
+			[a = 5, b = 0](auto x) { int c = a, d = b; return  x * x + c + d; },
+			{N}
+		);
+
+		multi::thrust::host_array<int, 1> h_out({N}, int{});
+
+		thrust::copy(restr.begin(), restr.end(), h_out.begin());
+
+		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+	}
+
+	// GPU memory and execution, iterator holds function by POINTER semantics
+	// {
+	// 	auto device_restr = multi::restricted<1>(
+	// 		[a = 5, b = 0] __device__(auto x) { int c = a, d = b; return  x * x + c + d; },
+	// 		{N}
+	// 	);
+
+	// 	multi::thrust::device_array<int, 1> d_out({N}, int{});
+
+	// 	// vvv this copy fails to actually exectute the device code
+	// 	thrust::copy(
+	// 		thrust::device,  // ensure this is run in the GPU (optional)
+	// 		device_restr.begin(), device_restr.end(), d_out.begin()
+	// 	);
+
+	// 	multi::thrust::host_array<int, 1> h_out = d_out;
+
+	// 	// vvv test fails
+	// 	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+	// 	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+	// }
+
+	// GPU memory and execution, iterator holds function by VALUE semantics
+	{
+		auto dev_restr = multi::thrust::device_restricted<1>(
+			[a = 5, b = 0] __device__(auto x) { int c = a, d = b; return  x * x + c + d; },
+			{N}
+		);
+
+		multi::thrust::device_array<int, 1> d_out({N}, int{});
+
+		thrust::copy(
+			thrust::device,  // ensure this is run in the GPU (optional)
+			dev_restr.begin(), dev_restr.end(), d_out.begin()
+		);
+
+		multi::thrust::host_array<int, 1> h_out = d_out;
+
+		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+	}
 
 	return boost::report_errors();
 }

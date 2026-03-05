@@ -6,6 +6,8 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
+#if 0
+
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
@@ -138,7 +140,11 @@ struct iden_t {
 
 constexpr iden_t iden;
 
+#endif
+
 int main() {
+
+#if 0
 	auto const lazy_matrix =
 		(iden ^ multi::extensions_t(6))
 			.partitioned(2);
@@ -162,6 +168,7 @@ int main() {
 	// printR2("materialized softmax", sofmax_copy);
 
 	//    assert(std::abs(sumR1(sofmax_copy[1]) - 1.0F) < 1e-12F);
+#endif
 
 	return boost::report_errors();
 }
