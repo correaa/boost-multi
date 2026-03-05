@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/broadcast.hpp>
+#include <boost/multi/elementwise.hpp>
 #include <boost/multi/io.hpp>
 #include <boost/multi/restriction.hpp>  // for restriction, operator!=
 
