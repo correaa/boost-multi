@@ -374,14 +374,23 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
-	using element = decltype(std_apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()));
+ private:
+	using element_ref_  = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+	using element_type_ = std::decay_t<element_ref_>;
+
+ public:
+	using element = element_type_;
 
 	using value_type = std::conditional_t<
 		(D == 1),
 		element,
 		array<element, D - 1>>;
 
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj const&>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
+	using reference = std::conditional_t<
+		(D != 1),  //
+		restriction<D - 1, bind_front_t<Proj const&>>,  //
+		element_type_  // element_ref_
+	>;
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
@@ -562,14 +571,19 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		~iterator() = default;
 
+	 private:
+		using element_ref_ = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+		using element_type_ = std::decay_t<element_ref_>;
+
+	 public:
 		using system = typename multi::detail::function_system<Proj>::type;
 
 		using difference_type = std::ptrdiff_t;
-		using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
+		using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, element_type_>;
 
 		using pointer = void;
 
-		using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+		using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, element_type_>;
 
 		using iterator_category = std::random_access_iterator_tag;
 
@@ -629,7 +643,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
 			} else {
 				using std::get;
-				return (*Pproj_)(get<0>(*it_));
+				return (const_cast<std::decay_t<decltype(*Pproj_)>&>(*Pproj_))(get<0>(*it_));
+				// return (*Pproj_)(get<0>(*it_));
 			}
 		}
 
