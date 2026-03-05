@@ -477,9 +477,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			}
 
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
-				if(n == 0) {
-					return *this;
-				} else if(n > 0) {
+				if(n >= 0) {
 					curr_ += (rest_it_ - rest_begin_ + n) / (rest_end_ - rest_begin_);
 					rest_it_ = rest_begin_ + ((rest_it_ - rest_begin_ + n) % (rest_end_ - rest_begin_));
 				} else {
