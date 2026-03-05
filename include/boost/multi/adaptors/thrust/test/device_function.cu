@@ -10,10 +10,13 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/system/cuda/execution_policy.h>
 #include <thrust/transform.h>
+#include <thrust/generate.h>
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <algorithm>
 #include <iostream>
+#include <nvfunctional>
 
 __device__ int square_device(int x) {
 	return x * x;
@@ -185,8 +188,59 @@ int main() {
 	}
     {
         thrust::host_vector<int> vec(10);
-        
+        std::generate_n(vec.begin(), vec.size(), [a = 1, b = 2]() {return a + b;} );
+
+        BOOST_TEST( vec[3] == 1 + 2 );
     }
+    {
+        ::thrust::device_vector<int> vec(10);
+        ::thrust::generate_n(
+            thrust::device,
+            vec.begin(), vec.size(),
+            [a = 1, b = 2] __device__ () {return a + b;}
+        );
+
+        thrust::host_vector<int> h_vec = vec;;
+        BOOST_TEST( h_vec[3] == 1 + 2 );
+    }
+    {
+        thrust::device_vector<int> vec(10);
+        auto gen = [a = 1, b = 2] __device__ () {return a + b;};
+        thrust::generate_n(
+            thrust::device,
+            vec.begin(), vec.size(),
+            multi::thrust::val(gen)
+        );
+
+        thrust::host_vector<int> h_vec = vec;;
+        BOOST_TEST( h_vec[3] == 1 + 2 );
+    }
+
+    // gives error:   what():  parallel_for: failed to synchronize: cudaErrorIllegalAddress: an illegal memory access was encountered
+    // {
+    //     thrust::device_vector<int> vec(10);
+    //     auto gen = [a = 1, b = 2] __device__ () {return a + b;};
+    //     thrust::generate_n(
+    //         thrust::device,
+    //         vec.begin(), vec.size(),
+    //         std::ref(gen)
+    //     );
+
+    //     thrust::host_vector<int> h_vec = vec;;
+    //     BOOST_TEST( h_vec[3] == 1 + 2 );
+    // }
+    // gives an error: cudaErrorInvalidPc: invalid program counter
+    // {
+    //     thrust::device_vector<int> vec(10);
+    //     auto gen = [a = 1, b = 2] __device__ () {return a + b;};
+    //     thrust::generate_n(
+    //         thrust::device,
+    //         vec.begin(), vec.size(),
+    //         nvstd::function<int()>(gen)
+    //     );
+
+    //     BOOST_TEST( vec[3] == 1 + 2 );
+    // }
 
 	return boost::report_errors();
 }
