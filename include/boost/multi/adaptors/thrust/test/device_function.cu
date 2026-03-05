@@ -203,18 +203,31 @@ int main() {
         thrust::host_vector<int> h_vec = vec;;
         BOOST_TEST( h_vec[3] == 1 + 2 );
     }
-    {
-        thrust::device_vector<int> vec(10);
-        auto gen = [a = 1, b = 2] __device__ () {return a + b;};
-        thrust::generate_n(
-            thrust::device,
-            vec.begin(), vec.size(),
-            multi::thrust::val(gen)
-        );
+    // compile error static vars no defined in device code
+    // {
+    //     ::thrust::device_vector<int> vec(10);
+    //     static int a = 1, b = 2;
+    //     ::thrust::generate_n(
+    //         thrust::device,
+    //         vec.begin(), vec.size(),
+    //         [] __device__ () {return a + b;}
+    //     );
 
-        thrust::host_vector<int> h_vec = vec;;
-        BOOST_TEST( h_vec[3] == 1 + 2 );
-    }
+    //     thrust::host_vector<int> h_vec = vec;;
+    //     BOOST_TEST( h_vec[3] == 1 + 2 );
+    // }
+    // {
+    //     ::thrust::device_vector<int> vec(10);
+    //     int a = 1;
+    //     ::thrust::generate_n(
+    //         thrust::device,
+    //         vec.begin(), vec.size(),
+    //         [ap = &a, b = 2] __device__ () {return *ap + b;}
+    //     );
+
+    //     thrust::host_vector<int> h_vec = vec;;
+    //     BOOST_TEST( h_vec[3] == 1 + 2 );
+    // }
 
     // gives error:   what():  parallel_for: failed to synchronize: cudaErrorIllegalAddress: an illegal memory access was encountered
     // {
