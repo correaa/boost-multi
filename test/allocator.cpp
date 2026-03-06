@@ -139,6 +139,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
+		BOOST_TEST( !(va != wa) );
+		BOOST_TEST( !(va > wa) );
+		BOOST_TEST( va >= wa );
+		BOOST_TEST( !(va < wa) );
+		BOOST_TEST( va <= wa );
+
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
