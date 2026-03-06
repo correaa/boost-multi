@@ -260,9 +260,9 @@ class value_wrapper {
 	~value_wrapper() = default;
 
 	template<class... As>
-	BOOST_MULTI_HD constexpr auto operator()(As&&... as)
-	-> decltype(f_(std::forward<As>(as)...)) const {
-		return f_(std::forward<As>(as)...);
+	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
+	-> decltype((const_cast<Fun&>(std::declval<Fun const&>()))(std::forward<As>(as)...)) {
+		return (const_cast<Fun&>(f_))(std::forward<As>(as)...);
 	}
 
 	constexpr auto operator&() const { return *this; }

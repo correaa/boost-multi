@@ -647,7 +647,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
 			} else {
 				using std::get;
+			#ifdef __CUDA_ARCH__
+				return (const_cast<decltype(*Pproj_)&>(*Pproj_))(get<0>(*it_));  // workaround for __nv_dl_wrapper_t<__nv_dl_tag<int (*)(), main, 4>, int, int> >
+			#else
 				return (*Pproj_)(get<0>(*it_));
+			#endif
 			}
 		}
 
