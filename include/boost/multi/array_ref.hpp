@@ -3687,6 +3687,51 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
+	#ifdef _MSC_VER
+
+	// Workaround for a standard library bug in MSVC 14.3 and greater
+	/*
+	compile-c-c++ ..\..\..\bin.v2\libs\boost-multi\test\allocator.test\msvc-14.3\debug\cxxstd-20-iso\threading-multi\allocator.obj
+	allocator.cpp
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): error C3889: call to object of class type 'std::equal_to<void>': no matching call operator found
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(742): note: could be 'unknown-type std::equal_to<void>::operator ()(_Ty1 &&,_Ty2 &&) noexcept(<expr>) const'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: Failed to specialize function template 'unknown-type std::equal_to<void>::operator ()(_Ty1 &&,_Ty2 &&) noexcept(<expr>) const'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: With the following template arguments:
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: '_Ty1=const _Ty &'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: '_Ty2=const _Ty &'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: the template instantiation context (the oldest one first) is
+	allocator.cpp(141): note: see reference to function template instantiation 'bool std::operator ==<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>>(const std::vector<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>> &,const std::vector<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>> &)' being compiled
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\vector(2275): note: see reference to function template instantiation 'bool std::equal<const _Ty*,const _Ty*>(const _InIt1,const _InIt1,const _InIt2)' being compiled
+			with
+			[
+				_Ty=boost::multi::array<int,2,std::allocator<int>>,
+				_InIt1=const boost::multi::array<int,2,std::allocator<int>> *,
+				_InIt2=const boost::multi::array<int,2,std::allocator<int>> *
+			]
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5663): note: see reference to function template instantiation 'bool std::equal<_InIt1,_InIt2,std::equal_to<void>>(const _InIt1,const _InIt1,const _InIt2,_Pr)' being compiled
+			with
+			[
+				_InIt1=const boost::multi::array<int,2,std::allocator<int>> *,
+				_InIt2=const boost::multi::array<int,2,std::allocator<int>> *,
+				_Pr=std::equal_to<void>
+			]
+
+		call "..\..\..\bin.v2\standalone\msvc\msvc-14.3\msvc-setup.bat"  >nul
+	 cl /Zm800 -nologo "allocator.cpp" -c -Fo"..\..\..\bin.v2\libs\boost-multi\test\allocator.test\msvc-14.3\debug\cxxstd-20-iso\threading-multi\allocator.obj"     -TP /wd4675 /EHs /std:c++20 /GR /Zc:throwingNew /Z7 /Od /Ob0 /W4 /WX /MDd /Zc:forScope /Zc:wchar_t /Zc:inline -DBOOST_ALL_NO_LIB=1 -DBOOST_COBALT_USE_STD_PMR=1 "-I..\..\.."
+	*/
+
+	friend constexpr auto operator==(array_ref const& self, array_ref const& other) -> bool {
+		if(self.extensions() != other.extensions()) {
+			return false;
+		}
+		return adl_equal(
+			other.data_elements(), other.data_elements() + other.num_elements(),
+			self.data_elements()
+		);
+	}
+
+	#endif
+
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) {
