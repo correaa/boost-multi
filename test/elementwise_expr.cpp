@@ -4,7 +4,7 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 

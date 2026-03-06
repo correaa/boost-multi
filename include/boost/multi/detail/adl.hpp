@@ -303,7 +303,7 @@ class adl_uninitialized_copy_t {
 	[[nodiscard]] constexpr auto _(priority<1> /**/, InIt first, InIt last, FwdIt d_first) const  // N_O_L_I_N_T(performance-unnecessary-value-param) bug in clang-tidy
 	// BOOST_MULTI_DECLRETURN(       std::uninitialized_copy(first, last, d_first))
 	{
-#if __cplusplus >= 202002L
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
 		if(
 			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
@@ -441,7 +441,7 @@ constexpr auto alloc_uninitialized_copy(std::allocator<T>&/*allocator*/, InputIt
 template<class Alloc, class InputIt, class ForwardIt, class=decltype(std::addressof(*std::declval<ForwardIt>())),
 	class=std::enable_if_t<std::is_constructible_v<typename std::iterator_traits<ForwardIt>::value_type, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 >
-#if __cplusplus >= 202002L
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 constexpr
 #endif
 auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, ForwardIt d_first) {
