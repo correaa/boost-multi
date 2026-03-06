@@ -12,7 +12,9 @@
 // IWYU pragma: no_include <string>                           // for allocator, operator<<
 
 #if __cplusplus >= 202302L
+#if __has_include(<print>)
 #include <print>
+#endif
 #endif
 
 namespace multi = boost::multi;
@@ -169,12 +171,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 #if __cplusplus >= 202302L
+#if __has_include(<print>)
 		multi::array<double, 2> const arr = {
 			{1,   3},
 			{2, -10},
 		};
 
 		std::print("{}", arr);
+#endif
 #endif
 	}
 
