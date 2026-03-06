@@ -249,7 +249,7 @@ class value_wrapper {
 
  public:
  	constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
-	constexpr value_wrapper(Fun const& fun) : f_(fun) {}
+	constexpr explicit value_wrapper(Fun const& fun) : f_(fun) {}
 
 	value_wrapper(value_wrapper const&) = default;
 	value_wrapper(value_wrapper&&) = default;
