@@ -82,7 +82,8 @@ Like in FORTRAN, arrays are not initialized automatically for simple types (e.g.
 | Declaration/Construction 1D | `real, dimension(2) :: numbers` (at top)         | `multi::array<double, 1> numbers(2);` (at scope)    
 | Initialization (2 elements) | `real, dimension(2) :: numbers = [ 1.0, 2.0 ]`   | `multi::array<double, 1> numbers = { 1.0, 2.0 };`    
 | Element assignment          | `numbers(3) = 99.0`                              | `numbers[2] = 99.0;`               
-| Element access (print 2nd)  | `Print *, numbers(3)`                            | `std::cout << numbers(2) << '\n';`                   
+| Element access (print 2nd)  | `print *, numbers(3)`                            | `std::cout << numbers(2) << '\n';`
+| Printing                    | `print *, numbers`                               | `std::cout << numbers;` (needs `multi/io.hpp`) or  `std::print("{}", number);` (needs pass:[C++23])                  
 | Initialization              | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0};`                            
 |===
 
