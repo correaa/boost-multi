@@ -640,7 +640,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
-		BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
+		BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
@@ -655,7 +655,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			}
 		}
 
-		BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> reference { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
