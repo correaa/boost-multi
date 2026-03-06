@@ -251,7 +251,13 @@ class value_wrapper {
  	constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
 	constexpr value_wrapper(Fun const& fun) : f_(fun) {}
 
-	constexpr value_wrapper(value_wrapper const& other) : f_(other.f_) {}
+	value_wrapper(value_wrapper const&) = default;
+	value_wrapper(value_wrapper&&) = default;
+
+	auto operator=(value_wrapper const&) -> value_wrapper& = delete;
+	auto operator=(value_wrapper&&) -> value_wrapper& = delete;
+
+	~value_wrapper() = default;
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(As&&... as)
