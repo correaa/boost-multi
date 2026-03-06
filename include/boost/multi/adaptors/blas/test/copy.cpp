@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #if !defined(__clang__) && defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 #if !((defined(__clang__)) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {

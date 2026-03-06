@@ -28,7 +28,7 @@
 #endif
 #endif
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<concepts>) && __has_include(<ranges>)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
 #endif
@@ -243,7 +243,7 @@ struct dynamic_array                                                            
 	// constexpr explicit dynamic_array(decay_type&& other) noexcept
 	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
 
-#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
@@ -281,7 +281,7 @@ struct dynamic_array                                                            
 	}
 #endif
 
-#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last)
 	: dynamic_array(first, last, allocator_type{}) {}
