@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <nvfunctional>
+// #include <nvfunctional>
 
 __device__ int square_device(int x) {
 	return x * x;
