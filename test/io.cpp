@@ -11,7 +11,7 @@
 #include <sstream>
 // IWYU pragma: no_include <string>                           // for allocator, operator<<
 
-#if __cplusplus >= 202302L
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 #if __has_include(<print>)
 #include <print>
 #endif
@@ -170,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
 	}
 	{
-#if __cplusplus >= 202302L
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 #if __has_include(<print>)
 		multi::array<double, 2> const arr = {
 			{1,   3},
