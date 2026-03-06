@@ -12,7 +12,7 @@
 #include <cmath>
 #include <type_traits>
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #include <vector>  // for .to conversion
 #endif
@@ -2524,7 +2524,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	static constexpr dimensionality_type dimensionality = 1;
 
-#if defined(__cplusplus) && __cplusplus >= 202002L && (!defined(__clang__) || __clang_major__ != 10)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang__) || __clang_major__ != 10)
 	// template<class T = void,
 	//  std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	constexpr explicit operator Ptr() const& {
