@@ -15,7 +15,7 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
   target_include_directories(boost_multi INTERFACE include)
 
-  target_compile_features(boost_multi INTERFACE cxx_std_14)
+  target_compile_features(boost_multi INTERFACE cxx_std_17)
 
   message(STATUS "Boost.Multi: standalone mode OFF")
 
