@@ -13,7 +13,7 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
@@ -22,11 +22,8 @@
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
-
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
-#endif
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>

@@ -13,7 +13,7 @@
 #include <tuple>      // IWYU pragma: keep  // for std::tuple  // NOLINT(misc-include-cleaner)
 // IWYU pragma: no_include <utility>  // for declval, forward, move
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <concepts>     // for constructible_from, defau...
 #include <ranges>       // IWYU pragma: keep
 #include <type_traits>  // for is_constructible_v
