@@ -240,6 +240,46 @@ struct array_traits {
 	using default_allocator_type = typename Array::default_allocator_type;
 };
 
+template<class Fun>
+class value_wrapper_ptr;
+
+template<class Fun>
+class value_wrapper {
+	Fun f_;
+
+ public:
+ 	constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
+	constexpr value_wrapper(Fun const& fun) : f_(fun) {}
+
+	constexpr value_wrapper(value_wrapper const& other) : f_(other.f_) {}
+
+	template<class... As>
+	BOOST_MULTI_HD constexpr auto operator()(As&&... as)
+	-> decltype(f_(std::forward<As>(as)...)) const {
+		return f_(std::forward<As>(as)...);
+	}
+
+	constexpr auto operator&() const { return *this; }
+
+	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
+};
+
+template<class F>
+constexpr auto val(F const& fun) { return value_wrapper<F>(fun); }
+
+template<class Fun>
+class value_wrapper_ptr {
+	Fun f_;
+	BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : f_(fun) {}
+
+	template<class> friend class value_wrapper;
+
+ public:
+	BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
+
+	BOOST_MULTI_HD constexpr auto operator*() const -> Fun { return f_; }
+};
+
 template<class T, typename = typename T::rank>
 auto        has_rank_aux(T const&) -> std::true_type;
 inline auto has_rank_aux(...) -> std::false_type;

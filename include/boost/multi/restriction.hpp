@@ -387,10 +387,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		array<element, D - 1>>;
 
 	using reference = std::conditional_t<
-		(D != 1),  //
+		(D != 1),                                       //
 		restriction<D - 1, bind_front_t<Proj const&>>,  //
-		element_type_  // element_ref_
-	>;
+		element_type_                                   // element_ref_
+		>;
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<class... Indices>
@@ -552,10 +552,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	}
 
 	class iterator {
-		typename extensions_t<D>::iterator it_;
-		Proj const*                        Pproj_;
+		using function_ptr = std::decay_t<decltype(& std::declval<Proj const&>())>;
 
-		iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
+		typename extensions_t<D>::iterator it_;
+		function_ptr                       Pproj_;
+		// Proj const* Pproj_;
+
+		iterator(typename extensions_t<D>::iterator it, function_ptr Pproj) : it_{it}, Pproj_{Pproj} {}
 
 		friend restriction;
 
@@ -572,7 +575,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		~iterator() = default;
 
 	 private:
-		using element_ref_ = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+		using element_ref_  = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
 		using element_type_ = std::decay_t<element_ref_>;
 
 	 public:
@@ -617,7 +620,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		}
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
-		friend constexpr auto operator+(iterator const& self, difference_type n) {
+		template<class = void>
+		friend BOOST_MULTI_HD constexpr auto operator+(iterator const& self, difference_type n) {
 			iterator ret{self};  // mull-ignore: cxx_init_const
 			return ret += n;
 		}
@@ -643,8 +647,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
 			} else {
 				using std::get;
-				return (const_cast<std::decay_t<decltype(*Pproj_)>&>(*Pproj_))(get<0>(*it_));
-				// return (*Pproj_)(get<0>(*it_));
+				return (*Pproj_)(get<0>(*it_));
 			}
 		}
 
@@ -684,7 +687,7 @@ template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
 
 template<dimensionality_type D, typename F>
 auto restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
-	return restriction<D, F>(ext, std::forward<F>(fun));
+	return restriction<D, std::decay_t<F>>(ext, std::forward<F>(fun));
 }
 
 template<class F, dimensionality_type D>
