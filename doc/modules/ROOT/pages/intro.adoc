@@ -4,8 +4,10 @@
 
 Alfredo A. Correa (last modified: {docdatetime})
 
-link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[role=left]] 
+link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[role=left]]
+{empty}
 link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost--multi-blue%3Flogo%3Dgitlab?style=social&logo=gitlab[role=left]]
+{empty}
 
 == Introduction
 
@@ -16,14 +18,16 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and, in combination with GPUs, to Artificial Intelligence and Machine Learning.
 This library offers array containers and subarrays in arbitrary dimensions with well-behaved  value semantics,
 
-```
- 1D ┌─ 0 ─┬─ 1 ─┬─ 2 ─┐   2D  ┌─0──┬─1──┬─2──┐   3D  ┌─0──┬─1──┬─2──┐       4D, ... ND
-    │  a  │  b  │  c  │       0  f │  g │  h │       0  m │  n │  o │2──┐
-    └─────┴─────┴─────┘       ├────┼────┼────┤       ├────┼────┼────┤ u │
-                              1  i │  j │  k │       1  p │  q │  r │───┤
-                              └────┴────┴────┘       └────┴────┴────┘ x │
-                                                        └────┴─────┴────┘
-```
+[source,plaintext]
+----
+ 1D ├─0───┼─1───┼─2───┼   2D  ┼─0──┼─1──┼─2──┼   3D  ┼─0──┼─1──┼─2──┤       4D, ... ND
+    |  a  |  b  |  c  |       0  f |  g |  h |       0  m |  n |  o |2──┤
+    └─────┴─────┴─────┘       ┼────┼────┼────┤       ┼────┼────┼────┤ u |
+                              1  i |  j |  k |       1  p |  q |  r |───┤
+                              ┴────┴────┴────┘       ┴────┴────┴────┘ x |
+                                                         ┴────┴────┴────┘
+----
+
 These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp
 #include <boost/multi.hpp>

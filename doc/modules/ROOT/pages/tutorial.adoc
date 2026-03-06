@@ -4,11 +4,55 @@
 
 :idprefix: tutorial_
 
+[#tutorial_motivation]
+== Motivation
+
+In many domains of computing, data is inherently multidimensional; that is, individual elements have an associated logical position denoted by one, two, three, or more discrete coordinates.
+Without the help of specialized libraries, low-level languages traditionally force programmers to represent it as a flat 1D buffer with manually computed indices.
+
+For example, consider a two-dimensional matrix of sizes M x N stored in a buffer.
+
+[source,cpp]
+----
+int N = 2;
+int M = 3;
+std::vector<int> data( N * M );  // 6 elements
+...
+----
+
+Reading or writing into the element at position (i, j) requires computation of the position offset in the linear buffer.
+
+[source,cpp]
+----
+...
+data[i * M + j] = 99;  // assignment to array element interpreted as (i, j)
+----
+
+This approach works for simple applications.
+However, several problems arise with this encoding of the multidimensional data structure:
+First, the buffer data needs to be propagated along with the stride M for data access (and N to determine the logical dimensions of the 2D array),
+stored as separate C++ variables.
+Second, information about the order is implicit and has to be agreed upon consistently across the whole code;
+an equally acceptable encoding for a N x M array could be `data[i + j*M]`.
+Any change in layout (column-major order, padded rows, subviews, GPU memory, etc.) requires a rewrite of the indexing logic and increases the risk of subtle bugs.
+Third, manipulating subarrays requires propagating different stride layout information and a different subset of the buffer.
+Finally, each dimension (e.g., 1D, 2D, 3D) would need to be explicitly coded and the relation between a subarray of lower dimensionality with respect to the main array would be opaque.
+
+A proper multidimensional array abstraction encapsulates shape and stride information, allowing users to write "A(i, j)" rather than manually compute offsets.
+This improves readability, safety, and maintainability, while still enabling zero-overhead access and layout flexibility.
+In short, a multidimensional array type expresses intent directly and separates algorithmic logic from memory layout details—something manual indexing simply cannot do cleanly at scale.
+
+There are several libraries for multidimensional arrays in C++ (see the section on comparison with other libraries), and all address this abstraction problem at different levels of generality.
+This library aims to be general in several aspects, dimensionality, memory control, index access, subarray access, index access, compatibility, iteration, algorithms, etc.
+
 [#tutorial_manip]
 == Manipulation of non-managed memory
 
-In this example, we are going to use memory that is not managed by the library and manipulate the elements.
-We can create a static C-array of ``double``s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+Based on the motivation section, in this first example, we use memory that is not managed by the library and manipulate the stored elements.
+This is to show that the library can operate on raw memory that is available already through other libraries or through other parts of a code.
+In the next section instead we will see an example of arrays owned by the library.
+
+We can create a static C-array of ``double``s, and refer to it via a two-dimensional (2D) array `multi::array_ref<double, 2>`.
 
 (This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
 
@@ -19,18 +63,22 @@ We can create a static C-array of ``double``s, and refer to it via a bidimension
 namespace multi = boost::multi;
 
 int main() {
-	double d_data[20] = {
+	int data[20] = {
 		150.0, 16.0, 17.0, 18.0, 19.0,
 		 30.0,  1.0,  2.0,  3.0,  4.0,
 		100.0, 11.0, 12.0, 13.0, 14.0,
 		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
-	multi::array_ref<double, 2> d2D_ref(&d_data[0], {4, 5});  // .. interpreted as a 4 by 5 array
+
+	multi::array_ref<double, 2> d2D_ref({4, 5}, &data[0]);  // .. interpreted as a 4 by 5 array
 	...
 ----
 
-Next, we print the elements in a way that corresponds to the logical arrangement.
-To do that, first, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
+Because this array is not controled by the library, this type of object is called an array-reference.
+
+Next, just as an illustration, we print the elements in a way that corresponds to the logical arrangement.
+(Generic printing can be done in other ways described in the reference section.)
+First, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
 then we decompose it as the cartesian product of two 1-dimensional ranges of integer indices.
 
 [source,cpp]
@@ -55,7 +103,8 @@ This will output:
 > 50 6 7 8 9
 > ```
 
-The arrays provide iterator-based access, which allows it to interface with algorithms and implement new ones.
+This is just an example to demonstrate the use of loops;
+the library provide iterator-based access, which allows it to interface with algorithms and implement new ones.
 
 It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement `std::stable_sort`.
 Presumably, if one can sort over a range, one can perform any other standard algorithm.
@@ -105,21 +154,25 @@ In this case, the original array will be transformed by sorting the matrix into:
 
 By combining index rotations and transpositions, an array of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
+Of course many other standard algorithms work with arrays at the top level dimension, or a the element level dimension.
+For example, after sorting, all the permutations of rows can be generated by `std::next_permutation(A.begin(), A.end())` (see https://godbolt.org/z/h7rjf8ojb[here])
+
 [#tutorial_init]
 == Initialization
 
-Array objects (`multi::array`) own the elements they contain and can be resized later.
+Libraries array objects (`multi::array`) own the elements they contain and can be resized later;
+because of their semantic properties they are called array-values.
 An `array` is initialized by specifying the index extensions and, optionally, a default value).
 
 [source,cpp]
 ----
 #include <boost/multi/array.hpp>  // for array value containers (owning memory)
 
-multi::array<int, 1> A1({3}      , 11);  // {11, 11, 11}
+auto A1 = multi::array<int, 1>({3}      , 11);  // {11, 11, 11}
 
-multi::array<int, 2> A2({2, 3}   , 22);  // { {22, 22, 22}, {22, 22, 22} }
+auto A2 = multi::array<int, 2>({2, 3}   , 22);  // { {22, 22, 22}, {22, 22, 22} }
 
-multi::array<int, 3> A3({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
+auto A3 = multi::array<int, 3>({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
 ----
 ... or alternatively from a rectangular list.
 
@@ -128,7 +181,7 @@ multi::array<int, 3> A3({3, 2, 2}, 33);  // { { { 33, ...}, { ... }, ... } }
 multi::array<int, 1> A1 = {1, 2, 3};
 assert( A1.elements().size() == 3 );  // or A1.num_elements()
 
-multi::array<int, 2> A2 {
+multi::array<int, 2> A2 = {
 	{ 1, 2, 3},
 	{ 4, 5, 6}
 };
@@ -402,7 +455,10 @@ auto&&       row1 =               A [1];  // same as decltype(A)::      referenc
 auto const& crow1 = std::as_const(A)[1];  // same as decltype(A)::const_reference crow0 = std::as_const(A)[1];
 ----
 
-If a new value is desired, these (equivalent) options express the intention more explicitly:
+The resulting object are of type `multi::subarray`, a type name that is rarely used explicity in code, thanks to the use of `auto`. 
+Because of their semantics they are called subarray-references and they are documented in the library's reference section.
+
+If a new value (array-value) is desired, these (equivalent) options express the intention more explicitly:
 
 [source,cpp]
 ----
@@ -473,9 +529,9 @@ while _partial_ index arguments `A[1]` generate a view 1-dimensional object (a r
 
 [source,cpp]
 ----
-A        // is a 2D value array
-A[0]     // is a 1D "reference"/"view" array
-A[0][0]  // is a an element reference, zero-D
+A        // is a 2D array-value
+A[0]     // is a 1D subarray-reference
+A[0][0]  // is a an element reference
 ----
 
 Transpositions are also multidimensional arrays _views_ in which the index are *logically* rearranged, for example `rotated(m)[2][3][1] == m[1][2][3]`.
@@ -522,7 +578,7 @@ and also to a combination of `MultiArrayView`-type objects (including standard v
 
 [source,cpp]
 ----
-multi::array<double, 2> A({6000, 7000}); std::iota(A.elements().begin(), A.elements().end(), 0.1);
+auto A = multi::array<double, 2>({6000, 7000}); std::iota(A.elements().begin(), A.elements().end(), 0.1);
 std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);  // could be also a multi::array<double, 1> y({3000});
 gj_solve(A({1000, 4000}, {0, 3000}), y);
 ----
@@ -535,13 +591,15 @@ Given an array, a slice in the first dimension can be taken with the `sliced` fu
 
 [source,cpp]
 ----
-multi::array<double, 2> A({4, 5});  // A is a value
-assert( std::get<0>(A.sizes()) == 4 );
-assert( std::get<1>(A.sizes()) == 5 );
+auto A = multi::array<double, 2>({4, 5});  // A is a value
+using std::get;  // needed in C++17
+assert( get<0>(A.sizes()) == 4 );
+assert( get<1>(A.sizes()) == 5 );
 
 auto&& A_sliced = A.sliced(1, 3); // {{d2D[1], d2D[2]}}
-assert( std::get<0>(A_sliced.sizes()) == 2 );
-assert( std::get<1>(A_sliced.sizes()) == 5 );
+using std::get;  // needed in C++17
+assert( get<0>(A_sliced.sizes()) == 2 );
+assert( get<1>(A_sliced.sizes()) == 5 );
 ----
 
 The number of rows in the sliced matrix is 2 because we took only two rows, row 1 and row 2 (row 3 is excluded).
@@ -583,14 +641,14 @@ Blocks (slices) in multidimensions can be obtained by pure index notation using 
 ----
 auto        A = multi::array<double, 2>({6, 7});  // 2D value array
 
-auto&&      A_block1 = A({1, 4}, {2, 4});  // 2D subarray reference (modifiable)
-auto const& A_block2 = A({1, 4}, {2, 4});  // 2D subarray reference (non-modifiable)
+auto&&      A_block1 = A({1, 4}, {2, 4});  // 2D subarray-reference (modifiable elements)
+auto const& A_block2 = A({1, 4}, {2, 4});  // 2D subarray-reference (non-modifiable elements)
 
 auto        A_block3 = A({1, 4}, {2, 4});  // works but it can be confusing, use `auto&&` instead
 ----
 
-Sometimes copies are necessary, specifically from a subarray block, this can be done by constructing a new array. 
-The value array can be deduced by using `auto` and the `decay` member, which in turn is equivalent to the prefix `+` operator.
+Sometimes copies are necessary, specifically from a subarray block, this can be done by constructing a new array-value. 
+Their type can be deduced by using `auto` and the `decay` member, which in turn is equivalent to the prefix `+` operator.
 
 ```cpp
 multi::array<double, 2> block_value_1 =   A({1, 4}, {2, 4})        ;
@@ -609,13 +667,15 @@ The result is as if elements are converted one by one;
 array sizes (extensions) are preserved.
 Allowed conversions can be implicit or explicit and reflect the behavior of the element types.
 
+Here we use numerical types to illustrate conversion rules, but the rules apply to all posible element types.
+
 [source,cpp]
 ----
 // implicit conversions from real to complex is allowed ...
-double                  d = 5.0;     std::complex<double>                  z = d;
+             double     d = 5.0;                  std::complex<double>     z = d;
 // ... therefore it is also allowed from array of reals to arrays of complex
 multi::array<double, 2> D({10, 10}); multi::array<std::complex<double>, 2> Z = D;
-// (implicit or explicit) conversions from real to complex are disallowed (compilation error)
+// implicit (or explicit) conversions from the other way (real to complex) are disallowed (compilation error)
 // multi::array<double, 2> D = Z;  // or D{Z};
 ----
 
@@ -653,15 +713,17 @@ For example, to convert an array of integers to an array of text strings:
 ----
 	multi::array<int, 2> const A = {{1, 2}, {3, 4}};
 
-	auto to_string = [](int e) {return std::to_string(e);};
-	multi::array<std::string, 2> B = A.element_transformed(to_string);
+	auto to_string = [](int e) { return std::to_string(e); };
+	multi::array<std::string, 2> B = A.element_transformed(to_string);  // or `auto B = + ...`
 	assert( B[1][1] == "4" );
 ----
+link:https://godbolt.org/z/vP6nPY539[(live)]
+
 
 [#tutorial_uninit_v_init]
 == Uninitialized vs. initialized elements
 
-If available, the library can take advantage of trivial initialization for specific element types that support it.
+If available, the library can take advantage of trivial initialization for element types that specifically support it.
 
 Primitive types or some user-defined are defined in such a way that their construction does nothing, not even set values.
 When used in the stack, these types can be declared with no initialization (e.g., `double x;`),
@@ -674,7 +736,7 @@ For example, after this construction of the array, the values of the six element
 
 [source,cpp]
 ----
-multi::array<int, 2> A2({2, 3});  // A2 elements have unspecified value
+auto A2 = multi::array<int, 2>({2, 3});  // A2 elements have unspecified value
 ----
 
 No behavior of the program should depend on these values.
@@ -685,7 +747,7 @@ If trivial construction is unavailable, the library uses the default initializat
 
 [source,cpp]
 ----
-multi::array<std::string, 2> A2({2, 3});  // A2 elements have specified value: empty std::string{}
+auto A2 = multi::array<std::string, 2>({2, 3});  // A2 elements have specified value: empty std::string{}
 ----
 
 For types that afford this partially formed states, elements can be later specified via assignment or assigning algorithms (e.g., copy or transform destination).
@@ -694,7 +756,7 @@ Initialization can be enforced by passing a single value argument after the exte
 
 [source,cpp]
 ----
-multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
+auto A2 = multi::array<int, 2>({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ----
 
 This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values.
@@ -799,7 +861,7 @@ link:https://godbolt.org/z/Porre3z8s[(live)]
 
 So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
 In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
-These are called "restrictions arrays" here, also commonly "lazy arrays", and enable delayed evaluation.
+These are called "restrictions arrays" here, also commonly known "lazy arrays", and they enable delayed evaluation.
 
 Multi's restriction arrays are functions wrapped in a multidimensional array interface.
 These functions are restricted (in the mathematical sense) to a discrete range of values in a multidimensional Cartesian grid.
@@ -828,7 +890,7 @@ As a simple example, the sum of all the elements of `R` is `std::reduce(R.elemen
 
 A key difference with concrete arrays is that their elements cannot be changed after creation (i.e., they are immutable). Additionally, concrete arrays do not use internal pointers—addresses that indicate where data is stored—or internal layouts—formats describing the structure of the array—to extract information (e.g., through functions like `.data_elements()`, `.base()`, `.layout()`, or `.stride()`).
 
-An elemental use for restrictions is for generating concrete arrays from coordinates, replacing common nested initialization loops:
+An straight forward use for restrictions is for generating concrete arrays from coordinates, replacing common nested initialization loops:
 
 [source,cpp]
 ----
@@ -891,8 +953,21 @@ multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ----
 link:https://godbolt.org/z/qK9cYzrzv[(live)]
 
-[#tutorial_broadcast]
-== Broadcast (lazy expressions)
+Another legitimate and practical use is to leverage the application of standard algorithms on functions (instead of on stored data),
+taking advantage of execution in parallel (`std::execution::par` in this example) or on GPU devices (see example in the Interoperability section).
+
+[source,cpp]
+----
+auto hankel = [](auto i, auto j) { return i + j; }^multi::extensions_t<2>{20, 100};  // or more complicated
+auto sum = std::reduce(std::execution::par, hankel[5].begin(), hankel[5].end(), 0);
+assert( sum == 100*5 + 100*(100 - 1)/2 );
+----
+link:https://godbolt.org/z/8bhrjrxGG[(live)]
+
+The main constrain of the function is that it needs to return values independently of the order of evaluation in which elements are probed; more formally it has to be link:https://eel.is/c++draft/res.on.requirements#3[equality preserving] in the context in which it is used.
+
+[#tutorial_elementwise]
+== Elementwise lazy expressions
 
 The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.
 Lazy expressions are useful for generating complex array expressions that are evaluated element-wise without the need for temporary arrays or storage.
@@ -900,34 +975,34 @@ These operations include summation and elementwise multiplication, along with mo
 
 [source,cpp]
 ----
-#include <boost/multi/broadcast.hpp>  // brings operators, expressions
+#include <boost/multi/elementwise.hpp>  // brings operators, expressions
 ...
-
-multi::array<int, 2> D = ...;
-
 multi::array<int, 2> const A = {{...}};
 multi::array<int, 2> const B = {{...}};
 multi::array<int, 2> const C = {{...}};
 
-using multi::broadcast::operator+;  // import elementwise lazy addition
-using multi::broadcast::operator*;  // import elementwise lazy multiplication
+multi::array<int, 2> D = ...;
+
+using multi::elementwise::operator+;  // import elementwise lazy addition
+using multi::elementwise::operator*;  // import elementwise lazy multiplication
 
 D = A + B + 2*C + A*B;  // will not generate intermediate arrays and will not allocate if D has already the correct sizes
 ----
 link:https://godbolt.org/z/dsTe6a4T1[(live)]
 
-A key feature of these operations is automatic "broadcasting", which simplifies notation and is common in modern array languages.
-So-called broadcasting (in Numpy or Matlab) or scalar extension (in APL) allows binary operations on data of different dimensionality.
-Dimensionality mismatches are handled by broadcasting, but size mismatches are not (assertions catch these in debug mode).
+Composition of operators form lazy expressions.
 
-In this example brew, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without copies) to match the left operand's dimensions.
+A key feature of binary operators is that they perform automatic broadcasting and can operate recursively (e.g. for arrays of arrays),
+which simplifies notation and is common in modern array languages.
+The broadcasting include scalar values, which are promoted to high dimensions as necessary.
+In the example below, the scalar `1` is "repeated" and interpreted as `{1, 1, 1}` (without making copies) to match the left operand's (`a`) dimensions.
 
 [source,cpp]
 ----
 multi::array<int, 1> const a = {1, 2, 3};
 
-using multi::broadcast::operator+;
-assert( a + 1 == multi::array<int, 1>{2, 3, 4} );
+using multi::elementwise::operator+;
+assert(( a + 1 == multi::array<int, 1>({2, 3, 4}) ));
 ----
 
 Similarly, such a scalar can also be promoted into higher dimensionality if necessary:
@@ -939,7 +1014,7 @@ multi::array<int, 2> const A = {
 	{4, 5, 6}
 };
 
-using multi::broadcast::operator+;
+using multi::elementwise::operator+;
 
 assert( A + 1 == multi::array<int, 2>{{2, 3, 4}, {5, 6, 7}} );
 ----
@@ -948,16 +1023,13 @@ The same behavior applies to arrays, on either side of the operation:
 
 [source,cpp]
 ----
-multi::array<int, 2> const A = {
-	{1, 2, 3},
-	{4, 5, 6}
-};
+    multi::array<int, 2> const A = {{1, 2, 3}, {4, 5, 6}};
 
-multi::array<int, 2> const b = {1, 2, 3};
+    multi::array<int, 1> const b = {1, 2, 3};
 
-using multi::broadcast::operator+;
+    using multi::elementwise::operator+;
 
-assert( b + A == multi::array<int, 2>{{2, 4, 6}, {5, 7, 9}} );
+    assert(( +(b + A) == multi::array<int, 2>{{2, 4, 6}, {5, 7, 9}} ));
 ----
 Inside the expression, `b` was promoted effectively into a 2D array by repetition (`{{1, 2, 3}, {1, 2, 3}}`).
 
@@ -977,22 +1049,24 @@ multi::array<int, 2> const B = {
 
 multi::array<int, 2> const b = {1, 2, 3};
 
-using multi::broadcast::operator+;
-using multi::broadcast::operator*;
-using multi::broadcast::operator/;  // import elementwise lazy division
-using multi::broadcast::exp;        // import elementwise exponentiation
+using multi::elementwise::operator+;
+using multi::elementwise::operator*;
+using multi::elementwise::operator/;  // import elementwise lazy division
+using multi::elementwise::exp;        // import elementwise exponentiation
 
 auto const& expr = 2*b + A / exp(B);
 
 assert( expr[2][1] == 2*b[2] + A[2][1] / std::exp(B[2][1]) );
 ----
 
-Expressions can be named (e.g., `expr` above), but they generally do not own the objects used in the expression.
+Mappings and expressions can be combined since all of them are specific instances of restrictions.
+
+Expressions can be named variables (e.g., `expr` above), but they generally do not own the objects used in the expression.
 Most arrays used in the expression are taken by reference, and array elements are neither copied nor allocated.
 Therefore, we should treat expressions as references to arrays, since they do not have independent value semantics.
 
-To use operators, you need to explicitly import them into your current namespace, as shown in the examples -- using `using namespace multi::broadcast` is possible but not recommended.
-This is to avoid surprises by confusing broadcast elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
+To use operators, you need to explicitly import them into your current namespace, as shown in the examples -- using a global `using namespace multi::elementwise` is possible but not recommended.
+This is to avoid surprises by confusing elementwise operations with other common algebraic operations, such as matrix multiplication or matrix exponentiation.
 Also as a reminder that these operations return expression objects with referential semantics, not concrete arrays.
 For example, returning expressions that refer to local array variables from a C++ function generally will produce dangling references.
 
@@ -1010,7 +1084,7 @@ multi::array<int, 2> expr_copy2({2, 3});
 expr_copy2 = 2*b + A / exp(B);  // allocation not expected because expr_copy2 has the "right" size, elements are assigned from the expression evaluation
 ----
 
-Expressions generate special unspecified types, they are internally based on parameterized `multi::restriction` types.
+The expressions generate special instances of `multi::restriction` types.
 In other C++ libraries, these are know as link:https://en.wikipedia.org/wiki/Expression_templates[Expression Templates] because they leverage heavy templated types.
 Unlike other expression-libraries, Multi's lazy expressions are fully integrated with the rest of the library, meaning that they can be utilized generically in the same way as immutable concrete arrays.
 (Although they don't have a layout or an internal pointer.)
@@ -1031,18 +1105,18 @@ multi::array<double, 2> const A = {
 
 assert( trace(A) == 1.0 + 4.0 );  // approximately
 
-using multi::broadcast::exp;
+using multi::elementwise::exp;
 assert( trace(exp(A)) == std::exp(1.0) + std::exp(4.0) ); // approximately
 ----
 
-Custom functions can be applied by using the `invoke` function:
+Custom functions can be applied by using the `multi::elementwise::mapping` function:
 
 [source,cpp]
 ----
-auto const& AVE = multi::broadcast::invoke([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
+auto const& AVE = multi::elementwise::mapping([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
 ----
 
-Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms.
+Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms (or used as part of other expressions)
 (e.g. https://godbolt.org/z/Ee1ohKxhW)
 
 // == Broadcast (infinite views)

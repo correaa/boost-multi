@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 // #include <boost/multi/adaptors/tblis.hpp>
 
-#if __cplusplus >= 202002L
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #include <tblis/tblis.h>
 namespace boost::multi::tblis {
 	class tensor {

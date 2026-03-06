@@ -11,7 +11,7 @@
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
 #endif

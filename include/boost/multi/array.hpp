@@ -28,7 +28,7 @@
 #endif
 #endif
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<concepts>) && __has_include(<ranges>)
 #include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
 #endif
@@ -240,7 +240,10 @@ struct dynamic_array                                                            
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
-#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+	// constexpr explicit dynamic_array(decay_type&& other) noexcept
+	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
+
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
@@ -278,7 +281,7 @@ struct dynamic_array                                                            
 	}
 #endif
 
-#if __cplusplus >= 202002L && (!defined(__clang_major__) || (__clang_major__ != 10))
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last)
 	: dynamic_array(first, last, allocator_type{}) {}
@@ -392,6 +395,22 @@ struct dynamic_array                                                            
 		std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
 	)
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
+
+	template<
+		class It,
+		std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<It>::value_type, T>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// NOLINT(readability-redundant-typename)
+	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
+		typename dynamic_array::extensions_type exts, It elements_first
+	)
+	: array_alloc{},
+	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
+		  exts,
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(exts).num_elements()),  // NOLINT(readability-redundant-typename)
+								nullptr)
+	  ) {
+		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), elements_first, this->num_elements(), this->elements().begin());
+	}
 
 	// NOLINT(readability-redundant-typename)
 	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
@@ -1249,7 +1268,7 @@ struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : dynamic_array<T, D, Alloc> {
-	using static_ = dynamic_array<T, D, Alloc>;
+	using dynamic_ = dynamic_array<T, D, Alloc>;
 
 	static_assert(
 		std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T> || std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,
@@ -1272,7 +1291,7 @@ struct array : dynamic_array<T, D, Alloc> {
 			clear();
 			this->reextent(extensions_);
 		}
-		static_::serialize(arxiv, version);
+		dynamic_::serialize(arxiv, version);
 	}
 
 	// vvv workaround for MSVC 14.3 and ranges, TODO(correaa) good solution would be to inherit from const_subarray
@@ -1305,7 +1324,7 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
-	: static_(
+	: dynamic_(
 		  (ilv.size() == 0) ? array<T, D>{}
 							: array<T, D>(ilv.begin(), ilv.end())
 	  ) {
@@ -1316,7 +1335,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
-	: static_(
+	: dynamic_(
 		  (ilv.size() == 0) ? array<T, D>()()
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
@@ -1335,7 +1354,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	}
 
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
-		static_::clear();
+		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
 	}
@@ -1394,7 +1413,7 @@ struct array : dynamic_array<T, D, Alloc> {
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
-			static_::operator=(other);
+			dynamic_::operator=(other);
 		} else {
 			clear();
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
@@ -1413,7 +1432,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	template<typename OtherT, typename OtherEP, class OtherLayout>
 	auto operator=(multi::const_subarray<OtherT, D, OtherEP, OtherLayout> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
-			static_::operator=(other);  // TODO(correaa) : protect for self assigment
+			dynamic_::operator=(other);  // TODO(correaa) : protect for self assigment
 		} else {
 			operator=(array{other});
 		}
@@ -1423,10 +1442,10 @@ struct array : dynamic_array<T, D, Alloc> {
 	template<class TT, class AAlloc>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
-			static_::operator=(other);
+			dynamic_::operator=(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
 			reshape(other.extensions());
-			static_::operator=(other);
+			dynamic_::operator=(other);
 		} else {
 			operator=(static_cast<array>(other));
 		}
@@ -1434,7 +1453,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	}
 
 	template<
-		class Range, class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
+		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
 		std::enable_if_t<has_extensions<std::decay_t<Range>>::value, int>     = 0,
 		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
@@ -1451,7 +1470,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	}
 
 	template<
-		class Range, class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
+		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto from(Range&& other) -> array& {                                            // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
@@ -1473,7 +1492,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		} else {
 			this->clear();
 			(*this).array::layout_t::operator=(layout_t<D>{extensions});
-			this->base_ = this->static_::array_alloc::allocate(this->num_elements(), nullptr);
+			this->base_ = this->dynamic_::array_alloc::allocate(this->num_elements(), nullptr);
 			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
 		}
 	}
@@ -1483,7 +1502,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		using std::all_of;
 		using std::next;
 		if(adl_distance(first, last) == this->size()) {
-			static_::ref::assign(first);
+			dynamic_::ref::assign(first);
 		} else {
 			this->operator=(array(first, last));
 		}
@@ -1520,12 +1539,13 @@ struct array : dynamic_array<T, D, Alloc> {
 			this->deallocate();
 
 			this->layout_mutable() = new_layout;  // typename array::layout_t{extensions};
-			this->base_            = this->static_::array_alloc::allocate(
-                static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
-                    new_layout.num_elements()
-                ),
-                this->data_elements()  // used as hint
-            );
+
+			this->base_ = this->dynamic_::array_alloc::allocate(
+				static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
+					new_layout.num_elements()
+				),
+				this->data_elements()  // used as hint
+			);
 
 			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element_type> || multi::force_element_trivial_default_construction<typename array::element_type>)) {
 				adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
@@ -1542,7 +1562,7 @@ struct array : dynamic_array<T, D, Alloc> {
 			return *this;
 		}
 		auto&& tmp = typename array::ref(
-			this->static_::array_alloc::allocate(
+			this->dynamic_::array_alloc::allocate(
 				static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
 					typename array::layout_t{extensions}.num_elements()
 				),
@@ -1572,7 +1592,7 @@ struct array : dynamic_array<T, D, Alloc> {
 
 		// implementation with hint
 		auto&& tmp = typename array::ref(
-			this->static_::array_alloc::allocate(
+			this->dynamic_::array_alloc::allocate(
 				static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
 				this->data_elements()  // use as hint
 			),
@@ -1663,8 +1683,8 @@ template<
 array(Range) -> array<V, 1>;
 
 template<class Reference>
-auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref))) {
-	return array<typename Reference::element, Reference::dimensionality>(std::forward<Reference>(ref));
+auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(ref)) {
+	return array<typename Reference::element, Reference::dimensionality>(ref);
 }
 
 #endif  // ends defined(__cpp_deduction_guides)

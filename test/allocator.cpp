@@ -139,6 +139,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
+		BOOST_TEST( !(va != wa) );
+		BOOST_TEST( !(va > wa) );
+		BOOST_TEST( va >= wa );
+		BOOST_TEST( !(va < wa) );
+		BOOST_TEST( va <= wa );
+
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
@@ -412,7 +418,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	  |                                ^
 2 errors generated.
 */
-#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ != 20)
+#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ < 20)
 	auto f = []() {
 		std::vector<int> v = {1, 2, 3};
 		return v.size();

@@ -11,7 +11,7 @@
 #include <algorithm>  // IWYU pragma: keep  // for std::equal
 #include <iterator>   // IWYU pragma: keep
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <concepts>  // for totally_ordered
 #include <ranges>    // IWYU pragma: keep
 #endif
@@ -618,6 +618,47 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<1>(p3D).size() == 3 );
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
+	{
+		auto exts = multi::extensions_t<2>(3, 4);
+		BOOST_TEST( exts.extensions() == exts );
 
+		static_assert(std::is_default_constructible_v<decltype(exts.elements())::iterator>);
+
+		auto it = exts.elements().begin() + 8;
+		BOOST_TEST( it + 0 == it );  // cppcheck-suppress knownConditionTrueFalse
+
+		it += -6;
+		BOOST_TEST( it == exts.elements().begin() + 2 );
+	}
+	{
+		auto exts = multi::extensions_t<1>(10);
+		BOOST_TEST( exts.size() == 10 );
+		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
+
+		auto it = exts.begin();
+		it += 2;
+		BOOST_TEST( it == exts.begin() + 2 );
+
+		BOOST_TEST( exts.elements().size() == 10 );
+		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 1) == exts.elements().size() - 2 );
+		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 2) == exts.elements().size() - 3 );
+
+		auto it2 = exts.begin();
+		auto it3 = it2 + 3;
+		auto it4 = it3 + 2;
+
+		BOOST_TEST( it4 == exts.begin() + 5 );
+		BOOST_TEST( *it4 == 5 );
+
+		auto it5 = it4 - 3;
+		BOOST_TEST( it5 == exts.begin() + 2 );
+		BOOST_TEST( *it5 == 2 );
+	}
+	{
+		auto exts = multi::extensions_t<1>(10);
+
+		BOOST_TEST( exts.size() == 10 );
+		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
+	}
 	return boost::report_errors();
 }

@@ -33,7 +33,7 @@
 // #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
 // #include <utility>      // for forward
 
-// #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+// #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 // #if !defined(__clang_major__) || !(__clang_major__ == 16)
 // #include <ranges>    // IWYU pragma: keep
 // #endif
@@ -159,7 +159,11 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 		using iterator_category = std::random_access_iterator_tag;
 
 		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
-		constexpr auto operator+(difference_type d) const { auto ret{*this}; ret += d; return ret; }
+		constexpr auto operator+(difference_type d) const {
+			iterator ret{*this};  // mull-ignore: cxx_init_const
+			ret += d;
+			return ret;
+		}
 		// constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
 
 		constexpr auto operator*() const {
@@ -1183,7 +1187,7 @@ struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert
 // 	template<class Ptr>
 // 	BOOST_MULTI_HD constexpr auto operator()(Ptr const& ptr) const -> Ptr { return ptr + 1; }
 
-// #if (__cplusplus >= 202002L)
+// #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 // 	using category = std::random_access_iterator_tag;  // std::contiguous_iterator_tag;
 // #else
 // 	using category = std::random_access_iterator_tag;

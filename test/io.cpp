@@ -11,6 +11,12 @@
 #include <sstream>
 // IWYU pragma: no_include <string>                           // for allocator, operator<<
 
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#if __has_include(<print>)
+#include <print>
+#endif
+#endif
+
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -35,20 +41,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	// matlab 3d
 	{
+		// clang-format off
 		multi::array<double, 3> const arr = {
 			{
-             {1.0, 2.0, 3.0},
-             {4.0, 5.0, 6.0},
-			 },
+				{1.0, 2.0, 3.0},
+				{4.0, 5.0, 6.0},
+			},
 			{
-             {7.0, 8.0, 9.0},
-             {10.0, 11.0, 12.0},
-			 },
+				{7.0, 8.0, 9.0},
+				{10.0, 11.0, 12.0},
+			},
 		};
+		// clang-format on
 
 		std::ostringstream oss;
 		multi::detail::print(oss, arr, "\t", "\t", "\a", "\a", 0);
 		std::cout << "arr = " << oss.str() << "; end\n";
+	}
+	{
+		std::ostringstream oss;
+		oss << multi::array<int, 3>({3, 4, 5}, int{}).extension();
+		BOOST_TEST( oss.str() == "[0, 3)" );
 	}
 	// fortran 2d
 	{
@@ -100,6 +113,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1.0, 2.0, 3.0},
 			{4.0, 5.0, 6.0}
 		};
+		std::ostringstream oss;
+		oss << "A2D = " << arr;
+		BOOST_TEST( oss.str() == "A2D = {\n"
+			"\t{1, 2, 3},\n"
+			"\t{4, 5, 6}, \n"
+			"}"
+		);
 
 		std::cout << "A2D = " << arr << "; no more, no less\n";
 	}
@@ -148,6 +168,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A4D = " << arr << "; no more, no less " << '\n';
 
 		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
+	}
+	{
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#if __has_include(<print>)
+		multi::array<double, 2> const arr = {
+			{1,   3},
+			{2, -10},
+		};
+
+		std::print("{}", arr);
+#endif
+#endif
 	}
 
 	return boost::report_errors();
