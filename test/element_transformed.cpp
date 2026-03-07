@@ -1,4 +1,4 @@
-// Copyright 2022-2025 Alfredo A. Correa
+// Copyright 2022-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -318,6 +318,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 	}
+
+	{
+		multi::array<int, 1> const arr = {4, 3, 2, 1, 0};
+
+		auto const& arr_plus_1 = arr.element_transformed([](auto val) noexcept { return val + 1; });
+
+		multi::array<int, 1> arr2 = arr_plus_1;
+
+		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
+	}
+	{
+		multi::array<int, 1> const arr = {4, 3, 2, 1, 0};
+
+		auto const& arr_plus_1 = arr.element_transformed(multi::val([](auto val) noexcept { return val + 1; }));
+
+		multi::array<int, 1> arr2 = arr_plus_1;
+
+		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
+	}
+
 
 	return boost::report_errors();
 }

@@ -288,7 +288,7 @@ class device_restriction_iterator {
 	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
-	__device__ constexpr auto operator*() -> int {
+	__host__ __device__ constexpr auto operator*() -> int {
 		// decltype(auto) {
 		// if constexpr(D != 1) {
 		// 	using std::get;
@@ -299,7 +299,7 @@ class device_restriction_iterator {
 		return proj_(get<0>(*it_));
 	}
 
-	__device__ auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	__host__ __device__ auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 };
 
 template<dimensionality_type D, class Proj>
