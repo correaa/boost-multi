@@ -244,12 +244,12 @@ template<class Fun>
 class value_wrapper_ptr;
 
 template<class Fun>
-class value_wrapper {
-	Fun f_;
-
+class value_wrapper : Fun {
  public:
- 	// constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
-	constexpr explicit value_wrapper(Fun const& fun) : f_(fun) {}
+	using Fun::operator();
+
+	// constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
+	constexpr explicit value_wrapper(Fun const& fun) : Fun(fun) {}
 
 	value_wrapper(value_wrapper const&) = default;
 	value_wrapper(value_wrapper&&) = default;
@@ -259,24 +259,24 @@ class value_wrapper {
 
 	~value_wrapper() = default;
 
-	template<class... As>
-	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
-	-> decltype((const_cast<Fun&>(std::declval<Fun const&>()))(std::forward<As>(as)...)) {
-		return (const_cast<Fun&>(f_))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
-	}
+	// template<class... As>
+	// BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
+	// -> decltype((const_cast<Fun&>(std::declval<Fun const&>()))(std::forward<As>(as)...)) {
+	// 	return (const_cast<Fun&>(f_))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+	// }
 
-	constexpr auto operator&() const { return *this; }  // NOLINT(google-runtime-operator) whole point of this class
+	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
+//	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
 };
 
 template<class F>
 constexpr auto val(F const& fun) { return value_wrapper<F>(fun); }
 
 template<class Fun>
-class value_wrapper_ptr {
-	Fun f_;
-	explicit BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : f_(fun) {}
+class value_wrapper_ptr : Fun {
+	// Fun f_;
+	explicit BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : Fun(fun) {}
 
 	template<class> friend class value_wrapper;
 
@@ -290,7 +290,7 @@ class value_wrapper_ptr {
 
 	~value_wrapper_ptr() = default;
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> Fun { return f_; }
+	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return static_cast<Fun const&>(*this); }
 };
 
 template<class T, typename = typename T::rank>
