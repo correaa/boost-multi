@@ -324,7 +324,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& arr_plus_1 = arr.element_transformed([](auto val) noexcept { return val + 1; });
 
-		multi::array<int, 1> arr2 = arr_plus_1;
+		multi::array<int, 1> const arr2 = arr_plus_1;
 
 		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
 	}
@@ -333,7 +333,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& arr_plus_1 = arr.element_transformed(multi::val([](auto val) noexcept { return val + 1; }));
 
-		multi::array<int, 1> arr2 = arr_plus_1;
+		multi::array<int, 1> const arr2 = arr_plus_1;
 
 		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
 	}
