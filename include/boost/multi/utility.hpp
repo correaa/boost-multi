@@ -248,7 +248,7 @@ class value_wrapper {
 	Fun f_;
 
  public:
- 	constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
+ 	// constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
 	constexpr explicit value_wrapper(Fun const& fun) : f_(fun) {}
 
 	value_wrapper(value_wrapper const&) = default;
@@ -288,6 +288,7 @@ class value_wrapper_ptr {
 	auto operator=(value_wrapper_ptr const&) -> value_wrapper_ptr& = default;
 	auto operator=(value_wrapper_ptr&&) -> value_wrapper_ptr& = default;
 
+	~value_wrapper_ptr() = default;
 
 	BOOST_MULTI_HD constexpr auto operator*() const -> Fun { return f_; }
 };
