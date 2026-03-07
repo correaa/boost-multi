@@ -4,7 +4,7 @@
 
 > **⚠️ ALERT** 
 > This library is under acitive Boost review until **March 15, 2026**.  
-> If you are interested in reviewing the library, please send an email to the review manager, **Matt Borland** (<matt AT mattborland DOT com>).
+> If you are interested in reviewing the library, please send an email to the review manager, **Matt Borland** (matt AT mattborland DOT com).
 
 **[Boost.] Multi**
 
