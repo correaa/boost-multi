@@ -3687,7 +3687,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
-	#ifdef _MSC_VER
+#ifdef _MSC_VER
 
 	// Workaround for a standard library bug in MSVC 14.3 and greater
 	/*
@@ -3730,7 +3730,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
-	#endif
+#endif
 
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
