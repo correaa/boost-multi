@@ -13,15 +13,17 @@
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #include <compare>  // for operator<, operat...
 #endif
-#include <complex>          // for complex
-#include <cstddef>          // for __GLIBCXX__, size_t
-#include <iterator>         // for size, back_insert...
-#include <memory>           // for make_unique, uniq...
+#include <complex>   // for complex
+#include <cstddef>   // for __GLIBCXX__, size_t
+#include <iterator>  // for size, back_insert...
+#include <memory>    // for make_unique, uniq...
+#ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_...
-#include <new>              // for operator new  // NOLINT(misc-include-cleaner)
-#include <string>           // for basic_string, string
-#include <utility>          // for move, forward
-#include <vector>           // for vector, allocator
+#endif
+#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
+#include <string>   // for basic_string, string
+#include <utility>  // for move, forward
+#include <vector>   // for vector, allocator
 // IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
 
 namespace multi = boost::multi;
