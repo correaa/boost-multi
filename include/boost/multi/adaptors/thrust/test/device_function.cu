@@ -202,7 +202,7 @@ int main() {
 	}
 	{
 		auto dev_restr = multi::thrust::device_restricted<1>(
-			multi::val([a = 5, b = 0] __device__(auto x) { int c = a, d = b; return  x * x + c + d; }),
+			multi::val([a = 5, b = 0] __device__(int x) { int c = a, d = b; return  x * x + c + d; }),
 			{N}
 		);
 

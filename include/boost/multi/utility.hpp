@@ -262,7 +262,7 @@ class value_wrapper : Fun {
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
 	-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
-		return (const_cast<Fun&>(*this))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
 	}
 
 	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
