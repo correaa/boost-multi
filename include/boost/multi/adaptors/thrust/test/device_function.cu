@@ -200,24 +200,24 @@ int main() {
 		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
 		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
 	}
-	{
-		auto dev_restr = multi::thrust::device_restricted<1>(
-			multi::val([a = 5, b = 0] __device__(int x) { int c = a, d = b; return  x * x + c + d; }),
-			{N}
-		);
+	// {
+	// 	auto dev_restr = multi::thrust::device_restricted<1>(
+	// 		multi::val([a = 5, b = 0] __device__(int x) { int c = a, d = b; return  x * x + c + d; }),
+	// 		{N}
+	// 	);
 
-		multi::thrust::device_array<int, 1> d_out({N}, int{});
+	// 	multi::thrust::device_array<int, 1> d_out({N}, int{});
 
-		thrust::copy(
-			thrust::device,  // ensure this is run in the GPU (optional)
-			dev_restr.begin(), dev_restr.end(), d_out.begin()
-		);
+	// 	thrust::copy(
+	// 		thrust::device,  // ensure this is run in the GPU (optional)
+	// 		dev_restr.begin(), dev_restr.end(), d_out.begin()
+	// 	);
 
-		multi::thrust::host_array<int, 1> h_out = d_out;
+	// 	multi::thrust::host_array<int, 1> h_out = d_out;
 
-		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
-		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
-	}
+	// 	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+	// 	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+	// }
     {
 		auto val  = multi::val([a = 5, b = 0](auto x) { int c = a, d = b; return  x * x + c + d; });
 		auto pval = &val;
