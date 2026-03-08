@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,6 +10,7 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
+#include <compare>    // for operator<, operat...
 #include <complex>    // for complex
 #include <cstddef>    // for __GLIBCXX__, size_t
 #include <iterator>   // for size, back_insert...
@@ -144,7 +145,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( va >= wa );
 		BOOST_TEST( !(va < wa) );
 		BOOST_TEST( va <= wa );
-
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
