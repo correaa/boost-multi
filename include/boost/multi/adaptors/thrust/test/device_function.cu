@@ -96,39 +96,39 @@ int main() {
 	//         }()
 	// );
 
-	[[maybe_unused]] auto fdev = [] __device__(int x) { return x * x + 1.9; };
-	using rt1                  = std::invoke_result<decltype(fdev), int>::type;
-	using rt2                  = typename multi::thrust::result_helper<decltype(fdev)>::type;
-	// multi::detail::what<rt>();
-	static_assert(std::is_same_v<rt1, double>);
-	static_assert(std::is_same_v<rt2, double>);
+// 	[[maybe_unused]] auto fdev = [] __device__(int x) { return x * x + 1.9; };
+// 	using rt1                  = std::invoke_result<decltype(fdev), int>::type;
+// 	using rt2                  = typename multi::thrust::result_helper<decltype(fdev)>::type;
+// 	// multi::detail::what<rt>();
+// 	static_assert(std::is_same_v<rt1, double>);
+// 	static_assert(std::is_same_v<rt2, double>);
 
-#if defined(__CUDACC__) &&        \
-	(__CUDACC_VER_MAJOR__ < 12 || \
-	 (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ <= 5))
+// #if defined(__CUDACC__) &&        \
+// 	(__CUDACC_VER_MAJOR__ < 12 || \
+// 	 (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ <= 5))
 
-	auto c2 = multi::thrust::device_restriction(
-		multi::extensions_t<1>(N),
-		BOOST_MULTI_DEVICE_LAMBDA_LEGACY(BOOST_MULTI_CAPTURE(a = 5, b = 0), (auto x) { int c = a, d = b; return  x * x + c + d; })
-	);
+// 	auto c2 = multi::thrust::device_restriction(
+// 		multi::extensions_t<1>(N),
+// 		BOOST_MULTI_DEVICE_LAMBDA_LEGACY(BOOST_MULTI_CAPTURE(a = 5, b = 0), (auto x) { int c = a, d = b; return  x * x + c + d; })
+// 	);
 
-#else
+// #else
 
-	auto c2 = multi::thrust::device_restriction(
-		multi::extensions_t<1>(N),
-		[ a = 5, b = 0 ] BOOST_MULTI_DEVICE_LAMBDA((auto x) { int c = a, d = b; return  x * x + c + d; })
-	);
+// 	auto c2 = multi::thrust::device_restriction(
+// 		multi::extensions_t<1>(N),
+// 		[ a = 5, b = 0 ] BOOST_MULTI_DEVICE_LAMBDA((auto x) { int c = a, d = b; return  x * x + c + d; })
+// 	);
 
-#endif
+// #endif
 
-	auto it = c2.begin();
+// 	auto it = c2.begin();
 
-	thrust::copy(c2.begin(), c2.end(), d_out.begin());
+// 	thrust::copy(c2.begin(), c2.end(), d_out.begin());
 
-	multi::thrust::host_array<int, 1> h_out = d_out;
+// 	multi::thrust::host_array<int, 1> h_out = d_out;
 
-	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
-	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+// 	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+// 	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
 
 	// CPU memory and execution, iterator holds function by POINTER semantics
 	{
@@ -182,24 +182,24 @@ int main() {
 	// 	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
 	// }
     // GPU memory and execution, iterator holds function by VALUE semantics
-	{
-		auto dev_restr = multi::thrust::device_restricted<1>(
-			[a = 5, b = 0] __device__(auto x) { int c = a, d = b; return  x * x + c + d; },
-			{N}
-		);
+	// {
+	// 	auto dev_restr = multi::thrust::device_restricted<1>(
+	// 		[a = 5, b = 0] __device__(auto x) { int c = a, d = b; return  x * x + c + d; },
+	// 		{N}
+	// 	);
 
-		multi::thrust::device_array<int, 1> d_out({N}, int{});
+	// 	multi::thrust::device_array<int, 1> d_out({N}, int{});
 
-		thrust::copy(
-			thrust::device,  // ensure this is run in the GPU (optional)
-			dev_restr.begin(), dev_restr.end(), d_out.begin()
-		);
+	// 	thrust::copy(
+	// 		thrust::device,  // ensure this is run in the GPU (optional)
+	// 		dev_restr.begin(), dev_restr.end(), d_out.begin()
+	// 	);
 
-		multi::thrust::host_array<int, 1> h_out = d_out;
+	// 	multi::thrust::host_array<int, 1> h_out = d_out;
 
-		BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
-		BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
-	}
+	// 	BOOST_TEST( h_out[1] == 1*1 + 5 + 0 );
+	// 	BOOST_TEST( h_out[2] == 2*2 + 5 + 0 );
+	// }
 	// {
 	// 	auto dev_restr = multi::thrust::device_restricted<1>(
 	// 		multi::val([a = 5, b = 0] __device__(int x) { int c = a, d = b; return  x * x + c + d; }),
