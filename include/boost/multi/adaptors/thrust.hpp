@@ -303,7 +303,7 @@ class device_restriction_iterator {
 };
 
 template<dimensionality_type D, class Proj>
-struct device_restriction {  //: restriction<D, Proj, int> {
+class device_restriction {  //: restriction<D, Proj, int> {
 	multi::extensions_t<D> exts_;
 	Proj                   proj_;
 
