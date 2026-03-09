@@ -11,7 +11,7 @@
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-#include <compare>  // for operator<, operat...
+#include <compare>  // IWYU pragma: keep
 #endif
 #include <complex>   // for complex
 #include <cstddef>   // for __GLIBCXX__, size_t
