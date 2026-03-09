@@ -282,6 +282,7 @@ class value_wrapper_ptr : Fun {
 
  public:
  	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
+	value_wrapper_ptr() : Fun(static_cast<Fun const&>(*this)) {}  // workaround for non-default constructible
 	value_wrapper_ptr(value_wrapper_ptr const&) = default;
 	value_wrapper_ptr(value_wrapper_ptr&&) = default;
 
