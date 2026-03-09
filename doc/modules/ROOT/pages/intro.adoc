@@ -27,6 +27,7 @@ This library offers array containers and subarrays in arbitrary dimensions with 
                               ┴────┴────┴────┘       ┴────┴────┴────┘ x |
                                                          ┴────┴────┴────┘
 ----
+Note that the depicted 3D case has only two planes, the first index (e.g. `1`) selects a plane (e.g. bottom).
 
 These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp
@@ -35,8 +36,14 @@ multi::array<char, 1> A1D = {'a', 'b', 'c'};
 multi::array<char, 2> A2D = { {'f', 'g', 'h'}, {'i', 'j', 'k'} };
 multi::array<char, 3> A3D = /*... nested list of letters (chars) */ ;
 ```
-and their elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 'b'`, `A2D[1][0] == 'i'` and `A3D[1][0][2] == 'u'`
-Note that the depicted 3D case has only two planes, the first index (e.g. `1`) selects the plane (e.g. bottom).
+and their elements, when retrived by their coordinates (indices) are such that, for example: 
+
+[source,cpp]
+----
+assert( A1D[1] == 'b' );
+assert( A2D[1][0] == 'i' );     // A2D[1, 0]     availabe from C++23
+assert( A3D[1][0][2] == 'u' );  // A3D[1, 0, 2]  availabe from in C++23
+----
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
 The internal data structure layout (when mapped to computer memory) is
