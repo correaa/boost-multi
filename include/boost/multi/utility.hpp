@@ -252,22 +252,22 @@ class value_wrapper : Fun {
 	constexpr explicit value_wrapper(Fun const& fun) : Fun(fun) {}
 
 	value_wrapper(value_wrapper const&) = default;
-	value_wrapper(value_wrapper&&) = default;
+	value_wrapper(value_wrapper&&)      = default;
 
 	auto operator=(value_wrapper const&) -> value_wrapper& = delete;
-	auto operator=(value_wrapper&&) -> value_wrapper& = delete;
+	auto operator=(value_wrapper&&) -> value_wrapper&      = delete;
 
 	~value_wrapper() = default;
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
-	-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
+		-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
 		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
 	}
 
 	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
 
-//	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
+	//	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
 };
 
 template<class F>
