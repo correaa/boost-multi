@@ -265,7 +265,7 @@ The C++ core guidelines proposed a similar (albeit one-dimensional) class, calle
 | (constructors)    | `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>` constructs the array with elements initialized from a nested list.
 | (destructor)      | Destructor deallocates memory and destroy the elements
 | `operator=`       | assigns the elements from the source, sizes must match.
-| `elements`        | A flatten random-access and contiguous view of all the elements in the array in canonical order. (This is overwritten from the base class, to provide contiguous access)
+| `elements`        | A flatten random-access and contiguous view of all the elements in the array in canonical order.
 |===
 
 |===
