@@ -94,7 +94,7 @@ these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `m
 
 |===
 | `operator==`/`operator!=` | Tells if elements of two `subarray` s are equal and if extensions of the subarrays are the same
-| `operator<`/`operator<=`  | Less-than/less-or-equal lexicographical comparison (requires elements to be comparable)
+| `operator<` / `pass:[operator<=]`  | Less-than/less-or-equal lexicographical comparison (requires elements to be comparable)
 | `operator>`/`operator>=`  | Greater-than/greater-or-equal lexicographical comparison (requires elements to be comparable)
 |===
 
