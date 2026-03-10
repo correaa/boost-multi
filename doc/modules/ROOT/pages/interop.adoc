@@ -33,7 +33,7 @@ In this example, we replace the values of the first row for which the sum of the
 
 	assert(arr[1][0] == 9 );
 ----
-link:https://godbolt.org/z/cT9WGffM3[(live)]
+link:https://godbolt.org/z/cT9WGffM3[(open with Compiler Explorer)]
 
 Together with the array constructors, the ranges library enables a more functional programming style;
 this allows us to work with immutable variables in many cases.
@@ -49,7 +49,7 @@ this allows us to work with immutable variables in many cases.
 	// multi::array<double, 1> R(V.size());  // R is created here...
 	// for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...and then mutated here
 ----
-link:https://godbolt.org/z/M84arKMnT[(live)]
+link:https://godbolt.org/z/M84arKMnT[((open with Compiler Explorer))]
 
 
 The "pipe" (`|`) notation of standard ranges allows one-line expressions.
@@ -108,7 +108,7 @@ int main() {
 ----
 
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
-In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[(live)]
+In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[((open with Compiler Explorer))]
 
 The library also supports memory resources from other libraries, including those returning special pointer types (see the "CUDA Thrust" section and the "Boost.Interprocess" section).
 
@@ -140,10 +140,8 @@ and for this reason, there is no single substitute for `std::span` for all cases
 Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
 The former typically works when using it as function argument.
 
-Multi-dimensinal arrays can interoperate with C++23's non-owning `mdspan`.
+Multi-dimensinal arrays can interoperate with C++23's non-owning link:https://en.cppreference.com/w/cpp/container/mdspan.html[`mdspan`].
 link:https://godbolt.org/z/aocn73bzf[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan` automatically (replicating the behavior of `std::vector`).
-
-A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen) is explained in an Appendix.
 
 === Execution policies (parallel algorithms)
 
@@ -158,7 +156,7 @@ The execution policy (`par`) selected is passed as the first argument.
 
     std::transform(std::execution::par, arr.begin(), arr.end(), vec.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
 ----
-link:https://godbolt.org/z/63jEdY7zP[(live)]
+link:https://godbolt.org/z/63jEdY7zP[((open with Compiler Explorer))]
 
 For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (i.e. without the `par` argument).
 
@@ -199,16 +197,16 @@ auto dot_product(X1D const& x, Y1D const& y) {
 	return std::reduce(std::execution::par_unseq, z.begin(), z.end());
 }
 ----
-link:https://godbolt.org/z/cMq87xPvb[(live)]
+link:https://godbolt.org/z/cMq87xPvb[((open with Compiler Explorer))]
 
 [#interop_range_v3]
 == Range-v3
 
-The library works out of the box with Eric Niebler's Range-v3 library, a precursor to the standard Ranges library (see above).
+The library works out of the box with Eric Niebler's link:https://ericniebler.github.io/range-v3/[Range-v3] library, a precursor to the standard Ranges library (see above).
 The library helps to remove explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
 Every Multi array object can be regarded as range.
-Every subarray references (and array values) are interpreted as range views.
+Every subarray references (and array values) can be interpreted as range views.
 
 For example for a 2D array `d2D`, `d2D` itself is interpreted as a range of rows.
 Each row, in turn, is interpreted as a range of elements.
@@ -314,7 +312,7 @@ int main() {
 	assert(A == B);
 }
 ----
-link:https://godbolt.org/z/Grr7Mqef5[(online)]
+link:https://godbolt.org/z/Grr7Mqef5[((open with Compiler Explorer))]
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
@@ -414,7 +412,7 @@ int main(){
 [#interop_cuda]
 == CUDA (and HIP, and OMP, and TBB) via Thrust
 
-The library works out-of-the-box in combination with the Thrust library.
+The library works out-of-the-box in combination with the link:https://nvidia.github.io/cccl/unstable/thrust/index.html[Thrust] library.
 
 [source,cpp]
 ----
@@ -433,7 +431,7 @@ int main() {
 	assert( B[5][0] == 50.0 );
 }
 ----
-link:https://godbolt.org/z/oM4YbPYz8[(live)]
+link:https://godbolt.org/z/oM4YbPYz8[((open with Compiler Explorer))]
 
 which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
@@ -516,7 +514,7 @@ auto const& hankel =  // a restriction object
 
 reduce_by_row(hankel, sums_out.begin());
 ----
-link:https://godbolt.org/z/v86bxKnK8[(live)]
+link:https://godbolt.org/z/v86bxKnK8[((open with Compiler Explorer))]
 
 Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
 Take into account that lambdas executed in the device cannot take captures by reference.
@@ -564,7 +562,7 @@ int main() {
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ----
-link:https://godbolt.org/z/KW19zMYnE[(live)]
+link:https://godbolt.org/z/KW19zMYnE[((open with Compiler Explorer))]
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
@@ -614,7 +612,7 @@ int main() {
 	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); /*... use A ...*/ }
 }
 ----
-link:https://godbolt.org/z/rKG8PhsEh[(live)]
+link:https://godbolt.org/z/rKG8PhsEh[((open with Compiler Explorer))]
 
 In the example, most of the frequent memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
@@ -622,7 +620,7 @@ More targeted usage patterns may require locally (non-globally) defined memory r
 [#interop_cuda_cpp]
 == CUDA C++
 
-CUDA is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
+link:https://developer.nvidia.com/cuda/toolkit[CUDA] is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
 CUDA code is generally "low level" (less abstracted), but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement custom algorithms.
 Although code inside kernels has certain restrictions, most Multi features can be used. 
 (Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
@@ -674,7 +672,7 @@ int main() {
     // now C = A x B
 }
 ----
-link:https://godbolt.org/z/eKbeosrWa[(live)]
+link:https://godbolt.org/z/eKbeosrWa[((open with Compiler Explorer))]
 
 Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarely occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
 
@@ -696,7 +694,7 @@ At the moment, the array containers can use the Unified Shared Memory (USM) allo
         ptr[i] *= 2;
     }).wait();
 ----
-link:https://godbolt.org/z/8WG8qaf4s[(live)]
+link:https://godbolt.org/z/8WG8qaf4s[((open with Compiler Explorer))]
 
 Algorithms are expected to work with oneAPI execution policies as well (not tested)
 
@@ -753,7 +751,7 @@ with the output:
 
 In a similar way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
 
-(link:https://godbolt.org/z/7sGExn35n[(live)]).
+(link:https://godbolt.org/z/7sGExn35n[((open with Compiler Explorer))]).
 
 When saving arrays to files, please consider using serialization (see section) instead of formatting facilities.
 
