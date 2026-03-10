@@ -1145,9 +1145,9 @@ circle-latest c++20:
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
     - tar -zxvf python-build_*.tgz
-    - ls
-    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
-    - tar -zxvf build_*.tgz
+    # - ls
+    # - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
+    # - tar -zxvf build_*.tgz
     - cd ..
     - ls
     - ldd ./build_latest/circle
