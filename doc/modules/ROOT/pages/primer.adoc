@@ -5,7 +5,7 @@
 :idprefix: primer_
 
 In this example, we initialize a 2-dimensional array of numbers, and then we inspect the properties of this array, copy the array, and manipulate the element values.
-The example can be followed link:https://godbolt.org/z/b8ao5Wz1T[online].
+The example can be followed link:https://godbolt.org/z/b8ao5Wz1T[online on Compiler Explorer].
 
 The individual elements are initialized from a nested rectangular list.
 
