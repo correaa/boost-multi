@@ -153,6 +153,6 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 |===
 
 [#technical_cpp17_minimum]
-== Why is c++17 chosen as the minimum?
+== Why is the C++17 standard chosen as the minimum?
 
-The implementation use `if constexpr` intensively, if you really need C++14 please open an issue.
+The implementation use `if constexpr` intensively, if you need C++14 please open an issue.

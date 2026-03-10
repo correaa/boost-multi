@@ -18,10 +18,10 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 Multidimensional array data structures are essential in various fields of computing, including data analysis, image processing, and scientific simulations. When combined with GPUs, they also play a significant role in Artificial Intelligence and Machine Learning.
 
 In many simulations, space is divided into a grid, and values are stored at each grid cell.
-For example, arrays can represent fields of physical values, such as temperature variations within a block of material based on spatial coordinates, or velocity fields in a fluid.
-In a game, the state of board can be represented by placing pieces in a lattice.
+For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or a velocity fields in a fluid.
+The state of game can be represented by placing pieces in a board made of squares.
 Arrays can also store numerical matrices, vectors, and more generally, tensors, to perform linear algebra operations.
-They can represent other abstract data structures, like network, graph, or store data in multiple columns.
+They can represent other abstract data structures, like networks, graph connections, or store data in multiple columns.
 Arrays are amenable to bulk processing in computing, and also to slicing, and reductions.
 
 Here are 3 examples of arrays of different dimensionality:
@@ -60,7 +60,7 @@ which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
-The following features of this library are not present in the Standard or generally combined in other libraries:
+The following _combination of features_ of this library are not present in the Standard or generally in other libraries:
 
 * Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
@@ -71,11 +71,12 @@ A _D_-dimensional array can be interpreted either as an (STL-compatible) sequenc
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
-or with the standard MDSpan proposal `std::mdspan`.
+or with the standard MDSpan proposal `std::mdspan` (accepted in C{plus}{plus}23)
 This library shares some of their goals and is compatible and complementary to them;
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
-For example, `std::mdspan` does not provide iterators, or generic interoperability with the rest of the STL. 
+For example, `std::mdspan` does not provide iterators, and it is not well integrated with the rest of the STL.
+Problems such are deep assignment, or const-propagation are not fully solved, and ownership is delegated to a separte proposal `std::mdarray` (C{plus}{plus}26).
 
 The library's primary concern is with the storage and logic structure of data.
 It doesn't make algebraic or geometric assumptions about the arrays and their elements.

@@ -74,7 +74,7 @@ int main() {
 	...
 ----
 
-Because this array is not controled by the library, this type of object is called an array-reference.
+Because this array is not controlled by the library, this type of object is called an array-reference.
 
 Next, just as an illustration, we print the elements in a way that corresponds to the logical arrangement.
 (Generic printing can be done in other ways described in the reference section.)
@@ -274,7 +274,7 @@ C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *
 ----
 
 Using the same or overlapping arrays in the RHS and LHS of assignment produces undefined behavior in general (and the library doesn't check).
-Notably, this instruction does not transpose the array but produces an undefined result:
+Notably, this attempt to transpose the array in-place fails and produces an undefined result instead:
 
 [source,cpp]
 ----
@@ -296,10 +296,8 @@ A generic workaround is to use the prefix `operator+`, to break "aliasing" as ab
 In general, the problem of aliasing can persist when taking mutable array-references in function arguments.
 The most general solution to this problem is to make copies or directly work with completely disjoint objects.
 Other case-by-case solutions might be possible.
-(For example, in-place transposition (as attempted above) is an active subject of research;
-_optimal_ speed and memory transpositions might require specially designed libraries.)
-
-Note that this is also different from creating a named reference:
+For example, in-place transposition, as attempted above, is an active subject of research;
+_optimal_ speed and memory transpositions might require specially designed libraries.
 
 Finally, arrays can be efficiently moved by transferring ownership of the internal data.
 
@@ -444,7 +442,7 @@ These references can be given a name; using `auto` can be misleading since the r
 auto row = *A.begin();  // accepted by the language but misleading, row is *not* a value independent of A
 ----
 
-In my experience, however, the following usage pattern produces a more consistent idiom for generating references (still without copying elements):
+If you want to avoid this misleading notation, and alternative usage pattern is also accepted for generating references:
 
 [source,cpp]
 ----
@@ -455,8 +453,8 @@ auto&&       row1 =               A [1];  // same as decltype(A)::      referenc
 auto const& crow1 = std::as_const(A)[1];  // same as decltype(A)::const_reference crow0 = std::as_const(A)[1];
 ----
 
-The resulting object are of type `multi::subarray`, a type name that is rarely used explicity in code, thanks to the use of `auto`. 
-Because of their semantics they are called subarray-references and they are documented in the library's reference section.
+The resulting object are of type `multi::subarray`, which is a type name that is rarely used explicity in code, thanks to the use of `auto`. 
+Because of their semantics they are called subarray-references and they are documented in Section <<reference_>>.
 
 If a new value (array-value) is desired, these (equivalent) options express the intention more explicitly:
 
