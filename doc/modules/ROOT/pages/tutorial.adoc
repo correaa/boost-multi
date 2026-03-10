@@ -54,7 +54,7 @@ In the next section instead we will see an example of arrays owned by the librar
 
 We can create a static C-array of ``double``s, and refer to it via a two-dimensional (2D) array `multi::array_ref<double, 2>`.
 
-(This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online].)
+(This tutorial can be followed https://godbolt.org/z/4zWTPcoK6[online with Compiler Explorer].)
 
 [source,cpp]
 ----
@@ -717,7 +717,7 @@ For example, to convert an array of integers to an array of text strings:
 	multi::array<std::string, 2> B = A.element_transformed(to_string);  // or `auto B = + ...`
 	assert( B[1][1] == "4" );
 ----
-link:https://godbolt.org/z/vP6nPY539[(live)]
+link:https://godbolt.org/z/vP6nPY539[(open with Compiler Explorer)]
 
 
 [#tutorial_uninit_v_init]
@@ -854,7 +854,7 @@ constexpr auto trace() {
 
 static_assert( trace() == 4 + 2 + 10 );
 ----
-link:https://godbolt.org/z/Porre3z8s[(live)]
+link:https://godbolt.org/z/Porre3z8s[(open with Compiler Explorer)]
 
 [#tutorial_restrictions]
 == Restrictions (lazy arrays)
@@ -951,7 +951,7 @@ The allocation would occur only when the result is materialized as a new concret
 multi::array<double, 2> shift_lazy_copy(shift(lazy));          // allocates here
 multi::array<double, 2> shift_concrete_copy(shift(concrete));  // allocates here
 ----
-link:https://godbolt.org/z/qK9cYzrzv[(live)]
+link:https://godbolt.org/z/qK9cYzrzv[(open with Compiler Explorer)]
 
 Another legitimate and practical use is to leverage the application of standard algorithms on functions (instead of on stored data),
 taking advantage of execution in parallel (`std::execution::par` in this example) or on GPU devices (see example in the Interoperability section).
@@ -962,7 +962,7 @@ auto hankel = [](auto i, auto j) { return i + j; }^multi::extensions_t<2>{20, 10
 auto sum = std::reduce(std::execution::par, hankel[5].begin(), hankel[5].end(), 0);
 assert( sum == 100*5 + 100*(100 - 1)/2 );
 ----
-link:https://godbolt.org/z/8bhrjrxGG[(live)]
+link:https://godbolt.org/z/8bhrjrxGG[(open with Compiler Explorer)]
 
 The main constrain of the function is that it needs to return values independently of the order of evaluation in which elements are probed; more formally it has to be link:https://eel.is/c++draft/res.on.requirements#3[equality preserving] in the context in which it is used.
 
@@ -988,7 +988,7 @@ using multi::elementwise::operator*;  // import elementwise lazy multiplication
 
 D = A + B + 2*C + A*B;  // will not generate intermediate arrays and will not allocate if D has already the correct sizes
 ----
-link:https://godbolt.org/z/dsTe6a4T1[(live)]
+link:https://godbolt.org/z/dsTe6a4T1[(open with Compiler Explorer)]
 
 Composition of operators form lazy expressions.
 
