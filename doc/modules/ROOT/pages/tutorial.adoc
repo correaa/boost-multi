@@ -1,6 +1,6 @@
 [#tutorial]
 
-= Tutorial (advanced usage)
+= Tutorial
 
 :idprefix: tutorial_
 
@@ -228,7 +228,7 @@ Array references do not own memory and, just as language references, can not be 
 Since `array_ref` is an array reference, it can "dangle" if the original memory is deallocated.
 
 [#tutorial_copy_assign]
-== Copy, and assigment (, and aliasing)
+== Copy, Assigment, and Aliasing
 
 The library offers value semantics for the `multi::array<T, D>` family of classes.
 Constructing or assigning from an existing array generates a copy of the original object, independent of the original one but equal in value.
@@ -242,7 +242,7 @@ assert(  B2[0][0] ==  A2[0][0] )
 assert( &B2[0][0] != &A2[0][0] );  // but they are independent
 ----
 
-A (mutable) array can be assigned at any moment, independently of the previous state or shape (extensions).
+An array can be assigned at any moment, independently of the previous state or shape (extensions).
 The dimensionality must match.
 
 [source,cpp]
@@ -330,7 +330,7 @@ In summary, to make a copy (enforce value semantics), use prefix `operator+`, to
 * Avoid `auto y = x;`, although accepted by the language, it is not clear what category or lifetime `y` has.
 
 [#tutorial_change_size]
-== Change sizes (extents)
+== Change Sizes
 
 Arrays can change their size while _preserving elements_ with the `reextent` method.
 
@@ -520,7 +520,7 @@ and the range defined by the pair `begin(A), end(A)` is equivalent to `A(extensi
 The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equivalent to `A[n][0]`.
 
 [#tutorial_element_access]
-== Element access and partial access
+== Element Access and Partial Access
 
 Index access mimics that of C-fixed sizes arrays. 
 For example, a 2-dimensional array will access to an element by specifying two indices `A[1][2]`,
@@ -584,7 +584,7 @@ gj_solve(A({1000, 4000}, {0, 3000}), y);
 ----
 
 [#tutorial_slices_and_strides]
-== Slices and strides
+== Slices and Strides
 
 Given an array, a slice in the first dimension can be taken with the `sliced` function. 
 `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
@@ -721,7 +721,7 @@ link:https://godbolt.org/z/vP6nPY539[(open with Compiler Explorer)]
 
 
 [#tutorial_uninit_v_init]
-== Uninitialized vs. initialized elements
+== Uninitialized vs. Initialized Elements
 
 If available, the library can take advantage of trivial initialization for element types that specifically support it.
 
@@ -840,7 +840,7 @@ int main() {
 ----
 
 [#tutorial_constexpr]
-== Compile-time evaluation (constexpr)
+== Compile-time Evaluation
 
 With certain limitations imposed by the language, arrays can be declared in contexts with compile-time evaluation.
 
@@ -848,16 +848,16 @@ With certain limitations imposed by the language, arrays can be declared in cont
 ----
 constexpr auto trace() {
 	multi::array<int, 2> arr = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-	arr[2][2] = 10;
-	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end());
+    arr[2][2] = 100;
+	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), 0);
 }
 
-static_assert( trace() == 4 + 2 + 10 );
+static_assert( trace() == 1 + 5 + 100 );
 ----
-link:https://godbolt.org/z/Porre3z8s[(open with Compiler Explorer)]
+link:https://godbolt.org/z/snrzY91eE[(open with Compiler Explorer)]
 
 [#tutorial_restrictions]
-== Restrictions (lazy arrays)
+== Restrictions
 
 So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
 In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
@@ -967,7 +967,7 @@ link:https://godbolt.org/z/8bhrjrxGG[(open with Compiler Explorer)]
 The main constrain of the function is that it needs to return values independently of the order of evaluation in which elements are probed; more formally it has to be link:https://eel.is/c++draft/res.on.requirements#3[equality preserving] in the context in which it is used.
 
 [#tutorial_elementwise]
-== Elementwise lazy expressions
+== Elementwise Expressions
 
 The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.
 Lazy expressions are useful for generating complex array expressions that are evaluated element-wise without the need for temporary arrays or storage.

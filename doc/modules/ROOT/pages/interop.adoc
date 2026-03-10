@@ -354,10 +354,10 @@ The output JSON file created by Cereal in the previous example looks like this.
     }
 }
 ----
-(The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output would have a similar structure.)
+The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output are different but they would have a similar structure.
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
-Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`.
+Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array of with random `double` elements.
 
 |===
 | Archive format (Library)     | file size     | speed (read - write)           | time (read - write)
