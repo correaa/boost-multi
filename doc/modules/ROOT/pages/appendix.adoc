@@ -28,7 +28,7 @@ Instead, the Multi library is dimension-generic and doesn't make any algebraic a
 Other frameworks includes the OpenCV (Open Computing Vision) framework, which is too specialized to make a comparison here.
 
 Here is a table comparing with `mdspan`, R. Garcia's link:https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html[Boost.MultiArray] and Eigen.
-link:https://godbolt.org/z/555893MqW[(online)].
+link:https://godbolt.org/z/555893MqW[((open with Compiler Explorer))].
 
 |===
 |                                      | Multi                                                                      | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen
@@ -164,7 +164,7 @@ do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
 end do              ! }
 -----
 
-link:https://godbolt.org/z/77onne46W[(online)]
+link:https://godbolt.org/z/77onne46W[((open with Compiler Explorer))]
 
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
@@ -205,7 +205,7 @@ If you don't have access to the ranges library (C++20) or if you want to control
   std::fill(std::execution::par, arr.elements().begin(), arr.elements().end(), 1);
 ...
 -----
-link:https://godbolt.org/z/sn8MqPEP5[(online)]
+link:https://godbolt.org/z/sn8MqPEP5[(open with Compiler Explorer)]
 
 If the data is in the GPU, you can use Thrust algorithms (which detects the memory space automatically, and it is parallel by default)
 
@@ -226,7 +226,7 @@ or more explicitly as,
   thrust::fill(thrust::device, arr.elements().begin(), arr.elements().end(), 1);
 ...
 -----
-link:https://godbolt.org/z/55vd7v8xf[(online)]
+link:https://godbolt.org/z/55vd7v8xf[(open with Compiler Explorer)]
 
 To create new array with a constant value, it is easier to directly construct it:
 
