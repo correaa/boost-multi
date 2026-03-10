@@ -703,7 +703,7 @@ template<> struct extensions_t<0> : tuple<> {
 	static BOOST_MULTI_HD constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
 	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
 
-	constexpr void operator[](index) const = delete;
+	constexpr auto operator[](index) const -> element = delete;
 
 	static BOOST_MULTI_HD constexpr auto next_canonical() /*const*/ -> bool { return true; }
 	static BOOST_MULTI_HD constexpr auto prev_canonical() /*const*/ -> bool { return true; }
@@ -725,11 +725,6 @@ template<> struct extensions_t<0> : tuple<> {
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
-
-	// template<class Fun>
-	// friend BOOST_MULTI_HD constexpr auto operator^(Fun&& fun, extensions_t const& xs) {
-	// 	return restriction<0, std::decay_t<Fun> >(xs, std::forward<Fun>(fun));
-	// }
 };
 
 template<> struct extensions_t<1> : tuple<multi::index_extension> {
