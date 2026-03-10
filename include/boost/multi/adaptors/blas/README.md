@@ -155,7 +155,7 @@ multi::array<double, 1> const v2 = multi::blas::copy(v);  // case 1: allocates s
 // auto const v2 = +v_copy;  // same effect as line above
 ```
 
-(Note that `auto const v2 = v_copy;` would not create a value or perform a copy, it will simply hold a variable with the "copy range".
+(Note that `auto const v2 = v_copy;` would not create a value or perform a copy, it will hold a variable with the "copy range" without performing any operation.
 This is not recommended as it can be confused and create a dangling range.)
 
 2) to assign to an existing vector (and resize it if is needed and possible)

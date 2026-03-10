@@ -22,7 +22,7 @@ This library can replace Boost.MultiArray in most contexts, it even fulfills the
 Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
 it doesn't support value-semantics, iterator support is limited, and it has other technical problems.
 
-link:https://eigen.tuxfamily.org/index.php?title=Main_Page[Eigen] is a very popular matrix linear algebra framework library, and as such, it only handles the special 2D (and 1D) array case.
+link:https://eigen.tuxfamily.org/index.php?title=Main_Page[Eigen] is a popular matrix linear algebra framework library, and as such, it only handles the special 2D (and 1D) array case.
 Instead, the Multi library is dimension-generic and doesn't make any algebraic assumptions for arrays or contained elements (but still can be used to _implement_, or in combination, with dense linear algebra algorithms.)
 
 Other frameworks includes the OpenCV (Open Computing Vision) framework, which is too specialized to make a comparison here.
@@ -105,7 +105,7 @@ internal representation (memory ordering) can still be different, affecting oper
 
 Range notation such as `1:2` is replaced by `{0, 2}`, which considers both the difference in the start index and the half-open interval notation in the C++ conventions.
 Stride notation such as `1:10:2` (i.e., from first to tenth included, every two elements) is replaced by `{0, 10, 2}`.
-Complete range interval (single `:` notation) is replaced by `multi::_`, which can be used simply as `_` after the declaration `using multi::_;`.
+Complete range interval (single `:` notation) is replaced by `multi::_`, (or by just `_` after the declaration `using multi::_;`).
 These rules extend to higher dimensionality.
 
 // Multi doesn't provide algebraic operators, using algorithms is encouraged instead.

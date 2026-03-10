@@ -40,7 +40,7 @@ Finally, each dimension (e.g., 1D, 2D, 3D) would need to be explicitly coded and
 
 A proper multidimensional array abstraction encapsulates shape and stride information, allowing users to write "A(i, j)" rather than manually compute offsets.
 This improves readability, safety, and maintainability, while still enabling zero-overhead access and layout flexibility.
-In short, a multidimensional array type expresses intent directly and separates algorithmic logic from memory layout details—something manual indexing simply cannot do cleanly at scale.
+In short, a multidimensional array type expresses intent directly and separates algorithmic logic from memory layout details —- something manual indexing cannot do cleanly at scale.
 
 There are several libraries for multidimensional arrays in C++ (see the section on comparison with other libraries), and all address this abstraction problem at different levels of generality.
 This library aims to be general in several aspects, dimensionality, memory control, index access, subarray access, index access, compatibility, iteration, algorithms, etc.
@@ -310,18 +310,18 @@ auto B2 = std::move(A2);  // A2 is empty after this
 
 Subarrays do not own the data; therefore they cannot directly take advantage of this feature.
 However, individual elements of a view can still be moved; this is particularly useful if the elements are expensive to copy (elements that are containers themselves for example).
-A "moved" subview is simply another kind of view of the elements.
+A "moved" subview is another kind of view of the elements:
 
 [source,cpp]
 ----
-multi::array<std::vector<double>, 2> A({10, 10}, std::vector<double>(1000));
+multi::array<std::vector<double>, 2> A({10, 10}, std::vector<double>(256));
 multi::array<std::vector<double>, 2> B({10, 10});
 ...
 B[1] = A[2].element_moved();
 ----
 
 Each of the 10 *elements* of the third row of `A` is moved into the second row of `B`.
-`A[2]` still has 10 (moved-from) empty vectors.
+`A[2]` still contains 10 (moved-from) empty vectors.
 
 In summary, to make a copy (enforce value semantics), use prefix `operator+`, to enforce reference semantics (avoid copies) use `auto&&` declarations:
 
@@ -885,7 +885,7 @@ For example, `R[1][2]` yields `12` (by performing the operation `10*1 + 2`).
 The main property of a restriction array is that it can be generically used in place of a concrete array because it has the same generic interface as `multi::array`, such as `.elements()`, `.transposed()`, `.rotated()`, and (partial) indexing (`operator[]`).
 They also provide a complete iterator interface, `.begin()`, `.end()`, `.home()`, and they can be used as standard ranges.
 This allows generic algorithms, including some outside Multi, to use these arrays.
-As a simple example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end()).`
+As an example, the sum of all the elements of `R` is `std::reduce(R.elements().begin(), R.elements().end()).`
 (the same expression as if it were a concrete array).
 
 A key difference with concrete arrays is that their elements cannot be changed after creation (i.e., they are immutable). Additionally, concrete arrays do not use internal pointers—addresses that indicate where data is stored—or internal layouts—formats describing the structure of the array—to extract information (e.g., through functions like `.data_elements()`, `.base()`, `.layout()`, or `.stride()`).
