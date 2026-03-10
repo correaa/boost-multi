@@ -131,14 +131,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-		// #else
-		//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-		//      std::vector<multi::array<int, 2>> const wa = {
-		//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-		//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-		//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-		//      };
-		// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );

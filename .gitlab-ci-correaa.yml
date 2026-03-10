@@ -1143,6 +1143,9 @@ circle-latest c++20:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
+    - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
+    - tar -zxvf python-build_*.tgz
+    - ls
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_*.tgz
     - cd ..
