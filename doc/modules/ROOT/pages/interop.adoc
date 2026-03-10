@@ -715,7 +715,7 @@ Although it is not ideal, arrays can be printed and formated by looping over ele
 
 Fortunately, the library automatically works with the external library link:https://fmt.dev/latest/index.html[pass:[{fmt}]], both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library;
-they simply work well together using the "ranges" part of the formatting library.
+they work well together using the "ranges" part of the formatting library.
 fmt allows a high degree of configurability.
 
 This example prints a 2-dimensional subblock of a larger array:
@@ -749,7 +749,7 @@ with the output:
 >  [6, 7]]
 > ```
 
-In a similar way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
+In a similar way, the size of the array can be printed by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
 
 (link:https://godbolt.org/z/7sGExn35n[((open with Compiler Explorer))]).
 

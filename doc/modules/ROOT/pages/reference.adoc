@@ -424,7 +424,7 @@ A[1][1] = 9.0;
 
 assert( buffer[11] == 9.0 );  // the target memory is affected
 ----
-Since `array_ref` does not manage the memory associated with it, the reference can simply dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
+Since `array_ref` does not manage the memory associated with it, the reference can dangle if the `buffer` memory is reallocated (e.g. by vector-`resize` in this case).
 
 [#ref_special_memory]
 === Special Memory: Pointers and Views
