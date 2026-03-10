@@ -11,9 +11,9 @@ The individual elements are initialized from a nested rectangular list.
 
 [source,cpp]
 ----
-multi::array<double, 2> A = {
-    {1.0, 2.0, 3.0},
-    {4.0, 5.0, 6.0},
+multi::array<int, 2> A = {
+    {1, 2, 3},
+    {4, 5, 6},
 };
 
 auto const [n, m] = A.sizes();
@@ -22,15 +22,26 @@ assert( n == 2 );  // or std::get<0>(A.sizes()) == 2
 assert( m == 3 );  // or std::get<1>(A.sizes()) == 3
 
 assert( A.size() == 2 );  // size in first dimension, same as std::get<0>(A.sizes())
-assert( A.num_elements() == 6 );  // total number of elements
 ----
 
 Individual elements can be accessed by the multidimensional indices, using brackets.
 
 [source,cpp]
 ----
-assert( A[1][2] == 6.0 );
+assert( A[1][2] == 6 );
 ----
+
+Arrays can be viewed simultaneously as a nested array or as flat set of elemets.
+
+```
+assert( A.elements().size() == 6 );  // total number of elements
+
+assert( A.elements()[6] == 6 );
+assert( &A.elements()[6] == &A[1][2] );
+```
+
+The elements can be also accesed through iterators; 
+`A.begin()`, `A.begin()->begin()` and `A.elements().begin()` are examples of valid ways to access the elements that allows the iteraction with algorithms.
 
 The value of an array can be copied, (moved,) and compared;
 copies are equal but independent (disjoint).
@@ -49,8 +60,8 @@ An array can be initialized from its sizes alone, in which case the element valu
 
 [source,cpp]
 ----
-multi::array<double, 3> C({3, 4, 5});
-assert( C.num_elements() == 3*4*5 );   // 60 elements with unspecified values
+multi::array<double, 3> C({3, 4, 5});  // 60 elements with unspecified values
+assert( C.elements().size() == 3*4*5 );  // or C.num_elements()
 ----
 
 Arrays can be passed by value or by reference.
