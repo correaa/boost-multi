@@ -345,6 +345,15 @@ assert( A[0][0] == 1 );
 ----
 
 An alternative syntax with an additional parameter, `.reextent({...}, value)`, sets _new_ (not preexisting) elements to a specific value.
+For example `A.reextent({4, 4}, 0)` results in
+>```
+>1 2 3 0
+>4 5 6 0
+>0 0 0 0
+>0 0 0 0
+>```
+
+The reason that the new element `A[0][3]` is `0` is because this element didn't exist in the original array.
 
 The primary purpose of `reextent` is element preservation.
 All calls to `reextent` allocate and deallocate memory; therefore, they are not amortized.
