@@ -217,7 +217,11 @@ class range {
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto first() const { return first_; }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto last() const { return last_; }
 
-	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
+	constexpr auto operator[](difference_type n) const -> const_reference {
+		assert(n >= 0);
+		assert(n < size());
+		return first() + n;
+	}
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0

@@ -620,6 +620,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		auto exts = multi::extensions_t<2>(3, 4);
+
+		// auto something = exts[-1];
+		// (void)something;
+
 		BOOST_TEST( exts.extensions() == exts );
 
 		static_assert(std::is_default_constructible_v<decltype(exts.elements())::iterator>);
@@ -656,6 +660,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		auto exts = multi::extensions_t<1>(10);
+
+		// BOOST_TEST( exts[-1] != decltype(exts[-1]){} );  gives an out-of-bounds assert
 
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
