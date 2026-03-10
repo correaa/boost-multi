@@ -1,6 +1,6 @@
 [#primer]
 
-= Primer (basic usage)
+= Getting Started
 
 :idprefix: primer_
 
@@ -75,4 +75,4 @@ In this way, the functions can be applied to subblocks of larger matrices.
 assert( &element_1_1(C[0]) == &C[0][1][1] );
 ----
 
-(Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.)
+Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.
