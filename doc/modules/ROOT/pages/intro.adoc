@@ -108,7 +108,7 @@ Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
-Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: fftw, , lapack, thurst, or CUDA
+Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thurst], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
 (all of them can be installed with
 `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
 or `sudo dnf install fftw-devel ...`.
