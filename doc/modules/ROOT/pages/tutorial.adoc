@@ -575,7 +575,7 @@ A first naive version of a 3x3 Gaussian blur involving 3 arrays (input, output a
 		out[i][j] = sum;
 	}
 ----
-link:https://godbolt.org/z/njd8cozrc[(open on Compiler Explorer)]
+link:https://godbolt.org/z/MojPrb5eP[(open on Compiler Explorer)]
 
 // == "Pointer" to subarray
 
