@@ -556,7 +556,7 @@ std::transform(
 )
 ----
 
-A first naive version of a 3x3 Gaussian blur applied to 3 arrays (input, output and a kernel) could be written as,
+A first naive version of a 3x3 Gaussian blur involving 3 arrays (input, output and a kernel) could be written as,
 
 [source,cpp]
 ----
@@ -570,7 +570,7 @@ A first naive version of a 3x3 Gaussian blur applied to 3 arrays (input, output 
 		double sum = 0.0;
 		for(auto [k, l] : kernel.extensions().elements()) {  // go through all the indices of kernel
 			// skip boundary elements here
-			sum += in[i + k][j + l] * kernel[k][l];
+			sum += in[i + k - 1][j + l - 1] * kernel[k][l];
 		}
 		out[i][j] = sum;
 	}
