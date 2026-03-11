@@ -374,7 +374,7 @@ For the same reason, subarrays cannot be assigned from an array or another subar
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
 [#tutorial_iteration]
-== Iteration (vs range-loops)
+== Iteration
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
 For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extensions()`, and in the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
@@ -389,7 +389,7 @@ For this type of usage, the valid range of indices in all the dimensions of an a
 	auto [is, js] = A.extensions();
 	for(auto i : is) {  // is == {0, 1} (range from 0 to 2, not included)
 		for(auto j : js) {  // ij = {0, 1, 2} (range from 0 to 3, not included)
-			A[i][j] *= 2;
+			A[i][j] = 5;
 		}
 	}
 ----
@@ -400,7 +400,7 @@ Using C++'s range-based for, the elements of the 2D array can be accessed direct
 ----
 	for(auto&& row : A) {
 		for(auto&& e: row) {  // equivalent to for(auto& e: row) or for(int& e: row)
-			e *= 2;
+			e = 5;
 		}
 	}
 ----
@@ -492,6 +492,90 @@ recursive_print(A);
 > ```
 
 This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
+
+In fact, using the `.elements()` method, one can achieve an effective way to fuse nested loops.
+
+[source,cpp]
+----
+	for(auto& e : A.elements()) {
+		e = 5;
+	}
+----
+
+This works whether `A` is an array-value, or a subarray-reference, as long as it can be mutated.
+
+This also gives the idea that we can write many operations by using standard algorithms,
+for example, `std::fill(A.elements().begin(), A.elements().end(), 5)`.
+
+There are other useful iterable random access sequences in the library.
+For example, the results of `A.extension()` is it self iterable and indexable; returning a sequence with valid indices for `A`.
+
+[source,cpp]
+----
+	for(auto idx : A.extension()) {
+		A[idx][0] = 5;
+	}
+----
+
+`A.extension()` not only has a `.begin()` and `.end()`, but it also can be indexed, `A.extension()[1] == 1`.
+`A.extension()` is conceptually the sequence {0, 1}
+
+`A.extensions()` deserves special attention because manipulation of this object enables powerful constructs.
+As we described earlier, it can regarded as a product type of one-dimensional extensions, 
+henceforth decomposed as `auto [is, js] = A.extensions();` or as `std::get<0>(A.extensions())` and `std::get<1>(A.extensions())` (like a tuple).
+Furthermore `A.extensions()` can be regarded as an n-dimensional array whose elements are the cartesian product of valid indices.
+In our example:
+
+```
+{
+	{[0, 0], [0, 1], [0, 2]},
+	{[1, 0], [1, 1], [1, 2]}
+}
+```
+
+Except for the fact that the elements are not really stored in memory, but generated on the fly, this object behaves like an array in many respects.
+For example, it has an `.elements()` method as well to access the cartesian products in a flat way.
+
+Combining these features we can write an assignment based on coordinates in a single loop
+
+[source,cpp]
+----
+	for(auto [i, j] : A.extensions().elements()) {
+		A[i][j] = i + 10*j;
+	}
+----
+
+With algorithms this is 
+
+[source,cpp]
+----
+std::transform(
+	A.extensions().elements().begin(), A.extensions().elements().end(),  // source
+	A.elements().begin(),  // destination
+	[](auto const& ij) { auto [i, j] = ij; return i + 10*j; }  // function of coordinates
+)
+----
+
+A first naive version of a 3x3 Gaussian blur applied to 3 arrays (input, output and a kernel) could be written as,
+
+[source,cpp]
+----
+	multi::array<double, 2> kernel = {
+		{1.0/16, 2.0/16, 1.0/16},
+		{2.0/16, 4.0/16, 2.0/16},
+		{1.0/16, 2.0/16, 1.0/16}
+	};
+
+	for(auto [i, j] : out.extensions().elements()) {  // go through all the indices of out
+		double sum = 0.0;
+		for(auto [k, l] : kernel.extensions().elements()) {  // go through all the indices of kernel
+			// skip boundary elements here
+			sum += in[i + k][j + l] * kernel[k][l];
+		}
+		out[i][j] = sum;
+	}
+----
+link:https://godbolt.org/z/njd8cozrc[(open on Compiler Explorer)]
 
 // == "Pointer" to subarray
 
