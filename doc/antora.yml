@@ -1,6 +1,9 @@
 name: multi
 version: ~
 title: Boost.Multi
+asciidoc:
+  attributes:
+    page-pagination: ''
 nav:
   - modules/ROOT/nav.adoc
 start_page: intro.adoc
