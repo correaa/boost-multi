@@ -540,9 +540,9 @@ Combining these features we can write an assignment based on coordinates in a si
 
 [source,cpp]
 ----
-	for(auto [i, j] : A.extensions().elements()) {
-		A[i][j] = i + 10*j;
-	}
+for(auto [i, j] : A.extensions().elements()) {
+	A[i][j] = i + 10*j;
+}
 ----
 
 With algorithms this is 
@@ -560,20 +560,20 @@ A first naive version of a 3x3 Gaussian blur involving 3 arrays (input, output a
 
 [source,cpp]
 ----
-	multi::array<double, 2> kernel = {
-		{1.0/16, 2.0/16, 1.0/16},
-		{2.0/16, 4.0/16, 2.0/16},
-		{1.0/16, 2.0/16, 1.0/16}
-	};
+multi::array<double, 2> kernel = {
+	{1.0/16, 2.0/16, 1.0/16},
+	{2.0/16, 4.0/16, 2.0/16},
+	{1.0/16, 2.0/16, 1.0/16}
+};
 
-	for(auto [i, j] : out.extensions().elements()) {  // go through all the indices of out
-		double sum = 0.0;
-		for(auto [k, l] : kernel.extensions().elements()) {  // go through all the indices of kernel
-			// skip boundary elements here
-			sum += in[i + k - 1][j + l - 1] * kernel[k][l];
-		}
-		out[i][j] = sum;
+for(auto [i, j] : out.extensions().elements()) {  // go through all the indices of out
+	double sum = 0.0;
+	for(auto [k, l] : kernel.extensions().elements()) {  // go through all the indices of kernel
+		// skip boundary elements here
+		sum += in[i + k - 1][j + l - 1] * kernel[k][l];
 	}
+	out[i][j] = sum;
+}
 ----
 link:https://godbolt.org/z/MojPrb5eP[(open on Compiler Explorer)]
 
