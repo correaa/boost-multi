@@ -10,7 +10,7 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
-#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<compare>)
 #include <compare>  // IWYU pragma: keep
 #endif
 #include <complex>   // for complex
