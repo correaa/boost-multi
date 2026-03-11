@@ -31,7 +31,7 @@ Individual elements can be accessed by the multidimensional indices, using brack
 assert( A[1][2] == 6 );
 ----
 
-Arrays can be viewed simultaneously as a nested array or as flat set of elemets.
+Arrays can be viewed simultaneously as a nested array or as _flat_ sequence of elemets.
 
 ```
 assert( A.elements().size() == 6 );  // total number of elements
@@ -40,7 +40,7 @@ assert( A.elements()[6] == 6 );
 assert( &A.elements()[6] == &A[1][2] );
 ```
 
-The elements can be also accesed through iterators; 
+The elements can be also accesed through iterators;
 `A.begin()`, `A.begin()->begin()` and `A.elements().begin()` are examples of valid ways to access the elements that allows the iteraction with algorithms.
 
 The value of an array can be copied, (moved,) and compared;
@@ -48,7 +48,7 @@ copies are equal but independent (disjoint).
 
 [source,cpp]
 ----
-multi::array<double, 2> B = A;                 // we make a copy
+multi::array<int, 2> B = A;                 // we make a copy
 
 assert(  B              ==  A              );  // copies are equal
 assert(  B.extensions() ==  A.extensions() );  // extensions (sizes) are equal
@@ -60,7 +60,7 @@ An array can be initialized from its sizes alone, in which case the element valu
 
 [source,cpp]
 ----
-multi::array<double, 3> C({3, 4, 5});  // 60 elements with unspecified values
+multi::array<int, 3> C({3, 4, 5});  // 60 elements with unspecified values
 assert( C.elements().size() == 3*4*5 );  // or C.num_elements()
 ----
 
@@ -70,16 +70,16 @@ The most useful functions work on the _concept_ of an array rather than on a con
 
 [source,cpp]
 ----
-template<class ArrayDouble2D>  // instead of the overspecific argument multi::array<double, 2>
-auto element_1_1(ArrayDouble2D const& m) -> double const& { return m[1][1]; }
+template<class ArrayOfInts2D>  // instead of the overspecific argument multi::array<double, 2>
+auto element_1_1(ArrayOfInts2D const& m) -> int const& { return m[1][1]; }
 ...
 assert( &element_1_1(A) == &A[1][1] );
 ----
 
-The function expects any array or subarray of dimension 2 (or greater) and returns an element with type `double`.
+The function expects any array or subarray of dimension 2 (or greater) and returns an element with type `int`.
 
 The generic function template arguments that are not intended to be modified are passed by `const&`; otherwise, they are passed by forward-reference `&&`.
-In this way, the functions can be applied to subblocks of larger matrices.
+In this way, the functions can be also applied to subblocks of larger matrices.
 
 [source,cpp]
 ----
