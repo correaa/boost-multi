@@ -3,7 +3,8 @@ $CXX $0 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
 #endif
 // Copyright 2018-2024 Alfredo A. Correa
 
-#include "../../multi/array.hpp"
+#include <boost/multi/array.hpp>
+#include <boost/multi/detail/real.hpp>
 
 #include<algorithm>  // transform
 #include<execution>
@@ -17,7 +18,7 @@ namespace multi = boost::multi;
 template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
-	auto m = size(A);// n = size(A[0]);//std::get<1>(sizes(A));
+	auto m = size(begin(A));// n = size(A[0]);//std::get<1>(sizes(A));
 	using std::begin; using std::end; using multi::rotated;
 	for(auto k = 0*m; k != std::min(m - 1, size(rotated(A))); ++k){
 		auto const& Ak = A[k];
@@ -68,13 +69,13 @@ Matrix&& lu_fact3(Matrix&& A){
 using std::cout;
 int main(){
 	{
-		multi::array<double, 2> A = {
+		multi::array<boost::multi::float_type, 2> A = {
 			{-3.0, 2.0, -4.0},
 			{ 0.0, 1.0,  2.0},
 			{ 2.0, 4.0,  5.0},
 		};
-		multi::array<double, 1> y = {12.0, 5.0, 2.0};
-		double AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+		multi::array<boost::multi::float_type, 1> y = {12.0, 5.0, 2.0};
+		boost::multi::float_type AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		using std::copy;
 		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
 
@@ -83,8 +84,10 @@ int main(){
 		assert( std::equal(begin(A), end(A), begin(*multi::array_ptr(&AA)), end(*multi::array_ptr(&AA))) );
 	}
 	{
-		multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
-		std::transform(A.data(), A.data() + A.num_elements(), A.data(), [](auto x){return x/=2.0e6;});
+		multi::array<boost::multi::float_type, 2> A({6000, 7000}); 
+		//std::iota(begin(A), begin(A) + A.num_elements(), 0.1);
+		
+		std::transform(begin(A), begin(A) + A.num_elements(), begin(A), [](auto& x){return x/=2.0e6;});
 		{
 			boost::timer::auto_cpu_timer t;
 			lu_fact(A({3000, 6000}, {0, 4000}));
