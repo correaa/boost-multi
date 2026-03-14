@@ -11,12 +11,15 @@
 namespace boost::multi {
 
 template <typename Precision>
-struct basic_real_type {
+struct basic_real_type final {
 	Precision v{};
 
 	const auto size() const {
 		return sizeof(v);
 	}
+
+    basic_real_type() = default;
+    ~basic_real_type() = default;
 
 	friend bool operator==(const basic_real_type& lhs, const Precision& rhs) {
 		return lhs.v == rhs;
