@@ -10,9 +10,15 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 #include <iostream>
 #include <numeric>  // for std::iota
 #include <random>
+#if __cpp_lib_source_location
 #include <source_location>
+using std::source_location;
+#else
+#include <boost/assert/source_location.hpp>
+using boost::source_location;
+#endif
 
-	namespace {
+namespace {
 	struct lup {  // LU method for decomposition and solution
 
 		// translated from  https://en.wikipedia.org/wiki/LU_decomposition#C_code_example
@@ -120,7 +126,7 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 				auto const& Lrowi = LU[i]({0, i});
 				x[i] -= std::inner_product(begin(Lrowi), end(Lrowi), cbegin(x), 0.);
 			}
-			return std::forward<Vector>(x);
+			return std::forward<Vector&&>(x);
 		}
 
 		template<class LUMatrix, class Vector>
@@ -138,8 +144,9 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 
 namespace multi = boost::multi;
 
-int main() try {
-	{
+int main() {
+	try {
+		{
 		multi::array<double, 2> const Aconst = {
 			{ 6.80, -6.05, -0.45,  8.32, -9.67},
 			{-2.11, -3.30,  2.58,  2.71, -5.14},
@@ -156,31 +163,38 @@ int main() try {
 		lup::solve(A, P, x);
 	
 		std::cout << std::abs(x[4]) << std::endl;
-		(std::abs(x[4] - 0.565756) < 1e-4) ?: throw std::source_location::current();
-	}
-	{
-		multi::array<double, 2> A({4000, 4000});
-
-		std::random_device rd;         // Non-deterministic random number generator
-		std::mt19937       gen(rd());  // Mersenne Twister engine seeded with rd()
-
-		std::uniform_real_distribution<double> dist(-1.0, 1.0);
-		for(auto&& e : A.elements()) {
-			e = dist(gen);
+		(std::abs(x[4] - 0.565756) < 1e-4) ?: 
+#if __cpp_lib_source_location
+		throw source_location::current();
+#else
+		throw BOOST_CURRENT_LOCATION;
+#endif
 		}
+		{
+			multi::array<double, 2> A({4000, 4000});
 
-		multi::array<int, 1> P(multi::array<int, 1>::extensions_type{A.size()});
-		std::iota(P.begin(), P.end(), int{});
-		lup::decompose(A, P);
+			std::random_device rd;         // Non-deterministic random number generator
+			std::mt19937       gen(rd());  // Mersenne Twister engine seeded with rd()
 
-		multi::array<double, 1> x(A.size());
-		for(auto&& e : x.elements()) {
-			e = dist(gen);
+			std::uniform_real_distribution<double> dist(-1.0, 1.0);
+			for(auto&& e : A.elements()) {
+				e = dist(gen);
+			}
+
+			multi::array<int, 1> P(multi::array<int, 1>::extensions_type{A.size()});
+			std::iota(P.begin(), P.end(), int{});
+			lup::decompose(A, P);
+
+			multi::array<double, 1> x(A.size());
+			for(auto&& e : x.elements()) {
+				e = dist(gen);
+			}
+
+			lup::solve(A, P, x);
 		}
-
-		lup::solve(A, P, x);
 	}
-} catch(std::source_location const& loc) {
-	std::cerr << loc.file_name() << ':' << loc.line() << '\n';
-	throw;
+	catch(source_location const& loc) {
+		std::cerr << loc.file_name() << ':' << loc.line() << '\n';
+		throw;
+	}
 }

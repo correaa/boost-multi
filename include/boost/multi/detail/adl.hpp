@@ -8,7 +8,8 @@
 
 #include "boost/multi/detail/what.hpp"
 
-#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 
 #ifdef __NVCC__
 #pragma nv_diagnostic push
@@ -74,7 +75,8 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 
 class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(::thrust::           copy_n(                      std::forward<As>(args)...))
 #endif
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     copy_n(                      std::forward<As>(args)...))
@@ -104,7 +106,8 @@ inline constexpr adl_move_t adl_move;
 
 class adl_fill_n_t {
 	template<         class... As> constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  fill_n              (std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class... As> constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(           thrust::  fill_n              (std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     fill_n              (std::forward<As>(args)...))
@@ -118,7 +121,8 @@ inline constexpr adl_fill_n_t adl_fill_n;
 
 class adl_fill_t {
 	template<         class... As> constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  fill              (std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class... As> constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(           thrust::  fill              (std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     fill              (std::forward<As>(args)...))
@@ -132,7 +136,8 @@ inline constexpr adl_fill_t adl_fill;
 
 class adl_equal_t {
 	template<         class...As> constexpr auto _(priority<1>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(               std::  equal(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class...As> constexpr auto _(priority<2>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(          ::thrust::  equal(                      std::forward<As>(args)...))
 #endif
 	template<         class...As> constexpr auto _(priority<3>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(                      equal(                      std::forward<As>(args)...))
@@ -154,7 +159,8 @@ class adl_copy_t {
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	>
 	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first) const BOOST_MULTI_DECLRETURN(std::copy(first, last, d_first))  // cppcheck-suppress functionStatic ; TODO(correaa) consider making these functions static
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(         ::thrust::copy(std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                   copy(std::forward<As>(args)...))
@@ -248,7 +254,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 
 	try {
 		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
-		//  workadoung for gcc 8.3.1 in Lass
+		//  workaround for gcc 8.3.1 in Lass
 		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return first + count;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	} catch(...) {
@@ -258,8 +264,8 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		// LCOV_EXCL_STOP
 	}
 
-
-	// return current;
+	// amlel-el-mahrouss not sure about commeting the return statement though.
+	return current;
 }
 
 #ifdef __clang__
@@ -342,7 +348,8 @@ inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
@@ -420,13 +427,13 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), std::move(*first));
 		}
-		return current;
 	} catch(...) {
 		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*d_first));
 		}
 		throw;
 	}
+	return current;
 }
 
 #ifdef __clang__
@@ -482,7 +489,8 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 
 namespace adl {
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
+	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION < 300102
 	using ::thrust::distance;
 #else
@@ -535,7 +543,7 @@ inline constexpr adl_end_t adl_end;
 class adl_size_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                std::size(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     size(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(    std::decay_t<T>::size(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(    std::decay_t<T&&>::size(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).size(std::forward<As>(args)...))
 
  public:
