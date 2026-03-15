@@ -4,7 +4,7 @@ $CXX $0 -std=c++17 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;ex
 // Copyright 2018-2024 Alfredo A. Correa
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/real.hpp>
+#include <boost/multi/detail/real_type.hpp>
 
 #include <algorithm>  // transform
 #include <execution>
@@ -20,7 +20,7 @@ Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
 	auto m = size(A[0]);// n = size(A[0]);//std::get<1>(sizes(A));
 	using std::begin; using std::end; using multi::rotated;
-	for(auto k = 0*m; k != std::min(m - 1, size(rotated(A))); ++k){
+	for(auto k = 0*m; k != std::min(m - 1, size(rotated(begin(A)))); ++k){
 		auto const& Ak = A[k];
 		auto const& Akk = Ak[k];
 #if __cpp_lib_execution
@@ -94,7 +94,7 @@ int main(){
 	}
 	{
 		multi::array<boost::multi::float_type, 2> A({6000.0, 7000.0}); 
-		//std::iota(begin(A), begin(A) + A.num_elements(), 0.1);
+		std::iota(begin(A), begin(A) + A.num_elements(), 0.1);
 		
 		std::transform(begin(A), begin(A) + A.num_elements(), begin(A), [](auto& x){return x/=2.0e6;});
 		{
