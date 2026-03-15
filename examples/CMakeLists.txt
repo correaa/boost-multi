@@ -17,6 +17,7 @@ add_subdirectory("../" multi-bin)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
 
 enable_testing()
 include(CTest)
@@ -34,6 +35,18 @@ add_test(NAME gj_solve.cpp.x COMMAND gj_solve.cpp.x)
 add_executable(redux.cpp.x redux.cpp)
 target_link_libraries(redux.cpp.x PUBLIC multi)
 target_link_libraries(redux.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+add_executable(basic_real_type.cpp.x basic_real_type.cpp)
+target_link_libraries(basic_real_type.cpp.x PUBLIC multi)
+target_link_libraries(basic_real_type.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+add_executable(lu_solve.cpp.x lu_solve.cpp)
+target_link_libraries(lu_solve.cpp.x PUBLIC multi)
+target_link_libraries(lu_solve.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+add_executable(lu_fact.cpp.x lu_fact.cpp)
+target_link_libraries(lu_fact.cpp.x PUBLIC multi)
+target_link_libraries(lu_fact.cpp.x PRIVATE ${Boost_LIBRARIES})
 
 find_package(TBB)
 
