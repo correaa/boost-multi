@@ -36,13 +36,17 @@ add_executable(redux.cpp.x redux.cpp)
 target_link_libraries(redux.cpp.x PUBLIC multi)
 target_link_libraries(redux.cpp.x PRIVATE ${Boost_LIBRARIES})
 
-add_executable(lu_fact.cpp.x lu_fact.cpp)
-target_link_libraries(lu_fact.cpp.x PUBLIC multi)
-target_link_libraries(lu_fact.cpp.x PRIVATE ${Boost_LIBRARIES})
+add_executable(basic_real_type.cpp.x basic_real_type.cpp)
+target_link_libraries(basic_real_type.cpp.x PUBLIC multi)
+target_link_libraries(basic_real_type.cpp.x PRIVATE ${Boost_LIBRARIES})
 
 add_executable(lu_solve.cpp.x lu_solve.cpp)
 target_link_libraries(lu_solve.cpp.x PUBLIC multi)
 target_link_libraries(lu_solve.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+add_executable(lu_fact.cpp.x lu_fact.cpp)
+target_link_libraries(lu_fact.cpp.x PUBLIC multi)
+target_link_libraries(lu_fact.cpp.x PRIVATE ${Boost_LIBRARIES})
 
 find_package(TBB)
 

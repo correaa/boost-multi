@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <utility>
 
+/// @brief Implements an operation for ID and OP.
+/// @param ID This could be /=.
+/// @param Op This could be /.
 #define BOOST_MULTI_DECL_OPERATOR(ID, OP) \
   friend PrecisionType& operator ID (basic_real_type& lhs, const PrecisionType& rhs) { \
 lhs.pv_ ID rhs; \
@@ -17,6 +20,14 @@ return lhs.pv_; \
 friend PrecisionType& operator OP (basic_real_type& lhs, const PrecisionType& rhs) { \
   return lhs.pv_ OP rhs; \
 } \
+ friend PrecisionType& operator ID (const PrecisionType& rhs, basic_real_type& lhs) {        \
+   lhs.pv_ ID rhs;                                                      \
+   return lhs.pv_;                                                      \
+ }                                                                      \
+                                                                        \
+ friend PrecisionType& operator OP (const PrecisionType& rhs, basic_real_type& lhs) { \
+   return lhs.pv_ OP rhs;                                               \
+ }                                                                      \
  friend PrecisionType& operator ID (basic_real_type& lhs, const basic_real_type& rhs) { \
    lhs.pv_ ID rhs.pv_;                                                      \
    return lhs.pv_;                                                      \
