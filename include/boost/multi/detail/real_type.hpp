@@ -30,7 +30,8 @@ friend PrecisionType& operator OP (basic_real_type& lhs, const PrecisionType& rh
 
 namespace boost::multi {
 
-  /// @brief This container represents a numeric type for the multi library. e.g: float, double, simd128, simd256, etc...
+  /// @brief This container represents a numeric type for the multi library. e.g: float, double, simd128, simd256...
+  /// @author Amlal El Mahrouss
   template <typename PrecisionType>
   class basic_real_type final {
     PrecisionType pv_{};
