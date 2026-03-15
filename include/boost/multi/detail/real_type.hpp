@@ -32,7 +32,8 @@ public:
   basic_real_type& operator=(const basic_real_type&) = default;
   basic_real_type(const basic_real_type&) = default;
 
-	friend PrecisionType operator/=(basic_real_type& lhs, const PrecisionType& rhs) {
+public:
+	friend PrecisionType& operator/=(basic_real_type& lhs, const PrecisionType& rhs) {
     lhs.pv_ /= rhs;
     return lhs.pv_;
 	}
@@ -82,6 +83,7 @@ public:
     return lhs;
 	}
 
+public:
 	friend PrecisionType& operator+(basic_real_type& lhs, const PrecisionType& rhs) {
     return lhs.pv_ + rhs;
 	}
