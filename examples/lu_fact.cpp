@@ -10,6 +10,7 @@ $CXX $0 -std=c++17 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;ex
 #include <execution>
 #include <iostream>
 #include <numeric>  // iota
+#include <tuple>
 
 #include <boost/timer/timer.hpp>
 

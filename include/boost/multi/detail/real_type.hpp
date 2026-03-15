@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_DETAIL_REAL_HPP
-#define BOOST_MULTI_DETAIL_REAL_HPP
+#ifndef BOOST_MULTI_DETAIL_REAL_TYPE_HPP
+#define BOOST_MULTI_DETAIL_REAL_TYPE_HPP
 
 #include <algorithm>
 #include <utility>
@@ -32,13 +32,22 @@ public:
   basic_real_type& operator=(const basic_real_type&) = default;
   basic_real_type(const basic_real_type&) = default;
 
-	friend basic_real_type& operator/=(const basic_real_type& lhs, const PrecisionType& rhs) {
+	friend PrecisionType operator/=(const basic_real_type& lhs, const PrecisionType& rhs) {
     lhs.pv_ /= rhs;
-    return lhs;
+    return lhs.pv_;
 	}
 
 	friend PrecisionType& operator/(const basic_real_type& lhs, const PrecisionType& rhs) {
     return lhs.pv_ / rhs;
+	}
+
+	friend PrecisionType operator/=(const basic_real_type& lhs, const basic_real_type& rhs) {
+    lhs.pv_ /= rhs.pv_;
+    return lhs.pv_;
+	}
+
+	friend PrecisionType& operator/(const basic_real_type& lhs, const basic_real_type& rhs) {
+    return lhs.pv_ / rhs.pv_;
 	}
 
 	friend bool operator==(const basic_real_type& lhs, const PrecisionType& rhs) {
@@ -86,4 +95,4 @@ inline auto size(const ::boost::multi::double_type& dt) {
 
 }
 
-#endif // BOOST_MULTI_DETAIL_REAL_HPP
+#endif // BOOST_MULTI_DETAIL_REAL_TYPE_HPP
