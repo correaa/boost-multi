@@ -48,11 +48,11 @@ namespace boost::multi {
     PrecisionType pv_{};
 
   public:
-    auto size() const {
+    const auto width() const {
       return sizeof(PrecisionType);
     }
 
-    auto& get() const {
+    const auto& get() const {
       return pv_;
     }
 
@@ -69,6 +69,8 @@ namespace boost::multi {
     BOOST_MULTI_DECL_OPERATOR(*=, *)
     BOOST_MULTI_DECL_OPERATOR(+=, +)
     BOOST_MULTI_DECL_OPERATOR(-=, -)
+    BOOST_MULTI_DECL_OPERATOR(<=, <)
+    BOOST_MULTI_DECL_OPERATOR(>=, >)
 
   public:
 
@@ -117,11 +119,11 @@ namespace boost::multi {
 namespace std {
 
   inline constexpr auto size(const ::boost::multi::float_type& ft) {
-    return ft.size();
+    return ft.width();
   }
 
   inline constexpr auto size(const ::boost::multi::double_type& dt) {
-    return dt.size();
+    return dt.width();
   }
 
 }
