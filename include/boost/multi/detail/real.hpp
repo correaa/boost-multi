@@ -10,49 +10,65 @@
 
 namespace boost::multi {
 
-template <typename Precision>
-struct basic_real_type final {
-	Precision v{};
+/// @brief This container represents a numeric type for the multi library. e.g: float, double, simd128, simd256, etc...
+template <typename PrecisionType>
+class basic_real_type final {
+	PrecisionType pv_{};
 
-	const auto size() const {
-		return sizeof(v);
+public:
+  auto size() const {
+		return sizeof(PrecisionType);
 	}
 
-    basic_real_type() = default;
-    ~basic_real_type() = default;
+  auto& get() const {
+    return pv_;
+  }
 
-	friend bool operator==(const basic_real_type& lhs, const Precision& rhs) {
-		return lhs.v == rhs;
+  basic_real_type(const PrecisionType& v) : pv_(v) {}
+
+  basic_real_type() = default;
+  ~basic_real_type() = default;
+
+  basic_real_type& operator=(const basic_real_type&) = default;
+  basic_real_type(const basic_real_type&) = default;
+
+	friend bool operator==(const basic_real_type& lhs, const PrecisionType& rhs) {
+		return lhs.pv_ == rhs;
+	}
+
+	friend bool operator!=(const basic_real_type& lhs, const PrecisionType& rhs) {
+		return lhs.pv_ != rhs;
 	}
 
 	friend bool operator==(const basic_real_type& lhs, const basic_real_type& rhs) {
-		return lhs.v == rhs.v;
+		return lhs.pv_ == rhs.pv_;
 	}
+
+  friend std::ofstream& operator<<(std::ofstream& os, const basic_real_type& ft) {
+    os << ft.pv_;
+    return os;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const basic_real_type& ft) {
+    os << ft.pv_;
+    return os;
+  }
+
 };
 
-using float_type = basic_real_type<double>;
+using float_type = basic_real_type<float>;
 using double_type = basic_real_type<double>;
 
 } // end boost::multi
 
-inline std::ofstream& operator<<(std::ofstream& os, const boost::multi::float_type& ft) {
-    os << ft.v;
-    return os;
-}
-
-inline std::ofstream& operator<<(std::ofstream& os, const boost::multi::double_type& ft) {
-    os << ft.v;
-    return os;
-}
-
 namespace std {
 
-inline auto& size(const ::boost::multi::float_type& ft) {
+inline auto size(const ::boost::multi::float_type& ft) {
     return ft.size();
 }
 
-inline auto& size(const ::boost::multi::double_type& ft) {
-    return ft.size();
+inline auto size(const ::boost::multi::double_type& dt) {
+    return dt.size();
 }
 
 }

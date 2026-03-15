@@ -1,29 +1,33 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
+$CXX $0 -std=c++17 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
 #endif
 // Copyright 2018-2024 Alfredo A. Correa
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/real.hpp>
 
-#include<algorithm>  // transform
-#include<execution>
-#include<iostream>
-#include<numeric>  // iota
+#include <algorithm>  // transform
+#include <execution>
+#include <iostream>
+#include <numeric>  // iota
 
-#include<boost/timer/timer.hpp>
+#include <boost/timer/timer.hpp>
 
 namespace multi = boost::multi;
 
 template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
-	auto m = size(begin(A));// n = size(A[0]);//std::get<1>(sizes(A));
+	auto m = size(A[0]);// n = size(A[0]);//std::get<1>(sizes(A));
 	using std::begin; using std::end; using multi::rotated;
 	for(auto k = 0*m; k != std::min(m - 1, size(rotated(A))); ++k){
 		auto const& Ak = A[k];
 		auto const& Akk = Ak[k];
-		std::for_each(std::execution::par, 
+#if __cpp_lib_execution
+		std::for_each(std::execution::par,
+#else
+        std::for_each(
+#endif
 			begin(A) + k + 1, end(A), [&](auto&& Ai){
 				std::transform(
 					begin(Ai)+k+1, end(Ai), begin(Ak)+k+1, begin(Ai)+k+1,
@@ -56,7 +60,12 @@ Matrix&& lu_fact3(Matrix&& A){
 	auto const [m, n] = A.sizes();
 	for(auto k = 0*m; k != m - 1; ++k){
 		auto&& Ak = A[k];
-		std::for_each(std::execution::par, begin(A) + k + 1, end(A), [&](auto& Ai){
+#if __cpp_lib_execution
+		std::for_each(std::execution::par,
+#else
+					  std::for_each(
+#endif
+					  begin(A) + k + 1, end(A), [&](auto& Ai){
 			auto const z = Ai[k]/Ak[k];
 			Ai[k] = z;
 			assert( k + 1 <= n );
@@ -84,7 +93,7 @@ int main(){
 		assert( std::equal(begin(A), end(A), begin(*multi::array_ptr(&AA)), end(*multi::array_ptr(&AA))) );
 	}
 	{
-		multi::array<boost::multi::float_type, 2> A({6000, 7000}); 
+		multi::array<boost::multi::float_type, 2> A({6000.0, 7000.0}); 
 		//std::iota(begin(A), begin(A) + A.num_elements(), 0.1);
 		
 		std::transform(begin(A), begin(A) + A.num_elements(), begin(A), [](auto& x){return x/=2.0e6;});
