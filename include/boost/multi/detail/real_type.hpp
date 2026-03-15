@@ -32,22 +32,58 @@ public:
   basic_real_type& operator=(const basic_real_type&) = default;
   basic_real_type(const basic_real_type&) = default;
 
-	friend PrecisionType operator/=(const basic_real_type& lhs, const PrecisionType& rhs) {
+	friend PrecisionType operator/=(basic_real_type& lhs, const PrecisionType& rhs) {
     lhs.pv_ /= rhs;
     return lhs.pv_;
 	}
 
-	friend PrecisionType& operator/(const basic_real_type& lhs, const PrecisionType& rhs) {
+	friend PrecisionType& operator/(basic_real_type& lhs, const PrecisionType& rhs) {
     return lhs.pv_ / rhs;
 	}
 
-	friend PrecisionType operator/=(const basic_real_type& lhs, const basic_real_type& rhs) {
+	friend PrecisionType& operator/=(basic_real_type& lhs, const basic_real_type& rhs) {
     lhs.pv_ /= rhs.pv_;
     return lhs.pv_;
 	}
 
-	friend PrecisionType& operator/(const basic_real_type& lhs, const basic_real_type& rhs) {
+	friend PrecisionType& operator/(basic_real_type& lhs, const basic_real_type& rhs) {
     return lhs.pv_ / rhs.pv_;
+	}
+
+  friend PrecisionType& operator*=(basic_real_type& lhs, const basic_real_type& rhs) {
+    lhs.pv_ *= rhs.pv_;
+    return lhs.pv_;
+	}
+
+	friend PrecisionType& operator*(basic_real_type& lhs, const basic_real_type& rhs) {
+    return lhs.pv_ * rhs.pv_;
+	}
+
+  friend PrecisionType& operator*=(basic_real_type& lhs, const PrecisionType& rhs) {
+    lhs.pv_ *= rhs;
+    return lhs;
+	}
+
+	friend PrecisionType& operator*(basic_real_type& lhs, const PrecisionType& rhs) {
+    return lhs.pv_ * rhs;
+	}
+
+  friend PrecisionType& operator-=(basic_real_type& lhs, const PrecisionType& rhs) {
+    lhs.pv_ -= rhs;
+    return lhs;
+	}
+
+	friend PrecisionType& operator-(basic_real_type& lhs, const PrecisionType& rhs) {
+    return lhs.pv_ - rhs;
+	}
+
+  friend PrecisionType& operator+=(basic_real_type& lhs, const PrecisionType& rhs) {
+    lhs.pv_ += rhs;
+    return lhs;
+	}
+
+	friend PrecisionType& operator+(basic_real_type& lhs, const PrecisionType& rhs) {
+    return lhs.pv_ + rhs;
 	}
 
 	friend bool operator==(const basic_real_type& lhs, const PrecisionType& rhs) {
