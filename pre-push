@@ -52,7 +52,7 @@ export UBSAN_OPTIONS=print_stacktrack=1
  (CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel        $CTR || ctest --test-dir .build.g++-rel        --rerun-failed $CTR) ) || exit 666
 
 if [[ $(uname -m) != 'aarch64' ]]; then
- clang-format-19 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp
+ clang-format-19 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp || exit 666
 #diff -u include/**/*.hpp test/*.cpp <(clang-format-19 include/**/*.hpp test/*.cpp)
 
 #(CXX="$HOME/bin/circle" cmake -S . -B .build.circle     -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1 -DCMAKE_CXX_EXTENSIONS=OFF -DENABLE_CIRCLE=1 -DCMAKE_THREAD_LIBS_INIT="-lpthread"                                                                                              && cmake --build .build.circle     $CMT && (ctest --test-dir .build.circle     $CTR || ctest --test-dir .build.circle     --rerun-failed $CTR)) || exit 666
@@ -82,12 +82,12 @@ export CMAKE_PREFIX_PATH=$HOME/lib/cmake/thrust
  (CXX=c++                                    cmake -S . -B .build.c++.plus  -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp    `#-DCMAKE_CXX_CLANG_TIDY=clang-tidy` -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_FLAGS="-DCPPCHECK=1" -DCMAKE_CXX_CPPCHECK="cppcheck;-DCPPCHECK=1;--enable=all;--suppress=preprocessorErrorDirective;--suppress=missingIncludeSystem;--suppress=unhandledChar;--checkers-report=cppcheck.report;--suppress=checkersReport;--suppress=syntaxError;--suppress=unmatchedSuppression;--suppress=unusedFunction;--suppress=constParameterReference;--suppress=normalCheckLevelMaxBranches;--inline-suppr;--std=c++17;--error-exitcode=1" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="include-what-you-use;-Xiwyu;--mapping_file=/Users/correatedesco1/boost-multi/.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;-Werror" && cmake --build .build.c++.plus $CMT --verbose --parallel && (ctest --test-dir .build.c++.plus -j 12 $CTR || ctest --test-dir .build.c++.tidy --rerun-failed $CTR)) || exit 666
  (CXX=/opt/homebrew/opt/llvm@21/bin/clang++  cmake -S . -B .build.c++.std26 -DCMAKE_BUILD_TYPE=Release                                                                                                                        -DCMAKE_CXX_STANDARD=26                                                                                                                                                                                                       && cmake --build .build.c++.std26 $CMT &&                                           (ctest --test-dir .build.c++.std26 $CTR                      || ctest --verbose --test-dir .build.c++.std26 --rerun-failed $CTR) ) || exit 666
 
+ $(brew --prefix)/opt/llvm@19/bin/clang-format --dry-run -Werror include/**/*.hpp test/*.cpp
+
 if [[ $(uname -m) == 'arm64' ]]; then
  (CXX=c++                                   cmake -S . -B .build.c++.m32   -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp    -DCMAKE_CXX_FLAGS="-m32" -DDISABLE_TBLIS=ON                                                                                                                                                                                                      && cmake --build .build.c++.m32   $CMT &&                                            ctest --test-dir .build.c++.m32   $CTR                                                                                          ) || exit 666
  (CXX=c++                                   cmake -S . -B .build.c++.tidy  -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp    -DDISABLE_TBLIS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy                                                                                                                                                                                             && cmake --build .build.c++.tidy  $CMT &&                                            ctest --test-dir .build.c++.tidy  $CTR                                                                                          ) || exit 666
 fi
-
- $(brew --prefix)/opt/llvm@19/bin/clang-format --dry-run -Werror include/**/*.hpp test/*.cpp
 fi
 
 # fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
