@@ -338,6 +338,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
 	}
 
-
 	return boost::report_errors();
 }
