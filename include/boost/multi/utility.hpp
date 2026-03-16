@@ -240,6 +240,61 @@ struct array_traits {
 	using default_allocator_type = typename Array::default_allocator_type;
 };
 
+template<class Fun>
+class value_wrapper_ptr;
+
+template<class Fun>
+class value_wrapper : Fun {
+ public:
+	using Fun::operator();
+
+	// constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
+	constexpr explicit value_wrapper(Fun const& fun) : Fun(fun) {}
+
+	value_wrapper(value_wrapper const&) = default;
+	value_wrapper(value_wrapper&&)      = default;
+
+	auto operator=(value_wrapper const&) -> value_wrapper& = delete;
+	auto operator=(value_wrapper&&) -> value_wrapper&      = delete;
+
+	~value_wrapper() = default;
+
+	template<class... As>
+	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
+		-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
+		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+	}
+
+	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
+
+	//	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
+};
+
+template<class F>
+constexpr auto val(F const& fun) { return value_wrapper<F>(fun); }
+
+template<class Fun>
+class value_wrapper_ptr : Fun {
+	// Fun f_;
+	explicit BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : Fun(fun) {}
+
+	template<class> friend class value_wrapper;
+
+ public:
+	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
+	value_wrapper_ptr() : Fun(static_cast<Fun const&>(*this)) {}  // workaround for non-default constructible
+
+	value_wrapper_ptr(value_wrapper_ptr const&) = default;
+	value_wrapper_ptr(value_wrapper_ptr&&)      = default;
+
+	auto operator=(value_wrapper_ptr const&) -> value_wrapper_ptr& = default;
+	auto operator=(value_wrapper_ptr&&) -> value_wrapper_ptr&      = default;
+
+	~value_wrapper_ptr() = default;
+
+	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return static_cast<Fun const&>(*this); }
+};
+
 template<class T, typename = typename T::rank>
 auto        has_rank_aux(T const&) -> std::true_type;
 inline auto has_rank_aux(...) -> std::false_type;
