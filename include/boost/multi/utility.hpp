@@ -281,13 +281,14 @@ class value_wrapper_ptr : Fun {
 	template<class> friend class value_wrapper;
 
  public:
- 	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
+	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
 	value_wrapper_ptr() : Fun(static_cast<Fun const&>(*this)) {}  // workaround for non-default constructible
+
 	value_wrapper_ptr(value_wrapper_ptr const&) = default;
-	value_wrapper_ptr(value_wrapper_ptr&&) = default;
+	value_wrapper_ptr(value_wrapper_ptr&&)      = default;
 
 	auto operator=(value_wrapper_ptr const&) -> value_wrapper_ptr& = default;
-	auto operator=(value_wrapper_ptr&&) -> value_wrapper_ptr& = default;
+	auto operator=(value_wrapper_ptr&&) -> value_wrapper_ptr&      = default;
 
 	~value_wrapper_ptr() = default;
 
