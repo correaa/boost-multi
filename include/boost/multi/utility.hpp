@@ -194,7 +194,7 @@ struct transform_ptr {
 
 	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
 
-	transform_ptr(transform_ptr const&)     = default;
+	transform_ptr(transform_ptr const&)         = default;
 	transform_ptr(transform_ptr&&) /*noexcept*/ = default;
 
 	~transform_ptr() = default;
