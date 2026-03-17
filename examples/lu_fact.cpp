@@ -19,7 +19,7 @@ Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
 	auto m = size(A[0]);// n = size(A[0]);//std::get<1>(sizes(A));
 	using std::begin; using std::end; using multi::rotated;
-	for(auto k = m; k != std::min(m - 1, size(A)); ++k){
+	for(auto k = 0*m; k != std::min(m - 1, size(A)); ++k){
 		auto const& Ak = A[k];
 		auto const& Akk = Ak[k];
         std::for_each(
