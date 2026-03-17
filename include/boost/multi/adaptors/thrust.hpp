@@ -288,7 +288,7 @@ class device_restriction_iterator {
 	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
-	__device__ constexpr auto operator*() -> int {
+	__host__ __device__ constexpr auto operator*() -> int {
 		// decltype(auto) {
 		// if constexpr(D != 1) {
 		// 	using std::get;
@@ -299,11 +299,11 @@ class device_restriction_iterator {
 		return proj_(get<0>(*it_));
 	}
 
-	__device__ auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	__host__ __device__ auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 };
 
 template<dimensionality_type D, class Proj>
-struct device_restriction {  //: restriction<D, Proj, int> {
+class device_restriction {  //: restriction<D, Proj, int> {
 	multi::extensions_t<D> exts_;
 	Proj                   proj_;
 
@@ -325,7 +325,15 @@ device_restriction(multi::extensions_t<D>, Fun) -> device_restriction<D, Fun>;
 
 template<typename Fun> device_restriction(extensions_t<0>, Fun) -> device_restriction<0, Fun>;
 template<typename Fun> device_restriction(extensions_t<1>, Fun) -> device_restriction<1, Fun>;
+template<typename Fun> device_restriction(extensions_t<2>, Fun) -> device_restriction<2, Fun>;
+template<typename Fun> device_restriction(extensions_t<3>, Fun) -> device_restriction<3, Fun>;
 #endif
+
+template<dimensionality_type D, typename F>
+auto device_restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
+	return device_restriction<D, F>(ext, std::forward<F>(fun));
+}
+
 
 }  // namespace thrust
 
