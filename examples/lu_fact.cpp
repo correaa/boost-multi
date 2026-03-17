@@ -6,7 +6,6 @@ $CXX $0 -std=c++17 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;ex
 #include <boost/multi/array.hpp>
 
 #include <algorithm>  // transform
-#include <execution>
 #include <iostream>
 #include <numeric>  // iota
 #include <tuple>
@@ -23,11 +22,7 @@ Matrix&& lu_fact(Matrix&& A){
 	for(auto k = m; k != std::min(m - 1, size(A)); ++k){
 		auto const& Ak = A[k];
 		auto const& Akk = Ak[k];
-#if __cpp_lib_execution
-		std::for_each(std::execution::par,
-#else
         std::for_each(
-#endif
 			begin(A) + k + 1, end(A), [&](auto&& Ai){
 				std::transform(
 					begin(Ai)+k+1, end(Ai), begin(Ak)+k+1, begin(Ai)+k+1,
@@ -60,11 +55,7 @@ Matrix&& lu_fact3(Matrix&& A){
 	auto const [m, n] = A.sizes();
 	for(auto k = 0*m; k != m - 1; ++k){
 		auto&& Ak = A[k];
-#if __cpp_lib_execution
-		std::for_each(std::execution::par,
-#else
 					  std::for_each(
-#endif
 					  begin(A) + k + 1, end(A), [&](auto& Ai){
 			auto const z = Ai[k]/Ak[k];
 			Ai[k] = z;
@@ -84,7 +75,7 @@ int main(){
 			{ 2.0, 4.0,  5.0},
 		};
 		multi::array<double, 1> y = {12.0, 5.0, 2.0};
-		float AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	    double AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		using std::copy;
 		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
 

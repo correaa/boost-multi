@@ -259,7 +259,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	}
 
 	// amlel-el-mahrouss not sure about commeting the return statement though.
-	return current;
+	// return current;
 }
 
 #ifdef __clang__
@@ -426,7 +426,7 @@ auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, Forward
 		}
 		throw;
 	}
-	return current;
+	//return current;
 }
 
 #ifdef __clang__
