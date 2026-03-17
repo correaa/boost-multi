@@ -170,16 +170,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
 	}
 	{
-#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
-#if __has_include(<print>)
-		multi::array<double, 2> const arr = {
-			{1,   3},
-			{2, -10},
-		};
+		// #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+		// #if __has_include(<print>)
+		// 		multi::array<double, 2> const arr = {
+		// 			{1,   3},
+		// 			{2, -10},
+		// 		};
 
-		std::print("{}", arr);
-#endif
-#endif
+		// 		std::print("{}", arr);
+		// #endif
+		// #endif
 	}
 
 	return boost::report_errors();
