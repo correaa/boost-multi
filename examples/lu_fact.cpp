@@ -95,7 +95,7 @@ int main(){
 	{
 		multi::array<float, 2> A({6000, 7000});
 	    std::iota(A.elements().begin(), A.elements().end(), 0.1);
-		
+		std::transform(A.elements().begin(), A.elements().begin() + A.num_elements(), A.elements().begin(), [](auto x){return x/=2.0e6;});
 		{
 			boost::timer::auto_cpu_timer t;
 			lu_fact(A({3000, 6000}, {0, 4000}));
