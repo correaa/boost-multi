@@ -29,8 +29,6 @@ export CMAKE_BUILD_PARALLEL_LEVEL=8
 export CTEST_PARALLEL_LEVEL=8
 export CTEST_OUTPUT_ON_FAILURE=1
 
-export NINJA_ARGS="-l 2.0"
-
 if [ -z "$1" ]; then
 echo "no arg"
 else
