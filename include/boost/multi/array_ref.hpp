@@ -2027,23 +2027,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using ptr = subarray_ptr<T, D, ElementPtr, Layout, false>;
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
-#endif
+	// clang-format off
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // good to know
+	#endif
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() && { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() & { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
+	// clang-format on
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
-	// NOLINTNEXTLINE(runtime/operator)
-	// BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
@@ -2464,6 +2464,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
 };
+
+template<class Subarray> auto diagonal(Subarray&& sarr)
+	-> decltype(std::forward<Subarray>(sarr).diagonal()) {
+	return std::forward<Subarray>(sarr).diagonal();
+}
 
 #ifdef __clang__
 #pragma clang diagnostic pop
