@@ -8,8 +8,7 @@
 
 #include "boost/multi/detail/what.hpp"
 
-#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 
 #ifdef __NVCC__
 #pragma nv_diagnostic push
@@ -75,8 +74,7 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 
 class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(::thrust::           copy_n(                      std::forward<As>(args)...))
 #endif
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     copy_n(                      std::forward<As>(args)...))
@@ -106,8 +104,7 @@ inline constexpr adl_move_t adl_move;
 
 class adl_fill_n_t {
 	template<         class... As> constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  fill_n              (std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class... As> constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(           thrust::  fill_n              (std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     fill_n              (std::forward<As>(args)...))
@@ -121,8 +118,7 @@ inline constexpr adl_fill_n_t adl_fill_n;
 
 class adl_fill_t {
 	template<         class... As> constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(              std::  fill              (std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class... As> constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(           thrust::  fill              (std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                     fill              (std::forward<As>(args)...))
@@ -136,8 +132,7 @@ inline constexpr adl_fill_t adl_fill;
 
 class adl_equal_t {
 	template<         class...As> constexpr auto _(priority<1>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(               std::  equal(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class...As> constexpr auto _(priority<2>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(          ::thrust::  equal(                      std::forward<As>(args)...))
 #endif
 	template<         class...As> constexpr auto _(priority<3>/**/,          As&&...args) const BOOST_MULTI_DECLRETURN(                      equal(                      std::forward<As>(args)...))
@@ -159,8 +154,7 @@ class adl_copy_t {
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	>
 	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first) const BOOST_MULTI_DECLRETURN(std::copy(first, last, d_first))  // cppcheck-suppress functionStatic ; TODO(correaa) consider making these functions static
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(         ::thrust::copy(std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(                   copy(std::forward<As>(args)...))
@@ -348,8 +342,7 @@ inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
@@ -489,8 +482,7 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 
 namespace adl {
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || \
-	defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION < 300102
 	using ::thrust::distance;
 #else
