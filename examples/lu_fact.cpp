@@ -78,12 +78,12 @@ Matrix&& lu_fact3(Matrix&& A){
 using std::cout;
 int main(){
 	{
-		multi::array<float, 2> A = {
+		multi::array<double, 2> A = {
 			{-3.0, 2.0, -4.0},
 			{ 0.0, 1.0,  2.0},
 			{ 2.0, 4.0,  5.0},
 		};
-		multi::array<float, 1> y = {12.0, 5.0, 2.0};
+		multi::array<double, 1> y = {12.0, 5.0, 2.0};
 		float AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		using std::copy;
 		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
@@ -93,7 +93,7 @@ int main(){
 		assert( std::equal(begin(A), end(A), begin(*multi::array_ptr(&AA)), end(*multi::array_ptr(&AA))) );
 	}
 	{
-		multi::array<float, 2> A({6000, 7000});
+		multi::array<double, 2> A({6000, 7000});
 	    std::iota(A.elements().begin(), A.elements().end(), 0.1);
 		std::transform(A.elements().begin(), A.elements().begin() + A.num_elements(), A.elements().begin(), [](auto x){return x/=2.0e6;});
 		{
