@@ -135,9 +135,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
 		BOOST_TEST( !(va != wa) );
-		BOOST_TEST( !(va > wa) );
+
 		BOOST_TEST( va >= wa );
+#if !defined(__NVCC__)  // bug in gcc 13.3 and nvcc 12.0: no match for ‘operator!’ (operand type is ‘std::vector<boost::multi::array<int, 2> >’)
 		BOOST_TEST( !(va < wa) );
+#endif
 		BOOST_TEST( va <= wa );
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
