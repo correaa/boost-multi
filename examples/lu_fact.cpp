@@ -18,8 +18,8 @@ template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
 	auto m = size(A);// n = size(A[0]);//std::get<1>(sizes(A));
-	using std::begin; using std::end; using multi::rotated;
-	for(auto k = 0*m; k != std::min(m - 1, size(rotated(A))); ++k){
+	using std::begin; using std::end; using multi::rotated; using multi::sizes; using std::get;
+	for(auto k = 0*m; k != std::min(m - 1, get<1>(sizes(A))); ++k){
 		auto const& Ak = A[k];
 		auto const& Akk = Ak[k];
         std::for_each(
