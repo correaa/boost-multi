@@ -17,7 +17,7 @@
 
 #if defined(__cpp_lib_format) && (__cpp_lib_format >= 202110L)
 template<typename T, boost::multi::dimensionality_type D>
-struct std::formatter<boost::multi::array<T, D>, char> {
+struct std::formatter<boost::multi::array<T, D>, char> {  // NOLINT(cert-dcl58-cpp) this is the way
 
 	constexpr auto parse(std::format_parse_context& ctx) {
 		return ctx.begin();
@@ -29,12 +29,12 @@ struct std::formatter<boost::multi::array<T, D>, char> {
 		*out++   = '[';
 
 		bool first = true;
-		for(auto const& e : arr) {
+		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops) TODO(correaa) use algorithm
 			if(!first) {
 				*out++ = ',';
 				*out++ = ' ';
 			}
-			out   = std::format_to(out, "{}", e);
+			out   = std::format_to(out, "{}", elem);
 			first = false;
 		}
 
@@ -44,7 +44,7 @@ struct std::formatter<boost::multi::array<T, D>, char> {
 };
 
 template<typename T, boost::multi::dimensionality_type D, typename P, class L>
-struct std::formatter<::boost::multi::const_subarray<T, D, P, L>, char> {
+struct std::formatter<::boost::multi::const_subarray<T, D, P, L>, char> {  // NOLINT(cert-dcl58-cpp) this is the way
 
 	constexpr auto parse(std::format_parse_context& ctx) {
 		return ctx.begin();
@@ -56,12 +56,12 @@ struct std::formatter<::boost::multi::const_subarray<T, D, P, L>, char> {
 		*out++   = '[';
 
 		bool first = true;
-		for(auto const& e : arr) {
+		for(auto const& elem : arr) {  // NOLINT(altera-unroll-loops) TODO(correaa) use algorithm
 			if(!first) {
 				*out++ = ',';
 				*out++ = ' ';
 			}
-			out   = std::format_to(out, "{}", e);
+			out   = std::format_to(out, "{}", elem);
 			first = false;
 		}
 
