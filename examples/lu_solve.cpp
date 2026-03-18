@@ -10,13 +10,9 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 #include <iostream>
 #include <numeric>  // for std::iota
 #include <random>
-#if __cpp_lib_source_location
-#include <source_location>
-using std::source_location;
-#else
 #include <boost/assert/source_location.hpp>
+
 using boost::source_location;
-#endif
 
 namespace {
 	struct lup {  // LU method for decomposition and solution
@@ -164,11 +160,8 @@ int main() {
 	
 		std::cout << std::abs(x[4]) << std::endl;
 		(std::abs(x[4] - 0.565756) < 1e-4) ?: 
-#if __cpp_lib_source_location
-		throw source_location::current();
-#else
+
 		throw BOOST_CURRENT_LOCATION;
-#endif
 		}
 		{
 			multi::array<double, 2> A({4000, 4000});
