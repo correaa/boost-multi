@@ -3244,18 +3244,18 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
 	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> const_subarray<T, 2, element_ptr> { return chunked_aux_(size); }
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
 	constexpr auto tiled(size_type count) const& {
 		BOOST_MULTI_ASSERT(count != 0);
+
 		struct divided_type {
 			const_subarray<T, 2, element_ptr> quotient;
 			const_subarray<T, 1, element_ptr> remainder;
 		};
+
 		return divided_type{
 			this->taked(this->size() - (this->size() % count)).chunked(count),
-			this->dropped(this->size() - (this->size() % count))
+			this->dropped(this->size() - (this->size() % count)),
 		};
 	}
 
@@ -3653,7 +3653,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto elements_aux_() const {
 		return elements_type{
 			this->base_,
-			typename elements_type::extensions_type{multi::iextension{this->num_elements()}}
+			static_cast<typename elements_type::extensions_type>(multi::iextension{this->num_elements()})
 		};
 	}
 
