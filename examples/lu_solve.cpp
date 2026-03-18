@@ -122,7 +122,7 @@ namespace {
 				auto const& Lrowi = LU[i]({0, i});
 				x[i] -= std::inner_product(begin(Lrowi), end(Lrowi), cbegin(x), 0.);
 			}
-			return std::forward<Vector&&>(x);
+			return std::forward<Vector>(x);
 		}
 
 		template<class LUMatrix, class Vector>
