@@ -208,8 +208,8 @@ constexpr auto me_to_address(priority<2>/**/, T const& ptr) noexcept -> T {
 
 template<class T>  // this one goes last!!!
 constexpr auto to_address(T const& ptr) noexcept
-->decltype(me_to_address(priority<2>{}/**/, ptr)) {
-	return me_to_address(priority<2>{}    , ptr); }
+->decltype(me_to_address(priority<2>(), ptr)) {
+	return me_to_address(priority<2>(), ptr); }
 
 template<class Alloc, class ForwardIt, class Size,
 	typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{})),
@@ -377,7 +377,7 @@ class adl_uninitialized_move_n_t {
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_move_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<4>{}, std::forward<As>(args)...);}
+	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<4>(), std::forward<As>(args)...);}
 };
 inline constexpr auto adl_uninitialized_move_n = adl_uninitialized_move_n_t{};
 
@@ -568,71 +568,71 @@ class adl_lexicographical_compare_t {
 inline constexpr adl_lexicographical_compare_t adl_lexicographical_compare;
 
 class adl_uninitialized_value_construct_n_t {
-	template<class... As>              constexpr auto _(priority<1>/**/,                      As&&... args) const BOOST_MULTI_DECLRET(              std::  uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-	template<class... As>              constexpr auto _(priority<2>/**/,                      As&&... args) const BOOST_MULTI_DECLRET(                     uninitialized_value_construct_n(std::forward<As>(args)...))
-	template<class T, class... As>     constexpr auto _(priority<3>/**/, T&& arg,             As&&... args) const BOOST_MULTI_DECLRET(  std::decay_t<T>::uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& arg,             As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_value_construct_n(std::forward<As>(args)...))
+	template<class... As>              static constexpr auto _(priority<1>/**/,                      As&&... args) BOOST_MULTI_DECLRET(              std::  uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>              static constexpr auto _(priority<2>/**/,                      As&&... args) BOOST_MULTI_DECLRET(                     uninitialized_value_construct_n(std::forward<As>(args)...))
+	template<class T, class... As>     static constexpr auto _(priority<3>/**/, T&& arg,             As&&... args) BOOST_MULTI_DECLRET(  std::decay_t<T>::uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As>     static constexpr auto _(priority<4>/**/, T&& arg,             As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_value_construct_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<4>{}, std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<4>(), std::forward<As>(args)...))
 };
 inline constexpr adl_uninitialized_value_construct_n_t adl_uninitialized_value_construct_n;
 
 class adl_alloc_uninitialized_value_construct_n_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) const BOOST_MULTI_DECLRET(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
-//  template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... args) const BOOST_MULTI_DECLRET(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-	template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const BOOST_MULTI_DECLRET(                     alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
-	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRET(  std::decay_t<T>::  alloc_uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As>     constexpr auto _(priority<5>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr static auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... args) BOOST_MULTI_DECLRET(                       adl_uninitialized_value_construct_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
+//  template<class... As>              constexpr static auto _(priority<2>/**/,                    As&&... args) BOOST_MULTI_DECLRET(              xtd::  alloc_uninitialized_value_construct_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>              constexpr static auto _(priority<3>/**/,                    As&&... args) BOOST_MULTI_DECLRET(                     alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
+	template<class T, class... As>     constexpr static auto _(priority<4>/**/, T&& arg,           As&&... args) BOOST_MULTI_DECLRET(  std::decay_t<T>::  alloc_uninitialized_value_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As>     constexpr static auto _(priority<5>/**/, T&& arg,           As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_value_construct_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<5>(), std::forward<As>(args)...))
 };
 inline constexpr adl_alloc_uninitialized_value_construct_n_t adl_alloc_uninitialized_value_construct_n;
 
 class adl_uninitialized_default_construct_n_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const {return                  std::  uninitialized_default_construct_n(                      std::forward<As>(args)...);}
+	template<class... As>          constexpr static auto _(priority<1>/**/,          As&&... args) {return                  std::  uninitialized_default_construct_n(                      std::forward<As>(args)...);}
 	// #if defined(__NVCC__)
 	// template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRET(             thrust::uninitialized_default_construct_n(                      std::forward<As>(args)...))
 	// #endif
-	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const BOOST_MULTI_DECLRET(                     uninitialized_default_construct_n(                      std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(  std::decay_t<T>::  uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	template<class... As>          constexpr static auto _(priority<3>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	template<class T, class... As> constexpr static auto _(priority<4>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(  std::decay_t<T>::  uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr static auto _(priority<5>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_default_construct_n(                      std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<5>{}, std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<5>(), std::forward<As>(args)...))
 };
 inline constexpr adl_uninitialized_default_construct_n_t adl_uninitialized_default_construct_n;
 
 class adl_alloc_uninitialized_default_construct_n_t {
-	template<class Alloc, class... As>          constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) const BOOST_MULTI_JUSTRET(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
-	template<class... As>                       constexpr auto _(priority<2>/**/,                    As&&... args) const BOOST_MULTI_DECLRET(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class Alloc, class... As>          constexpr static auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) BOOST_MULTI_JUSTRET(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
+	template<class... As>                       constexpr static auto _(priority<2>/**/,                    As&&... args) BOOST_MULTI_DECLRET(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
 #if defined(__CUDACC__) || defined(__HIPCC__)
 #if defined(THRUST_VERSION) && (THRUST_VERSION < 200700)  // 200800)
 	// boost::multi::detail::what_value_t<THRUST_VERSION> a;
-	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRET(         (thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n)) )
+	template<class Alloc, class It, class Size> constexpr static auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) BOOST_MULTI_DECLRET(         (thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n)) )
 #else
 	// boost::multi::detail::what_value_t<THRUST_VERSION> b;
-	template<class Alloc, class It, class Size> constexpr auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) const BOOST_MULTI_DECLRET(         (thrust::detail::value_initialize_range(std::forward<Alloc>(alloc), first, n)) )
+	template<class Alloc, class It, class Size> constexpr static auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) BOOST_MULTI_DECLRET(         (thrust::detail::value_initialize_range(std::forward<Alloc>(alloc), first, n)) )
 #endif
 #endif
-	template<class... As>                       constexpr auto _(priority<4>/**/,          As&&... args          ) const BOOST_MULTI_DECLRET(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  
-	template<class T, class... As>              constexpr auto _(priority<5>/**/, T&& arg, As&&... args          ) const BOOST_MULTI_DECLRET(  std::decay_t<T>::  alloc_uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As>              constexpr auto _(priority<6>/**/, T&& arg, As&&... args          ) const BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
+	template<class... As>                       constexpr static auto _(priority<4>/**/,          As&&... args          ) BOOST_MULTI_DECLRET(                     alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  
+	template<class T, class... As>              constexpr static auto _(priority<5>/**/, T&& arg, As&&... args          ) BOOST_MULTI_DECLRET(  std::decay_t<T>::  alloc_uninitialized_default_construct_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As>              constexpr static auto _(priority<6>/**/, T&& arg, As&&... args          ) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<6>(), std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_alloc_uninitialized_default_construct_n_t adl_alloc_uninitialized_default_construct_n;
 
 class adl_destroy_n_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRET(            multi::  destroy_n              (std::forward<As>(args)...))
-	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRET(                     destroy_n              (std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(  std::decay_t<T>::  destroy_n(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).destroy_n              (std::forward<As>(args)...))
+	template<class... As>          constexpr static auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET(            multi::  destroy_n              (std::forward<As>(args)...))
+	template<class... As>          constexpr static auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     destroy_n              (std::forward<As>(args)...))
+	template<class T, class... As> constexpr static auto _(priority<3>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(  std::decay_t<T>::  destroy_n(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr static auto _(priority<4>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).destroy_n              (std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<4>{}, std::forward<As>(args)...))
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<4>(), std::forward<As>(args)...))
 };
 inline constexpr adl_destroy_n_t adl_destroy_n;
 
