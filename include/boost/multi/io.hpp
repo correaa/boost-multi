@@ -10,6 +10,12 @@
 
 #include <iostream>
 
+// #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+// #if __has_include(<format>)
+// #include <boost/multi/io/format.hpp>
+// #endif
+// #endif
+
 namespace boost::multi {
 
 namespace detail {
@@ -83,4 +89,5 @@ auto operator<<(std::ostream& os, extension_t<Integer> const& ext) -> std::ostre
 }
 
 }  // namespace boost::multi
+
 #endif  // BOOST_MULTI_IO_HPP
