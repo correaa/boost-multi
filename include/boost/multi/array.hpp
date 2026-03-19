@@ -215,7 +215,7 @@ struct dynamic_array                                                            
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
 	// dynamic_array(dynamic_array&&) = delete;
-	constexpr dynamic_array(dynamic_array&& other) noexcept(false)  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor)
+	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor)
 	: array_alloc{other.alloc()},
 	  ref(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
