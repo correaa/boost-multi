@@ -829,10 +829,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 		 public:
 			using value_type      = std::tuple<multi::index_range::iterator::value_type>;
-			using difference_type = multi::index_range::iterator::difference_type;
+			using multi::index_range::iterator::difference_type;  // using difference_type = multi::index_range::iterator::difference_type;
 			using reference = value_type;
-			// using pointer = void;
-			// using reference = value_type;
+			using pointer = void;
 
 			iterator() = default;
 
@@ -842,6 +841,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				++base_();
 				return *this;
 			}
+
 			BOOST_MULTI_HD constexpr auto operator--() -> iterator& {
 				--base_();
 				return *this;
@@ -854,6 +854,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				base_() += n;
 				return *this;
 			}
+
 			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
 				base_() -= n;
 				return *this;
