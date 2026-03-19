@@ -13,6 +13,8 @@
 
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 #if __has_include(<print>)
+#include <boost/multi/io/format.hpp>
+
 #include <print>
 #endif
 #endif
@@ -124,16 +126,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A2D = " << arr << "; no more, no less\n";
 	}
 	{
+		// clang-format off
 		multi::array<double, 3> const arr = {
 			{
-             {1.0, 2.0, 3.0},
-             {4.0, 5.0, 6.0},
-			 },
+				{1.0, 2.0, 3.0},
+				{4.0, 5.0, 6.0},
+			},
 			{
-             {7.0, 8.0, 9.0},
-             {10.0, 11.0, 12.0},
-			 },
+				{7.0, 8.0, 9.0},
+				{10.0, 11.0, 12.0},
+			},
 		};
+		// clang-format on
 
 		std::cout << "A3D = " << arr << "; no more, no less\n";
 	}
@@ -170,16 +174,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
 	}
 	{
-		// #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
-		// #if __has_include(<print>)
-		// 		multi::array<double, 2> const arr = {
-		// 			{1,   3},
-		// 			{2, -10},
-		// 		};
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#if __has_include(<print>)
+		multi::array<double, 2> const arr = {
+			{1,   3},
+			{2, -10},
+		};
 
-		// 		std::print("{}", arr);
-		// #endif
-		// #endif
+		std::print("{}", arr);
+#endif
+#endif
 	}
 
 	return boost::report_errors();
