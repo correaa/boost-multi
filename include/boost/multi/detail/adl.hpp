@@ -72,6 +72,7 @@ namespace boost::multi {
 
 template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
 
+// clang-format off
 class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const BOOST_MULTI_DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
@@ -85,6 +86,7 @@ class adl_copy_n_t {
 	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 };
 inline constexpr adl_copy_n_t adl_copy_n;
+// clang-format on
 
 // there is no move_n (std::move_n), use copy_n(std::make_move_iterator(first), count) instead
 
