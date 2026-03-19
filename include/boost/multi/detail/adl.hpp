@@ -141,7 +141,7 @@ class adl_equal_t {
 	template<class T, class...As> constexpr auto _(priority<6>/**/, T&& arg, As&&...args) const BOOST_MULTI_DECLRETURN( std::forward<T>(arg).equal(                      std::forward<As>(args)...))
 
  public:
-	template<class...As>          constexpr auto operator()(As&&...args) const BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
+	template<class...As>          constexpr auto operator()(As&&...args) const BOOST_MULTI_DECLRETURN(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_equal_t adl_equal;
 
@@ -163,7 +163,7 @@ class adl_copy_t {
 	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).copy(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN( _(priority<6>{}, std::forward<As>(args)...) ) \
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN( _(priority<6>(), std::forward<As>(args)...) ) \
 };
 inline constexpr adl_copy_t adl_copy;
 
@@ -330,7 +330,7 @@ class adl_uninitialized_copy_t {
 	template<class TB, class... As       > constexpr auto _(priority<6>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRETURN(std::forward<TB>(first).uninitialized_copy(                         std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 
@@ -619,7 +619,7 @@ class adl_alloc_uninitialized_default_construct_n_t {
 	template<class T, class... As>              constexpr auto _(priority<6>/**/, T&& arg, As&&... args          ) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<6>{}, std::forward<As>(args)...));}
+	template<class... As> constexpr auto operator()(As&&... args) const {return (_(priority<6>(), std::forward<As>(args)...));}
 };
 inline constexpr adl_alloc_uninitialized_default_construct_n_t adl_alloc_uninitialized_default_construct_n;
 
@@ -645,7 +645,7 @@ class adl_alloc_destroy_n_t {
 	template<class T,     class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_destroy_n              (std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_alloc_destroy_n_t adl_alloc_destroy_n;
 
@@ -672,7 +672,7 @@ class adl_alloc_uninitialized_copy_n_t {
 	template<class T, class... As>     constexpr auto _(priority<6>/**/, T&& arg,           As&&... args) const BOOST_MULTI_DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>{}, std::forward<As>(args)...);}
+	template<class... As> constexpr auto operator()(As&&... args) const {return _(priority<6>(), std::forward<As>(args)...);}
 };
 inline constexpr adl_alloc_uninitialized_copy_n_t adl_alloc_uninitialized_copy_n;
 
