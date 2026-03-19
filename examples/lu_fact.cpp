@@ -13,7 +13,7 @@ exit
 #include <numeric>  // iota
 #include <tuple>
 
-	namespace multi = boost::multi;
+namespace multi = boost::multi;
 
 template<class Matrix>
 Matrix&& lu_fact(Matrix&& A) {
