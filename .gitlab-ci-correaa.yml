@@ -230,7 +230,7 @@ g++-9-bullseye:
     - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23 par:
+g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
   stage: build
   image: debian:unstable
   tags:
@@ -238,6 +238,9 @@ g++-unstable c++23 par:
     - docker
   allow_failure: true
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
@@ -586,9 +589,6 @@ g++-testing c++20:
     - non-shared
     - docker
   interruptible: true
-  only:
-    refs:
-      - master
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
