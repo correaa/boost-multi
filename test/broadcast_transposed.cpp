@@ -40,6 +40,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		));
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
+
 		auto const& C1 = ~(~A + (~B)[0]);
 
 		std::cout << "C1 = " << C1 << '\n';
@@ -52,6 +53,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		));
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
+
 		auto const& C2 = ~(~A + b);
 
 		std::cout << "C2 = " << C2 << '\n';
