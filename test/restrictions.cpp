@@ -159,7 +159,9 @@ int main() {
 		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
 
 		using multi::elementwise::operator-;
-		auto                      subtract = mat - max_per_row_repeat_T;
+
+		auto subtract = mat - max_per_row_repeat_T;
+
 		BOOST_TEST( subtract[0][0] == -2 );
 		BOOST_TEST( subtract[0][1] == -1 );
 		BOOST_TEST( subtract[0][2] ==  0 );

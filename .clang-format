@@ -50,7 +50,7 @@ IndentWidth: 4
 # PackConstructorInitializers: CurrentLine
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
-# ReferenceAlignment: Left
+ReferenceAlignment: Left
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Custom
