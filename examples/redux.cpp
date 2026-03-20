@@ -48,7 +48,7 @@
 
 namespace multi = boost::multi;
 
-#if (__cplusplus >= 202302L)
+#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))
 #if __has_include(<generator>)
 #include <generator>
 #endif
@@ -345,7 +345,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 
-#if (__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if (defined(__has_include) && __has_include(<execution>))
 #if !defined(__NVCC__) && !defined(__NVCOMPILER) && !(defined(__clang__) && defined(__CUDA__))
 #if (!defined(__clang_major__) || (__clang_major__ > 7))

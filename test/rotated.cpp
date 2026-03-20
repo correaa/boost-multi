@@ -10,7 +10,7 @@
 #include <array>    // for array
 #include <numeric>  // for iota
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #endif
 
@@ -19,7 +19,7 @@
 
 namespace multi = boost::multi;
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -110,7 +110,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
 	{
@@ -330,7 +330,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
 

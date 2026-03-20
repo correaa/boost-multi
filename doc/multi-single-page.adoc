@@ -30,12 +30,11 @@ Alfredo A. Correa (last modified: {docdatetime})
 </style>
 ++++
 
-include::multi/intro.adoc[]
-include::multi/install.adoc[]
-include::multi/primer.adoc[]
-include::multi/tutorial.adoc[]
-include::multi/interop.adoc[]
-include::multi/technical.adoc[]
-include::multi/reference.adoc[]
-include::multi/appendix.adoc[]
-
+include::modules/ROOT/pages/intro.adoc[]
+include::modules/ROOT/pages/install.adoc[]
+include::modules/ROOT/pages/primer.adoc[]
+include::modules/ROOT/pages/tutorial.adoc[]
+include::modules/ROOT/pages/interop.adoc[]
+include::modules/ROOT/pages/technical.adoc[]
+include::modules/ROOT/pages/reference.adoc[]
+include::modules/ROOT/pages/appendix.adoc[]

@@ -4,8 +4,10 @@
 
 Alfredo A. Correa (last modified: {docdatetime})
 
-link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[role=left]] 
+link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[role=left]]
+{empty}
 link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost--multi-blue%3Flogo%3Dgitlab?style=social&logo=gitlab[role=left]]
+{empty}
 
 == Introduction
 
@@ -13,17 +15,28 @@ link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/g
 
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
-Multidimensional array data structures are fundamental to several branches of computing, such as data analysis, image processing, and scientific simulations, and, in combination with GPUs, to Artificial Intelligence and Machine Learning.
-This library offers array containers and subarrays in arbitrary dimensions with well-behaved  value semantics,
+Multidimensional array data structures are essential in various fields of computing, including data analysis, image processing, and scientific simulations. When combined with GPUs, they also play a significant role in Artificial Intelligence and Machine Learning.
 
-```
- 1D ┌─ 0 ─┬─ 1 ─┬─ 2 ─┐   2D  ┌─0──┬─1──┬─2──┐   3D  ┌─0──┬─1──┬─2──┐       4D, ... ND
-    │  a  │  b  │  c  │       0  f │  g │  h │       0  m │  n │  o │2──┐
-    └─────┴─────┴─────┘       ├────┼────┼────┤       ├────┼────┼────┤ u │
-                              1  i │  j │  k │       1  p │  q │  r │───┤
-                              └────┴────┴────┘       └────┴────┴────┘ x │
-                                                        └────┴─────┴────┘
-```
+In many simulations, space is divided into a grid, and values are stored at each grid cell.
+For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or a velocity fields in a fluid.
+The state of game can be represented by placing pieces in a board made of squares.
+Arrays can also store numerical matrices, vectors, and more generally, tensors, to perform linear algebra operations.
+They can represent other abstract data structures, like networks, graph connections, or store data in multiple columns.
+Arrays are amenable to bulk processing in computing, and also to slicing, and reductions.
+
+Here are 3 examples of arrays of different dimensionality:
+
+[source,plaintext]
+----
+ 1D ├─0───┼─1───┼─2───┼   2D  ┼─0──┼─1──┼─2──┼   3D  ┼─0──┼─1──┼─2──┤       4D, ... ND
+    |  a  |  b  |  c  |       0  f |  g |  h |       0  m |  n |  o |2──┤
+    └─────┴─────┴─────┘       ┼────┼────┼────┤       ┼────┼────┼────┤ u |
+                              1  i |  j |  k |       1  p |  q |  r |───┤
+                              ┴────┴────┴────┘       ┴────┴────┴────┘ x |
+                                                         ┴────┴────┴────┘
+----
+Note that the depicted 3D case has only two planes, the first index (e.g. `1`) selects a plane (e.g. bottom).
+
 These depicted 1D, 2D, and 3D arrays containing letters and can be represented, within this library, as C++ objects declared as:
 ```cpp
 #include <boost/multi.hpp>
@@ -31,8 +44,14 @@ multi::array<char, 1> A1D = {'a', 'b', 'c'};
 multi::array<char, 2> A2D = { {'f', 'g', 'h'}, {'i', 'j', 'k'} };
 multi::array<char, 3> A3D = /*... nested list of letters (chars) */ ;
 ```
-and their elements, when retrived by their coordinates (indices) are such that, for example: `A1D[1] == 'b'`, `A2D[1][0] == 'i'` and `A3D[1][0][2] == 'u'`
-Note that the depicted 3D case has only two planes, the first index (e.g. `1`) selects the plane (e.g. bottom).
+and their elements, when retrived by their coordinates (indices) are such that, for example: 
+
+[source,cpp]
+----
+assert( A1D[1] == 'b' );
+assert( A2D[1][0] == 'i' );     // A2D[1, 0]     availabe from C++23
+assert( A3D[1][0][2] == 'u' );  // A3D[1, 0, 2]  availabe from in C++23
+----
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
 The internal data structure layout (when mapped to computer memory) is
@@ -41,7 +60,7 @@ which makes it compatible with low-level C libraries.
 
 The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
 
-Features of this library that aim to facilitate the manipulation of multidimensional arrays include:
+The following _combination of features_ of this library are not present in the Standard or generally in other libraries:
 
 * Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible.
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
@@ -52,17 +71,46 @@ A _D_-dimensional array can be interpreted either as an (STL-compatible) sequenc
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
-or with the standard MDSpan proposal `std::mdspan`.
+or with the standard MDSpan proposal `std::mdspan` (accepted in C{plus}{plus}23)
 This library shares some of their goals and is compatible and complementary to them;
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
+For example, `std::mdspan` does not provide iterators, and it is not well integrated with the rest of the STL.
+Problems such are deep assignment, or const-propagation are not fully solved, and ownership is delegated to a separte proposal `std::mdarray` (C{plus}{plus}26).
 
 The library's primary concern is with the storage and logic structure of data.
 It doesn't make algebraic or geometric assumptions about the arrays and their elements.
-(althoug they are still good building blocks for implementing mathematical algorithms,
+(although they are still good building blocks for implementing on top of this mathematical and numerical algorithms,
 such as representing algebraic dense matrices in the 2D case, or tensors in the general case.)
 
 The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
+== Requirements
+
+:idprefix: reqs_
+
 _Multi_ is a header-only library and C++17 or later is required.
+
+The code requires any modern https://godbolt.org/z/hxEYGYEWc[C\++ compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard C\++17 support;
+for reference, (at least) any of:
+LLVM's          https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (libc\++ and libstdc\++),
+GNU's           https://godbolt.org/z/1nGEbKc5a[g\++ (7.1+)],
+Nvidia's        https://godbolt.org/z/v9W889njx[nvcc (11.5+)] 
+and 
+                https://godbolt.org/z/6z39PjT47[nvc\++ (22.7+)],
+Intel's icpx (2022.0.0+) and icc (2021.1.2+, deprecated),
+Baxter's        https://www.circle-lang.org[circle] (https://godbolt.org/z/KeG417fMz[build 202+]),
+https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j[Zig] in https://godbolt.org/z/cKGebsWMG[c++ mode (v0.9.0+)],
+Edison Design's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
+and
+Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
+
+(Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
+Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
+
+Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thurst], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
+(all of them can be installed with
+`sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
+or `sudo dnf install fftw-devel ...`.
+)

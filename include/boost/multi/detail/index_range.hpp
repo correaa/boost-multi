@@ -108,13 +108,18 @@ class range {
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
-		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+		arxiv
+			& multi::archive_traits<Archive>::make_nvp("first", first_)
+			& multi::archive_traits<Archive>::make_nvp("last", last_)
+		;
+
+		// arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
 		// arxiv &               BOOST_SERIALIZATION_NVP(         first_);
 		// arxiv &                     cereal:: make_nvp("first", first_);
 		// arxiv &                            CEREAL_NVP(         first_);
 		// arxiv &                                                first_ ;
 
-		arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
+		// arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
 		// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
 		// arxiv &                        cereal:: make_nvp("last" , last_ );
 		// arxiv &                               CEREAL_NVP(         last_ );
@@ -212,7 +217,11 @@ class range {
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto first() const { return first_; }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto last() const { return last_; }
 
-	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
+	constexpr auto operator[](difference_type n) const -> const_reference {
+		assert(n >= 0);
+		assert(n < size());
+		return first() + n;
+	}
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
@@ -281,10 +290,10 @@ class intersecting_range {
 	range<IndexType> impl_;
 	
 	constexpr intersecting_range() noexcept :  // MSVC 19.07 needs constexpr to initialize ALL later
-		impl_{
+		impl_(
 			(std::numeric_limits<IndexType>::min)(),  // NOLINT(readability-redundant-parentheses) for MSVC min macros
 			(std::numeric_limits<IndexType>::max)()   // NOLINT(readability-redundant-parentheses) for MSVC max macros
-		}
+		)
 	{}
 
 	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {

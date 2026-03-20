@@ -33,7 +33,7 @@ In this example, we replace the values of the first row for which the sum of the
 
 	assert(arr[1][0] == 9 );
 ----
-link:https://godbolt.org/z/cT9WGffM3[(live)]
+link:https://godbolt.org/z/cT9WGffM3[(open with Compiler Explorer)]
 
 Together with the array constructors, the ranges library enables a more functional programming style;
 this allows us to work with immutable variables in many cases.
@@ -49,7 +49,7 @@ this allows us to work with immutable variables in many cases.
 	// multi::array<double, 1> R(V.size());  // R is created here...
 	// for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...and then mutated here
 ----
-link:https://godbolt.org/z/M84arKMnT[(live)]
+link:https://godbolt.org/z/M84arKMnT[((open with Compiler Explorer))]
 
 
 The "pipe" (`|`) notation of standard ranges allows one-line expressions.
@@ -108,7 +108,7 @@ int main() {
 ----
 
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
-In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[(live)]
+In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[((open with Compiler Explorer))]
 
 The library also supports memory resources from other libraries, including those returning special pointer types (see the "CUDA Thrust" section and the "Boost.Interprocess" section).
 
@@ -140,10 +140,8 @@ and for this reason, there is no single substitute for `std::span` for all cases
 Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
 The former typically works when using it as function argument.
 
-Multi-dimensinal arrays can interoperate with C++23's non-owning `mdspan`.
+Multi-dimensinal arrays can interoperate with C++23's non-owning link:https://en.cppreference.com/w/cpp/container/mdspan.html[`mdspan`].
 link:https://godbolt.org/z/aocn73bzf[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan` automatically (replicating the behavior of `std::vector`).
-
-A detailed comparison with other array libraries (mspan, Boost.MultiArray, Eigen) is explained in an Appendix.
 
 === Execution policies (parallel algorithms)
 
@@ -158,7 +156,7 @@ The execution policy (`par`) selected is passed as the first argument.
 
     std::transform(std::execution::par, arr.begin(), arr.end(), vec.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
 ----
-link:https://godbolt.org/z/63jEdY7zP[(live)]
+link:https://godbolt.org/z/63jEdY7zP[((open with Compiler Explorer))]
 
 For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (i.e. without the `par` argument).
 
@@ -199,16 +197,16 @@ auto dot_product(X1D const& x, Y1D const& y) {
 	return std::reduce(std::execution::par_unseq, z.begin(), z.end());
 }
 ----
-link:https://godbolt.org/z/cMq87xPvb[(live)]
+link:https://godbolt.org/z/cMq87xPvb[((open with Compiler Explorer))]
 
 [#interop_range_v3]
 == Range-v3
 
-The library works out of the box with Eric Niebler's Range-v3 library, a precursor to the standard Ranges library (see above).
+The library works out of the box with Eric Niebler's link:https://ericniebler.github.io/range-v3/[Range-v3] library, a precursor to the standard Ranges library (see above).
 The library helps to remove explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
 Every Multi array object can be regarded as range.
-Every subarray references (and array values) are interpreted as range views.
+Every subarray references (and array values) can be interpreted as range views.
 
 For example for a 2D array `d2D`, `d2D` itself is interpreted as a range of rows.
 Each row, in turn, is interpreted as a range of elements.
@@ -314,7 +312,7 @@ int main() {
 	assert(A == B);
 }
 ----
-link:https://godbolt.org/z/Grr7Mqef5[(online)]
+link:https://godbolt.org/z/Grr7Mqef5[((open with Compiler Explorer))]
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
@@ -356,24 +354,24 @@ The output JSON file created by Cereal in the previous example looks like this.
     }
 }
 ----
-(The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output would have a similar structure.)
+The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output are different but they would have a similar structure.
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
-Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`.
+Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array of with random `double` elements.
 
 |===
-| Archive format (Library)     | file size     | speed (read - write)           | time (read - write)   |
+| Archive format (Library)     | file size     | speed (read - write)           | time (read - write)
 
-| JSON (Cereal)                | 684 MB        |    3.9 MB/sec  -   8.4 MB/sec  |  32.1 sec - 15.1  sec |
-| XML (Cereal)                 | 612 MB        |    2.0  MB/sec -   4.0 MB/sec  |  56.0 sec - 28.0  sec |
-| XML (Boost)                  | 662 MB        |   11.0  MB/sec -  13.0 MB/sec  |  11.0 sec -  9.0  sec |
-| YAML (link:https://gitlab.com/correaa/boost-archive-yml[custom archive)]) | 702 MB        |   10.0  MB/sec -    4.4 MB/sec  |  12.0   sec  - 28.0   sec |
-| Portable Binary (Cereal)     | 134 MB        |  130  MB/sec -  121  MB/sec  |  9.7  sec  - 10.6 sec |
-| Text (Boost)                 | 411 MB        |   15.0  MB/sec -   16.0  MB/sec  |  8.2  sec  - 7.6  sec |
-| Binary (Cereal)              | 134 MB        |  134.4 MB/sec -  126.  MB/sec  |  0.9  sec  -  0.9 sec |
-| Binary (Boost)               | 134 MB        | 5200  MB/sec - 1600  MB/sec  |  0.02 sec -   0.1 sec |
-| gzip-XML (Cereal)            | 191 MB        |    2.0  MB/sec -    4.0  MB/sec  | 61    sec  - 32   sec |
-| gzip-XML (Boost)             | 207 MB        |    8.0  MB/sec -    8.0  MB/sec  | 16.1  sec  - 15.9 sec |
+| JSON (Cereal)                | 684 MB        |    3.9 MB/sec  -   8.4 MB/sec  |  32.1 sec - 15.1  sec
+| XML (Cereal)                 | 612 MB        |    2.0  MB/sec -   4.0 MB/sec  |  56.0 sec - 28.0  sec
+| XML (Boost)                  | 662 MB        |   11.0  MB/sec -  13.0 MB/sec  |  11.0 sec -  9.0  sec
+| YAML (link:https://gitlab.com/correaa/boost-archive-yml[custom archive)]) | 702 MB        |   10.0  MB/sec -    4.4 MB/sec  |  12.0   sec  - 28.0   sec
+| Portable Binary (Cereal)     | 134 MB        |  130  MB/sec -  121  MB/sec  |  9.7  sec  - 10.6 sec
+| Text (Boost)                 | 411 MB        |   15.0  MB/sec -   16.0  MB/sec  |  8.2  sec  - 7.6  sec
+| Binary (Cereal)              | 134 MB        |  134.4 MB/sec -  126.  MB/sec  |  0.9  sec  -  0.9 sec
+| Binary (Boost)               | 134 MB        | 5200  MB/sec - 1600  MB/sec  |  0.02 sec -   0.1 sec
+| gzip-XML (Cereal)            | 191 MB        |    2.0  MB/sec -    4.0  MB/sec  | 61    sec  - 32   sec
+| gzip-XML (Boost)             | 207 MB        |    8.0  MB/sec -    8.0  MB/sec  | 16.1  sec  - 15.9 sec
 |===
 
 [#interop_interprocess]
@@ -414,7 +412,7 @@ int main(){
 [#interop_cuda]
 == CUDA (and HIP, and OMP, and TBB) via Thrust
 
-The library works out-of-the-box in combination with the Thrust library.
+The library works out-of-the-box in combination with the link:https://nvidia.github.io/cccl/unstable/thrust/index.html[Thrust] library.
 
 [source,cpp]
 ----
@@ -433,9 +431,9 @@ int main() {
 	assert( B[5][0] == 50.0 );
 }
 ----
-link:https://godbolt.org/z/oM4YbPYz8[(live)]
+link:https://godbolt.org/z/oM4YbPYz8[((open with Compiler Explorer))]
 
-which uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
+This example uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
 
 More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
@@ -467,6 +465,73 @@ Finally, the element type of the device array has to be device-friendly to work 
 this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
 They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
 
+Thrust algorithms can be used to gain a high degree of parallelism.
+For example, for reduction by index (sum over rows) over a big array in the CUDA array, a generic implementation can be:
+
+[source,cpp]
+----
+template<class In2D, class OutputIt>
+void reduce_by_row(In2D const& in, OutputIt d_first) {
+	using index = typename In2D::index;
+	auto const& row_id = multi::restricted(
+		[] __host__ __device__ (index i, index j) { return i; },
+		in.extensions()
+	);  // or use "fun ^ ext" notation
+
+	::thrust::reduce_by_key(
+		row_id.elements().begin(), row_id.elements().end(),
+		in.elements().begin(),
+		::thrust::make_discard_iterator(),
+		d_first,
+		::thrust::equal_to<multi::index>{}  //, thrust::plus<>{}
+	);
+};
+----
+
+This algorithm can be applied to a 2D array, using a second 1D array to store the sums:
+
+[source,cpp]
+----
+multi::array<double, 2, thrust::device_allocator<double>> A_in = ...;
+
+multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A.size()});
+
+reduce_by_row(A_in, sums_out.begin());
+----
+
+Interestingly, we can apply this same algorithm to a pure function and still get the benefits of parallelism.
+That is, without the need to store data in memory and whose elements are evaluated on the fly (in the GPU).
+
+[source,cpp]
+----
+multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{N});
+
+using multi::index;
+auto const& hankel =  // a restriction object
+	[] __host__ __device__ (index i, index j) { return i + j; }
+	^ multi::extensions_t<2>({N, M})
+;
+
+reduce_by_row(hankel, sums_out.begin());
+----
+link:https://godbolt.org/z/v86bxKnK8[((open with Compiler Explorer))]
+
+Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
+Take into account that lambdas executed in the device cannot take captures by reference.
+Library's restrictions do not work on `__device__`-only functions due to limitations of the CUDA language.
+In addition, `__host__ __device__` cannot take initializing captures (e.g. `[var = ...]`),
+or `auto` arguments.
+As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parenthesis).
+
+```
+	int base = 4;
+	auto const& hankel2 =  // a restriction object of a lambda with captures
+		[initval = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return initval + i + j; } )
+		^ multi::extensions_t<2>({N, M})
+```
+
+(Alternatively the functions can be defined as separate class with a `__host__ __device__ operator()`).
+
 [#interop_openmp]
 === OpenMP via Thrust
 
@@ -497,7 +562,7 @@ int main() {
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ----
-link:https://godbolt.org/z/KW19zMYnE[(live)]
+link:https://godbolt.org/z/KW19zMYnE[((open with Compiler Explorer))]
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
@@ -547,7 +612,7 @@ int main() {
 	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); /*... use A ...*/ }
 }
 ----
-link:https://godbolt.org/z/rKG8PhsEh[(live)]
+link:https://godbolt.org/z/rKG8PhsEh[((open with Compiler Explorer))]
 
 In the example, most of the frequent memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
@@ -555,7 +620,7 @@ More targeted usage patterns may require locally (non-globally) defined memory r
 [#interop_cuda_cpp]
 == CUDA C++
 
-CUDA is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
+link:https://developer.nvidia.com/cuda/toolkit[CUDA] is a dialect of C++ that allows writing pieces of code for GPU execution, known as "CUDA kernels".
 CUDA code is generally "low level" (less abstracted), but it can be used in combination with CUDA Thrust or the CUDA runtime library, specially to implement custom algorithms.
 Although code inside kernels has certain restrictions, most Multi features can be used. 
 (Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
@@ -607,7 +672,7 @@ int main() {
     // now C = A x B
 }
 ----
-link:https://godbolt.org/z/eKbeosrWa[(live)]
+link:https://godbolt.org/z/eKbeosrWa[((open with Compiler Explorer))]
 
 Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarely occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
 
@@ -629,7 +694,7 @@ At the moment, the array containers can use the Unified Shared Memory (USM) allo
         ptr[i] *= 2;
     }).wait();
 ----
-link:https://godbolt.org/z/8WG8qaf4s[(live)]
+link:https://godbolt.org/z/8WG8qaf4s[((open with Compiler Explorer))]
 
 Algorithms are expected to work with oneAPI execution policies as well (not tested)
 
@@ -650,7 +715,7 @@ Although it is not ideal, arrays can be printed and formated by looping over ele
 
 Fortunately, the library automatically works with the external library link:https://fmt.dev/latest/index.html[pass:[{fmt}]], both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library;
-they simply work well together using the "ranges" part of the formatting library.
+they work well together using the "ranges" part of the formatting library.
 fmt allows a high degree of configurability.
 
 This example prints a 2-dimensional subblock of a larger array:
@@ -666,16 +731,16 @@ This example prints a 2-dimensional subblock of a larger array:
         {6.0, 7.0, /**/ 8.0},
     };
 
-    fmt::print("A2D subblock = {}", A2({1, 3}, {0, 2}));  // second and third row, first and second column
+    fmt::print("A2D subblock = {}", A2D({1, 3}, {0, 2}));  // second and third row, first and second column
 ----
-yielding the "flat" output `A2D subblock = [[3, 4], [6, 7]]`.
+yielding the "flat" output the string `A2D subblock = [[3, 4], [6, 7]]`.
 (A similar effect can be achieved with link:https://godbolt.org/z/4ehd4s5vf[experimental C++23 `std::print` in libc++].)
 
 For 2 or more dimensions the output can be conveniently structured in different lines using the `fmt::join` facility:
 
 [source,cpp]
 ----
-    fmt::print("\n[{}]\n", fmt::join(A2({1, 3}, {0, 2}), ",\n "));  // rows are printed in separate lines
+    fmt::print("\n[{}]\n", fmt::join(A2D({1, 3}, {0, 2}), ",\n "));  // rows are printed in separate lines
 ----
 with the output:
 
@@ -684,11 +749,13 @@ with the output:
 >  [6, 7]]
 > ```
 
-In a similar way, the size of the array can be printed simply by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
+In a similar way, the size of the array can be printed by passing the sizes output; `fmt::print("{}", A2(...).sizes() )`, which will print `(2, 2)`.
 
-(link:https://godbolt.org/z/7sGExn35n[(live)]).
+(link:https://godbolt.org/z/7sGExn35n[(open with Compiler Explorer)]).
 
 When saving arrays to files, please consider using serialization (see section) instead of formatting facilities.
+
+The headed `multi/io.hpp` can be used to output arrays and subarrays, but it is mainly for debugging purposed and there is no control of the output format.
 
 [#interop_python]
 == Python (cppyy)
@@ -815,7 +882,7 @@ print(a2d_ref)
 > ```
 > {
 >         {1, 2},
->         {4, 999.9}, 
+>         {4, 999.9},
 > }
 > ```
 

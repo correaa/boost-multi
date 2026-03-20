@@ -2,9 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_BROADCAST_HPP
-#define BOOST_MULTI_BROADCAST_HPP
-// #pragma once
+#ifndef BOOST_MULTI_ELEMENTWISE_HPP
+#define BOOST_MULTI_ELEMENTWISE_HPP
 
 #include "boost/multi/array_ref.hpp"
 #include "boost/multi/restriction.hpp"
@@ -54,7 +53,7 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 	using type = ::boost::multi::subarray<T, D, Ts...> const&;
 };
 
-namespace broadcast {
+namespace elementwise {
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
 constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
@@ -93,7 +92,7 @@ template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
 	auto const xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extensions()) && ...));
-	return apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...} ^ xs;
+	return multi::restricted(apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
 }
 
 template<class T>
@@ -125,57 +124,122 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	}
 }
 
-template<class A, class B>
-class apply_plus_t {
-	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+// template<class A, class B>
+// class apply_plus_t {
+// 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+// 	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
- public:
-	template<class AA, class BB>
-	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
+//  public:
+// 	template<class AA, class BB>
+// 	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
 
-	template<class... Is>
-	constexpr auto operator()(Is... is) const {
-		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
-			 +
-			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
-			;
-	}
+// 	template<class... Is>
+// 	constexpr auto operator()(Is... is) const {
+// 		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
+// 			 +
+// 			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
+// 			;
+// 	}
+// };
+
+namespace detail {
+struct plus {
+	template<class T1, class T2>
+	constexpr auto operator()(T1&& a, T2&& b) const;
 };
+}  // end namespace detail
 
 template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
-template<class A, class B>
-constexpr auto add(A&& alpha, B&& omega) noexcept {
-	return broadcast::map(std::plus<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+template<class T1, class T2>
+constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
+	using elementwise::operator+;  // cppcheck-suppress constStatement ;
+	return std::forward<T1>(a) + std::forward<T2>(b);
 }
 
+namespace detail {
+struct minus {
+	template<class T1, class T2>
+	constexpr auto operator()(T1&& a, T2&& b) const;
+};
+}  // end namespace detail
+
 template<class A, class B>
-constexpr auto operator-(A&& alpha, B&& omega) { return broadcast::map(std::minus<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator-(A&& alpha, B&& omega) noexcept {
+	return elementwise::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
+}
+
+template<class T1, class T2>
+constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
+	using elementwise::operator-;  // cppcheck-suppress constStatement ;
+	return std::forward<T1>(a) - std::forward<T2>(b);
+}
 
 template<class A>
-constexpr auto operator-(A&& alpha) { return broadcast::apply(std::negate<>{}, std::forward<A>(alpha)); }
+constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
 template<class A, class B>
-constexpr auto operator*(A&& alpha, B&& omega) { return broadcast::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
 constexpr auto operator/(A&& alpha, B&& omega) {
-	return broadcast::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+}
+
+template<class T = void>
+struct default_zero_f {
+	template<class TT = T>
+	auto operator()(TT const& /*unused*/) const { return TT{}; }
+};
+
+template<class T, class ZF>
+constexpr auto eye(multi::size_t size, T unit, ZF zero_f) {
+	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extensions_t<2>({size, size}));
+}
+
+template<class T, class ZF = default_zero_f<T>>
+constexpr auto eye(multi::size_t size, T unit) {
+	return eye(size, unit, default_zero_f<T>{});
+}
+
+template<class T = int>
+constexpr auto eye(multi::size_t size) {
+	return eye(size, T{1});
+}
+
+template<class Array, class DefaultZero>
+constexpr auto zeros(Array&& arr, DefaultZero df) {
+	auto exts = arr.extensions();  // mull-ignore: cxx_init_const
+	return restricted([arr_ = std::forward<Array>(arr), df](auto... ijk) { return df(arr_(ijk...)); }, exts);
+}
+
+template<typename Element = int, class Array, class DefaultZero = default_zero_f<Element>>
+constexpr auto zeros(Array&& arr) {
+	return zeros(std::forward<Array>(arr), DefaultZero{});
+}
+
+template<typename Element, dimensionality_type D>
+constexpr auto zeros(multi::extensions_t<D> const& exts) {
+	return zeros<Element, multi::extensions_t<D> const&>(exts);
+}
+
+template<dimensionality_type D>
+constexpr auto zeros(multi::extensions_t<D> const& exts) {
+	return zeros<int, D>(exts);
 }
 
 template<class A, class B>
-constexpr auto operator&&(A&& alpha, B&& omega) { return broadcast::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class A, class B>
-constexpr auto operator||(A&& a, B&& b) { return broadcast::map(std::logical_or<>{}, std::forward<A>(a), std::forward<B>(b)); }
+constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
-constexpr auto operator|(A&& a, F fun) {
-	return std::forward<A>(a).element_transformed(fun);
+constexpr auto operator|(A&& alpha, F fun) {
+	return std::forward<A>(alpha).element_transformed(fun);
 }
 
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std::declval<typename std::decay_t<A>::reference>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
@@ -202,7 +266,8 @@ template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
 template<class A, std::enable_if_t<multi::has_extensions<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
-	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
+	// shouldn't get to this point for scalars
+	auto xs = alpha.extensions();  // mull-ignore: cxx_init_const
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
@@ -247,9 +312,12 @@ template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(m
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
 
 // #endif
-}  // end namespace broadcast
+}  // end namespace elementwise
+
+namespace broadcast = elementwise;
+
 }  // end namespace boost::multi
 
 #undef BOOST_MULTI_HD
 
-#endif  // BOOST_MULTI_BROADCAST_HPP
+#endif  // BOOST_MULTI_ELEMENTWISE_HPP

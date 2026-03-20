@@ -7,7 +7,7 @@
 
 #include "boost/multi/array.hpp"
 #include "boost/multi/array_ref.hpp"
-#include "boost/multi/broadcast.hpp"
+#include "boost/multi/elementwise.hpp"
 #include "boost/multi/io.hpp"
 
 #endif  //  BOOST_MULTI_HPP

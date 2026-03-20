@@ -12,7 +12,7 @@
 #include <cmath>
 #include <type_traits>
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #include <vector>  // for .to conversion
 #endif
@@ -747,13 +747,10 @@ struct cursor_t {
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
-			return cursor_t<
-				ElementPtr,
-				D - 1,
-				std::decay_t<decltype(strides_.tail())>>{
+			return cursor_t<ElementPtr, D - 1, std::decay_t<decltype(strides_.tail())>>(
 				base_ + get<0>(strides_) * n,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				strides_.tail()
-			};
+			);
 		} else {
 			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
@@ -1021,17 +1018,10 @@ struct elements_range_t {
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t&&)      = delete;
 
-	// template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& other) const -> bool {
-	// 	return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive bug in mull-18
-	// }
-	// template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& other) const -> bool {
-	// 	// if(is_empty() && other.is_empty()) { return false; }
-	// 	return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
-	// }
-
 	template<class Range> auto operator==(Range const& other) const -> bool {
-		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());  // mull-ignore: cxx_eq_to_ne  // false positive bug in mull-18
+		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
 	}
+
 	template<class Range> auto operator!=(Range const& other) const -> bool {
 		return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
 	}
@@ -1367,12 +1357,12 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto dropped_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT(n <= this->size());
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride() * (this->size() - n)
-		};
+		);
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -1589,10 +1579,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 			const_subarray<T, D + 1, element_ptr> quotient;
 			const_subarray<T, D, element_ptr>     remainder;
 		};
-		return divided_type{
+		return divided_type(
 			this->taked(this->size() - (this->size() % count)).chunked(count),
 			this->dropped(this->size() - (this->size() % count))
-		};
+		);
 	}
 
  private:
@@ -1906,10 +1896,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		// static_assert( sizeof(T)%sizeof(T2) == 0,
 		//  "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
-		return {
+		return rebind<T2, P2>(
 			this->layout().scale(sizeof(T), sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
 			reinterpret_pointer_cast<P2>(this->base_)     // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
-		};
+		);
 	}
 
  public:
@@ -2037,23 +2027,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using ptr = subarray_ptr<T, D, ElementPtr, Layout, false>;
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // TODO(correaa) use checked span
-#endif
+	// clang-format off
+	#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wlarge-by-value-copy"  // good to know
+	#endif
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() && { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() & { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+	#ifdef __clang__
+	#pragma clang diagnostic pop
+	#endif
+	// clang-format on
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
-	// NOLINTNEXTLINE(runtime/operator)
-	// BOOST_MULTI_HD constexpr auto operator&() const& {return subarray_ptr<const_subarray, Layout>{this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
@@ -2475,6 +2465,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 };
 
+template<class Subarray> auto diagonal(Subarray&& sarr)
+	-> decltype(std::forward<Subarray>(sarr).diagonal()) {
+	return std::forward<Subarray>(sarr).diagonal();
+}
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -2534,7 +2529,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	static constexpr dimensionality_type dimensionality = 1;
 
-#if defined(__cplusplus) && __cplusplus >= 202002L && (!defined(__clang__) || __clang_major__ != 10)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang__) || __clang_major__ != 10)
 	// template<class T = void,
 	//  std::enable_if_t<sizeof(T*) && std::is_base_of_v<std::contiguous_iterator_tag, iterator_category>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	constexpr explicit operator Ptr() const& {
@@ -2815,10 +2810,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
 	constexpr auto reinterpret_array_cast() const& {
-		return const_subarray<T2, 0, P2>{
+		return const_subarray<T2, 0, P2>(
 			typename const_subarray::layout_type{this->layout()},
 			reinterpret_pointer_cast<P2>(this->base_)
-		};
+		);
 	}
 
 	constexpr auto broadcasted() const& {
@@ -3022,6 +3017,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return const_subarray<T, 2, ElementPtr, multi::layout_t<2>>(new_layout, types::base_);
 	}
 
+	constexpr auto repeated(multi::size_t n) && {
+		auto exts = this->extensions();  // mull-ignore: cxx_init_const
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * exts);
+	}
+
 	constexpr auto repeated(multi::size_t n) const& {
 		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
 	}
@@ -3094,12 +3094,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
  private:
 	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
 		BOOST_MULTI_ASSERT(count <= this->size());  // calculating size is expensive that is why
-		typename types::layout_t const new_layout{
+		typename types::layout_t const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride() * count
-		};
+		);
 		return const_subarray{new_layout, this->base_};
 	}
 
@@ -3244,18 +3244,18 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
 	BOOST_MULTI_HD constexpr auto chunked(size_type size) const& -> const_subarray<T, 2, element_ptr> { return chunked_aux_(size); }
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux_(size);}
-	// BOOST_MULTI_HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux_(size);}
 
 	constexpr auto tiled(size_type count) const& {
 		BOOST_MULTI_ASSERT(count != 0);
+
 		struct divided_type {
 			const_subarray<T, 2, element_ptr> quotient;
 			const_subarray<T, 1, element_ptr> remainder;
 		};
+
 		return divided_type{
 			this->taked(this->size() - (this->size() % count)).chunked(count),
-			this->dropped(this->size() - (this->size() % count))
+			this->dropped(this->size() - (this->size() % count)),
 		};
 	}
 
@@ -3263,7 +3263,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto reversed_aux_() const -> const_subarray {
 		auto new_layout = this->layout();
 		new_layout.reverse();
-		return {new_layout, types::base_};
+		return const_subarray(new_layout, types::base_);
 	}
 
  public:
@@ -3400,9 +3400,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
-		return {
+		return subarray<T2, 1, P2, Layout>(
 			this->layout(), P2{this->base_, std::forward<Args>(args)...}
-		};
+		);
 	}
 
 	template<class UF>
@@ -3450,20 +3450,20 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	constexpr auto reinterpret_array_cast() const& {
 		BOOST_MULTI_ASSERT(this->layout().stride() * static_cast<size_type>(sizeof(T)) % static_cast<size_type>(sizeof(T2)) == 0);
 
-		return const_subarray<T2, 1, P2>{
+		return const_subarray<T2, 1, P2>(
 			layout_type{this->layout().sub(), this->layout().stride() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().offset() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2)), this->layout().nelems() * static_cast<size_type>(sizeof(T)) / static_cast<size_type>(sizeof(T2))},
 			reinterpret_pointer_cast<P2>(this->base_)
-		};
+		);
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast(size_type n) const& -> subarray<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert(sizeof(T) % sizeof(T2) == 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		return subarray<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n},
-			reinterpret_pointer_cast<P2>(this->base())
-		}
+		return subarray<std::decay_t<T2>, 2, P2>(
+				   layout_t<2>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, n),
+				   reinterpret_pointer_cast<P2>(this->base())
+		)
 			.rotated();
 	}
 
@@ -3653,7 +3653,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto elements_aux_() const {
 		return elements_type{
 			this->base_,
-			typename elements_type::extensions_type{multi::iextension{this->num_elements()}}
+			static_cast<typename elements_type::extensions_type>(multi::iextension{this->num_elements()})
 		};
 	}
 
@@ -3691,6 +3691,51 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 			self.data_elements()
 		);
 	}
+
+#ifdef _MSC_VER
+
+	// Workaround for a standard library bug in MSVC 14.3 and greater
+	/*
+	compile-c-c++ ..\..\..\bin.v2\libs\boost-multi\test\allocator.test\msvc-14.3\debug\cxxstd-20-iso\threading-multi\allocator.obj
+	allocator.cpp
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): error C3889: call to object of class type 'std::equal_to<void>': no matching call operator found
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(742): note: could be 'unknown-type std::equal_to<void>::operator ()(_Ty1 &&,_Ty2 &&) noexcept(<expr>) const'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: Failed to specialize function template 'unknown-type std::equal_to<void>::operator ()(_Ty1 &&,_Ty2 &&) noexcept(<expr>) const'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: With the following template arguments:
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: '_Ty1=const _Ty &'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: '_Ty2=const _Ty &'
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5646): note: the template instantiation context (the oldest one first) is
+	allocator.cpp(141): note: see reference to function template instantiation 'bool std::operator ==<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>>(const std::vector<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>> &,const std::vector<boost::multi::array<int,2,std::allocator<int>>,std::allocator<boost::multi::array<int,2,std::allocator<int>>>> &)' being compiled
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\vector(2275): note: see reference to function template instantiation 'bool std::equal<const _Ty*,const _Ty*>(const _InIt1,const _InIt1,const _InIt2)' being compiled
+			with
+			[
+				_Ty=boost::multi::array<int,2,std::allocator<int>>,
+				_InIt1=const boost::multi::array<int,2,std::allocator<int>> *,
+				_InIt2=const boost::multi::array<int,2,std::allocator<int>> *
+			]
+	C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\xutility(5663): note: see reference to function template instantiation 'bool std::equal<_InIt1,_InIt2,std::equal_to<void>>(const _InIt1,const _InIt1,const _InIt2,_Pr)' being compiled
+			with
+			[
+				_InIt1=const boost::multi::array<int,2,std::allocator<int>> *,
+				_InIt2=const boost::multi::array<int,2,std::allocator<int>> *,
+				_Pr=std::equal_to<void>
+			]
+
+		call "..\..\..\bin.v2\standalone\msvc\msvc-14.3\msvc-setup.bat"  >nul
+	 cl /Zm800 -nologo "allocator.cpp" -c -Fo"..\..\..\bin.v2\libs\boost-multi\test\allocator.test\msvc-14.3\debug\cxxstd-20-iso\threading-multi\allocator.obj"     -TP /wd4675 /EHs /std:c++20 /GR /Zc:throwingNew /Z7 /Od /Ob0 /W4 /WX /MDd /Zc:forScope /Zc:wchar_t /Zc:inline -DBOOST_ALL_NO_LIB=1 -DBOOST_COBALT_USE_STD_PMR=1 "-I..\..\.."
+	*/
+
+	friend constexpr auto operator==(array_ref const& self, array_ref const& other) -> bool {
+		if(self.extensions() != other.extensions()) {
+			return false;
+		}
+		return adl_equal(
+			other.data_elements(), other.data_elements() + other.num_elements(),
+			self.data_elements()
+		);
+	}
+
+#endif
 
 	template<typename TT, class... As>
 	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {

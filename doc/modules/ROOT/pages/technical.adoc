@@ -104,17 +104,19 @@ std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {ele
 ----
 
 [#technical_dimensionality_static]
-== Why is dimensionality static and the sizes are dynamic?
+== Why is the array's dimensionality hardcoded, while the array's sizes can be defined at runtime?
 
-The main idea is that the extensions of an array doesn't need to be hard coded, for applications such as simulations the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
-This is a useful combination for medium to large arrays,
-therefore the library mainly provides arrays which sizes can be determined at run time.
+The main idea is that the extents of an array can be determined at runtume, for applications such as simulations, the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
+This is a useful combination for medium to large arrays, therefore the library mainly provides arrays which sizes can be determined at run time.
+Since dimensionality known at compile-time can help determine if algorithms are available for specific dimensions during compilation.
+
+Even if the sizes of some are arrays are fixed (like for a chessboard, 8 x 8), there is utility in choosing arbitrary subsets of the array for processing.
 
 The alternative, static sizes (hard coded) can be useful for two different orthogonal reasons
 a) Compile-time sizes, to optimize access (unroll loops),
 b) Use stack, to avoid allocations
 
-Different features have different trade-off:
+Different features have different trade-offs:
 
 |===
 |                         | Pros                                     | Const                                                        
@@ -151,6 +153,6 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 |===
 
 [#technical_cpp17_minimum]
-== Why is c++17 chosen as the minimum?
+== Why is the C++17 standard chosen as the minimum?
 
-The implementation use `if constexpr` intensively, if you really need C++14 please open an issue.
+The implementation use `if constexpr` intensively, if you need C++14 please open an issue.

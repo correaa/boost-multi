@@ -2,6 +2,10 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
+> **⚠️ ALERT** 
+> This library is under acitive Boost review until **March 15, 2026**.  
+> If you are interested in reviewing the library, please send an email to the review manager, **Matt Borland** (matt AT mattborland DOT com).
+
 **[Boost.] Multi**
 
 > **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
