@@ -2845,9 +2845,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this constructs a reference to the init list
 	: array_types<T, 1, ElementPtr, Layout>(
-		  layout_type(multi::extensions_t<1>(
-			  {0, static_cast<size_type>(std::size(il))}
-		  )),
+		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il))})),
 		  std::data(il)
 	  ) {
 	}
@@ -2855,15 +2853,13 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	/*explicit*/ BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT>&& il)
 	: array_types<T, 1, ElementPtr, Layout>(
-		  layout_type(multi::extensions_t<1>(
-			  {0, static_cast<size_type>(std::size(il))}
-		  )),
+		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il))})),
 		  std::data(il)
 	  ) {
 		(void)std::move(il);
 	}
 
-	// boost serialization needs `delete`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]
+	// boost serialization needs `delete(...)`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::layout_t<1> >]
 	// void operator delete(void* ptr) noexcept = delete;
 	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)
 

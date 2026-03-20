@@ -137,6 +137,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const b = {4, 5, 6};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+
 		auto c = a + b;
 
 		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
@@ -146,6 +147,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const b = {4, 5, 6};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+
 		auto const& c = a + b;
 
 		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
@@ -310,6 +312,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const b = {1, 2, 3};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+
 		multi::array<int, 2> const C = A + b;
 
 		BOOST_TEST((
@@ -324,6 +327,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 		multi::array<int, 1> const a = {1, 2, 3};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+
 		multi::array<int, 1> const b = a + 1;
 
 		BOOST_TEST(( b == multi::array<int, 1>{2, 3, 4} ));

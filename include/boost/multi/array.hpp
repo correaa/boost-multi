@@ -204,6 +204,7 @@ struct dynamic_array                                                            
 	explicit dynamic_array(allocator_type const& alloc) : array_alloc{alloc}, ref(nullptr, {}) {}
 
 	using ref::operator();
+
 	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref::element_moved(); }
 
 	using ref::taked;
@@ -390,10 +391,8 @@ struct dynamic_array                                                            
 	}
 
 	template<class Element>
-	explicit dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-		Element const& elem, allocator_type const& alloc,
-		std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0  // NOLINT(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
-	)
+	// NOLINTNEXTLINE(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
+	explicit dynamic_array(Element const& elem, allocator_type const& alloc, std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0)  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
 
 	template<
@@ -419,10 +418,8 @@ struct dynamic_array                                                            
 	: array_alloc{},
 	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
 		  exts,
-		  array_alloc::allocate(
-			  static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(exts).num_elements()),  // NOLINT(readability-redundant-typename)
-			  nullptr
-		  )
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(exts).num_elements()),  // NOLINT(readability-redundant-typename)
+								nullptr)
 	  ) {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type>) {
 			array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
