@@ -3651,10 +3651,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  private:
 	constexpr auto elements_aux_() const {
-		return elements_type{
+		return elements_type(
 			this->base_,
-			static_cast<typename elements_type::extensions_type>(multi::iextension{this->num_elements()})
-		};
+			static_cast<typename elements_type::extensions_type>(multi::iextension(this->num_elements()))
+		);
 	}
 
  public:
