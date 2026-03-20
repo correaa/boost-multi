@@ -829,12 +829,12 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 		return multi::layout_t<2>{};
 	}
 	if(il.size() == 1) {
-		return multi::layout_t<2>{
+		return multi::layout_t<2>(
 			layout(*il.begin()),
 			static_cast<multi::size_t>(il.size()),
 			0,
 			static_cast<multi::size_t>(il.size())  // * il.begin()->size())
-		};
+		);
 	}
 	auto strd =
 		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -843,12 +843,12 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 
 	assert(base(*(il.end() - 1)) - base(*il.begin()) == static_cast<std::ptrdiff_t>(il.size() - 1) * strd);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-	return multi::layout_t<2>{
+	return multi::layout_t<2>(
 		layout(*il.begin()),
 		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
 		static_cast<multi::size_t>(il.size()) * strd
-	};
+	);
 }
 
 template<class T>

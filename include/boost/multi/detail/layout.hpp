@@ -1711,21 +1711,13 @@ struct layout_t
 	}
 
 	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
-		return layout_t{
+		return layout_t(
 			this->sub(),
 			this->stride(),
 			this->offset(),
 			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
-		};
+		);
 	}
-
-	// template<typename Size>
-	// constexpr auto partition(Size const& count) -> layout_t& {
-	// 	stride_ *= count;
-	// 	nelems_ *= count;
-	// 	sub_.partition(count);
-	// 	return *this;
-	// }
 
 	constexpr auto partition(size_type n) const {
 		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
