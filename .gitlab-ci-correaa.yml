@@ -230,7 +230,7 @@ g++-9-bullseye:
     - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
+g++-unstable c++23 par:
   stage: build
   image: debian:unstable
   tags:
@@ -238,9 +238,6 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
     - docker
   allow_failure: true
   interruptible: true
-  only:
-    refs:
-      - master
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
@@ -295,6 +292,9 @@ clang++-18 mull-18:  # mull-18 crashes
     - non-shared
   interruptible: true
   allow_failure: false
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
@@ -631,6 +631,9 @@ oneapi:
     - large-disk-space
     - x86_64
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get update
     - apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -856,6 +859,9 @@ cuda-12.6.3 cutensor:
     - non-shared
     - nvidia-gpu
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -1284,7 +1290,7 @@ qmcpack:
     - ctest -R afqmc     --output-on-failure
   needs: ["g++"]
 
-qmcpack cuda-12.3.1:
+qmcpack cuda:
   stage: test
   image:
     name: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu24.04
@@ -1294,9 +1300,6 @@ qmcpack cuda-12.3.1:
     - high-bandwidth
   interruptible: true
   allow_failure: false
-  only:
-    refs:
-      - master
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
   script:
