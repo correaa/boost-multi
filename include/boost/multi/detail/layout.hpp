@@ -639,7 +639,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return extensions_t{
 			multi::detail::ht_tuple(
 				index_extension(intersection(get<0>(self.base()), get<0>(other.base()))),
-				intersection(extensions_t<D - 1>{self.base().tail()}, extensions_t<D - 1>{other.base().tail()}).base()
+				intersection(extensions_t<D - 1>(self.base().tail()}, extensions_t<D - 1>{other.base().tail())).base()
 			)
 		};
 	}
