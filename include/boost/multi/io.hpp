@@ -10,6 +10,12 @@
 
 #include <iostream>
 
+// #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+// #if __has_include(<format>)
+// #include <boost/multi/io/format.hpp>
+// #endif
+// #endif
+
 namespace boost::multi {
 
 namespace detail {
@@ -34,7 +40,8 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 	if constexpr(Array::dimensionality > 1) {
 		os << '\n';
 	}
-	for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops)
+	for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops) TODO(correaa) use an algorithm
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		multi::detail::print(os, arr[idx], open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		if(idx != arr.extension().back()) {
 			os << sep[0];
@@ -45,21 +52,14 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 			}
 		}
 	}
-	// multi::detail::print(os, arr.front(), open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
-	// for(auto const& item : arr.dropped(1)) {
-	// 	os << sep[0] << ' ';
-	// 	if constexpr(Array::dimensionality > 1) {
-	// 		os << '\n';
-	// 	}
-	// 	multi::detail::print(os, item, open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
-	// }
-	// }
+
 	if constexpr(Array::dimensionality > 1) {
 		os << sep[0] << ' ' << '\n';
-		for(auto count = 0; count != indent; ++count) {  // NOLINT(altera-unroll-loops)
+		for(auto count = 0; count != indent; ++count) {  // NOLINT(altera-unroll-loops) TODO(correaa) use an algorithm
 			os << tab;
 		}
 	}
+
 	os << close[0];
 }
 
@@ -83,4 +83,5 @@ auto operator<<(std::ostream& os, extension_t<Integer> const& ext) -> std::ostre
 }
 
 }  // namespace boost::multi
+
 #endif  // BOOST_MULTI_IO_HPP

@@ -829,10 +829,9 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 		 public:
 			using value_type      = std::tuple<multi::index_range::iterator::value_type>;
-			using difference_type = multi::index_range::iterator::difference_type;
+			using multi::index_range::iterator::difference_type;  // using difference_type = multi::index_range::iterator::difference_type;
 			using reference = value_type;
-			// using pointer = void;
-			// using reference = value_type;
+			using pointer = void;
 
 			iterator() = default;
 
@@ -842,6 +841,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				++base_();
 				return *this;
 			}
+
 			BOOST_MULTI_HD constexpr auto operator--() -> iterator& {
 				--base_();
 				return *this;
@@ -854,6 +854,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 				base_() += n;
 				return *this;
 			}
+
 			BOOST_MULTI_HD constexpr auto operator-=(difference_type n) -> iterator& {
 				base_() -= n;
 				return *this;
@@ -1710,21 +1711,13 @@ struct layout_t
 	}
 
 	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
-		return layout_t{
+		return layout_t(
 			this->sub(),
 			this->stride(),
 			this->offset(),
 			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
-		};
+		);
 	}
-
-	// template<typename Size>
-	// constexpr auto partition(Size const& count) -> layout_t& {
-	// 	stride_ *= count;
-	// 	nelems_ *= count;
-	// 	sub_.partition(count);
-	// 	return *this;
-	// }
 
 	constexpr auto partition(size_type n) const {
 		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
