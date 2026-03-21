@@ -13,7 +13,7 @@ set -x;${CXX:-c++} -std=c++20 -O3 -DNDEBUG -I../include $0 -o $0x &&time $0x&&rm
 #include <numeric>  // for std::iota
 #include <random>
 
-	using boost::source_location;
+using boost::source_location;
 
 namespace {
 struct lup {  // LU method for decomposition and solution
@@ -74,15 +74,15 @@ struct lup {  // LU method for decomposition and solution
 		return upper_solve(LU, lower_solve(LU, permute(P, x)));
 	}
 
- private:
-	template<class Matrix, class Permutation, class Index>
-	static auto permute_max_diagonal(Matrix&& LU, Permutation&& P, Index i) {
-		auto mi = std::max_element(begin(LU), end(LU), [i](auto const& a, auto const& b) { return std::abs(a[i]) < std::abs(b[i]); }) - begin(LU);
-		using std::swap;
-		swap(LU[0], LU[mi]);
-		swap(P[0], P[mi]);
-		return std::abs(LU[0][i]);
-	}
+	private:
+		template<class Matrix, class Permutation, class Index>
+		static auto permute_max_diagonal(Matrix&& LU, Permutation&& P, Index i) {
+			auto mi = std::max_element(begin(LU), end(LU), [i](auto const& a, auto const& b) { return std::abs(a[i]) < std::abs(b[i]); }) - begin(LU);
+			using std::swap;
+			swap(LU[0], LU[mi]);
+			swap(P[0], P[mi]);
+			return std::abs(LU[0][i]);
+		}
 
 	template<class Matrix, class Permutation, class Index>
 	static auto permute_max(Matrix&& LU, Permutation&& P) {
@@ -91,8 +91,8 @@ struct lup {  // LU method for decomposition and solution
 			using std::swap;
 			swap(LU[0], LU[mi]);
 			swap(P[0], P[mi]);
+			return std::abs(LU[0][0]);
 		}
-		return std::abs(LU[0][0]);
 	}
 
 	template<class Permutation, class Vector>
