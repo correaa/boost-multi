@@ -31,11 +31,13 @@ int main() {
 	BOOST_TEST( C1[1][1] == std::plus<>{}(A[1][1], B[1][1]) );  // NOLINT(build/include_what_you_use)
 
 	using multi::elementwise::operator+;
+
 	multi::array<int, 2> const C2 = A + B;
 
 	BOOST_TEST( C1 == C2 );
 
 	using multi::elementwise::operator-;
+
 	multi::array<int, 2> const C3 = A - (-B);
 
 	BOOST_TEST( C2 == C3 );
