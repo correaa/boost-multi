@@ -111,8 +111,8 @@ struct lup {  // LU method for decomposition and solution
 				};
 				data[k] = t;
 			}
+			return std::forward<Vector>(data);
 		}
-		return std::forward<Vector>(data);
 	}
 
 	template<class LUMatrix, class Vector>
