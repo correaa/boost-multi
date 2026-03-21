@@ -161,7 +161,7 @@ int main() try {
 		std::cout << std::abs(x[4]) << std::endl;
 		(std::abs(x[4] - 0.565756) < 1e-4) ?:
 
-										   throw BOOST_CURRENT_LOCATION;
+		throw BOOST_CURRENT_LOCATION;
 	}
 	{
 		multi::array<double, 2> A({4000, 4000});
