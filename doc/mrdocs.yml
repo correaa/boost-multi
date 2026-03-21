@@ -1,0 +1,49 @@
+# MrDocs configuration for Boost.Multi
+# https://mrdocs.com/docs/mrdocs/config-file.html
+#
+# Run from the doc/ directory:
+#   mrdocs mrdocs.yml
+# Or let the Antora extension invoke it automatically via multi-playbook.yml.
+
+# -- Source -----------------------------------------------------------------
+
+# Root of the project (relative to this file); symbols in files under here are extracted.
+source-root: ..
+
+# Pre-generated compile_commands.json (see CMakeLists.txt + mrdocs_driver.cpp).
+# Regenerate with:
+#   cmake -S doc -B /tmp/mrdocs_build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+#   cp /tmp/mrdocs_build/compile_commands.json doc/
+compilation-database: compile_commands.json
+
+# -- Symbol filtering -------------------------------------------------------
+# input is omitted: MrDocs processes everything reachable from the compile unit.
+# include-symbols restricts output to boost::multi only.
+
+# include-symbols: boost::multi   # re-enable once extraction is working
+
+# Don't expose private or anonymous-namespace symbols.
+extract-private: false
+
+# -- Output -----------------------------------------------------------------
+
+generator: adoc
+
+# Each documented entity gets its own page; better for large APIs.
+multipage: true
+
+# Write into an Antora module that the playbook can pick up.
+# This path is relative to this config file.
+output: modules/reference/pages
+
+# -- Presentation -----------------------------------------------------------
+
+# Use human-readable page names (e.g. "array" instead of a mangled ID).
+legible-names: true
+
+# Generate a tag file for cross-referencing from hand-written pages.
+# tagfile: multi-reference.tag
+
+# -- Source links -----------------------------------------------------------
+# Uncomment and adjust once the repo has a stable public URL, e.g. on GitHub.
+# base-url: https://github.com/correaa/boost-multi/blob/master/

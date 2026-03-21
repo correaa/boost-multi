@@ -1,0 +1,7 @@
+[#index]
+= Global namespace
+:relfileprefix: 
+:mrdocs:
+
+
+[.small]#Created with https://www.mrdocs.com[MrDocs]#

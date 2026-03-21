@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@cppalliance/antora-downloads-extension": "^0.0.2",
-    "@antora/lunr-extension": "^1.0.0-alpha.12"
+    "@antora/lunr-extension": "^1.0.0-alpha.12",
+    "@cppalliance/antora-cpp-reference-extension": "^1.0.0"
   }
 }

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/tmp/mrdocs_build",
+  "command": "/usr/bin/c++  -I/home/correaa/boost-multi/doc/../include  -o CMakeFiles/mrdocs_driver.dir/mrdocs_driver.cpp.o -c /home/correaa/boost-multi/doc/mrdocs_driver.cpp",
+  "file": "/home/correaa/boost-multi/doc/mrdocs_driver.cpp",
+  "output": "CMakeFiles/mrdocs_driver.dir/mrdocs_driver.cpp.o"
+}
+]

@@ -16,3 +16,5 @@ antora:
   extensions:
     - require: '@cppalliance/antora-downloads-extension'
     - require: '@antora/lunr-extension'
+    - require: '@cppalliance/antora-cpp-reference-extension'
+      mrdocs: doc/mrdocs.yml
