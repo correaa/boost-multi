@@ -22,7 +22,6 @@ Matrix&& lu_fact(Matrix&& A) {
 	using multi::sizes;
 	using std::begin;
 	using std::end;
-	using std::get;
 	for(auto k = 0 * m; k != std::min(m - 1, get<1>(sizes(A))); ++k) {
 		auto const& Ak  = A[k];
 		auto const& Akk = Ak[k];
