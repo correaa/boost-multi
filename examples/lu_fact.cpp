@@ -19,7 +19,6 @@ template<class Matrix>
 Matrix&& lu_fact(Matrix&& A) {
 	using multi::size;
 	auto m = size(A);  // n = size(A[0]);//std::get<1>(sizes(A));
-	using multi::rotated;
 	using multi::sizes;
 	using std::begin;
 	using std::end;
@@ -45,9 +44,9 @@ Matrix&& lu_fact2(Matrix&& A) {
 	auto const [m, n] = A.sizes();
 
 	for(decltype(m) k = 0; k != m - 1; ++k) {
-		for(auto i = k + 1; i != m; ++i) {
-			auto const z = A[i][k] / A[k][k];
-			A[i][k]      = z;
+		for(auto i = k + 1; i != m; ++i){
+			auto const z = A[i][k]/A[k][k];
+			A[i][k] = z;
 			std::transform(begin(A[i]) + k + 1, begin(A[i]) + std::max(n, k + 1), A[k].begin() + k + 1, begin(A[i]) + k + 1, [&](auto a, auto b) { return a - z * b; });
 		}
 	}
@@ -82,7 +81,7 @@ int main() {
 			{ 2.0, 4.0,  5.0},
 		};
 		multi::array<double, 1> y = {12.0, 5.0, 2.0};
-		double                  AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+		double AA[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 		using std::copy;
 		copy(begin(A), end(A), begin(*multi::array_ptr(&AA)));
 
