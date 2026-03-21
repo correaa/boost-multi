@@ -40,6 +40,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 #if !defined(__CUDACC_VER_MAJOR__) || (__CUDACC_VER_MAJOR__ > 11)
 	// this method brings both arrays to the right (final) dimensionality and then does elementwise mult
 	using multi::broadcast::operator*;  // cppcheck-suppress constStatement
+
 	auto const& M2 = (~a.repeated(b.size())) * b.repeated(a.size());
 
 	std::cout << "M2 = " << M2 << '\n';
@@ -47,6 +48,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 
 	// it is actually only necessary to bring one to the final dimension
 	using multi::broadcast::operator*;  // cppcheck-suppress constStatement
+
 	auto const& M3 = ~a.repeated(b.size()) * b;
 
 	std::cout << "M3 = " << M3 << '\n';
@@ -59,6 +61,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexity)
 	B[0] = b;
 
 	using multi::broadcast::operator*;  // cppcheck-suppress constStatement
+
 	auto const& M4 = (~((~A)[0].repeated(B[0].size()))) * B[0];
 
 	std::cout << "M4 = " << M4 << '\n';
