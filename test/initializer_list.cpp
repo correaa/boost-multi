@@ -219,6 +219,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][1] == 344 );
 
 		using multi::operator+;  // cppcheck-suppress [constStatement];
+
 		auto arr2 = operator+({
 			{ 12,  24, 36},
 			{112, 344, 56},
