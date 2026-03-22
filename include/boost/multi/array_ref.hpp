@@ -1115,7 +1115,7 @@ template<class It>
 /// A `D`-dimensional array whose size is bound at construction and never changes.
 ///
 /// Provides contiguous, allocator-managed storage with no reallocation after construction.
-/// Pointers, references, and iterators to elements remain valid for the lifetime of the object. 
+/// Pointers, references, and iterators to elements remain valid for the lifetime of the object.
 ///
 /// @note Assignments require matching extensions; use `array` when resizing or full value semantics is needed
 ///
