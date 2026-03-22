@@ -3498,6 +3498,17 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+/// A `D`-dimensional view of a contiguous, pre-existing memory buffer.
+///
+/// Does not own or manage the elements it references.
+/// Has reference semantics: cannot be rebound after construction, assignments are deep,
+/// and the size is fixed for the object's lifetime.
+/// Invalidated if the underlying buffer is deallocated or moved.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam ElementPtr Pointer-like type to the elements (default `T*`)
+/// @tparam Layout Layout type describing strides and extensions
 template<
 	typename T, dimensionality_type D, typename ElementPtr = T*,
 	class Layout =

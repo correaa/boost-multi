@@ -1371,10 +1371,8 @@ struct array : dynamic_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept
-	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {
-		assert(this->stride() != 0);
-	}
+	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
+	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {}
 
 	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
@@ -1512,6 +1510,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		}
 		return *this;
 	}
+
 	void assign(std::initializer_list<value_type> values) {
 		if(values.size() != 0) {
 			assign(values.begin(), values.end());

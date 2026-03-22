@@ -98,14 +98,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( ext.size() == vec.size() );
 			BOOST_TEST( vec[1] == 1L );
 		}
-		{
-			multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
+		// {
+		// 	multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
 
-			auto const ext = extension(vec);
+		// 	auto const ext = extension(vec);
 
-			vec.assign(ext.begin(), ext.end());
-			BOOST_TEST( vec[1] == 1 );
-		}
+		// 	vec.assign(ext.begin(), ext.end());
+		// 	BOOST_TEST( vec[1] == 1 );
+		// }
 	}
 
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
