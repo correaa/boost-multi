@@ -34,7 +34,7 @@ exclude-symbols:
   - "boost::multi::array<T, 0"
   - "boost::multi::array_iterator"
   - "boost::multi::array_ptr<T, 0"
-  - "boost::multi::array_traits<T["
+  - "boost::multi::array_traits"
   - "boost::multi::array_types"
   - "boost::multi::const_subarra<T"
 
