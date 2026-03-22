@@ -1221,7 +1221,7 @@ template<class T>
 using inplace_array = typename detail::inplace_array_impl<T>::type;
 
 template<typename T, class Alloc>
-struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
+struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {  ///< @private
 	using dynamic_array<T, 0, Alloc>::dynamic_array;
 
 	using dynamic_array<T, 0, Alloc>::operator=;
@@ -1704,11 +1704,7 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 }  // end namespace boost::multi
 
-/// Convenience aliases using `std::pmr::polymorphic_allocator` as the allocator.
-///
-/// Types in this namespace are drop-in replacements for their counterparts in
-/// `boost::multi`, with support for `std::pmr::memory_resource` to control allocation.
-namespace boost::multi::pmr {
+namespace boost::multi::pmr {  ///<  Convenience aliases using `std::pmr::polymorphic_allocator`.
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 template<class T, boost::multi::dimensionality_type D>
