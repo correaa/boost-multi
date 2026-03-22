@@ -12,6 +12,7 @@ compilation-database: build-mrdocs/compile_commands.json
 
 input:
   - include/boost/multi/array.hpp
+  - include/boost/multi/array_ref.hpp
 
 output: doc/modules/reference/pages
 
