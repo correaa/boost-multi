@@ -135,6 +135,16 @@ template<class T> struct is_const_subarray : decltype(detail::is_const_subarray_
 template<class T>
 constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 
+/// Mutable `D`-dimensional view into part or all of an array
+///
+/// Represents a subregion of a larger array without owning the elements.
+/// Has reference semantics: cannot be rebound, assignments are deep, and size is immutable.
+/// Invalidated if the originating array is destroyed or resized.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam ElementPtr Pointer-like type to the elements (default `T*`)
+/// @tparam Layout Layout type describing strides and extensions
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
@@ -341,6 +351,16 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma clang diagnostic pop
 #endif
 
+/// Pointer-like type to a `subarray`, providing an extra level of indirection
+///
+/// Corresponds to `subarray` the way a raw pointer corresponds to a reference.
+/// Can be rebound (unlike `subarray`) and supports pointer arithmetic.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam ElementPtr Pointer-like type to the elements
+/// @tparam Layout Layout type describing strides and extensions
+/// @tparam IsConst Whether the pointed-to subarray is const
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
 struct subarray_ptr;
 
