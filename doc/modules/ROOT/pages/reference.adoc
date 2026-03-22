@@ -497,7 +497,7 @@ auto hermitized(Array2D const& arr) {
 
 int main() {
 	using namespace std::complex_literals;
-	multi::array A = {
+	multi::array<std::complex, 2> A = {
 		{ 1.0 + 2.0i,  3.0 +  4.0i},
 		{ 8.0 + 9.0i, 10.0 + 11.0i}
 	};
