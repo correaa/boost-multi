@@ -129,9 +129,6 @@ using sizes_t = typename extensions_t<D>::sizes_type;
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
-// template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-// struct dynamic_array;
-
 namespace detail {
 struct non_copyable_base {
 	non_copyable_base(non_copyable_base const&) = delete;
