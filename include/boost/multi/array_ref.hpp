@@ -1251,6 +1251,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
+	/// Associated type that this reference decays to (when true copies are needed)
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -3668,7 +3669,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		return *this;  // lints (cppcoreguidelines-c-copy-assignment-signature)
 	}
 
-	using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
+	// using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
  private:
