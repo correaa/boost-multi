@@ -1500,8 +1500,10 @@ struct array : dynamic_array<T, D, Alloc> {
 		}
 	}
 
+
+	/// Assign from a range (defined by an iterator pair)
 	template<class It>
-	auto assign(It first, It last) -> array& {  // cppcheck-suppress duplInheritedMember ; to overwrite
+	void assign(It first, It last) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using std::all_of;
 		using std::next;
 		if(adl_distance(first, last) == this->size()) {
@@ -1509,7 +1511,6 @@ struct array : dynamic_array<T, D, Alloc> {
 		} else {
 			this->operator=(array(first, last));
 		}
-		return *this;
 	}
 
 	void assign(std::initializer_list<value_type> values) {
