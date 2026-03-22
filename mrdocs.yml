@@ -1,0 +1,27 @@
+# MrDocs configuration for Boost.Multi
+# https://github.com/cppalliance/mrdocs
+#
+# Note: adding multiple input files triggers a crash in MrDocs 0.0.4.
+# array.hpp transitively includes array_ref.hpp, restriction.hpp, and utility.hpp,
+# which covers the core API. elementwise.hpp and io.hpp can be added once
+# https://github.com/cppalliance/mrdocs/issues is resolved.
+
+source-root: include/
+
+compilation-database: build-mrdocs/compile_commands.json
+
+input:
+  - include/boost/multi/array.hpp
+
+output: doc/modules/reference/pages
+
+generator: adoc
+
+multipage: true
+
+include-symbols:
+  - "boost::multi"
+exclude-symbols:
+  - "boost::multi::detail"
+
+verbose: false
