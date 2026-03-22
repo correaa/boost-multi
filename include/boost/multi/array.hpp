@@ -1502,7 +1502,9 @@ struct array : dynamic_array<T, D, Alloc> {
 		}
 	}
 
-	/// Assign from a range (defined by an iterator pair)
+	/// Assigns elements from an iterator range, resizing if necessary.
+	/// @param first Iterator to the beginning of the source range
+	/// @param last Iterator past the end of the source range
 	template<class It>
 	void assign(It first, It last) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using std::all_of;
