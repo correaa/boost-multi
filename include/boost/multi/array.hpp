@@ -1261,13 +1261,9 @@ struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-/// A multidimensional array with value semantics.
-///
-/// @tparam T Element type
-/// @tparam D Dimensionality (non-negative)
-/// @tparam Alloc Allocator type
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : dynamic_array<T, D, Alloc> {
+ private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 
 	static_assert(
@@ -1275,6 +1271,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		"only exact type of array element or void (default) is allowed as allocator value type"
 	);
 
+ public:
 	// cppcheck-suppress duplInheritedMember ; to override  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 	// cppcheck-suppress duplInheritedMember ; to override  // NOLINTNEXTLINE(runtime/operator)

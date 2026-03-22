@@ -122,6 +122,11 @@ struct extensions_t;
 template<dimensionality_type D>
 using sizes_t = typename extensions_t<D>::sizes_type;
 
+/// A multidimensional array with value semantics.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
 
 // template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
