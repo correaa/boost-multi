@@ -38,4 +38,6 @@ exclude-symbols:
   - "boost::multi::array_types"
   - "boost::multi::const_subarra<T"
 
+warn-no-paramdoc: false
+
 verbose: false
