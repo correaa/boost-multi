@@ -49,3 +49,4 @@
 ** xref:appendix.adoc#appendix_fortran[Multi for FORTRAN Programmers]
 ** xref:appendix.adoc#appendix_howtos[FAQ]
 *** xref:appendix.adoc#appendix_howto_fill[How to fill elements?]
+* xref:reference:index.adoc[Generated API Reference]
