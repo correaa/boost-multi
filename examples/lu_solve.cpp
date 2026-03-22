@@ -101,8 +101,8 @@ struct lup {  // LU method for decomposition and solution
 		using index = typename Permutation::size_type;
 		for(index i = 0; i != size(p); ++i) {
 			index k = p[i];
-			for(; k > i; k = p[k]) {
-			}
+			// for(; k > i; k = p[k]) {
+			// }
 			index pk = p[k];
 			if(k >= i and pk != i) {
 				auto const t = data[i];
@@ -113,6 +113,7 @@ struct lup {  // LU method for decomposition and solution
 			}
 			return std::forward<Vector>(data);
 		}
+		return std::forward<Vector>(data);
 	}
 
 	template<class LUMatrix, class Vector>
