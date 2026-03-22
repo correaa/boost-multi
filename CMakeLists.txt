@@ -73,6 +73,16 @@ set_target_properties(
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
+# Documentation driver for MrDocs — configured but not built by default.
+# Produces a compile_commands.json entry for the public headers when
+# cmake is invoked with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON.
+add_library(mrdocs_driver OBJECT ${PROJECT_SOURCE_DIR}/doc/mrdocs_driver.cpp)
+target_include_directories(mrdocs_driver PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+target_compile_features(mrdocs_driver PRIVATE cxx_std_17)
+set_target_properties(mrdocs_driver PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
 #if(NOT ENABLE_CUDA)
 #target_compile_options(multi INTERFACE
 #  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
