@@ -19,6 +19,8 @@ generator: adoc
 
 multipage: true
 
+extract-private: false
+
 include-symbols:
   - "boost::multi"
 exclude-symbols:
