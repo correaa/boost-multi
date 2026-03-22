@@ -45,6 +45,9 @@
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
 
+/// Branding namespace for the library
+namespace boost{}
+
 /// Main namespace for the library
 namespace boost::multi {
 
