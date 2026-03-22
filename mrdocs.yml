@@ -21,7 +21,8 @@ multipage: true
 
 extract-private: false
 
-inherit-base-members: derived
+# inherit-base-members not supported in MrDocs 0.0.4
+# inherit-base-members: derived
 
 include-symbols:
   - "boost::multi"
