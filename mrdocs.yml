@@ -21,6 +21,8 @@ multipage: true
 
 extract-private: false
 
+inherit-base-members: always
+
 include-symbols:
   - "boost::multi"
 exclude-symbols:
