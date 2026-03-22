@@ -1393,7 +1393,7 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ clang cmake tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make g++ clang cmake tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv wget
     - npm i -q @antora/cli @antora/site-generator
     - wget https://github.com/cppalliance/mrdocs/releases/download/v0.0.4/MrDocs-0.0.4-Linux.tar.gz
     - tar zxvf MrDocs-0.0.4-Linux.tar.gz
