@@ -656,6 +656,7 @@ struct dynamic_array                                                            
 	constexpr auto begin() & noexcept -> typename dynamic_array::iterator { return ref::begin(); }
 	constexpr auto end() & noexcept -> typename dynamic_array::iterator { return ref::end(); }
 
+	/// Inherited indexed access
 	using ref::operator[];
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
