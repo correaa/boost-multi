@@ -1122,7 +1122,7 @@ template<class It>
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam Alloc Allocator type
-template<typename, ::boost::multi::dimensionality_type, class Alloc> struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
 #ifdef __clang__
 #pragma clang diagnostic push
