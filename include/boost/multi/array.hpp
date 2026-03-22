@@ -46,7 +46,7 @@
 #endif
 
 /// Branding namespace for the library
-namespace boost{}
+namespace boost {}
 
 /// Main namespace for the library
 namespace boost::multi {
