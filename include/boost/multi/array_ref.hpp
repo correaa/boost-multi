@@ -690,6 +690,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 	}
 };
 
+/// @internal
 template<typename ElementPtr, dimensionality_type D, class StridesType>
 struct cursor_t {
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
@@ -947,6 +948,8 @@ struct elements_iterator_t
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);  // TODO(correaa) calling host function from host device
 		return n_ != other.n_;
 	}
+
+	~elements_iterator_t() = default;
 };
 
 template<typename Pointer, class LayoutType>
