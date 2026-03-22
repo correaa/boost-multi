@@ -1261,6 +1261,11 @@ struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+/// A multidimensional array with value semantics.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam Alloc Allocator type
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_ = dynamic_array<T, D, Alloc>;
