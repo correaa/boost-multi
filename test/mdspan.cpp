@@ -15,20 +15,20 @@
 namespace multi = boost::multi;
 
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
-template<class MultiArray, multi::dimensionality_type D = std::decay_t<MultiArray>::dimensionality>
+template<class MultiArray, typename T = std::remove_reference_t<typename std::decay_t<MultiArray>::element_cref>, multi::dimensionality_type D = std::decay_t<MultiArray>::dimensionality>
 auto to_strided_mdspan(MultiArray&& arr) {
 	using std::apply;
-	auto const shape = apply(
+	auto shape = apply(
 		[](auto... sizes) { return std::dextents<std::size_t, D>{static_cast<std::size_t>(sizes)...}; },
 		arr.sizes()
 	);
 
-	auto const strides = apply(
+	auto strides = apply(
 		[](auto... strds) { return std::array<std::size_t, D>{static_cast<std::size_t>(strds)...}; },
 		arr.strides()
 	);
 
-	return std::mdspan<int, std::dextents<std::size_t, D>, std::layout_stride>{
+	return std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>{
 		arr.base(), std::layout_stride::mapping{shape, strides}
 	};
 }
@@ -45,10 +45,10 @@ auto main() -> int {
 	auto const& center = arr({1, 3}, {1, 3});
 	BOOST_TEST( &center[0][0] == &arr[1][1] );
 
-	#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
 	auto mds = to_strided_mdspan(center);
-	BOOS_TEST( &mds[0, 0] == &center[0][0] );
-	#endif
+	BOOST_TEST(( &mds[0, 0] == &center[0][0] ));
+#endif
 
 	return boost::report_errors();
 }
