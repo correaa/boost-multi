@@ -1321,9 +1321,8 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	/// Constructs the array from a nested initializer list.
 	///
-	/// @param nested_values Nested initializer list of elements; allows assignment-like syntax such as `array<int, 2> A = {{1, 2}, {3, 4}}`.
-	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> nested_values)
+	/// @param nested_values Nested initializer list of elements (must be rectangular, not ragged); allows assignment-like syntax such as `array<int, 2> A = {{1, 2}, {3, 4}}`.
+	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> nested_values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	: dynamic_(
 		  (nested_values.size() == 0) ? array<T, D>{}
 									  : array<T, D>(nested_values.begin(), nested_values.end())
@@ -1705,6 +1704,10 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 }  // end namespace boost::multi
 
+/// Convenience aliases using `std::pmr::polymorphic_allocator` as the allocator.
+///
+/// Types in this namespace are drop-in replacements for their counterparts in
+/// `boost::multi`, with support for `std::pmr::memory_resource` to control allocation.
 namespace boost::multi::pmr {
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
