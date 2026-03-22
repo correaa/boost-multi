@@ -2484,6 +2484,7 @@ template<class Subarray> auto diagonal(Subarray&& sarr)
 #pragma clang diagnostic pop
 #endif
 
+/// @private
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr> {};
 
 #ifdef __clang__

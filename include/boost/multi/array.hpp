@@ -45,6 +45,7 @@
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
 
+/// Main namespace for the library
 namespace boost::multi {
 
 namespace detail {
@@ -1220,7 +1221,7 @@ struct inplace_array_impl<T***> {
 template<class T>
 using inplace_array = typename detail::inplace_array_impl<T>::type;
 
-///< @private
+/// @private
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;

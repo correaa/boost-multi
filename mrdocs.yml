@@ -25,7 +25,7 @@ extract-private: false
 # inherit-base-members not supported in MrDocs 0.0.4
 # inherit-base-members: derived
 
-base-url: https://gitlab.com/correaa/boost-multi/-/blob/master/
+base-url: https://gitlab.com/correaa/boost-multi/-/blob/master/include/
 
 include-symbols:
   - "boost::multi"
