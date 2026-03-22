@@ -3669,7 +3669,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		return *this;  // lints (cppcoreguidelines-c-copy-assignment-signature)
 	}
 
-	// using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
+	using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
  private:
