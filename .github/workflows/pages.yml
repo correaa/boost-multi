@@ -27,18 +27,34 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Antora
-        run: npm i -g @antora/cli @antora/site-generator
+      - name: Install Clang and CMake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake libboost-dev
 
-      - name: Verify Antora installation
-        run: antora --version
+      - name: Install MrDocs
+        run: |
+          wget -q https://github.com/cppalliance/mrdocs/releases/download/v0.0.4/MrDocs-0.0.4-Linux.tar.gz
+          tar xzf MrDocs-0.0.4-Linux.tar.gz
+          echo "$PWD/MrDocs-0.0.4-Linux/bin" >> $GITHUB_PATH
+
+      - name: Generate compile_commands.json for MrDocs
+        run: |
+          cmake -B build-mrdocs \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMULTI_BUILD_TESTS=OFF \
+            -DMULTI_BUILD_PACKAGE=OFF
+
+      - name: Run MrDocs
+        run: mrdocs mrdocs.yml
 
       - name: Build Docs with Antora
         run: |
           cd doc
-          chmod +x antora_docs.sh
-          ./antora_docs.sh
-          cd ..
+          npm ci --ignore-scripts
+          npx antora multi-playbook.yml
 
       - name: Prepare artifact for GitHub Pages
         run: cp -r doc/html .public
