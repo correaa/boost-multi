@@ -144,7 +144,7 @@ constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam ElementPtr Pointer-like type to the elements (default `T*`)
-/// @tparam Layout Layout type describing strides and extensions
+/// @tparam Layout type describing strides and extensions
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class subarray;
 
@@ -2729,8 +2729,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma clang diagnostic pop
 #endif
 
-template<class Element, dimensionality_type D, typename... Ts>
-using iterator = array_iterator<Element, D, Ts...>;
+// template<class Element, dimensionality_type D, typename... Ts>
+// using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>

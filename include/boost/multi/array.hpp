@@ -1224,6 +1224,9 @@ struct inplace_array_impl<T***> {
 
 }  // namespace detail
 
+/// Stack-allocated multidimensional array whose maximum size is encoded in the element type `T`
+///
+/// @tparam T C array type encoding the shape, e.g. `double[4][4]`
 template<class T>
 using inplace_array = typename detail::inplace_array_impl<T>::type;
 
