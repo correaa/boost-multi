@@ -814,6 +814,8 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	/// (r-value address-of operator is deleted)
+	/// @internal
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() && -> dynamic_array* = delete;  // NOSONAR(cpp:S877) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
 	// NOLINTNEXTLINE(runtime/operator)
@@ -1499,7 +1501,6 @@ struct array : dynamic_array<T, D, Alloc> {
 			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
 		}
 	}
-
 
 	/// Assign from a range (defined by an iterator pair)
 	template<class It>
