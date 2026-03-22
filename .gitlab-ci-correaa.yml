@@ -1392,6 +1392,7 @@ pages:
   tags:
     - non-shared
     - docker
+    - x86_64  # for MrDocs binary
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make g++ clang cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge 
     - npm i -q @antora/cli @antora/site-generator
