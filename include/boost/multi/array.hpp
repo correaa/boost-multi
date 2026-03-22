@@ -1319,11 +1319,14 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	/// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> ilv)
+	/// Constructs the array from a nested initializer list.
+	///
+	/// @param nested_values Nested initializer list of elements; allows assignment-like syntax such as `array<int, 2> A = {{1, 2}, {3, 4}}`.
+	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> nested_values)
 	: dynamic_(
-		  (ilv.size() == 0) ? array<T, D>{}
-							: array<T, D>(ilv.begin(), ilv.end())
+		  (nested_values.size() == 0) ? array<T, D>{}
+									  : array<T, D>(nested_values.begin(), nested_values.end())
 	  ) {
 	}
 

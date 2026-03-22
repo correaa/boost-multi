@@ -1112,6 +1112,15 @@ template<class It>
 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
+/// A `D`-dimensional array whose size is bound at construction and never changes.
+///
+/// Provides contiguous, allocator-managed storage with no reallocation after construction.
+/// Pointers, references, and iterators to elements remain valid for the lifetime of the object.
+/// Assignments require matching extensions; use `array` when resizing is needed.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam Alloc Allocator type
 template<typename, ::boost::multi::dimensionality_type, class Alloc> struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
 
 #ifdef __clang__
