@@ -113,6 +113,15 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 
 namespace boost::multi {
 
+/// Read-only `D`-dimensional view into a subarray
+///
+/// Provides the same interface as `subarray` but prevents modification of the referenced elements.
+/// Has reference semantics: cannot be rebound, assignments are deep, and size is immutable.
+///
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam ElementPtr Pointer-like type to const elements (default `T const*`)
+/// @tparam Layout Layout type describing strides and extensions
 template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
 struct const_subarray;
 
