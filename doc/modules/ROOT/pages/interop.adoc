@@ -462,8 +462,8 @@ Multi can be used on existing memory in a non-invasive way via (non-owning) refe
 ----
 
 Finally, the element type of the device array has to be device-friendly to work correctly; 
-this includes all build in types, and classes with basic device operations, such as construction, destruction, and assigment.
-They notably do not include `std::complex<T>`, in which can be replaced by the device-friendly `thrust::complex<T>` can be used as replacement.
+this includes all built-in types, and classes with basic device operations, such as construction, destruction, and assignment.
+They notably do not include `std::complex<T>`, in which case it can be replaced by the device-friendly `thrust::complex<T>`.
 
 Thrust algorithms can be used to gain a high degree of parallelism.
 For example, for reduction by index (sum over rows) over a big array in the CUDA array, a generic implementation can be:
