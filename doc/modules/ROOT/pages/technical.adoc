@@ -45,7 +45,7 @@ std::array<int, 3> p = {2, 3, 4};
 std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ----
 
-Since C++23 (when the `__cpp_multitdimensional_subscript` is available), element access supports multidimensional subscript notation.
+Since C++23 (when the `__cpp_multidimensional_subscript` is available), element access supports multidimensional subscript notation.
 In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
 [#technical_iteration]
@@ -57,7 +57,7 @@ Since the library iteration is pointer-based, the iterators replicate these rest
 
 There are three cases to consider; the first two can be illustrated with one-dimensional arrays, and one is intrinsic to multiple dimensions.
 
-The first case is that of strided views (e.g. `A.strided(n)`) whose stride value are not divisors of original array size.
+The first case is that of strided views (e.g. `A.strided(n)`) whose stride values are not divisors of original array size.
 The second case is that or negative strides in general.
 The third case is that of iterators of transposed array.
 
@@ -76,7 +76,7 @@ This is a choice is made because it is useful to know the dimensionality of an o
 The reason is that in general there are not many algorithms or uses that work in the same way in different dimensions.
 
 The library achieves a different kind of cross-dimensional flexibility by:
-a) Treating D-dimensional arrays as, for example, one-dimensional arrays arrays of (D-1)-dimensional subarrays.
+a) Treating D-dimensional arrays as, for example, a one-dimensional sequence of (D-1)-dimensional subarrays.
 A new D-dimensional array can be generated from an array of lower dimensionality
 
 [source,cpp]
@@ -106,11 +106,11 @@ std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {ele
 [#technical_dimensionality_static]
 == Why is the array's dimensionality hardcoded, while the array's sizes can be defined at runtime?
 
-The main idea is that the extents of an array can be determined at runtume, for applications such as simulations, the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
+The main idea is that the extents of an array can be determined at runtime, for applications such as simulations, the sizes adapt to the problem sizes, or set interactively/input by the user or from a previous run.
 This is a useful combination for medium to large arrays, therefore the library mainly provides arrays which sizes can be determined at run time.
 Since dimensionality known at compile-time can help determine if algorithms are available for specific dimensions during compilation.
 
-Even if the sizes of some are arrays are fixed (like for a chessboard, 8 x 8), there is utility in choosing arbitrary subsets of the array for processing.
+Even if the sizes of some arrays are fixed (like for a chessboard, 8 x 8), there is utility in choosing arbitrary subsets of the array for processing.
 
 The alternative, static sizes (hard coded) can be useful for two different orthogonal reasons
 a) Compile-time sizes, to optimize access (unroll loops),
@@ -119,7 +119,7 @@ b) Use stack, to avoid allocations
 Different features have different trade-offs:
 
 |===
-|                         | Pros                                     | Const                                                        
+|                         | Pros                                     | Cons                                                        
 
 | Dynamic dimensionality  | Avoids (dimension) templates/duck typing | Frequent runtime checks for dimensionality, layout and indices need to be dynamic themselves
 | Dynamics sizes          | Runtime adjust sizes                     | Requires either allocations or sizes are compile-time bounded
@@ -155,4 +155,4 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 [#technical_cpp17_minimum]
 == Why is the C++17 standard chosen as the minimum?
 
-The implementation use `if constexpr` intensively, if you need C++14 please open an issue.
+The implementation uses `if constexpr` intensively, if you need C++14 please open an issue.
