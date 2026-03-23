@@ -205,7 +205,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	BOOST_MULTI_HD constexpr auto strides() const { return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides()); }
+	BOOST_MULTI_HD constexpr auto strides() const {
+		return layout_t::strides();
+		// return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides());  // TODO(correaa) remove convertible_tuple
+	}
 
 	using typename layout_t::difference_type;
 
