@@ -3253,6 +3253,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	}
 
  public:
+	/// A (const_)subarray can be converted implicitly to a strided mdspan object
 	operator std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>() const& { return to_mdspan_(); }
 #endif
 
