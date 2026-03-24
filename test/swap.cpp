@@ -57,6 +57,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr1[1] == 101 );
 		BOOST_TEST( arr2[1] ==   1 );
 	}
+	// BOOST_AUTO_TEST_CASE(swap_subarray_1D)
+	{
+		multi::array<int, 1> arr1 = {0, 1, 2, 3};
+		multi::array<int, 1> arr2 = {100, 101, 102, 103};
+
+		using std::swap;
+		auto&& arr1_sub = arr1();
+		auto&& arr2_sub = arr2();
+		arr1_sub.swap(arr2_sub);
+
+		BOOST_TEST( arr1[1] == 101 );
+		BOOST_TEST( arr2[1] ==   1 );
+	}
 
 	// BOOST_AUTO_TEST_CASE(swap_subarray_2D)
 	{
