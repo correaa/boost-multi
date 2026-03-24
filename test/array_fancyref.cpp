@@ -15,7 +15,7 @@ namespace fancy {
 
 template<class T> class ref;
 
-template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions,misc-use-internal-linkage)
 	static double const value;
 
  public:
@@ -82,7 +82,7 @@ template<class T> class ref {
 	using decay_t = std::decay_t<T>;
 };
 
-template<class T> struct allocator {
+template<class T> struct allocator {  // NOLINT(misc-use-internal-linkage)
 	using pointer    = ptr<T>;
 	using value_type = T;
 	static auto allocate(std::size_t /*size*/) { return pointer{}; }

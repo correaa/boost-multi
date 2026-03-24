@@ -454,7 +454,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		auto const B = [](auto array) {
-			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp) test purposes
+			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp,bugprone-random-generator-seed) test purposes
 			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
 				return complex{gauss(gen), gauss(gen)};
 			};

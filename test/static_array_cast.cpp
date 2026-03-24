@@ -20,7 +20,7 @@
 namespace multi = boost::multi;
 
 template<class Ref, class Involution>
-class involuted {
+class involuted {  // NOLINT(misc-use-internal-linkage)
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_'
@@ -81,7 +81,7 @@ class involuted {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 template<class It, class F>
-class involuter {
+class involuter {  // NOLINT(misc-use-internal-linkage)
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
 
@@ -192,7 +192,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ref[1] == arr[1] );
 
 #if !defined(_MSC_VER) && !defined(__NVCC__)
-		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 #endif
 		// ^^^ this doesn't work on MSVC+NVCC in C++20 because it tries to generate this type:
 		// using coty = std::common_reference<
@@ -237,7 +237,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( neg_arr[2] == arr2[2] );
 		BOOST_TEST( arr2[2] == neg_arr[2] );
-		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal( neg_arr.begin(), neg_arr.end(), arr2.begin(), arr2.end() ) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}
@@ -258,7 +258,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2[1] == neg_arr[1] );
 		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal(arr2.begin(), arr2.end(), neg_arr.begin(), neg_arr.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}

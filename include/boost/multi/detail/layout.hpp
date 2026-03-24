@@ -341,9 +341,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		}
 	};
 
-	auto home() const {
-		return cursor_t<tuple<>, D>{};
-	}
+	/// Returns a cursor to the home (e.g. top-left) element
+	static auto home() { return cursor_t<tuple<>, D>{}; }
 
 	class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) constructor does not initialize these fields: idx_
 		index idx_;
@@ -1914,13 +1913,13 @@ struct layout_t<0, SSize>
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }
-	friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
+	// friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
-	friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
+	// friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
-	friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
+	// friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }

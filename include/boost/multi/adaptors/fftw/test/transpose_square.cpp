@@ -19,6 +19,7 @@ namespace multi = boost::multi;
 
 using complex = std::complex<double>;
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point  start_ = now();
@@ -46,7 +47,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 
 	multi::fftw::initialize_threads();
 	{
-		auto const in = std::invoke([] () noexcept {
+		auto const in = std::invoke([] () {
 			//  multi::array<complex, 2> ret({819, 819});
 			multi::array<complex, 2> ret({ 81, 81 });
 			std::generate(
