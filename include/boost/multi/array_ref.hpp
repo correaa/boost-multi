@@ -482,18 +482,18 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
-		-> decltype((base_ == other.base_) && (layout_ == other.layout_)) {
-		return (base_ == other.base_) && (layout_ == other.layout_);
+		-> decltype(base_ == other.base_ && layout_ == other.layout_) {
+		return base_ == other.base_ && layout_ == other.layout_;
 	}
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator!=(OtherSubarrayPtr const& other) const
-		-> decltype((base_ != other.base_) || (layout_ != other.layout_)) {
-		return (base_ != other.base_) || (layout_ != other.layout_);
+		-> decltype(base_ != other.base_ || layout_ != other.layout_) {
+		return base_ != other.base_ || layout_ != other.layout_;
 	}
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return (base_ == other.base_) && (layout_ == other.layout_);
+		return base_ == other.base_ && (layout_ == other.layout_);
 	}
 
 	constexpr auto operator!=(subarray_ptr const& other) const -> bool {
