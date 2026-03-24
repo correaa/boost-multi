@@ -1912,7 +1912,7 @@ struct layout_t<0, SSize>
 	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }  // cppcheck-suppress functionStatic
 	// friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
@@ -1921,9 +1921,9 @@ struct layout_t<0, SSize>
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto sizes() const { return tuple<>{}; }
 	// friend BOOST_MULTI_HD constexpr auto        sizes(layout_t const& self) { return self.sizes(); }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto nelemss() const { return nelemss_type{}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto strides() const { return strides_type{}; }  // cppcheck-suppress functionStatic
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto offsets() const { return offsets_type{}; }  // cppcheck-suppress functionStatic
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto nelemss() const { return nelemss_type{}; }  // cppcheck-suppress functionStatic
 
 	BOOST_MULTI_HD constexpr auto operator()() const { return offset_; }
 	// constexpr explicit operator offset_type() const {return offset_;}
