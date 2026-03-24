@@ -21,7 +21,7 @@
 namespace multi = boost::multi;
 
 // NOLINTBEGIN(readability-identifier-length)
-int main() {  // NOLINT(readability-function-cognitive-complexity)
+int main() {  // NOLINT(readability-function-cognitive-complexit,bugprone-exception-escape,readability-function-cognitive-complexity)
 	{
 		// multi::array const a = {1.0, 2.0, 3.0};
 		multi::array<double, 1> const a = {1.0, 2.0, 3.0};
