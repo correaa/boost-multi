@@ -2235,13 +2235,19 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	constexpr void swap(subarray& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
+	}
+	constexpr void swap(subarray&& other) & noexcept {
+		BOOST_MULTI_ASSERT(this->extension() == other.extension());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
-	constexpr void swap(subarray&& other) & noexcept { return swap(other); }
-	constexpr void swap(subarray&& other) && noexcept { return swap(other); }
+	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
 	constexpr void swap(subarray& other) && noexcept { return swap(other); }
 
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
+	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
+	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
+	friend constexpr void swap(subarray& self, subarray& other) noexcept { self.swap(other); }
 
 	// fix mutation
 	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> decltype(auto) {operator=(          other ); return *this;}
