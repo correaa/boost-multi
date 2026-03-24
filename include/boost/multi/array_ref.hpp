@@ -17,6 +17,12 @@
 #include <vector>  // for .to conversion
 #endif
 
+#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))
+#if __has_include(<mdspan>)
+#include <mdspan>
+#endif
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4623)  // assignment operator was implicitly defined as deleted
@@ -1253,6 +1259,33 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTEND(google-explicit-constructor,modernize-use-constraints)
 
 #undef BM_DELETE
+
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+ private:
+	auto to_mdspan_aux_() const {
+		using std::apply;
+		auto shape = apply(
+			[](auto... sizes) { return std::dextents<std::size_t, D>{static_cast<std::size_t>(sizes)...}; },
+			this->sizes()
+		);
+
+		auto strides = apply(
+			[](auto... strds) { return std::array<std::size_t, D>{static_cast<std::size_t>(strds)...}; },
+			this->strides()
+		);
+
+		return std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>{
+			this->base_, std::layout_stride::mapping(shape, strides)
+		};
+	}
+
+ public:
+	auto to_mdspan() const& {
+		return std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>(to_mdspan_aux_());
+	}
+
+	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
+#endif
 
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
@@ -3196,6 +3229,33 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+ private:
+	auto to_mdspan_aux_() const {
+		using std::apply;
+		auto shape = apply(
+			[](auto... sizes) { return std::dextents<std::size_t, 1>{static_cast<std::size_t>(sizes)...}; },
+			this->sizes()
+		);
+
+		auto strides = apply(
+			[](auto... strds) { return std::array<std::size_t, 1>{static_cast<std::size_t>(strds)...}; },
+			this->strides()
+		);
+
+		return std::mdspan<T, std::dextents<std::size_t, 1>, std::layout_stride>{
+			this->base_, std::layout_stride::mapping(shape, strides)
+		};
+	}
+	auto to_mdspan_() const& {
+		return std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>(to_mdspan_aux_());
+	}
+
+ public:
+	/// A (const_)subarray can be converted implicitly to a strided mdspan object
+	operator std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>() const& { return to_mdspan_(); }
+#endif
 
  private:
 	constexpr auto elements_aux_() const { return elements_range{this->base_, this->layout()}; }
