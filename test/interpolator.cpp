@@ -14,11 +14,11 @@
 
 namespace multi = boost::multi;
 
-class uniform_cspline {
+class uniform_cspline {  // NOLINT(misc-use-internal-linkage)
 	using argument_type = double;
 	using result_type   = double;  // typename std::decay<decltype(std::declval<vector>()[0])>::type;
 	using vector        = std::vector<result_type>;
-	using size_type     = typename vector::size_type;
+	using size_type     = vector::size_type;
 	using index         = multi::array<double, 2>::index;
 
 	argument_type lower_;
@@ -69,14 +69,14 @@ class uniform_cspline {
 		for(index i = 1; i != n - 2; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
 			l[i] = (4 * dx_) - (dx_ * u[i - 1]);
 			u[i] = dx_ / l[i];
-			z[i] = (A[i + 1] - dx_ * z[i - 1]) / l[i];
+			z[i] = (A[i + 1] - (dx_ * z[i - 1])) / l[i];
 		}
 
 		c[n - 1] = 0;
 
 		for(index j = n - 2; j != 0; --j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use algorithms
 			c[j] = z[j - 1] - (u[j - 1] * c[j + 1]);
-			b[j] = ((a[j + 1] - a[j]) / dx_) - (dx_ * (c[j + 1] + 2 * c[j]) / 3);
+			b[j] = ((a[j + 1] - a[j]) / dx_) - (dx_ * (c[j + 1] + (2 * c[j])) / 3);
 			d[j] = (c[j + 1] - c[j]) / (3 * dx_);
 		}
 
@@ -92,7 +92,7 @@ class uniform_cspline {
 		// auto const& Ki = K[i]; using std::get;
 		// return K[0][i] + Dx*(K[1][i] + Dx*(K[2][i] + Dx*K[3][i]));
 		auto const& Ki = K_[i];
-		return Ki[0] + (Dx * (Ki[1] + Dx * (Ki[2] + Dx * Ki[3])));
+		return Ki[0] + (Dx * (Ki[1] + (Dx * (Ki[2] + (Dx * Ki[3])))));
 	}
 };
 
@@ -118,7 +118,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_TEST( std::abs(as.dx() - 0.4) < 1.0e-10 );
 	BOOST_TEST( std::abs( as.lower() - 1.0) < 1.0e-10 );
-	BOOST_TEST( std::abs( as.upper() - ( 1.0 + as.dx()*static_cast<double>(a.size() - 1)) ) < 1.0e-10 );
+	BOOST_TEST( std::abs( as.upper() - ( 1.0 + (as.dx()*static_cast<double>(a.size() - 1))) ) < 1.0e-10 );
 	BOOST_TEST( std::abs( as(1.0) - 10.0) < 1.0e-10 );
 	BOOST_TEST( std::abs( as(1.4) - 12.0) < 1.0e-10 );
 

@@ -340,7 +340,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[4] = "c";
 		arr[5] = "d";
 		arr[6] = "e";
-		BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed)
@@ -1070,7 +1070,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
 			std::cout << "rng.size(): " << rng.size() << '\n';                                                  // (4)
-			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
+			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 

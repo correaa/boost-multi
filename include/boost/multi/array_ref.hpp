@@ -205,9 +205,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	BOOST_MULTI_HD constexpr auto strides() const {
+	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress functionStatic;
 		return layout_t::strides();
-		// return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides());  // TODO(correaa) remove convertible_tuple
 	}
 
 	using typename layout_t::difference_type;
@@ -1106,7 +1105,7 @@ struct elements_range_t {
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
-	auto operator=(elements_range_t&& other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
+	auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
 		}
@@ -2298,7 +2297,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
-	constexpr auto operator=(subarray&& other) & noexcept -> subarray& {  // TODO(correaa) make conditionally noexcept
+	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // TODO(correaa) make conditionally noexcept
 		// if(this == std::addressof(other)) { return *this; }
 		BOOST_MULTI_ASSERT(this->extension() == other.extension());
 		this->elements() = std::move(other).elements();

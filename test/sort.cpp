@@ -108,7 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)  for C++20
+		BOOST_TEST( std::is_sorted(vec.begin(), vec.end()) );  // NOLINT(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges)  for C++20
 
 		multi::array<double, 2> d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
@@ -141,11 +141,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		));
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)      // bug in is_sorted in clang 7
-		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges) for C++20
+		BOOST_TEST( !std::is_sorted(d2D.begin(), d2D.end() ) );  // NOLINT(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
 #endif
 
-		std::stable_sort(d2D.begin(), d2D.end());         // NOLINT(modernize-use-ranges) for C++20
-		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
+		std::stable_sort(d2D.begin(), d2D.end());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
+
+		BOOST_TEST( std::is_sorted( begin(d2D), end(d2D) ) );  // NOLINT(llvm-use-ranges,fuchsia-default-arguments-calls,modernize-use-ranges)
 
 		// clang-format off
 		BOOST_TEST(
@@ -162,9 +163,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
 #endif
 
-		std::stable_sort(begin(d2D.rotated()), end(d2D.rotated()));           // NOLINT(modernize-use-ranges) for C++20
-		BOOST_TEST( std::is_sorted( begin(d2D.rotated()), end(d2D.rotated()) ) );  // NOLINT(modernize-use-ranges) for C++20
-		BOOST_TEST( std::is_sorted( begin(d2D          ), end(d2D          ) ) );                      // NOLINT(modernize-use-ranges) for C++20
+		std::stable_sort(d2D.rotated().begin(), d2D.rotated().end());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
+
+		BOOST_TEST( std::is_sorted( d2D.rotated().begin(), d2D.rotated().end() ) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST( std::is_sorted( d2D.begin(), d2D.end() ) );                      // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 		BOOST_TEST((
 		d2D == decltype(d2D){
@@ -178,16 +180,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort)
 	{
-		std::vector<double> vec = {1.0, 2.0, 3.0};        // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( std::is_sorted(begin(vec), end(vec)) );  // NOLINT(modernize-use-ranges) for C++20
+		std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+
+		BOOST_TEST( std::is_sorted(vec.begin(), vec.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 		// clang-format off
-	std::array<std::array<double, 5>, 4> d2D {{
-		{{150.0, 16.0, 17.0, 18.0, 19.0}},
-		{{ 30.0,  1.0,  2.0,  3.0,  4.0}},
-		{{100.0, 11.0, 12.0, 13.0, 14.0}},
-		{{ 50.0,  6.0,  7.0,  8.0,  9.0}}
-	}};
+		std::array<std::array<double, 5>, 4> d2D {{
+			{{150.0, 16.0, 17.0, 18.0, 19.0}},
+			{{ 30.0,  1.0,  2.0,  3.0,  4.0}},
+			{{100.0, 11.0, 12.0, 13.0, 14.0}},
+			{{ 50.0,  6.0,  7.0,  8.0,  9.0}}
+		}};
 		// clang-format on
 
 		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
