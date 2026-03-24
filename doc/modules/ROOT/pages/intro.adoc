@@ -18,13 +18,13 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 Multidimensional array data structures are essential in various fields of computing, including data analysis, image processing, and scientific simulations. When combined with GPUs, they also play a significant role in Artificial Intelligence and Machine Learning.
 
 In many simulations, space is divided into a grid, and values are stored at each grid cell.
-For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or the velocity field of a moving fluid.
-The state of the game can be represented by placing pieces in a board made of squares.
-Arrays can also store numerical matrices, vectors, and more generally, tensors, to perform linear algebra operations.
+For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or the velocity field of a fluid.
+The state of a game can be represented by placing pieces in a board made of squares.
+Arrays can also be used to numerical matrices, vectors, and more generally, tensors, to perform linear algebra operations.
 They can represent other abstract data structures, like networks, graph connections, or store data in multiple columns.
 Arrays are amenable to bulk processing in computing, and also to slicing, and reductions.
 
-Here are 3 examples of arrays of different dimensionality:
+Here are 3 examples of arrays of different dimensionalities:
 
 [source,plaintext]
 ----
@@ -71,7 +71,7 @@ A _D_-dimensional array can be interpreted either as an (STL-compatible) sequenc
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
-or with the standard MDSpan proposal `std::mdspan` (accepted in C{plus}{plus}23)
+or with standard `std::mdspan` (accepted in C{plus}{plus}23)
 This library shares some of their goals and is compatible and complementary to them;
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
@@ -79,12 +79,12 @@ For example, `std::mdspan` does not provide iterators, and it is not well integr
 Problems such as deep assignment, or const-propagation are not fully solved, and ownership is delegated to a separate proposal `std::mdarray` (C{plus}{plus}26).
 
 The library's primary concern is with the storage and logic structure of data.
-It doesn't make algebraic or geometric assumptions about the arrays and their elements.
+It doesn't make specific algebraic or geometric assumptions about the arrays and their elements.
 (although they are still good building blocks for implementing on top of this mathematical and numerical algorithms,
 such as representing algebraic dense matrices in the 2D case, or tensors in the general case.)
 
 The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
-Indexing and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
+Indexing errors and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
 == Requirements
 
