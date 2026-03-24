@@ -16,7 +16,7 @@
 namespace multi = boost::multi;
 
 // NOLINTBEGIN(readability-identifier-length)
-int main() {  // NOLINT(readability-function-cognitive-complexity)
+int main() {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	multi::array<int, 1> a(13);
 	std::iota(a.begin(), a.end(), 0);
 

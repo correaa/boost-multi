@@ -19,7 +19,7 @@
 
 namespace multi = boost::multi;
 
-template<class T> struct complex_dummy {
+template<class T> struct complex_dummy {  // NOLINT(misc-use-internal-linkage)
 	T real;
 	T imag;
 };

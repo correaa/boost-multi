@@ -369,7 +369,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 3 );
 		BOOST_TEST( arr[1] == 20 );
 
-		static_assert(typename decltype(arr)::rank{} == 1);
+		static_assert(decltype(arr)::rank{} == 1);
 	}
 
 #if !defined(__GNUC__) || (__GNUC__ < 14)  // workaround bug in gcc 14.2
@@ -385,7 +385,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 3 );
 		BOOST_TEST( arr[1] == 20 );
 
-		static_assert(typename decltype(arr)::rank{} == 1);
+		static_assert(decltype(arr)::rank{} == 1);
 	}
 
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_b)
