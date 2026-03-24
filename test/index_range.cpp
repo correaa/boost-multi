@@ -51,7 +51,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -223,7 +224,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -254,7 +256,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );

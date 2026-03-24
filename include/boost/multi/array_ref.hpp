@@ -493,11 +493,11 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	}
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return base_ == other.base_ && (layout_ == other.layout_);
+		return base_ == other.base_ && layout_ == other.layout_;
 	}
 
 	constexpr auto operator!=(subarray_ptr const& other) const -> bool {
-		return (base_ != other.base_) || (layout_ != other.layout_);
+		return base_ != other.base_ || layout_ != other.layout_;
 	}
 
 	template<
