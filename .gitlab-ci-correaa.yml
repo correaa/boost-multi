@@ -1148,6 +1148,7 @@ inq:
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
     - cd inq
+    - ls -all
     - cp -rf ../bm/* external_lib/multi/
     # - cd external_libs/multi
     # - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
