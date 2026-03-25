@@ -1368,7 +1368,7 @@ pages-presentation:
     - docker
   script:
     - mkdir public
-    - cd pres
+    - cd talk
     - pdflatex presentation.tex
     - cp presentation.pdf ../public/
   artifacts:
