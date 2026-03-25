@@ -1316,7 +1316,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
 	/// Associated type that this reference decays to (when true copies are needed)
-	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<std::decay_t<typename types::element_type>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};
@@ -2967,7 +2967,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
-	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<std::decay_t<typename types::element_type>, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
 	constexpr auto                    decay() const -> decay_type { return decay_type{*this}; }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
