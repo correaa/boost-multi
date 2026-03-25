@@ -1144,9 +1144,9 @@ inq:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - rm -rf external_libs/multi
-    - ln -s $CI_PROJECT_DIR external_libs/multi
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
@@ -1176,11 +1176,9 @@ inq-debug:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - git submodule update
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
-    - cd ../..
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
