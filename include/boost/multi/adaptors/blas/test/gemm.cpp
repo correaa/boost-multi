@@ -1979,11 +1979,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		float c_data[9] = {};                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 
 		// Weight matrices can be const (loaded once, read many times)
-		auto const& A = multi::array_ref<float const, 2>(std::data(a_data), {3, 2});
-		auto const& B = multi::array_ref<float const, 2>(std::data(b_data), {2, 3});
+		auto const& A = multi::array_ref<float const, 2>(std::data(a_data), {3, 2});  // NOLINT(readability-identifier-length)
+		auto const& B = multi::array_ref<float const, 2>(std::data(b_data), {2, 3});  // NOLINT(readability-identifier-length)
 
 		// Output: mutable pre-allocated buffer
-		auto&& C = multi::array_ref<float, 2>(std::data(c_data), {3, 3});
+		auto&& C = multi::array_ref<float, 2>(std::data(c_data), {3, 3});  // NOLINT(readability-identifier-length)
 
 		using multi::blas::operators::operator*;
 		C = A * B;
