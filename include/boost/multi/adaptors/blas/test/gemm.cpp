@@ -1955,23 +1955,40 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( C[1][0] == 105.0 );
 	}
 	{
-		float a_data[6] = {1,2,3,4,5,6};
-		float b_data[6] = {1,0,0,1,0,0};
+		float a_data[6] = {1,2,3,4,5,6};  // NOLINT(cppcoreguidelines) for testing
+		float b_data[6] = {1,0,0,1,0,0};  // NOLINT(cppcoreguidelines) for testing
+		float c1_data[9] = {};  // NOLINT(cppcoreguidelines) for testing
+		float c2_data[9] = {};  // NOLINT(cppcoreguidelines) for testing
+
+		auto const& A = multi::array_ref<float, 2>(a_data, {3, 2});  // NOLINTI(readability-identifier-length)
+		auto const& B = multi::array_ref<float, 2>(b_data, {2, 3});  // NOLINTI(readability-identifier-length)
+
+		auto&& C1 = multi::array_ref<float, 2>(c1_data, {3, 3});
+
+		using multi::blas::operators::operator*;
+		C1 = A * B;
+
+		auto&& C2 = multi::array_ref<float, 2>(c2_data, {3, 3});
+		multi::blas::gemm(1.0F, A, B, 0.0f, C2);
+
+		BOOST_TEST( C1 == C2 );
+	}
+	{
+		float a_data[6] = {1,2,3,4,5,6};  // NOLINT(cppcoreguidelines) for testing
+		float b_data[6] = {1,0,0,1,0,0};  // NOLINT(cppcoreguidelines) for testing
 		float c_data[9] = {};
 
 		// Weight matrices can be const (loaded once, read many times)
-		auto const& A = multi::array_ref<float, 2>(a_data, {3, 2});
-		auto const& B = multi::array_ref<float, 2>(b_data, {2, 3});
+		auto const& A = multi::array_ref<float const, 2>(a_data, {3, 2});
+		auto const& B = multi::array_ref<float const, 2>(b_data, {2, 3});
 
 		// Output: mutable pre-allocated buffer
 		auto&& C = multi::array_ref<float, 2>(c_data, {3, 3});
 
 		using multi::blas::operators::operator*;
-		// This works now:
 		C = A * B;
 
-		// This works:
-		multi::blas::gemm(1.0f, A, B, 0.0f, C);
+		multi::blas::gemm(1.0F, A, B, 0.0f, C);
 	}
 
 	return boost::report_errors();
