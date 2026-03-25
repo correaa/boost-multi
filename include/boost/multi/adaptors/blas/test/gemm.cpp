@@ -1791,9 +1791,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({3, 1}, 999.);
 		blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c));
-		BOOST_TEST_REQUIRE( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
-		BOOST_TEST_REQUIRE( c[1][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
-		BOOST_TEST_REQUIRE( c[2][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+		BOOST_TEST_REQUIRE(c[0][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST_REQUIRE(c[1][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST_REQUIRE(c[2][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case_no_n_interface) {
@@ -1804,9 +1804,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({3, 10}, 999.);
 		blas::gemm(1., a, blas::H(b), 0., c);
-		BOOST_TEST_REQUIRE( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
-		BOOST_TEST_REQUIRE( c[1][0] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
-		BOOST_TEST_REQUIRE( c[0][1] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
+		BOOST_TEST_REQUIRE(c[0][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST_REQUIRE(c[1][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST_REQUIRE(c[0][1] == (2. + 1. * I) * std::conj(3. + 4. * I));
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case_complex_value_hermitized) {
@@ -1880,9 +1880,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({2, 4}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1.0, ~A, ~B, 0.0, ~C);
 
-		BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
-		BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
-		BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
+		BOOST_TEST_REQUIRE(C[0][0] == 105.0);
+		BOOST_TEST_REQUIRE(C[0][1] == 105.0);
+		BOOST_TEST_REQUIRE(C[1][0] == 105.0);
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_issue_109) {
@@ -1892,9 +1892,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({4, 2}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1., ~A, ~B, 0., C);
 
-		BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
-		BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
-		BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
+		BOOST_TEST_REQUIRE(C[0][0] == 105.0);
+		BOOST_TEST_REQUIRE(C[0][1] == 105.0);
+		BOOST_TEST_REQUIRE(C[1][0] == 105.0);
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
@@ -1904,9 +1904,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 2> C({2, 4}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, ~C);
 
-		BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
-		BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
-		BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
+		BOOST_TEST_REQUIRE(C[0][0] == 105.0);
+		BOOST_TEST_REQUIRE(C[0][1] == 105.0);
+		BOOST_TEST_REQUIRE(C[1][0] == 105.0);
 	}
 
 	BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
@@ -1955,10 +1955,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( C[1][0] == 105.0 );
 	}
 	{
-		float a_data[6] = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};  // NOLINT(cppcoreguidelines) for testing
-		float b_data[6] = {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F};  // NOLINT(cppcoreguidelines) for testing
-		float c1_data[9] = {};  // NOLINT(cppcoreguidelines) for testing
-		float c2_data[9] = {};  // NOLINT(cppcoreguidelines) for testing
+		float a_data[6]  = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float b_data[6]  = {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float c1_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float c2_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 
 		auto const& A = multi::array_ref<float, 2>(std::data(a_data), {3, 2});  // NOLINT(readability-identifier-length)
 		auto const& B = multi::array_ref<float, 2>(std::data(b_data), {2, 3});  // NOLINT(readability-identifier-length)
@@ -1974,9 +1974,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( C1 == C2 );
 	}
 	{
-		float a_data[6] = {1,2,3,4,5,6};  // NOLINT(cppcoreguidelines) for testing
-		float b_data[6] = {1,0,0,1,0,0};  // NOLINT(cppcoreguidelines) for testing
-		float c_data[9] = {};
+		float a_data[6] = {1, 2, 3, 4, 5, 6};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float b_data[6] = {1, 0, 0, 1, 0, 0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float c_data[9] = {};                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 
 		// Weight matrices can be const (loaded once, read many times)
 		auto const& A = multi::array_ref<float const, 2>(std::data(a_data), {3, 2});
