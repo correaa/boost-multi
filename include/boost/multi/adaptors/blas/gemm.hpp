@@ -282,7 +282,7 @@ class gemm_range {
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;
-	using size_type = typename decay_type::size_type;
+	using size_type = typename std::iterator_traits<ItA>::difference_type;  // typename decay_type::size_type;
 
 	       auto begin()          const& -> iterator {return {ctxtp_, s_, a_begin_, b_begin_};}
 	       auto end()            const& -> iterator {return {ctxtp_, s_, a_end_  , b_begin_};}
@@ -357,7 +357,7 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 
 namespace operators {
 	template<class A2D, class B2D,
-		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
 	->decltype(blas::gemm(1.0, A, B)) {
 		return blas::gemm(1.0, A, B); }
