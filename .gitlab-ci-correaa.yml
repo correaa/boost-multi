@@ -1140,7 +1140,7 @@ inq:
   interruptible: true
   script:
     - mkdir bm
-    - cp -r * bm
+    - mv * bm/ || echo "moved"
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
