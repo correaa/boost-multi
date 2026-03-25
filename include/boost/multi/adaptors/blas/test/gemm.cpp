@@ -1955,17 +1955,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( C[1][0] == 105.0 );
 	}
 	{
-		float a_data[6]  = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
-		float b_data[6]  = {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
-		float c1_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
-		float c2_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
+		float a_data[6]  = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		float b_data[6]  = {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		float c1_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		float c2_data[9] = {};                                    // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto const& A = multi::array_ref<float, 2>(std::data(a_data), {3, 2});  // NOLINT(readability-identifier-length)
 		auto const& B = multi::array_ref<float, 2>(std::data(b_data), {2, 3});  // NOLINT(readability-identifier-length)
 
 		auto&& C1 = multi::array_ref<float, 2>(std::data(c1_data), {3, 3});
 
-		using multi::blas::operators::operator*;
+		using multi::blas::operators::operator*;  // cppcheck-suppress constStatement; cppcheck bug
 		C1 = A * B;
 
 		auto&& C2 = multi::array_ref<float, 2>(std::data(c2_data), {3, 3});
@@ -1978,14 +1978,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		float b_data[6] = {1, 0, 0, 1, 0, 0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 		float c_data[9] = {};                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 
-		// Weight matrices can be const (loaded once, read many times)
 		auto const& A = multi::array_ref<float const, 2>(std::data(a_data), {3, 2});  // NOLINT(readability-identifier-length)
 		auto const& B = multi::array_ref<float const, 2>(std::data(b_data), {2, 3});  // NOLINT(readability-identifier-length)
 
-		// Output: mutable pre-allocated buffer
 		auto&& C = multi::array_ref<float, 2>(std::data(c_data), {3, 3});  // NOLINT(readability-identifier-length)
 
-		using multi::blas::operators::operator*;
+		using multi::blas::operators::operator*;  // cppcheck-suppress constStatement; cppcheck bug
 		C = A * B;
 
 		multi::blas::gemm(1.0F, A, B, 0.0F, C);
