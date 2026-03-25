@@ -1244,10 +1244,9 @@ inq rocm:
     - cmake --version
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA
-    - cd ../..
     - mkdir build && cd build
     - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
