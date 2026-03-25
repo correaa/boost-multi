@@ -1149,7 +1149,7 @@ inq:
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
     - cd inq
     - ls -all
-    - cp -rf ../bm/* external_lib/multi/
+    - cp -rf ../bm/* external_libs/multi/
     # - cd external_libs/multi
     # - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     # - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
