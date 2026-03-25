@@ -242,17 +242,17 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 
 	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_z<AA>{} && is_z<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
+			is_s<AA>{} && is_s<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> &&
 			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) {
-		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, static_cast<int>(m), static_cast<int>(n), (DoubleComplex const*)&alpha, (DoubleComplex*)raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex*)raw_pointer_cast(bb), static_cast<int>(ldb));
+		sync_call<hicu(blasStrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, static_cast<int>(m), static_cast<int>(n), (float const*)&alpha, (float const*)raw_pointer_cast(aa), static_cast<int>(lda), (float*)raw_pointer_cast(bb), static_cast<int>(ldb));
 	}
 
 	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
 		std::enable_if_t<
-			is_d<AA>{} && is_d<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> && 
+			is_d<AA>{} && is_d<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> &&
 			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
 		,int> =0
 	>
@@ -264,6 +264,26 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 			cuda::cublas::diagonal{diag},
 			static_cast<int>(m), static_cast<int>(n), (double const*)&alpha, (double const*)raw_pointer_cast(aa), static_cast<int>(lda), (double*)raw_pointer_cast(bb), static_cast<int>(ldb)
 		);
+	}
+
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
+		std::enable_if_t<
+			is_c<AA>{} && is_c<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> &&
+			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
+		,int> =0
+	>
+	void trsm(char side, char ul, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) {
+		sync_call<hicu(blasCtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, static_cast<int>(m), static_cast<int>(n), (Complex const*)&alpha, (Complex const*)raw_pointer_cast(aa), static_cast<int>(lda), (Complex*)raw_pointer_cast(bb), static_cast<int>(ldb));
+	}
+
+	template<class SSize, class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
+		std::enable_if_t<
+			is_z<AA>{} && is_z<BB>{} && is_assignable_v<BB&, decltype(AA{}*BB{}/ALPHA{})> && is_assignable_v<BB&, decltype(ALPHA{}*BB{}/AA{})> &&
+			is_convertible_v<AAP, ::thrust_hicup::pointer<AA>> && is_convertible_v<BBP, ::thrust_hicup::pointer<BB>>
+		,int> =0
+	>
+	void trsm(char side, char ul, char transA, char diag, SSize m, SSize n, ALPHA alpha, AAP aa, SSize lda, BBP bb, SSize ldb) {
+		sync_call<hicu(blasZtrsm)>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, static_cast<int>(m), static_cast<int>(n), (DoubleComplex const*)&alpha, (DoubleComplex*)raw_pointer_cast(aa), static_cast<int>(lda), (DoubleComplex*)raw_pointer_cast(bb), static_cast<int>(ldb));
 	}
 
 	template<
