@@ -17,7 +17,8 @@ namespace multi = boost::multi;
 namespace minimalistic {
 
 template<class T>
-class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
+/// minimalistic pointer
+class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linkage)
 	using underlying_type = T*;
 	underlying_type impl_;
 	template<class> friend class ptr;
@@ -61,7 +62,8 @@ class ptr : public std::iterator_traits<T*> {  // minimalistic pointer
 };
 
 template<class T>
-class ptr2 : public std::iterator_traits<T*> {  // minimalistic pointer
+/// minimalistic pointer
+class ptr2 : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linkage)
 	T* impl_;
 
  public:

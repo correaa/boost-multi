@@ -32,6 +32,10 @@ auto to_strided_mdspan(MultiArray&& arr) {
 		arr.base(), std::layout_stride::mapping{shape, strides}
 	};
 }
+
+auto fun(std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mds) -> int const& {
+	return mds[0, 0];
+}
 #endif
 
 auto main() -> int {
@@ -46,8 +50,13 @@ auto main() -> int {
 	BOOST_TEST( &center[0][0] == &arr[1][1] );
 
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
-	auto mds = to_strided_mdspan(center);
+	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mds = center;
 	BOOST_TEST(( &mds[0, 0] == &center[0][0] ));
+
+	BOOST_TEST( &fun(center) == &center[0][0] );
+
+	std::mdspan<int const, std::dextents<std::size_t, 1>, std::layout_stride> mds1D = center[0];
+	BOOST_TEST(( &mds1D[0] == &center[0][0] ));
 #endif
 
 	return boost::report_errors();

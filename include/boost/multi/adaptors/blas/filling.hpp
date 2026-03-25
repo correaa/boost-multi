@@ -27,7 +27,7 @@ inline auto flip(filling side) -> filling {
 		case filling::lower: return filling::upper;
 		case filling::upper: return filling::lower;
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE
-	return {};
+	return {};  // NOLINT(bugprone-invalid-enum-default-initialization) unreacheable
 }
 
 #ifdef __clang__

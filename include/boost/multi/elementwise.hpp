@@ -150,7 +150,7 @@ struct plus {
 }  // end namespace detail
 
 template<class A, class B>
-constexpr auto operator+(A&& alpha, B&& omega) noexcept {
+constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 

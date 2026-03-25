@@ -22,7 +22,12 @@ inline auto swap(side sid) noexcept -> side {
 		case side::left : return side::right;
 		case side::right: return side::left ;
 	}  // __builtin_unreachable();  // LCOV_EXCL_LINE
-	return {};
+	return side::left;
+	// return {};
+}
+
+inline auto iden(side sid) noexcept -> side {
+	return sid;
 }
 
 #ifdef __clang__

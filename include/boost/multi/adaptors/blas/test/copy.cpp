@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			<< std::invoke(
 				   [&, start_time = high_resolution_clock::now()] () noexcept {
 					   // NOLINTNEXTLINE(modernize-use-ranges) for C++20
-					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });  // NOLINT(llvm-use-ranges) for C++20
 					   return duration<double>{high_resolution_clock::now() - start_time};
 				   }
 			   ).count()
@@ -186,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::cout << "std::copy\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
-						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(modernize-use-ranges) for C++20
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';

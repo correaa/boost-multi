@@ -29,16 +29,16 @@ auto fnv1a(unsigned char const* first, std::ptrdiff_t len, fnv1a_size hash) noex
 }
 }  // namespace
 
-class fnv1a_t {
-	fnv1a_size h_ = 14695981039346656037U;  // offset
+class fnv1a_t {  // NOLINT(misc-use-internal-linkage)
+	fnv1a_size h_ = 14695981039346656037U;
 
  public:
 	using result_type = fnv1a_size;
-	static constexpr auto(min)() {  // paren for MSVC macros
-		return (std::numeric_limits<result_type>::min)();
+	static constexpr auto(min)() {
+		return (std::numeric_limits<result_type>::min)();  // NOLINT(readability-redundant-parentheses) paren for MSVC macros
 	}
 	static constexpr auto(max)() {
-		return (std::numeric_limits<result_type>::max)();
+		return (std::numeric_limits<result_type>::max)();  // NOLINT(readability-redundant-parentheses) paren for MSVC macros
 	}
 
 	void operator()(unsigned char const* key, std::ptrdiff_t len) noexcept { h_ = fnv1a(key, len, h_); }
@@ -190,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};  // NOSONAR
 
 		multi::array<int, 2> r2D({5, 5});
-		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });  // NOLINT(modernize-use-ranges)
+		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
 	}
 
 	// BOOST_AUTO_TEST_CASE(fill_1D)

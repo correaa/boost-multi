@@ -51,7 +51,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -202,8 +203,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
-// && !defined(__PGI) && (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)  // NOLINT(whitespace/line_length)
 		static_assert(sizeof(irng) == sizeof(int));
 #endif
 
@@ -224,7 +224,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -247,7 +248,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( * irng.begin()      ==  5 );
 		BOOST_TEST( *(irng.begin() + 1) ==  6 );
 
-		BOOST_TEST(   irng.first()       ==  5 );
+		BOOST_TEST(   irng.first()      ==  5 );
 		BOOST_TEST(   irng.last()       == 12 );
 
 		BOOST_TEST(   irng.front()      ==  5 );
@@ -255,7 +256,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));  // NOLINT(fuchsia-default-arguments-calls,modernize-use-ranges)
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls,llvm-use-ranges,modernize-use-ranges) for C++20
+		BOOST_TEST(std::equal(irng.begin(), irng.end(), vec.begin(), vec.end()));
 
 		auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 		BOOST_TEST( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
