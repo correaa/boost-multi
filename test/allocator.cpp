@@ -573,11 +573,11 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[1] == vv );
 
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 
 			VV.resize(10, xx);
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 		}
 	}
 #endif

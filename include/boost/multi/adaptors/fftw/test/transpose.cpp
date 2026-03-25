@@ -18,7 +18,7 @@
 
 namespace multi = boost::multi;
 
-class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+class watch  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions,misc-use-internal-linkage)
 : private std::chrono::high_resolution_clock {
 	std::string label_;
 	time_point  start_ = now();
@@ -41,7 +41,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	using complex = std::complex<double>;
 
-	auto const in = std::invoke([] () noexcept {
+	auto const in = std::invoke([] () {
 		multi::array<complex, 2> ret({101, 99});  // ({1013, 997});  // ({10137, 9973});
 		std::generate(
 			ret.elements().begin(), ret.elements().end(),

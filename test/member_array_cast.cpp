@@ -181,7 +181,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// clang-format off
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		char padding_[
-			(((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
+			((((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string)) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
 		] = {};
 		// clang-format on
 #ifdef __NVCC__

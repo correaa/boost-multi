@@ -31,7 +31,7 @@ Individual elements can be accessed by the multidimensional indices, using brack
 assert( A[1][2] == 6 );
 ----
 
-Arrays can be viewed simultaneously as a nested array or as _flat_ sequence of elemets.
+Arrays can be viewed simultaneously as a nested array or as _flat_ sequence of elements.
 
 ```
 assert( A.elements().size() == 6 );  // total number of elements
@@ -40,8 +40,8 @@ assert( A.elements()[6] == 6 );
 assert( &A.elements()[6] == &A[1][2] );
 ```
 
-The elements can be also accesed through iterators;
-`A.begin()`, `A.begin()->begin()` and `A.elements().begin()` are examples of valid ways to access the elements that allows the iteraction with algorithms.
+The elements also can be accessed through iterators;
+`A.begin()`, `A.begin()->begin()` and `A.elements().begin()` are examples of valid ways to access the data structure that allow the interaction with algorithms.
 
 The value of an array can be copied, (moved,) and compared;
 copies are equal but independent (disjoint).
@@ -53,7 +53,7 @@ multi::array<int, 2> B = A;                 // we make a copy
 assert(  B              ==  A              );  // copies are equal
 assert(  B.extensions() ==  A.extensions() );  // extensions (sizes) are equal
 assert(  B[0][1]        ==  A[0][1]        );  // all elements are equal
-assert( &B[0][1]        != &A[0][1]        );  // elements are independent (dfferent addresses)
+assert( &B[0][1]        != &A[0][1]        );  // elements are independent (different addresses)
 ----
 
 An array can be initialized from its sizes alone, in which case the element values are defaulted:
@@ -86,4 +86,4 @@ In this way, the functions can be also applied to subblocks of larger matrices.
 assert( &element_1_1(C[0]) == &C[0][1][1] );
 ----
 
-Although most of the examples use numeric elements for conciseness, the library is designed to hold general types (e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.
+Although most of the examples use numeric elements for conciseness, the library is designed to hold general types e.g. non-numeric, non-trivial types, like `std::string`, other containers or, in general, user-defined value-types.

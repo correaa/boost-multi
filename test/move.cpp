@@ -99,7 +99,7 @@ void move_element_1d_array() {
 
 		auto&& marr62 = multi::move(arr({2, 6}));
 
-		// NOLINTNEXTLINE(modernize-use-ranges,bugprone-use-after-move,hicpp-invalid-access-moved)
+		// NOLINTNEXTLINE(llvm-use-ranges,modernize-use-ranges,bugprone-use-after-move,hicpp-invalid-access-moved)
 		std::copy(std::move(marr62).begin(), std::move(marr62).end(), out_vec.begin());
 
 		BOOST_TEST( out_vec[0].size() == 5 );
@@ -122,7 +122,7 @@ void move_element_1d_array() {
 
 		auto&& marr62 = multi::move(arr({2, 6}));
 
-		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(modernize-use-ranges) for C++20
+		std::copy(marr62.begin(), marr62.end(), out_vec.begin());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( !arr[2].empty() );
@@ -397,7 +397,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::vector<int>, 1> arr({3}, std::vector<int>{10, 20, 30});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr.size() == 3 );
 		multi::array<std::vector<int>, 1> arr2({3}, std::vector<int>{});
-		std::copy(arr.begin(), arr.end(), arr2.begin());  // NOLINT(modernize-use-ranges)
+		std::copy(arr.begin(), arr.end(), arr2.begin());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 		BOOST_TEST( arr2[0] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST( arr2[1] == std::vector<int>({10, 20, 30}) );  // NOLINT(fuchsia-default-arguments-calls)

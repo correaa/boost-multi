@@ -33,7 +33,7 @@ auto power(M const& array) {
 
 }  // end anonymous namespace
 
-template<class T> class randomizer {
+template<class T> class randomizer {  // NOLINT(misc-use-internal-linkage)
 	std::mt19937_64 gen_;  // NOSONAR rng good enough for the test
 
  public:
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 						  in, out);
 
 		multi::array<complex, 2> out2({3, 10});
-		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(modernize-use-ranges) for C++20
+		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 			fftw::dft_forward({{true}}, in_elem, out2_elem);
 			return std::forward<decltype(out2_elem)>(out2_elem);
 		});
@@ -160,7 +160,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 						  in, out);
 
 		multi::array<complex, 3> out2({3, 5, 6});
-		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(modernize-use-ranges) for C++20
+		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 			fftw::dft_forward({true, true}, in_elem, out2_elem);
 			return std::forward<decltype(out2_elem)>(out2_elem);
 		});

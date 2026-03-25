@@ -44,13 +44,13 @@ multi::array<char, 1> A1D = {'a', 'b', 'c'};
 multi::array<char, 2> A2D = { {'f', 'g', 'h'}, {'i', 'j', 'k'} };
 multi::array<char, 3> A3D = /*... nested list of letters (chars) */ ;
 ```
-and their elements, when retrived by their coordinates (indices) are such that, for example: 
+and their elements, when retrieved by their coordinates (indices) are such that, for example: 
 
 [source,cpp]
 ----
 assert( A1D[1] == 'b' );
-assert( A2D[1][0] == 'i' );     // A2D[1, 0]     availabe from C++23
-assert( A3D[1][0][2] == 'u' );  // A3D[1, 0, 2]  availabe from in C++23
+assert( A2D[1][0] == 'i' );     // A2D[1, 0]     available since C++23
+assert( A3D[1][0][2] == 'u' );  // A3D[1, 0, 2]  available since C++23
 ----
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
@@ -76,7 +76,7 @@ This library shares some of their goals and is compatible and complementary to t
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 For example, `std::mdspan` does not provide iterators, and it is not well integrated with the rest of the STL.
-Problems such are deep assignment, or const-propagation are not fully solved, and ownership is delegated to a separte `std::mdarray` (proposed for C{plus}{plus}26).
+Problems such as deep assignment, or const-propagation are not fully solved, and ownership is delegated to a separate proposal `std::mdarray` (C{plus}{plus}26).
 
 The library's primary concern is with the storage and logic structure of data.
 It doesn't make specific algebraic or geometric assumptions about the arrays and their elements.
@@ -109,7 +109,7 @@ Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (
 (Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
-Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thurst], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
+Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thrust], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
 (all of them can be installed with
 `sudo apt install libfftw3-dev lib64-dev liblapack64-dev libthrust-dev nvidia-cuda-dev`
 or `sudo dnf install fftw-devel ...`.

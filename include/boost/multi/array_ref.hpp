@@ -17,6 +17,12 @@
 #include <vector>  // for .to conversion
 #endif
 
+#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))
+#if __has_include(<mdspan>)
+#include <mdspan>
+#endif
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4623)  // assignment operator was implicitly defined as deleted
@@ -205,9 +211,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_t::strides_type;
 
-	BOOST_MULTI_HD constexpr auto strides() const {
+	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress functionStatic;
 		return layout_t::strides();
-		// return detail::convertible_tuple<decltype(layout_t::strides())>(layout_t::strides());  // TODO(correaa) remove convertible_tuple
 	}
 
 	using typename layout_t::difference_type;
@@ -477,22 +482,22 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
-		-> decltype((base_ == other.base_) && (layout_ == other.layout_)) {
-		return (base_ == other.base_) && (layout_ == other.layout_);
+		-> decltype(base_ == other.base_ && layout_ == other.layout_) {
+		return base_ == other.base_ && layout_ == other.layout_;
 	}
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator!=(OtherSubarrayPtr const& other) const
-		-> decltype((base_ != other.base_) || (layout_ != other.layout_)) {
-		return (base_ != other.base_) || (layout_ != other.layout_);
+		-> decltype(base_ != other.base_ || layout_ != other.layout_) {
+		return base_ != other.base_ || layout_ != other.layout_;
 	}
 
 	constexpr auto operator==(subarray_ptr const& other) const -> bool {
-		return (base_ == other.base_) && (layout_ == other.layout_);
+		return base_ == other.base_ && layout_ == other.layout_;
 	}
 
 	constexpr auto operator!=(subarray_ptr const& other) const -> bool {
-		return (base_ != other.base_) || (layout_ != other.layout_);
+		return base_ != other.base_ || layout_ != other.layout_;
 	}
 
 	template<
@@ -1106,7 +1111,7 @@ struct elements_range_t {
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
-	auto operator=(elements_range_t&& other) noexcept -> elements_range_t& {  // cannot be =delete in NVCC?
+	auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
 		}
@@ -1254,6 +1259,33 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTEND(google-explicit-constructor,modernize-use-constraints)
 
 #undef BM_DELETE
+
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+ private:
+	auto to_mdspan_aux_() const {
+		using std::apply;
+		auto shape = apply(
+			[](auto... sizes) { return std::dextents<std::size_t, D>{static_cast<std::size_t>(sizes)...}; },
+			this->sizes()
+		);
+
+		auto strides = apply(
+			[](auto... strds) { return std::array<std::size_t, D>{static_cast<std::size_t>(strds)...}; },
+			this->strides()
+		);
+
+		return std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>{
+			this->base_, std::layout_stride::mapping(shape, strides)
+		};
+	}
+
+ public:
+	auto to_mdspan() const& {
+		return std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>(to_mdspan_aux_());
+	}
+
+	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
+#endif
 
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
@@ -2201,26 +2233,21 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	constexpr void swap(subarray&& other) && noexcept {
+	constexpr void swap(subarray& other) & noexcept {
+		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
+	}
+	constexpr void swap(subarray&& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extension() == other.extension());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
+	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
+	constexpr void swap(subarray& other) && noexcept { return swap(other); }
+
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
-
-	// template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(subarray&& self, A&& other) noexcept { std::move(self).swap(std::forward<A>(other)); }
-	// template<class A, typename = std::enable_if_t<!std::is_base_of_v<subarray, std::decay_t<A>>>> friend constexpr void swap(A&& other, subarray&& self) noexcept { std::move(self).swap(std::forward<A>(other)); }
-
-	// template<class Array> constexpr void swap(Array&& other) && noexcept {
-	//  assert( std::move(*this).extension() == other.extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	//  this->elements().swap(std::forward<Array>(other).elements());
-	// //  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
-	// }
-	// template<class A> constexpr void swap(A&& other) & noexcept {return swap(std::forward<A>(other));}
-
-	// friend constexpr void swap(subarray&& self, subarray&& other) noexcept {std::move(self).swap(std::move(other));}
-
-	// template<class Array> constexpr void swap(subarray& self, Array&& other) noexcept {self.swap(std::forward<Array>(other));}  // TODO(correaa) remove
-	// template<class Array> constexpr void swap(Array&& other, subarray& self) noexcept {self.swap(std::forward<Array>(other));}
+	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
+	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
+	friend constexpr void swap(subarray& self, subarray& other) noexcept { self.swap(other); }
 
 	// fix mutation
 	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> decltype(auto) {operator=(          other ); return *this;}
@@ -2298,7 +2325,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
-	constexpr auto operator=(subarray&& other) & noexcept -> subarray& {  // TODO(correaa) make conditionally noexcept
+	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // TODO(correaa) make conditionally noexcept
 		// if(this == std::addressof(other)) { return *this; }
 		BOOST_MULTI_ASSERT(this->extension() == other.extension());
 		this->elements() = std::move(other).elements();
@@ -3197,6 +3224,33 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+ private:
+	auto to_mdspan_aux_() const {
+		using std::apply;
+		auto shape = apply(
+			[](auto... sizes) { return std::dextents<std::size_t, 1>{static_cast<std::size_t>(sizes)...}; },
+			this->sizes()
+		);
+
+		auto strides = apply(
+			[](auto... strds) { return std::array<std::size_t, 1>{static_cast<std::size_t>(strds)...}; },
+			this->strides()
+		);
+
+		return std::mdspan<T, std::dextents<std::size_t, 1>, std::layout_stride>{
+			this->base_, std::layout_stride::mapping(shape, strides)
+		};
+	}
+	auto to_mdspan_() const& {
+		return std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>(to_mdspan_aux_());
+	}
+
+ public:
+	/// A (const_)subarray can be converted implicitly to a strided mdspan object
+	operator std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>() const& { return to_mdspan_(); }
+#endif
 
  private:
 	constexpr auto elements_aux_() const { return elements_range{this->base_, this->layout()}; }

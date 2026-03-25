@@ -18,7 +18,7 @@
 
 namespace multi = boost::multi;
 
-struct multiplies_bind1st {
+struct multiplies_bind1st {  // NOLINT(misc-use-internal-linkage)
 	using complex = std::complex<double>;
 	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {}  // this produces a bug in nvcc11.0
  private:

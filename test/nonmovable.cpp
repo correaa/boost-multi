@@ -15,21 +15,24 @@
 
 namespace multi = boost::multi;
 
-class ncnm {
+class ncnm {  // NOLINT(misc-use-internal-linkage)
 	int val_;
 
  public:
+	explicit ncnm(int val) : val_{val} {}
+
 	ncnm(ncnm const&) = delete;
 	ncnm(ncnm&&)      = delete;
-	explicit ncnm(int val) : val_{val} {}
-	~ncnm()                     = default;
+
 	auto operator=(ncnm const&) = delete;
 	auto operator=(ncnm&&)      = delete;
 
 	int val() const { return val_; }
+
+	~ncnm() = default;
 };
 
-class rando {
+class rando {  // NOLINT(misc-use-internal-linkage)
 	int val_ = 0;
 
  public:
