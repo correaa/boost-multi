@@ -1954,6 +1954,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( C[0][0] == 105.0 );
 		BOOST_TEST( C[1][0] == 105.0 );
 	}
+	{
+		float a_data[6] = {1,2,3,4,5,6};
+		float b_data[6] = {1,0,0,1,0,0};
+		float c_data[9] = {};
+
+		// Weight matrices can be const (loaded once, read many times)
+		auto const& A = multi::array_ref<float, 2>(a_data, {3, 2});
+		auto const& B = multi::array_ref<float, 2>(b_data, {2, 3});
+
+		// Output: mutable pre-allocated buffer
+		auto&& C = multi::array_ref<float, 2>(c_data, {3, 3});
+
+		using multi::blas::operators::operator*;
+		// This works now:
+		C = A * B;
+
+		// This works:
+		multi::blas::gemm(1.0f, A, B, 0.0f, C);
+	}
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
