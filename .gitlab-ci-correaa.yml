@@ -30,6 +30,17 @@ variables:
   CMAKE_COMPILE_WARNING_AS_ERROR: "ON"
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  APT_CACHE_DIR: "$CI_PROJECT_DIR/.apt-cache"
+  APT_CONFIG: "$CI_PROJECT_DIR/.apt.conf"
+
+before_script:
+  - mkdir -p $APT_CACHE_DIR/partial
+  - echo "Dir::Cache::Archives \"$APT_CACHE_DIR\";" > $APT_CONFIG
+
+cache:
+  key: apt-$CI_JOB_IMAGE
+  paths:
+    - .apt-cache/
 
 include:
   - local: '.gitlab-ci.yml'
@@ -65,7 +76,6 @@ g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
     - non-shared
     - docker
   script:
-    - apt-get clean
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates python3 cmake gcc g++ git make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
@@ -85,7 +95,6 @@ g++-omp-thrust:
     - docker
     - non-shared
   script:
-    - apt-get clean
     - apt-get -qq update --allow-unauthenticated
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
@@ -372,6 +381,7 @@ visual-studio-windows:
       - master
   allow_failure: true  # runner not always available
   interruptible: true
+  before_script: []  # override global before_script (bash commands don't work on Windows runner)
   variables:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
@@ -408,8 +418,7 @@ vs2022-shell:
   stage: build
   allow_failure: false
   interruptible: true
-  # before_script:
-  #   - Set-Location $env:CI_PROJECT_DIR
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   script:
     - pwd
     # - wsl install
@@ -437,6 +446,7 @@ vs2022-shell c++17:
   stage: build
   allow_failure: false
   interruptible: true
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
       - master
@@ -460,6 +470,7 @@ vs2022-shell c++23:
   stage: build
   allow_failure: false
   interruptible: true
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
       - master
