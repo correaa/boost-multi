@@ -14,17 +14,6 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 
-# g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
-#   stage: build
-#   interruptible: false
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
-#     - g++ --version
-#     - mkdir build && cd build
-#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-
 g++:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
   stage: build
   interruptible: false
@@ -32,29 +21,13 @@ g++:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
   #   - non-shared
   #   - docker
   script:
-    - apt-get clean
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates python3 cmake gcc g++ git make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
-
-# clang++:
-#   stage: build
-#   # tags:
-#   #   - non-shared
-#   interruptible: false
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-#     - mkdir build && cd build
-#     - clang++ --version
-#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1"
-#     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-#     - ctest -j 2 --output-on-failure
-#   except:
-#     - gitlab-org
 
 clang++:
   stage: build
@@ -63,7 +36,6 @@ clang++:
   #   - docker
   interruptible: false
   script:
-    - apt-get clean
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake git python3 make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
@@ -72,24 +44,7 @@ clang++:
     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
-# clang++-latest libc++:
-#   stage: build
-#   #image: debian:latest
-#   # tags:
-#   #   - non-shared
-#   interruptible: true
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
-#     - mkdir build && cd build
-#     - clang++ --version
-#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
-#     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["clang++"]
-#   except:
-#     - gitlab-org
-
-clang++-latest libc++ format:  # Aug2025 clang 19
+clang++-latest libc++ format:
   stage: build
   image: debian:latest
   # tags:
