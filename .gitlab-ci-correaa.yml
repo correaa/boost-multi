@@ -408,8 +408,8 @@ vs2022-shell:
   stage: build
   allow_failure: false
   interruptible: true
-  before_script:
-    - Set-Location $env:CI_PROJECT_DIR
+  # before_script:
+  #   - Set-Location $env:CI_PROJECT_DIR
   script:
     - pwd
     # - wsl install
