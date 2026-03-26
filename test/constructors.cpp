@@ -18,7 +18,7 @@
 
 namespace multi = boost::multi;
 
-struct multiplies_bind1st {
+struct multiplies_bind1st {  // NOLINT(misc-use-internal-linkage)
 	using complex = std::complex<double>;
 	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {}  // this produces a bug in nvcc11.0
  private:
@@ -28,8 +28,8 @@ struct multiplies_bind1st {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_construct_1d)
 	{
-		multi::static_array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 10);
-		//  multi::static_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
+		multi::dynamic_array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 10);
+		//  multi::dynamic_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[1] == 10 );
 	}
@@ -227,6 +227,53 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<double, 2> const AA = {{1.0, 2.0}, {3.0, 4.0}};
 		// std::vector<decltype(AA[0])> vv(3, AA[0]);
 	}
+	{
+		using arri1d = multi::array<int, 1> const;
 
+		// #ifdef __clang__
+		// #pragma clang diagnostic push
+		// #pragma clang diagnostic ignored "-Wbraced-scalar-init"
+		// #endif
+
+		// clang-format off
+		// arri1d A1({3}, {11});    BOOST_TEST((A1 == arri1d{11, 11, 11} && A1.size() == 3));  // fair, clang warning: [-Wbraced-scalar-init]
+		// arri1d A2{{3}, {11}};    BOOST_TEST((A2 == arri1d{3, 11}      && A2.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
+		// arri1d A3 = {{3}, {11}}; BOOST_TEST((A3 == arri1d{3, 11}      && A3.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
+#ifndef CPPCHECK
+		arri1d A4({3}, 11);      BOOST_TEST((A4 == arri1d{11, 11, 11} && A4.size() == 3));  // good, no warning  // cppcheck-suppress [internalAstError];
+		// arri1d A5{{3}, 11};      BOOST_TEST((A5 == arri1d{3, 11}      && A5.size() == 2));  // ok  , clang warning: [-Wbraced-scalar-init]
+		// arri1d A6 = {{3}, 11};   BOOST_TEST((A6 == arri1d{3, 11}      && A6.size() == 2));  // fair, clang warning: [-Wbraced-scalar-init]
+		arri1d A7(3, 11);        BOOST_TEST((A7 == arri1d{11, 11, 11} && A7.size() == 3));  // fair, no warning
+		arri1d A8{3, 11};        BOOST_TEST((A8 == arri1d{3, 11}      && A8.size() == 2));  // fair, no warning
+		arri1d A9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
+#endif
+
+		arri1d B1(multi::extensions_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
+#ifndef __circle_build__  // deduced types not allowed in function parameters
+		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
+#endif
+#ifndef CPPCHECK
+		// multi::array const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
+		// multi::array const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
+		// multi::array const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
+		// multi::array const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
+
+		multi::array<int, 1> const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning
+		multi::array<int, 1> const C7(3, 11);    BOOST_TEST((C7 == arri1d{11, 11, 11} && C7.size() == 3));  // fair, no warning
+		multi::array<int, 1> const C8{3, 11};    BOOST_TEST((C8 == arri1d{3, 11}      && C8.size() == 2));  // fair, no warning
+		multi::array<int, 1> const C9 = {3, 11}; BOOST_TEST((C9 == arri1d{3, 11}      && C9.size() == 2));  // good, no warning
+#endif
+		// clang-format on
+
+		// #ifdef __clang__
+		// #pragma clang diagnostic pop
+		// #endif
+	}
+	{
+		std::vector<int> const vec = {1, 2, 3, 4, 5, 6};
+
+		multi::array<int, 2> arr({2, 3}, vec.begin());
+		BOOST_TEST( arr[1][0] == 4 );
+	}
 	return boost::report_errors();
 }

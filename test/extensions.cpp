@@ -1,21 +1,31 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/detail/extensions.hpp>
+#include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <algorithm>    // IWYU pragma: keep  // for std::equal
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
+#include <iterator>   // IWYU pragma: keep
+
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
+#include <concepts>  // for totally_ordered
+#include <ranges>    // IWYU pragma: keep
+#endif
+
 #include <tuple>        // IWYU pragma: keep
 #include <type_traits>  // for std::is_same_v
-// IWYU pragma: no_include <variant>        // for get, iwyu bug
+// IWYU pragma: no_include <utility>  // for declval, forward, move
+// IWYU pragma: no_include <variant>  // for get, iwyu bug
 
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
-	auto       A2D  = multi::array<int, 2>({5, 7}, 1);
+	auto const A2D = multi::array<int, 2>({5, 7}, 1);
+
 	auto const A2Dx = A2D.extension();
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
@@ -106,7 +116,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( x1d.elements().begin() < x1d.elements().end() );
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().end() );
-		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );
+		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
 		auto x1d = multi::extensions_t<1>(3);
@@ -135,7 +145,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto ll = [](auto xx, auto yy) {
 			return xx + yy;
 		};
-		multi::f_extensions_t<2, decltype(ll)> const x2df({4, 2}, ll);
+		multi::restriction<2, decltype(ll)> const x2df({4, 2}, ll);
 		(void)x2df;
 		auto val = x2df[3][1];
 		BOOST_TEST(val == 4);
@@ -336,7 +346,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
 
-		// boost::multi::f_extensions_t<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
+		// boost::multi::restriction<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
 		BOOST_TEST( x2df.elements()[0] == 0 );
 		BOOST_TEST( x2df.elements()[1] == 1 );
 		BOOST_TEST( x2df.elements()[2] == 2 );
@@ -443,6 +453,218 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		}
 #endif
 	}
+	{
+		auto xs1D = multi::extensions_t(10);
+		BOOST_TEST( xs1D.size() == 10 );
+		using std::get;
+		BOOST_TEST( get<0>(xs1D[3]) == 3 );
 
+		BOOST_TEST( xs1D.begin() != xs1D.end() );
+		BOOST_TEST( !(xs1D.begin() == xs1D.end()) );
+		BOOST_TEST( xs1D.begin() + 10 == xs1D.end() );
+		BOOST_TEST( xs1D.begin() == xs1D.end() - 10 );
+
+		BOOST_TEST( *(xs1D.begin() + 3) == xs1D[3] );
+
+#ifdef __NVCC__  // nvcc gets confused with inline lambdas
+		auto fun = [](auto ii) noexcept { return ii * ii; };
+		auto v1D = fun ^ multi::extensions_t(10);
+#else
+		auto v1D = [](auto ii) noexcept { return ii * ii; } ^ multi::extensions_t(10);
+#endif
+
+		BOOST_TEST( v1D.size() == 10 );
+		BOOST_TEST( v1D[4] == 16 );
+
+		BOOST_TEST( v1D.elements().size() == 10 );
+		BOOST_TEST( v1D.elements()[4] == v1D[4] );
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
+		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
+		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
+
+		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
+		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
+
+		auto xs1Dr = xs1D | std::ranges::views::reverse;
+
+		BOOST_TEST( *xs1Dr.begin() == 9 );
+		BOOST_TEST( *(xs1Dr.end() - 1) == 0 );
+
+		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
+		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
+
+		// auto xs1D_elements = xs1D.elements();
+		BOOST_TEST( xs1D.elements().begin() == std::ranges::begin(xs1D.elements()) );
+
+		static_assert(std::input_or_output_iterator<decltype(v1D)::iterator>);
+
+		BOOST_TEST( std::ranges::begin(v1D) == v1D.begin() );
+		BOOST_TEST( std::ranges::end(v1D) == v1D.end() );
+
+		static_assert(std::totally_ordered<decltype(v1D)::iterator>);
+		static_assert(std::random_access_iterator<decltype(v1D)::iterator>);
+
+		auto v1Dr = v1D | std::views::reverse;
+		BOOST_TEST( v1Dr[0] == v1D[9] );
+		BOOST_TEST( v1Dr[9] == v1D[0] );
+#endif
+	}
+	{
+		auto xs2D = multi::extensions_t<2>(5, 7);
+		BOOST_TEST( xs2D.size() == 5 );
+
+		using std::get;
+		BOOST_TEST( get<0>(xs2D[3][2]) == 3 );
+		BOOST_TEST( get<1>(xs2D[3][2]) == 2 );
+
+		BOOST_TEST( xs2D.begin() != xs2D.end() );
+		BOOST_TEST( !(xs2D.begin() == xs2D.end()) );
+		BOOST_TEST( xs2D.begin() + xs2D.size() == xs2D.end() );
+		BOOST_TEST( xs2D.begin() == xs2D.end() - xs2D.size() );
+
+		BOOST_TEST( *(xs2D.begin() + 3) == xs2D[3] );
+
+		// auto it = xs2D.begin();
+		// multi::detail::what(*it);
+
+		auto xs3D = multi::extensions_t<3>(5, 7, 21);
+		BOOST_TEST( xs3D.size() == 5 );
+		// multi::detail::what(*xs3D.begin());
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		using xs2D_iterator = multi::extensions_t<2>::iterator;
+
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>>);
+
+		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<multi::index, multi::index>>);
+
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::base_>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>::iterator>);
+
+		static_assert(std::is_constructible_v<xs2D_iterator>);
+		static_assert(std::constructible_from<xs2D_iterator, xs2D_iterator>);
+		static_assert(std::default_initializable<multi::extensions_t<2>::iterator>);
+		static_assert(std::semiregular<multi::extensions_t<2>::iterator>);
+		static_assert(std::regular<multi::extensions_t<2>::iterator>);
+		static_assert(std::incrementable<multi::extensions_t<2>::iterator>);
+
+		static_assert(std::weakly_incrementable<multi::extensions_t<2>::iterator>);
+		static_assert(std::input_iterator<multi::extensions_t<2>::iterator>);
+		static_assert(std::forward_iterator<multi::extensions_t<2>::iterator>);
+		static_assert(std::bidirectional_iterator<multi::extensions_t<2>::iterator>);
+		static_assert(std::random_access_iterator<multi::extensions_t<2>::iterator>);
+		static_assert(std::ranges::random_access_range<multi::extensions_t<2>>);
+
+		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
+		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
+
+		auto xs2Dr = xs2D | std::ranges::views::reverse;
+
+		BOOST_TEST( *xs2Dr.begin() == *(xs2D.end() - 1) );
+		BOOST_TEST( *(xs2Dr.end() - 1) == *(xs2D.begin()) );
+
+		BOOST_TEST( xs2Dr[xs2D.size() - 1] == xs2D[0] );
+		BOOST_TEST( xs2Dr[0] == xs2D[xs2D.size() - 1] );
+#endif
+	}
+	{
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
+		// auto front = *v2D.begin();
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
+		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
+
+		auto v2Dr = v2D | std::ranges::views::reverse;
+
+		BOOST_TEST( (*v2Dr.begin())[4] == (*(v2D.end() - 1))[4] );
+		BOOST_TEST( (*(v2Dr.end() - 1))[4] == (*(v2D.begin()))[4] );
+
+		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
+		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
+
+		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
+		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
+		{
+			auto matrix =
+				([](auto ii) noexcept { return static_cast<float>(ii); } ^
+				 multi::extensions_t(6))
+					.partitioned(2);
+
+			auto [matrix_is, matrix_js] = matrix.extensions();
+			BOOST_TEST( matrix_is.size() == 2 );
+			BOOST_TEST( matrix_js.size() == 3 );
+
+#ifndef __NVCC__
+			static_assert(std::movable<std::decay_t<decltype(matrix[0])>::iterator>);
+#endif
+			BOOST_TEST( std::ranges::begin(matrix[0]) == matrix[0].begin() );
+			BOOST_TEST( std::ranges::end(matrix[0]) == matrix[0].end() );
+		}
+#endif
+	}
+	{
+		multi::extensions_t<2> const x2D(6, 5);
+		multi::extensions_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extensions();
+
+		using std::get;
+		BOOST_TEST( get<0>(p3D).size() == 2 );
+		BOOST_TEST( get<1>(p3D).size() == 3 );
+		BOOST_TEST( get<2>(p3D).size() == 5 );
+	}
+	{
+		auto exts = multi::extensions_t<2>(3, 4);
+
+		// auto something = exts[-1];
+		// (void)something;
+
+		BOOST_TEST( exts.extensions() == exts );
+
+		static_assert(std::is_default_constructible_v<decltype(exts.elements())::iterator>);
+
+		auto it = exts.elements().begin() + 8;
+		BOOST_TEST( it + 0 == it );  // cppcheck-suppress knownConditionTrueFalse
+
+		it += -6;
+		BOOST_TEST( it == exts.elements().begin() + 2 );
+	}
+	{
+		auto exts = multi::extensions_t<1>(10);
+		BOOST_TEST( exts.size() == 10 );
+		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
+
+		auto it = exts.begin();
+		it += 2;
+		BOOST_TEST( it == exts.begin() + 2 );
+
+		BOOST_TEST( exts.elements().size() == 10 );
+		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 1) == exts.elements().size() - 2 );
+		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 2) == exts.elements().size() - 3 );
+
+		auto it2 = exts.begin();
+		auto it3 = it2 + 3;
+		auto it4 = it3 + 2;
+
+		BOOST_TEST( it4 == exts.begin() + 5 );
+		BOOST_TEST( *it4 == 5 );
+
+		auto it5 = it4 - 3;
+		BOOST_TEST( it5 == exts.begin() + 2 );
+		BOOST_TEST( *it5 == 2 );
+	}
+	{
+		auto exts = multi::extensions_t<1>(10);
+
+		// BOOST_TEST( exts[-1] != decltype(exts[-1]){} );  gives an out-of-bounds assert
+
+		BOOST_TEST( exts.size() == 10 );
+		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
+	}
 	return boost::report_errors();
 }

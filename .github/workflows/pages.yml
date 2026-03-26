@@ -22,29 +22,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby (for Asciidoctor)
-        uses: ruby/setup-ruby@v1
+      - name: Set up Node.js (for Antora)
+        uses: actions/setup-node@v4
         with:
-          ruby-version: '3.2'
+          node-version: '20'
 
-      - name: Install Asciidoctor
+      - name: Install Clang and CMake
         run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge
+          sudo apt-get update
+          sudo apt-get install -y clang cmake libboost-dev
 
-      - name: Install Boost Build (b2)
+      - name: Install MrDocs
         run: |
-          pandoc --version
-          asciidoctor --version
+          wget -q https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-0.0.4-Linux.tar.gz
+          tar xzf MrDocs-0.0.4-Linux.tar.gz
+          echo "$PWD/MrDocs-0.0.4-Linux/bin" >> $GITHUB_PATH
 
-      - name: Build Docs with b2
+      - name: Generate compile_commands.json for MrDocs
         run: |
-          mkdir .public
+          cmake -B build-mrdocs \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMULTI_BUILD_TESTS=OFF \
+            -DMULTI_BUILD_PACKAGE=OFF
+
+      - name: Run MrDocs
+        run: mrdocs mrdocs.yml
+
+      - name: Build Docs with Antora
+        run: |
           cd doc
-          asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
-          cd ..
-          cp -r doc/multi.html .public
-          # cp -r doc/multi.html .public/index.html
+          npm ci --ignore-scripts
+          npx antora multi-playbook.yml
+
+      - name: Prepare artifact for GitHub Pages
+        run: cp -r doc/html .public
+
+      # Makes another copy of doc/html/index.html into .public but with the name multi.html
+      - name: Create multi.hmtl redirect
+        run: cp doc/html/index.html .public/multi.html
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3

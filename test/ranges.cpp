@@ -12,7 +12,8 @@
 #include <memory>      // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+// clang 16 c++23 crashed when including ranges
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -60,6 +61,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const result = rowOddSum(values);
 
 		BOOST_TEST( result - values.begin() == 4 );
+
+		{
+			auto const lazy1D = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6);
+			auto const sum    = std::ranges::fold_left(lazy1D, float{}, std::plus<>{});
+			BOOST_TEST( std::abs(sum - (0.0F + 1.0F + 2.0F + 3.0F + 4.0F + 5.0F)) < 1e-12F );
+		}
 #endif
 	}
 
@@ -163,6 +170,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{7, 8, 9},
 		};
 
+		BOOST_TEST( A.begin() == std::ranges::begin(A) );
+		BOOST_TEST( A.end() == std::ranges::end(A) );
+
+		BOOST_TEST( A().begin() == std::ranges::begin(A()) );
+		BOOST_TEST( A().end() == std::ranges::end(A()) );
+
+		BOOST_TEST( A[1].begin() == std::ranges::begin(A[1]) );
+		BOOST_TEST( A[1].end() == std::ranges::end(A[1]) );
+
 		multi::array<int, 1> const V = {10, 11, 12};
 		multi::array<int, 1> const R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
 
@@ -171,6 +187,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( R[2] == 15 );
 
 		// R = std::ranges::views::zip_transform(std::plus<>{}, A[0], V);
+	}
+	{
+		multi::array<int, 2> A = {
+			{2, 2, 2, 2},
+			{2, 0, 0, 2},
+			{2, 0, 0, 2},
+			{2, 2, 2, 2}
+		};
+
+		std::ranges::fill(A({1, 3}, {1, 3}).elements(), 1);
+
+		BOOST_TEST( A[1][1] == 1 );
+		BOOST_TEST( A[2][2] == 1 );
 	}
 #endif
 

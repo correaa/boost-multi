@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
+#include <array>        // for array
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
@@ -19,7 +20,7 @@
 namespace multi = boost::multi;
 
 template<class Ref, class Involution>
-class involuted {
+class involuted {  // NOLINT(misc-use-internal-linkage)
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // '3' bytes padding added after data member 'involuted<int,std::negate<void>>::f_'
@@ -80,7 +81,7 @@ class involuted {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 template<class It, class F>
-class involuter {
+class involuter {  // NOLINT(misc-use-internal-linkage)
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
 
@@ -161,9 +162,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( m5 == -50 );
 	}
 
-	// BOOST_AUTO_TEST_CASE(static_array_cast)
+	// BOOST_AUTO_TEST_CASE(dynamic_array_cast)
 	{
-		multi::static_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
+		multi::dynamic_array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0};
 
 		auto&& ref = arr.static_array_cast<double, double const*>();
 
@@ -191,7 +192,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ref[1] == arr[1] );
 
 #if !defined(_MSC_VER) && !defined(__NVCC__)
-		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 #endif
 		// ^^^ this doesn't work on MSVC+NVCC in C++20 because it tries to generate this type:
 		// using coty = std::common_reference<
@@ -229,19 +230,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// // BOOST_AUTO_TEST_CASE(static_array_cast_3)
 	{
-		multi::static_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
-		multi::static_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
+		multi::dynamic_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
+		multi::dynamic_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
 		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
 		BOOST_TEST( neg_arr[2] == arr2[2] );
 		BOOST_TEST( arr2[2] == neg_arr[2] );
-		BOOST_TEST( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal( neg_arr.begin(), neg_arr.end(), arr2.begin(), arr2.end() ) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}
 	{
-		multi::static_array<int, 2> arr({4, 5}, 0);
+		multi::dynamic_array<int, 2> arr({4, 5}, 0);
 		std::iota(elements(arr).begin(), elements(arr).end(), 0);
 
 		multi::array<int, 2> arr2({4, 5});
@@ -257,7 +258,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2[1] == neg_arr[1] );
 		BOOST_TEST( neg_arr[1] == arr2[1] );
 
-		BOOST_TEST( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );  // NOLINT(modernize-use-ranges)
+		BOOST_TEST( std::equal(arr2.begin(), arr2.end(), neg_arr.begin(), neg_arr.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 		BOOST_TEST( neg_arr == arr2 );
 		BOOST_TEST( arr2 == neg_arr );
 	}
@@ -274,7 +275,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// Uninitialized Memory Read - 2
 		BOOST_TEST( arr.size() == 3 );
 	}
+	{
+		multi::array<int, 2> const arr1({
+			{3, 5}
+		});  // this array has 1-row
+		multi::array<int, 2> const arr2 = {
+			{3, 5}
+		};  // this array has 1-row
 
+		BOOST_TEST( arr1 == arr2  );
+	}
+	{
+		multi::array<int, 2> const arr(std::array<multi::size_t, 2>{
+			{3, 4}
+		});
+		BOOST_TEST( arr.size() == 3 );
+	}
 	{
 		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
 		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"

@@ -21,7 +21,8 @@ if((NOT
 		"icpc"
 	   )
 )
-	find_package(Boost REQUIRED NO_MODULE)  # COMPONENTS boost)  # headers unit_test_framework)
+	find_package(Boost CONFIG)  # COMPONENTS boost)  # headers unit_test_framework)
+#	find_package(Boost REQUIRED NO_MODULE)  # COMPONENTS boost)  # headers unit_test_framework)
 #   link_libraries("-lboost_unit_test_framework")
 
 	find_package(BLAS REQUIRED)
@@ -137,7 +138,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			${TEST_EXE}
 			PRIVATE
 					$<$<CXX_COMPILER_ID:GNU>:
-					-Werror
+					#-Werror
 					-Wall
 					-Wextra
 					-Wpedantic
@@ -146,7 +147,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wparentheses
 					> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-					-Werror
+					#-Werror
 					-Wall
 					# -Weverything
 					-Wextra
@@ -154,12 +155,15 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmove
 					-Wno-padded
 					-Wno-pass-failed
+					-Wno-exit-time-destructors  # bug in cmake 4, boost,
+					-Wno-poison-system-directories  # bug in cmake 4, boost,
+					# -Wno-float-equal  # BLWT uses equality between float and double
 					-Wno-error=\#warnings
 					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
 					> # -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:IntelLLVM>:
 					-Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions
-					-Wno-enum-constexpr-conversion  # for Boost.Test
+					# -Wno-enum-constexpr-conversion  # for Boost.Test
 					>
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra

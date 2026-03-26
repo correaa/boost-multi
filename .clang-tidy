@@ -29,11 +29,13 @@ CheckOptions:
 Checks: '*,
   -altera-struct-pack-align,
   -boost-use-ranges,
+  -cert-dcl21-cpp,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-  -fuchsia-overloaded-operator,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
   -fuchsia-default-arguments-calls,
+  -fuchsia-statically-constructed-objects,
+  -fuchsia-overloaded-operator,
   -fuchsia-trailing-return,
   -hicpp-no-array-decay,
   -llvm-prefer-static-over-anonymous-namespace,
@@ -42,21 +44,21 @@ Checks: '*,
   -modernize-use-trailing-return-type,
   -readability-magic-numbers,
   -readability-simplify-boolean-expr'
+
 ## explanation of the suppressed rules above:
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
 #  -boost-use-ranges                                      // would introduce a dependency on Boost
-#  -clang-diagnostic-deprecated-declarations              // some test run deprecated functions on purpose
+#  -cert-dcl21-cpp                                        // this asks postfix operator++ to return a const value
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
-#  -cppcoreguidelines-pro-bounds-array-to-pointer-decay   // for Boost Lightweight test BOOST_TEST
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
+#  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access  // tests use magic numbers
+#  -fuchsia-statically-constructed-objects,               // used for traits, is_const_subarray
 #  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -hicpp-no-array-decay,                                 // for Boost Lightweight Test
 #  -llvm-prefer-static-over-anonymous-namespace,          // contradicts other rules
 #  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
-#  -llvm-header-guard,                                    // allow PCH
-#  -misc-include-cleaner                                  // allow PCH
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
-#  -modernize-use-trailing-return-type                    // mandates all lambdas end with -> auto
+#  -modernize-use-trailing-return-type,                   // mandates all lambdas end with -> auto
 #  -readability-magic-numbers,                            // many tests use magic numbers
 #  -readability-simplify-boolean-expr,                    // for Boost Lightweight Test BOOST_TEST

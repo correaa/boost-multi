@@ -5,12 +5,10 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_GEMM_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
-// #include <boost/multi/adaptors/blas/gemv.hpp>
-#include <boost/multi/adaptors/blas/numeric.hpp>
-// #include <boost/multi/adaptors/blas/operations.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"
 
-#include <boost/multi/array_ref.hpp>              // for base, size, begin
+#include "boost/multi/array_ref.hpp"              // for base, size, begin
 
 #include <cassert>                               // for assert
 #include <cstddef>                                // for nullptr_t
@@ -197,12 +195,14 @@ class gemm_iterator {
 	friend class gemm_range;
 
  public:
+	gemm_iterator() = default;
 	gemm_iterator(gemm_iterator const&) = default;
 	gemm_iterator(gemm_iterator&&) noexcept = default;
 	~gemm_iterator() = default;
 
-	auto operator=(gemm_iterator&&) -> gemm_iterator& = delete;
-	auto operator=(gemm_iterator const&) -> gemm_iterator& = delete;
+	// auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator const&) -> gemm_iterator&;  // = delete;
+	auto operator=(gemm_iterator&&) noexcept -> gemm_iterator&;
 
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
@@ -210,11 +210,14 @@ class gemm_iterator {
 	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
-	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
+	auto operator+=(difference_type n) -> gemm_iterator& { a_it_ += n; return *this; }
+	auto operator-=(difference_type n) -> gemm_iterator& { a_it_ -= n; return *this; }
 
 	auto operator++() -> gemm_iterator& { return operator+=(1); }  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& { return operator-=(1); }
+
+	auto operator++(int) -> gemm_iterator { gemm_iterator ret{*this}; ++(*this); return ret; }  // required by random access concept requires even if not used explicitly
+	auto operator--(int) -> gemm_iterator { gemm_iterator ret{*this}; --(*this); return ret; }
 
 	friend auto operator+(gemm_iterator ret, difference_type n) { return ret += n; }
 
@@ -227,7 +230,7 @@ class gemm_iterator {
 
 	template<class ItOut>
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
-	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls)
+	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls,readability-redundant-typename) for C++20
 		return blas::gemm_n(first.ctxtp_              , static_cast<typename ItA::element>(first.s_), first.a_it_        , count, first.b_begin_     , 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
 	} catch(std::exception const& e) {
 		throw std::logic_error(
@@ -279,7 +282,7 @@ class gemm_range {
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;
-	using size_type = typename decay_type::size_type;
+	using size_type = typename std::iterator_traits<ItA>::difference_type;  // typename decay_type::size_type;
 
 	       auto begin()          const& -> iterator {return {ctxtp_, s_, a_begin_, b_begin_};}
 	       auto end()            const& -> iterator {return {ctxtp_, s_, a_end_  , b_begin_};}
@@ -354,7 +357,7 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 
 namespace operators {
 	template<class A2D, class B2D,
-		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
 	->decltype(blas::gemm(1.0, A, B)) {
 		return blas::gemm(1.0, A, B); }

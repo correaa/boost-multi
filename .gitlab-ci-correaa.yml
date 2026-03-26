@@ -1,4 +1,4 @@
-# Copyright 2020-2025 Alfredo A. Correa
+# Copyright 2020-2026 Alfredo A. Correa
 
 # Install docker (for local CI or to set up CI machine)
 #   sudo apt install docker.io
@@ -25,38 +25,69 @@ variables:
   RT_VERSION: "0.1"
   NVIDIA_DISABLE_REQUIRE: 1  # disable nvidia driver check
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_STRATEGY: clone  # git fetch
   GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   CMAKE_COMPILE_WARNING_AS_ERROR: "ON"
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+
+include:
+  - local: '.gitlab-ci.yml'
 
 stages:
   - basic
   - build
   - test
 
-g++:  # debian-stable: default is gcc 12.2.0 as of April 2024
-  stage: basic
+# g++:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
+#   stage: basic
+#   interruptible: false
+#   tags:
+#     - non-shared
+#     - docker
+#   script:
+#     - apt-get clean
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates python3 cmake gcc g++ git make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
+#     - g++ --version
+#     - mkdir build && cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection"
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+
+g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
+  stage: build
   interruptible: false
-  # tags:
-  #   - non-shared
+  only:
+    refs:
+      - master
+  tags:
+    - non-shared
+    - docker
   script:
     - apt-get clean
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates python3 cmake gcc g++ git make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection -fcf-protection=full"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_STANDARD=20 -DENABLE_TBLIS=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1 -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -ftrivial-auto-var-init=zero -fPIE  -pie  -Wl,-z,relro,-z,now -fstack-protector-strong -fstack-clash-protection"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+  needs: ["g++"]
 
 g++-omp-thrust:
   stage: build
   interruptible: true
+  only:
+    refs:
+      - master
   tags:
+    - docker
     - non-shared
   script:
     - apt-get clean
     - apt-get -qq update --allow-unauthenticated
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
@@ -67,6 +98,9 @@ g++-omp-thrust:
 g++-m32 sanitize:
   stage: build
   image: debian:latest
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - high-bandwidth  # for boost source download
@@ -75,10 +109,10 @@ g++-m32 sanitize:
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
-    - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-m32 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-m32 -DCCCL_DISABLE_LONG_DOUBLE_SUPPORT=1 -fsanitize=address -fsanitize=signed-integer-overflow -D_GLIBCXX_SANITIZE_VECTOR" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
     - ctest -j 1 --output-on-failure
   needs: ["g++"]
@@ -86,19 +120,42 @@ g++-m32 sanitize:
 arm64:
   stage: build
   image: arm64v8/debian:latest
-  allow_failure: true
+  allow_failure: true  # runner not always availabe
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - arm  # for image
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ cmake make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
     - cmake --build .
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -j 2 --output-on-failure
   needs: ["g++"]
+
+c++-macos-shell:
+  stage: build
+  interruptible: true
+  allow_failure: true  # runner might not be available
+  only:
+    refs:
+      - master
+  tags:
+    - macos
+    - shell
+  script:
+    # - brew install pkgconf boost cmake fftw  # one time
+    - cmake --version
+    - c++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+  needs: ["clang++"]
 
 coverage:
   stage: build
@@ -146,44 +203,12 @@ g++ cppcheck cpplint memcheck lto:
     - cppcheck --version
     - valgrind --version
     - mkdir build && cd build
-    # - export VALGRIND_EXE="valgrind --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=.valgrind-suppressions --gen-suppressions=all --error-exitcode=1 "
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - (ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/../.valgrind-suppressions -T memcheck) || (cat /builds/correaa/boost-multi/build/Testing/Temporary/MemoryChecker.*.log && exit 666)
   needs: ["g++"]
-
-# clang++ sanitizer:
-#   stage: build
-#   tags:
-#     - non-shared
-#     - docker
-#   # image: debian:testing
-#   allow_failure: true
-#   interruptible: true
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake clang make libasan8 libasan6 libclang-rt-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-#     - mkdir build && cd build
-#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  # ,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-omit-frame-pointer -fno-sanitize-recover=all"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure -T Test
-#   needs: ["clang++"]
-
-# g++ sanitizer:
-#   stage: build
-#   # image: debian:testing
-#   tags:
-#     - non-shared
-#     - docker
-#   interruptible: true
-#   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
-#     - mkdir build && cd build
-#     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure -T Test
-#   needs: ["g++"]
 
 g++-9-bullseye:
   stage: build
@@ -192,7 +217,10 @@ g++-9-bullseye:
     - non-shared
     - docker
   interruptible: true
-  allow_failure: true
+  allow_failure: false
+  only:
+    refs:
+      - master
   script:
     - arch
     - apt-get -qq update
@@ -205,29 +233,7 @@ g++-9-bullseye:
     - cmake --build build/ --target test  # - ctest -j 2 --output-on-failure
   needs: ["g++"]
 
-# g++-9:
-#   stage: build
-#   image: debian:oldstable  # default is gcc 8 as of Dec 2023
-#   tags:
-#     - non-shared
-#     - docker
-#   interruptible: true
-#   script:
-#     - arch
-#     - apt-get -qq update
-#     - apt-get install --no-install-recommends --assume-yes ca-certificates cmake g++-11 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-#     # - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-`arch`.sh --no-verbose
-#     # - sh ./cmake-*.sh --skip-license --prefix=/usr
-#     - cmake --version
-#     - g++ --version
-#     - g++-11 --version
-#     - mkdir build && cd build
-#     - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest -j 2 --output-on-failure
-#   needs: ["g++"]
-
-g++-unstable c++23 par:  # debian-testing: default is gcc 14.2.0 as of Sep 2022
+g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
   stage: build
   image: debian:unstable
   tags:
@@ -235,6 +241,9 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 14.2.0 as of Sep 2022
     - docker
   allow_failure: true
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
@@ -244,26 +253,31 @@ g++-unstable c++23 par:  # debian-testing: default is gcc 14.2.0 as of Sep 2022
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["g++-testing c++20"]
 
-clang++:
-  stage: basic
-  # tags:
-  #   - non-shared
-  interruptible: false
-  script:
-    - apt-get clean
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet clang cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
-    - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
-    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+# clang++:
+#   stage: basic
+#   tags:
+#     - non-shared
+#     - docker
+#   interruptible: false
+#   script:
+#     - apt-get clean
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake git python3 make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+#     - mkdir build && cd build
+#     - clang++ --version
+#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
+#     - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
+#     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
 
 clang++ ubsan:  # more UB is detected on Release
   stage: build
   tags:
     - non-shared
+    - docker
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet clang libclang-rt-dev cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
@@ -283,7 +297,10 @@ clang++-18 mull-18:  # mull-18 crashes
     - large-memory-space
     - non-shared
   interruptible: true
-  allow_failure: true
+  allow_failure: false
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
@@ -304,62 +321,78 @@ clang++-18 mull-18:  # mull-18 crashes
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
 
-# deb:
+# clang++-latest libc++ format:  # Aug2025 clang 19
 #   stage: build
+#   image: debian:latest
+#   tags:
+#     - non-shared
+#     - docker
+#   interruptible: true
+#   only:
+#     refs:
+#       - master
 #   script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang clang-format cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
 #     - mkdir build && cd build
-#     - cmake .. -DCMAKE_BUILD_TYPE=Release
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - clang++ --version
+#     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
+#     - cmake --build .
 #     - ctest -j 2 --output-on-failure
-#     - cpack -G DEB
-#     - ls -all
-#     - dpkg -i multi_all.deb
-#     - ls -all /usr/include/multi
-#     - c++ ../test/main.cpp
-#   artifacts:
-#     paths:
-#       - build/multi_all.deb
-#   needs: ["g++", "clang++"]
+#     - cd ..
+#     - clang-format --version
+#     - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
+#   needs: ["clang++"]
 
-clang++-latest libc++ format:  # Aug2025 clang 19
+clang++-16 c++20:
   stage: build
-  image: debian:latest
+  image: ubuntu:24.04  # debian:latest
   tags:
     - non-shared
     - docker
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-format cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-16 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
-    - clang++ --version
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_CXX98_FUNCTION_BASE -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
+    - clang-16 --version
+    - clang++-16 --version
+    - CXX=clang++-16 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
     - cmake --build .
     - ctest -j 2 --output-on-failure
-    - cd ..
-    - clang-format --version
-    - clang-format --dry-run -Werror test/*.cpp include/**/*.hpp || echo "errors in formatting"
   needs: ["clang++"]
 
-.vs2019-windows:
+visual-studio-windows:
   stage: build
   only:
     refs:
       - master
-  allow_failure: true
+  allow_failure: true  # runner not always available
   interruptible: true
   variables:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
+    VCPKG_ROOT: ${CI_PROJECT_DIR}/vcpkg
+    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
+
+  cache:
+    key: vcpkg-windows
+    paths:
+      - vcpkg/
+
   script:
-    - choco --version
-    - choco install poshgit -y
-    - choco install visualstudio2019community -y --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
-    - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    # vvv saas-windows-medium-amd64 runner comes with all this
+    # - choco --version
+    # - choco install poshgit -y
+    # - choco install visualstudio2019community -y --params "'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'"
+    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
+    - if (!(Test-Path vcpkg)) { git clone --depth=1 https://github.com/microsoft/vcpkg.git }
     - .\vcpkg\bootstrap-vcpkg.bat
-    - .\vcpkg\vcpkg install boost-core boost-multi-array boost-timer pkgconf
+    - .\vcpkg\vcpkg install boost-core  # boost-multi-array boost-timer pkgconf
     - mkdir build
     - $env:Path += ";${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin"
     - cmake --version
@@ -375,43 +408,48 @@ vs2022-shell:
   stage: build
   allow_failure: false
   interruptible: true
+  before_script:
+    - Set-Location $env:CI_PROJECT_DIR
   script:
-    # - winget install --id=Microsoft.VisualStudio.2022.Community -e
-    # - winget install Microsoft.VisualStudio.2022.BuildTools
-    # - winget install Git.Git Kitware.CMake Microsoft.PowerShell Microsoft.msmpi Microsoft.msmpisdk
-    # - choco --version
-    # - choco install -y visualstudio2019community poshgit
     - pwd
+    # - wsl install
+    # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop
+    # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
+    # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
+    # - winget install Ninja-build.Ninja
+    # - winget install Microsoft.msmpi Microsoft.msmpisdk
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
-    # - .\vcpkg\vcpkg install blas fftw3 boost-multi-array boost-timer
-    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    # - .\vcpkg\vcpkg install blas fftw3
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - $Env:Path -split ';'
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 cmake -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
-    - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
-  needs: ["clang++", "g++"]
+  # needs: ["clang++", "g++"]
   timeout: 20 minutes
 
 vs2022-shell c++17:
   stage: build
   allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   script:
-    # - choco --version
-    # - choco install -y visualstudio2019community poshgit
-    - dir C:\local\
-    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
-    # - .\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    # - .\vcpkg\vcpkg install blas fftw3 boost-multi-array boost-timer
+    #  - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - mkdir build
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DDISABLE_MPI=1
-    - cmake --build build --config Debug --parallel 2 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
     - windows, shell
@@ -422,6 +460,9 @@ vs2022-shell c++23:
   stage: build
   allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
     #- .\vcpkg\bootstrap-vcpkg.bat
@@ -429,9 +470,9 @@ vs2022-shell c++23:
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045" -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"  # -DDISABLE_MPI=1
-    - cmake --build build --config Release --parallel 2 ; if (!$?) { cmake --build build --config Release --parallel 1 --verbose }
-    - ctest -j 4 --test-dir build --output-on-failure -C Release
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/wd4514 /wd5045 /D_MSVC_STL_HARDENING=1" -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - ctest -j 4 --test-dir build --output-on-failure --build-config Debug
   tags:
     - windows, shell
   needs: ["vs2022-shell"]
@@ -441,9 +482,11 @@ vs2022-shell cudatk-17:
   stage: build
   allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - whoami
-    - dir C:\local\
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
@@ -456,7 +499,7 @@ vs2022-shell cudatk-17:
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
   tags:
     - windows, shell, cudatk
-  needs: ["vs2022-shell"]  # , "cuda"]
+  needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
 
 vs2022-shell cudatk:
@@ -465,7 +508,6 @@ vs2022-shell cudatk:
   interruptible: true
   script:
     - whoami
-    - dir C:\local\
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
@@ -478,18 +520,18 @@ vs2022-shell cudatk:
     - cmake --build build --config Debug --parallel ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
   tags:
     - windows, shell, cudatk
-  needs: ["vs2022-shell"]  # , "cuda"]
+  needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
 
 vs2022-shell cuda:
   stage: build
   allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   script:
-    # - choco --version
-    # - choco install -y visualstudio2019community poshgit
     - whoami
-    - dir C:\local\
     - nvidia-smi
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
@@ -513,6 +555,9 @@ clang++-m32:
     - high-bandwidth  # for boost source download
     - x86_64  # for g++-multilib in image
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
@@ -533,7 +578,7 @@ clang++-latest tidy iwyu everything:
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet git clang clang-tidy cmake iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
     - clang-tidy --version
@@ -559,28 +604,6 @@ g++-testing c++20:
     - ctest --output-on-failure
   needs: ["g++"]
 
-# clang++-19-unstable libc++ c++26 boost_1_87:
-#   stage: build
-#   image: debian:unstable  # clang 17 as of March 2024
-#   tags:
-#     - non-shared
-#     - docker
-#     - high-bandwidth
-#   interruptible: true
-#   script:  # clang 17 doesn't work with gcc 13 libstd
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang clang-19 cmake make libblas-dev libc++-19-dev libc++abi-19-dev libfftw3-dev pkg-config tar wget
-#     - wget https://downloads.sourceforge.net/project/boost/boost/1.87.0/boost_1_87_0.tar.gz --no-verbose
-#     - tar -xf boost_1_87_0.tar.gz 
-#     - cd boost_1_87_0
-#     - ./bootstrap.sh --with-toolset=clang
-#     - ./b2 toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-serialization --with-timer install -j4
-#     - cd ..
-#     - mkdir build && cd build
-#     - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=26 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_ENABLE_DEBUG_MODE=1 -D_LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY=1 -D_LIBCPP_DEBUG_STRICT_WEAK_ORDERING_CHECK=1"  # -DBoost_NO_SYSTEM_PATHS=ON
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - ctest --output-on-failure
-#   needs: ["clang++-latest libc++", "g++-testing c++20"]
-
 clang++-oldstable-cmake4:
   stage: build
   image: debian:oldstable  # clang 7.0.1 as of Jan 2025
@@ -588,10 +611,13 @@ clang++-oldstable-cmake4:
     - non-shared
     - docker
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - arch
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang-13 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-13 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
@@ -611,6 +637,9 @@ oneapi:
     - large-disk-space
     - x86_64
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get update
     - apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -627,8 +656,11 @@ oneapi-2022.2:
     - non-shared
     - large-disk-space
     - x86_64
-  allow_failure: true
+  allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get update --allow-unauthenticated=false && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -638,11 +670,14 @@ oneapi-2022.2:
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
 
-oneapi-latest c++20:
+oneapi-latest c++23:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   allow_failure: false
   interruptible: true
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - large-disk-space
@@ -654,7 +689,7 @@ oneapi-latest c++20:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["oneapi"]
@@ -669,6 +704,9 @@ nvhpc:
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ --version
+    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh
+    # - sh cmake-install.sh --skip-license --prefix=/usr
+    - cmake --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
@@ -684,6 +722,9 @@ nvhpc-22.7:
     - large-disk-space
     - x86_64
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
@@ -696,36 +737,23 @@ nvhpc-22.7:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
 
-# nvhpc-25.1:
-#   stage: build
-#   image: nvcr.io/nvidia/nvhpc:25.1-devel-cuda12.6-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
-#   tags:
-#     - non-shared
-#     - large-disk-space
-#     - x86_64
-#   interruptible: true
-#   script:
-#     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
-#     - /opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ --version
-#     - mkdir build && cd build
-#     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20  # -DCMAKE_CXX_FLAGS="-stdpar=multicore"
-#     - cmake --build . --parallel 2 || cmake --build . --verbose
-#     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
-#   needs: ["nvhpc"]
-
-nvhpc-25.5:
+nvhpc-26.1:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:25.5-devel-cuda12.9-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:26.1-devel-cuda13.1-ubuntu24.04  # nvcr.io/nvidia/nvhpc:25.5-devel-cuda12.9-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
     - x86_64
+  allow_failure: true
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ --version
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23"  # -DCMAKE_CXX_FLAGS="-stdpar=multicore"
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"  # -DCMAKE_CXX_FLAGS="-stdpar=multicore"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
@@ -745,19 +773,23 @@ cuda:
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
-cuda-11.5.2:
+cuda-11.6.1:
   stage: build
-  image: nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04  # 11.4.3-devel-ubuntu20.04
+  image: nvcr.io/nvidia/cuda:11.6.1-devel-ubuntu20.04  # nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04
+  allow_failure: false
   tags:
     - non-shared
     - nvidia-gpu
     - x86_64
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
@@ -780,6 +812,9 @@ culang++-16 cuda-11.4.3:
     - non-shared
     - nvidia-gpu
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -800,33 +835,68 @@ culang++-16 cuda-11.4.3:
 
 cuda-12.6.3:
   stage: build
+  allow_failure: false
+  image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  interruptible: true
+  only:
+    refs:
+      - master
+  script:
+    - nvidia-smi
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - cmake --version
+    - mkdir build && cd build
+    - g++ --version
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
+    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
+  needs: ["cuda"]
+
+cuda-12.6.3 cutensor:
+  stage: build
   allow_failure: true
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
   tags:
     - non-shared
     - nvidia-gpu
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - nvidia-smi
     - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    # - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+    # - dpkg -i cuda-keyring_1.1-1_all.deb
+    - apt-get update
+    - apt-get -y install cutensor-cuda-12
     - cmake --version
     - mkdir build && cd build
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_HOST_COMPILER=g++
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
-cuda-12.9.0:
+cuda-13.1.0:
   stage: build
   allow_failure: false
-  image: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+  image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:13.0.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   tags:
     - non-shared
     - nvidia-gpu
+    - arch75
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -835,36 +905,18 @@ cuda-12.9.0:
     - mkdir build && cd build
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_HOST_COMPILER=g++
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-ftemplate-backtrace-limit=0" -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
     - cmake --build . --verbose --parallel 2 || cmake --build . --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++", "clang++", "cuda"]
 
-cuda-13.0.1:
-  stage: build
-  allow_failure: true
-  image: nvcr.io/nvidia/cuda:13.0.1-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
-  tags:
-    - non-shared
-    - nvidia-gpu
-  interruptible: true
-  script:
-    - nvidia-smi
-    - apt-get -qq update
-    - apt-get install --no-install-recommends -y cmake g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - cmake --version
-    - mkdir build && cd build
-    - g++ --version
-    - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-ftemplate-backtrace-limit=0" -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --build . --verbose --parallel 2 || cmake --build . --verbose
-    - ctest || ctest --rerun-failed --output-on-failure
-  needs: ["g++", "clang++", "cuda"]
-
-culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
   allow_failure: false
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - nvidia-gpu
@@ -877,19 +929,46 @@ culang++-19 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
-    - ./llvm.sh 19
-    - apt-get install --no-install-recommends -y clang-19 clang-tidy-19
+    - ./llvm.sh 20
+    - apt-get install --no-install-recommends -y clang-20 clang-tidy-20
     - mkdir build && cd build
-    - clang++-19 --version
-    - clang-tidy-19 --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-19 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CUDA_ARCHITECTURES=75
+    - clang++-20 --version
+    - clang-tidy-20 --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-20 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-20 -DCMAKE_CXX_COMPILER=clang++-20 -DCMAKE_CUDA_ARCHITECTURES=native  # =75  # =80
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["cuda", "clang++"]
 
+# doesn't work yet with Clang 21.1.8
+# culang++-21 cuda-13.0.1 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+#   stage: build
+#   image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+#   allow_failure: false
+#   tags:
+#     - non-shared
+#     - nvidia-gpu
+#     - high-bandwidth
+#   interruptible: true
+#   script:
+#     - nvidia-smi
+#     - apt-get -qq update
+#     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#     - apt-get install --no-install-recommends -y lsb-release software-properties-common
+#     - wget https://apt.llvm.org/llvm.sh
+#     - chmod u+x llvm.sh
+#     - ./llvm.sh 21
+#     - apt-get install --no-install-recommends -y clang-21 clang-tidy-21
+#     - mkdir build && cd build
+#     - clang++-21 --version
+#     - clang-tidy-21 --version
+#     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-21 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-21 -DCMAKE_CXX_COMPILER=clang++-21 -DCMAKE_CUDA_ARCHITECTURES=native  # =75  # =80
+#     - cmake --build . --parallel 2 || cmake --build . --verbose
+#     - ctest -j 2 --output-on-failure
+#   needs: ["cuda", "clang++"]
+
 rocm:
   stage: build
-  image: rocm/dev-ubuntu-24.04  # rocm/dev-ubuntu-22.04
+  image: rocm/dev-ubuntu-24.04
   allow_failure: false
   tags:
     - non-shared
@@ -903,6 +982,7 @@ rocm:
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - /opt/rocm/llvm/bin/clang++ --version
     - cmake --version
     - mkdir build && cd build
     - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
@@ -912,11 +992,95 @@ rocm:
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
     - cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
-#  needs: ["clang++", "g++"]
+  needs: ["clang++"]
+
+rocm-latest:
+  stage: build
+  image: rocm/dev-ubuntu-24.04:latest
+  allow_failure: false
+  only:
+    refs:
+      - master
+  tags:
+    - non-shared
+    - docker
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
+  interruptible: true
+  script:
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - /opt/rocm/bin/hipconfig --full
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - /opt/rocm/llvm/bin/clang++ --version
+    - cmake --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
+    - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
+    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
+  needs: ["clang++", "rocm"]
+
+rocm-6.4.4:
+  stage: build
+  image: rocm/dev-ubuntu-24.04:6.4.4
+  allow_failure: false
+  only:
+    refs:
+      - master
+  tags:
+    - non-shared
+    - docker
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
+  interruptible: true
+  script:
+    - apt-get -qq update
+    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - /opt/rocm/bin/hipconfig --full
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - /opt/rocm/llvm/bin/clang++ --version
+    - cmake --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
+    - time (cmake --build . --parallel 2 || cmake --build . --verbose --parallel 1)
+    - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
+  needs: ["clang++", "rocm"]
 
 circle:
   stage: build
   allow_failure: false
+  tags:
+    - non-shared
+    - x86_64  # for circle executable
+  script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - mkdir -p build_latest ; cd build_latest
+    - wget https://www.circle-lang.org/linux/build_226.tgz --no-verbose
+    - tar -zxvf build_*.tgz
+    - cd ..
+    - ./build_latest/circle --version
+    - mkdir build && cd build
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - cmake --build . --parallel 4 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure
+
+circle-202:
+  stage: build
+  allow_failure: false
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - x86_64  # for circle executable
@@ -932,28 +1096,37 @@ circle:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
     - cmake --build . --parallel 4 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
+  needs: ["circle"]
 
 circle-latest c++20:
   stage: build
-  allow_failure: false
+  image: ubuntu:24.04
+  allow_failure: true
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - x86_64  # for circle executable
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
-    - tar -zxvf build_*.tgz
+    - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
+    - tar -zxvf python-build_*.tgz
+    # - ls
+    # - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
+    # - tar -zxvf build_*.tgz
     - cd ..
     - ls
+    - ldd ./build_latest/circle
     - ./build_latest/circle --version
     - mkdir build && cd build
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-#  needs: ["circle"]
+  needs: ["circle"]
 
 inq:
   stage: test
@@ -968,11 +1141,9 @@ inq:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - git submodule update
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
-    - cd ../..
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
@@ -993,17 +1164,18 @@ inq-debug:
     - non-shared
     - large-memory-space
   interruptible: true
+  only:
+    refs:
+      - master
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - git submodule update
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA  # check that multi repo is mirrored correctly
-    - cd ../..
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --parallel 4 || cmake --build . --parallel 1
@@ -1024,6 +1196,7 @@ inq cuda:
   tags:
     - non-shared
     - nvidia-gpu
+    - arch75
   interruptible: true
   before_script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
@@ -1034,28 +1207,27 @@ inq cuda:
     - __nvcc_device_query
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA
-    - cd ../..
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61  # =75  # =80
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=75  # =75  # =80
+    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 2400
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+    # - ctest -j 4 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure -j 2 --timeout 2400
   timeout: 2 hours 30 minutes
   needs: ["inq", "g++"]  # "cuda", "inq"]
 
 inq rocm:
-  stage: build  # test
+  stage: test
   # image: rocm/dev-ubuntu-22.04
   image: rocm/dev-ubuntu-24.04
   allow_failure: false
@@ -1076,17 +1248,16 @@ inq rocm:
     - cmake --version
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_SHA
-    - cd ../..
     - mkdir build && cd build
     - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -1094,7 +1265,7 @@ inq rocm:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400 || echo "ctest failed, probably due to lack of hardware"
   timeout: 2 hours 30 minutes
-#  needs: ["rocm", "inq"]
+  needs: ["inq", "rocm"]
 
 qmcpack:
   stage: test
@@ -1120,40 +1291,21 @@ qmcpack:
     - ctest -R afqmc     --output-on-failure
   needs: ["g++"]
 
-# github:
-#   stage: basic
-#   image: debian:latest
-#   tags:
-#     - non-shared
-#     - docker
-#   interruptible: true
-#   before_script:
-#     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates  # gnupg cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
-#     - |
-#       (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
-#       && sudo mkdir -p -m 755 /etc/apt/keyrings \
-#       && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-#       && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-#       && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-#       && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-#     - apt update
-#     - apt install gh -y
-#   script:
-#     - gh --version
-# #  needs: ["g++"]
-
-qmcpack cuda-12.3.1:
+qmcpack cuda:
   stage: test
-  image: nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
+  image:
+    name: nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu24.04
   tags:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
   interruptible: true
+  allow_failure: false
   before_script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
   script:
     - nvidia-smi
+    - rsync --version
     - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
     # - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
     - cd qmcpack
@@ -1163,8 +1315,8 @@ qmcpack cuda-12.3.1:
     - cd build
     - nvcc --version
     - __nvcc_device_query
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DQMC_GPU=cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" -DCMAKE_CUDA_ARCHITECTURES=75  # =80
-    - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DQMC_GPU=cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" -DCMAKE_CUDA_ARCHITECTURES=native  # =80
+    - VERBOSE=1 make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
@@ -1206,7 +1358,93 @@ sonar:
     - sonar-scanner/bin/sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}" -Dsonar.token="${SONAR_TOKEN}" -Dsonar.python.version=3.12.3 -Dsonar.cfamily.compile-commands=build/compile_commands.json `#-Dsonar.cfamily.build-wrapper-output=bw-output` -Dsonar.cfamily.gcov.reportsPath="build/"
   needs: ["g++"]
 
+pages-presentation:
+  stage: basic
+  allow_failure: true
+  # only:
+  #   refs:
+  #     - master
+  image: texlive/texlive:latest
+  tags:
+    - non-shared
+    - docker
+  script:
+    - mkdir public
+    - cd talk
+    - pdflatex presentation.tex
+    - cp presentation.pdf ../public/
+  artifacts:
+    paths:
+      - public
+
+# this is a specially named workflow to populates the pages site
 pages:
+  stage: basic
+  allow_failure: true
+  needs:
+    - job: pages-presentation
+      artifacts: true
+  only:
+    refs:
+      - master
+  tags:
+    - non-shared
+    - docker
+    - x86_64  # for MrDocs binary
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make g++ clang cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge 
+    - npm i -q @antora/cli @antora/site-generator
+    - wget https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-0.0.4-Linux.tar.gz  
+    - tar zxvf MrDocs-0.0.4-Linux.tar.gz
+    - export PATH=MrDocs-0.0.4-Linux/bin:$PATH
+    # - antora --version
+    - cd doc
+    - chmod +x antora_docs.sh
+    - ./antora_docs.sh
+    - cd ..
+    - cp -r doc/html .public
+    - cp doc/html/index.html .public/multi.html
+    # - pandoc --version
+    # - asciidoctor --version
+    # - mkdir .public
+    # - cd doc_back
+    # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
+    # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
+    # - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
+    # - cd ..
+    # - cp -r doc_back/multi.html .public
+    # - cp -r doc/multi.adoc .public
+    - python3 -m venv .venv
+    - source .venv/bin/activate
+    - pip install quom
+    - quom --help
+    - cd include
+    - tree -L 4
+    - quom -I. multi.hpp boost-multi.hpp --include_guard BOOST_MULTI_.+_HPP
+    - echo -e "#include \"boost-multi.hpp\"\n int main() {}" > a.cpp
+    - c++ -std=c++17 a.cpp
+    - echo "// Amalgamated header vesion of the Boost.Multi library" >> ../.public/boost-multi.hpp
+    - echo "// Copyright 2018-2026 Alfredo A. Correa" >> ../.public/boost-multi.hpp
+    - echo "// This version was autogenerated on $(date), git hash $(git rev-parse --short HEAD)" >> ../.public/boost-multi.hpp
+    - echo "// and it was downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> ../.public/boost-multi.hpp
+    - echo "" >> ../.public/boost-multi.hpp
+    - echo "// \#pragma message(\"using amalgamanted version of Multi, downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp $(git rev-parse --short HEAD), generated on $(date)\")" >> ../.public/boost-multi.hpp
+    - echo "" >> ../.public/boost-multi.hpp
+    - echo "" >> ../.public/boost-multi.hpp
+    - cat boost-multi.hpp >> ../.public/boost-multi.hpp
+    - cat boost-multi.hpp
+    - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
+    - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
+    - cd ..
+    - mkdir -p public
+    - mv .public/* public/
+    - ls public/
+  artifacts:
+    paths:
+    - public
+  # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+
+pages-single-page:
   stage: basic
   allow_failure: true
   only:
@@ -1216,47 +1454,42 @@ pages:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates asciidoctor pandoc ruby-rouge pip python3-venv
-    - pandoc --version
-    - asciidoctor --version
-    - mkdir .public
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ tree ca-certificates npm asciidoctor sed git pandoc ruby-rouge pip python3-venv
     - cd doc
-    # - pandoc --highlight-style pygments --to html5 -f markdown ../README.md > multi.html
-    # - pandoc --to asciidoc --from markdown ../README.md > multi.adoc
-    - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi.adoc
-    - cd ..
-    - cp -r doc/multi.html .public
+    - asciidoctor --failure-level=WARN -a source-highlighter=rouge -b xhtml5 multi-single-page.adoc
+    # - cd ..
+    # - cp -r doc_back/multi.html .public
     # - cp -r doc/multi.adoc .public
-    - python3 -m venv .venv
-    - source .venv/bin/activate
-    - pip install quom
-    - quom include/boost/multi/array.hpp boost-multi.hpp
-    - cp -r include/boost/multi/array.hpp .public/boost-multi.html
-    - cp -r boost-multi.hpp .public/boost-multi.hpp
-    # - cp -r include/boost/multi/array.hpp .public/boost-multi.hpp
-    - mv .public public
+    # - cd ..
+    # - mv .public public
   artifacts:
     paths:
     - public
-  # check for file here: https://correaa.gitlab.io/multi/multi.html
 
 headers:
   stage: basic
   allow_failure: true
-  #only:
-  #  refs:
-  #    - master
+  only:
+    refs:
+      - master
   tags:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install pip python3-venv
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet pip python3-venv
     - mkdir .public
-    - cp include/boost/multi/array.hpp .public/boost-multi.txt
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
+    - quom --help
+    - quom -S `pwd`/include/ include/boost/multi/array.hpp boost-multi.hpp
+    - echo "// single header vesion of the Boost.Multi library" >> .public/boost-multi.hpp
+    - echo "// download a newer version from https://correaa.gitlab.io/boost-multi/boost-multi.hpp" >> .public/boost-multi.hpp
+    - date | sed 's/^/\/\/\ /' >> .public/boost-multi.hpp
+    - cat boost-multi.hpp >> .public/boost-multi.hpp
+    - cat .public/boost-multi.hpp
     - mv .public public
   artifacts:
     paths:
     - public
+  # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp

@@ -17,6 +17,7 @@ add_subdirectory("../" multi-bin)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
 
 enable_testing()
 include(CTest)
@@ -35,11 +36,34 @@ add_executable(redux.cpp.x redux.cpp)
 target_link_libraries(redux.cpp.x PUBLIC multi)
 target_link_libraries(redux.cpp.x PRIVATE ${Boost_LIBRARIES})
 
+add_executable(lu_solve.cpp.x lu_solve.cpp)
+target_link_libraries(lu_solve.cpp.x PUBLIC multi)
+target_link_libraries(lu_solve.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+# Captured structured bindings are present in the example (AMLALE)
+set(CMAKE_CXX_STANDARD 20)
+
+add_executable(lu_fact.cpp.x lu_fact.cpp)
+target_link_libraries(lu_fact.cpp.x PUBLIC multi)
+target_link_libraries(lu_fact.cpp.x PRIVATE ${Boost_LIBRARIES})
+
+set(CMAKE_CXX_STANDARD 17)
 find_package(TBB)
 
 if(TBB_FOUND)
 	target_link_libraries     (redux.cpp.x PRIVATE TBB::tbb)
 	target_compile_definitions(redux.cpp.x PUBLIC  TBB_FOUND=1)
 endif()
+
+# Boost (header-only for what we use)
+find_package(Boost REQUIRED)
+
+# libpng (required by Boost.GIL PNG backend)
+find_package(PNG REQUIRED)
+
+add_executable(gil_grayscale.cpp.x gil_grayscale.cpp)
+target_link_libraries(gil_grayscale.cpp.x     PRIVATE
+        Boost::boost
+        PNG::PNG)
 
 add_test(NAME redux.cpp.x COMMAND redux.cpp.x)

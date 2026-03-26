@@ -1,9 +1,10 @@
-// Copyright 2023-2025 Alfredo A. Correa
+// Copyright 2023-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
 #define BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP
+// #pragma once
 
 #include <type_traits>
 #include <utility>
@@ -20,4 +21,4 @@ template<class To, class From, std::enable_if_t<std::is_constructible_v<To, From
 constexpr auto explicit_cast(From&& ref) -> To {return static_cast<To>(std::forward<From&&>(ref));}
 
 }  // end namespace boost::multi::detail
-#endif
+#endif  // BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP

@@ -9,15 +9,17 @@
 
 #include <array>    // for array
 #include <numeric>  // for iota
-#if __has_include(<ranges>) && defined(__cplusplus) && (__cplusplus >= 202002L)
+
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #endif
+
 #include <tuple>        // for get // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -29,7 +31,7 @@ template<class X1D, class Y1D>
 auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	auto ret = std::pair{
 		multi::array<typename X1D::element_type, 2>({x.size(), y.size()}),
-		multi::array<typename Y1D::element_type, 2>(std::views::repeat(y, x.size()))
+		multi::array<typename Y1D::element_type, 2>(std::ranges::views::repeat(y, x.size()))
 	};
 
 	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
@@ -108,7 +110,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
 	{
@@ -328,13 +330,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
+
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
 	{
-		auto const x = multi::array{1, 2, 3};
-		auto const y = multi::array{1, 2, 3, 4, 5};
+		auto const x = multi::array<int, 1>{1, 2, 3};
+		auto const y = multi::array<int, 1>{1, 2, 3, 4, 5};
 
 		auto const& [X, Y] = meshgrid(x, y);
 

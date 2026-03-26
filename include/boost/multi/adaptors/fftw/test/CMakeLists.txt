@@ -91,6 +91,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wall
 					-Wextra
 					-Wpedantic
+					# -Wno-exit-time-destructors  # bug in cmake 4, boost,
+					# -Wno-poison-system-directories  # bug in cmake 4, boost,
 					#-fno-common
 					#-Wmove
 					#-Wno-error=\#warnings

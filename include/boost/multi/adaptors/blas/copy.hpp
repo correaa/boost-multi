@@ -1,12 +1,11 @@
-// Copyright 2020-2024 Alfredo A. Correa
+// Copyright 2020-2025 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_COPY_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>  // for copy, default_context_of  // IWYU pragma: export
-// IWYU pragma: no_include "boost/multi/adaptors/blas/core.hpp"  // bug in iwyu 18.1.8?
+#include "boost/multi/adaptors/blas/core.hpp"  // IWYU pragma: keep
 
 #include <cassert>   // for assert
 #include <iterator>  // for iterator_traits, outpu...
@@ -40,7 +39,22 @@ struct copy_it {
 	using iterator_category = std::output_iterator_tag;
 	using iterator_type     = copy_it;
 
+	explicit copy_it(It it) : it_{it} {}
+
+	copy_it() = default;
+
+	copy_it(copy_it const&)     = default;
+	copy_it(copy_it&&) noexcept = default;
+
+	auto operator=(copy_it const&) -> copy_it&     = default;
+	auto operator=(copy_it&&) noexcept -> copy_it& = default;
+
+	~copy_it() = default;
+
 	friend auto operator-(copy_it const& c1, copy_it const& c2) { return c1.it_ - c2.it_; }
+
+	auto operator==(copy_it const& other) const -> bool { return it_ == other.it_; }
+	auto operator!=(copy_it const& other) const -> bool { return it_ != other.it_; }
 
 	template<class It1DOut>
 	friend constexpr auto copy_n(copy_it first, difference_type count, It1DOut result) -> It1DOut {
@@ -58,6 +72,12 @@ struct copy_it {
 		return other.it_ - self.it_;
 	}
 	constexpr auto operator*() const -> value_type { return *it_; }
+
+	constexpr auto operator++() -> copy_it&;  // void {};  // -> copy_it& { assert(0); /*++it_;*/ return *this; }
+	constexpr auto operator--() -> copy_it&;  // void {};  // -> copy_it& { assert(0); /*--it_;*/ return *this; }
+
+	constexpr auto operator++(int) -> copy_it;
+	constexpr auto operator--(int) -> copy_it;
 };
 
 template<class A1D> [[nodiscard]]

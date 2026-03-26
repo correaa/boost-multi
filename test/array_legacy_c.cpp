@@ -70,13 +70,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
-
 	// BOOST_AUTO_TEST_CASE(array_legacy_c_2)
 	{
 		double arr[5] = {150.0, 16.0, 17.0, 18.0, 19.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_TEST( &f2(arr) == &arr[2] );
 	}
-
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

@@ -1,11 +1,12 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP
 #define BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP
+// #pragma once
 
-#include <cstddef>      // for size_t
+// #include <cstddef>      // for size_t
 #include <tuple>        // for deprecated functions  // for make_index_sequence, index_sequence, tuple_element, tuple_size, apply, tuple
 #include <type_traits>  // for declval, decay_t, conditional_t, true_type
 #include <utility>      // for forward, move
@@ -15,6 +16,26 @@
 #else
 #define BOOST_MULTI_HD
 #endif
+
+#ifdef __NVCC__
+#define BOOST_MULTI_DEV __device__
+#else
+#define BOOST_MULTI_DEV
+#endif
+
+// namespace boost::multi 
+// {}
+// #ifdef __NVCC__
+// template<class F>
+// struct device {
+// 	F f_;
+// 	template<class... Ts> __device__ auto operator()(Ts&& ... ts) const {
+// 		return f_(std::forward<Ts>(ts)...);
+// 	}
+// }
+// #else
+// #define BOOST_MULTI_DEV
+// #endif
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -140,12 +161,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<class F, std::size_t... I>
-	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_DEV constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
 	template<class F, std::size_t... I>
-	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	BOOST_MULTI_HD  // BOOST_MULTI_DEV
+	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(std::move(*this).template get<I>()...);
 	}
 
@@ -211,19 +233,15 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 
-#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#ifdef __NVCC__
 	#pragma nv_diagnostic push
-	#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifdef __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
+	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#elif defined(__NVCOMPILER)
+	#pragma diagnostic push
+	#pragma diag_suppress = implicit_return_from_non_void_function
+#elif (defined(__GNUC__) && !defined(__EDG__))
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 	template<std::size_t N>
@@ -249,9 +267,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
 #pragma diagnostic pop
-#endif
-
-#ifndef _MSC_VER
+#elif (defined(__GNUC__) && !defined(__EDG__))
 #pragma GCC diagnostic pop
 #endif
 
@@ -342,19 +358,15 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>&& t) -> decltype(std::move(t
 template<class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
-#ifdef __NVCC__  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#ifdef __NVCC__
 	#pragma nv_diagnostic push
-	#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifdef __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-type"
+	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#elif defined(__NVCOMPILER)
+	#pragma diagnostic push
+	#pragma diag_suppress = implicit_return_from_non_void_function
+#elif defined(__GNUC__) && !defined(__EDG__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 template<std::size_t N, class T0, class... Ts>
@@ -386,13 +398,11 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 }
 
 #ifdef __NVCC__
-#pragma nv_diagnostic pop
+	#pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)
-#pragma diagnostic pop
-#endif
-
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
+	#pragma diagnostic pop
+#elif defined(__GNUC__) && !defined(__EDG__)
+	#pragma GCC diagnostic pop
 #endif
 
 }  // end namespace detail
@@ -406,7 +416,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
 #endif
 
 template<class... Ts>
-struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	// // cppcheck-suppress unusedStructMember
 	// static constexpr std::size_t value = sizeof...(Ts);
 };
@@ -417,17 +427,17 @@ struct std::tuple_element<0, boost::multi::detail::tuple<>> {  // NOLINT(cert-dc
 };
 
 template<class T0>
-struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<0, boost::multi::detail::tuple<T0>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = T0;
 };
 
 template<class T0, class... Ts>
-struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<0, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = T0;
 };
 
 template<std::size_t N, class T0, class... Ts>
-struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp) to have structured bindings
+struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
 	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
@@ -437,10 +447,10 @@ BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_seq
 	return std::forward<F>(fn)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
 
-namespace std {  // NOLINT(cert-dcl58-cpp) to implement structured bindings
+namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured bindings
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -448,7 +458,7 @@ BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...> c
 }
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
 		std::forward<F>(fn), tp,
 		std::make_index_sequence<sizeof...(Ts)>{}
@@ -456,8 +466,8 @@ BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>& 
 }
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
-	return std_apply_timpl(
+BOOST_MULTI_HD constexpr auto apply(F&& fn, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std_apply_timpl(	
 		std::forward<F>(fn), std::move(tp),
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
@@ -562,4 +572,4 @@ using detail::tie;
 
 #undef BOOST_MULTI_HD
 
-#endif
+#endif  // BOOST_MULTI_DETAIL_TUPLE_ZIP_HPP

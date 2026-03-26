@@ -16,9 +16,7 @@
 #include<limits>       // numeric_limits
 #include<type_traits>  // is_convertible
 
-// #include "../../config/MARK.hpp"
-
-#include <boost/multi/adaptors/blas/traits.hpp>  // IWYU pragma: export
+#include "boost/multi/adaptors/blas/traits.hpp"  // IWYU pragma: export
 
 #ifdef __PRETTY_FUNCTION__
 #define BOOST_MULTI_BLAS_PRETTY_FUNCTION __PRETTY_FUNCTION__
@@ -312,21 +310,21 @@ template<class SSize, class XP, class X = typename std::pointer_traits<XP>::elem
 		std::array<std::complex<float>, 3> const v2 = {std::complex<float>{7.0F, 8.0F}, std::complex<float>{9.0F, 10.0F}, std::complex<float>{11.0F, 12.0F}};
 		Complex_float rr{-1.0F, -2.0F};
 		BLAS(cdotu)(&rr, 3, v1.data(), 1, v2.data(), 1);
-		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error("[real] cdotu should be configured as non-void returing"); }
-		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8 ) { throw std::logic_error("[imag] cdotu should be configured as non-void returing"); }
+		if( std::abs(rr.real - std::real(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8F ) { throw std::logic_error("[real] cdotu should be configured as non-void returing"); }
+		if( std::abs(rr.imag - std::imag(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])) > 1.0e-8F ) { throw std::logic_error("[imag] cdotu should be configured as non-void returing"); }
 		return true;
-	}();
+	}();  // cppcheck-suppress knownConditionTrueFalse
 	// BLAS(cdotu)(reinterpret_cast<Complex_float *>(rp), n, reinterpret_cast<c const*>(static_cast<X*>(xp)), incx, reinterpret_cast<c const*>(static_cast<Y*>(yp)), incy);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	BLAS(cgemv)('N', 1, static_cast<ssize_t>(n), std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(xp)), static_cast<ssize_t>(incx), reinterpret_cast<c const*>(static_cast<Y*>(yp)), static_cast<ssize_t>(incy), std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument,cppcoreguidelines-pro-type-reinterpret-cast)
 }                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
-template<class SSize, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{}+X{}*Y{}))>{}, int> =0> void dotu(SSize n, XP xp, SSize incx, YP yp, SSize incy, RP rp) {                BLAS(zdotu)(reinterpret_cast<Complex_double*>(rp), static_cast<ssize_t>(n), reinterpret_cast<z const*>(static_cast<X*>(xp)), static_cast<ssize_t>(incx), reinterpret_cast<z const*>(static_cast<Y*>(yp)), static_cast<ssize_t>(incy));}                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
+template<class SSize, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(0.0 +((X{}*Y{})+(X{}*Y{})))>{}, int> =0> void dotu(SSize n, XP xp, SSize incx, YP yp, SSize incy, RP rp) {                BLAS(zdotu)(reinterpret_cast<Complex_double*>(rp), static_cast<ssize_t>(n), reinterpret_cast<z const*>(static_cast<X*>(xp)), static_cast<ssize_t>(incx), reinterpret_cast<z const*>(static_cast<Y*>(yp)), static_cast<ssize_t>(incy));}                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
 
-template<class SSize, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(0.0F+(X{}*Y{}+X{}*Y{}))>{}, int> =0> void dotc(SSize n, XP xp, SSize incx, YP yp, SSize incy, RP rp) {
+template<class SSize, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} && is_c<Y>{} && is_assignable<R&, decltype(0.0F+((X{}*Y{})+(X{}*Y{})))>{}, int> =0> void dotc(SSize n, XP xp, SSize incx, YP yp, SSize incy, RP rp) {
 	// std::clog << "using cdotc void\n";
 	BLAS(cdotc)(reinterpret_cast<Complex_float *>(rp), static_cast<ssize_t>(n), reinterpret_cast<c const*>(static_cast<X*>(xp)), static_cast<ssize_t>(incx), reinterpret_cast<c const*>(static_cast<Y*>(yp)), static_cast<ssize_t>(incy));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	// BLAS(cgemv)('C', n, 1, std::complex<float>{1.0F, 0.0F}, reinterpret_cast<c const*>(static_cast<X*>(xp)), incx, reinterpret_cast<c const*>(static_cast<Y*>(yp)), incy, std::complex<float>{0.0F, 0.0F}, reinterpret_cast<c*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument)
 }                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{}+X{}*Y{}))>{}, int> =0> void dotc(ssize_t n, XP xp, ptrdiff_t incx, YP yp, ptrdiff_t incy, RP rp) {                BLAS(zdotc)(reinterpret_cast<Complex_double*>(rp), n, reinterpret_cast<z const*>(static_cast<X*>(xp)), incx, reinterpret_cast<z const*>(static_cast<Y*>(yp)), incy);}                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} && is_z<Y>{} && is_assignable<R&, decltype(0.0 +((X{}*Y{})+(X{}*Y{})))>{}, int> =0> void dotc(ssize_t n, XP xp, ptrdiff_t incx, YP yp, ptrdiff_t incy, RP rp) {                BLAS(zdotc)(reinterpret_cast<Complex_double*>(rp), n, reinterpret_cast<z const*>(static_cast<X*>(xp)), incx, reinterpret_cast<z const*>(static_cast<Y*>(yp)), incy);}                                                                                                                          // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,google-readability-casting) : adapt types
 #else
 // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 // TODO(correaa) implement workaround for bug in Apple Accelerate BLAS ? https://stackoverflow.com/a/77017238/225186
@@ -534,7 +532,8 @@ v gemm(char transA, char transB, SSize m, SSize n, SSize k, ALPHA const* alpha, 
 	BOOST_MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
 \
 	if(!( ldc >= max(SSize{1}, m) )) { throw std::logic_error("failed 'ldc >= max(1, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m)); }                                                                               \
-	if(*beta != 0.0) { BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype((std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>()) + (std::declval<BETA>()*std::declval<CC>()))> {})); }                                                          \
+	using std::norm; \
+	if(norm(*beta) > norm(static_cast<BETA>(0.0))) { BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype((std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>()) + (std::declval<BETA>()*std::declval<CC>()))> {})); }                                                          \
 	BLAS(T##gemm)(transA, transB, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), static_cast<ssize_t>(BC(k)), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T const*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)), *reinterpret_cast<T const*>(beta), reinterpret_cast<T*>(static_cast<CC*>(cc)) /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/ /*TODO(correaa) check constness*/, static_cast<ssize_t>(BC(ldc))); \
 }                                                                                                                                                                                                                        \
 

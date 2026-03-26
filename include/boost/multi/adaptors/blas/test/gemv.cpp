@@ -1,4 +1,4 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,6 +8,8 @@
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
+#include <boost/multi/elementwise.hpp>         // for operations
+#include <boost/multi/restriction.hpp>         // for restriction
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -16,7 +18,6 @@
 #include <complex>    // for complex, operator*
 // #include <cstdlib>    // IWYU pragma: keep
 // IWYU pragma: no_include <cstdlib>  // for abs
-#include <iostream>  // for char_traits, basic_ost...	
 #include <iterator>  // for size, begin
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for inner_product
@@ -61,7 +62,6 @@ void gemv_broadcast() {
 		multi::array<double, 1> sum_by_rows({2}, 0.0);
 		blas::gemv_n(1.0, a.begin(), 2, ones.begin(), 0.0, sum_by_rows.begin());
 
-		std::cout << sum_by_rows[0] << " " << sum_by_rows[1] << "\n";
 		BOOST_TEST( std::abs( sum_by_rows[0] - (1.0 + 2.0 + 3.0)) < 1.0e-8 );
 		BOOST_TEST( std::abs( sum_by_rows[1] - (4.0 + 5.0 + 6.0)) < 1.0e-8 );
 	}
@@ -183,7 +183,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::array<T, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
 			MV(a, x, w2);
-			BOOST_TEST_LT(std::abs(w2[0] - y[0]), 0.0001);
+			BOOST_TEST( std::abs(w2[0] - y[0]) < 0.0001F );
 		}
 		{
 			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
@@ -454,7 +454,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		auto const B = [](auto array) {
-			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp) test purposes
+			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp,bugprone-random-generator-seed) test purposes
 			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
 				return complex{gauss(gen), gauss(gen)};
 			};
@@ -532,6 +532,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	gemv_broadcast();
+
+#ifndef __NVCC__
+	{
+		multi::array<double, 2> const arr = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
+		multi::array<double, 1> const vec = {1.0, 2.0};
+
+		multi::array<double, 1> vec2 = {0.0, 0.0};
+
+		vec2 = multi::blas::gemv(5.0, arr, vec);
+
+		BOOST_TEST( vec2[1] - 55.0 < 1e-7 );
+
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
+		using multi::blas::gemv;
+		using multi::elementwise::exp;
+		using multi::elementwise::log;
+
+		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
+
+		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
+	}
+#endif
 
 	return boost::report_errors();
 }

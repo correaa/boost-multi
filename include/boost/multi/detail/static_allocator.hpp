@@ -1,12 +1,13 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
 #define BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
+// #pragma once
 
-#include <boost/multi/detail/config/NODISCARD.hpp>
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+#include "boost/multi/detail/config/NODISCARD.hpp"
+#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 
 #include <array>
 #include <cassert>
@@ -116,7 +117,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #pragma warning( pop ) 
 #endif
 
-	void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
+	static void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
 		assert(n <= N);
 	}
 

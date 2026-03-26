@@ -1,0 +1,43 @@
+# MrDocs configuration for Boost.Multi
+# https://github.com/cppalliance/mrdocs
+#
+# Note: adding multiple input files triggers a crash in MrDocs 0.0.4.
+# array.hpp transitively includes array_ref.hpp, restriction.hpp, and utility.hpp,
+# which covers the core API. elementwise.hpp and io.hpp can be added once
+# https://github.com/cppalliance/mrdocs/issues is resolved.
+
+source-root: include/
+
+compilation-database: build-mrdocs/compile_commands.json
+
+input:
+  - include/boost/multi/array.hpp
+  - include/boost/multi/array_ref.hpp
+
+output: doc/modules/reference/pages
+
+generator: adoc
+
+multipage: true
+
+extract-private: false
+
+# inherit-base-members not supported in MrDocs 0.0.4
+# inherit-base-members: derived
+
+base-url: https://gitlab.com/correaa/boost-multi/-/blob/master/include/
+
+include-symbols:
+  - "boost::multi"
+exclude-symbols:
+  - "boost::multi::detail"
+  - "boost::multi::array<T, 0"
+  - "boost::multi::array_iterator"
+  - "boost::multi::array_ptr<T, 0"
+  - "boost::multi::array_traits"
+  - "boost::multi::array_types"
+  - "boost::multi::const_subarra<T"
+
+warn-no-paramdoc: false
+
+verbose: false

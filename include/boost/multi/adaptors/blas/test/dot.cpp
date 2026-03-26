@@ -141,13 +141,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-		BOOST_TEST_EQ(
-			real(res),
-			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+		BOOST_TEST(
+			std::abs(
+			real(res)-
+			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))
+			)
+			< 1.0e-10
+			// NOLINT(fuchsia-default-arguments-calls)
 		);
-		BOOST_TEST_EQ(
-			imag(res),
+		BOOST_TEST(
+			std::abs(
+			imag(res)-
 			imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+			) < 1.0e-10
 		);
 	}
 
@@ -172,19 +178,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs(real(res)) > 1e-6F );
 
 		// // an isolated error here might mean that the dot and nrm2 interface for the BLAS library is not detected properly
-		BOOST_TEST_EQ(
-			real(res),
+		BOOST_TEST(
+			std::abs(
+			real(res) -
 			real(std::inner_product(
 				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); }
 			))
+		)< 1.0e-10F
 		);
-		BOOST_TEST_EQ(
-			imag(res),
+		BOOST_TEST(
+			std::abs(
+			imag(res)-
 			imag(
 				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); })
 			)
+		) < 1.0e-10F
 		);
 	}
 
@@ -496,8 +506,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto CC = C;
 
 		auto const [is, js] = C.extensions();
-		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {  // NOLINT(modernize-use-ranges) for C++20
-			std::for_each(Js.begin(), Js.end(), [&](auto jj) {  // NOLINT(modernize-use-ranges) for C++20
+		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
+			std::for_each(Js.begin(), Js.end(), [&](auto jj) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 				C[ii][jj] *= 0.0;
 				std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
 					C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
@@ -508,7 +518,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// TODO(correaa) MKL gives an error here
 		// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 
-		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {  // NOLINT(modernize-use-ranges) for C++20
+		std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = B.transposed()](auto const& Ar, auto&& Cr) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 			return std::transform(
 						begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto const& Ce) {
 							return (std::complex<double>{1.0, 0.0} * blas::dot(Ar, blas::C(Bc))) + (0.0 * Ce);

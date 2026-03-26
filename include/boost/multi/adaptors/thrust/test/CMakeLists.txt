@@ -30,10 +30,13 @@ endif()
 
 set(TEST_SRCS
 	array.cu
+	broadcast_softmax.cu
 	by_key.cu
+	device_function.cu
 	diffusion3d_kernel.cu
 	memory_resource.cu
 	neighbor_list.cu
+	restriction.cu
 	run_reduce.cu
 	set_identity_kernel.cu
 	speed.cu
@@ -47,7 +50,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
+		# set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)
 	endif()
 
 	target_include_directories(${TEST_EXE}        PUBLIC ../../../../../include)

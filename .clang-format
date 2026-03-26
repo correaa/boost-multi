@@ -42,13 +42,15 @@ IncludeCategories:
     Priority: 3
   - Regex: '"([A-Za-z0-9.\Q/-_\E])+"'
     Priority: 2
-IndentPPDirectives: None
+#IndentPPDirectives: Leave
+#IndentPPDirectives: None
 IndentWidth: 4
 # LambdaBodyIndentation: Signature
 # OneLineFormatOffRegex: ^(\#ifdef|\#endif)  # for clang-format version 21
 # PackConstructorInitializers: CurrentLine
 PenaltyBreakTemplateDeclaration: 10
 PointerAlignment: Left
+ReferenceAlignment: Left
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Custom

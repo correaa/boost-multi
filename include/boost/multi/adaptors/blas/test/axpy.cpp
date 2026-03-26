@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -63,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::axpy(2.0, b, arr[1]);  // daxpy
-		BOOST_TEST( std::abs( arr[1][2] - (2.0*b[2] + AC[1][2]) ) < 1e-10 );
+		BOOST_TEST( std::abs( arr[1][2] - ((2.0*b[2]) + AC[1][2]) ) < 1e-10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(blas_axpy_repeat)
@@ -107,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const b{const_arr[2]};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 		blas::axpy(2.0, b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
-		BOOST_TEST( std::abs( arr[1][2] - (2.0*b[2] + const_arr[1][2])) < 1e-10 );
+		BOOST_TEST( std::abs( arr[1][2] - ((2.0*b[2]) + const_arr[1][2])) < 1e-10 );
 
 		auto const I = complex{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 
@@ -242,6 +242,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	zero_stride();
+
+	{
+		using blas::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
+	}
 
 	return boost::report_errors();
 }

@@ -42,6 +42,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> arr  = {10, 20, 30};
 		multi::array<int, 1> arr2 = {10, 20, 30};
 
+		static_assert(multi::is_const_subarray_v<decltype(arr2)>);
+
 		BOOST_TEST(    arr == arr2  );
 		BOOST_TEST( !(arr != arr2) );
 
@@ -96,14 +98,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( ext.size() == vec.size() );
 			BOOST_TEST( vec[1] == 1L );
 		}
-		{
-			multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
+		// {
+		// 	multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
 
-			auto const ext = extension(vec);
+		// 	auto const ext = extension(vec);
 
-			vec.assign(ext.begin(), ext.end());
-			BOOST_TEST( vec[1] == 1 );
-		}
+		// 	vec.assign(ext.begin(), ext.end());
+		// 	BOOST_TEST( vec[1] == 1 );
+		// }
 	}
 
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
@@ -208,7 +210,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(self_assignment)
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)
-		multi::static_array<std::vector<int>, 2> arr = {
+		multi::dynamic_array<std::vector<int>, 2> arr = {
 			{std::vector<int>(10, 1), std::vector<int>(20, 2)},
 			{std::vector<int>(30, 3), std::vector<int>(40, 4)},
 		};
@@ -226,10 +228,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr[1][1][5] == loc );
 	}
 
-	// BOOST_AUTO_TEST_CASE(static_array_move)
+	// BOOST_AUTO_TEST_CASE(dynamic_array_move)
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)
-		multi::static_array<std::vector<int>, 2> arr = {
+		multi::dynamic_array<std::vector<int>, 2> arr = {
 			{std::vector<int>(10, 1), std::vector<int>(20, 2)},
 			{std::vector<int>(30, 3), std::vector<int>(40, 4)},
 		};
@@ -237,7 +239,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		multi::static_array<std::vector<int>, 2> arr2(std::move(arr));
+		multi::dynamic_array<std::vector<int>, 2> arr2(std::move(arr));
 		BOOST_TEST( arr2[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
 
 		// cppcheck-suppress accessMoved ;

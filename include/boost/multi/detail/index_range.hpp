@@ -1,16 +1,17 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
 #define BOOST_MULTI_DETAIL_INDEX_RANGE_HPP
+// #pragma once
 
-#include <boost/multi/detail/implicit_cast.hpp>
-#include <boost/multi/detail/serialization.hpp>
-#include <boost/multi/detail/tuple_zip.hpp>
-#include <boost/multi/detail/types.hpp>
+#include "boost/multi/detail/implicit_cast.hpp"
+#include "boost/multi/detail/serialization.hpp"
+#include "boost/multi/detail/tuple_zip.hpp"
+#include "boost/multi/detail/types.hpp"
 
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 
 #include <algorithm>    // for min, max
 #include <cassert>
@@ -87,7 +88,7 @@ class range {
 	#endif
 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS
-	IndexType     first_ = {};
+	IndexType first_;  //  = {};
 
 	#ifdef _MSC_VER
 	#pragma warning(pop)
@@ -98,7 +99,7 @@ class range {
 	#pragma clang diagnostic ignored "-Wpadded"
 	#endif
 
-	IndexTypeLast last_ = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_;  // = first_;  // TODO(correaa) check how to do partially initialzed
 
 	#ifdef __clang__
 	#pragma clang diagnostic pop
@@ -107,13 +108,18 @@ class range {
  public:
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
-		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+		arxiv
+			& multi::archive_traits<Archive>::make_nvp("first", first_)
+			& multi::archive_traits<Archive>::make_nvp("last", last_)
+		;
+
+		// arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
 		// arxiv &               BOOST_SERIALIZATION_NVP(         first_);
 		// arxiv &                     cereal:: make_nvp("first", first_);
 		// arxiv &                            CEREAL_NVP(         first_);
 		// arxiv &                                                first_ ;
 
-		arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
+		// arxiv & multi::archive_traits<Archive>::make_nvp("last", last_);
 		// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
 		// arxiv &                        cereal:: make_nvp("last" , last_ );
 		// arxiv &                               CEREAL_NVP(         last_ );
@@ -128,7 +134,7 @@ class range {
 	using const_pointer   = value_type;
 	using pointer         = value_type;
 
-	range() = default;
+	range() = default;  // cppcheck-suppress uninitMemberVar ;
 
 	// range(range const&) = default;
 
@@ -178,7 +184,7 @@ class range {
 			++curr_;
 			return *this;
 		}
-		constexpr auto operator--() -> const_iterator& {
+		constexpr auto operator--() noexcept(noexcept(--curr_)) -> const_iterator& {
 			--curr_;
 			return *this;
 		}
@@ -211,10 +217,14 @@ class range {
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto first() const { return first_; }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto last() const { return last_; }
 
-	constexpr auto operator[](difference_type n) const -> const_reference { return first() + n; }
+	constexpr auto operator[](difference_type n) const -> const_reference {
+		assert(n >= 0);
+		assert(n < size());
+		return first() + n;
+	}
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> const_reference { return first(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> const_reference { return last() - 1; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto front() const -> value_type { return first(); }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto back() const -> value_type { return last() - 1; }  // cppcheck-suppress functionStatic ;  // bug in cppcheck 2.19.0
 
 	[[nodiscard]] constexpr auto cbegin() const { return const_iterator{first_}; }
 	[[nodiscard]] constexpr auto cend() const { return const_iterator{last_}; }
@@ -226,10 +236,8 @@ class range {
 	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
 
 	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
-	friend BOOST_MULTI_HD constexpr auto is_empty(range const& self) noexcept { return self.is_empty(); }
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto empty() const& noexcept { return is_empty(); }
-	friend BOOST_MULTI_HD constexpr auto        empty(range const& self) noexcept { return self.empty(); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic push
@@ -241,11 +249,6 @@ class range {
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
-
-	friend BOOST_MULTI_HD constexpr auto size(range const& self) noexcept -> size_type { return self.size(); }
-
-	friend constexpr auto begin(range const& self) { return self.begin(); }
-	friend constexpr auto end(range const& self) { return self.end(); }
 
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
@@ -287,10 +290,10 @@ class intersecting_range {
 	range<IndexType> impl_;
 	
 	constexpr intersecting_range() noexcept :  // MSVC 19.07 needs constexpr to initialize ALL later
-		impl_{
-			(std::numeric_limits<IndexType>::min)(),  // parent needed for MSVC min/max macros
-			(std::numeric_limits<IndexType>::max)()
-		}
+		impl_(
+			(std::numeric_limits<IndexType>::min)(),  // NOLINT(readability-redundant-parentheses) for MSVC min macros
+			(std::numeric_limits<IndexType>::max)()   // NOLINT(readability-redundant-parentheses) for MSVC max macros
+		)
 	{}
 
 	static constexpr auto make_(IndexType first, IndexType last) -> intersecting_range {
@@ -364,6 +367,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	// >
 	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
 	// : extension_t{other.first(), other.last()} {}
+	using index = IndexTypeLast;
 
 	template<class OtherExtension>
 	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
@@ -371,7 +375,8 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	constexpr extension_t() = default;
 
 	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 

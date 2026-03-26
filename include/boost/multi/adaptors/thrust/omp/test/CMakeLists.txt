@@ -20,11 +20,11 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "NVHPC")
 endif()
 
 if(DISABLE_THRUST_OMP)
-    message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
+    message(WARNING "OMP disabled, OMP-through-Thrust capabilities will not be tested")
 else()
     if(OpenMP_FOUND)
-
         find_package(Thrust CONFIG)
+
         if(NOT Thrust_FOUND)
             message(WARNING "Cannot find Thurst in the system, fetching from CCCL")
 
@@ -41,11 +41,10 @@ else()
             FetchContent_Declare(
                 cccl-cmake
                 GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-                GIT_TAG main
+                GIT_TAG main  # v3.1.0
                 GIT_SHALLOW ON
             )
             FetchContent_MakeAvailable(cccl-cmake)
-            
         endif()
 
         include(CTest)
@@ -55,9 +54,9 @@ else()
 
         add_executable(omp.cpp.x omp.cpp)
 
-        target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
-        target_link_libraries(omp.cpp.x PUBLIC ThrustOMP)
-        target_link_libraries(omp.cpp.x PUBLIC multi Boost::boost OpenMP::OpenMP_CXX)
+        target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})  # needs this to include thrust as an -isystem header
+        target_link_libraries(omp.cpp.x PRIVATE ThrustOMP)  # SYSTEM has no effect here
+        target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost)
 
         add_test(NAME omp.cpp.x COMMAND $<TARGET_FILE:omp.cpp.x>)
     else()

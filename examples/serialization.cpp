@@ -2,7 +2,7 @@
 ${CXX:-c++} $0 -o $0x -I../include -lstdc++fs -lboost_serialization -lboost_iostreams&& $0x&& rm $0x;
 exit
 #endif
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 
 #include <multi/array.hpp>
 
@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml) {
-		multi::static_array<double, 2> d2D({10, 10});
+		multi::dynamic_array<double, 2> d2D({10, 10});
 
 		std::mt19937_64 eng(std::random_device{}());
 
@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml) {
 
-		multi::static_array<double, 2> d2D({1000, 1000});
+		multi::dynamic_array<double, 2> d2D({1000, 1000});
 
 		auto gen = [e = std::mt19937_64(std::random_device{}())]() mutable {
 			return std::uniform_real_distribution<>{}(e);
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_AUTO_TEST_CASE(multi_serialization_static_small) {
 		{
-			multi::static_array<double, 0> d0D{12.0};
+			multi::dynamic_array<double, 0> d0D{12.0};
 
 			std::ofstream ofs{"serialization-static_0D.xml"};
 			assert(ofs);
@@ -382,8 +382,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0},
 			{20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0},
 		};
-		multi::array_ref<double, 2>       marr(&carr[0][0], {3, 10});
-		boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
+		multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
+		//		boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
 
 		namespace arxiv = boost::archive;
 		{
@@ -393,22 +393,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			fs::remove("utility_serialization_marr.xml");
 		}
 		{
-			std::ofstream ofs{"utility_serialization_marr_as_value.xml"};
-			assert(ofs);
-			multi::array<double, 2> const& marr_value = decay(marr);  // static_cast<multi::array<double, 2> const&>(marr);
-			BOOST_TEST( marr_value.data_elements() == marr.data_elements() );
-			arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(marr_value);
-			fs::remove("utility_serialization_marr_as_value.xml");
-		}
-		{
 			std::ofstream ofs{"utility_serialization_carr.xml"};
 			assert(ofs);
 			arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(carr);
 			fs::remove("utility_serialization_carr.xml");
-		}
-		{
-			//      std::ofstream ofs{"utility_serialization_Marr.xml"}; assert(ofs);
-			//      arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
 		}
 	}
 

@@ -1,13 +1,13 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_AXPY_HPP
 
-#include <boost/multi/adaptors/blas/core.hpp>
+#include "boost/multi/adaptors/blas/core.hpp"
 
-#include <boost/multi/array_ref.hpp>
+#include "boost/multi/array_ref.hpp"
 
 #include <cassert>                            // for assert
 #include <complex>                             // for complex
@@ -170,10 +170,26 @@ template<class X,
 	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
 
-template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
-template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {  // NOLINT(readability-identifier-length) conventional name in BLAS
+	auto X = x.decay();  // NOLINT(readability-identifier-length) conventional name in BLAS
+	X += y;
+	return X;
+}
+
+template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {  // NOLINT(readability-identifier-length) conventional name in BLAS
+	auto X = x.decay();  // NOLINT(readability-identifier-length) conventional name in BLAS
+	X -= y;
+	return X;
+}
 
 } // end namespace operators
+
+using operators::operator+;
+using operators::operator-;
+
+using operators::operator+=;
+using operators::operator-=;
+
 
 } // end namespace boost::multi::blas
 

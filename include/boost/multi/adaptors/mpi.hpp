@@ -1,12 +1,13 @@
-// Copyright 2024-2025 Alfredo A. Correa
+// Copyright 2024-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 10.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MULTI_ADAPTORS_MPI_HPP_
-#define BOOST_MULTI_ADAPTORS_MPI_HPP_
-#include <type_traits>
+#ifndef BOOST_MULTI_ADAPTORS_MPI_HPP
+#define BOOST_MULTI_ADAPTORS_MPI_HPP
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
+
+#include <type_traits>
 
 #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
@@ -366,4 +367,4 @@ template<class ArrayElements> message(ArrayElements const&) -> message<>;
 
 }  // namespace boost::multi::mpi
 
-#endif
+#endif  // BOOST_MULTI_ADAPTORS_MPI_HPP

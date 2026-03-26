@@ -1,13 +1,15 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_UTILITY_HPP
 #define BOOST_MULTI_UTILITY_HPP
+// #pragma once
 
-#include <boost/multi/detail/implicit_cast.hpp>  // IWYU pragma: export
-#include <boost/multi/detail/layout.hpp>
+#include "boost/multi/detail/implicit_cast.hpp"  // IWYU pragma: export
+#include "boost/multi/detail/layout.hpp"
 
+#include <cassert>
 #include <functional>   // for std::invoke
 #include <iterator>     // for std::size (in c++17)
 #include <memory>       // for allocator<>
@@ -126,8 +128,21 @@ struct transform_ptr {
 #if defined(__GNUC__) && (__GNUC__ < 9)
 	constexpr explicit transform_ptr(std::nullptr_t nil) : p_{nil} /*, f_{}*/ {}  // seems to be necessary for gcc 7
 #endif
+#if !defined(_MSC_VER) && (defined(__NVCC__) || defined(__NVCOMPILER))              // TODO(correaa) maybe needs to skip this for MSVC
+	constexpr transform_ptr() : p_{}, f_{reinterpret_cast<UF&>(p_)} { assert(0); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) should never be called, this is to fulfil a concept
+#else
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 5046)  // 'boost::multi::transform_ptr<std::complex<double>,UF,Ptr,const std::complex<double>>::transform_ptr': Symbol involving type with internal linkage not defined
+#endif
+	constexpr transform_ptr();  // : p_{}, f_{} {}
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+#endif
 
-	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
+	template<class UFF>
+	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
@@ -179,6 +194,19 @@ struct transform_ptr {
 
 	constexpr auto operator<(transform_ptr const& other) const -> bool { return p_ < other.p_; }
 
+	transform_ptr(transform_ptr const&)         = default;
+	transform_ptr(transform_ptr&&) /*noexcept*/ = default;
+
+	~transform_ptr() = default;
+
+	auto operator=(transform_ptr&&) -> transform_ptr& = default;
+
+	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
+		// assert(f_ == other.f_);
+		p_ = other.p_;
+		return *this;
+	}
+
  private:
 	Ptr p_;
 
@@ -210,6 +238,61 @@ struct array_traits {
 	using element_ptr            = typename Array::element_ptr;
 	using decay_type             = typename Array::decay_type;
 	using default_allocator_type = typename Array::default_allocator_type;
+};
+
+template<class Fun>
+class value_wrapper_ptr;
+
+template<class Fun>
+class value_wrapper : Fun {
+ public:
+	using Fun::operator();
+
+	// constexpr value_wrapper() : f_(f_) {}  // this is an optional hack to ensure default constructibility
+	constexpr explicit value_wrapper(Fun const& fun) : Fun(fun) {}
+
+	value_wrapper(value_wrapper const&) = default;
+	value_wrapper(value_wrapper&&)      = default;
+
+	auto operator=(value_wrapper const&) -> value_wrapper& = delete;
+	auto operator=(value_wrapper&&) -> value_wrapper&      = delete;
+
+	~value_wrapper() = default;
+
+	template<class... As>
+	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
+		-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
+		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+	}
+
+	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
+
+	//	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return f_; }
+};
+
+template<class F>
+constexpr auto val(F const& fun) { return value_wrapper<F>(fun); }
+
+template<class Fun>
+class value_wrapper_ptr : Fun {
+	// Fun f_;
+	explicit BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : Fun(fun) {}
+
+	template<class> friend class value_wrapper;
+
+ public:
+	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
+	value_wrapper_ptr() : Fun(static_cast<Fun const&>(*this)) {}  // workaround for non-default constructible
+
+	value_wrapper_ptr(value_wrapper_ptr const&) = default;
+	value_wrapper_ptr(value_wrapper_ptr&&)      = default;
+
+	auto operator=(value_wrapper_ptr const&) -> value_wrapper_ptr& = default;
+	auto operator=(value_wrapper_ptr&&) -> value_wrapper_ptr&      = default;
+
+	~value_wrapper_ptr() = default;
+
+	BOOST_MULTI_HD constexpr auto operator*() const -> Fun const& { return static_cast<Fun const&>(*this); }
 };
 
 template<class T, typename = typename T::rank>
@@ -642,12 +725,177 @@ constexpr auto layout(std::array<T, N> const& arr) {
 #endif
 
 namespace detail {
+template<class T> struct element_t_impl {};
+
+template<class T> auto element_t_aux(T) -> T;
+template<class T> auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
+
+template<class T> struct element_t_impl<std::initializer_list<T>> {
+	using type = T;
+};
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<T>>> {
+	using type = T;
+};
+template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
+	using type = T;
+};
+}  // namespace detail
+
+template<class T> using element_t = typename detail::element_t_impl<T>::type;
+
+template<class T>
+auto base(std::initializer_list<T> const& il) -> T const* {
+	if(il.size() == 0) {
+		return nullptr;
+	}
+	return il.begin();
+}
+
+template<class T>
+auto base(std::initializer_list<std::initializer_list<T>> const& il) -> T const* {
+	if(il.size() == 0) {
+		return nullptr;
+	}
+	return base(*il.begin());
+}
+
+template<class T>
+auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) -> T const* {
+	if(il.size() == 0) {
+		return nullptr;
+	}
+	return base(*il.begin());
+}
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"  // for clang 13
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"     // TODO(correaa) use checked span?
+#endif
+
+template<class T>
+constexpr auto extensions(std::initializer_list<T> const& il) {
+	return multi::extensions_t<1>{static_cast<multi::size_t>(il.size())};
+}
+
+template<class T>
+constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const& il) {
+	if(il.size() == 0) {
+		return multi::extensions_t<2>{0, 0};
+	}
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	// for(std::size_t i = 1; i != il.size(); ++i) {
+	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	// }
+	return multi::extensions_t<2>{static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size())};
+}
+
+template<class T>
+constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+	if(il.size() == 0) {
+		return multi::extensions_t<3>{0, 0, 0};
+	}
+
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	// for(std::size_t i = 1; i != il.size(); ++i) {
+	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	// }
+
+	// if(il.begin()->size() == 0) {
+	// 	return multi::extensions_t<3>{il.size(), 0, 0};
+	// }
+
+	return static_cast<multi::size_t>(il.size()) * extensions(*il.begin());
+	// return multi::extensions_t<3>{
+	// 	static_cast<multi::size_t>(il.size()),
+	// 	static_cast<multi::size_t>(il.begin()->size()),
+	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
+	// };
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<T> const& il) {
+	return multi::layout_t<1>{
+		multi::layout_t<0>(multi::extensions_t<0>{}),
+		1,
+		0,
+		static_cast<multi::size_t>(il.size())
+	};
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il) {
+	if(il.size() == 0) {
+		return multi::layout_t<2>{};
+	}
+	if(il.size() == 1) {
+		return multi::layout_t<2>(
+			layout(*il.begin()),
+			static_cast<multi::size_t>(il.size()),
+			0,
+			static_cast<multi::size_t>(il.size())  // * il.begin()->size())
+		);
+	}
+	auto strd =
+		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		base(*(il.begin() + 0))    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		;
+
+	assert(base(*(il.end() - 1)) - base(*il.begin()) == static_cast<std::ptrdiff_t>(il.size() - 1) * strd);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	return multi::layout_t<2>(
+		layout(*il.begin()),
+		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		0,
+		static_cast<multi::size_t>(il.size()) * strd
+	);
+}
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+	if(il.size() == 0) {
+		return multi::layout_t<3>(multi::extensions_t<3>{});
+	}
+	return multi::layout_t<3>{
+		layout(*il.begin()),
+		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		0,
+		static_cast<multi::size_t>(il.size()),
+	};
+}
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+namespace detail {
 inline auto valid_mull(int age) -> bool {
 	return age >= 21;
 }
 }  // end namespace detail
 
 }  // end namespace boost::multi
+
+namespace boost::multi::detail {
+
+template<class F>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fn);
+}
+
+template<class F, class Arg>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fn)[std::forward<Arg>(arg)];
+}
+
+template<class F, class Arg, class... Args>
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return invoke_square(std::forward<F>(fn)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
+	// return            std::forward<F>(fn)[std::forward<Arg>(arg),  std::forward<Arg>(args)...];  // will not work with iterators or cursors in the current state, it is also a C++23-only feature
+}
+
+}  // end namespace boost::multi::detail
 
 #ifdef _MSC_VER
 #pragma warning(pop)

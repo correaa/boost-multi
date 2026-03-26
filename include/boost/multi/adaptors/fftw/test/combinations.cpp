@@ -23,6 +23,7 @@ namespace multi = boost::multi;
 template<>
 inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction
 	std::string label_;
 	time_point  start_ = now();
@@ -52,7 +53,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using complex = std::complex<double>;
 		{
-			multi::static_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+			multi::dynamic_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
 			ret[1][2][3][4] = std::complex<double>{1.0, 2.0};
 			BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 		}
@@ -90,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		for(auto which : which_cases) {  // NOLINT(altera-unroll-loops)
 			cout << "case ";
-			std::for_each(which.begin(), which.end(), [](auto elem) { std::cout << elem << ", "; });  // NOLINT(modernize-use-ranges) for C++20
+			std::for_each(which.begin(), which.end(), [](auto elem) { std::cout << elem << ", "; });  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 			marray<complex, 4> out = in;
 			{

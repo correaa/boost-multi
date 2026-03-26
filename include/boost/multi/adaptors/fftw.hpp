@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ADAPTORS_FFTW_HPP
 #define BOOST_MULTI_ADAPTORS_FFTW_HPP
 
-#include <boost/multi/array.hpp>
+#include "boost/multi/array.hpp"
 
-#include <boost/multi/adaptors/fftw/memory.hpp>  // IWYU pragma: export
+#include "boost/multi/adaptors/fftw/memory.hpp"  // IWYU pragma: export
 
 #include <algorithm>  // sort
 #include <chrono>
@@ -322,7 +322,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layou
 		/*const fftw_iodim64 *dims         */ dims.data(),
 		/*int                 howmany_rank */ static_cast<int>(howmany_dims_end - howmany_dims.begin()),
 		/*const fftw_iodim   *howmany_dims */ howmany_dims.data(),
-		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ (in_base))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
+		/*fftw_complex       *in           */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/ in_base)),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) //NOSONAR FFTW is taken as non-const while it is really not touched
 		/*fftw_complex       *out          */ (reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>       *>*/ out_base_digested)),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		sign, flags  // FFTW_ESTIMATE | FFTW_PRESERVE_INPUT
 	);
@@ -612,7 +612,7 @@ template<typename... A> auto dft_backward(A&&... args)
 // }
 
 template<class T, boost::multi::dimensionality_type D>
-using static_array = ::boost::multi::static_array<T, D, fftw::allocator<T>>;
+using dynamic_array = ::boost::multi::dynamic_array<T, D, fftw::allocator<T>>;
 
 template<class T, multi::dimensionality_type D>
 using array = ::boost::multi::array<T, D, fftw::allocator<T>>;

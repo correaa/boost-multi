@@ -1,13 +1,14 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 #define BOOST_MULTI_DETAIL_EXTENSIONS_HPP
+// #pragma once
 
-#include <boost/multi/detail/index_range.hpp>
+#include "boost/multi/detail/index_range.hpp"
 
-#if (__cplusplus >= 202002L) && !defined(_MSC_VER) && __has_include(<format>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && !defined(_MSC_VER) && __has_include(<format>)
 #include <format>
 #endif
 

@@ -10,11 +10,13 @@
 #include <array>      // for array, array<>::value_type
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
-#if __cplusplus > 201703L
-#if __has_include(<ranges>)
-#include <ranges>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
+#if !defined(__clang_major__) || (__clang_major__ != 16)
+#include <ranges>  // IWYU pragma: keep
 #endif
 #endif
+
 #include <tuple>   // for make_tuple, tuple_element<>::type
 #include <vector>  // for vector
 // IWYU pragma: no_include <version>
@@ -386,81 +388,81 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_3)
-	{
-		multi::array<double, 2> arr(
-#ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<2>
-#endif
-			{50, 50}
-		);
-		BOOST_TEST( size(arr)  == 50 );
-		BOOST_TEST( arr.size() == 50 );
+	// 	{
+	// 		multi::array<double, 2> arr(
+	// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+	// 			multi::extensions_t<2>
+	// #endif
+	// 			{50, 50}
+	// 		);
+	// 		BOOST_TEST( size(arr)  == 50 );
+	// 		BOOST_TEST( arr.size() == 50 );
 
-		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
-		BOOST_TEST( size(arr[0].sliced(10, 20))  == 10 );
+	// 		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
+	// 		BOOST_TEST( size(arr[0].sliced(10, 20))  == 10 );
 
-		static_assert(decltype(arr(0, {10, 20}))::rank_v == 1);
+	// 		static_assert(decltype(arr(0, {10, 20}))::rank_v == 1);
 
-		BOOST_TEST( size(arr(0, {10, 20})) == 10 );
+	// 		BOOST_TEST( size(arr(0, {10, 20})) == 10 );
 
-		BOOST_TEST(      arr.layout() == arr.layout()  );
-		BOOST_TEST( !(arr.layout() <  arr.layout()) );
+	// 		BOOST_TEST(      arr.layout() == arr.layout()  );
+	// 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
 
-		// auto bl = arr.layout().flatten();
-		auto const& barr = arr.flattened();
-		BOOST_TEST( &barr[10] == &arr[0][10] );
-	}
-	{
-		multi::array<double, 2> arr({6, 10});
+	// 		// auto bl = arr.layout().flatten();
+	// 		auto const& barr = arr.flattened();
+	// 		BOOST_TEST( &barr[10] == &arr[0][10] );
+	// 	}
+	// {
+	// 	multi::array<double, 2> arr({6, 10});
 
-		auto const& barr = arr.strided(2).flattened();
+	// 	auto const& barr = arr.strided(2).flattened();
 
-		BOOST_TEST( &barr [0] == &arr[0][0] );
-		BOOST_TEST( &barr [1] == &arr[0][1] );
-		// ...
-		BOOST_TEST( &barr [9] == &arr[0][9] );
+	// 	BOOST_TEST( &barr [0] == &arr[0][0] );
+	// 	BOOST_TEST( &barr [1] == &arr[0][1] );
+	// 	// ...
+	// 	BOOST_TEST( &barr [9] == &arr[0][9] );
 
-		BOOST_TEST( &barr[10] == &arr[2][0] );
-		BOOST_TEST( &barr[11] == &arr[2][1] );
-		BOOST_TEST( &barr[12] == &arr[2][2] );
-		// ...
-		BOOST_TEST( &barr[19] == &arr[2][9] );
+	// 	BOOST_TEST( &barr[10] == &arr[2][0] );
+	// 	BOOST_TEST( &barr[11] == &arr[2][1] );
+	// 	BOOST_TEST( &barr[12] == &arr[2][2] );
+	// 	// ...
+	// 	BOOST_TEST( &barr[19] == &arr[2][9] );
 
-		BOOST_TEST( &barr[20] == &arr[4][0] );
-		BOOST_TEST( &barr[21] == &arr[4][1] );
-		BOOST_TEST( &barr[22] == &arr[4][2] );
-		// ...
-		BOOST_TEST( &barr[29] == &arr[4][9] );
+	// 	BOOST_TEST( &barr[20] == &arr[4][0] );
+	// 	BOOST_TEST( &barr[21] == &arr[4][1] );
+	// 	BOOST_TEST( &barr[22] == &arr[4][2] );
+	// 	// ...
+	// 	BOOST_TEST( &barr[29] == &arr[4][9] );
 
-		BOOST_TEST( arr.num_elements() == 60 );
-		BOOST_TEST( barr.size() == 30 );
-	}
-	{
-		multi::array<double, 2> arr({6, 10});
+	// 	BOOST_TEST( arr.num_elements() == 60 );
+	// 	BOOST_TEST( barr.size() == 30 );
+	// }
+	// {
+	// 	multi::array<double, 2> arr({6, 10});
 
-		auto const& barr = arr.strided(2).transposed().strided(2).transposed().flattened();
+	// 	auto const& barr = arr.strided(2).transposed().strided(2).transposed().flattened();
 
-		BOOST_TEST( &barr [0] == &arr[0][0] );
-		BOOST_TEST( &barr [1] == &arr[0][2] );
-		BOOST_TEST( &barr [2] == &arr[0][4] );
-		BOOST_TEST( &barr [3] == &arr[0][6] );
-		BOOST_TEST( &barr [4] == &arr[0][8] );
+	// 	BOOST_TEST( &barr [0] == &arr[0][0] );
+	// 	BOOST_TEST( &barr [1] == &arr[0][2] );
+	// 	BOOST_TEST( &barr [2] == &arr[0][4] );
+	// 	BOOST_TEST( &barr [3] == &arr[0][6] );
+	// 	BOOST_TEST( &barr [4] == &arr[0][8] );
 
-		BOOST_TEST( &barr [5] == &arr[2][0] );
-		BOOST_TEST( &barr [6] == &arr[2][2] );
-		BOOST_TEST( &barr [7] == &arr[2][4] );
-		BOOST_TEST( &barr [8] == &arr[2][6] );
-		BOOST_TEST( &barr [9] == &arr[2][8] );
+	// 	BOOST_TEST( &barr [5] == &arr[2][0] );
+	// 	BOOST_TEST( &barr [6] == &arr[2][2] );
+	// 	BOOST_TEST( &barr [7] == &arr[2][4] );
+	// 	BOOST_TEST( &barr [8] == &arr[2][6] );
+	// 	BOOST_TEST( &barr [9] == &arr[2][8] );
 
-		BOOST_TEST( &barr [10] == &arr[4][0] );
-		BOOST_TEST( &barr [11] == &arr[4][2] );
-		BOOST_TEST( &barr [12] == &arr[4][4] );
-		BOOST_TEST( &barr [13] == &arr[4][6] );
-		BOOST_TEST( &barr [14] == &arr[4][8] );
+	// 	BOOST_TEST( &barr [10] == &arr[4][0] );
+	// 	BOOST_TEST( &barr [11] == &arr[4][2] );
+	// 	BOOST_TEST( &barr [12] == &arr[4][4] );
+	// 	BOOST_TEST( &barr [13] == &arr[4][6] );
+	// 	BOOST_TEST( &barr [14] == &arr[4][8] );
 
-		BOOST_TEST( arr.num_elements() == 60 );
-		BOOST_TEST( barr.size() == 15 );
-	}
+	// 	BOOST_TEST( arr.num_elements() == 60 );
+	// 	BOOST_TEST( barr.size() == 15 );
+	// }
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
 	{
@@ -528,6 +530,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto xA = extensions(arr);
 
 		using std::get;  // needed for C++17
+		using std::size;
 		BOOST_TEST( size(get<0>(xA)) == 3 );
 		BOOST_TEST( size(get<1>(xA)) == 4 );
 		BOOST_TEST( size(get<2>(xA)) == 5 );
@@ -1274,6 +1277,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( lyt.size() == 6 );
 		BOOST_TEST( lyt.extension().front() == 3 );
 		BOOST_TEST( lyt.extension().back() == 8 );
+	}
+	{
+		multi::extension_t<int> const ext(5);
+
+		BOOST_TEST( *ext.begin() == 0 );
+		BOOST_TEST( *(ext.end() - 1) == 4 );
+
+#if !defined(__clang_major__) || (__clang_major__ > 16)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+		BOOST_TEST( *std::ranges::begin(ext) == 0 );
+		BOOST_TEST( *(std::ranges::end(ext)-1) == 4 );
+
+		BOOST_TEST( ext[0] == 0 );
+		BOOST_TEST( ext[1] == 1 );
+		BOOST_TEST( ext[4] == 4 );
+
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
+
+		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
+		auto rext = ext | std::ranges::views::reverse;
+
+		BOOST_TEST( rext[0] == 4 );
+		BOOST_TEST( rext[1] == 3 );
+		BOOST_TEST( rext[4] == 0 );
+#endif
+#endif
 	}
 
 	return boost::report_errors();

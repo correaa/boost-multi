@@ -199,22 +199,22 @@ int main() {
 			BOOST_TEST( res == res2 );
 		}
 		{
-			multi::static_array<double, 0, thrust::cuda::allocator<double>> res2({}, 0.0);
+			multi::dynamic_array<double, 0, thrust::cuda::allocator<double>> res2({}, 0.0);
 			res2.assign(&blas::asum(x));
 			res2 = blas::asum(x);
-			BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+			BOOST_TEST(( res == static_cast<multi::dynamic_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
 			BOOST_TEST(( res == static_cast<double>(res2) ));
 			//  BOOST_TEST( res == res2 );
 		}
 		{
 			multi::array<double, 0, thrust::cuda::allocator<double>> res2{blas::asum(x)};
-			BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+			BOOST_TEST(( res == static_cast<multi::dynamic_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
 			BOOST_TEST(( res == static_cast<double>(res2) ));
 			//  BOOST_TEST( res == res2 );
 		}
 		{
 			multi::array<double, 0, thrust::cuda::allocator<double>> res2 = blas::asum(x);
-			BOOST_TEST(( res == static_cast<multi::static_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
+			BOOST_TEST(( res == static_cast<multi::dynamic_array<double, 0, thrust::cuda::allocator<double>>::element_ref>(res2) ));
 			BOOST_TEST(( res == static_cast<double>(res2) ));
 			//  BOOST_TEST( res == res2 );
 		}

@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,10 +10,13 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
-#include <complex>    // for complex
-#include <cstddef>    // for __GLIBCXX__, size_t
-#include <iterator>   // for size, back_insert...
-#include <memory>     // for make_unique, uniq...
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<compare>)
+#include <compare>  // IWYU pragma: keep
+#endif
+#include <complex>   // for complex
+#include <cstddef>   // for __GLIBCXX__, size_t
+#include <iterator>  // for size, back_insert...
+#include <memory>    // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_...
 #endif
@@ -26,14 +29,14 @@
 namespace multi = boost::multi;
 
 template<class T, multi::dimensionality_type D, std::size_t Capacity = 4UL * 4UL>
-using small_array = multi::static_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+using small_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
 // https://godbolt.org/z/d8ozWahna
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// static_array_allocator
+	// dynamic_array_allocator
 	{
-		multi::array<int, 2> const                             ma({2, 3}, 99);
-		multi::static_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
+		multi::array<int, 2> const                              ma({2, 3}, 99);
+		multi::dynamic_array<int, 2, std::allocator<int>> const sma(ma(), std::allocator<int>{});
 		BOOST_TEST( sma == ma );
 	}
 
@@ -128,17 +131,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-		// #else
-		//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-		//      std::vector<multi::array<int, 2>> const wa = {
-		//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-		//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-		//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-		//      };
-		// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
+		BOOST_TEST( !(va != wa) );
+
+		BOOST_TEST( va >= wa );
+#if !defined(__NVCC__)  // bug in gcc 13.3 and nvcc 12.0: no match for ‘operator!’ (operand type is ‘std::vector<boost::multi::array<int, 2> >’)
+		BOOST_TEST( !(va < wa) );
+#endif
+		BOOST_TEST( va <= wa );
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
@@ -351,7 +353,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( *std::next(pp, 8) == 42 );
 		// (pp + 8)->~double();
-		sa.deallocate(pp, 10);
+		sa.deallocate(pp, 10);  // NOLINT(readability-static-accessed-through-instance)
 	}
 
 // Clang-20 likely has incompatibility with GCC-14 here since the error points to the STL:
@@ -388,11 +390,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 ./boost/multi/detail/adl.hpp:327:93: note: (skipping 5 calls in backtrace; use -fconstexpr-backtrace-limit=0 to see all)
   327 |         template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRETURN(_(priority<6>{}, std::forward<As>(args)...))
 	  |                                                                                                    ^
-./boost/multi/array.hpp:271:55: note: in call to 'static_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3], allocator_type{})'
-  271 |         constexpr explicit static_array(It first, It last) : static_array(first, last, allocator_type{}) {}
+./boost/multi/array.hpp:271:55: note: in call to 'dynamic_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3], allocator_type{})'
+  271 |         constexpr explicit dynamic_array(It first, It last) : dynamic_array(first, last, allocator_type{}) {}
 	  |                                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-./boost/multi/array.hpp:1215:35: note: in call to 'static_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3])'
- 1215 |         using static_array<T, D, Alloc>::static_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+./boost/multi/array.hpp:1215:35: note: in call to 'dynamic_array<const int *, long>(&{4, 5, 6}[0], &{4, 5, 6}[3])'
+ 1215 |         using dynamic_array<T, D, Alloc>::dynamic_array;  // MSVC wants fullname here? // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	  |                                          ^~~~~~~~~~~~
 ./boost/multi/array.hpp:1232:42: note: in implicit initialization for inherited constructor of 'array<int, 1>'
  1232 |         : static_{(ilv.size()==0)?array<T, D>():array<T, D>(ilv.begin(), ilv.end())} {
@@ -412,7 +414,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	  |                                ^
 2 errors generated.
 */
-#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ != 20)
+#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ < 20)
 	auto f = []() {
 		std::vector<int> v = {1, 2, 3};
 		return v.size();
@@ -514,7 +516,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	//  std::vector<std::vector<int>> vv(5, std::vector<int>(10, 99));
 	//  multi::array_ref<std::vector<int>, 2> ww(vv.data() + 1, {2, 2});
 	//  // multi::what(ww.element_moved());
-	//  multi::static_array<std::vector<int>, 2> sa(ww.element_moved());
+	//  multi::dynamic_array<std::vector<int>, 2> sa(ww.element_moved());
 
 	//  //BOOST_TEST( ww[0][0].empty() );
 	// }
@@ -571,11 +573,11 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[1] == vv );
 
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 
 			VV.resize(10, xx);
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 		}
 	}
 #endif

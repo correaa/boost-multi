@@ -126,12 +126,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &v1D[1] == vv.base() );
 
 		multi::array<int, 1> r1D({4}, 0);
-		std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(modernize-use-ranges)
+		std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 
 		BOOST_TEST( r1D[3] == arr[3] + 2 );
 
-		std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(modernize-use-ranges)
+		std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 		BOOST_TEST( arr[3] == 2 );
+	}
+
+	{
+		multi::array<int, 2> arr({3, 3}, 0);
+		std::fill(multi::diagonal(arr).begin(), multi::diagonal(arr).end(), 1);
+
+		BOOST_TEST( arr[1][1] == 1 );
 	}
 
 	return boost::report_errors();

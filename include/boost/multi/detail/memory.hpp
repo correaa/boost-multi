@@ -1,11 +1,12 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
+// #pragma once
 
-#include <boost/multi/utility.hpp>  // for has_rank, to_address
+#include "boost/multi/utility.hpp"  // for has_rank, to_address
 
 #include <iterator>                 // for copy, iterator_traits
 #include <memory>                   // for allocator_traits

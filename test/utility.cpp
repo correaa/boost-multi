@@ -25,7 +25,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 		std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 
-		static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});
+		static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});  // NOLINT(readability-redundant-typename) for C++20
 
 		BOOST_TEST( multi::dimensionality(arr) == 3 );
 
@@ -50,7 +50,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 		std::array<std::array<double, 4>, 3> arr = {};
 
-		static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});
+		static_assert(std::is_same_v<typename multi::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
 
 		using multi::dimensionality;
 		BOOST_TEST( dimensionality(arr) == 2 );
@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 		std::array<double, 4> arr = {};
 
-		static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});
+		static_assert(std::is_same_v<typename multi::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
 
 		using multi::dimensionality;
 		BOOST_TEST( dimensionality(arr) == 1 );

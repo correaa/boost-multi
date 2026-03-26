@@ -340,7 +340,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[4] = "c";
 		arr[5] = "d";
 		arr[6] = "e";
-		BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(modernize-use-ranges) for C++20
+		BOOST_TEST( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed)
@@ -755,11 +755,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<double, 2> ref(&darr[0][0], {2, 2});
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-		auto&& other_darr = static_cast<double(&)[2][2]>(ref);
+		auto&& other_darr = static_cast<double (&)[2][2]>(ref);
 
 		// NOLINTNEXTLINE(hicpp-use-auto,modernize-use-auto,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-		double(&other_darr2)[2][2] = static_cast<double(&)[2][2]>(ref);
-		double(&other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+		double (&other_darr2)[2][2] = static_cast<double (&)[2][2]>(ref);
+		double (&other_darr3)[2][2](ref);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
 		BOOST_TEST( &ref        [1][0] == &darr[1][0] );
 		BOOST_TEST( &other_darr [1][0] == &darr[1][0] );
@@ -1015,13 +1015,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		{
-			auto& carr = static_cast<int(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			auto& carr = static_cast<int (&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3] == &arr[3] );
 
 			BOOST_TEST(f1d5(static_cast<int(&)[5]>(arr)) == 1 );  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		}
 		{
-			int(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			int (&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3] == &arr[3] );
 		}
 
@@ -1042,13 +1042,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		{
-			auto& carr = static_cast<int(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			auto& carr = static_cast<int (&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3][2] == &arr[3][2] );
 
-			f2d54(static_cast<int(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			f2d54(static_cast<int (&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		}
 		{
-			int(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			int (&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 			BOOST_TEST( &carr[3][2] == &arr[3][2] );
 		}
 
@@ -1070,7 +1070,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
 			std::cout << "rng.size(): " << rng.size() << '\n';                                                  // (4)
-			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(modernize-use-ranges)
+			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 
@@ -1113,7 +1113,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			print_me1(arr2);
 			print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
 
-			multi::static_array<int, 1> marr(
+			multi::dynamic_array<int, 1> marr(
 				// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
 				multi::extensions_t<1>
 				// #endif
@@ -1148,7 +1148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			//  print_me2(&arr2);  // this crashes clang-tidy
 			print_me2({arr2.data(), {6}});
 
-			//  multi::static_array<int, 1> marr({10}, 99);
+			//  multi::dynamic_array<int, 1> marr({10}, 99);
 			//  print_me2(&marr);  // TODO(correaa) make this work
 		}
 	}

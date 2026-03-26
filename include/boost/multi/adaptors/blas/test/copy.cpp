@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			<< std::invoke(
 				   [&, start_time = high_resolution_clock::now()] () noexcept {
 					   // NOLINTNEXTLINE(modernize-use-ranges) for C++20
-					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
+					   std::transform(A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });  // NOLINT(llvm-use-ranges) for C++20
 					   return duration<double>{high_resolution_clock::now() - start_time};
 				   }
 			   ).count()
@@ -137,9 +137,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-#if defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if !defined(__clang__) && defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 #if !((defined(__clang__)) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
-#if(__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
@@ -186,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::cout << "std::copy\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] () noexcept {
-						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(modernize-use-ranges) for C++20
+						 std::copy(A2D_block.begin(), A2D_block.end(), B2D_block.begin());  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';

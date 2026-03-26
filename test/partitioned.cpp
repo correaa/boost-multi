@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A2_ref = A1.halved();
 
-		static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
+		// static_assert(std::decay_t<decltype(A2_ref)>::rank{} == decltype(A1)::rank{} + 1);
 		static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
 		BOOST_TEST( size(A2_ref   ) == 2 );
@@ -297,32 +297,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 		}));
-
-		// BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated() == multi::array<int, 4>{
-		//  {
-		//      {{ 1,  2},
-		//       { 9, 10}},
-		//      {{ 3, 4},
-		//       {11, 12}},
-		//  },
-		//  {
-		//      {{ 5,  6},
-		//       {13, 14}},
-		//      {{7, 8},
-		//       {15, 16}}
-		//  }
-		// }));
-
-		// BOOST_TEST(( arr.halved().rotated().rotated().halved().unr == multi::array<int, 3>{
-		//  {
-		//      { 1,  2,  3,  4},
-		//      { 5,  6,  7,  8}
-		//  },
-		//  {
-		//      { 9, 10, 11, 12},
-		//      {13, 14, 15, 16}
-		//  }
-		// }));
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_partitioned_1d)
@@ -331,11 +305,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A2_ref = A1.partitioned(2);
 
-		static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
+		auto [is, js] = A2_ref.extensions();
+		BOOST_TEST( is.size() == 2 );
+		BOOST_TEST( js.size() == 3 );
+
+		// static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
 		static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
-		BOOST_TEST( size(A2_ref   ) == 2 );
-		BOOST_TEST( size(A2_ref[0]) == 3 );
+		BOOST_TEST( A2_ref.size() == 2 );
+		BOOST_TEST( A2_ref[0].size() == 3 );
 
 		BOOST_TEST( &A2_ref[1][0] == &A1[3] );
 

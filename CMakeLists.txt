@@ -15,7 +15,7 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
   target_include_directories(boost_multi INTERFACE include)
 
-  target_compile_features(boost_multi INTERFACE cxx_std_14)
+  target_compile_features(boost_multi INTERFACE cxx_std_17)
 
   message(STATUS "Boost.Multi: standalone mode OFF")
 
@@ -72,6 +72,16 @@ set_target_properties(
 )
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+
+# Documentation driver for MrDocs — configured but not built by default.
+# Produces a compile_commands.json entry for the public headers when
+# cmake is invoked with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON.
+add_library(mrdocs_driver OBJECT ${PROJECT_SOURCE_DIR}/doc/mrdocs_driver.cpp)
+target_include_directories(mrdocs_driver PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+target_compile_features(mrdocs_driver PRIVATE cxx_std_17)
+set_target_properties(mrdocs_driver PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 #if(NOT ENABLE_CUDA)
 #target_compile_options(multi INTERFACE
@@ -191,12 +201,14 @@ if(MULTI_BUILD_TESTS)
     if(ENABLE_CUDA)
       add_subdirectory(include/boost/multi/adaptors/cuda)
       add_subdirectory(include/boost/multi/adaptors/cufft)
+      add_subdirectory(include/boost/multi/adaptors/cutensor)
     endif()
     if(ENABLE_HIP)
     #  add_subdirectory(include/boost/multi/adaptors/hipfft)
     #  add_subdirectory(include/boost/multi/adaptors/hipthrust/test)
     endif()
 
+    add_subdirectory(include/boost/multi/adaptors/tblis)
     add_subdirectory(include/boost/multi/adaptors)
   endif()
 endif()

@@ -15,7 +15,7 @@ namespace fancy {
 
 template<class T> class ref;
 
-template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions,misc-use-internal-linkage)
 	static double const value;
 
  public:
@@ -82,11 +82,11 @@ template<class T> class ref {
 	using decay_t = std::decay_t<T>;
 };
 
-template<class T> struct allocator {
+template<class T> struct allocator {  // NOLINT(misc-use-internal-linkage)
 	using pointer    = ptr<T>;
 	using value_type = T;
-	auto allocate(std::size_t /*size*/) { return pointer{}; }
-	void deallocate(pointer /*base*/, std::size_t /*size*/) {
+	static auto allocate(std::size_t /*size*/) { return pointer{}; }
+	static void deallocate(pointer /*base*/, std::size_t /*size*/) {
 		/*no-op;*/
 	}
 	//  std::true_type operator==(allocator const&){return {};}
@@ -95,10 +95,10 @@ template<class T> struct allocator {
 		/*no-op;*/
 	}
 	template<class... Args>
-	void construct(pointer /*location*/, Args const&... /*args*/) {
+	static void construct(pointer /*location*/, Args const&... /*args*/) {
 		/*no-op;*/
 	}
-	void destroy(pointer /*location*/) {
+	static void destroy(pointer /*location*/) {
 		/*no-op;*/
 	}
 };
