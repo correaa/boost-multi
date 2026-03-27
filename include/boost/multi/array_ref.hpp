@@ -1767,7 +1767,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+	using iterator_element_     = typename iterator::element;
+	using iterator_element_ptr_ = typename iterator::element_ptr;
+
+	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<iterator_element_, iterator::rank_v, iterator_element_ptr_>;
 
  public:
 	using ptr       = subarray_ptr<T, D, ElementPtr, Layout, false>;
