@@ -947,10 +947,10 @@ static_assert( trace() == 1 + 5 + 100 );
 ----
 link:https://godbolt.org/z/snrzY91eE[(open with Compiler Explorer)]
 
-The language limitation is that the array must no cross from compile-time to runtime context.
+The language limitation is that the array (and more specifically, the memory allocation) must no cross from compile-time context to runtime context.
 
 In C++20, if you want an array with _full_ compile-time/run-time (constexpr) valuation support, use `multi::inplace_array`.
-(This is possible because this kind of array never allocates in the heap.)
+(This is possible because it never allocates in the heap.)
 
 [source,cpp]
 ----
