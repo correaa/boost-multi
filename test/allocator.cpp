@@ -345,7 +345,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(static_allocator)
 	{
 		using T = int;
-		multi::detail::static_allocator<T, 32> sa{};
+		multi::detail::static_allocator<T, 32> sa;  // {};
 
 		auto* pp = sa.allocate(10);
 

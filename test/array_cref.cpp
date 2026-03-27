@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -82,11 +82,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1>      an_array_value(a_c_array);            // ok, it is a copy
 		multi::array_cref<int, 1> an_array_const_reference(a_c_array);  // ok, it is read only reference
 
-		//  multi::array_ref <int, 1> an_array_reference      (a_c_array);  // not ok, c array is const
+		// multi::array_ref <int, 1> an_array_reference      (a_c_array);  // not ok, c array is const
 
 		BOOST_TEST( an_array_value          .size() == 3 && an_array_value          [1] == 20 );
 		BOOST_TEST( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 20 );
-		//  BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
+		// BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
 	}
 #endif
 
@@ -96,11 +96,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1>             an_array_value(il);            // ok, it is a copy
 		multi::array_cref<int, 1>        an_array_const_reference(il);  // ok, it is read only
 
-		//  multi::array_ref <int, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
+		// multi::array_ref <int, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
 
 		BOOST_TEST( an_array_value          .size() == 3 && an_array_value          [1] == 20 );
 		BOOST_TEST( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 20 );
-		//  BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
+		// BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list)
@@ -109,23 +109,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1>      an_array_value(il);            // ok, it is a copy
 		multi::array_cref<int, 1> an_array_const_reference(il);  // ok, it is read only
 
-		//  multi::array_ref <int, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
+		// multi::array_ref <int, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
 
 		BOOST_TEST( an_array_value          .size() == 3 && an_array_value          [1] == 20 );
 		BOOST_TEST( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 20 );
-		//  BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
+		// BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(arrays_1D_from_init_list)
 	{
 		multi::array<int, 1> an_array_value({10, 20, 30});  // ok, it is a copy
 
-		//  multi::array_cref<double, 1> an_array_const_reference({10, 20, 30});  // not ok, constructor disable because memcheck detects use after scope
-		//  multi::array_ref <double, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
+		// multi::array_cref<double, 1> an_array_const_reference({10, 20, 30});  // not ok, constructor disable because memcheck detects use after scope
+		// multi::array_ref <double, 1> an_array_reference      ({10, 20, 30});  // not allowed, the init list elems are const
 
 		BOOST_TEST( an_array_value          .size() == 3 && an_array_value          [1] == 20 );
-		//  BOOST_TEST( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 20 );
-		//  BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
+		// BOOST_TEST( an_array_const_reference.size() == 3 && an_array_const_reference[1] == 20 );
+		// BOOST_TEST( an_array_reference      .size() == 3 && an_array_reference      [1] == 20 );
 	}
 
 	return boost::report_errors();

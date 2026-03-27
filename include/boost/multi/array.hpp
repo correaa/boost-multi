@@ -688,6 +688,7 @@ struct dynamic_array                                                            
 	}
 
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+	constexpr ~dynamic_array() requires detail::is_static_allocator<allocator_type>::value = default;
 	constexpr ~dynamic_array()
 #else
 	~dynamic_array()

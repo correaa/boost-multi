@@ -62,7 +62,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 
 	static constexpr auto max_size() noexcept -> std::size_t { return N; }
 
-	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
+	static_allocator() = default;
 
 	template<class TT, std::size_t NN>
 	explicit static_allocator(static_allocator<TT, NN> const& /*other*/) {  // NOLINT(hicpp-explicit-conversions,google-explicit-constructor) follow std::allocator  // NOSONAR
@@ -70,12 +70,12 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 		static_assert(NN == N);
 	}
 
-	static_allocator(static_allocator const& /*other*/)  // std::vector makes a copy right away
+	constexpr static_allocator(static_allocator const& /*other*/)  // std::vector makes a copy right away
 	// = default;  // this copies the internal buffer
 	{}
 
 	// [[deprecated("don't move dynamic container with static_allocator")]]
-	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
+	constexpr static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
 		// = delete;
 		// {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
 		noexcept {}
@@ -104,7 +104,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #pragma warning( disable : 4068)  // bug in MSVC 14.2/14.3
 #endif
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
-	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
+	constexpr auto allocate([[maybe_unused]] std::size_t n) -> pointer {
 		assert(n <= N);
 		assert(!dirty_);  // do not attempt to resize a vector with static_allocator
 		// dirty_ = true;
@@ -117,7 +117,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #pragma warning( pop ) 
 #endif
 
-	static void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
+	static constexpr void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
 		assert(n <= N);
 	}
 
@@ -140,6 +140,13 @@ auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> con
 template<class T, std::size_t N, class U>
 [[deprecated("don't swap dynamic container with static_allocator")]]
 void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) noexcept = delete;
+
+template<class T, std::size_t N>
+auto is_static_allocator_aux_(static_allocator<T, N> const&) -> std::true_type;
+auto is_static_allocator_aux_(...) -> std::false_type;
+
+template<class T>
+struct is_static_allocator : decltype(is_static_allocator_aux_(std::declval<T>())) {};
 
 }  // end namespace boost::multi::detail
 #endif  // BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP
