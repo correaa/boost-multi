@@ -320,15 +320,15 @@ class adl_uninitialized_copy_t {
 	constexpr auto _(priority<2>/**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
 	{
 		if(std::is_constant_evaluated()) {
+			auto result = d_first;
+			for(; first != last; ++first, ++result) { std::construct_at(std::addressof(*result), *first); }
+			return result;
+		} else {
 			if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 				return ::thrust::copy(first, last, d_first);
 			} else {
 				return ::thrust::uninitialized_copy(first, last, d_first);
 			}
-		} else {
-			auto result = d_first;
-			for(; first != last; ++first, ++result) { std::construct_at(std::addressof(*result), *first); }
-			return result;
 		}
 	}
 #endif
