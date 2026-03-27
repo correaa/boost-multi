@@ -307,11 +307,10 @@ class adl_uninitialized_copy_t {
 	// BOOST_MULTI_DECLRET(       std::uninitialized_copy(first, last, d_first))
 	{
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
-		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
-		if(
-			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
-		) {
-			return std::copy(std::move(first), std::move(last), std::move(d_first));
+		if(std::is_constant_evaluated()) {
+			auto result = d_first;
+			for(; first != last; ++first, ++result) { std::construct_at(std::addressof(*result), *first); }
+			return result;
 		}
 #endif
 		return std::uninitialized_copy(std::move(first), std::move(last), std::move(d_first));
@@ -343,7 +342,20 @@ inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 #endif
 
 class adl_uninitialized_copy_n_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRET(                  std::uninitialized_copy_n(std::forward<As>(args)...))
+	//template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const 
+	template<class InIt, class Size, class FwdIt, class = decltype(std::addressof(*FwdIt{}))>                 // sfinae friendy std::uninitialized_copy
+	[[nodiscard]] constexpr auto _(priority<1> /**/, InIt first, Size count, FwdIt d_first) const  // N_O_L_I_N_T(performance-unnecessary-value-param) bug in clang-tidy
+	//BOOST_MULTI_DECLRET(                  std::uninitialized_copy_n(std::forward<As>(args)...))
+	{
+	#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
+		if(std::is_constant_evaluated()) {
+			auto result = d_first;
+			for(Size i = 0; i != count; ++i, ++first, ++result) { std::construct_at(std::addressof(*result), *first); }
+			return result;
+		}
+	#endif
+		return std::uninitialized_copy_n(std::move(first), count, std::move(d_first));
+	}
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRET(                       uninitialized_copy_n(std::forward<As>(args)...))
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<
@@ -496,7 +508,7 @@ namespace adl {
 class adl_distance_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRET(                std::distance(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRET(                     distance(std::forward<As>(args)...))
-	// template<class It1, class It2> constexpr auto _(priority<3>/**/, It1 it1, It2 it2     ) const BOOST_MULTI_DECLRET(it2 - it1)
+	// template<class It1, class It2> constexpr auto _(priority<3>/**/, It1 it1, It2 it2     ) const BOOST_MULTI_DECLRET(it2 - it1)  // TODO(correaa) check what is wrong with this one
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(  std::decay_t<T>::  distance(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).distance(std::forward<As>(args)...))
 

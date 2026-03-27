@@ -27,16 +27,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( iparr.size() == 3 );
 		BOOST_TEST( iparr[1] == 1 );
 	}
-	#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	{
 		constexpr int carr[3] = {0, 1, 2};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-		constexpr multi::inplace_array<int[5]> iparr(carr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		static constexpr multi::inplace_array<int[5]> iparr(carr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		BOOST_TEST( iparr.size() == 3 );
+		static_assert(iparr.size() == 3);
+
 		BOOST_TEST( iparr[1] == 1 );
+		static_assert(iparr[1] == 1);
 	}
-	#endif
+	{
+		static constexpr multi::inplace_array<int[5]> iparr = {0, 1, 2};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+		BOOST_TEST( iparr.size() == 3 );
+		static_assert(iparr.size() == 3);
+
+		BOOST_TEST( iparr[1] == 1 );
+		static_assert(iparr[1] == 1);
+	}
+	{
+		static constexpr multi::inplace_array<int[4]> iparr = {0, 1, 2};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+		BOOST_TEST( iparr.size() == 3 );
+		static_assert(iparr.size() == 3);
+
+		BOOST_TEST( iparr[1] == 1 );
+		static_assert(iparr[1] == 1);
+	}
+#endif
 
 	return boost::report_errors();
 }

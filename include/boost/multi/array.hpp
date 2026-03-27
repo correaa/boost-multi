@@ -84,7 +84,7 @@ struct array_allocator {
 	}
 
 	template<typename It>
-	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
+	constexpr auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
@@ -174,13 +174,9 @@ struct dynamic_array                                                            
 		}
 	}
 
-	template<typename It> auto uninitialized_copy_elements(It first) {
+	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
-
-	// template<typename It> auto uninitialized_move_elements(It first) {
-	//  return array_alloc::uninitialized_move_n(first, this->num_elements(), this->data_elements());
-	// }
 
 	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
 		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
@@ -253,8 +249,8 @@ struct dynamic_array                                                            
 	constexpr explicit dynamic_array(It const& first, Sentinel const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extensions(*first)}.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
-		  index_extension(adl_distance(first, last)) * multi::extensions(*first)
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(last - first /*adl_distance(first, last)*/) * multi::extensions(*first)}.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
+		  index_extension(last - first /*adl_distance(first, last)*/) * multi::extensions(*first)
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
@@ -563,7 +559,7 @@ struct dynamic_array                                                            
 	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
 	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&&>().base()), T>, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	constexpr /*mplct*/ dynamic_array(array_ref<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		assert(this->stride() != 0);
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
@@ -1023,7 +1019,7 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		uninitialized_copy(other.data_elements());
 	}
 
-	dynamic_array(dynamic_array&& other) noexcept
+	constexpr dynamic_array(dynamic_array&& other) noexcept
 	: array_alloc{other.get_allocator()}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
 		other.layout_mutable() = {};
 		// other.layout_t<0>::operator=({});
