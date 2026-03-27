@@ -1,8 +1,8 @@
 \documentclass{beamer}
 \usetheme{Madrid}  % or another theme
 
-\title{Your Presentation Title}
-\author{Your Name}
+\title{Generic Programming for Multidimensional Arrays}
+\author{Alfredo A. Correa}
 \date{\today}
 
 \begin{document}
@@ -27,6 +27,31 @@ Your content here
 \begin{alertblock}{2026}
   \large Is 2026 \textbf{the year of C++ as an array language}?
 \end{alertblock}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{As a proposal}
+
+Why not proposed for Standard?
+\begin{itemize}
+  \item Can't promise ABI compatibility
+  \item Controversial idioms (some hacks)
+  \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
+  \item Enough overlap with \texttt{std::span} and \texttt{std::mdarray}
+  \item Long time horizon
+\end{itemize}
+
+Why proposed to Boost?
+\begin{itemize}
+  \item Ideal balance between risk (innovation) and requirements (quality, guidelines)
+  \item \emph{Peer reviewed}
+  \item Still good distribution model and visibility
+  \item No need for compiler-magic (although new language features would help)
+  \item Moderate time horizon
+  \item Can eventually benefit from low level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
+  \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
+\end{itemize}
 
 \end{frame}
 
