@@ -190,7 +190,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};  // NOSONAR
 
 		multi::array<int, 2> r2D({5, 5});
-		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
+		std::for_each(  // NOLINT(llvm-use-ranges,modernize-use-ranges)
+			begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); }
+		);
 	}
 
 	// BOOST_AUTO_TEST_CASE(fill_1D)
