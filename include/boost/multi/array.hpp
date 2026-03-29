@@ -222,12 +222,21 @@ struct dynamic_array                                                            
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
 		  other.extensions()
 	  ) {
-		adl_alloc_uninitialized_move_n(
-			this->alloc(),
-			other.data_elements(),
-			other.num_elements(),
-			this->data_elements()
-		);
+		if constexpr(std::is_same_v<typename dynamic_array::element_ref, typename dynamic_array::element_type&>) {
+			adl_alloc_uninitialized_move_n(
+				this->alloc(),
+				other.data_elements(),
+				other.num_elements(),
+				this->data_elements()
+			);
+		} else {
+			adl_alloc_uninitialized_copy_n(
+				this->alloc(),
+				other.data_elements(),
+				other.num_elements(),
+				this->data_elements()
+			);
+		}
 		(void)std::move(other);
 	}
 
@@ -619,7 +628,8 @@ struct dynamic_array                                                            
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
-	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
+	: dynamic_array((values.size() == 0) ? dynamic_array{} : dynamic_array{values.begin(), values.end()})  // construct all with default constructor and copy to special memory at the end
+	{}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
@@ -1332,8 +1342,8 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// @param nested_values Nested initializer list of elements (must be rectangular, not ragged); allows assignment-like syntax such as `array<int, 2> A = {{1, 2}, {3, 4}}`.
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> nested_values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	: dynamic_(
-		  (nested_values.size() == 0) ? array<T, D>{}
-									  : array<T, D>(nested_values.begin(), nested_values.end())
+		  (nested_values.size() == 0) ? dynamic_{}
+									  : dynamic_{nested_values.begin(), nested_values.end()}
 	  ) {
 	}
 
@@ -1350,7 +1360,10 @@ struct array : dynamic_array<T, D, Alloc> {
 	array()             = default;
 	array(array const&) = default;
 
-	~array() = default;
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+	constexpr
+#endif
+		~array() = default;
 
 	auto reshape(typename array::extensions_type extensions) & -> array& {
 		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape

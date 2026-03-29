@@ -32,11 +32,11 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 		// In C++20, initialize typed_buffer_ as the active union member so constexpr
 		// context can access it. The container overwrites elements via std::construct_at.
-		T typed_buffer_[N];  // NOLINT(modernize-avoid-c-arrays)
+		T typed_buffer_[N];  // NOLINT(modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,cppcoreguidelines-pro-type-union-access)
 		constexpr storage_t_() : typed_buffer_{} {}
 		constexpr ~storage_t_() {}
 #else
-		alignas(T) std::byte buffer_[sizeof(T) * N];  // NOLINT(modernize-avoid-c-arrays)
+		alignas(T) std::byte buffer_[sizeof(T) * N];  // NOLINT(modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays)
 		constexpr storage_t_() : buffer_{} {}
 		~storage_t_() {}
 #endif
@@ -108,7 +108,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	constexpr auto allocate(size_type n) -> pointer {
 		check_size_(n);
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-		return storage_.typed_buffer_;
+		return std::data(storage_.typed_buffer_);
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"  // buffer_ is aligned as T
@@ -139,12 +139,14 @@ template<class T, std::size_t N>
 [[deprecated("don't swap containers with static_allocator")]]
 void swap(static_allocator<T, N>&, static_allocator<T, N>&) noexcept = delete;
 
+namespace detail {
 template<class T, std::size_t N>
-auto is_static_allocator_aux_(static_allocator<T, N> const&) -> std::true_type;
-auto is_static_allocator_aux_(...) -> std::false_type;
+auto is_static_allocator_aux(static_allocator<T, N> const&) -> std::true_type;
+auto is_static_allocator_aux(...) -> std::false_type;
+}
 
 template<class T>
-struct is_static_allocator : decltype(is_static_allocator_aux_(std::declval<T>())){};
+struct is_static_allocator : decltype(detail::is_static_allocator_aux(std::declval<T>())){};
 
 }  // end namespace boost::multi::detail
 #endif  // BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP

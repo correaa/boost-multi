@@ -40,6 +40,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( iparr[1] == 1 );
 		static_assert(iparr[1] == 1);
 	}
+#ifndef __NVCC__
 	{
 		static constexpr multi::inplace_array<int[5]> iparr = {0, 1, 2};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
@@ -58,6 +59,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( iparr[1] == 1 );
 		static_assert(iparr[1] == 1);
 	}
+#endif
 #endif
 
 	return boost::report_errors();

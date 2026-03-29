@@ -302,14 +302,16 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 #endif
 
 class adl_uninitialized_copy_t {
-	template<class InIt, class FwdIt, class = decltype(std::addressof(*FwdIt{}))>                 // sfinae friendy std::uninitialized_copy
-	[[nodiscard]] constexpr auto _(priority<1> /**/, InIt first, InIt last, FwdIt d_first) const  // N_O_L_I_N_T(performance-unnecessary-value-param) bug in clang-tidy
+	template<class InIt, class FwdIt, class = decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
+	[[nodiscard]] constexpr auto _(priority<1> /**/, InIt first, InIt last, FwdIt d_first) const
 	// BOOST_MULTI_DECLRET(       std::uninitialized_copy(first, last, d_first))
 	{
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 		if(std::is_constant_evaluated()) {
 			auto result = d_first;
-			for(; first != last; ++first, ++result) { std::construct_at(std::addressof(*result), *first); }  // NOLINT(altera-unroll-loops) this is a constexpr alternative
+			for(; first != last; ++first, ++result) {  // NOLINT(altera-unroll-loops) this is a constexpr alternative
+				std::construct_at(std::addressof(*result), *first);
+			}
 			return result;
 		}
 #endif
@@ -317,13 +319,17 @@ class adl_uninitialized_copy_t {
 	}
 #if defined(__CUDACC__) || defined(__HIPCC__)
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
-	constexpr auto _(priority<2>/**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
-	{
+	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first)) {  // doesn't work with culang 17, cuda 12 ?
+#if defined(__cpp_lib_is_constant_evaluated)
 		if(std::is_constant_evaluated()) {
 			auto result = d_first;
-			for(; first != last; ++first, ++result) { std::construct_at(std::addressof(*result), *first); }  // NOLINT(altera-unroll-loops) this is a constexpr alternative
+			for(; first != last; ++first, ++result) {
+				std::construct_at(std::addressof(*result), *first);
+			}  // NOLINT(altera-unroll-loops) this is a constexpr alternative
 			return result;
-		} else {
+		} else
+#endif
+		{
 			if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 				return ::thrust::copy(first, last, d_first);
 			} else {
@@ -332,13 +338,10 @@ class adl_uninitialized_copy_t {
 		}
 	}
 #endif
-	template<class TB, class... As       > constexpr auto _(priority<3>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRET(                        uninitialized_copy(                 std::forward<TB>(first) , std::forward<As>(args)...))
-	template<class TB, class TE, class DB> constexpr auto _(priority<4>/**/, TB&& first, TE&& last, DB&& d_first) const BOOST_MULTI_DECLRET(std::decay_t<DB>      ::uninitialized_copy(                 std::forward<TB>(first) , std::forward<TE>(last), std::forward<DB>(d_first)            ))
-	template<class TB, class... As       > constexpr auto _(priority<5>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRET(std::decay_t<TB>      ::uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...))
-	template<class TB, class... As       > constexpr auto _(priority<6>/**/, TB&& first, As&&... args       ) const BOOST_MULTI_DECLRET(std::forward<TB>(first).uninitialized_copy(                         std::forward<As>(args)...))
+ template<class TB, class... As> constexpr auto _(priority<3> /**/, TB&& first, As&&... args) const BOOST_MULTI_DECLRET(uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...)) template<class TB, class TE, class DB> constexpr auto _(priority<4> /**/, TB&& first, TE&& last, DB&& d_first) const BOOST_MULTI_DECLRET(std::decay_t<DB>::uninitialized_copy(std::forward<TB>(first), std::forward<TE>(last), std::forward<DB>(d_first))) template<class TB, class... As> constexpr auto _(priority<5> /**/, TB&& first, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<TB>::uninitialized_copy(std::forward<TB>(first), std::forward<As>(args)...)) template<class TB, class... As> constexpr auto _(priority<6> /**/, TB&& first, As&&... args) const BOOST_MULTI_DECLRET(std::forward<TB>(first).uninitialized_copy(std::forward<As>(args)...))
 
- public:
-	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
+	 public : template<class... As>
+			  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 
@@ -370,17 +373,27 @@ class adl_uninitialized_copy_n_t {
 		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 3060  // call to is_constant_evaluated appearing in a non-constexpr function always produces "false"
+#endif
+#if defined(__cpp_lib_is_constant_evaluated)
 		if(std::is_constant_evaluated()) {
 			auto result = d_first;
 			for(Size i = 0; i != count; ++i, ++first, ++result) { std::construct_at(std::addressof(*result), *first); }  // NOLINT(altera-unroll-loops) this is a constexpr alternative
 			return result;
-		} else {
+		} else
+#endif
+		{
 			if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 				return ::thrust::copy_n(first, count, d_first);
 			} else {
 				return ::thrust::uninitialized_copy_n(first, count, d_first);
 			}
 		}
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 	}
 #endif
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::    uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -705,12 +718,64 @@ inline constexpr adl_alloc_uninitialized_copy_n_t adl_alloc_uninitialized_copy_n
 
 class alloc_uninitialized_move_n_t {
 // TODO(correaa) : fallback to no alloc version
-	template<class... As>          static constexpr auto _(priority<1>/**/,          As&&... args) { return(                          xtd:: alloc_uninitialized_move_n(std::forward<As>(args)...)); }
-	template<class... As>          static constexpr auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     alloc_uninitialized_move_n(std::forward<As>(args)...))
-	template<class T, class... As> static constexpr auto _(priority<3>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
+	template<class Alloc, class InputIt, class Size, class ForwardIt>
+	static constexpr auto _(priority<1>/**/, Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 3060  // call to is_constant_evaluated appearing in a non-constexpr function always produces "false"
+#endif
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && !defined(__NVCC__)
+		if(std::is_constant_evaluated()) {
+			auto result = d_first;
+			for(Size i = 0; i != count; ++i, ++first, ++result) { std::construct_at(std::addressof(*result), std::move(*first)); }  // NOLINT(altera-unroll-loops) this is a constexpr alternative
+			return result;
+		} else 
+#endif
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
+		return xtd::alloc_uninitialized_move_n(alloc, first, count, d_first);
+	}
+
+	#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+	template<
+		class Alloc,
+		class It, class Size, class ItFwd,
+		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
+		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >,
+		class = std::enable_if_t<std::is_trivially_copyable_v<ValueType> && std::is_same_v<typename std::iterator_traits<ItFwd>::reference, ValueType&> >
+	>
+	constexpr auto _(priority<2>/**/, Alloc /*unused*/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 3060  // call to is_constant_evaluated appearing in a non-constexpr function always produces "false"
+#endif
+#if defined(__cpp_lib_is_constant_evaluated)
+		if(std::is_constant_evaluated()) {
+			auto result = d_first;
+			for(Size i = 0; i != count; ++i, ++first, ++result) { std::construct_at(std::addressof(*result), *first); }  // NOLINT(altera-unroll-loops) this is a constexpr alternative
+			return result;
+		} else
+#endif
+		{
+			if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
+				return ::thrust::copy_n(first, count, d_first);
+			} else {
+				return ::thrust::uninitialized_copy_n(first, count, d_first);
+			}
+		}
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
+	}
+#endif
+
+
+	template<class... As>          static constexpr auto _(priority<3>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     alloc_uninitialized_move_n(std::forward<As>(args)...))
+	template<class T, class... As> static constexpr auto _(priority<4>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const { return _(priority<3>(), std::forward<As>(args)...); }
+	template<class... As> constexpr auto operator()(As&&... args) const { return _(priority<4>(), std::forward<As>(args)...); }
 };
 inline constexpr alloc_uninitialized_move_n_t adl_alloc_uninitialized_move_n;
 
