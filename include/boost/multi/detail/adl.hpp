@@ -312,7 +312,7 @@ class adl_uninitialized_copy_t {
 			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::copy(std::move(first), std::move(last), std::move(d_first));
-		} else
+		} else  // NOLINT(llvm-else-after-return,readability-else-after-return,-warnings-as-errors)
 #endif
 		{
 			return std::uninitialized_copy(std::move(first), std::move(last), std::move(d_first));
