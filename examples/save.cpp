@@ -12,7 +12,7 @@
 #include <boost/archive/polymorphic_xml_iarchive.hpp>
 #include <boost/archive/polymorphic_xml_oarchive.hpp>
 
-#include "../../multi/array.hpp"
+#include <boost/multi/array.hpp>
 #include <experimental/filesystem>
 
 enum format { xml,

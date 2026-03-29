@@ -48,6 +48,11 @@ target_link_libraries(lu_fact.cpp.x PUBLIC multi)
 target_link_libraries(lu_fact.cpp.x PRIVATE ${Boost_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
+
+add_executable(save.cpp.x save.cpp)
+target_link_libraries(save.cpp.x PUBLIC multi)
+target_link_libraries(save.cpp.x PRIVATE ${Boost_LIBRARIES})
+
 find_package(TBB)
 
 if(TBB_FOUND)
