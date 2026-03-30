@@ -50,7 +50,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		using it = boost::multi::array_iterator<int, 2, int*>;
+		using it = multi::array<int, 2>::iterator;
 
 		static_assert(std::forward_iterator<it>);
 
@@ -100,7 +100,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::ranges::sort(~A2D);                   // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST(std::ranges::is_sorted(~A2D));  // NOLINT(fuchsia-default-arguments-calls)
 
-		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
+		static_assert(std::permutable<multi::array<int, 2>::iterator>);
 	}
 #endif
 
