@@ -84,7 +84,7 @@ struct array_allocator {
 	}
 
 	template<typename It>
-	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
+	constexpr auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
@@ -174,7 +174,7 @@ struct dynamic_array                                                            
 		}
 	}
 
-	template<typename It> auto uninitialized_copy_elements(It first) {
+	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
