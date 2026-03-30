@@ -718,8 +718,8 @@ struct dynamic_array                                                            
 			decltype(*std::declval<typename dynamic_array::element_const_ptr>()),
 			void>>;
 
-	using iterator       = multi::array_iterator<T, D, typename dynamic_array::element_ptr>;
-	using const_iterator = multi::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
+	using iterator       = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr>;
+	using const_iterator = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
 
 	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
@@ -1230,7 +1230,10 @@ struct inplace_array_impl<T***> {
 template<class T>
 using inplace_array = typename detail::inplace_array_impl<T>::type;
 
-/// @private
+/// A specialized multidimensional array value with zero dimensions
+///
+/// @tparam T Element type
+/// @tparam Alloc Allocator type
 template<typename T, class Alloc>
 struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;

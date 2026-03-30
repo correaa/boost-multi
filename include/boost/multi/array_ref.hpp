@@ -179,6 +179,11 @@ struct of_dim {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+namespace detail {
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
+struct array_iterator;
+}  // end namespace detail
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element      = T;
@@ -314,7 +319,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma warning(pop)
 #endif
 
-	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -407,7 +412,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
+	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
 
 	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -538,10 +543,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	}
 };
 
-/// @private
-template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
-struct array_iterator;
-
+namespace detail {
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride, class SubLayout>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
@@ -726,6 +728,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		return *this;
 	}
 };
+}  // end namespace detail
 
 /// @internal
 template<typename ElementPtr, dimensionality_type D, class StridesType>
@@ -1752,9 +1755,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
-	using iterator       = array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
-	using const_iterator = array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;
-	using move_iterator  = array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using move_iterator  = detail::array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;
 
 	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first) * first->size()), first.base()) {
@@ -2072,7 +2075,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
+	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
 	subarray(subarray const&) = delete;
@@ -2082,7 +2085,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
-	using move_iterator = array_iterator<T, D, ElementPtr, false, true>;
+	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
 
 	using typename const_subarray<T, D, ElementPtr, Layout>::element;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
@@ -2541,11 +2544,12 @@ template<class Subarray> auto diagonal(Subarray&& sarr)
 	return std::forward<Subarray>(sarr).diagonal();
 }
 
+namespace detail {
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-/// @private
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr> {};
 
 #ifdef __clang__
@@ -2565,13 +2569,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 			  IsMove,
 			  std::add_rvalue_reference_t<std::decay_t<typename std::iterator_traits<Ptr>::reference>>,
 			  typename std::iterator_traits<Ptr>::reference>>,
-	  multi::difference_type>
-// , multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>
-// , multi::decrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-// , multi::incrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-// , multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, void>
+	  multi::difference_type>  //
 {
-	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
+	using affine = multi::affine<detail::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
 		IsConst,
@@ -2756,6 +2756,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma clang diagnostic pop
 #endif
 
+}  // end namespace detail
+
 // template<class Element, dimensionality_type D, typename... Ts>
 // using iterator = array_iterator<Element, D, Ts...>;
 
@@ -2769,7 +2771,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using element      = typename types::element;
 	using element_ref  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
 	using element_cref = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
-	using iterator     = array_iterator<T, 0, ElementPtr>;
+	using iterator     = detail::array_iterator<T, 0, ElementPtr>;
 
 	using layout_type = Layout;
 
@@ -3002,7 +3004,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct array_iterator;
+	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
@@ -3378,9 +3380,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
 
-	using iterator       = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
-	using const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
-	using move_iterator  = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
+	using iterator       = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
+	using const_iterator = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
+	using move_iterator  = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
 
 	using reverse_iterator [[deprecated]]       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -4126,8 +4128,8 @@ constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> exten
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 	// require N>1 (this is important because it forces calling placement new on the pointer
-	(In first, In last, multi::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
-	while(first != last) {                                       // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	(In first, In last, multi::detail::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
+	while(first != last) {                                               // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		++dest;
