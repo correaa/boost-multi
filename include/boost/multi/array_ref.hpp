@@ -184,6 +184,9 @@ template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst
 struct array_iterator;
 }  // end namespace detail
 
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
+using array_iterator [[deprecated]] = typename detail::array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride, SubLayout>;
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element      = T;

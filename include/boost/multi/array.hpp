@@ -171,16 +171,22 @@ struct dynamic_array                                                            
 	constexpr auto uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type> && !multi::force_element_trivial_default_construction<typename dynamic_array::element_type>) {
 			return adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
+		} else {
+#ifdef __clang__
+#pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+			return this->base_ + this->num_elements();
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 	}
 
 	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
-
-	// template<typename It> auto uninitialized_move_elements(It first) {
-	//  return array_alloc::uninitialized_move_n(first, this->num_elements(), this->data_elements());
-	// }
 
 	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
 		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
@@ -219,7 +225,6 @@ struct dynamic_array                                                            
 
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref::dropped(n).element_moved(); }
 
-	// dynamic_array(dynamic_array&&) = delete;
 	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor,bugprone-exception-escape)
 	: array_alloc{other.alloc()},
 	  ref(
@@ -244,9 +249,6 @@ struct dynamic_array                                                            
 	: array_alloc{std::move(other.alloc())}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
-
-	// constexpr explicit dynamic_array(decay_type&& other) noexcept
-	// : dynamic_array(std::move(other), allocator_type{}) {}  // 6b
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
@@ -316,7 +318,6 @@ struct dynamic_array                                                            
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
-		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>                                                        // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T>  //
 		explicit dynamic_array(Range const& rng)                                                                            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
@@ -360,7 +361,6 @@ struct dynamic_array                                                            
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(modernize-type-traits) bug in clang-tidy 19.1
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
-		// class = decltype(/*dynamic_array*/ (std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of dynamic_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<!is_subarray<Range const&>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 																	  // cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	/*explicit*/ dynamic_array(Range const& rng)                      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
@@ -995,11 +995,6 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>             // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)  // 3
 	: dynamic_array(extension, value, allocator_type{}) {}
-	// : dynamic_array(extension * extensions(value)) {  // TODO(correaa) : call other constructor (above)
-	//  assert(this->stride() != 0);
-	//  using std::fill;
-	//  fill(this->begin(), this->end(), value);
-	// }
 
 	explicit dynamic_array(typename dynamic_array::extensions_type const& extensions, allocator_type const& alloc)  // 3
 	: array_alloc{alloc}, ref(dynamic_array::allocate(typename dynamic_array::layout_t{extensions}.num_elements()), extensions) {
@@ -1022,9 +1017,10 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 		uninitialized_copy(other.data_elements());
 	}
 
+	// dynamic_array(dynamic_array&& other) = delete;
 	dynamic_array(dynamic_array&& other) noexcept
-	: array_alloc{other.get_allocator()}, ref(std::exchange(other.base_, nullptr), other.extensions()) {
-		other.layout_mutable() = {};
+	: array_alloc{other.get_allocator()}, ref(std::exchange(other.base_, nullptr), other.extensions()) {  // should this move the elements? or move the object? or should be deleted?
+		other.layout_mutable() = {};                                                                      // TODO(correaa) eliminate use of mutable member
 		// other.layout_t<0>::operator=({});
 		// , ref(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extensions()) {
 		//  adl_alloc_uninitialized_move_n(
@@ -1171,7 +1167,6 @@ struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLIN
 	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_t>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		// cppcheck-suppress duplInheritedMember ; to overwrite
 		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
-																											// return dynamic_array_cast<typename dynamic_array::value_type, typename dynamic_array::element_const_ptr>(*this);
 	}
 
 	template<class Archive>
@@ -1620,19 +1615,6 @@ struct array : dynamic_array<T, D, Alloc> {
 
 		return *this;
 	}
-	// template<class... Indices> constexpr auto reindex(Indices... idxs) && -> array&& {
-	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-	//  return std::move(*this);
-	// }
-	// template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array& {
-	//  this->layout_mutable() = this->layout_mutable().creindex(idxs...);
-	//  // this->layout_mutable().reindex(idxs...);
-	//  return *this;
-	// }
-
-	// ~array() {
-	//  assert(this->stride() != 0);
-	// }
 };
 
 #ifdef __clang__
@@ -1729,23 +1711,6 @@ struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't
 #endif
 
 }  // end namespace boost::multi::pmr
-
-// common_reference for compatibility with ranges
-#if defined(__cpp_lib_common_reference) || defined(__cpp_lib_ranges)
-// TODO(correaa) achieve this by normal inheritance
-// NOLINTBEGIN(cert-dcl58-cpp)
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array     &&,          ::boost::multi::array<T, D, A...>                         &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array     &&; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array     &&,          ::boost::multi::array<T, D, A...>                    const&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array     &&; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>                         &, typename ::boost::multi::array<T, D, A...>::basic_const_array     &&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array     &&; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>                    const&, typename ::boost::multi::array<T, D, A...>::basic_const_array     &&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array     &&; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array       ,          ::boost::multi::array<T, D, A...>                         &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array       ; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>                    const&, typename ::boost::multi::array<T, D, A...>::basic_const_array const&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array const&; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array const&,          ::boost::multi::array<T, D, A...>                    const&> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array const&; };
-
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<typename ::boost::multi::array<T, D, A...>::basic_const_array      &,          ::boost::multi::array<T, D, A...>                         &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array      &; };
-// template<class T, ::boost::multi::dimensionality_type D, class... A> struct std::common_reference<         ::boost::multi::array<T, D, A...>                         &, typename ::boost::multi::array<T, D, A...>::basic_const_array      &> { using type = typename ::boost::multi::array<T, D, A...>::basic_const_array      &; };
-// NOLINTEND(cert-dcl58-cpp)
-#endif
 
 namespace boost::serialization {
 
