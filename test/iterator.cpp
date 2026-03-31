@@ -265,17 +265,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::is_sorted(arr.begin(), arr.end()) );                      // sorted by rows  // NOLINT(modernize-use-ranges,llvm-use-ranges)
 		BOOST_TEST( std::is_sorted(arr.rotated().begin(), arr.rotated().end()) );  // sorted by cols  // NOLINT(modernize-use-ranges,llvm-use-ranges)
 
-		BOOST_TEST( (*begin( arr           )).size() == arr[0].size() );
-		BOOST_TEST(   begin( arr           )->size() == arr[0].size() );
+		BOOST_TEST( (*arr.begin()).size() == arr[0].size() );
+		BOOST_TEST(   arr.begin()->size() == arr[0].size() );
 
-		BOOST_TEST( (*begin( arr.rotated() )).size() == arr.size() );
-		BOOST_TEST(   begin( arr.rotated() )->size() == arr.size() );
+		BOOST_TEST( (*arr.rotated().begin()).size() == arr.size() );
+		BOOST_TEST(   arr.rotated().begin()->size() == arr.size() );
 
-		BOOST_TEST( &((*begin( arr           )).operator[](1)) == &(arr[0][1]) );
-		BOOST_TEST( &(  begin( arr           )->operator[](1)) == &(arr[0][1]) );
+		BOOST_TEST( &((*arr.begin()).operator[](1)) == &(arr[0][1]) );
+		BOOST_TEST( &(  arr.begin()->operator[](1)) == &(arr[0][1]) );
 
-		BOOST_TEST( &((*begin( arr.rotated() )).operator[](1)) == &(arr[1][0]) );
-		BOOST_TEST( &(  begin( arr.rotated() )->operator[](1)) == &(arr[1][0]) );
+		BOOST_TEST( &((*arr.rotated().begin()).operator[](1)) == &(arr[1][0]) );
+		BOOST_TEST( &(  arr.rotated().begin()->operator[](1)) == &(arr[1][0]) );
 	}
 
 	// index_range_iteration
