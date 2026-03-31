@@ -1515,7 +1515,9 @@ headers:
 conan:
   stage: basic
   interruptible: true
-  image: conanio/gcc14:latest
   script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y python3 python3-pip cmake gcc g++ make
+    - pip3 install conan --break-system-packages
     - conan profile detect --force
     - conan create . --version 0.90.0 --build=missing
