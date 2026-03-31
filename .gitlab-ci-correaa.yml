@@ -1511,3 +1511,11 @@ headers:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+
+conan:
+  stage: basic
+  interruptible: true
+  image: conanio/gcc14:latest
+  script:
+    - conan profile detect --force
+    - conan create . --version 0.90.0 --build=missing
