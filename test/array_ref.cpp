@@ -1105,14 +1105,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
 
-			print_me1( *&multi::array_ref<int, 1>({5}, vec.data()) );
+			print_me1(*&multi::array_ref<int, 1>({5}, vec.data()));
 
 			// clang-format off
 			std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
 			// clang-format on
 
 			print_me1(arr2);
-			print_me1(*&multi::array_ref<int, 1>({6}, arr2.data()) );
+			print_me1(*&multi::array_ref<int, 1>({6}, arr2.data()));
 
 			multi::dynamic_array<int, 1> marr(
 				// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
@@ -1122,7 +1122,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				99
 			);
 
-			print_me1( *&multi::array_ref<int, 1>(10, marr.data_elements()) );
+			print_me1(*&multi::array_ref<int, 1>(10, marr.data_elements()));
 
 			// #ifndef _MSC_VER
 			auto& alias = marr;
@@ -1139,14 +1139,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			print_me2(&multi::array_ref<int, 1>{arr});
 
 			std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
-			print_me2( &multi::array_ref<int, 1>(5, vec.data()) );
+			print_me2(&multi::array_ref<int, 1>(5, vec.data()));
 
 			// clang-format off
 			std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
 			// clang-format on
 
 			//  print_me2(&arr2);  // this crashes clang-tidy
-			print_me2( &multi::array_ref<int, 1>({6}, arr2.data()) );
+			print_me2(&multi::array_ref<int, 1>({6}, arr2.data()));
 
 			//  multi::dynamic_array<int, 1> marr({10}, 99);
 			//  print_me2(&marr);  // TODO(correaa) make this work

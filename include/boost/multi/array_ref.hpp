@@ -3598,7 +3598,7 @@ struct array_ptr;
 template<class T, dimensionality_type D, typename Ptr = T*>
 using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
-}  // end namespace detail;
+}  // namespace detail
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -4077,7 +4077,6 @@ constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*>{&array};
 }
-
 }
 
 template<dimensionality_type D, class P>
