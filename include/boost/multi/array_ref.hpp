@@ -3591,6 +3591,15 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
+namespace detail {
+template<class T, dimensionality_type D, typename Ptr = T*>
+struct array_ptr;
+
+template<class T, dimensionality_type D, typename Ptr = T*>
+using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
+
+}  // end namespace detail;
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
@@ -3698,6 +3707,21 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	  ) {}
 
 	using subarray_base::operator=;
+
+ private:
+	constexpr auto addressof_aux_() const { return detail::array_ptr<T, D, ElementPtr>(this->base_, this->extensions()); }
+
+ public:
+	constexpr auto addressof() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }
+	constexpr auto addressof() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }
+	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }
+
+	// operator& is not defined for r-values anyway
+	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// [[deprecated("controversial")]]
+	// constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// // [[deprecated("controversial")]]
+	// constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 
  private:
 	template<class It> constexpr auto copy_elements_(It first) {
@@ -3990,7 +4014,8 @@ constexpr auto ref(
 	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
 
-template<class T, dimensionality_type D, typename Ptr = T*>
+namespace detail {
+template<class T, dimensionality_type D, typename Ptr /*= T* */>
 struct array_ptr
 : detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
 	using basic_ptr = detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false>;
@@ -4048,13 +4073,12 @@ class /*[[deprecated("no good uses found")]]*/ array_ptr<T, 0, Ptr> {  // TODO(c
 
 template<class TT, std::size_t N>
 constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return array_ptr<
+	return detail::array_ptr<
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*>{&array};
 }
 
-template<class T, dimensionality_type D, typename Ptr = T*>
-using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
+}
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {
@@ -4069,7 +4093,7 @@ template<class P> auto make_array_ref(P data, extensions_t<4> exts) { return mak
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) { return make_array_ref<5>(data, exts); }
 
 #ifdef __cpp_deduction_guides
-
+namespace detail {
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It) -> array_ptr<V, 0, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
@@ -4087,6 +4111,7 @@ template<
 	typename V = std::remove_all_extents_t<T[N]>, std::size_t D = std::rank_v<T[N]>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	>
 array_ptr(T (*)[N]) -> array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+}  // end namespace detail
 
 template<class Ptr> array_ref(Ptr, index_extensions<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
@@ -4123,7 +4148,7 @@ constexpr auto rotated(T (&array)[N]) noexcept {                                
 
 template<class RandomAccessIterator, dimensionality_type D>
 constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> extensions)
-	-> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
+	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
 	return {data, extensions};
 }
 

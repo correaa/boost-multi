@@ -151,15 +151,14 @@ auto main() -> int {
 
 		BOOST_TEST( arr[0][0] == 10 );
 
-		multi::array_ref<int, 2> const& Ar = *multi::array_ptr<int, 2>(arr[0].data(), {3, 5});
+		multi::array_ref<int, 2> const& Ar = *&multi::array_ref<int, 2>({3, 5}, arr[0].data());
 		BOOST_TEST( &Ar[1][3] == &arr[1][3] );
 
-		multi::array_ref<int, 2> const& Ar2 = *multi::array_ptr<int, 2>(
-			arr[0].data(),
+		multi::array_ref<int, 2> const& Ar2 = *&multi::array_ref<int, 2>(
 			{
 				{1, 1 + 3},
 				{1, 1 + 5},
-        }
+			}, arr[0].data()
 		);
 
 		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
