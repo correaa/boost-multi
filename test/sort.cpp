@@ -193,7 +193,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}};
 		// clang-format on
 
-		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
+		auto&& d2D_ref = *&multi::array_ref<double, 2>({4, 5}, &d2D[0][0]);  // NOLINT(readability-container-data-pointer) test access
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
