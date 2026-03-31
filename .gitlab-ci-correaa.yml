@@ -1134,7 +1134,9 @@ circle-latest c++20:
     - ldd ./build_latest/circle
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
+    - ulimit -c unlimited          # enable core dumps
+    - export CMAKE_CXX_COMPILER_LAUNCHER=strace
+    - CXX=`pwd`/../build_latest/circle cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["circle"]
