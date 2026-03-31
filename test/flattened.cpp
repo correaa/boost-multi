@@ -134,10 +134,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& arr = arr_original({0, 3}, {0, 5});
 
-		multi::array_iterator<int, 2, int*> const it2(arr.base(), arr.layout().sub(), arr.layout().stride());
+		multi::array<int, 2>::iterator const it2(arr.base(), arr.layout().sub(), arr.layout().stride());
 		BOOST_TEST(( *it2 == multi::array<int, 1>{0, 1, 2, 3, 4} ));
 
-		multi::array_iterator<int, 1, int*> const it1(arr.base(), arr.layout().sub().sub(), arr.layout().sub().stride());
+		multi::array<int, 1>::iterator const it1(arr.base(), arr.layout().sub().sub(), arr.layout().sub().stride());
 
 		// multi::array_iterator<int, 1, multi::array_iterator<int, 1, int*> > const bit({arr.base(), arr.base(), arr.base()}, arr.layout().sub(), arr.stride());
 
