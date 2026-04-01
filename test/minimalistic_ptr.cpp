@@ -109,7 +109,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
-		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
+
+		auto const CCP = &multi::array_ref<int, 2, pointer_type>({20, 20}, pointer_type{buffer.data()});
+
 		(*CCP)[2];  // requires operator+
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
