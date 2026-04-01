@@ -3664,8 +3664,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
 
-	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
+	explicit constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
+
+#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
+#if defined(__cpp_lib_span)
+	template<class Dummy = void*, std::enable_if_t<sizeof(Dummy) && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// explicit converts a more primitive type into a more powerful type (also removing explicit generates a problem with nvc++ 26)
+	explicit constexpr array_ref(std::span<typename array_ref::element_type>&& data_ref)
+	: array_ref({static_cast<typename array_ref::size_type>(data_ref.size())}, data_ref.data()) { (void)std::move(data_ref); }
+#endif
+#endif
 
 	// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)  // compatibility with legacy c-arrays
 	template<
