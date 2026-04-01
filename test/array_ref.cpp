@@ -164,7 +164,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{150, 160, 170, 180, 190},
 		};
 
-		multi::array_ptr<int, 2> const map{&arr};
+		auto map = &multi::array_ref<int, 2>(arr);
+		// multi::array_ptr<int, 2> const map{&arr};
 
 		BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );
 		BOOST_TEST( &map->operator[](1)[1] == &arr[1][1] );
@@ -316,7 +317,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};  // NOLINT(misc-include-cleaner) bug in clang-tidy 18.1.3
 		// clang-format on
 
-		multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);
+		multi::array_ref<std::string, 1> mar = *&multi::array_ref<std::string, 1>(stdarr);  // *multi::array_ptr<std::string, 1>(&stdarr);
 
 		BOOST_TEST( &mar[1] == &stdarr[1] );
 		BOOST_TEST( sizes(mar.reindexed(1)) == sizes(mar) );
@@ -355,7 +356,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// clang-format on
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
-		multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
+		multi::array_ref<double, 2> mar = *&multi::array_ref<double, 2>(arr);
 		BOOST_TEST( &mar[1][1] == &arr[1][1] );
 	}
 
@@ -376,7 +377,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
-		multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&arr);
+		multi::array_ref<double, 2> mar = *&multi::array_ref<double, 2>(arr);
 
 		BOOST_TEST( &mar[1][1] == &arr[1][1] );
 
@@ -469,7 +470,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
-		auto const& mar = *multi::array_ptr<double, 2>(&arr);
+		auto const& mar = *&multi::array_ref<double, 2>(arr);
 		BOOST_TEST( mar.size() == 4 );
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
@@ -669,7 +670,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 	std::array<std::string, 5> arr = {{"a", "b", "c", "d", "e"}};
 		// clang-format on
-		multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>{&arr};
+		multi::array_ref<std::string, 1>&& mar = *&multi::array_ref<std::string, 1>{arr};
 		// multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
 
 		BOOST_TEST(  extension(mar).first() == 0 );
@@ -1074,7 +1075,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::cout << "\n\n";
 		};
 
-		auto print_me2 = [](multi::array_ptr<int, 1> const& ptr) {
+		auto print_me2 = [](auto const ptr) {
 			std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
 			std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) { std::cout << elem << ' '; });
 			std::cout << "\n\n";
@@ -1104,14 +1105,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
 
-			print_me1(*multi::array_ptr<int, 1>{vec.data(), 5});
+			print_me1(*&multi::array_ref<int, 1>({5}, vec.data()));
 
 			// clang-format off
-		std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
+			std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
 			// clang-format on
 
 			print_me1(arr2);
-			print_me1(*multi::array_ptr<int, 1>{arr2.data(), {6}});
+			print_me1(*&multi::array_ref<int, 1>({6}, arr2.data()));
 
 			multi::dynamic_array<int, 1> marr(
 				// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
@@ -1121,7 +1122,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				99
 			);
 
-			print_me1(*multi::array_ptr<int, 1>(marr.data_elements(), 10));
+			print_me1(*&multi::array_ref<int, 1>(10, marr.data_elements()));
 
 			// #ifndef _MSC_VER
 			auto& alias = marr;
@@ -1135,18 +1136,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
-			print_me2(multi::array_ptr<int, 1>{&arr});
-			print_me2(&arr);
+			print_me2(&multi::array_ref<int, 1>{arr});
 
 			std::vector<int> vec = {1, 2, 3, 4, 5};  // NOLINT(fuchsia-default-arguments-calls)
-			print_me2({vec.data(), 5});
+			print_me2(&multi::array_ref<int, 1>(5, vec.data()));
 
 			// clang-format off
-		std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
+			std::array<int, 6> arr2 = {{1, 2, 3, 4, 5, 6}};
 			// clang-format on
 
 			//  print_me2(&arr2);  // this crashes clang-tidy
-			print_me2({arr2.data(), {6}});
+			print_me2(&multi::array_ref<int, 1>({6}, arr2.data()));
 
 			//  multi::dynamic_array<int, 1> marr({10}, 99);
 			//  print_me2(&marr);  // TODO(correaa) make this work
@@ -1171,7 +1171,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
-		multi::array_ref<int, 2> mar = *multi::array_ptr<int, 2>(&arr);
+		multi::array_ref<int, 2> mar = *&multi::array_ref<int, 2>(arr);
 
 		BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[0] == &arr[0][0] );
 		BOOST_TEST( &mar({0, 3}, {0, 3}).diagonal()[1] == &arr[1][1] );
