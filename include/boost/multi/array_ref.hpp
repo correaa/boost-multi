@@ -3717,6 +3717,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }
 
 	// operator& is not defined for r-values anyway
+	// NOLINTNEXTLINE(google-runtime-operator)
 	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 	// [[deprecated("controversial")]]
 	// constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
@@ -4077,7 +4078,10 @@ constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*>{&array};
 }
-}
+}  // namespace detail
+
+template<class T, dimensionality_type D, typename Ptr = T*>
+using array_ptr [[deprecated]] = detail::array_ptr<T, D, Ptr>;
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {
