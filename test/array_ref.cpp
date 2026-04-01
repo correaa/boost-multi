@@ -1124,7 +1124,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			print_me1(*&multi::array_ref<int, 1>(10, marr.data_elements()));
 
-			// #ifndef _MSC_VER
 			auto& alias = marr;
 
 			marr = alias;
@@ -1132,8 +1131,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			marr = alias();
 			BOOST_TEST(marr[5] == 99);
-			// #endif
 		}
+#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
+#if defined(__cpp_lib_span)
+		{
+			std::vector<int> vec = {1, 2, 3};
+
+			multi::array_ref<int, 1> aref(std::span{vec});
+			BOOST_TEST( &aref[1] == &vec[1] );
+		}
+		{
+			std::vector<int> vec = {1, 2, 3};
+
+			multi::array_ref<int, 1> aref(std::span{vec});
+			BOOST_TEST( &aref[1] == &vec[1] );
+		}
+#endif
+#endif
 		{
 			int arr[] = {1, 2, 3, 4};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test c-arrays
 			print_me2(&multi::array_ref<int, 1>{arr});
