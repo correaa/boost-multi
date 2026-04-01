@@ -154,12 +154,15 @@ auto main() -> int {
 		multi::array_ref<int, 2> const& Ar = *&multi::array_ref<int, 2>({3, 5}, arr[0].data());
 		BOOST_TEST( &Ar[1][3] == &arr[1][3] );
 
+		// clang-format off
 		multi::array_ref<int, 2> const& Ar2 = *&multi::array_ref<int, 2>(
 			{
 				{1, 1 + 3},
 				{1, 1 + 5},
-			}, arr[0].data()
+			},
+			arr[0].data()
 		);
+		// clang-format on
 
 		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
 		BOOST_TEST( &Ar2[1][1] == arr[0].data() );
