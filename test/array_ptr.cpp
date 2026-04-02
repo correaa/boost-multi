@@ -115,7 +115,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);
 
-			BOOST_TEST( (*arrP).extensions() == multi::extensions(arr) );
+			BOOST_TEST( (*arrP).extensions() == multi::extensions(arr) );  // cppcheck-suppress danglingTemporaryLifetime ;
 			BOOST_TEST( arrP->extensions() == multi::extensions(arr) );
 			BOOST_TEST( extensions(*arrP) == multi::extensions(arr) );
 
@@ -126,14 +126,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arrP->operator[](1)[1] == &arr[1][1] );
 
 			auto const arrP2 = &multi::array_ref<double, 2>(arr);
-			BOOST_TEST( arrP == arrP2 );
+			BOOST_TEST( arrP == arrP2 );  // cppcheck-suppress danglingTemporaryLifetime ;
 			BOOST_TEST( !(arrP != arrP2) );
 
 			std::array<std::array<double, 5>, 4> arr2{};
 
 			auto arr2P = &multi::array_ref<double, 2>{arr2};
 
-			BOOST_TEST( arr2P != arrP );
+			BOOST_TEST( arr2P != arrP );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime] ;
 			BOOST_TEST( !(arr2P == arrP) );
 
 			arr2P = arrP;
@@ -143,15 +143,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(  (*arrP).operator==(*arrP) );
 			BOOST_TEST(  arrP->operator==(*arrP) );
 
-			auto&& arrR = *arrP;
-			BOOST_TEST( &arrR[1][1] == &arr[1][1] );
-			BOOST_TEST( arrR == *arrP );
+			auto&& arrR = *arrP;                  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( &arrR[1][1] == &arr[1][1] );  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( arrR == *arrP );              // cppcheck-suppress danglingTempReference
 
-			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );
-			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );
+			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );      // cppcheck-suppress danglingTempReference
 
-			BOOST_TEST( arrR.size() == (*arrP).size() );
-			BOOST_TEST( size(arrR) == arrP->size() );
+			BOOST_TEST( arrR.size() == (*arrP).size() );  // cppcheck-suppress danglingTempReference ;
+			BOOST_TEST( size(arrR) == arrP->size() );     // cppcheck-suppress danglingTempReference ;
 		}
 		{
 			// clang-format off
@@ -179,7 +179,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const v1P2D = &multi::array_ref<int, 2>({10, 10}, v1.data());
 			auto const v2P2D = &multi::array_cref<int, 2>({10, 10}, v2.data());
 
-			*v1P2D = *v2P2D;
+			*v1P2D = *v2P2D;  // cppcheck-suppress danglingTemporaryLifetime
 			(*v1P2D).operator=(*v2P2D);
 			BOOST_TEST( v1[8] == 40 );
 

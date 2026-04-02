@@ -79,7 +79,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( dd == doub );
 
 			auto const ap1 = &multi::array_ref<int, 1>(multi::extensions_t<1>({0, 1}), &doub);
-			BOOST_TEST( (*ap1).base() == &doub );
+			BOOST_TEST( (*ap1).base() == &doub );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime] ;
 			BOOST_TEST( ap1->base() == &doub );
 		}
 		{
