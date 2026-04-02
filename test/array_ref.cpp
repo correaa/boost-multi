@@ -1134,7 +1134,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 #if defined(__cpp_lib_span)
-#if !defined(__GNUC__) || __GNUC__ > 10
+#if !defined(__GNUC__) || __GNUC__ > 11
 		{
 			std::vector<int> vec = {1, 2, 3};
 
@@ -1142,6 +1142,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &aref[1] == &vec[1] );
 		}
 #endif
+		{
+			std::vector<int> vec = {1, 2, 3};
+
+			multi::array_ref<int, 1> aref(std::span(vec));
+			BOOST_TEST( &aref[1] == &vec[1] );
+		}
 		{
 			std::vector<int> vec = {1, 2, 3};
 
