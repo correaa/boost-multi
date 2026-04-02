@@ -1786,18 +1786,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
-	constexpr auto addressof() && -> ptr { return addressof_aux_(); }
-	constexpr auto addressof() & -> ptr { return addressof_aux_(); }
-	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
+	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 
 	// operator& is not defined for r-values anyway
-	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 
 	// NOLINTEND(google-runtime-operator)
 
@@ -3721,13 +3721,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto addressof_aux_() const { return detail::array_ptr<T, D, ElementPtr>(this->base_, this->extensions()); }
 
  public:
-	constexpr auto addressof() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }
-	constexpr auto addressof() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }
-	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }
+	constexpr auto addressof() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }       // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }        // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 
 	// operator& is not defined for r-values anyway
 	// NOLINTNEXTLINE(google-runtime-operator)
-	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  // NOLINT(runtime/operator)  //NOSONAR
 	// [[deprecated("controversial")]]
 	// constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 	// // [[deprecated("controversial")]]
