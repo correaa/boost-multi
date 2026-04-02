@@ -1793,11 +1793,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 
 	// operator& is not defined for r-values anyway
-	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator)  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 
 	// NOLINTEND(google-runtime-operator)
 
