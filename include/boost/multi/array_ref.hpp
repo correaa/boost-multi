@@ -179,6 +179,14 @@ struct of_dim {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+namespace detail {
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
+struct array_iterator;
+}  // end namespace detail
+
+template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
+using array_iterator [[deprecated]] = typename detail::array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride, SubLayout>;
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element      = T;
@@ -314,7 +322,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma warning(pop)
 #endif
 
-	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
+	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
 
 	using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
@@ -359,6 +367,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma clang diagnostic pop
 #endif
 
+namespace detail {
 /// Pointer-like type to a `subarray`, providing an extra level of indirection
 ///
 /// Corresponds to `subarray` the way a raw pointer corresponds to a reference.
@@ -371,10 +380,12 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 /// @tparam IsConst Whether the pointed-to subarray is const
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
 struct subarray_ptr;
+}  // end namespace detail
 
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>>
-using const_subarray_ptr = subarray_ptr<T, D, ElementPtr, Layout, true>;
+using const_subarray_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
 
+namespace detail {
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst = false>
 struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
 : boost::multi::iterator_facade<
@@ -407,7 +418,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class> friend struct array_iterator;
+	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
 
 	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -537,11 +548,9 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		return *this;
 	}
 };
+}  // end namespace detail
 
-/// @private
-template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
-struct array_iterator;
-
+namespace detail {
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride, class SubLayout>
 struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
@@ -726,6 +735,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		return *this;
 	}
 };
+}  // end namespace detail
 
 /// @internal
 template<typename ElementPtr, dimensionality_type D, class StridesType>
@@ -1752,14 +1762,9 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
-	using iterator       = array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
-	using const_iterator = array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;
-	using move_iterator  = array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;
-
-	// using  move_iterator = array_iterator<element, D, element_move_ptr >;
-
-	// using       reverse_iterator [[deprecated]] = std::reverse_iterator<      iterator>;
-	// using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
+	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;
+	using move_iterator  = detail::array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;
 
 	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first) * first->size()), first.base()) {
@@ -1767,10 +1772,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	friend BOOST_MULTI_HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::subarray<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+	template<class It>
+	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
 
  public:
-	using ptr       = subarray_ptr<T, D, ElementPtr, Layout, false>;
+	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
 	using pointer       = ptr;
@@ -1780,18 +1786,18 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
  public:
-	constexpr auto addressof() && -> ptr { return addressof_aux_(); }
-	constexpr auto addressof() & -> ptr { return addressof_aux_(); }
-	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }
+	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 
 	// operator& is not defined for r-values anyway
-	constexpr auto operator&() && { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
-	constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 
 	// NOLINTEND(google-runtime-operator)
 
@@ -2074,9 +2080,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	: subarray(other.layout(), other.mutable_base()) {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
-	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
+	template<typename, multi::dimensionality_type, typename, class, bool> friend struct detail::subarray_ptr;
 
-	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct array_iterator;
+	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
 	subarray(subarray const&) = delete;
@@ -2086,7 +2092,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
-	using move_iterator = array_iterator<T, D, ElementPtr, false, true>;
+	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
 
 	using typename const_subarray<T, D, ElementPtr, Layout>::element;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
@@ -2105,7 +2111,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	subarray(subarray&&) noexcept = default;
 	~subarray()                   = default;
 
-	using ptr = subarray_ptr<T, D, ElementPtr, Layout, false>;
+	using ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	// clang-format off
 	#ifdef __clang__
@@ -2114,9 +2120,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	#endif
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&() && { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&() && { return detail::subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 	// cppcheck-suppress duplInheritedMember ; to overwrite  // NOLINTNEXTLINE(runtime/operator)
-	BOOST_MULTI_HD constexpr auto operator&() & { return subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&() & { return detail::subarray_ptr<T, D, ElementPtr, Layout, false>(this->base_, this->layout()); }  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed  //NOSONAR
 
 	#ifdef __clang__
 	#pragma clang diagnostic pop
@@ -2545,11 +2551,12 @@ template<class Subarray> auto diagonal(Subarray&& sarr)
 	return std::forward<Subarray>(sarr).diagonal();
 }
 
+namespace detail {
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-/// @private
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr> {};
 
 #ifdef __clang__
@@ -2569,13 +2576,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 			  IsMove,
 			  std::add_rvalue_reference_t<std::decay_t<typename std::iterator_traits<Ptr>::reference>>,
 			  typename std::iterator_traits<Ptr>::reference>>,
-	  multi::difference_type>
-// , multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>
-// , multi::decrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-// , multi::incrementable<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>>
-// , multi::totally_ordered2<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, void>
+	  multi::difference_type>  //
 {
-	using affine = multi::affine<array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
+	using affine = multi::affine<detail::array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>, multi::difference_type>;
 
 	using pointer = std::conditional_t<
 		IsConst,
@@ -2760,6 +2763,8 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 #pragma clang diagnostic pop
 #endif
 
+}  // end namespace detail
+
 // template<class Element, dimensionality_type D, typename... Ts>
 // using iterator = array_iterator<Element, D, Ts...>;
 
@@ -2773,7 +2778,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using element      = typename types::element;
 	using element_ref  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
 	using element_cref = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
-	using iterator     = array_iterator<T, 0, ElementPtr>;
+	using iterator     = detail::array_iterator<T, 0, ElementPtr>;
 
 	using layout_type = Layout;
 
@@ -2881,7 +2886,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	BOOST_MULTI_HD constexpr auto operator&() const& {  // NOLINT(google-runtime-operator)
-		return /*TODO(correaa) add const*/ subarray_ptr<T, 0, ElementPtr, Layout, false>(this->base_, this->layout());
+		return /*TODO(correaa) add const*/ detail::subarray_ptr<T, 0, ElementPtr, Layout, false>(this->base_, this->layout());
 	}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
@@ -3006,7 +3011,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  protected:
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct array_iterator;
+	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
@@ -3382,9 +3387,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
 
-	using iterator       = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
-	using const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
-	using move_iterator  = typename multi::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
+	using iterator       = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
+	using const_iterator = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
+	using move_iterator  = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
 
 	using reverse_iterator [[deprecated]]       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -3586,6 +3591,15 @@ constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto)
 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
+namespace detail {
+template<class T, dimensionality_type D, typename Ptr = T*>
+struct array_ptr;
+
+template<class T, dimensionality_type D, typename Ptr = T*>
+using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
+
+}  // namespace detail
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
@@ -3650,8 +3664,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
 
-	constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
+	explicit constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
+
+#if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
+#if defined(__cpp_lib_span)
+	template<class Dummy = void*, std::enable_if_t<sizeof(Dummy) && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// explicit converts a more primitive type into a more powerful type (also removing explicit generates a problem with nvc++ 26)
+	explicit constexpr array_ref(std::span<typename array_ref::element_type>&& data_ref)
+	: array_ref({static_cast<typename array_ref::size_type>(data_ref.size())}, data_ref.data()) { (void)std::move(data_ref); }
+#endif
+#endif
 
 	// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)  // compatibility with legacy c-arrays
 	template<
@@ -3693,6 +3716,22 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	  ) {}
 
 	using subarray_base::operator=;
+
+ private:
+	constexpr auto addressof_aux_() const { return detail::array_ptr<T, D, ElementPtr>(this->base_, this->extensions()); }
+
+ public:
+	constexpr auto addressof() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }       // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }        // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+
+	// operator& is not defined for r-values anyway
+	// NOLINTNEXTLINE(google-runtime-operator)
+	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  // NOLINT(runtime/operator)  //NOSONAR
+	// [[deprecated("controversial")]]
+	// constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// // [[deprecated("controversial")]]
+	// constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
 
  private:
 	template<class It> constexpr auto copy_elements_(It first) {
@@ -3985,10 +4024,11 @@ constexpr auto ref(
 	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
 }
 
-template<class T, dimensionality_type D, typename Ptr = T*>
+namespace detail {
+template<class T, dimensionality_type D, typename Ptr /*= T* */>
 struct array_ptr
-: subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
-	using basic_ptr = subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false>;
+: detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
+	using basic_ptr = detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false>;
 
 	constexpr array_ptr(Ptr data, multi::extensions_t<D> extensions)
 	: basic_ptr{data, typename array_ref<T, D, Ptr>::layout_t(extensions)} {}
@@ -4008,7 +4048,7 @@ struct array_ptr
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
-		return array_ref<T, D, Ptr>((*static_cast<subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extensions(), this->base());
+		return array_ref<T, D, Ptr>((*static_cast<detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extensions(), this->base());
 	}
 };
 
@@ -4043,13 +4083,14 @@ class /*[[deprecated("no good uses found")]]*/ array_ptr<T, 0, Ptr> {  // TODO(c
 
 template<class TT, std::size_t N>
 constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return array_ptr<
+	return detail::array_ptr<
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*>{&array};
 }
+}  // namespace detail
 
 template<class T, dimensionality_type D, typename Ptr = T*>
-using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template rebind<T const>>;
+using array_ptr [[deprecated]] = detail::array_ptr<T, D, Ptr>;
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {
@@ -4064,7 +4105,7 @@ template<class P> auto make_array_ref(P data, extensions_t<4> exts) { return mak
 template<class P> auto make_array_ref(P data, extensions_t<5> exts) { return make_array_ref<5>(data, exts); }
 
 #ifdef __cpp_deduction_guides
-
+namespace detail {
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It) -> array_ptr<V, 0, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
@@ -4082,6 +4123,7 @@ template<
 	typename V = std::remove_all_extents_t<T[N]>, std::size_t D = std::rank_v<T[N]>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	>
 array_ptr(T (*)[N]) -> array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+}  // end namespace detail
 
 template<class Ptr> array_ref(Ptr, index_extensions<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
 template<class Ptr> array_ref(Ptr, index_extensions<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
@@ -4118,7 +4160,7 @@ constexpr auto rotated(T (&array)[N]) noexcept {                                
 
 template<class RandomAccessIterator, dimensionality_type D>
 constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> extensions)
-	-> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
+	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
 	return {data, extensions};
 }
 
@@ -4130,8 +4172,8 @@ constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> exten
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 	// require N>1 (this is important because it forces calling placement new on the pointer
-	(In first, In last, multi::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
-	while(first != last) {                                       // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	(In first, In last, multi::detail::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
+	while(first != last) {                                               // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		++dest;

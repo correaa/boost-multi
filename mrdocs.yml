@@ -31,7 +31,7 @@ include-symbols:
   - "boost::multi"
 exclude-symbols:
   - "boost::multi::detail"
-  - "boost::multi::array<T, 0"
+  - "boost::multi::array<T, 0*"
   - "boost::multi::array_iterator"
   - "boost::multi::array_ptr<T, 0"
   - "boost::multi::array_traits"

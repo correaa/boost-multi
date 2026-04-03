@@ -50,7 +50,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( !std::ranges::is_sorted(A2D) );  // NOLINT(fuchsia-default-arguments-calls)
 
-		using it = boost::multi::array_iterator<int, 2, int*>;
+		using it = multi::array<int, 2>::iterator;
 
 		static_assert(std::forward_iterator<it>);
 
@@ -100,7 +100,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::ranges::sort(~A2D);                   // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_TEST(std::ranges::is_sorted(~A2D));  // NOLINT(fuchsia-default-arguments-calls)
 
-		static_assert(std::permutable<boost::multi::array_iterator<int, 2, int*>>);
+		static_assert(std::permutable<multi::array<int, 2>::iterator>);
 	}
 #endif
 
@@ -193,7 +193,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}};
 		// clang-format on
 
-		auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
+		auto&& d2D_ref = *&multi::array_ref<double, 2>({4, 5}, &d2D[0][0]);  // NOLINT(readability-container-data-pointer) test access
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );

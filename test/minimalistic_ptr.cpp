@@ -109,8 +109,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
-		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
-		(*CCP)[2];  // requires operator+
+
+		auto const CCP = &multi::array_ref<int, 2, pointer_type>({20, 20}, pointer_type{buffer.data()});
+
+		(*CCP)[2];  // cppcheck-suppress danglingTemporaryLifetime
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
 
@@ -128,14 +130,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( pcd == pd );
 
 		{
-			auto&& REF = *CCP;
-			(void)REF;
-			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int>>);
+			auto&& REF = *CCP;                                                                                          // cppcheck-suppress danglingTempReference ;
+			(void)REF;                                                                                                  // cppcheck-suppress danglingTempReference ;
+			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int>>);  // cppcheck-suppress danglingTempReference ;
 		}
 		{
-			auto const& REF = *CCP;
-			(void)REF;
-			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
+			auto const& REF = *CCP;                                                                                           // cppcheck-suppress danglingTempReference ;
+			(void)REF;                                                                                                        // cppcheck-suppress danglingTempReference ;
+			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);  // cppcheck-suppress danglingTempReference ;
 		}
 	}
 

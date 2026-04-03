@@ -265,25 +265,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::is_sorted(arr.begin(), arr.end()) );                      // sorted by rows  // NOLINT(modernize-use-ranges,llvm-use-ranges)
 		BOOST_TEST( std::is_sorted(arr.rotated().begin(), arr.rotated().end()) );  // sorted by cols  // NOLINT(modernize-use-ranges,llvm-use-ranges)
 
-		BOOST_TEST( (*begin( arr           )).size() == arr[0].size() );
-		BOOST_TEST(   begin( arr           )->size() == arr[0].size() );
+		BOOST_TEST( (*arr.begin()).size() == arr[0].size() );
+		BOOST_TEST(   arr.begin()->size() == arr[0].size() );
 
-		BOOST_TEST( (*begin( arr.rotated() )).size() == arr.size() );
-		BOOST_TEST(   begin( arr.rotated() )->size() == arr.size() );
+		BOOST_TEST( (*arr.rotated().begin()).size() == arr.size() );
+		BOOST_TEST(   arr.rotated().begin()->size() == arr.size() );
 
-		BOOST_TEST( &((*begin( arr           )).operator[](1)) == &(arr[0][1]) );
-		BOOST_TEST( &(  begin( arr           )->operator[](1)) == &(arr[0][1]) );
+		BOOST_TEST( &((*arr.begin()).operator[](1)) == &(arr[0][1]) );
+		BOOST_TEST( &(  arr.begin()->operator[](1)) == &(arr[0][1]) );
 
-		BOOST_TEST( &((*begin( arr.rotated() )).operator[](1)) == &(arr[1][0]) );
-		BOOST_TEST( &(  begin( arr.rotated() )->operator[](1)) == &(arr[1][0]) );
+		BOOST_TEST( &((*arr.rotated().begin()).operator[](1)) == &(arr[1][0]) );
+		BOOST_TEST( &(  arr.rotated().begin()->operator[](1)) == &(arr[1][0]) );
 	}
 
 	// index_range_iteration
 	{
 		multi::index_range irng(0, 5);  // semiopen interval
 		std::ostringstream out;
-		std::copy(irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>(out, ","));  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
-		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});                                                   // NOLINT(fuchsia-default-arguments-calls)
+		std::copy(  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
+			irng.begin(), irng.end(), std::ostream_iterator<multi::index_range::value_type>(out, ",")
+		);
+
+		BOOST_TEST_EQ(out.str(), std::string{"0,1,2,3,4,"});  // NOLINT(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( std::accumulate(begin(irng), end(irng), static_cast<multi::index_range::value_type>(0U)) == irng.size()*(irng.size()-1)/2 );
 

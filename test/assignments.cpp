@@ -177,8 +177,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> wec(5 * 7L, 33);  // NOLINT(fuchsia-default-arguments-calls)
 
-			multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
-			make_ref(vec.data()) = *Bp;
+			auto Bp = &multi::array_ref<int, 2>({5, 7}, wec.data());
+			// multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
+			make_ref(vec.data()) = *Bp;  // cppcheck-suppress danglingTemporaryLifetime
 
 			auto&& mref = make_ref(vec.data());
 			// mref        = (*Bp).sliced(0, 5);

@@ -1,5 +1,6 @@
 \documentclass{beamer}
 \usetheme{Madrid}  % or another theme
+\usepackage{tikz}
 
 \title{Generic Programming for Multidimensional Arrays}
 \author{Alfredo A. Correa}
@@ -12,6 +13,90 @@
 \begin{frame}
 \frametitle{First Slide}
 Your content here
+\end{frame}
+
+\begin{frame}{A bit about myself}
+\begin{itemize}
+  \item Physicist
+  \item Group Leader Quantum Simulations Group at Lawrence Livermore Lab
+  \item UC Berkeley -> LLNL -> Stanford -> LLNL -> Stanford
+  \item Simulating Quantum Mechanics (with Classical Computers, for now)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{My C++ journey}
+\begin{itemize}
+  \item Solid state physics (materials simulations)
+  \item Community is historically FORTRAN
+  \item Always in search for the perfect language for simulations (tried Mathematica, C, Smalltalk, Matlab)
+  \item Many false starts with C++, object-oriented, pointless template MP, multiple dispatching, DSLs
+  \item ...until I found Stepanov's works, understood the STL, all clicked
+  \item Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Multidimensional Arrays}
+\begin{center}
+\begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
+
+  % All diagrams share top y = 2.8 (index labels), cells start at y = 2.4 down
+
+  % --- 1D ---
+  \node[anchor=east] at (-0.2, 2.15) {\textbf{1D}};
+  \foreach \i/\val in {0/a, 1/b, 2/c} {
+    \draw (\i*1.1, 1.7) rectangle (\i*1.1+1.0, 2.7);
+    \node at (\i*1.1+0.5, 2.2) {\val};
+    \node[font=\tiny] at (\i*1.1+0.5, 2.85) {\i};
+  }
+
+  % --- 2D ---
+  \node[anchor=east] at (4.0, 2.65) {\textbf{2D}};
+  % row 0
+  \draw (4.2, 1.7) rectangle (5.1, 2.6); \node at (4.65, 2.15) {f};
+  \draw (5.1, 1.7) rectangle (6.0, 2.6); \node at (5.55, 2.15) {g};
+  \draw (6.0, 1.7) rectangle (6.9, 2.6); \node at (6.45, 2.15) {h};
+  % row 1
+  \draw (4.2, 0.8) rectangle (5.1, 1.7); \node at (4.65, 1.25) {i};
+  \draw (5.1, 0.8) rectangle (6.0, 1.7); \node at (5.55, 1.25) {j};
+  \draw (6.0, 0.8) rectangle (6.9, 1.7); \node at (6.45, 1.25) {k};
+  % col indices
+  \foreach \col in {0,1,2} { \node[font=\tiny] at (4.65+\col*0.9, 2.85) {\col}; }
+  % row indices
+  \node[font=\tiny] at (3.95, 2.15) {0};
+  \node[font=\tiny] at (3.95, 1.25) {1};
+
+  % --- 3D ---
+  \node[anchor=east] at (8.2, 2.65) {\textbf{3D}};
+  \def\ox{8.4} \def\oy{0.8} \def\oz{0.55}
+  \foreach \layer in {1, 0} {
+    \foreach \row in {0, 1} {
+      \foreach \col in {0, 1, 2} {
+        \pgfmathsetmacro{\x}{\ox + \col*0.82 + \layer*\oz}
+        \pgfmathsetmacro{\y}{\oy + (1-\row)*0.82 + \layer*\oz}
+        \draw[fill=white] (\x, \y) rectangle (\x+0.75, \y+0.75);
+      }
+    }
+  }
+  % layer 0 labels
+  \node at (8.78, 1.17) {p}; \node at (9.60, 1.17) {q}; \node at (10.42, 1.17) {r};
+  \node at (8.78, 1.99) {m}; \node at (9.60, 1.99) {n}; \node at (10.42, 1.99) {o};
+  % layer 1 labels
+  \node at (9.33, 1.72) {u}; \node at (10.15, 1.72) {v}; \node at (10.97, 1.72) {w};
+  \node at (9.33, 2.54) {x}; \node at (10.15, 2.54) {y}; \node at (10.97, 2.54) {z};
+  % col indices (top)
+  \foreach \col in {0,1,2} { \node[font=\tiny] at (8.78+\col*0.82, 2.85) {\col}; }
+  % row indices
+  \node[font=\tiny] at (8.05, 1.99) {0};
+  \node[font=\tiny] at (8.05, 1.17) {1};
+  % depth indices
+  \node[font=\tiny] at (9.15, 2.72) {0};
+  \node[font=\tiny] at (9.70, 2.72) {1};
+
+  % ND label
+  \node[font=\normalsize] at (12.4, 1.8) {\textbf{4D\ldots ND}};
+
+\end{tikzpicture}
+\end{center}
 \end{frame}
 
 \begin{frame}
