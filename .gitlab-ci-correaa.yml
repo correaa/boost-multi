@@ -1488,7 +1488,7 @@ conan:
   needs: ["g++"]
 
 github-ci-status:
-  stage: build
+  stage: test
   interruptible: true
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates curl jq
