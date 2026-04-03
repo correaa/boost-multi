@@ -1497,4 +1497,4 @@ github-ci-status:
     - STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion)
     - echo "GitHub CI status $STATUS"
     - test "$STATUS" = "success"
-  needs: ["g++","clang++","cuda","nvhpc"]
+  needs: ["g++","cuda","nvhpc","clang++-latest tidy iwyu everything"]
