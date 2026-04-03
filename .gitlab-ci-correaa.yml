@@ -1486,3 +1486,17 @@ conan:
     - conan profile detect --force
     - conan create . --version 0.90.0 --build=missing
   needs: ["g++"]
+
+github-ci-status:
+  stage: build
+  interruptible: true
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y curl jq
+    - |
+      STATUS=$(curl -s \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=master&per_page=1" \
+        | jq -r '.workflow_runs[0].conclusion')
+    - echo "GitHub CI status: $STATUS"
+    - test "$STATUS" = "success"
+  needs: ["g++","clang++"]
