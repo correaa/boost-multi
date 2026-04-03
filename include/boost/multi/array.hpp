@@ -793,8 +793,14 @@ using static_array [[deprecated("static_array has been renamed to dynamics_array
 #pragma clang diagnostic pop
 #endif
 
+/// A specialization for zero dimensions
+///
+/// The array might or might not contain an element
+///
+/// @tparam T Element type
+/// @tparam Alloc Allocator type
 template<typename T, class Alloc>
-struct dynamic_array<T, ::boost::multi::dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : design
+struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : design
 : protected detail::array_allocator<Alloc>
 , public array_ref<T, 0, typename multi::allocator_traits<typename detail::array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename dynamic_array::element_type>, "allocator value type must match array value type");
