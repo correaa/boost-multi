@@ -187,6 +187,7 @@ struct array_iterator;
 template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
 using array_iterator [[deprecated]] = typename detail::array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride, SubLayout>;
 
+namespace detail {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element      = T;
@@ -259,12 +260,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::is_compact;
 
-	// friend constexpr auto                size(array_types const& self) noexcept -> size_type { return self.size(); }
-	// friend BOOST_MULTI_HD constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
-	// friend constexpr auto                num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
-
-	friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
-	friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
+	// friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
+	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
@@ -361,6 +358,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
+}  // namespace detail
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1180,11 +1178,11 @@ template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct 
 #endif
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-struct const_subarray : array_types<T, D, ElementPtr, Layout> {
-	using types = array_types<T, D, ElementPtr, Layout>;
+struct const_subarray : detail::array_types<T, D, ElementPtr, Layout> {
+	using types = detail::array_types<T, D, ElementPtr, Layout>;
 	using ref_  = const_subarray;
 
-	using array_types<T, D, ElementPtr, Layout>::rank_v;
+	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend struct const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
@@ -1194,7 +1192,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using layout_type = Layout;
 
 	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
-	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
+	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return detail::array_types<T, D, ElementPtr, Layout>::layout(); }
 
 	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
@@ -1203,7 +1201,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	auto operator=(const_subarray&&) -> const_subarray&      = delete;
 
 	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& base)
-	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
+	: detail::array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
  protected:
 	// using types::types;
@@ -2773,9 +2771,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 /// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
-: public array_types<T, 0, ElementPtr, Layout> {
+: public detail::array_types<T, 0, ElementPtr, Layout> {
  public:
-	using types = array_types<T, 0, ElementPtr, Layout>;
+	using types = detail::array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
 	using element      = typename types::element;
@@ -2924,12 +2922,12 @@ class const_subarray<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
 : multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, array_types<T, 1, ElementPtr, Layout> {
+, detail::array_types<T, 1, ElementPtr, Layout> {
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this constructs a reference to the init list
-	: array_types<T, 1, ElementPtr, Layout>(
+	: detail::array_types<T, 1, ElementPtr, Layout>(
 		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il))})),
 		  std::data(il)
 	  ) {
@@ -2937,7 +2935,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	/*explicit*/ BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT>&& il)
-	: array_types<T, 1, ElementPtr, Layout>(
+	: detail::array_types<T, 1, ElementPtr, Layout>(
 		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il))})),
 		  std::data(il)
 	  ) {
@@ -2950,7 +2948,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	static constexpr dimensionality_type rank_v = 1;
 
-	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
+	using types = detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 
 	using rank        = std::integral_constant<dimensionality_type, rank_v>;
@@ -2967,8 +2965,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using const_pointer   = element_const_ptr;
 	using pointer         = element_ptr;
-	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
-	using reference       = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
+	using const_reference = typename detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
+	using reference       = typename detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type;
 
