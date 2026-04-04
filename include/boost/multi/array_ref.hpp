@@ -1404,6 +1404,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// 	return operator[](detail::head(tup));
 	// }
 
+	/// Returns a const reference to the first element.
+	/// \pre `!is_empty()`
 	constexpr auto front() const& -> const_reference { return *begin(); }
 	constexpr auto back() const& -> const_reference { return *(end() - 1); }  // std::prev(end(), 1);}
 
@@ -3112,6 +3114,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
+	/// Returns a const reference to the first element.
+	/// \pre `!is_empty()`
 	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
 	BOOST_MULTI_HD constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
 
@@ -3426,7 +3430,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }  ///< returns a iterator to the beginning
-	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }  ///< returns a iterator to the end
+	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }      ///< returns a iterator to the end
 
 #if defined(__GNUC__) && !defined(__EDG__)
 #pragma GCC diagnostic push
