@@ -3442,11 +3442,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma GCC diagnostic pop
 #endif
 
-	BOOST_MULTI_HD constexpr auto cbegin() const& -> const_iterator { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
-	BOOST_MULTI_HD constexpr auto cend() const& -> const_iterator { return end(); }  ///< returns an (explicitly const-)iterator to the end
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto cbegin(const_subarray const& self) { return self.cbegin(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto cend(const_subarray const& self) { return self.cend(); }
+	/// returns an (explicitly const-)iterator to the beginning
+	BOOST_MULTI_HD constexpr auto cbegin() const& -> const_iterator { return begin(); }
+	/// returns an (explicitly const-)iterator to the end
+	BOOST_MULTI_HD constexpr auto cend() const& -> const_iterator { return end(); }
 
 	template<class It> constexpr auto assign(It first) && -> decltype(adl_copy_n(first, std::declval<size_type>(), std::declval<iterator>()), void()) {
 		return adl_copy_n(first, this->size(), std::move(*this).begin()), void();
