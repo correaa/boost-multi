@@ -709,6 +709,12 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 	return num_elements(arr[0]);
 }
 
+template<class Array>
+constexpr auto stride(Array const& arr) -> decltype(arr.stride()) {
+	return arr.stride();
+}
+
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"

@@ -264,10 +264,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
+//	friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
+///	friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
 
  protected:
 	constexpr auto layout_mutable() -> layout_t& { return static_cast<layout_t&>(*this); }

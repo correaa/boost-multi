@@ -50,6 +50,9 @@ template<class Array> auto U(Array const& arr) { return upper_parted(arr); }  //
 template<class Matrix>
 auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readability-identifier-length) BLAS naming
 	auto ret =+ m;
+
+	using multi::extension;
+
 	switch(f) {  // NOLINT(clang-diagnostic-switch-default)
 	case multi::blas::filling::upper:
 		{
@@ -85,6 +88,8 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 
 	assert( stride( a) == 1 || stride(~a) == 1 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( stride( b) == 1 || stride(~b) == 1 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
+	using multi::stride;
 
 	// cppcheck-suppress-begin knownConditionTrueFalse ; bug in cppcheck 2.18?
 	if(size(b) != 0) {
