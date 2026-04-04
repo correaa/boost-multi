@@ -1818,8 +1818,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns an iterator to the beginning
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }      // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns an iterator to the end
 
-	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }
-	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
+	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an const-iterator to the beginning
+	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an const-iterator to the end
 
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
