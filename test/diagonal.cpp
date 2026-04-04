@@ -17,7 +17,7 @@ namespace {
 template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element_type sum{0};
-	for(auto i : extension(arr)) {  // NOLINT(altera-unroll-loops) testing loops
+	for(auto i : arr.extension()) {  // NOLINT(altera-unroll-loops) testing loops
 		sum += arr[i][i];           // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using int_element = multi::index;
 		multi::array<int_element, 2> arr({5, 5}, 0);
 
-		auto [is, js] = extensions(arr);
+		auto [is, js] = arr.extensions();
 
 		// NOLINTNEXTLINE(altera-unroll-loops) testing loops
 		for(auto i : is) {

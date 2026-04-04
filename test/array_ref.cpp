@@ -326,7 +326,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( diff == 0 );
 
 		BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-		for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
+		for(auto idx : mar.stenciled({2, 4}).extension()) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 		}
 
@@ -335,7 +335,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// clang-format on
 
 		BOOST_TEST( size(arr) == 5 );
-		BOOST_TEST( extension(arr) == multi::iextension(2, 7) );
+		BOOST_TEST( arr.extension() == multi::iextension(2, 7) );
 		arr[2] = "a";
 		arr[3] = "b";
 		arr[4] = "c";
@@ -673,22 +673,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<std::string, 1>&& mar = *&multi::array_ref<std::string, 1>{arr};
 		// multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
 
-		BOOST_TEST(  extension(mar).first() == 0 );
-		BOOST_TEST(  extension(mar).last()  == 5 );
+		BOOST_TEST(  mar.extension().first() == 0 );
+		BOOST_TEST(  mar.extension().last()  == 5 );
 
 		auto&& mar1 = mar.reindexed(1);
 
-		BOOST_TEST( extension(mar1).size() == extension(mar).size() );
+		BOOST_TEST( mar1.extension().size() == mar.extension().size() );
 
-		BOOST_TEST( mar1.extension() == extension(mar1) );
-		BOOST_TEST(  extension(mar1).first() == 1 );
+		BOOST_TEST( mar1.extension() == mar1.extension() );
+		BOOST_TEST(  mar1.extension().first() == 1 );
 		BOOST_TEST(  mar1.extension().first() == 1 );
 		BOOST_TEST(  mar1.extension().last()  == 6 );
-		BOOST_TEST( *extension(mar1).begin() == 1 );
+		BOOST_TEST( *mar1.extension().begin() == 1 );
 
 		BOOST_TEST( size(mar1) == size(mar) );
 		BOOST_TEST( mar1.layout().extension().first() == 1 );
-		BOOST_TEST( extension(mar1).first() == 1 );
+		BOOST_TEST( mar1.extension().first() == 1 );
 		BOOST_TEST( &mar1[1]     == &arr[0] );     // NOLINT(readability-container-data-pointer) test access
 		BOOST_TEST(  mar1.base() == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
 		BOOST_TEST(  mar1.base() ==  arr.data() );

@@ -48,7 +48,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {50.0, 0.0},  {6.0, 0.0},  {7.0, 0.0},  {8.0, 0.0},  {9.0, 0.0}},
 		};
 
-		multi::array<std::complex<double>, 2> out(extensions(in));
+		multi::array<std::complex<double>, 2> out(in.extensions());
 
 		BOOST_TEST( dimensionality(out) == dimensionality(in) );
 		BOOST_TEST( sizes(out) == sizes(in) );

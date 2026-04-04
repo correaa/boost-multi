@@ -108,8 +108,8 @@ auto main() -> int {
 		BOOST_TEST( Af.elements()[Af.num_elements()-1] == 990 );
 		BOOST_TEST( size(Af) == 10 );
 
-		BOOST_TEST( extension(Af).first()  ==  1 );
-		BOOST_TEST( extension(Af).last() == 11 );
+		BOOST_TEST( Af.extension().first()  ==  1 );
+		BOOST_TEST( Af.extension().last() == 11 );
 
 		multi::array<int, 2> BB({
 									{0, 10},

@@ -76,8 +76,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {1.2, 1.1},  {2.4, 1.0}},
 		};
 
-		multi::array_ref<double, 3>  ref(arr.data_elements(), extensions(arr));
-		multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
+		multi::array_ref<double, 3>  ref(arr.data_elements(), arr.extensions());
+		multi::array_cref<double, 3> cref(data_elements(arr), arr.extensions());
 
 		BOOST_TEST( arr ==  arr );
 		BOOST_TEST( !(arr !=  arr) );
@@ -105,9 +105,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {12, 11},  {24, 10}},
 		};
 
-		multi::array_ref<int, 3> ref(arr.data_elements(), extensions(arr));
+		multi::array_ref<int, 3> ref(arr.data_elements(), arr.extensions());
 
-		multi::array_cref<int, 3> cref(data_elements(arr), extensions(arr));
+		multi::array_cref<int, 3> cref(data_elements(arr), arr.extensions());
 
 		BOOST_TEST(  arr[0]    <=  arr[1] );
 		BOOST_TEST(  ref[0]    <=  arr[1] );

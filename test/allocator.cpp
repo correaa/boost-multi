@@ -208,7 +208,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( size(arr) == 10 );
 
 		std::transform(
-			begin(extension(arr)), end(extension(arr)), begin(arr),
+			begin(arr.extension()), end(arr.extension()), begin(arr),
 			[](auto idx) { return multi::array<std::string, 2>({idx, idx}, std::to_string(idx)); }
 		);
 
@@ -242,8 +242,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)
 	{
 		multi::array<multi::array<int, 3>, 2> AA({10, 20});
-		std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
-			std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
+		std::transform(AA.extension().begin(), AA.extension().end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(row) {
+			std::transform(row.extension().begin(), row.extension().end(), row.begin(), [idx](auto jdx) {
 				return multi::array<int, 3>({idx + jdx, idx + jdx, idx + jdx}, 99);
 			});
 			return std::forward<decltype(row)>(row);

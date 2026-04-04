@@ -237,7 +237,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> arr({2, 3});
 
-		arr = multi::array<int, 2>(extensions(arr), 1230);
+		arr = multi::array<int, 2>(arr.extensions(), 1230);
 		BOOST_TEST( arr[1][2] == 1230 );
 
 		arr.clear();

@@ -53,7 +53,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 	switch(f) {  // NOLINT(clang-diagnostic-switch-default)
 	case multi::blas::filling::upper:
 		{
-			auto const ext = extension(ret);
+			auto const ext = ret.extension();
 			std::for_each(ext.begin(), ext.end(), [&ret](auto idx) {
 				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
 			});
@@ -61,7 +61,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 		break;
 	case multi::blas::filling::lower:
 		{
-			auto extt = extension(~ret);
+			auto extt = (~ret).extension();
 			std::for_each(extt.begin(), extt.end(), [&ret](auto jdx) {
 				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
 			});

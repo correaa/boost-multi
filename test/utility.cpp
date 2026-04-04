@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::layout;
 		BOOST_TEST( layout(arr) == layout(marr) );
 
-		BOOST_TEST( multi::extensions(arr) == extensions(marr) );
+		BOOST_TEST( multi::extensions(arr) == marr.extensions() );
 	}
 
 	BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
@@ -70,7 +70,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::layout;
 		BOOST_TEST( layout(arr) == layout(marr) );
 
-		BOOST_TEST( extensions(arr) == extensions(marr) );
+		BOOST_TEST( extensions(arr) == marr.extensions() );
 	}
 
 	BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {

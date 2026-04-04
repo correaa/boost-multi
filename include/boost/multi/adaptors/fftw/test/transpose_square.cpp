@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			multi::array<complex, 2> out = in;
 			{
 				watch const unnamed{ "transposition with loop   %ws wall, CPU (%p%)\n"s };
-				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
+				std::for_each(out.extension().begin(), out.extension().end(), [&out](auto idx) {
 					auto ext = multi::extension_t(0L, idx);
 					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
 						std::swap(out[idx][jdx], out[jdx][idx]);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			multi::array<complex, 2> out = in;
 			{
 				watch const unnamed{ "transposition with loop 2 %ws wall, CPU (%p%)\n"s };
-				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
+				std::for_each(out.extension().begin(), out.extension().end(), [&out](auto idx) {
 					auto ext = multi::extension_t(idx + 1, out.size());
 					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
 						std::swap(out[idx][jdx], out[jdx][idx]);
