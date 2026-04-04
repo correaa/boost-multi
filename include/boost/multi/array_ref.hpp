@@ -1974,6 +1974,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		}
 	}
 
+	/// Returns a const-element view of the array, preventing modification of elements.
 	constexpr auto as_const() const {
 		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
@@ -2770,6 +2771,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 // template<class Element, dimensionality_type D, typename... Ts>
 // using iterator = array_iterator<Element, D, Ts...>;
 
+/// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
 : public array_types<T, 0, ElementPtr, Layout> {
@@ -2919,6 +2921,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+/// ... a specialization for one dimension
 template<typename T, typename ElementPtr, class Layout>
 struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
 : multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
