@@ -802,7 +802,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &d2Rce[2][3] == &d2D[2][3] );
 		BOOST_TEST( d2Rce.size() == 4 );
-		BOOST_TEST( num_elements(d2Rce) == 20 );
+		BOOST_TEST( d2Rce.num_elements() == 20 );
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -824,15 +824,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
 
 		multi::array_cref<std::string, 3> cref(&dc3D[0][0][0], {4, 2, 3});
-		BOOST_TEST( num_elements(cref) == 24 && cref[2][1][1] == "C1b" );
+		BOOST_TEST( cref.num_elements() == 24 && cref[2][1][1] == "C1b" );
 
 		auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-		BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && num_elements(A2) == 6 );
+		BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && A2.num_elements() == 6 );
 
 		BOOST_TEST( get<0>(sizes(A2)) == 3 && get<1>(sizes(A2)) == 2 );
 
 		auto const& A3 = cref({0, 3}, 1, {0, 2});
-		BOOST_TEST( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && num_elements(A3) == 6 );
+		BOOST_TEST( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && A3.num_elements() == 6 );
 
 		BOOST_TEST( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 		BOOST_TEST( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );

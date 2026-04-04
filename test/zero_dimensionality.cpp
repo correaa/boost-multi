@@ -25,7 +25,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array_ref<int, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 			BOOST_TEST( size(m1) == 3 );
 			BOOST_TEST( &m1[1] == &v1[1] );
-			BOOST_TEST( num_elements(m1) == 3 );
+			BOOST_TEST( m1.num_elements() == 3 );
 
 			multi::array_ref<int, 0> const m0(v1.data(), {});
 			// BOOST_TEST(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
@@ -41,7 +41,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			// vvv--- TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 			multi::dynamic_array<double, 0> a0 = multi::dynamic_array<double, 0>{45.0};
-			BOOST_TEST( num_elements(a0) == 1 );
+			BOOST_TEST( a0.num_elements() == 1 );
 			BOOST_TEST( a0 == 45.0 );
 
 			a0 = multi::dynamic_array<double, 0>{60.0};
@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::dynamic_array<double, 0> a0(45.0, alloc);
 
-			BOOST_TEST( num_elements(a0) == 1 );
+			BOOST_TEST( a0.num_elements() == 1 );
 			BOOST_TEST( a0 == 45.0 );
 
 			a0 = multi::dynamic_array<double, 0>{60.0};

@@ -304,7 +304,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			 }
 		};
 		multi::array<int, 2> arr(begin(nested), end(nested));
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 		BOOST_TEST( arr[2][1] == 60 );
 	}
 	{
@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			};
 			// NOLINTEND(fuchsia-default-arguments-calls)
 
-			BOOST_TEST( num_elements(B3) == 12 );
+			BOOST_TEST( B3.num_elements() == 12 );
 			BOOST_TEST( B3[1][0][1] == "101" );
 		}
 	}
@@ -364,9 +364,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
-		BOOST_TEST( size(arr) == 3 && num_elements(arr) == 3 );
+		BOOST_TEST( size(arr) == 3 && arr.num_elements() == 3 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1);
-		BOOST_TEST( num_elements(arr) == 3 );
+		BOOST_TEST( arr.num_elements() == 3 );
 		BOOST_TEST( arr[1] == 20 );
 
 		static_assert(decltype(arr)::rank{} == 1);
@@ -380,9 +380,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 		BOOST_TEST( size(arr) == 3 );
-		BOOST_TEST( num_elements(arr) == 3 );
+		BOOST_TEST( arr.num_elements() == 3 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
-		BOOST_TEST( num_elements(arr) == 3 );
+		BOOST_TEST( arr.num_elements() == 3 );
 		BOOST_TEST( arr[1] == 20 );
 
 		static_assert(decltype(arr)::rank{} == 1);
@@ -394,9 +394,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 		BOOST_TEST( arr.size() == 2 );
-		BOOST_TEST( num_elements(arr) == 2 );
+		BOOST_TEST( arr.num_elements() == 2 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
-		BOOST_TEST( num_elements(arr) == 2 );
+		BOOST_TEST( arr.num_elements() == 2 );
 		BOOST_TEST( arr[1] == 20 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 	}
@@ -409,9 +409,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 		BOOST_TEST( size(arr) == 2 );
-		BOOST_TEST( num_elements(arr) == 2 );
+		BOOST_TEST( arr.num_elements() == 2 );
 		BOOST_TEST( multi::rank<decltype(arr)>{} == 1 );
-		BOOST_TEST( num_elements(arr) == 2 );
+		BOOST_TEST( arr.num_elements() == 2 );
 		BOOST_TEST( arr[1] == 2 );
 		BOOST_TEST( multi::rank<decltype(arr)>{} == 1 );
 	}
@@ -424,7 +424,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
-		BOOST_TEST( num_elements(arr) == 1 );
+		BOOST_TEST( arr.num_elements() == 1 );
 		BOOST_TEST( arr[0] == 90 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 	}
@@ -437,9 +437,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
 
 		BOOST_TEST( size(arr) == 1 );
-		BOOST_TEST( num_elements(arr) == 1 );
+		BOOST_TEST( arr.num_elements() == 1 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
-		BOOST_TEST( num_elements(arr) == 1 );
+		BOOST_TEST( arr.num_elements() == 1 );
 		BOOST_TEST( arr[0] == 90 );
 	}
 
@@ -456,7 +456,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			});
 
 			BOOST_TEST( multi::rank<decltype(arr)>{} == 2 );
-			BOOST_TEST( num_elements(arr) == 6 );
+			BOOST_TEST( arr.num_elements() == 6 );
 		}
 		// {
 		// 	multi::array const arr({
