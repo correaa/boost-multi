@@ -171,7 +171,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( vec[9] == val );  // cppcheck-suppress containerOutOfBounds ;
 			BOOST_TEST( !vec.empty() );
-			BOOST_TEST( !is_empty(arr) );
+			BOOST_TEST( !arr.is_empty() );
 		}
 		{
 			std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
