@@ -1,10 +1,5 @@
 # MrDocs configuration for Boost.Multi
 # https://github.com/cppalliance/mrdocs
-#
-# Note: adding multiple input files triggers a crash in MrDocs 0.0.4.
-# array.hpp transitively includes array_ref.hpp, restriction.hpp, and utility.hpp,
-# which covers the core API. elementwise.hpp and io.hpp can be added once
-# https://github.com/cppalliance/mrdocs/issues is resolved.
 
 source-root: include/
 
