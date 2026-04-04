@@ -39,7 +39,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -49,7 +49,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(size(arr3[0]) == 3);
 
 		arr.reextent({5, 4}, 990);
-		BOOST_TEST( num_elements(arr)== 5L*4L );
+		BOOST_TEST( arr.num_elements()== 5L*4L );
 		BOOST_TEST( arr[1][2] ==  60 );   // reextent preserves values when it can...
 		BOOST_TEST( arr[4][3] == 990 );  // ...and gives selected value to the rest
 	}
@@ -107,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_noop)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -118,7 +118,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto* const A_base = arr.base();
 		arr.reextent({2, 3});
-		BOOST_TEST( num_elements(arr)== 2L*3L );
+		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
 
 		BOOST_TEST( A_base == arr.base() );
@@ -127,7 +127,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -138,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto* const A_base = arr.base();
 		arr.reextent({2, 3}, 990);
-		BOOST_TEST( num_elements(arr)== 2L*3L );
+		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
 
 		BOOST_TEST( A_base == arr.base() );
@@ -147,7 +147,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_moved)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -158,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.size() == 2 );
 		BOOST_TEST( arr.num_elements() == 2L*3L );
-		BOOST_TEST( num_elements(arr)== 2L*3L );
+		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST(arr[1][2] == 60);  // after move the original elments might not be the same
 
 		BOOST_TEST( A_base == arr.base() );
@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial)
 	{
 		multi::array<int, 2> arr({2, 3});
-		BOOST_TEST( num_elements(arr) == 6 );
+		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
@@ -176,7 +176,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 
-		BOOST_TEST( num_elements(arr)== 2L*3L );
+		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // after move the original elments might not be the same
 
 		BOOST_TEST( A_base == arr.base() );
@@ -241,7 +241,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 1230 );
 
 		arr.clear();
-		BOOST_TEST( num_elements(arr) == 0 );
+		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
 		arr.reextent({5, 4}, 660);
@@ -300,7 +300,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 40 );
 
 		arr.clear();
-		BOOST_TEST( num_elements(arr) == 0 );
+		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
 		arr.reextent({20, 30}, 90);
@@ -327,7 +327,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 40 );
 
 		arr.clear();
-		BOOST_TEST( num_elements(arr) == 0 );
+		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 	}
 

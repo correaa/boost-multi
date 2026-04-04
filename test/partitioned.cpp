@@ -348,7 +348,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::decay_t<decltype(A3_ref)>::rank{} == decltype(A2)::rank{} + 1);
 		static_assert(std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1);
 
-		BOOST_TEST( num_elements(A3_ref) == num_elements(A2) );
+		BOOST_TEST( A3_ref.num_elements() == A2.num_elements() );
 		BOOST_TEST( size(A3_ref) == 2 );
 		BOOST_TEST( size(A3_ref[0]) == 2 );
 		BOOST_TEST( size(A3_ref[0][0]) == 6 );

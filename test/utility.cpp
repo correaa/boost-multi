@@ -166,7 +166,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &carr[1][7] == &marr[1][7] );
 
 		using multi::num_elements;
-		BOOST_TEST( num_elements(carr) == num_elements(marr) );
+		BOOST_TEST( num_elements(carr) == marr.num_elements() );
 
 		using multi::data_elements;
 		BOOST_TEST( data_elements(carr) == data_elements(marr) );
