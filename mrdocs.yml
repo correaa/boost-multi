@@ -33,4 +33,4 @@ exclude-symbols:
 
 warn-no-paramdoc: false
 
-verbose: false
+verbose: true
