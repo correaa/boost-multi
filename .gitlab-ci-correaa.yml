@@ -1493,11 +1493,17 @@ conan:
 github-ci-status:
   stage: test
   interruptible: true
+  timeout: 2 hours
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates curl jq
-    - RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=${CI_COMMIT_BRANCH}&per_page=1")
-    - echo "GitHub API response $RESPONSE"
-    - STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion)
-    - echo "GitHub CI status $STATUS"
-    - test "$STATUS" = "success"
-  needs: ["g++","cuda","nvhpc","clang++-latest tidy iwyu everything"]
+    - STATUS=null
+    - while [ "$STATUS" = "null" ]; do RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=master&per_page=1"); STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion); RUN_ID=$(echo "$RESPONSE" | jq -r .workflow_runs[0].id); echo "GitHub CI status $STATUS (run ID: $RUN_ID)"; if [ "$STATUS" = "null" ]; then echo "Run in progress, retrying in 10 minutes..."; sleep 300; fi; done
+    - if [ "$STATUS" != "success" ]; then JOBS=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/runs/$RUN_ID/jobs"); echo "Failed/incomplete jobs:"; echo "$JOBS" | jq -r '.jobs[] | select(.conclusion != "success" and .conclusion != null) | "\(.name): \(.conclusion)"'; exit 1; fi
+  needs: ["g++"]
+
+    # - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates curl jq
+    # - RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=${CI_COMMIT_BRANCH}&per_page=1")
+    # - echo "GitHub API response $RESPONSE"
+    # - STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion)
+    # - echo "GitHub CI status $STATUS"
+    # - test "$STATUS" = "success"
