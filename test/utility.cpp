@@ -120,7 +120,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &carr[7] == &marr[7] );
 
 		using multi::num_elements;
-		BOOST_TEST( num_elements(carr) == num_elements(marr) );
+		BOOST_TEST( num_elements(carr) == marr.num_elements() );
 		// BOOST_TEST( num_elements(varr) == num_elements(marr) );
 		BOOST_TEST( num_elements(aarr) == num_elements(aarr) );
 
