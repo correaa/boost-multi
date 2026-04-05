@@ -213,10 +213,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		auto const               pln = multi::fftw::plan::forward({
-                                                        {true, true}
+
+		auto const pln = multi::fftw::plan::forward(
+			{
+				{true, true}
         },
-																  in.base(), in.layout(), out.base(), out.layout());
+			in.base(), in.layout(), out.base(), out.layout()
+		);
 		pln.execute(in.base(), out.base());
 		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
 	}
