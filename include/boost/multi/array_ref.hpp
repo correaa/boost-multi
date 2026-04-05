@@ -1822,14 +1822,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an (explicitly const-)iterator to the end
 
-	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;   // Cursor for the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;   // const-cursor for the array
+	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        //< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  //< Cursor for constant access to the array
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }   ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }  ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
 
 	template<
 		class Range,
@@ -4194,8 +4194,11 @@ constexpr auto uninitialized_copy
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
-template<class T> auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }
-template<class T> auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }
+template<class T> auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  //< Returns the beginning of the range (generic free function, usually return .begin())
+template<class T> auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }  //< Returns the end of the range (generic free function, usually return .begin())
+
+template<class T> auto cbegin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  //< Returns the beginning of the range (for constant access, generic free function, usually return .begin())
+template<class T> auto cend(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }  //< Returns the end of the range (for constant access, generic free function, usually return .begin())
 
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
