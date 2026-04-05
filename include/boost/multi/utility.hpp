@@ -240,7 +240,7 @@ struct array_traits {
 	using decay_type             = typename Array::decay_type;
 	using default_allocator_type = typename Array::default_allocator_type;
 };
-}
+}  // namespace detail
 
 template<class Fun>
 class value_wrapper_ptr;
