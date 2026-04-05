@@ -49,6 +49,8 @@ project(
   VERSION 0.88.0
   LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 message(STATUS "Boost.Multi: standalone mode ON")
 
 add_library(multi INTERFACE)
