@@ -121,7 +121,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::num_elements;
 		BOOST_TEST( num_elements(carr) == marr.num_elements() );
-		// BOOST_TEST( num_elements(varr) == num_elements(marr) );
+		// BOOST_TEST( varr.num_elements() == marr.num_elements() );
+		using multi::num_elements;  // for std::array, which doesn't have member function
 		BOOST_TEST( num_elements(aarr) == num_elements(aarr) );
 
 		using multi::data_elements;
