@@ -228,6 +228,7 @@ struct transform_ptr {
 #pragma clang diagnostic pop
 #endif
 
+namespace detail {
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
 
@@ -239,6 +240,7 @@ struct array_traits {
 	using decay_type             = typename Array::decay_type;
 	using default_allocator_type = typename Array::default_allocator_type;
 };
+}  // namespace detail
 
 template<class Fun>
 class value_wrapper_ptr;
@@ -640,7 +642,7 @@ template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
 template<class T, std::size_t N>
-struct array_traits<std::array<T, N>> {
+struct detail::array_traits<std::array<T, N>> {
 	static constexpr auto dimensionality() -> dimensionality_type { return 1; }
 
 	using reference   = T&;
@@ -652,7 +654,7 @@ struct array_traits<std::array<T, N>> {
 };
 
 template<class T, std::size_t N, std::size_t M>
-struct array_traits<std::array<std::array<T, M>, N>> {
+struct detail::array_traits<std::array<std::array<T, M>, N>> {
 	static constexpr auto dimensionality() -> dimensionality_type { return 1 + array_traits<std::array<T, M>>::dimensionality(); }
 
 	using reference   = std::array<T, M>&;
@@ -717,7 +719,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
-	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
+	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
 #ifdef __clang__

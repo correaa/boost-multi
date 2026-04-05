@@ -6,8 +6,8 @@ source-root: include/
 compilation-database: build-mrdocs/compile_commands.json
 
 input:
-  - include/boost/multi/array.hpp
   - include/boost/multi/array_ref.hpp
+  - include/boost/multi/array.hpp
 
 output: doc/modules/reference/pages
 

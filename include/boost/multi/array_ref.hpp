@@ -71,14 +71,13 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 #include "boost/multi/detail/serialization.hpp"
 #include "boost/multi/detail/types.hpp"  // for dimensionality_type  // IWYU pragma: export
 
-#include <algorithm>  // fpr copy_n
-#include <array>
+#include <algorithm>   // for copy_n
+#include <array>       // for std::array
 #include <cstring>     // for std::memset in reinterpret_cast
 #include <functional>  // for std::invoke
 #include <iterator>    // for std::next
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
-// #include <vector>      // for std::vector (for conversion)
 
 #if __has_include(<span>)
 #if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
@@ -260,14 +259,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_t::is_compact;
 
 	// friend constexpr auto                size(array_types const& self) noexcept -> size_type { return self.size(); }
-	friend BOOST_MULTI_HD constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
-	friend constexpr auto                num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
+	// friend BOOST_MULTI_HD constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
+	// friend constexpr auto                num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
 
-	friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
+	// friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
 	friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
+	// friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
@@ -908,7 +907,7 @@ struct elements_iterator_t
 		return *this;
 	}
 
-	template<class = void>  // TODO(correaa) lazy instantion to workaround MSVC linking limitations iterator copy for restrictions
+	template<class = void>  // TODO(correaa) lazy instantiation to workaround MSVC linking limitations iterator copy for restrictions
 	BOOST_MULTI_HD constexpr auto operator++(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
 		++(*this);
@@ -1822,14 +1821,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an (explicitly const-)iterator to the end
 
-	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;   // Cursor for the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;   // const-cursor for the array
+	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        ///< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  ///< Cursor for constant access to the array
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }   ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }  ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
 
 	template<
 		class Range,
@@ -4194,8 +4193,16 @@ constexpr auto uninitialized_copy
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
-template<class T> auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }
-template<class T> auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }
+template<class T> constexpr auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (generic free function, usually return .begin())
+template<class T> constexpr auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (generic free function, usually return .begin())
+
+// this has to take argument by forward reference to avoid collison with std::cbegin/std::cend
+template<class T> constexpr auto cbegin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (for constant access, generic free function, usually return .begin())
+template<class T> constexpr auto cend(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (for constant access, generic free function, usually return .begin())
+
+template<class T> /*[[deprecated("use extent")]]*/ auto extension(T const& rng) -> decltype(rng.extension()) { return rng.extension(); }
+
+template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
