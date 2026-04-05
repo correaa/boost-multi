@@ -16,16 +16,14 @@
 
 namespace multi = boost::multi;
 
-// TODO(correaa) add test for reinterpret_pointer_cast
-
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
+	// BOOST_AUTO_TEST_CASE(std_array_extensions_3d)
+	{
 		std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 
-		static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});  // NOLINT(readability-redundant-typename) for C++20
+		static_assert(std::is_same<typename multi::detail::array_traits<decltype(arr)>::element, double>{});  // NOLINT(readability-redundant-typename) for C++20
 
 		BOOST_TEST( multi::dimensionality(arr) == 3 );
 
@@ -47,10 +45,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( multi::extensions(arr) == extensions(marr) );
 	}
 
-	BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
+	// BOOST_AUTO_TEST_CASE(std_array_extensions_2d)
+	{
 		std::array<std::array<double, 4>, 3> arr = {};
 
-		static_assert(std::is_same_v<typename multi::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
+		static_assert(std::is_same_v<typename multi::detail::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
 
 		using multi::dimensionality;
 		BOOST_TEST( dimensionality(arr) == 2 );
@@ -73,10 +72,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( extensions(arr) == extensions(marr) );
 	}
 
-	BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
+	// BOOST_AUTO_TEST_CASE(std_array_extensions_1d)
+	{
 		std::array<double, 4> arr = {};
 
-		static_assert(std::is_same_v<typename multi::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
+		static_assert(std::is_same_v<typename multi::detail::array_traits<decltype(arr)>::element, double>);  // NOLINT(readability-redundant-typename) for C++20
 
 		using multi::dimensionality;
 		BOOST_TEST( dimensionality(arr) == 1 );
@@ -95,7 +95,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( num_elements(arr) == 4 );
 	}
 
-	BOOST_AUTO_TEST_CASE(test_utility_1d) {
+	// BOOST_AUTO_TEST_CASE(test_utility_1d)
+	{
 		std::array<int, 10> carr = {
 			{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 		};
@@ -119,8 +120,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &carr[7] == &marr[7] );
 
 		using multi::num_elements;
-		BOOST_TEST( num_elements(carr) == num_elements(marr) );
-		// BOOST_TEST( num_elements(varr) == num_elements(marr) );
+		BOOST_TEST( num_elements(carr) == marr.num_elements() );
+		// BOOST_TEST( varr.num_elements() == marr.num_elements() );
+		using multi::num_elements;  // for std::array, which doesn't have member function
 		BOOST_TEST( num_elements(aarr) == num_elements(aarr) );
 
 		using multi::data_elements;
@@ -148,7 +150,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-	BOOST_AUTO_TEST_CASE(test_utility_2d) {
+	// BOOST_AUTO_TEST_CASE(test_utility_2d)
+	{
 		// clang-format off
 	std::array<std::array<int, 10>, 3> carr{{
 		{{ 00, 10, 20, 30, 40, 50, 60, 70, 80, 90 }},
@@ -172,7 +175,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( data_elements(carr) == data_elements(marr) );
 	}
 
-	BOOST_AUTO_TEST_CASE(multi_utility_test) {
+	// BOOST_AUTO_TEST_CASE(multi_utility_test)
+	{
 		static_assert(std::is_same_v<std::iterator_traits<int const*>::value_type, int>);
 
 		using multi::corigin;
