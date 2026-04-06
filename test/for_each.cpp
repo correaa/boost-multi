@@ -9,7 +9,7 @@
 #include <chrono>
 #include <cmath>
 
-#if defined(TBB_FOUND) && !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
+#if defined(TBB_FOUND) && !defined(__NVCC__)
 #if !defined(__clang__) && !defined(__CUDACC__)
 #include <execution>
 #endif
@@ -69,7 +69,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			});
 		}
 #if defined(__cpp_lib_execution)
-#if defined(TBB_FOUND) && !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
+#if defined(TBB_FOUND) && !defined(__NVCC__)
 #if !defined(__clang__) && !defined(__CUDACC__)
 		{
 			auto_timer t{"std::for_each(std::par)"};
