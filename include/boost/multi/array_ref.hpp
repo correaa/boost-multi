@@ -171,7 +171,7 @@ struct of_dim {
 
 	template<class A> struct is_subarray_of_dim : decltype(is_subarray_of_dim_aux(std::declval<A>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 };
-}  // namesacpe detail
+}  // namespace detail
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -3407,10 +3407,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	template<
 		class Range,
-		std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int> = 0,
-		std::enable_if_t<!detail::is_subarray<std::decay_t<Range>>::value, int>    = 0,
-		class                                                              = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end()),
-		class                                                              = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
+		std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int>      = 0,
+		std::enable_if_t<!detail::is_subarray<std::decay_t<Range>>::value, int> = 0,
+		class                                                                   = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end()),
+		class                                                                   = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
 	constexpr explicit operator Range() const {
 		// vvv Range{...} needed by Windows GCC?
 		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
