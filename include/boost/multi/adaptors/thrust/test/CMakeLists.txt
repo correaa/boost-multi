@@ -34,6 +34,7 @@ set(TEST_SRCS
 	by_key.cu
 	device_function.cu
 	diffusion3d_kernel.cu
+	for_each.cu
 	memory_resource.cu
 	neighbor_list.cu
 	restriction.cu
