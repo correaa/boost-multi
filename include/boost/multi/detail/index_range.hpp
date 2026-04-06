@@ -232,8 +232,8 @@ class range {
 	[[nodiscard]] constexpr auto rbegin() const { return reverse_iterator{end()}; }
 	[[nodiscard]] constexpr auto rend() const { return reverse_iterator{begin()}; }
 
-	[[nodiscard]] constexpr auto begin() const -> const_iterator { return cbegin(); }
-	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
+	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return cbegin(); }
+	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return cend(); }
 
 	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
 
