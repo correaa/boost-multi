@@ -7,6 +7,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <memory>
 #include <type_traits>  // for std::is_swappable_v
 #include <utility>      // for as_const
 

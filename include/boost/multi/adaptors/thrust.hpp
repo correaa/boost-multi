@@ -4,7 +4,9 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP
-#pragma once
+// #pragma once
+
+#include <exception>
 
 #include "boost/multi/array.hpp"
 
@@ -117,11 +119,19 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	using device_index = int;
 	static auto get_current_device_() -> device_index {
 		int device;  // NOLINT(cppcoreguidelines-init-variables) delayed init
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
 		switch(HICUP_(GetDevice)(&device)) {
 		case HICUP_(Success): break;
 		case HICUP_(ErrorInvalidValue): assert(0);  // NOLINT(bugprone-branch-clone)
+		// ... 125 cases not handled
 		default: assert(0);
 		}
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 		return device;
 	}
 	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
@@ -166,6 +176,8 @@ class result_helper{
 
  public:
 	using type = decltype(_(priority<4>{}, std::declval<FF>()));
+	result_helper() = default;
+	void dummy() const {}
 };
 
 template<class F, class R = void>
@@ -230,7 +242,6 @@ class device_restriction_iterator {
 	using difference_type = std::ptrdiff_t;
 	using value_type      = int;
 	//	std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>
-	;
 
 	using pointer = void;
 
