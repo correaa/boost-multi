@@ -65,8 +65,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		{
 			auto_timer t{"std::for_each"};
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& row) {
-				for(auto&& e : row) {
-					e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+				for(auto&& elem : row) {
+					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 				}
 			});
 		}
@@ -76,15 +76,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		{
 			auto_timer t{"std::for_each(std::par)"};
 			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& row) {
-				for(auto&& e : row) {
-					e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+				for(auto&& elem : row) {
+					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 				}
 			});
 		}
 		{
 			auto_timer t{"std::for_each(std::par, elements)"};
-			std::for_each(std::execution::par, cpu.elements().begin(), cpu.elements().end(), [](auto&& e) {
-				e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+			std::for_each(std::execution::par, cpu.elements().begin(), cpu.elements().end(), [](auto&& elem) {
+				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 			});
 		}
 #endif
