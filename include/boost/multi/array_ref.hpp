@@ -477,6 +477,15 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		return proxy{operator*()};
 	}
 
+    // Type aliases for Thrust introspection
+    using raw_pointer = reference*;
+    // using element_type = std::conditional_t<
+    //     IsConst,
+    //     const subarray<Element, D, Pointer, Layout>,
+    //     subarray<Element, D, Pointer, Layout>
+    // >;
+    
+
 	BOOST_MULTI_HD constexpr auto get() const {
 		return reinterpret_cast<reference* const&>(*this);
 	}
