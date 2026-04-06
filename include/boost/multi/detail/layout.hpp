@@ -878,8 +878,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		};
 		// using const_iterator = iterator;
 
-		BOOST_MULTI_HD constexpr auto begin() const -> iterator { return iterator{rng_.begin()}; }
-		BOOST_MULTI_HD constexpr auto end() const -> iterator { return iterator{rng_.end()}; }
+		BOOST_MULTI_HD constexpr auto begin() const noexcept -> iterator { return iterator{rng_.begin()}; }
+		BOOST_MULTI_HD constexpr auto end() const noexcept -> iterator { return iterator{rng_.end()}; }
 
 		using size_type = multi::index_extension::size_type;
 		using difference_type = multi::index_extension::difference_type;
