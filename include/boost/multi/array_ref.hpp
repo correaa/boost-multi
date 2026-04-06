@@ -477,6 +477,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 		return proxy{operator*()};
 	}
 
+	BOOST_MULTI_HD constexpr auto get() const {
+		return reinterpret_cast<reference* const&>(*this);
+	}
+
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }

@@ -7,14 +7,16 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// GCC 12 + nvcc < 12.1 incompatibility: avx512fp16intrin.h uses _Float16 which older nvcc doesn't support
-#if !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
-#include <execution>
-#include <numeric>
-#endif
-// #include <boost/timer/timer.hpp>
-
 #include <chrono>
+#include <cmath>
+
+#if defined(TBB_FOUND) && !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
+#if !defined(__clang__) && !defined(__CUDACC__)
+#include <execution>
+#endif
+#endif
+
+#include <numeric>
 
 namespace multi = boost::multi;
 
@@ -26,10 +28,6 @@ class auto_timer : std::chrono::high_resolution_clock {
 
  public:
 	explicit auto_timer(char const* label) : label_{label} {
-		cudaDeviceSynchronize() == cudaSuccess
-			? void()
-			: assert(0);  // NOLINT(misc-include-cleaner) the header is included
-						  // conditionally
 		start_ = now();
 	}
 
@@ -39,7 +37,7 @@ class auto_timer : std::chrono::high_resolution_clock {
 	auto operator=(auto_timer const&) -> auto_timer& = delete;
 	auto operator=(auto_timer&&) -> auto_timer&      = delete;
 
-	auto_timer() : auto_timer("") {}
+	// auto_timer() : auto_timer("") {}
 	// auto elapsed() const {
 	// 	cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
 	// 	struct {
@@ -49,20 +47,19 @@ class auto_timer : std::chrono::high_resolution_clock {
 	// 	return ret;
 	// }
 	~auto_timer() {
-		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
+		// cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
 		auto const count = std::chrono::duration<double>(now() - start_).count();
 		std::cerr << label_ << ": " << count << " sec\n";
 	}
 };
 }  // namespace
 
-auto main()
-	-> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	using T = double;
 	{
-		auto cpu     = multi::array<T, 2>({64, 1024*1024}, 0);
-		auto cpu_par = multi::array<T, 2>({64, 1024*1024});
+		auto cpu     = multi::array<T, 2>({64, 1024 * 1024}, 0);
+		auto cpu_par = multi::array<T, 2>({64, 1024 * 1024});
 
 		{
 			auto_timer t{"std::for_each"};
@@ -72,22 +69,26 @@ auto main()
 				}
 			});
 		}
-
-		auto gpu_par = multi::thrust::device_array<T, 2>({64, 1024*8});
-		// {
-		// 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
-		// 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
-		// 		for(auto&& e : row) {
-		// 			e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
-		// 		}
-		// 	});
-		// }
+#if defined(__cpp_lib_execution)
+#if defined(TBB_FOUND) && !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
+#if !defined(__clang__) && !defined(__CUDACC__)
 		{
-			auto_timer t{"thrust::for_each(thrust::cuda::par, elements)"};
-			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& e) {
+			auto_timer t{"std::for_each(std::par)"};
+			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& row) {
+				for(auto&& e : row) {
+					e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+				}
+			});
+		}
+		{
+			auto_timer t{"std::for_each(std::par, elements)"};
+			std::for_each(std::execution::par, cpu.elements().begin(), cpu.elements().end(), [](auto&& e) {
 				e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
 			});
 		}
+#endif
+#endif
+#endif
 	}
 
 	return boost::report_errors();
