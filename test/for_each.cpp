@@ -59,8 +59,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	using T = double;
 	{
-		auto cpu     = multi::array<T, 2>({64, 1024 * 1024}, 0);
-		auto cpu_par = multi::array<T, 2>({64, 1024 * 1024});
+		auto cpu     = multi::array<T, 2>({64, 1048576}, 0);
+		auto cpu_par = multi::array<T, 2>({64, 1048576});
 
 		{
 			auto_timer t{"std::for_each"};

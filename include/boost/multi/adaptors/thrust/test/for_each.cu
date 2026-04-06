@@ -61,8 +61,8 @@ auto main()
 
 	using T = double;
 	{
-		auto cpu     = multi::array<T, 2>({64, 1024*1024}, 0);
-		auto cpu_par = multi::array<T, 2>({64, 1024*1024});
+		auto cpu     = multi::array<T, 2>({64, 1048576}, 0);
+		auto cpu_par = multi::array<T, 2>({64, 1048576});
 
 		{
 			auto_timer t{"std::for_each"};
@@ -73,7 +73,7 @@ auto main()
 			});
 		}
 
-		auto gpu_par = multi::thrust::device_array<T, 2>({64, 1024*8});
+		auto gpu_par = multi::thrust::device_array<T, 2>({64, 1048576});
 		// {
 		// 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
 		// 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
