@@ -478,6 +478,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	}
 
 	using raw_pointer = reference*;  ///< Type aliases for Thrust introspection
+
 	BOOST_MULTI_HD constexpr auto get() const { return reinterpret_cast<reference* const&>(*this); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
