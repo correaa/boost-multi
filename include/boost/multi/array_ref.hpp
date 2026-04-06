@@ -134,11 +134,11 @@ namespace detail {
 template<class T, dimensionality_type D, class... Ts>
 auto is_const_subarray_aux(multi::const_subarray<T, D, Ts...> const&) -> std::true_type;
 auto is_const_subarray_aux(...) -> std::false_type;
-}  // end namespace detail
 
 template<class T> struct is_const_subarray : decltype(detail::is_const_subarray_aux(std::declval<T>())){};
 template<class T>
 constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
+}  // end namespace detail
 
 /// Mutable `D`-dimensional view into part or all of an array
 ///
@@ -156,6 +156,7 @@ class subarray;
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class move_subarray;
 
+namespace detail {
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 constexpr auto is_subarray_aux(const_subarray<T, D, ElementPtr, Layout> const&) -> std::true_type;
 constexpr auto is_subarray_aux(...) -> std::false_type;
@@ -170,8 +171,7 @@ struct of_dim {
 
 	template<class A> struct is_subarray_of_dim : decltype(is_subarray_of_dim_aux(std::declval<A>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 };
-
-// template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
+}  // namespace detail
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -2278,7 +2278,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<
 		class Range,
 		class                                              = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class                                              = std::enable_if_t<!is_subarray<Range>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		class                                              = std::enable_if_t<!detail::is_subarray<Range>::value>,   // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 		std::enable_if_t<!has_elements<Range>::value, int> = 0>                                                      // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(Range const& rng) & -> subarray& {                                                      // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));                                   // TODO(correaa) or use std::cmp_equal?
@@ -2289,7 +2289,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<
 		class MultiRange,
 		class                                                  = std::enable_if_t<!std::is_base_of_v<subarray, MultiRange>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
-		class                                                  = std::enable_if_t<!is_subarray<MultiRange>::value>,           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+		class                                                  = std::enable_if_t<!detail::is_subarray<MultiRange>::value>,   // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 		std::enable_if_t<has_elements<MultiRange>::value, int> = 0>                                                           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(MultiRange const& mrng) & -> subarray& {                                                         // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->extensions() == mrng.extensions());                                                          // TODO(correaa) or use std::cmp_equal?
@@ -2300,7 +2300,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<
 		class Range,
 		class = std::enable_if_t<!std::is_base_of_v<subarray, Range>>,  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-		class = std::enable_if_t<!is_subarray<Range>::value>            // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<!detail::is_subarray<Range>::value>    // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 		>
 	constexpr auto operator=(Range const& rng) && -> subarray& {
 		operator=(rng);
@@ -3407,10 +3407,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	template<
 		class Range,
-		std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int> = 0,
-		std::enable_if_t<!is_subarray<std::decay_t<Range>>::value, int>    = 0,
-		class                                                              = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end()),
-		class                                                              = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
+		std::enable_if_t<!has_extensions<std::decay_t<Range>>::value, int>      = 0,
+		std::enable_if_t<!detail::is_subarray<std::decay_t<Range>>::value, int> = 0,
+		class                                                                   = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end()),
+		class                                                                   = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
 	constexpr explicit operator Range() const {
 		// vvv Range{...} needed by Windows GCC?
 		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
@@ -3476,17 +3476,17 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	friend constexpr auto operator<=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(self, other) || self == other; }
 	friend constexpr auto operator>=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
 
-	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
 	friend constexpr auto operator==(const_subarray const& self, Range const& other) -> bool {
 		return self.extensions() == other.extensions() && self.elements() == other.elements();
 	}
 
-	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
 	friend constexpr auto operator==(Range const& other, const_subarray const& self) -> bool {
 		return self.extensions() == other.extensions() && self.elements() == other.elements();
 	}
 
-	template<class Range, typename = std::enable_if_t<!is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extensions(), std::declval<Range const&>().elements())>
 	friend constexpr auto operator!=(const_subarray const& self, Range const& other) -> bool {
 		return self.extensions() != other.extensions() || self.elements() == other.elements();
 	}
