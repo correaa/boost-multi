@@ -351,10 +351,11 @@ struct dynamic_array                                                            
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(modernize-type-traits) bug in clang-tidy 19.1
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
-		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-																	  // cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	/*explicit*/ dynamic_array(Range const& rng)                      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
-	: dynamic_array(std::begin(rng), std::end(rng)) {}                // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		>
+	// cppcheck-suppress noExplicitConstructor ; because I want to use assignment for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
+	/*explicit*/ dynamic_array(Range const& rng)        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
