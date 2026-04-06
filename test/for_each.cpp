@@ -17,7 +17,6 @@
 
 #include <algorithm>  // for for_each
 #include <iostream>   // for basic_ostream, operator<<
-#include <numeric>
 #include <string>  // for char_traits, operator<<
 
 namespace multi = boost::multi;
