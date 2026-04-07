@@ -8,9 +8,11 @@
 #include <boost/core/lightweight_test.hpp>
 
 // GCC 12 + nvcc < 12.1 incompatibility: avx512fp16intrin.h uses _Float16 which older nvcc doesn't support
-#if !defined(__NVCC__) || __CUDACC_VER_MAJOR__ > 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ >= 1)
+#if defined(TBB_FOUND) && !defined(__NVCC__)
+#if !defined(__clang__)
 #include <execution>
 #include <numeric>
+#endif
 #endif
 // #include <boost/timer/timer.hpp>
 
