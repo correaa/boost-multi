@@ -63,19 +63,21 @@ auto main()
 
 	using T = double;
 	{
-		auto cpu     = multi::array<T, 2>({64, 1048576}, 0);
-		auto cpu_par = multi::array<T, 2>({64, 1048576});
+		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
 
+		auto&& cpu = cpu_own();
 		{
-			auto_timer t{"std::for_each"};
-			std::for_each(cpu.begin(), cpu.end(), [](auto&& row) {
-				for(auto&& e : row) {
-					e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+			auto_timer const _{"std::for_each"};
+			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {
+				for(auto&& row : plane) {  // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
 				}
 			});
 		}
 
-		auto gpu_par = multi::thrust::device_array<T, 2>({64, 1048576});
+		auto gpu_par = multi::thrust::device_array<T, 3>({64, 64, 64}, 0);
 		// {
 		// 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
 		// 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
@@ -85,7 +87,7 @@ auto main()
 		// 	});
 		// }
 		{
-			auto_timer t{"thrust::for_each(thrust::cuda::par, elements)"};
+			auto_timer const _{"thrust::for_each(thrust::cuda::par, elements)"};
 			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& e) {
 				e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
 			});

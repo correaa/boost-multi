@@ -59,14 +59,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	using T = double;
 	{
-		auto cpu     = multi::array<T, 2>({64, 1048576}, 0);
-		auto cpu_par = multi::array<T, 2>({64, 1048576});
+		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
 
+		auto&& cpu = cpu_own();
 		{
 			auto_timer const _{"std::for_each"};
-			std::for_each(cpu.begin(), cpu.end(), [](auto&& row) {
-				for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
-					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {  // NOLINT(modernize-use-ranges)
+				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
 				}
 			});
 		}
@@ -75,9 +77,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #if !defined(__clang__)
 		{
 			auto_timer const _{"std::for_each(std::par)"};
-			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& row) {
-				for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
-					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& plane) {
+				for(auto&& row : plane) {  // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
 				}
 			});
 		}
