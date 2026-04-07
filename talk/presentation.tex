@@ -1,8 +1,11 @@
-\documentclass{beamer}
+\documentclass[t]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage[T1]{fontenc}
+
+\beamertemplatenavigationsymbolsempty
 
 \definecolor{kwblue}{RGB}{0,102,204}      % Keywords: blue
 \definecolor{varblack}{RGB}{32,32,32}     % Variables: near-black
@@ -22,7 +25,8 @@
   keywordstyle=[2]\color{typepur},
   backgroundcolor=\color{codebackground},
   breaklines=true,
-  showstringspaces=false
+  showstringspaces=false,
+  columns=flexible
 }
 
 \lstMakeShortInline[backgroundcolor=\color{codebackground}]|
@@ -192,36 +196,130 @@ Why proposed to Boost?
 \end{itemize}
 \end{frame}
 
+\begin{frame}{LED Cube Visualization}
+Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{led-cube.png}
+\end{center}
+
+\end{frame}
 
 \begin{frame}[fragile]{Algorithms}
   Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
-
-  \only<1>{
-    \begin{lstlisting}
+  \begin{lstlisting}
 for(auto&& plane : A) {
-  for(auto&& row : plane) {
-    for(auto&& elem : row) {
-      elem = op(elem);
+
+    for(auto&& row : plane) {
+      for(auto&& elem : row) {
+        elem = op(elem);
+      }
     }
-  }
+
 }
-    \end{lstlisting}
-  }
-
-  \only<2>{
-    \begin{lstlisting}
-std::for_each(A.begin(), A.end(), [](auto&& plane) {
-  for(auto&& row : plane) {
-    for(auto&& elem : row) {
-      elem = op(elem);
-    }
-  }
-});
-    \end{lstlisting}
-  }
-
-  timing: \textbf{0.0026 sec}
+  \end{lstlisting}
+  timing: \textbf{2.6 msec}
 \end{frame}
 
+\begin{frame}[fragile]{Algorithms (optimized)}
+  Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
+  \begin{lstlisting}
+std::for_each(A.begin(), A.end(), 
+  [](auto&& plane) {
+    for(auto&& row : plane) {
+      for(auto&& elem : row) {
+        elem = op(elem);
+      }
+    }
+  }
+);
+  \end{lstlisting}
+  timing: \textbf{2.6 msec}
+\end{frame}
+
+\begin{frame}[fragile]{Algorithms (optimized)}
+  Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
+  \begin{lstlisting}
+std::for_each(std::execution::par, A.begin(), A.end(),
+  [](auto&& plane) {
+    for(auto&& row : plane) {
+      for(auto&& elem : row) {
+        elem = op(elem);
+      }
+    }
+  }
+);
+  \end{lstlisting}
+  timing: \textbf{1.4 msec}
+\end{frame}
+
+\begin{frame}[fragile]{Algorithms (optimized)}
+  Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
+  \begin{lstlisting}
+thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
+  [](auto&& plane) __device__ {
+    for(auto&& row : plane) {
+      for(auto&& elem : row) {
+        elem = op(elem);
+      }
+    }
+  }
+);
+  \end{lstlisting}
+  timing: \pause doesn't compile! (Thrust is unfriendly to proxy objects)
+
+  But even if it did compile... \includegraphics[width=0.2\textwidth]{led-cube.png}
+\end{frame}
+
+\begin{frame}[fragile]{Algorithms (optimized)}
+  Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
+  \begin{lstlisting}
+thrust::for_each(thrust::cuda::par, A.elements().begin(), A.elements().end(), [] __device__(auto& e) {
+  e = op(e);
+});
+  \end{lstlisting}
+  timing: \textbf{0.3 msec}
+\end{frame}
+
+\begin{frame}[fragile]{Algorithms (optimized)}
+  Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
+  \begin{lstlisting}
+std::for_each(std::execution::par, A.elements().begin(), A.elements().end(), [] (auto& e) {
+  e = op(e);
+});
+  \end{lstlisting}
+  timing: \textbf{0.7 msec}
+\end{frame}
+
+\begin{frame}[fragile]{Summary}
+
+\begin{table}
+\begin{tabular}{lcc}
+\textbf{Algorithm} & \textbf{Time (ms)} & \textbf{Speedup} \\
+\hline
+Nested loops                                    & 2.6 & 1.0x \\
+STL (leading dimension)                         & 2.6 & 1.0x \\
+Parallel STL (leading dimension)                & 1.4 & 1.9x \\
+\hline
+thrust::for\_each ([cuda::par, ] flat elements) & 0.3 & 8.7x \\
+std::for\_each (std::par, flat elements)        & 0.6 & 3.7x \\
+std::for\_each (flat elements)                  & 3.0 & 0.9x \\
+\end{tabular}
+\end{table}
+
+\begin{alertblock}{title}
+  Prefer algorithms to raw loops,
+  prefer to fuse loops
+\end{alertblock}
+
+  \begin{lstlisting}
+  algorithm(... A.elements() ...);
+  \end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{...but I need my 3D structure}
+\end{frame}
 
 \end{document}

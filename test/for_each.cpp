@@ -105,6 +105,12 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #endif
 #endif
 #endif
+		{
+			auto_timer const _{"std::for_each(elements)"};
+			std::for_each(cpu.elements().begin(), cpu.elements().end(), [](auto&& elem) {
+				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+			});
+		}
 	}
 
 	return boost::report_errors();
