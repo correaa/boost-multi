@@ -63,7 +63,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto cpu_par = multi::array<T, 2>({64, 1048576});
 
 		{
-			auto_timer const t{"std::for_each"};
+			auto_timer const _{"std::for_each"};
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& row) {
 				for(auto&& elem : row) {
 					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
@@ -74,7 +74,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #if defined(TBB_FOUND) && !defined(__NVCC__)
 #if !defined(__clang__)
 		{
-			auto_timer const t{"std::for_each(std::par)"};
+			auto_timer const _{"std::for_each(std::par)"};
 			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& row) {
 				for(auto&& elem : row) {
 					elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
@@ -82,7 +82,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			});
 		}
 		{
-			auto_timer const t{"std::for_each(std::par, elements)"};
+			auto_timer const _{"std::for_each(std::par, elements)"};
 			std::for_each(std::execution::par, cpu.elements().begin(), cpu.elements().end(), [](auto&& elem) {
 				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 			});
