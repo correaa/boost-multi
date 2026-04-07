@@ -62,6 +62,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
 
 		auto&& cpu = cpu_own();
+        {
+			auto_timer const _{"triple nested for"};
+			for(auto&& plane : cpu) {  // NOLINT(modernize-use-ranges)
+				for(auto&& row : plane) {                             // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {                          // NOLINT(altera-unroll-loops)
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
+				}
+			};
+		}
+
 		{
 			auto_timer const _{"std::for_each"};
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {  // NOLINT(modernize-use-ranges)
