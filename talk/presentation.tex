@@ -1,6 +1,31 @@
 \documentclass{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{kwblue}{RGB}{0,102,204}      % Keywords: blue
+\definecolor{varblack}{RGB}{32,32,32}     % Variables: near-black
+\definecolor{symbolGray}{RGB}{100,100,100} % Operators/symbols: dark gray
+\definecolor{bracketGray}{RGB}{80,80,80}   % Brackets/delimiters
+\definecolor{typepur}{RGB}{153,0,153}     % Types: purple
+\definecolor{funcgreen}{RGB}{0,100,0}     % Function names: dark green
+\definecolor{codebackground}{RGB}{245,245,245} % Light gray background
+
+\lstset{
+  language=C++,
+  basicstyle=\ttfamily\small\color{varblack},
+  keywordstyle=\color{kwblue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red},
+  morekeywords={array,subarray,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
+  keywordstyle=[2]\color{typepur},
+  backgroundcolor=\color{codebackground},
+  breaklines=true,
+  showstringspaces=false
+}
+
+\lstMakeShortInline[backgroundcolor=\color{codebackground}]|
 
 \title{Generic Programming for Multidimensional Arrays}
 \author{Alfredo A. Correa}
@@ -126,7 +151,7 @@ Why not proposed for Standard?
   \item Enough overlap with \texttt{std::span} and \texttt{std::mdarray}
   \item Long time horizon
 \end{itemize}
-
+ 
 Why proposed to Boost?
 \begin{itemize}
   \item Ideal balance between risk (innovation) and requirements (quality, guidelines)
@@ -137,7 +162,35 @@ Why proposed to Boost?
   \item Can eventually benefit from low level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
   \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
 \end{itemize}
-
 \end{frame}
+
+\begin{frame}{Fundamental View/Layout operations}
+\begin{itemize}
+\item Rotate (indices)\\
+  \lstinline|A[i][j][k]...[x][y][z]| $\to$ \lstinline|A[z][i][j]...[x][y]|
+\item Transpose (first two indices) \\
+  \lstinline|A[i][j][k]...| $\to$ \lstinline|A[j][i][k]...|
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Recursive Indexing}
+  \lstinline|A[i]| removes one dimension \\
+  \lstinline|A[i][j]| removes two dimensions \\
+  \ldots
+\end{frame}
+
+\begin{frame}{Positional indexing}
+  \lstinline|A[3, _]| $\equiv$ \lstinline|A[3]| \\
+  \lstinline|A[_, 3]| $\equiv$ \lstinline|A.rotated()[3].unrotated()| \\
+\end{frame}
+
+\begin{frame}{Implement positional indices}
+\begin{itemize}
+\item Recursive Indexing (leading dimensions)
+\item Positional Indexing (leading dimensions)
+  \lstinline|A[_, i]| = \lstinline|A.rotated()[i].unrotated()| \\
+\end{itemize}
+\end{frame}
+
 
 \end{document}

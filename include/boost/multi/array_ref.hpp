@@ -643,13 +643,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, D, ElementPtr, OtherIsConst> const& other) const -> bool {
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && ((*(this->ptr_)).layout() == (*(other.ptr_)).layout());
+		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		BOOST_MULTI_ASSERT(this->ptr_->layout() == other.ptr_->layout());
-		return (this->ptr_ == other.ptr_);  // && (this->stride_ == other.stride_) && ( (*(this->ptr_)).layout() == (*(other.ptr_)).layout() );
+		return this->ptr_ == other.ptr_;
 	}
 
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
@@ -821,8 +821,8 @@ struct cursor_t {
  private:
 	template<class Tuple, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
-		using std::get;  // for C++17 compatibility
-		return ((get<I>(tup) * get<I>(strides_)) + ...);
+		using std::get;                                   // for C++17 compatibility
+		return ((get<I>(tup) * get<I>(strides_)) + ...);  // NOLINT(readability-redundant-parentheses) for fold expression
 	}
 
  public:
@@ -1123,7 +1123,7 @@ struct elements_range_t {
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
-	auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?
+	auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?  // NOLINT(bugprone-unsafe-to-allow-exceptions)
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
 		}
@@ -1426,7 +1426,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
 	constexpr auto reindexed(index first, Indexes... idxs) const& -> const_subarray {
-		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
+		return reindexed(first).rotated().reindexed(idxs...).unrotated();
 	}
 
  private:
@@ -1504,27 +1504,27 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using iextension = typename const_subarray::index_extension;
 
 	constexpr auto stenciled(iextension iex) & -> const_subarray { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) & -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
 	constexpr auto stenciled(iextension iex) && -> const_subarray { return blocked(iex.first(), iex.last()); }
 	constexpr auto stenciled(iextension iex, iextension iex1) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated(); }
 
 	constexpr auto stenciled(iextension iex) const& -> basic_const_array { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) const& -> basic_const_array { return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& -> basic_const_array { return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& -> basic_const_array {
-		return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();
+		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated();
 	}
 
 	constexpr auto elements_at(size_type idx) const& -> decltype(auto) {
