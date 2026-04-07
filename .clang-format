@@ -14,7 +14,6 @@ AlignConsecutiveDeclarations:
   Enabled: true
   AcrossEmptyLines: false
   AcrossComments: false
-  AlignFunctionDeclarations: true
 AlignConsecutiveMacros: None
 AlignOperands: AlignAfterOperator
 AllowAllArgumentsOnNextLine: false

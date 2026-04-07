@@ -46,7 +46,7 @@ else()
 		endif()
 	endif()
 
-#   find_package(TBB)
+	find_package(TBB)
 
 	enable_testing()
 	include(CTest)
@@ -370,7 +370,7 @@ else()
 	)
 
 	if(NOT Boost_FOUND)
-		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Core (for Boost.LightweightTest), for example please run:\n    sudo apt install libboost-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
