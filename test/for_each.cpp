@@ -70,7 +70,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 					}
 				}
-			};
+			}
 		}
 
 		{
