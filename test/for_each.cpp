@@ -65,8 +65,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		{
 			auto_timer const _{"std::for_each"};
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {  // NOLINT(modernize-use-ranges)
-				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
-					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+				for(auto&& row : plane) {                             // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {                          // NOLINT(altera-unroll-loops)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 					}
 				}
