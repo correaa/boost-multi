@@ -193,4 +193,35 @@ Why proposed to Boost?
 \end{frame}
 
 
+\begin{frame}[fragile]{Algorithms}
+  Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
+
+  \only<1>{
+    \begin{lstlisting}
+for(auto&& plane : A) {
+  for(auto&& row : plane) {
+    for(auto&& elem : row) {
+      elem = op(elem);
+    }
+  }
+}
+    \end{lstlisting}
+  }
+
+  \only<2>{
+    \begin{lstlisting}
+std::for_each(A.begin(), A.end(), [](auto&& plane) {
+  for(auto&& row : plane) {
+    for(auto&& elem : row) {
+      elem = op(elem);
+    }
+  }
+});
+    \end{lstlisting}
+  }
+
+  timing: \textbf{0.0026 sec}
+\end{frame}
+
+
 \end{document}
