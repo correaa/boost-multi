@@ -10,7 +10,7 @@
 #include <cmath>
 
 #if defined(TBB_FOUND) && !defined(__NVCC__)
-#if !defined(__clang__) && !defined(__CUDACC__)
+#if !defined(__clang__)
 #include <execution>
 #endif
 #endif
@@ -72,7 +72,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		}
 #if defined(__cpp_lib_execution)
 #if defined(TBB_FOUND) && !defined(__NVCC__)
-#if !defined(__clang__) && !defined(__CUDACC__)
+#if !defined(__clang__)
 		{
 			auto_timer t{"std::for_each(std::par)"};
 			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& row) {
