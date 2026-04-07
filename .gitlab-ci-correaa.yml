@@ -525,7 +525,7 @@ clang++-m32:
     - c++ --version
     - CXX=clang++ cmake .. -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build .
-    - ctest--output-on-failure
+    - ctest --output-on-failure
   needs: ["clang++"]
 
 clang++-latest tidy iwyu everything:
