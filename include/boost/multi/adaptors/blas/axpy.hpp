@@ -114,6 +114,7 @@ class axpy_range {
 
 	auto size() const -> size_type { return end() - begin(); }
 	auto extensions() const { return extensions_t<1>{ {0, size()} }; }
+	[[nodiscard]] constexpr auto extents() const { return extensions_t<1>{ {0, size()} }; }
 
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {
