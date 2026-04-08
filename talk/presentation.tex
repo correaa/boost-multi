@@ -319,7 +319,96 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \end{frame}
 
 
-\begin{frame}[fragile]{...but I need my 3D structure}
+\begin{frame}[fragile]
+\frametitle{...but I need my 3D structure}
+
+Suppose you need to assign values based on the 3D indices
+
+\begin{lstlisting}
+auto [is, js, ks] = A.extents();
+for(auto i : is) for(auto j : js) for(auto k : ks)
+  A[i][j][k] = fun(i + j + k);
+\end{lstlisting}
+
+\only<1>{
+\begin{lstlisting}
+std::for_each(
+  A.extents().elements().begin(), A.extents().elements().end(),
+  [&A](auto ijk) { auto [i, j, k] = ijk;
+    A[i][j][k] = fun(i + j + k);
+  }
+);
+\end{lstlisting}
+}
+
+\only<2>{
+\begin{lstlisting}
+std::transform(
+  A.extents().elements().begin(), A.extents().elements().end(),
+  A.elements().begin(),
+  [](auto ijk) { auto [i, j, k] = ijk;
+    return fun(i + j + k);
+  }
+);
+}
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{The Problem: Row-wise Reduction}
+
+Given a 2D array, reduce each row independently:
+\begin{lstlisting}
+multi::array<double, 2> M({100, 1000});
+auto row_sums = multi::array<double, 1>(M.size(0));
+
+// Better: use transform instead of raw loop
+thrust::transform(M.begin(), M.end(), row_sums.begin(),
+  [](auto const& row) {
+    return thrust::reduce(row.begin(), row.end());
+  }
+);
+\end{lstlisting}
+
+\textbf{Problem:} Even with transform, each row reduction still happens one at a time — the reductions are \emph{serialized}
+\end{frame}
+
+\begin{frame}[fragile]{Solution: reduce\_by\_index}
+
+Use Thrust's built-in parallelism:
+\begin{lstlisting}
+auto row_sums = multi::reduce_by_index(M);
+// Massively parallel! All rows reduce simultaneously
+\end{lstlisting}
+
+\textbf{How it works:}
+\begin{itemize}
+  \item Maps each element to its row index
+  \item Uses \lstinline|thrust::reduce_by_key| (GPU-native)
+  \item Parallelizes across all rows at once
+\end{itemize}
+
+\textbf{Speedup:} Parallelization across all $N$ rows vs. serialized $N$ iterations
+\end{frame}
+
+\begin{frame}[fragile]{Custom Binary Operations}
+
+\begin{lstlisting}
+// Default: addition
+auto sum = multi::reduce_by_index(M);
+
+// Custom: product
+auto prod = multi::reduce_by_index(M,
+  [](double a, double b) { return a * b; }
+);
+
+// Custom: max element per row
+auto row_maxs = multi::reduce_by_index(M,
+  thrust::maximum<double>{}
+);
+\end{lstlisting}
+
+All executed with full GPU parallelism.
 \end{frame}
 
 \end{document}

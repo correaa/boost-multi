@@ -62,11 +62,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
 
 		auto&& cpu = cpu_own();
-        {
+		{
 			auto_timer const _{"triple nested for"};
-			for(auto&& plane : cpu) {  // NOLINT(modernize-use-ranges)
-				for(auto&& row : plane) {                             // NOLINT(altera-unroll-loops)
-					for(auto&& elem : row) {                          // NOLINT(altera-unroll-loops)
+			for(auto&& plane : cpu) {         // NOLINT(modernize-use-ranges)
+				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 					}
 				}
@@ -110,6 +110,31 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			std::for_each(cpu.elements().begin(), cpu.elements().end(), [](auto&& elem) {
 				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 			});
+		}
+		{
+			std::for_each(
+				cpu.extensions().elements().begin(),
+				cpu.extensions().elements().end(),
+				[&cpu](auto const& coords) {
+					auto [i, j, k] = coords;
+
+					cpu[i][j][k] = static_cast<double>(i + j + k);
+				}
+			);
+			BOOST_TEST( std::abs(cpu[1][2][3] - 6.0) < 1e-10 );
+		}
+		{
+			std::transform(
+				cpu.extensions().elements().begin(),
+				cpu.extensions().elements().end(),
+				cpu.elements().begin(),
+				[](auto const& coords) {
+					auto [i, j, k] = coords;
+
+					return static_cast<double>(i + j + k);
+				}
+			);
+			BOOST_TEST( std::abs(cpu[1][2][3] - 6.0) < 1e-10 );
 		}
 	}
 
