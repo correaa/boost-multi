@@ -595,7 +595,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
 
-	BOOST_MULTI_HD constexpr auto extensions() const {
+	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const {
+		using std::apply;
+		return apply([](auto... sizes) { return extensions_t(sizes...); }, sizes());
+	}
+	BOOST_MULTI_HD constexpr auto extents() const {
 		using std::apply;
 		return apply([](auto... sizes) { return extensions_t(sizes...); }, sizes());
 	}
@@ -1222,7 +1226,8 @@ class contiguous_layout {
 
 	BOOST_MULTI_HD constexpr auto nelems() const { return nelems_; }
 
-	BOOST_MULTI_HD constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
+	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
+	BOOST_MULTI_HD constexpr auto extents() const { return multi::extensions_t<1>{extension()}; }
 
 	BOOST_MULTI_HD constexpr auto is_empty() const -> bool { return nelems_ == 0; }
 
@@ -1666,7 +1671,7 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
-	friend BOOST_MULTI_HD constexpr auto        extension(layout_t const& self) { return self.extension(); }
+	//friend BOOST_MULTI_HD constexpr auto        extension(layout_t const& self) { return self.extension(); }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
 		if(nelems_ == 0) {
 			return index_extension{};
@@ -1686,7 +1691,16 @@ struct layout_t
 		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
 	}
 
-	friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
+	BOOST_MULTI_HD constexpr auto        extents() const {
+		// auto fa = extension();
+		// auto sa = sub_.extensions().base();
+		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
+		// auto ret = extensions_type{ht_tuple};
+		// return ret;
+		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
+	}
+
+	// friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
@@ -1914,6 +1928,7 @@ struct layout_t<0, SSize>
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }  // cppcheck-suppress functionStatic
 	// friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const { return extensions_type{}; }  // cppcheck-suppress functionStatic
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 	// friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
