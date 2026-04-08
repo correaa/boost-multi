@@ -168,6 +168,8 @@ class gemv_range {
 
 	auto size() const -> size_type{return end() - begin();}
 	auto extensions() const -> typename decay_type::extensions_type{return typename decay_type::extensions_type{{0, size()}};}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return typename decay_type::extensions_type{{0, size()}};}
+
 	auto decay() const{return decay_type{*this};}
 
 	friend auto operator+(gemv_range const& self) {return self.decay();}
