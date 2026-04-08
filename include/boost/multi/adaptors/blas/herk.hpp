@@ -80,31 +80,12 @@ class herk_range {
 		auto operator!=(iterator const&) const -> bool;
 	};
 
-//  // using iterator = herk_iterator<ContextPtr, Scalar, ItA>;
-//  using decay_type = DecayType;
-//  using size_type = typename decay_type::size_type;
-
 	auto begin() const { return iterator{this, 0}; }
 	auto end() const { return iterator{this, a_rows_}; }
 
 	auto size() const { return a_rows_;}
 	auto extensions() const { return multi::extensions_t<2>{a_rows_, a_rows_}; }
-
-	// template<class ItOut>
-	// friend auto copy(iterator const& first, iterator const& last, ItOut d_first) {
-	//  auto const& a = multi::ref(first.self_, last);
-	//  blas::herk_nm(first.self_->cs_, a.home(), a.size(), (~a).size(), 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
-	// }
-
-//  // auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
-//  // template<class Arr>
-//  // friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
-//  //  blas::gemm_n(self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
-//  //  return std::forward<Arr>(a);
-//  // }
-//  // friend auto operator*(Scalar factor, gemm_range const& self) {
-//  //  return gemm_range{self.ctxtp_, factor*self.s_, self.a_begin_, self.a_end_, self.b_begin_};
-//  // }
+	[[nodiscard]] constexpr auto extents() const { return multi::extensions_t<2>{a_rows_, a_rows_}; }
 };
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr,

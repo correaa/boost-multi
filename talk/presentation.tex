@@ -345,7 +345,8 @@ std::for_each(
 \onslide<2>
 \begin{lstlisting}
 std::transform(
-  A.extents().elements().begin(), A.extents().elements().end(),
+  A.extents().elements().begin(),
+  A.extents().elements().end(),
   A.elements().begin(),
   [](auto ijk) { auto [i, j, k] = ijk;
     return fun(i + j + k);
@@ -357,6 +358,8 @@ Note: \lstinline|A.extents().elements().size() == A.elements().size()|
 \end{overprint}
 
 \end{frame}
+
+\begin{frame}
 
 \begin{frame}[fragile]{The Problem: Row-wise Reduction}
 
