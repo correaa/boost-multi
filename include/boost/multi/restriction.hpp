@@ -664,7 +664,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto size() const { return xs_.size(); }
 	constexpr auto sizes() const { return xs_.sizes(); }
 
-	constexpr auto extension() const { return xs_.extension(); }
+	constexpr auto               extension() const { return xs_.extension(); }
 	[[nodiscard]] constexpr auto extent() const { return xs_.extension(); }
 
 	constexpr auto               extensions() const { return xs_; }
