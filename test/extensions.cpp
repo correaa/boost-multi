@@ -26,7 +26,8 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	auto const A2D = multi::array<int, 2>({5, 7}, 1);
 
-	auto const A2Dx = A2D.extension();
+	// auto const A2Dx = A2D.extension();
+	auto const A2Dx = A2D.extent();
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
 

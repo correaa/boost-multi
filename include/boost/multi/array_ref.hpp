@@ -230,9 +230,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_t::nelems;
 
 	using layout_t::extension;
+	using layout_t::extent;
+
 	using typename layout_t::extension_type;
 
 	using layout_t::extensions;
+	using layout_t::extents;
+
 	using typename layout_t::extensions_type;
 
 	BOOST_MULTI_HD constexpr auto               extensions() const -> extensions_type { return static_cast<layout_t const&>(*this).extensions(); }
@@ -259,18 +263,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::is_compact;
 
-	// friend constexpr auto                size(array_types const& self) noexcept -> size_type { return self.size(); }
-	// friend BOOST_MULTI_HD constexpr auto extension(array_types const& self) noexcept -> extension_type { return self.extension(); }
-	// friend constexpr auto                num_elements(array_types const& self) noexcept -> size_type { return self.num_elements(); }
-
-	// friend constexpr auto extensions(array_types const& self) noexcept -> extensions_type { return self.extensions(); }
-	friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
+	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	// friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
+	// friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
 
  protected:
 	constexpr auto layout_mutable() -> layout_t& { return static_cast<layout_t&>(*this); }
@@ -1063,7 +1062,8 @@ struct elements_range_t {
 
 	using extension_type = multi::extension_t<index>;
 
-	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, size()}; }
+	BOOST_MULTI_HD constexpr auto               extension() const { return extension_type{0, size()}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return extension_type{0, size()}; }
 
 	[[nodiscard]]
 	constexpr auto empty() const -> bool { return l_.empty(); }

@@ -53,6 +53,8 @@ class extensions<Ex, Exts...> : private Ex {
 	using sub_type       = extensions<Exts...>;
 
 	BOOST_MULTI_HD constexpr auto extension() const { return static_cast<Ex const&>(*this); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return static_cast<Ex const&>(*this); }
+
 	BOOST_MULTI_HD constexpr auto sub() const { return rest_; }
 };
 
