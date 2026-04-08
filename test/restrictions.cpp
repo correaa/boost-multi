@@ -304,6 +304,10 @@ int main() {
 		// NOLINTNEXTLINE(runtime/threadsafe_f)
 		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n});
 	}
+	{
+		multi::array<double, 3> arr;
+		arr = [](auto i, auto j, auto k) { return i + j + k; } ^ multi::extensions_t<3>(2, 3, 4);
+	}
 
 	return boost::report_errors();
 }
