@@ -18,6 +18,7 @@
 \lstset{
   language=C++,
   basicstyle=\ttfamily\small\color{varblack},
+  escapeinside={<@}{@>},
   keywordstyle=\color{kwblue}\bfseries,
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{red},
@@ -26,7 +27,7 @@
   backgroundcolor=\color{codebackground},
   breaklines=true,
   showstringspaces=false,
-  columns=flexible
+  columns=fixed
 }
 
 \lstMakeShortInline[backgroundcolor=\color{codebackground}]|
@@ -322,7 +323,7 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \begin{frame}[fragile]
 \frametitle{...but I need my 3D structure}
 
-Suppose you need to assign values based on the 3D indices
+Task: assign values based on the 3D indices
 
 \begin{lstlisting}
 auto [is, js, ks] = A.extents();
@@ -330,7 +331,8 @@ for(auto i : is) for(auto j : js) for(auto k : ks)
   A[i][j][k] = fun(i + j + k);
 \end{lstlisting}
 
-\only<1>{
+\begin{overprint}
+\onslide<1>
 \begin{lstlisting}
 std::for_each(
   A.extents().elements().begin(), A.extents().elements().end(),
@@ -339,9 +341,8 @@ std::for_each(
   }
 );
 \end{lstlisting}
-}
 
-\only<2>{
+\onslide<2>
 \begin{lstlisting}
 std::transform(
   A.extents().elements().begin(), A.extents().elements().end(),
@@ -350,8 +351,10 @@ std::transform(
     return fun(i + j + k);
   }
 );
-}
 \end{lstlisting}
+
+Note: \lstinline|A.extents().elements().size() == A.elements().size()|
+\end{overprint}
 
 \end{frame}
 

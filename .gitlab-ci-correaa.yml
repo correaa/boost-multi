@@ -55,7 +55,7 @@ g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
   interruptible: false
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -74,7 +74,7 @@ g++-omp-thrust:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - docker
     - non-shared
@@ -93,7 +93,7 @@ g++-m32 sanitize:
   image: debian:latest
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - high-bandwidth  # for boost source download
@@ -116,7 +116,7 @@ arm64:
   allow_failure: true  # runner not always availabe
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - arm  # for image
@@ -136,7 +136,7 @@ c++-macos-shell:
   allow_failure: true  # runner might not be available
   only:
     refs:
-      - master
+      - develop
   tags:
     - macos
     - shell
@@ -154,7 +154,7 @@ coverage:
   stage: build
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -213,7 +213,7 @@ g++-9-bullseye:
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   script:
     - arch
     - apt-get -qq update
@@ -236,7 +236,7 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
@@ -254,7 +254,7 @@ clang++ ubsan:  # more UB is detected on Release
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet clang libclang-rt-dev cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
@@ -277,7 +277,7 @@ clang++-18 mull-18:  # mull-18 crashes
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
@@ -307,7 +307,7 @@ clang++-16 c++20:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-16 cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
@@ -323,7 +323,7 @@ visual-studio-windows:
   stage: build
   only:
     refs:
-      - master
+      - develop
   allow_failure: true  # runner not always available
   interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows runner)
@@ -395,7 +395,7 @@ vs2022-shell c++17:
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
-      - master
+      - develop
   script:
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git
     # - .\vcpkg\bootstrap-vcpkg.bat
@@ -419,7 +419,7 @@ vs2022-shell c++23:
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
-      - master
+      - develop
   script:
     #- git clone --depth=1 https://github.com/microsoft/vcpkg.git
     #- .\vcpkg\bootstrap-vcpkg.bat
@@ -442,7 +442,7 @@ vs2022-shell cudatk-17:
   cache: []
   only:
     refs:
-      - master
+      - develop
   script:
     - whoami
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
@@ -488,7 +488,7 @@ vs2022-shell cuda:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - whoami
     - nvidia-smi
@@ -516,7 +516,7 @@ clang++-m32:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - dpkg --add-architecture i386
     - apt-get -qq update
@@ -573,7 +573,7 @@ clang++-oldstable-cmake4:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - arch
     - apt-get -qq update
@@ -599,7 +599,7 @@ oneapi:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get update
     - apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -620,7 +620,7 @@ oneapi-2022.2:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get update --allow-unauthenticated=false && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
@@ -637,7 +637,7 @@ oneapi-latest c++23:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - large-disk-space
@@ -684,7 +684,7 @@ nvhpc-22.7:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
@@ -708,7 +708,7 @@ nvhpc-26.1:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
@@ -749,7 +749,7 @@ cuda-11.6.1:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
@@ -774,7 +774,7 @@ culang++-16 cuda-11.4.3:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -803,7 +803,7 @@ cuda-12.6.3:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -827,7 +827,7 @@ cuda-12.6.3 cutensor:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -856,7 +856,7 @@ cuda-13.1.0:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - nvidia-smi
     - apt-get -qq update
@@ -876,7 +876,7 @@ culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - nvidia-gpu
@@ -934,7 +934,7 @@ rocm-latest:
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -965,7 +965,7 @@ rocm-6.4.4:
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -1014,7 +1014,7 @@ circle-202:
   allow_failure: false
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - x86_64  # for circle executable
@@ -1038,7 +1038,7 @@ circle-latest c++20:
   allow_failure: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - x86_64  # for circle executable
@@ -1103,7 +1103,7 @@ inq-debug:
   interruptible: true
   only:
     refs:
-      - master
+      - develop
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
@@ -1271,7 +1271,7 @@ sonar:
   allow_failure: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -1304,7 +1304,7 @@ pages-presentation:
   allow_failure: true
   # only:
   #   refs:
-  #     - master
+  #     - develop
   image: texlive/texlive:latest
   tags:
     - non-shared
@@ -1327,7 +1327,7 @@ pages:
       artifacts: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
@@ -1394,7 +1394,7 @@ headers:
   allow_failure: true
   only:
     refs:
-      - master
+      - develop
   tags:
     - non-shared
     - docker
