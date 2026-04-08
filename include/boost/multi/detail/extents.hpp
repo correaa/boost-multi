@@ -122,6 +122,10 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 		using std::get;
 		return get<0>(static_cast<std::tuple<Ext, Exts...> const&>(*this));
 	}
+	[[nodiscard]] constexpr auto extent() const -> extension_type {
+		using std::get;
+		return get<0>(static_cast<std::tuple<Ext, Exts...> const&>(*this));
+	}
 
 	auto size() const -> size_type { return extension().size(); }
 
