@@ -51,9 +51,6 @@ clang++-latest libc++ format:
   #   - non-shared
   #   - docker
   interruptible: true
-  only:
-    refs:
-      - master
   script:
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang clang-format cmake make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
