@@ -1334,6 +1334,7 @@ headers:
     - pip install quom
     - quom --version
     - quom --help
+    - mkdir .public
     - cd include
     - tree -L 4
     - quom -I. multi.hpp boost-multi.hpp --include_guard BOOST_MULTI_.+_HPP
