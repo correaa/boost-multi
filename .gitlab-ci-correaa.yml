@@ -725,6 +725,10 @@ cuda:
     - non-shared
     - nvidia-gpu
   interruptible: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
