@@ -1328,6 +1328,7 @@ headers:
     - non-shared
     - docker
   script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet python3  # make g++ clang cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge 
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
@@ -1356,8 +1357,8 @@ headers:
   artifacts:
     paths:
     - public
+# needs: ["g++", "clang++"]
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
-  needs: ["g++", "clang++"]
 
 # this is a specially named workflow to populates the pages site
 pages:
