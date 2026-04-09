@@ -3657,8 +3657,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-	template<class Tconst = typename array_ref::element_type const, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, Tconst*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	constexpr explicit operator std::span<Tconst>() const& { return std::span<Tconst>(this->data_elements(), this->size()); }
+	template<class U = typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit operator std::span<U const>() const { return std::span<U const>(this->data_elements(), this->size()); }
+
+	template<class U = typename array_ref::element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit operator std::span<U>() { return std::span<U>(this->data_elements(), this->size()); }
 #endif
 
 	template<class OtherPtr, class = std::enable_if_t<!std::is_same_v<OtherPtr, ElementPtr>>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
