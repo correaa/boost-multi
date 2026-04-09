@@ -17,7 +17,7 @@ multipage: true
 
 extract-private: false
 
-inherit-base-members: "copy-dependencies"
+inherit-base-members: "copy-all"
 
 base-url: https://gitlab.com/correaa/boost-multi/-/blob/develop/include/
 
