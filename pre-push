@@ -26,7 +26,9 @@ export CMAKE_CUDA_COMPILER_LAUNCHER="ccache"
 export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 export CMAKE_C_COMPILER_LAUNCHER="ccache"
 export CMAKE_COMPILE_WARNING_AS_ERROR="ON"
+if [[ $OSTYPE != "darwin"* ]]; then
 export CMAKE_BUILD_PARALLEL_LEVEL=$(($(nproc) - 2))
+fi
 export CTEST_PARALLEL_LEVEL=8
 export CTEST_OUTPUT_ON_FAILURE=1
 
