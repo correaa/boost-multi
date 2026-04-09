@@ -3973,14 +3973,14 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
+	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>        // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator To const&() const& { return to_carray_<To>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	constexpr explicit operator To&() && { return to_carray_<To>(); }   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator To&() && { return to_carray_<To>(); }      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr explicit operator To&() & { return to_carray_<To>(); }    // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr explicit operator To&() & { return to_carray_<To>(); }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
  private:
