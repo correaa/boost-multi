@@ -3964,22 +3964,22 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		return *launder_(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
-	template<class TTN>
-	constexpr auto to_carray_() const& -> TTN const& {
-		check_sizes_<TTN>();
-		return *launder_(reinterpret_cast<TTN const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	template<typename To>
+	constexpr auto to_carray_() const& -> To const& {
+		check_sizes_<To>();
+		return *launder_(reinterpret_cast<To const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
-	constexpr explicit operator TTN const&() const& { return to_carray_<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>           // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit operator To const&() const& { return to_carray_<To>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	constexpr explicit operator TTN&() && { return to_carray_<TTN>(); }   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	constexpr explicit operator To&() && { return to_carray_<To>(); }   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	constexpr explicit operator TTN&() & { return to_carray_<TTN>(); }    // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<typename To, std::enable_if_t<std::is_array_v<To>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit operator To&() & { return to_carray_<To>(); }    // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
  private:
