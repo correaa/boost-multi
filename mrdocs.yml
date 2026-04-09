@@ -26,8 +26,8 @@ include-symbols:
 exclude-symbols:
   - "boost::multi::detail"
 
-sort-members-by: location
-sort-namespace-members-by: location
+# sort-members-by: location
+# sort-namespace-members-by: location
 
 warn-no-paramdoc: false
 
