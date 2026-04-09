@@ -79,8 +79,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( col2.size(0) == size(arr) );
 
 		BOOST_TEST( dimensionality(col2) == 1 );
-		BOOST_TEST( size(col2) == size(arr) );
+
 		BOOST_TEST( col2.size() == size(arr) );
+		BOOST_TEST( size(col2) == size(arr) );
+
 		BOOST_TEST( col2.stride() == 3 );
 		BOOST_TEST( multi::stride(col2) == 3 );
 		BOOST_TEST( stride(col2) == 3 );
