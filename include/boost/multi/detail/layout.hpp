@@ -589,7 +589,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	template<class Func>
 	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
 
-	BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+
 	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
@@ -746,6 +748,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	using sizes_type = tuple<size_type>;
 
 	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+	[[nodiscard]] constexpr auto extent() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+
 	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sub() const { return extensions_t<0>{this->base().tail()}; }
@@ -1217,7 +1221,9 @@ class contiguous_layout {
 
 	static BOOST_MULTI_HD constexpr auto stride() { return std::integral_constant<int, 1>{}; }
 	static BOOST_MULTI_HD constexpr auto offset() { return std::integral_constant<int, 0>{}; }
+
 	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, nelems_}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return extension_type{0, nelems_}; }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
@@ -1404,7 +1410,11 @@ struct bilayout {
 
 	auto nelems() const     = delete;
 	void extension() const  = delete;
+	void extent() const     = delete;
+
 	auto extensions() const = delete;
+	auto extents() const = delete;
+
 	auto is_empty() const   = delete;
 	auto empty() const      = delete;
 	BOOST_MULTI_HD constexpr auto sub() const { return sub_; }
@@ -1671,8 +1681,16 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
-	//friend BOOST_MULTI_HD constexpr auto        extension(layout_t const& self) { return self.extension(); }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
+		if(nelems_ == 0) {
+			return index_extension{};
+		}
+		// assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(offset_ % stride_ == 0);
+		assert(nelems_ % stride_ == 0);
+		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
+	}
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const -> extension_type {
 		if(nelems_ == 0) {
 			return index_extension{};
 		}
@@ -1949,7 +1967,9 @@ struct layout_t<0, SSize>
 	constexpr auto sub() const -> sub_type = delete;
 
 	constexpr auto size() const -> size_type           = delete;
+
 	constexpr auto extension() const -> extension_type = delete;
+	constexpr auto extent() const -> extension_type = delete;
 
 	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }
 

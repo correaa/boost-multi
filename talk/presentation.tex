@@ -1,9 +1,11 @@
-\documentclass[t]{beamer}
+\documentclass[t,aspectratio=169]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage[T1]{fontenc}
+\usepackage[scale=0.85]{FiraMono}
+\usepackage{ulem}
 
 \beamertemplatenavigationsymbolsempty
 
@@ -19,11 +21,13 @@
   language=C++,
   basicstyle=\ttfamily\small\color{varblack},
   escapeinside={<@}{@>},
-  keywordstyle=\color{kwblue}\bfseries,
+  keywordstyle=\color{varblack}\bfseries,
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{red},
-  morekeywords={array,subarray,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
-  keywordstyle=[2]\color{typepur},
+  keywordstyle=[2]\color{kwblue}\bfseries,
+  morekeywords=[2]{array,subarray,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
+  morekeywords=[3]{multi},
+  keywordstyle=[3]\color{kwblue},
   backgroundcolor=\color{codebackground},
   breaklines=true,
   showstringspaces=false,
@@ -39,11 +43,6 @@
 \begin{document}
 
 \frame{\titlepage}
-
-\begin{frame}
-\frametitle{First Slide}
-Your content here
-\end{frame}
 
 \begin{frame}{A bit about myself}
 \begin{itemize}
@@ -185,8 +184,8 @@ Why proposed to Boost?
 \end{frame}
 
 \begin{frame}{Positional indexing}
-  \lstinline|A[3, _]| $\equiv$ \lstinline|A[3]| \\
-  \lstinline|A[_, 3]| $\equiv$ \lstinline|A.rotated()[3].unrotated()| \\
+  \lstinline|A[3, _]| \(\equiv\) \lstinline|A[3]| \\
+  \lstinline|A[_, 3]| \(\equiv\) \lstinline|A.rotated()[3].unrotated()| \\
 \end{frame}
 
 \begin{frame}{Implement positional indices}
@@ -197,11 +196,58 @@ Why proposed to Boost?
 \end{itemize}
 \end{frame}
 
-\begin{frame}{LED Cube Visualization}
-Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
+\begin{frame}[fragile]{Lazy sequences, the evolution of iota}
+
+  \begin{lstlisting}
+std::iota(c.begin(), c.end(), 0);  // c = {0, 1, 2, 3, ...}
+  \end{lstlisting}
+  \begin{lstlisting}
+std::views::iota(1, 10);  // {0, 1, ..., 10}
+  \end{lstlisting}
+  \begin{lstlisting}
+multi::array<char, 1> A = ...;
+A            // {'a', 'b', 'c', 'd'}
+A.extent();  // {  0,   1,   2,   3}
+  \end{lstlisting}
+  \begin{lstlisting}
+multi::array<int, 2> B = ...;
+B.extent();  // leading dimension {0, 1, 2, 3, ..., B.size() - 1}
+  \end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Lazy array, multidimensional iota}
+
+  \begin{lstlisting}[escapechar=|]
+multi::array<char, 2> B = ...;
+B.extent|\xout{s}|();  // leading dimension {0, 1, 2, 3, ..., B.size() - 1}
+  \end{lstlisting}
+
+  \begin{lstlisting}[escapechar=|]
+multi::array<char, 2> B = {
+  {'a', 'b', 'c'},
+  {'d', 'e', 'c'}
+};
+B.extent|\uline{s}|();
+// {
+//   { tuple{0, 0}, tuple{0, 1}, tuple{0, 2} },  // <-- B.extents().begin()
+//   { tuple{1, 0}, tuple{1, 1}, tuple{1, 2} }
+// }
+
+B.extent|\uline{s}|().elements();  // {tuple{0, 0}, tuple{0, 1}, tuple{0, 2}, tuple{1, 0},...}
+B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
+
+// std::views::cartesian_product( get<0>(B.extents()), get<1>(B.extents()) );
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}{Algorithms}
+Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
 
 \begin{center}
-\includegraphics[width=0.6\textwidth]{led-cube.png}
+\includegraphics[width=0.4\textwidth]{led-cube.png}
 \end{center}
 
 \end{frame}
@@ -392,7 +438,7 @@ auto row_sums = multi::reduce_by_index(M);
   \item Parallelizes across all rows at once
 \end{itemize}
 
-\textbf{Speedup:} Parallelization across all $N$ rows vs. serialized $N$ iterations
+\textbf{Speedup:} Parallelization across all \(N\) rows vs. serialized $N$ iterations
 \end{frame}
 
 \begin{frame}[fragile]{Custom Binary Operations}
@@ -413,6 +459,15 @@ auto row_maxs = multi::reduce_by_index(M,
 \end{lstlisting}
 
 All executed with full GPU parallelism.
+\end{frame}
+
+\begin{frame}{Uses}
+  \begin{itemize}
+    \item INQ: engine for electronic structure calculations and dynamics
+    \item QMCPACK: Quantum Monte Carlo (QMC) simulation code
+    \item AI research, RIKEN, Japan
+    \item a manufacturing company in Québec, Canada
+  \end{itemize}
 \end{frame}
 
 \end{document}

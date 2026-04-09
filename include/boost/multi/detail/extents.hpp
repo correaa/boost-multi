@@ -96,10 +96,10 @@ template<class Tuple> using tuple_type_t = typename tuple_tail<Tuple>::type;
 // }  // end namespace detail
 
 template<class... Exts>
-class extents;
+class extents_t;
 
 template<class Ext, class... Exts>
-class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
+class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
 	using base_ = std::tuple<Ext, Exts...>;
 
  public:
@@ -114,26 +114,30 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 	using size_type       = typename extension_type::size_type;
 	using index           = typename extension_type::index;
 
-	extents() = default;
+	extents_t() = default;
 	// using std::tuple<Exts...>::tuple;
-	explicit extents(Ext ext, Exts... xs) : std::tuple<Ext, Exts...>{std::move(ext), std::move(xs)...} {}
+	explicit extents_t(Ext ext, Exts... xs) : std::tuple<Ext, Exts...>{std::move(ext), std::move(xs)...} {}
 
 	auto extension() const -> extension_type {
+		using std::get;
+		return get<0>(static_cast<std::tuple<Ext, Exts...> const&>(*this));
+	}
+	[[nodiscard]] constexpr auto extent() const -> extension_type {
 		using std::get;
 		return get<0>(static_cast<std::tuple<Ext, Exts...> const&>(*this));
 	}
 
 	auto size() const -> size_type { return extension().size(); }
 
-	using sub_type = extents<>;
+	using sub_type = extents_t<>;
 
 	class iterator : public detail::forward_iterator_facade<iterator> {
-		friend class extents;
+		friend class extents_t;
 
 		typename extension_type::iterator idx_;
-		extents<Exts...>                  rest_;
+		extents_t<Exts...>                  rest_;
 
-		constexpr explicit iterator(typename extension_type::iterator idx, extents<Exts...> rest)
+		constexpr explicit iterator(typename extension_type::iterator idx, extents_t<Exts...> rest)
 		: idx_{idx}, rest_{std::move(rest)} {}
 
 	 public:
@@ -201,28 +205,28 @@ class extents<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 	constexpr auto begin() const {
 		return iterator{
 			stdx::head(static_cast<std::tuple<Ext, Exts...> const&>(*this)).begin(),
-			std::apply([](auto... xs) { return extents<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
+			std::apply([](auto... xs) { return extents_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
 		};
 	}
 
 	template<std::size_t I>
-	friend auto get(extents const& self) {
+	friend auto get(extents_t const& self) {
 		using std::get;
 		return get<I>(static_cast<std::tuple<Ext, Exts...> const&>(self));
 	}
 };
 
-template<class... Exts> extents(Exts...) -> extents<decltype(multi::extension_t(std::declval<Exts>()))...>;
+template<class... Exts> extents_t(Exts...) -> extents_t<decltype(multi::extension_t(std::declval<Exts>()))...>;
 
 }  // end namespace boost::multi
 
 template<class... Exts>
-struct std::tuple_size<::boost::multi::extents<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_size<::boost::multi::extents_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
 template<std::size_t I, class... Exts>
-struct std::tuple_element<I, ::boost::multi::extents<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_element<I, ::boost::multi::extents_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
 };
 

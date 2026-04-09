@@ -17,15 +17,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr1d(3);
 
-		auto const x1d = multi::extents(arr1d.extension());
+		auto const x1d = multi::extents_t(arr1d.extension());
 
 		BOOST_TEST( x1d.size() == 3 );
 
-		auto const y1d = multi::extents(3);
+		auto const y1d = multi::extents_t(3);
 		BOOST_TEST( y1d.size() == 3 );
 	}
 	{
-		multi::extents const x2d(4, 3);
+		multi::extents_t const x2d(4, 3);
 		BOOST_TEST( x2d.size() == 4 );
 		auto [x0, x1] = x2d;
 
