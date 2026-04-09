@@ -17,7 +17,7 @@ multipage: true
 
 extract-private: false
 
-inherit-base-members: "reference"
+inherit-base-members: "copy"
 
 base-url: https://gitlab.com/correaa/boost-multi/-/blob/master/include/
 
@@ -25,11 +25,6 @@ include-symbols:
   - "boost::multi"
 exclude-symbols:
   - "boost::multi::detail"
-  - "boost::multi::array<T, 0*"
-  - "boost::multi::array_iterator"
-  - "boost::multi::array_ptr<T, 0"
-  - "boost::multi::array_traits"
-  - "boost::multi::const_subarra<T"
 
 sort-members-by: location
 sort-namespace-members-by: location
