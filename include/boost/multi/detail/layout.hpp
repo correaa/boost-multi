@@ -1681,15 +1681,6 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
-		if(nelems_ == 0) {
-			return index_extension{};
-		}
-		// assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert(offset_ % stride_ == 0);
-		assert(nelems_ % stride_ == 0);
-		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
-	}
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const -> extension_type {
 		if(nelems_ == 0) {
 			return index_extension{};
@@ -1698,6 +1689,9 @@ struct layout_t
 		assert(offset_ % stride_ == 0);
 		assert(nelems_ % stride_ == 0);
 		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
+	}
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
+		return extent();
 	}
 
 	BOOST_MULTI_HD constexpr auto        extensions() const {
