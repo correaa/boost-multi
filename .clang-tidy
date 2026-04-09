@@ -3,6 +3,7 @@
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.'
 FormatStyle: file
+TransformLambdas: none
 
 CheckOptions:
   - { key: readability-identifier-naming.ClassCase                         , value: lower_case }
