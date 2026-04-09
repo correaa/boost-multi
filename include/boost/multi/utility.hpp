@@ -641,6 +641,11 @@ constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>
 template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
+template<class Array>
+[[nodiscard]] auto strides(Array const& arr) -> decltype(arr.strides()) {
+	return arr.strides();
+}
+
 template<class T, std::size_t N>
 struct detail::array_traits<std::array<T, N>> {
 	static constexpr auto dimensionality() -> dimensionality_type { return 1; }
@@ -693,6 +698,11 @@ constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boo
 
 template<class T, std::size_t N>
 constexpr auto extensions(std::array<T, N> const& /*arr*/) {
+	return multi::extensions_t<1>{multi::index_extension(0, N)};
+}
+
+template<class T, std::size_t N>
+[[nodiscard]] constexpr auto extents(std::array<T, N> const& /*arr*/) {
 	return multi::extensions_t<1>{multi::index_extension(0, N)};
 }
 
