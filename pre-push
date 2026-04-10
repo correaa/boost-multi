@@ -26,7 +26,9 @@ export CMAKE_CUDA_COMPILER_LAUNCHER="ccache"
 export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 export CMAKE_C_COMPILER_LAUNCHER="ccache"
 export CMAKE_COMPILE_WARNING_AS_ERROR="ON"
+if [[ $OSTYPE != "darwin"* ]]; then
 export CMAKE_BUILD_PARALLEL_LEVEL=$(($(nproc) - 2))
+fi
 export CTEST_PARALLEL_LEVEL=8
 export CTEST_OUTPUT_ON_FAILURE=1
 
@@ -42,14 +44,14 @@ if [[ $OSTYPE != "darwin"* ]]; then
 export PMIX_MCA_gds=hash
 export UBSAN_OPTIONS=print_stacktrack=1
 
- ([ -d .build.g++ ] || CXX=g++                           cmake -S . -B .build.g++            -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.g++            $CMT && (ctest --test-dir .build.g++   --rerun-failed         $CTR || ctest --test-dir .build.g++            --rerun-failed $CTR) ) || exit 666
- ([ -d .build.clang++-rel ] || CXX=clang++                       cmake -S . -B .build.clang++-rel    -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON                                           && cmake --build .build.clang++-rel    $CMT && (ctest --test-dir .build.clang++-rel    $CTR || ctest --test-dir .build.clang++-rel    --rerun-failed $CTR) ) || exit 666
- ([ -d .build.clang++-16 ] || CXX=clang++-16                    cmake -S . -B .build.clang++-16     -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20                                     && cmake --build .build.clang++-16     $CMT && (ctest --test-dir .build.clang++-16     $CTR || ctest --test-dir .build.clang++-16     --rerun-failed $CTR) ) || exit 666
- ([ -d .build.clang++ ] || CXX=clang++ CXXFLAGS=-Weverything cmake -S . -B .build.clang++        -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.clang++        $CMT && (ctest --test-dir .build.clang++        $CTR || ctest --test-dir .build.clang++        --rerun-failed $CTR) ) || exit 666
- ([ -d .build.clang++.c++23 ] || CXX=clang++                       cmake -S . -B .build.clang++.c++23  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23                                     && cmake --build .build.clang++.c++23  $CMT && (ctest --test-dir .build.clang++.c++23  $CTR || ctest --test-dir .build.clang++.c++23  --rerun-failed $CTR) ) || exit 666
- ([ -d .build.g++.c++23 ] || CXX=g++                           cmake -S . -B .build.g++.c++23      -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=23                                     && cmake --build .build.g++.c++23      $CMT && (ctest --test-dir .build.g++.c++23      $CTR || ctest --test-dir .build.g++.c++23      --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.g++ ]            || CXX=g++                           cmake -S . -B .build.g++            -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.g++            $CMT && (ctest --test-dir .build.g++   --rerun-failed $CTR || ctest --test-dir .build.g++            --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.clang++-rel ]    || CXX=clang++                       cmake -S . -B .build.clang++-rel    -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON                                           && cmake --build .build.clang++-rel    $CMT && (ctest --test-dir .build.clang++-rel          $CTR || ctest --test-dir .build.clang++-rel    --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.clang++-16 ]     || CXX=clang++-16                    cmake -S . -B .build.clang++-16     -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20                                     && cmake --build .build.clang++-16     $CMT && (ctest --test-dir .build.clang++-16           $CTR || ctest --test-dir .build.clang++-16     --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.clang++ ]        || CXX=clang++ CXXFLAGS=-Weverything cmake -S . -B .build.clang++        -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.clang++        $CMT && (ctest --test-dir .build.clang++              $CTR || ctest --test-dir .build.clang++        --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.clang++.c++23 ]  || CXX=clang++                       cmake -S . -B .build.clang++.c++23  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23                                     && cmake --build .build.clang++.c++23  $CMT && (ctest --test-dir .build.clang++.c++23        $CTR || ctest --test-dir .build.clang++.c++23  --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.g++.c++23 ]      || CXX=g++                           cmake -S . -B .build.g++.c++23      -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=23                                     && cmake --build .build.g++.c++23      $CMT && (ctest --test-dir .build.g++.c++23            $CTR || ctest --test-dir .build.g++.c++23      --rerun-failed $CTR) ) || exit 666
  ([ -d .build.clang++.libcpp ] || CXX=clang++                       cmake -S . -B .build.clang++.libcpp -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=1 -DCMAKE_CXX_FLAGS="-stdlib=libc++ -D_LIBCPP_DEBUG=1 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -fsanitize=address,undefined"  && cmake --build .build.clang++.libcpp $CMT && (ctest --test-dir .build.clang++.libcpp $CTR || ctest --test-dir .build.clang++.libcpp --rerun-failed $CTR) ) || exit 666
- ([ -d .build.g++-rel ] || CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel        $CTR || ctest --test-dir .build.g++-rel        --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.g++-rel ]        || CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel              $CTR || ctest --test-dir .build.g++-rel        --rerun-failed $CTR) ) || exit 666
 
 if [[ $(uname -m) != 'aarch64' ]]; then
  clang-format-20 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp || exit 666
