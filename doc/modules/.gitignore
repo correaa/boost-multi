@@ -1,1 +1,2 @@
-
+reference/pages/*
+!reference/pages/index.adoc
