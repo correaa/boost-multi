@@ -73,7 +73,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		{
 			auto_timer const _{"std::for_each"};
 			std::ranges::for_each(cpu, [](auto&& plane) {
-				for(auto&& row : std::forward<decltype(row)>(plane)) {                                         // NOLINT(altera-unroll-loops)
+				for(auto&& row : std::forward<decltype(plane)>(plane)) {                                         // NOLINT(altera-unroll-loops)
 					for(auto&& elem : std::forward<decltype(row)>(row)) {         // NOLINT(altera-unroll-loops)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm;
 					}
