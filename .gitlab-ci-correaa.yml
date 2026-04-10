@@ -1380,7 +1380,7 @@ pages:
     - docker
     - x86_64  # for MrDocs binary
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang++ cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge 
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge 
     - npm i -q @antora/cli @antora/site-generator
     - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
     - tar zxvf MrDocs-0.8.0-Linux.tar.gz
