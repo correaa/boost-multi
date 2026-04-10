@@ -1060,7 +1060,7 @@ circle-latest c++20:
     - mkdir build && cd build
     - ulimit -c unlimited          # enable core dumps
     - strace --version
-    - strace ./build_latest/circle test/main.cpp && ./a.out
+    - strace `pwd`/../build_latest/circle test/main.cpp && ./a.out
     # - export CMAKE_CXX_COMPILER_LAUNCHER=strace
     - CXX=`pwd`/../build_latest/circle cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
