@@ -240,7 +240,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::extensions_type;
 
 	BOOST_MULTI_HD constexpr auto               extensions() const -> extensions_type { return static_cast<layout_t const&>(*this).extensions(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_t const&>(*this).extents(); }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_t const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	using layout_t::empty;
 	using layout_t::is_empty;

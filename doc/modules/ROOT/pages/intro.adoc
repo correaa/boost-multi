@@ -106,7 +106,7 @@ Edison Design's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
 and
 Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
 
-(Multi code inside CUDA kernel can be compiled with `nvcc` and with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
+(_Multi_ code inside CUDA kernel can be compiled with `nvcc` or with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
 
 Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thrust], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
