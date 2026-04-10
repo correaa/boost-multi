@@ -1700,11 +1700,11 @@ struct detail::array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avo
 namespace boost::multi::pmr {
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
-template<class T, boost::multi::dimensionality_type D>
-using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+template<class T, boost::multi::dimensionality_type D> using array         = ::boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+template<class T, boost::multi::dimensionality_type D> using dynamic_array = ::boost::multi::dynamic_array<T, D, std::pmr::polymorphic_allocator<T>>;
 #else
-template<class T, boost::multi::dimensionality_type D>
-struct [[deprecated("no PMR allocator")]] array;  // your version of C++ doesn't provide polymorphic_allocators
+template<class T, boost::multi::dimensionality_type D> struct [[deprecated("no PMR allocator")]] array;          // your version of C++ doesn't provide polymorphic_allocators
+template<class T, boost::multi::dimensionality_type D> struct [[deprecated("no PMR allocator")]] dynamic_array;  // your version of C++ doesn't provide polymorphic_allocators
 #endif
 
 }  // end namespace boost::multi::pmr
