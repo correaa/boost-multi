@@ -1060,6 +1060,7 @@ circle-latest c++20:
     - mkdir build && cd build
     - ulimit -c unlimited          # enable core dumps
     - strace --version
+    - strace ./build_latest/circle test/main.cpp && ./a.out
     # - export CMAKE_CXX_COMPILER_LAUNCHER=strace
     - CXX=`pwd`/../build_latest/circle cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
     - cmake --build . --parallel 2 || make VERBOSE=1
@@ -1383,6 +1384,7 @@ pages:
     - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
     - tar zxvf MrDocs-0.8.0-Linux.tar.gz
     - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
+    - mkdir .public
     - cd doc
     - chmod +x antora_docs.sh
     - ./antora_docs.sh
@@ -1424,6 +1426,7 @@ pages:
     - mkdir -p public
     - mv .public/* public/
     - ls public/
+    - tree public/
   artifacts:
     paths:
     - public
