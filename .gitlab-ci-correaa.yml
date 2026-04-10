@@ -1405,7 +1405,7 @@ pages:
     # - source .venv/bin/activate
     # - pip install quom
     # - quom --help
-    - cd include
+    # - cd include
     # - tree -L 4
     # - quom -I. multi.hpp boost-multi.hpp --include_guard BOOST_MULTI_.+_HPP
     # - echo -e "#include \"boost-multi.hpp\"\n int main() {}" > a.cpp
@@ -1422,7 +1422,7 @@ pages:
     # - cat boost-multi.hpp
     # - quom -I. multi/array_ref.hpp boost-multi-ref.hpp --include_guard BOOST_MULTI_.+_HPP
     # - cat boost-multi-ref.hpp >> ../.public/boost-multi-ref.hpp
-    - cd ..
+    # - cd ..
     - mkdir -p public
     - mv .public/* public/
     - ls public/

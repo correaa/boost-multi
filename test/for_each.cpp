@@ -69,18 +69,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 				}
 			});
 		}
-		#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 		{
 			auto_timer const _{"std::for_each"};
 			std::ranges::for_each(cpu, [](auto&& plane) {
-				for(auto&& row : plane) {                                         // NOLINT(altera-unroll-loops)
-					for(auto&& elem : row) {                                      // NOLINT(altera-unroll-loops)
+				for(auto&& row : std::forward<decltype(row)>(plane)) {                                         // NOLINT(altera-unroll-loops)
+					for(auto&& elem : std::forward<decltype(row)>(row)) {         // NOLINT(altera-unroll-loops)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm;
 					}
 				}
 			});
 		}
-		#endif
+#endif
 #ifdef __cpp_lib_execution
 #if defined(TBB_FOUND) && !defined(__NVCC__)
 #if !defined(__clang__)
