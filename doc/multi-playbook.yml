@@ -1,6 +1,6 @@
 site:
   title: Boost.Multi
-  start_page: multi::index.adoc
+  start_page: ROOT::intro.adoc
 content:
   sources:
     - url: ..
