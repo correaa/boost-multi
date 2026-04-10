@@ -1058,6 +1058,7 @@ circle-latest c++20:
     - ldd ./build_latest/circle
     - ./build_latest/circle --version
     - ulimit -c unlimited          # enable core dumps
+    - ./build_latest/circle test/main.cpp && ./a.out
     - strace --version
     - strace ./build_latest/circle test/main.cpp && ./a.out
     - mkdir build && cd build
