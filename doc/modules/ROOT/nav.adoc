@@ -45,7 +45,7 @@
 ** xref:reference.adoc#ref_types[Fundamental Types and Concepts]
 *** xref:reference.adoc#ref_subarray[Subarrays]
 *** xref:reference.adoc#ref_array_ref[Array References]
-*** xref:reference.adoc#ref_static_array[Static Arrays]
+// *** xref:reference.adoc#ref_static_array[Static Arrays]
 *** xref:reference.adoc#ref_array[Arrays]
 *** xref:reference.adoc#ref_restriction[Restrictions]
 *** xref:reference.adoc#ref_iterators[Iterators]
