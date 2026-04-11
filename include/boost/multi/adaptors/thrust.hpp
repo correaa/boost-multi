@@ -425,6 +425,26 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 
 }  // end namespace thrust
 
+namespace thrust::detail {
+// #if THRUST_VERSION >= 300200  // CCCL 2
+// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+// struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+// 	using type = std::conditional_t<D == 1, T, void>;
+// };
+
+
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+	using type = std::conditional_t<D == 1,
+		std::conditional_t<IsConst,
+			std::add_const_t<typename pointer_element<ElementPtr>::type>,
+			typename pointer_element<ElementPtr>::type>,
+		void>;
+};
+
+// #endif
+}  // end namespace thrust::detail
+
 namespace boost::multi::thrust {
 
 // defines multi::thrust::device_array
