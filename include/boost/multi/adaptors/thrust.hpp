@@ -34,6 +34,11 @@
 #include <thrust/system/cuda/detail/execution_policy.h>  // for tag
 #include <thrust/system/cuda/memory_resource.h>          // for universal_memory_resource
 #include <thrust/system/cuda/pointer.h>                  // for universal_pointer
+
+#if THRUST_VERSION >= 300200  // CCCL 2
+#include <thrust/detail/type_traits/pointer_traits.h>  // needed for specialization for Thrust 3 (CUDA 13.2)
+#endif
+
 #else
 // #include <thrust/system/hip/detail/execution_policy.h>        // for tag
 // #include <thrust/system/hip/memory_resource.h>                // for universal_memory_resource
@@ -424,6 +429,21 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 // }
 
 }  // end namespace thrust
+
+#if THRUST_VERSION >= 300200  // CCCL 2
+namespace thrust::detail {
+
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+	using type = std::conditional_t<D == 1,
+		std::conditional_t<IsConst,
+			std::add_const_t<typename pointer_element<ElementPtr>::type>,
+			typename pointer_element<ElementPtr>::type>,
+		void>;
+};
+
+}  // end namespace thrust::detail
+#endif
 
 namespace boost::multi::thrust {
 
