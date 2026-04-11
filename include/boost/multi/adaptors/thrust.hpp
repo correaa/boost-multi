@@ -34,6 +34,11 @@
 #include <thrust/system/cuda/detail/execution_policy.h>  // for tag
 #include <thrust/system/cuda/memory_resource.h>          // for universal_memory_resource
 #include <thrust/system/cuda/pointer.h>                  // for universal_pointer
+
+#if THRUST_VERSION >= 300200  // CCCL 2
+#include <thrust/detail/type_traits/pointer_traits.h>  // needed for specialization for Thrust 3 (CUDA 13.2)
+#endif
+
 #else
 // #include <thrust/system/hip/detail/execution_policy.h>        // for tag
 // #include <thrust/system/hip/memory_resource.h>                // for universal_memory_resource
