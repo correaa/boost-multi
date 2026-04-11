@@ -1462,6 +1462,7 @@ pages:
     - tree .
     - cd ..
     - cp -r doc/html .public
+    - echo '<meta http-equiv="refresh" content="0; url=multi/intro.html">' > .public/index.html
     # - cp doc/html/index.html .public/multi.html
     # - pandoc --version
     # - asciidoctor --version
