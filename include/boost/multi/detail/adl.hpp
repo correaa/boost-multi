@@ -22,6 +22,7 @@
 #include <thrust/detail/memory_algorithms.h>
 #include <thrust/equal.h>
 #include <thrust/uninitialized_copy.h>
+#include <thrust/swap.h>
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION >= 300102
