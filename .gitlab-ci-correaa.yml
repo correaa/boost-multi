@@ -1388,11 +1388,8 @@ antora:
     # - tar zxvf MrDocs-0.8.0-Linux.tar.gz
     # - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
     # - truncate -s 0 doc/modules/.gitignore  # allow Antora to see MrDocs-generated pages
-    - export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-    - export REPO_ROOT="$SCRIPT_DIR/.."
     - cd doc
     - tree .
-    - cd "$SCRIPT_DIR"
     - npm ci --ignore-scripts
     - npx antora multi-playbook.yml
     - tree .
