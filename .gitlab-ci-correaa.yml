@@ -1395,7 +1395,6 @@ antora:
     - cd "$SCRIPT_DIR"
     - npm ci --ignore-scripts
     - npx antora multi-playbook.yml
-    - ./antora_docs.sh
     - tree .
     - cd ..
     - cp -r doc/html .public
