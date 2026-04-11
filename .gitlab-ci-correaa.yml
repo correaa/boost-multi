@@ -1365,6 +1365,50 @@ headers:
   needs: ["g++", "clang++"]
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
+
+# this is a specially named workflow to populates the pages site
+antora:
+  image: antora/antora
+  stage: build
+  allow_failure: true
+  needs:
+    - job: pages-presentation
+      artifacts: true
+  only:
+    refs:
+      - develop
+  tags:
+    - non-shared
+    - docker
+    - x86_64  # for MrDocs binary
+  script:
+    # - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make clang cmake tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge
+    # - npm i -q @antora/cli @antora/site-generator
+    # - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
+    # - tar zxvf MrDocs-0.8.0-Linux.tar.gz
+    # - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
+    # - truncate -s 0 doc/modules/.gitignore  # allow Antora to see MrDocs-generated pages
+    - export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    - export REPO_ROOT="$SCRIPT_DIR/.."
+    - cd doc
+    - tree .
+    - cd "$SCRIPT_DIR"
+    - npm ci --ignore-scripts
+    - npx antora multi-playbook.yml
+    - ./antora_docs.sh
+    - tree .
+    - cd ..
+    - cp -r doc/html .public
+    - mkdir -p public
+    - mv .public/* public/
+    - ls public/
+    - tree public/
+  artifacts:
+    paths:
+    - public
+  # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+  needs: ["clang++"]
+
 # this is a specially named workflow to populates the pages site
 pages:
   stage: build
