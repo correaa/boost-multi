@@ -1389,7 +1389,7 @@ pages:
     - tree .
     - chmod +x antora_docs.sh
     - ./antora_docs.sh
-    - tee.
+    - tree .
     - cd ..
     - cp -r doc/html .public
     # - cp doc/html/index.html .public/multi.html
