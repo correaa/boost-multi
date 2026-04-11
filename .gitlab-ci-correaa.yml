@@ -1385,6 +1385,7 @@ pages:
     - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
     - tar zxvf MrDocs-0.8.0-Linux.tar.gz
     - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
+    - truncate -s 0 doc/modules/.gitignore  # allow Antora to see MrDocs-generated pages
     - cd doc
     - tree .
     - chmod +x antora_docs.sh
