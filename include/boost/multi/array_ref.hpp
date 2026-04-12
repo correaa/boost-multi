@@ -577,7 +577,12 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using value_type        = typename subarray<element, D - 1, element_ptr>::decay_type;
 
-	using pointer   = void;  // subarray<element, D - 1, element_ptr>*;
+	using pointer   = std::conditional_t<D == 1,
+		std::conditional_t<IsConst,
+			std::add_const_t<typename pointer_element<ElementPtr>::type>,
+			typename pointer_element<ElementPtr>::type>,
+		void>;  // void;  // subarray<element, D - 1, element_ptr>*;
+
 	using reference = std::conditional_t<
 		IsConst,
 		const_subarray<element, D - 1, element_ptr>,
@@ -1784,8 +1789,11 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
-	using pointer       = ptr;
-	using const_pointer = const_ptr;
+	using pointer       = std::conditional_t<D == 1,
+		ElementPtr,
+		void>;  // void;  // subarray<element, D - 1, element_ptr>*;
+
+	using const_pointer = pointer;
 
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
