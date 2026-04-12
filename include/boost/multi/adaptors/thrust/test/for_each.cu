@@ -78,14 +78,14 @@ auto main()
 		}
 
 		auto gpu_par = multi::thrust::device_array<T, 3>({64, 64, 64}, 0);
-		// {
-		// 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
-		// 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
-		// 		for(auto&& e : row) {
-		// 			e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
-		// 		}
-		// 	});
-		// }
+		{
+		 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
+		 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
+		 		for(auto&& e : row) {
+		 			e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+		 		}
+		 	});
+		}
 		{
 			auto_timer const _{"thrust::for_each(thrust::cuda::par, elements)"};
 			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& e) {
