@@ -643,7 +643,8 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, D, ElementPtr, OtherIsConst> const& other) const -> bool {
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
+		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
+		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && *this->ptr_.layout() == (*(other.ptr_)).layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
@@ -1463,7 +1464,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + (n * this->layout().stride()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + n * this->layout().stride());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 		// return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
