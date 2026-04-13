@@ -77,7 +77,7 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 // clang-format off
 class adl_copy_n_t {
 	template<class... As>          constexpr static auto _(priority<0>/**/,          As&&... args) BOOST_MULTI_DECLRET(std::                copy_n(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          constexpr static auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET(::thrust::           copy_n(                      std::forward<As>(args)...))
 #endif
 	template<class... As>          constexpr static auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     copy_n(                      std::forward<As>(args)...))
@@ -136,7 +136,7 @@ inline constexpr adl_fill_t adl_fill;
 
 class adl_equal_t {
 	template<         class...As> constexpr auto _(priority<1>/**/,          As&&...args) const BOOST_MULTI_DECLRET(               std::  equal(                      std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<         class...As> constexpr auto _(priority<2>/**/,          As&&...args) const BOOST_MULTI_DECLRET(          ::thrust::  equal(                      std::forward<As>(args)...))
 #endif
 	template<         class...As> constexpr auto _(priority<3>/**/,          As&&...args) const BOOST_MULTI_DECLRET(                      equal(                      std::forward<As>(args)...))
@@ -319,7 +319,7 @@ class adl_uninitialized_copy_t {
 			return std::uninitialized_copy(std::move(first), std::move(last), std::move(d_first));
 		}
 	}
-#if defined(__CUDACC__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
 	constexpr auto _(priority<2>/**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
 	{
@@ -348,7 +348,7 @@ inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const BOOST_MULTI_DECLRET(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const BOOST_MULTI_DECLRET(                       uninitialized_copy_n(std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
@@ -488,7 +488,7 @@ auto alloc_uninitialized_fill_n(Alloc& alloc, ForwardIt first, Size n, T const& 
 
 namespace adl {
 
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION < 300102
 	using ::thrust::distance;
 #else
@@ -696,7 +696,7 @@ inline constexpr alloc_uninitialized_move_n_t adl_alloc_uninitialized_move_n;
 class uninitialized_fill_n_t {
 	template<class... As>          static constexpr auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET(               std::    uninitialized_fill_n(std::forward<As>(args)...))
 	template<class... As>          static constexpr auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                        uninitialized_fill_n(std::forward<As>(args)...))
-#if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class... As>          static constexpr auto _(priority<3>/**/,          As&&... args) BOOST_MULTI_DECLRET(              ::thrust::uninitialized_fill_n(std::forward<As>(args)...))
 #endif
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET( std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...))
