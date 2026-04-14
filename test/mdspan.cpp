@@ -15,7 +15,10 @@
 namespace multi = boost::multi;
 
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
-template<class MultiArray, typename T = std::remove_reference_t<typename std::decay_t<MultiArray>::element_cref>, multi::dimensionality_type D = std::decay_t<MultiArray>::dimensionality>
+template<
+	class MultiArray,
+	typename T                   = std::remove_reference_t<typename std::decay_t<MultiArray>::element_cref>,
+	multi::dimensionality_type D = std::decay_t<MultiArray>::dimensionality>
 auto to_strided_mdspan(MultiArray&& arr) {
 	using std::apply;
 	auto shape = apply(

@@ -301,8 +301,9 @@ int main() {
 		multi::iextension k(64);
 		multi::iextension n(96);
 
-		// NOLINTNEXTLINE(runtime/threadsafe_f)
-		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n});
+		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
+			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n}
+		);
 	}
 	{
 		multi::array<double, 3> arr;
