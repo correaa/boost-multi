@@ -130,14 +130,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( pcd == pd );
 
 		{
-			auto&& REF = *CCP;                                                                                          // cppcheck-suppress danglingTempReference ;
-			(void)REF;                                                                                                  // cppcheck-suppress danglingTempReference ;
-			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int>>);  // cppcheck-suppress danglingTempReference ;
+			auto&& REF = *CCP;  // cppcheck-suppress danglingTempReference ;
+			(void)REF;          // cppcheck-suppress danglingTempReference ;
+
+			// cppcheck-suppress danglingTempReference ;
+			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int>>);
 		}
 		{
-			auto const& REF = *CCP;                                                                                           // cppcheck-suppress danglingTempReference ;
-			(void)REF;                                                                                                        // cppcheck-suppress danglingTempReference ;
-			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);  // cppcheck-suppress danglingTempReference ;
+			auto const& REF = *CCP;  // cppcheck-suppress danglingTempReference ;
+			(void)REF;               // cppcheck-suppress danglingTempReference ;
+
+			// cppcheck-suppress danglingTempReference ;
+			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
 		}
 	}
 

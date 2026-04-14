@@ -139,7 +139,6 @@ struct iden_t {
 constexpr iden_t iden;
 
 int main() {
-
 	auto const lazy_matrix =
 		(iden ^ multi::extensions_t(6))
 			.partitioned(2);
