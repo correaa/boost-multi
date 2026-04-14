@@ -1,11 +1,11 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
-#include "boost/multi/array_ref.hpp"
+#include <boost/multi/array_ref.hpp>
 
 #include "boost/multi/adaptors/blas/complex_traits.hpp"
 #include "boost/multi/adaptors/blas/numeric/is_complex.hpp"
@@ -22,6 +22,10 @@
 #include <type_traits>                                       // for decay_t
 #include <utility>                                           // for declval
 // IWYU pragma: no_include <version>                                    // for nullptr_t
+
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+#include <thrust/device_reference.h>  // for thrust::tagged_reference
+#endif
 
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
@@ -275,13 +279,13 @@ struct conjugate {
 		return conj(zee);
 	}
 
-#ifdef __CUDACC__
+#if defined(__CUDA__) || defined(__NVCC__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
 	}
 #endif
-#ifdef __HIPCC__
+#if defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 	template<class Complex>
 	constexpr auto operator()(::thrust::tagged_reference<Complex, ::thrust::hip::tag> zee) const {
 		return conj(static_cast<Complex>(zee));
