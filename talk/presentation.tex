@@ -1,4 +1,4 @@
-\documentclass[t,aspectratio=169]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
 \usepackage{listings}
@@ -31,7 +31,8 @@
   backgroundcolor=\color{codebackground},
   breaklines=true,
   showstringspaces=false,
-  columns=fixed
+  columns=fixed,
+  literate={->}{{$\rightarrow$}}2
 }
 
 \lstMakeShortInline[backgroundcolor=\color{codebackground}]|
@@ -252,6 +253,37 @@ B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
 \end{frame}
 
 
+\begin{frame}[fragile]{Algorithm Dispatching}{
+How does the library call the right \lstinline|copy_n| for CPU vs GPU?
+}
+
+
+\medskip
+\begin{lstlisting}
+class adl_copy_n_t {
+  auto _(priority<0>, auto... as)->decltype(...) { return std::copy_n(...); }  // CPU fallback
+  auto _(priority<1>, auto... as)->decltype(...) { return thrust::copy_n(...); }  // GPU, if available
+  auto _(priority<2>, auto... as)->decltype(...) { return copy_n via(...); } // ADL
+  auto _(priority<3>, auto first, auto... rst) { return decltype(first)::copy_n(...); } // static member
+  auto _(priority<4>, auto first, auto... rst) { return first.copy_n(...); } // from member function
+public:
+  template<class... As>
+  auto operator()(As&&... as) const
+    -> decltype(...) { return _(priority<4>(), std::forward<As>(as)...)); }
+};
+inline constexpr adl_copy_n_t adl_copy_n;
+\end{lstlisting}
+
+\medskip
+\begin{itemize}
+  \item Overload resolution picks the \emph{highest priority} that compiles (SFINAE)
+  \item Same call site works for CPU (\lstinline|std::|), GPU (\lstinline|thrust::|), or user types
+  \item Extensible (non-intrusive but dangerous): add a \lstinline|copy_n| free function found via ADL
+  \item Extensible (intrusive): add members: add a \lstinline|copy_n| member function
+\end{itemize}
+
+\end{frame}
+
 \begin{frame}{Algorithms}
 Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
 
@@ -387,7 +419,7 @@ for(auto i : is) for(auto j : js) for(auto k : ks)
 \end{lstlisting}
 
 \begin{overprint}
-\onslide<1>
+\onslide<1| handout:0>
 \begin{lstlisting}
 std::for_each(
   A.extents().elements().begin(), A.extents().elements().end(),
@@ -397,7 +429,7 @@ std::for_each(
 );
 \end{lstlisting}
 
-\onslide<2>
+\onslide<2| handout:1>
 \begin{lstlisting}
 std::transform(
   A.extents().elements().begin(),
