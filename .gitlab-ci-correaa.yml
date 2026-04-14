@@ -699,10 +699,10 @@ nvhpc-22.7:
 nvhpc-26.1:
   stage: build
   image: nvcr.io/nvidia/nvhpc:26.1-devel-cuda13.1-ubuntu24.04  # nvcr.io/nvidia/nvhpc:25.5-devel-cuda12.9-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
-  tags:
-    - non-shared
-    - large-disk-space
-    - x86_64
+  # tags:
+  #   - non-shared
+  #   - large-disk-space
+  #   - x86_64
   allow_failure: true
   interruptible: true
   # only:
