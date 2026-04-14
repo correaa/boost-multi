@@ -611,7 +611,7 @@ inline constexpr adl_uninitialized_default_construct_n_t adl_uninitialized_defau
 class adl_alloc_uninitialized_default_construct_n_t {
 	template<class Alloc, class... As>          constexpr static auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... args) BOOST_MULTI_JUSTRET(                      adl_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	template<class... As>                       constexpr static auto _(priority<2>/**/,                    As&&... args) BOOST_MULTI_DECLRET(               xtd::alloc_uninitialized_default_construct_n(                      std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-#if defined(__CUDACC__) || defined(__HIPCC__)
+#if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if defined(THRUST_VERSION) && (THRUST_VERSION < 200700)  // 200800)
 	// boost::multi::detail::what_value_t<THRUST_VERSION> a;
 	template<class Alloc, class It, class Size> constexpr static auto _(priority<3>/**/, Alloc&& alloc, It first, Size n) BOOST_MULTI_DECLRET(         (thrust::detail::default_construct_range(std::forward<Alloc>(alloc), first, n)) )
