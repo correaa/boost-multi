@@ -719,7 +719,7 @@ nvhpc-26.1:
 
 nvhpc-26.3:
   stage: build
-  image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.2-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
