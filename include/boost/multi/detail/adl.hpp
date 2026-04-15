@@ -10,7 +10,7 @@
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__CUDACC__) || \
 	defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || \
-	defined(__HIPCC__) || __has_include(<thrust/version.h>) || defined(BOOST_MULTI_HAS_THRUST)
+	defined(__HIPCC__) || (defined(__has_include) && __has_include(<thrust/version.h>)) || defined(BOOST_MULTI_HAS_THRUST)
 #define BOOST_MULTI_ADL_HAS_THRUST 1
 #endif
 
@@ -23,12 +23,14 @@
 #pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
 #endif
 
+#include <exception>  // for std::terminate, fixes a bug un Thrust 2
+
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
 #include <thrust/equal.h>
-#include <thrust/uninitialized_copy.h>
 #include <thrust/swap.h>
+#include <thrust/uninitialized_copy.h>
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION >= 300102
@@ -358,11 +360,11 @@ class adl_uninitialized_copy_n_t {
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
-		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >
+		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >  // NOLINT(modernize-use-constraints) for C++20
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
-			return ::thrust::copy_n(first, count, d_first);
+			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
 		} else {
 			return ::thrust::uninitialized_copy_n(first, count, d_first);
 		}
