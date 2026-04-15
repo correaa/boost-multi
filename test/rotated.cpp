@@ -111,7 +111,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
+#if !defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
 	{
 		constexpr auto test = [] {
