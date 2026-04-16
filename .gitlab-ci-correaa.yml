@@ -28,6 +28,7 @@ variables:
   CMAKE_GENERATOR: "Ninja"  # or CMAKE_GENERATOR: "Unix Makefiles"s
   # CMAKE_BUILD_PARALLEL_LEVEL: "6"
   CTEST_PARALLEL_LEVEL: "4"
+  NINJA_STATUS: "[%f/%t||%r] "
 
 before_script:
   - mkdir -p $APT_CACHE_DIR/partial
