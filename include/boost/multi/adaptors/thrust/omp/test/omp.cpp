@@ -146,118 +146,94 @@ void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
 /**
  * @brief Solution to the Hello world exercise in OpenMP.
  **/
-auto main() -> int {
+auto main() -> int {  // NOLINT(bugprone-exception-escape)
+// 1) Create the OpenMP parallel region
+#pragma omp parallel default(none)
+	{
+		// 1.1) Get my thread number
+		int const my_id = omp_get_thread_num();
 
-	      // 1) Copy-construct from a const source — the canonical trigger.
-      thrust::omp::vector<double> const src(10, 1.5);                                    
-      thrust::omp::vector<double>       dst(src);   // <-- should compile
-      assert(dst.size() == src.size());                                                  
-      assert(dst[0] == 1.5);
-                                                                                         
-      // 2) Copy-assignment from a const source.
-      thrust::omp::vector<double> dst2;                                                  
-      dst2 = src;                                    // <-- should compile
-      assert(dst2[0] == 1.5);                                                            
-   
-      // 3) Algorithms reading a const range (uses pointer<const T, omp::tag, ...>).     
-      thrust::omp::vector<double> out(src.size());
-      thrust::copy(src.begin(), src.end(), out.begin());       // <-- should compile     
-                                                                                         
-      bool const eq = thrust::equal(src.begin(), src.end(), out.begin());                
-      assert(eq);                                                                        
-                                                                                         
-      // 4) transform from a const source to a non-const destination.
-      thrust::omp::vector<double> out2(src.size());
-      thrust::transform(src.begin(), src.end(), out2.begin(),                            
-                        [](double x){ return x + 1.0; });      // <-- should compile
+		// 1.2) Get the number of threads inside that parallel region
+		int const thread_number = omp_get_num_threads();
 
-// // 1) Create the OpenMP parallel region
-// #pragma omp parallel default(none)
-// 	{
-// 		// 1.1) Get my thread number
-// 		int const my_id = omp_get_thread_num();
+		// 1.3) Print everything
+		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+	}
 
-// 		// 1.2) Get the number of threads inside that parallel region
-// 		int const thread_number = omp_get_num_threads();
+#ifndef __clang__
+	{
+		namespace multi = boost::multi;
 
-// 		// 1.3) Print everything
-// 		printf("\"Hello world!\" from thread %d, we are %d threads.\n", my_id, thread_number);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-// 	}
+		multi::thrust::omp::array<double, 1> arr(1U << 20U);
 
-// #ifndef __clang__
-// 	{
-// 		namespace multi = boost::multi;
+		{
+#pragma omp parallel for default(none) shared(arr)
+			for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
+				arr[i] = static_cast<double>(i) * static_cast<double>(i);
+			}
+		}
 
-// 		multi::thrust::omp::array<double, 1> arr(1U << 20U);
+		BOOST_TEST( arr[arr.size() - 1] == static_cast<double>(arr.size() - 1)*static_cast<double>(arr.size() - 1) );
 
-// 		{
-// #pragma omp parallel for default(none) shared(arr)
-// 			for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
-// 				arr[i] = static_cast<double>(i) * static_cast<double>(i);
-// 			}
-// 		}
+		auto tick = std::chrono::high_resolution_clock::now();
 
-// 		BOOST_TEST( arr[arr.size() - 1] == static_cast<double>(arr.size() - 1)*static_cast<double>(arr.size() - 1) );
+		auto const serial = serial_array_sum(arr);
+		DoNotOptimize(serial);
+		std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-// 		auto tick = std::chrono::high_resolution_clock::now();
+		tick = std::chrono::high_resolution_clock::now();
 
-// 		auto const serial = serial_array_sum(arr);
-// 		DoNotOptimize(serial);
-// 		std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		auto const parallel = parallel_array_sum(arr);
+		DoNotOptimize(parallel);
+		std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-// 		tick = std::chrono::high_resolution_clock::now();
+		std::cout << serial << ' ' << parallel << ' ' << serial - parallel << '\n';
+		BOOST_TEST( std::abs((serial / parallel) - 1.0) < 1.0e-12 );
 
-// 		auto const parallel = parallel_array_sum(arr);
-// 		DoNotOptimize(parallel);
-// 		std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		tick = std::chrono::high_resolution_clock::now();
 
-// 		std::cout << serial << ' ' << parallel << ' ' << serial - parallel << '\n';
-// 		BOOST_TEST( std::abs((serial / parallel) - 1.0) < 1.0e-12 );
+		auto const parallel_idiom = parallel_idiom_array_sum(arr);
+		DoNotOptimize(parallel_idiom);
+		std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-// 		tick = std::chrono::high_resolution_clock::now();
+		BOOST_TEST( std::abs((parallel_idiom / parallel) - 1.0) < 1.0e-12 );
 
-// 		auto const parallel_idiom = parallel_idiom_array_sum(arr);
-// 		DoNotOptimize(parallel_idiom);
-// 		std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		tick = std::chrono::high_resolution_clock::now();
 
-// 		BOOST_TEST( std::abs((parallel_idiom / parallel) - 1.0) < 1.0e-12 );
+		auto const thrust = thrust_array_sum(arr);
+		DoNotOptimize(thrust);
+		std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-// 		tick = std::chrono::high_resolution_clock::now();
+		BOOST_TEST( std::abs((thrust / parallel) - 1.0) < 1.0e-12 );
 
-// 		auto const thrust = thrust_array_sum(arr);
-// 		DoNotOptimize(thrust);
-// 		std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		tick = std::chrono::high_resolution_clock::now();
 
-// 		BOOST_TEST( std::abs((thrust / parallel) - 1.0) < 1.0e-12 );
+		auto const thrust_omp = thrust_omp_array_sum(arr);
+		DoNotOptimize(thrust_omp);
+		std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 
-// 		tick = std::chrono::high_resolution_clock::now();
+		BOOST_TEST( std::abs((thrust_omp / parallel) - 1.0) < 1.0e-12 );
 
-// 		auto const thrust_omp = thrust_omp_array_sum(arr);
-// 		DoNotOptimize(thrust_omp);
-// 		std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		multi::array<double, 1> const arr_normal{arr};
+		DoNotOptimize(arr_normal);
 
-// 		BOOST_TEST( std::abs((thrust_omp / parallel) - 1.0) < 1.0e-12 );
+		tick = std::chrono::high_resolution_clock::now();
 
-// 		multi::array<double, 1> const arr_normal{arr};
-// 		DoNotOptimize(arr_normal);
+		auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
+		DoNotOptimize(thrust_omp_normal);
+		std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
+	}
+#if THRUST_VERSION >= 300000
+	{
+		namespace multi = boost::multi;
 
-// 		tick = std::chrono::high_resolution_clock::now();
+		auto arr  = multi::thrust::omp::array<double, 2>({10, 10}, 1.2);
+		auto arr2 = arr;
 
-// 		auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
-// 		DoNotOptimize(thrust_omp_normal);
-// 		std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-// 		BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
-// 	}
-// #if THRUST_VERSION >= 300000
-// 	{
-// 		namespace multi = boost::multi;
-
-// 		auto arr  = multi::thrust::omp::array<double, 2>({10, 10}, 1.2);
-// 		auto arr2 = arr;
-
-// 		// BOOST_TEST( arr2 == arr );
-// 	}
-// #endif
-// #endif
+		// BOOST_TEST( arr2 == arr );
+	}
+#endif
+#endif
 	return boost::report_errors();
 }
