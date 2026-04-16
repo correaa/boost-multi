@@ -407,6 +407,34 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \end{frame}
 
 
+\begin{frame}[fragile]{OpenMP via Thrust Backend}
+
+Use Thrust's OMP backend for parallel CPU execution --- no GPU required:
+
+\begin{lstlisting}
+#include <boost/multi/adaptors/thrust/omp.hpp>
+
+// array backed by thrust::omp::allocator
+multi::thrust::omp::array<double, 1> arr(64);  // <double, 1, thrust::omp::allocator<double>>
+
+// parallel fill with OpenMP
+#pragma omp parallel for
+for(int i = 0; i < arr.size(); ++i)
+  arr[i] = double(i) * double(i);
+
+// thrust::reduce with OMP execution policy
+auto sum = thrust::reduce(thrust::omp::par,
+  arr.begin(), arr.end(), 0.0);
+\end{lstlisting}
+
+\begin{itemize}
+  \item \lstinline|multi::thrust::omp::array<T, D>| = \lstinline|multi::array<T, D, thrust::omp::allocator<T>>|
+  \item Thrust algorithms dispatch to OpenMP automatically via allocator tag
+  \item Same code structure as CUDA --- swap allocator to switch backend
+\end{itemize}
+
+\end{frame}
+
 \begin{frame}[fragile]
 \frametitle{...but I need my 3D structure}
 

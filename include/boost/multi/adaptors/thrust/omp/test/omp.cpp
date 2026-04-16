@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -15,6 +15,7 @@
 // #include <omp.h>  // NOLINT(clang-diagnostic-error)
 #include <thrust/reduce.h>                       // IWYU pragma: keep
 #include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
+#include <thrust/version.h>                       // IWYU pragma: keep
 
 #ifndef __clang__
 #include <chrono>
@@ -153,68 +154,79 @@ auto main() -> int {
 	}
 
 #ifndef __clang__
-	namespace multi = boost::multi;
-
-	multi::thrust::omp::array<double, 1> arr(1U << 20U);
-
 	{
-#pragma omp parallel for default(none) shared(arr)
-		for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
-			arr[i] = static_cast<double>(i) * static_cast<double>(i);
+		namespace multi = boost::multi;
+
+		multi::thrust::omp::array<double, 1> arr(1U << 20U);
+
+		{
+	#pragma omp parallel for default(none) shared(arr)
+			for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
+				arr[i] = static_cast<double>(i) * static_cast<double>(i);
+			}
 		}
+
+		BOOST_TEST( arr[arr.size() - 1] == static_cast<double>(arr.size() - 1)*static_cast<double>(arr.size() - 1) );
+
+		auto tick = std::chrono::high_resolution_clock::now();
+
+		auto const serial = serial_array_sum(arr);
+		DoNotOptimize(serial);
+		std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+		tick = std::chrono::high_resolution_clock::now();
+
+		auto const parallel = parallel_array_sum(arr);
+		DoNotOptimize(parallel);
+		std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+		std::cout << serial << ' ' << parallel << ' ' << serial - parallel << '\n';
+		BOOST_TEST( std::abs((serial / parallel) - 1.0) < 1.0e-12 );
+
+		tick = std::chrono::high_resolution_clock::now();
+
+		auto const parallel_idiom = parallel_idiom_array_sum(arr);
+		DoNotOptimize(parallel_idiom);
+		std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+		BOOST_TEST( std::abs((parallel_idiom / parallel) - 1.0) < 1.0e-12 );
+
+		tick = std::chrono::high_resolution_clock::now();
+
+		auto const thrust = thrust_array_sum(arr);
+		DoNotOptimize(thrust);
+		std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+		BOOST_TEST( std::abs((thrust / parallel) - 1.0) < 1.0e-12 );
+
+		tick = std::chrono::high_resolution_clock::now();
+
+		auto const thrust_omp = thrust_omp_array_sum(arr);
+		DoNotOptimize(thrust_omp);
+		std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+
+		BOOST_TEST( std::abs((thrust_omp / parallel) - 1.0) < 1.0e-12 );
+
+		multi::array<double, 1> const arr_normal{arr};
+		DoNotOptimize(arr_normal);
+
+		tick = std::chrono::high_resolution_clock::now();
+
+		auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
+		DoNotOptimize(thrust_omp_normal);
+		std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
+		BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
 	}
+	#endif
+	#if THRUST_VERSION >= 300000
+	{
+		namespace multi = boost::multi;
 
-	BOOST_TEST( arr[arr.size() - 1] == static_cast<double>(arr.size() - 1)*static_cast<double>(arr.size() - 1) );
+		auto arr = multi::thrust::omp::array<double, 2>({10, 10}, 1.2);
+		auto arr2 = arr;
 
-	auto tick = std::chrono::high_resolution_clock::now();
-
-	auto const serial = serial_array_sum(arr);
-	DoNotOptimize(serial);
-	std::cout << "serial " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-
-	tick = std::chrono::high_resolution_clock::now();
-
-	auto const parallel = parallel_array_sum(arr);
-	DoNotOptimize(parallel);
-	std::cout << "parallel " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-
-	std::cout << serial << ' ' << parallel << ' ' << serial - parallel << '\n';
-	BOOST_TEST( std::abs((serial / parallel) - 1.0) < 1.0e-12 );
-
-	tick = std::chrono::high_resolution_clock::now();
-
-	auto const parallel_idiom = parallel_idiom_array_sum(arr);
-	DoNotOptimize(parallel_idiom);
-	std::cout << "parallel idiom " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-
-	BOOST_TEST( std::abs((parallel_idiom / parallel) - 1.0) < 1.0e-12 );
-
-	tick = std::chrono::high_resolution_clock::now();
-
-	auto const thrust = thrust_array_sum(arr);
-	DoNotOptimize(thrust);
-	std::cout << "thrust " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-
-	BOOST_TEST( std::abs((thrust / parallel) - 1.0) < 1.0e-12 );
-
-	tick = std::chrono::high_resolution_clock::now();
-
-	auto const thrust_omp = thrust_omp_array_sum(arr);
-	DoNotOptimize(thrust_omp);
-	std::cout << "thrust omp " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-
-	BOOST_TEST( std::abs((thrust_omp / parallel) - 1.0) < 1.0e-12 );
-
-	multi::array<double, 1> const arr_normal{arr};
-	DoNotOptimize(arr_normal);
-
-	tick = std::chrono::high_resolution_clock::now();
-
-	auto const thrust_omp_normal = thrust_omp_array_sum(arr_normal);
-	DoNotOptimize(thrust_omp_normal);
-	std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
-	BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
-#endif
-
+		// BOOST_TEST( arr2 == arr );
+	}
+	#endif
 	return boost::report_errors();
 }
