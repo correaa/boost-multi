@@ -25,6 +25,22 @@ struct std::pointer_traits<::thrust::pointer<As...>>  // NOLINT(cert-dcl58-cpp) 
 	template<class T>
 	using rebind = typename ::thrust::detail::pointer_traits<::thrust::pointer<As...>>::template rebind<T>::other;
 };
+
+// template<class T, class Tag, class Derived>
+// struct std::pointer_traits<
+// 	::thrust::pointer<T, Tag, ::thrust::tagged_reference<T, Tag>, Derived>
+// > : ::thrust::detail::pointer_traits<
+// 		::thrust::pointer<T, Tag, ::thrust::tagged_reference<T, Tag>, Derived>
+// 	>
+// {
+// 	template<class U>
+// 	using rebind = ::thrust::pointer<
+// 		U, Tag,
+// 		::thrust::tagged_reference<U, Tag>,  // keep Reference in sync with Element
+// 		Derived
+// 	>;
+// };
+
 // end of nvcc thrust 11.5 workaround
 // #endif
 
