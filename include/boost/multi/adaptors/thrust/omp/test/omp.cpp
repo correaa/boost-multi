@@ -15,7 +15,7 @@
 // #include <omp.h>  // NOLINT(clang-diagnostic-error)
 #include <thrust/reduce.h>                       // IWYU pragma: keep
 #include <thrust/system/omp/execution_policy.h>  // IWYU pragma: keep
-#include <thrust/version.h>                       // IWYU pragma: keep
+#include <thrust/version.h>                      // IWYU pragma: keep
 
 #ifndef __clang__
 #include <chrono>
@@ -160,7 +160,7 @@ auto main() -> int {
 		multi::thrust::omp::array<double, 1> arr(1U << 20U);
 
 		{
-	#pragma omp parallel for default(none) shared(arr)
+#pragma omp parallel for default(none) shared(arr)
 			for(int i = 0; i < arr.size(); ++i) {  // NOLINT(altera-unroll-loops)
 				arr[i] = static_cast<double>(i) * static_cast<double>(i);
 			}
@@ -217,16 +217,16 @@ auto main() -> int {
 		std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 		BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
 	}
-	#endif
-	#if THRUST_VERSION >= 300000
+#endif
+#if THRUST_VERSION >= 300000
 	{
 		namespace multi = boost::multi;
 
-		auto arr = multi::thrust::omp::array<double, 2>({10, 10}, 1.2);
+		auto arr  = multi::thrust::omp::array<double, 2>({10, 10}, 1.2);
 		auto arr2 = arr;
 
 		// BOOST_TEST( arr2 == arr );
 	}
-	#endif
+#endif
 	return boost::report_errors();
 }
