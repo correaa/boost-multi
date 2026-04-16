@@ -464,6 +464,7 @@ vs2022-shell cudatk:
   stage: build
   allow_failure: false
   interruptible: true
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   cache: []
   script:
     - whoami
