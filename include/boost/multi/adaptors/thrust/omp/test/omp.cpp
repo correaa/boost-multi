@@ -224,7 +224,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		std::cout << "thrust omp normal " << (std::chrono::high_resolution_clock::now() - tick).count() << '\n';
 		BOOST_TEST( std::abs((thrust_omp_normal / parallel) - 1.0) < 1.0e-12 );
 	}
-#if THRUST_VERSION >= 300000
 	{
 		namespace multi = boost::multi;
 
@@ -233,7 +232,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		// BOOST_TEST( arr2 == arr );
 	}
-#endif
 #endif
 	return boost::report_errors();
 }
