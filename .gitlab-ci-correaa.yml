@@ -38,6 +38,7 @@ variables:
 before_script:
   - mkdir -p $APT_CACHE_DIR/partial
   - echo "Dir::Cache::Archives \"$APT_CACHE_DIR\";" > $APT_CONFIG
+  - apt-get -qq update  # factored update; macOS and Windows jobs override with `before_script: []`
 
 cache:
   key: apt-$CI_JOB_IMAGE
@@ -58,7 +59,6 @@ g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
     - non-shared
     - docker
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates python3 cmake ninja-build gcc g++ git make libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
@@ -77,7 +77,7 @@ g++-omp-thrust:
     - docker
     - non-shared
   script:
-    - apt-get -qq update --allow-unauthenticated
+    # - apt-get -qq update --allow-unauthenticated
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake ninja-build g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
@@ -99,7 +99,6 @@ g++-m32 sanitize:
   interruptible: true
   script:
     - dpkg --add-architecture i386
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake ninja-build libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
@@ -120,7 +119,7 @@ arm64:
     - arm  # for image
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake ninja-build make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake ninja-build make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
     - c++ --version
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
@@ -135,6 +134,7 @@ c++-macos-shell:
   only:
     refs:
       - develop
+  before_script: []  # override global before_script (bash/apt-get commands don't apply on macOS shell runner)
   tags:
     - macos
     - shell
@@ -159,7 +159,6 @@ coverage:
   allow_failure: true
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
@@ -187,7 +186,6 @@ g++ cppcheck cpplint memcheck lto:
     - non-shared
     - docker
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build cppcheck cpplint g++ make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config valgrind
     - g++ --version
     - cpplint --version
@@ -195,7 +193,7 @@ g++ cppcheck cpplint memcheck lto:
     - valgrind --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DDISABLE_MPI=1 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=syntaxError;--suppress=unmatchedSuppression;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . || cmake --build . --parallel 1 --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - (ctest --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/../.valgrind-suppressions -T memcheck) || (cat /builds/correaa/boost-multi/build/Testing/Temporary/MemoryChecker.*.log && exit 666)
@@ -214,7 +212,6 @@ g++-9-bullseye:
       - develop
   script:
     - arch
-    - apt-get -qq update
     - apt-get install --no-install-recommends --assume-yes ca-certificates cmake ninja-build g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     - cmake --version
     - g++ --version
@@ -236,7 +233,7 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
     refs:
       - develop
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
+    - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
     - mkdir build && cd build
     - g++ --version
     - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr" -DDISABLE_MPI=1
@@ -254,7 +251,6 @@ clang++ ubsan:  # more UB is detected on Release
     refs:
       - develop
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet clang libclang-rt-dev cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - export UBSAN_OPTIONS=print_stacktrack=1
     - mkdir build && cd build
@@ -277,7 +273,6 @@ clang++-18 mull-18:  # mull-18 crashes
     refs:
       - develop
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake ninja-build file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - apt-get -qq update
@@ -307,7 +302,6 @@ clang++-16 c++20:
     refs:
       - develop
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-16 cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
     - clang-16 --version
@@ -441,6 +435,8 @@ vs2022-shell c++23:
 
 vs2022-shell cudatk-17:
   stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
   interruptible: true
   cache: []
@@ -523,7 +519,6 @@ clang++-m32:
       - develop
   script:
     - dpkg --add-architecture i386
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake ninja-build make libboost-serialization-dev:i386 tar wget pkg-config > /dev/null
     - mkdir build && cd build
     - c++ --version
@@ -540,7 +535,6 @@ clang++-latest tidy iwyu everything:
     - docker
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet git clang-format clang clang-tidy cmake ninja-build iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
     - clang++ --version
@@ -560,7 +554,6 @@ g++-testing c++20:
     - docker
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
@@ -580,7 +573,6 @@ clang++-oldstable-cmake4:
       - develop
   script:
     - arch
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-13 cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
@@ -605,7 +597,7 @@ oneapi:
     refs:
       - develop
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
@@ -625,7 +617,7 @@ oneapi-2022.2:
     refs:
       - develop
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx CXXFLAGS="-DPSTL_USE_PARALLEL_POLICIES=0" cmake .. -DCMAKE_BUILD_TYPE=Release -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
@@ -649,7 +641,7 @@ oneapi-latest c++23:
   script:
     # - wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
     # - echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=ON  # Intel MPI doesn't work on CI
@@ -665,7 +657,7 @@ nvhpc:
     - large-disk-space
     - x86_64
   script:
-    - apt-get update && apt-get install --no-install-recommends -y cmake ninja-build make libboost-serialization-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++ --version
     # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh
     # - sh cmake-install.sh --skip-license --prefix=/usr
@@ -689,7 +681,7 @@ nvhpc-22.7:
     refs:
       - develop
   script:
-    - apt-get update && apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.30.0-rc4/cmake-3.30.0-rc4-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
@@ -713,7 +705,7 @@ nvhpc-26.3:
     refs:
       - develop
   script:
-    - apt-get update && apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"
@@ -735,12 +727,12 @@ cuda:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - nvidia-smi
-    - apt-get update && apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_HOST_COMPILER=g++-12 -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
@@ -759,7 +751,6 @@ cuda-11.6.1:
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
-    - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libtbb-dev
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
     - sh ./cmake-install.sh --skip-license --prefix=/usr
@@ -783,7 +774,6 @@ culang++-16 cuda-11.4.3:
       - develop
   script:
     - nvidia-smi
-    - apt-get -qq update
     - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
@@ -812,7 +802,6 @@ cuda-12.6.3:
       - develop
   script:
     - nvidia-smi
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - cmake --version
     - mkdir build && cd build
@@ -836,7 +825,6 @@ cuda-12.6.3 cutensor:
       - develop
   script:
     - nvidia-smi
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     # - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
     # - dpkg -i cuda-keyring_1.1-1_all.deb
@@ -847,7 +835,7 @@ cuda-12.6.3 cutensor:
     - g++ --version
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CUDA_STANDARD=20 -DCMAKE_CUDA_ARCHITECTURES=native -DCMAKE_CUDA_HOST_COMPILER=g++
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["cuda"]
 
@@ -865,7 +853,6 @@ cuda-13.1.0:
       - develop
   script:
     - nvidia-smi
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - cmake --version
     - mkdir build && cd build
@@ -890,7 +877,6 @@ cuda-13.2.0 cccl-2:
   #     - develop
   script:
     - nvidia-smi
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - cmake --version
     - mkdir build && cd build
@@ -916,7 +902,6 @@ culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
   interruptible: true
   script:
     - nvidia-smi
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
@@ -943,7 +928,6 @@ rocm:
     - x86_64  # for rocm image
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
@@ -974,7 +958,6 @@ rocm-latest:
     - x86_64  # for rocm image
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
@@ -1005,7 +988,6 @@ rocm-6.4.4:
     - x86_64  # for rocm image
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
@@ -1029,7 +1011,6 @@ circle:
     - non-shared
     - x86_64  # for circle executable
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_226.tgz --no-verbose
@@ -1051,7 +1032,6 @@ circle-202:
     - non-shared
     - x86_64  # for circle executable
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake ninja-build g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
@@ -1076,7 +1056,7 @@ circle-latest c++20:
     - x86_64  # for circle executable
   interruptible: true
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet strace ca-certificates clang cmake ninja-build g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
+    - apt-get -qq install --no-install-recommends -y --quiet strace ca-certificates clang cmake ninja-build g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
     - tar -zxvf python-build_*.tgz
@@ -1108,7 +1088,6 @@ inq:
   interruptible: true
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
@@ -1140,8 +1119,7 @@ inq-debug:
       - develop
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev 
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch update-multi-get
     - rm -rf inq/external_libs/multi
@@ -1172,7 +1150,7 @@ inq cuda:
   # before_script:
   #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=0,1
@@ -1210,7 +1188,6 @@ inq rocm:
   interruptible: true
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
@@ -1251,7 +1228,6 @@ qmcpack:
   #   - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
     - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
     # - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
@@ -1280,7 +1256,7 @@ qmcpack cuda:
   #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
     - nvidia-smi
     - rsync --version
     - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
@@ -1315,7 +1291,7 @@ sonar:
   interruptible: true
   script:
     # Run the build inside the build wrapper
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl unzip g++ gcovr make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl unzip g++ gcovr make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - g++ --version
     - mkdir build
     # Download sonar-scanner, from https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/
@@ -1364,7 +1340,7 @@ headers:
     - non-shared
     - docker
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet python3 python3-venv tree g++ # make g++ clang cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge 
+    - apt-get -qq install --no-install-recommends -y --quiet python3 python3-venv tree g++ # make g++ clang cmake tree ca-certificates npm asciidoctor sed git pip python3-venv wget  # pandoc ruby-rouge
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip install quom
@@ -1453,7 +1429,7 @@ pages:
     - docker
     - x86_64  # for MrDocs binary
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge
+    - apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge
     - npm i -q @antora/cli @antora/site-generator
     - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
     - tar zxvf MrDocs-0.8.0-Linux.tar.gz
@@ -1514,7 +1490,6 @@ conan:
   stage: build
   interruptible: true
   script:
-    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y python3 python3-pip cmake ninja-build gcc g++ make
     - pip3 install conan --break-system-packages
     - conan profile detect --force
@@ -1526,7 +1501,7 @@ github-ci-status:
   interruptible: true
   timeout: 2 hours
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates curl jq
+    - apt-get -qq install --no-install-recommends -y ca-certificates curl jq
     - STATUS=null
     - while [ "$STATUS" = "null" ]; do RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=${CI_COMMIT_REF_NAME}&per_page=1"); STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion); RUN_ID=$(echo "$RESPONSE" | jq -r .workflow_runs[0].id); echo "GitHub CI status $STATUS (run ID=$RUN_ID)"; if [ "$STATUS" = "null" ]; then echo "Run in progress, retrying in 5 minutes..."; sleep 300; fi; done
     - if [ "$STATUS" != "success" ]; then JOBS=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/runs/$RUN_ID/jobs"); echo "Failed/incomplete jobs"; echo "$JOBS" | jq -r '.jobs[] | select(.conclusion != "success" and .conclusion != null) | [.name, .conclusion] | @tsv'; exit 1; fi
