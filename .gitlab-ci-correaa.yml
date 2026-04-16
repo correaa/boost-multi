@@ -359,6 +359,8 @@ visual-studio-windows:
 
 vs2022-shell:
   stage: build
+  variables:                                                                             
+    CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
   interruptible: true
   cache: []
@@ -388,6 +390,8 @@ vs2022-shell:
 
 vs2022-shell c++17:
   stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
   interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
@@ -412,6 +416,8 @@ vs2022-shell c++17:
 
 vs2022-shell c++23:
   stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
   interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
@@ -938,7 +944,7 @@ rocm:
   interruptible: true
   script:
     - apt-get -qq update
-    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y ninja cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
@@ -1024,7 +1030,7 @@ circle:
     - x86_64  # for circle executable
   script:
     - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja clang cmake g++-11 gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/build_226.tgz --no-verbose
     - tar -zxvf build_*.tgz
