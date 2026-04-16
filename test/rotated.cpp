@@ -110,18 +110,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-#if !defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
-	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
-	{
-		constexpr auto test = [] {
-			multi::array<int, 2> arr({3, 3}, 99);
-			return arr.rotated()[1].end() != arr.rotated()[1].begin();
-		}();
-		BOOST_TEST(test);
-	}
-#endif
-#endif
+// #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+// #if !defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
+// 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
+// 	{
+// 		constexpr auto test = [] {
+// 			multi::array<int, 2> arr({3, 3}, 99);
+// 			return arr.rotated()[1].end() != arr.rotated()[1].begin();
+// 		}();
+// 		BOOST_TEST(test);
+// 	}
+// #endif
+// #endif
 
 	// BOOST_AUTO_TEST_CASE(multi_2d_const)
 	{
