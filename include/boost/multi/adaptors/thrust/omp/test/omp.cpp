@@ -13,8 +13,8 @@
 #endif
 
 #include <thrust/copy.h>  // IWYU pragma: keep
-#include <thrust/equal.h>
-#include <thrust/system/omp/vector.h>
+// #include <thrust/equal.h>
+// #include <thrust/system/omp/vector.h>
 #include <thrust/transform.h>
 
 #include <cassert>
