@@ -303,6 +303,34 @@ auto y = ~(x / ((~x) | sumR1));       // normalize
 \end{frame}
 
 
+\begin{frame}[fragile]{Aliasing, and how functional idioms partially solve it}
+
+Classic pitfall: two pointers/references may refer to the \emph{same} memory; the compiler must assume they do, and optimizations (vectorization, reordering, fusion) are disabled.
+
+\begin{lstlisting}
+multi::array<double, 1> y = /* ... */;
+y = M * y;               // self-aliasing: y is both source and destination
+A = A.transposed();      // writes overlap with reads
+\end{lstlisting}
+
+Usual patches --- C's \lstinline|restrict|, \lstinline|__restrict__|, expression templates with bookkeeping --- are brittle and non-portable. A value-based, pointer-free expression \emph{cannot} alias by construction.
+
+\begin{lstlisting}
+auto R = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{N, N};
+auto T = R + R.transposed();          // lazy: no memory, no pointers
+
+multi::array<int, 2> out = T;         // single write into a fresh array
+\end{lstlisting}
+
+\begin{itemize}
+  \item No intermediate buffers $\Rightarrow$ no aliasing between stages.
+  \item Materialization is the \emph{only} write --- compiler sees a pure nested loop.
+  \item \emph{Partial}: assigning back into an array whose storage backs the RHS still aliases; lambda captures-by-reference can re-introduce it.
+\end{itemize}
+
+\end{frame}
+
+
 \begin{frame}[fragile]{Algorithm Dispatching}{
 How does the library call the right \lstinline|copy_n| for CPU vs GPU?
 }
