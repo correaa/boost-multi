@@ -31,7 +31,7 @@ variables:
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   APT_CACHE_DIR: "$CI_PROJECT_DIR/.apt-cache"
   APT_CONFIG: "$CI_PROJECT_DIR/.apt.conf"
-  CMAKE_GENERATOR: Ninja
+  # CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_PARALLEL_LEVEL: "6"
   CTEST_PARALLEL_LEVEL: "4"
 
@@ -43,9 +43,6 @@ cache:
   key: apt-$CI_JOB_IMAGE
   paths:
     - .apt-cache/
-
-include:
-  - local: '.gitlab-ci.yml'
 
 stages:
   - build
@@ -1533,3 +1530,6 @@ github-ci-status:
     # - STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion)
     # - echo "GitHub CI status $STATUS"
     # - test "$STATUS" = "success"
+
+include:
+  - local: '.gitlab-ci.yml'
