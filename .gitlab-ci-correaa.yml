@@ -12,12 +12,6 @@ image: debian:stable
 workflow:
   auto_cancel:
     on_new_commit: interruptible
-  # rules:
-  #   - if: $CI_COMMIT_TAG
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  #   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-
-# https://stackoverflow.com/a/78636529/225186 
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -40,6 +34,9 @@ before_script:
   - echo "Dir::Cache::Archives \"$APT_CACHE_DIR\";" > $APT_CONFIG
   - apt-get -qq update  # factored update; macOS and Windows jobs override with `before_script: []`
 
+default:
+  interruptible: true  # jobs may override with `interruptible: false`
+
 cache:
   key: apt-$CI_JOB_IMAGE
   paths:
@@ -51,7 +48,6 @@ stages:
 
 g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
   stage: build
-  interruptible: false
   only:
     refs:
       - develop
@@ -69,7 +65,6 @@ g++ c++20 tblis:  # debian-stable: default is gcc 14.2.0 as of Dec 2025
 
 g++-omp-thrust:
   stage: build
-  interruptible: true
   only:
     refs:
       - develop
@@ -96,7 +91,6 @@ g++-m32 sanitize:
     - non-shared
     - high-bandwidth  # for boost source download
     - x86_64  # for g++-multilib in image
-  interruptible: true
   script:
     - dpkg --add-architecture i386
     - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake ninja-build libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
@@ -117,7 +111,6 @@ arm64:
   tags:
     - non-shared
     - arm  # for image
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake ninja-build make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
     - mkdir build && cd build
@@ -129,7 +122,6 @@ arm64:
 
 c++-macos-shell:
   stage: build
-  interruptible: true
   allow_failure: true  # runner might not be available
   only:
     refs:
@@ -157,7 +149,6 @@ coverage:
     - non-shared
     - docker
   allow_failure: true
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ gcovr git make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
@@ -181,7 +172,6 @@ coverage:
 g++ cppcheck cpplint memcheck lto:
   stage: build
   allow_failure: false
-  interruptible: true
   tags:
     - non-shared
     - docker
@@ -205,7 +195,6 @@ g++-9-bullseye:
   tags:
     - non-shared
     - docker
-  interruptible: true
   allow_failure: false
   only:
     refs:
@@ -228,7 +217,6 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
     - non-shared
     - docker
   allow_failure: true
-  interruptible: true
   only:
     refs:
       - develop
@@ -246,7 +234,6 @@ clang++ ubsan:  # more UB is detected on Release
   tags:
     - non-shared
     - docker
-  interruptible: true
   only:
     refs:
       - develop
@@ -267,7 +254,6 @@ clang++-18 mull-18:  # mull-18 crashes
     - x86_64  # for mull
     - large-memory-space
     - non-shared
-  interruptible: true
   allow_failure: false
   only:
     refs:
@@ -297,7 +283,6 @@ clang++-16 c++20:
   tags:
     - non-shared
     - docker
-  interruptible: true
   only:
     refs:
       - develop
@@ -319,7 +304,6 @@ visual-studio-windows:
     refs:
       - develop
   allow_failure: true  # runner not always available
-  interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows runner)
   variables:
     BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
@@ -358,7 +342,6 @@ vs2022-shell:
   variables:                                                                             
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
-  interruptible: true
   cache: []
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   script:
@@ -389,7 +372,6 @@ vs2022-shell c++17:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
-  interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
@@ -415,7 +397,6 @@ vs2022-shell c++23:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
-  interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
@@ -440,7 +421,6 @@ vs2022-shell cudatk-17:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
-  interruptible: true
   cache: []
   only:
     refs:
@@ -467,7 +447,6 @@ vs2022-shell cudatk:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
-  interruptible: true
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   cache: []
   script:
@@ -490,7 +469,6 @@ vs2022-shell cudatk:
 vs2022-shell cuda:
   stage: build
   allow_failure: false
-  interruptible: true
   only:
     refs:
       - develop
@@ -518,7 +496,6 @@ clang++-m32:
     - non-shared
     - high-bandwidth  # for boost source download
     - x86_64  # for g++-multilib in image
-  interruptible: true
   only:
     refs:
       - develop
@@ -538,7 +515,6 @@ clang++-latest tidy iwyu everything:
   tags:
     - non-shared
     - docker
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y --quiet git clang-format clang clang-tidy cmake ninja-build iwyu make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - mkdir build && cd build
@@ -557,7 +533,6 @@ g++-testing c++20:
   tags:
     - non-shared
     - docker
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
@@ -572,7 +547,6 @@ clang++-oldstable-cmake4:
   tags:
     - non-shared
     - docker
-  interruptible: true
   only:
     refs:
       - develop
@@ -597,7 +571,6 @@ oneapi:
     - non-shared
     - large-disk-space
     - x86_64
-  interruptible: true
   only:
     refs:
       - develop
@@ -617,7 +590,6 @@ oneapi-2022.2:
     - large-disk-space
     - x86_64
   allow_failure: false
-  interruptible: true
   only:
     refs:
       - develop
@@ -634,7 +606,6 @@ oneapi-latest c++23:
   stage: build
   image: intel/oneapi-hpckit:latest  # icpx --version (2023.2.0.20230721) as of Dec 2023
   allow_failure: false
-  interruptible: true
   only:
     refs:
       - develop
@@ -681,7 +652,6 @@ nvhpc-22.7:
     - non-shared
     - large-disk-space
     - x86_64
-  interruptible: true
   only:
     refs:
       - develop
@@ -705,7 +675,6 @@ nvhpc-26.3:
     - large-disk-space
     - x86_64
   allow_failure: true
-  interruptible: true
   only:
     refs:
       - develop
@@ -725,7 +694,6 @@ cuda:
   tags:
     - non-shared
     - nvidia-gpu
-  interruptible: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_TAG
@@ -749,7 +717,6 @@ cuda-11.6.1:
     - non-shared
     - nvidia-gpu
     - x86_64
-  interruptible: true
   only:
     refs:
       - develop
@@ -773,7 +740,6 @@ culang++-16 cuda-11.4.3:
   tags:
     - non-shared
     - nvidia-gpu
-  interruptible: true
   only:
     refs:
       - develop
@@ -801,7 +767,6 @@ cuda-12.6.3:
   tags:
     - non-shared
     - nvidia-gpu
-  interruptible: true
   only:
     refs:
       - develop
@@ -824,7 +789,6 @@ cuda-12.6.3 cutensor:
   tags:
     - non-shared
     - nvidia-gpu
-  interruptible: true
   only:
     refs:
       - develop
@@ -852,7 +816,6 @@ cuda-13.1.0:
     - non-shared
     - nvidia-gpu
     - arch75
-  interruptible: true
   only:
     refs:
       - develop
@@ -876,7 +839,6 @@ cuda-13.2.0 cccl-2:
     - non-shared
     - nvidia-gpu
     - arch75
-  interruptible: true
   # only:
   #   refs:
   #     - develop
@@ -904,7 +866,6 @@ culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - non-shared
     - nvidia-gpu
     - high-bandwidth
-  interruptible: true
   script:
     - nvidia-smi
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -931,7 +892,6 @@ rocm:
     - docker
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
-  interruptible: true
   script:
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
@@ -961,7 +921,6 @@ rocm-latest:
     - docker
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
-  interruptible: true
   script:
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
@@ -991,7 +950,6 @@ rocm-6.4.4:
     - docker
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
-  interruptible: true
   script:
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
@@ -1059,7 +1017,6 @@ circle-latest c++20:
   tags:
     - non-shared
     - x86_64  # for circle executable
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y --quiet strace ca-certificates clang cmake ninja-build g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
@@ -1090,7 +1047,6 @@ inq:
   tags:
     - non-shared
     - large-memory-space
-  interruptible: true
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
@@ -1118,7 +1074,6 @@ inq-debug:
   tags:
     - non-shared
     - large-memory-space
-  interruptible: true
   only:
     refs:
       - develop
@@ -1151,7 +1106,6 @@ inq cuda:
     - non-shared
     - nvidia-gpu
     - arch75
-  interruptible: true
   # before_script:
   #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
@@ -1190,7 +1144,6 @@ inq rocm:
     - non-shared
     - large-disk-space
     - x86_64  # for image
-  interruptible: true
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
@@ -1227,7 +1180,6 @@ qmcpack:
   tags:
     - non-shared
     - docker
-  interruptible: true
   # before_script:
   #   - apt-get -qq update
   #   - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
@@ -1255,7 +1207,6 @@ qmcpack cuda:
     - non-shared
     - nvidia-gpu
     - high-bandwidth
-  interruptible: true
   allow_failure: false
   # before_script:
   #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
@@ -1293,7 +1244,6 @@ sonar:
     - non-shared
     - docker
     - x86_64  # for executable
-  interruptible: true
   script:
     # Run the build inside the build wrapper
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl unzip g++ gcovr make lcov libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
@@ -1493,7 +1443,6 @@ pages:
 
 conan:
   stage: build
-  interruptible: true
   script:
     - apt-get -qq install --no-install-recommends -y python3 python3-pip cmake ninja-build gcc g++ make
     - pip3 install conan --break-system-packages
@@ -1503,20 +1452,12 @@ conan:
 
 github-ci-status:
   stage: .post
-  interruptible: true
-  timeout: 2 hours
+  timeout: 1 hours
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates curl jq
     - STATUS=null
     - while [ "$STATUS" = "null" ]; do RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=${CI_COMMIT_REF_NAME}&per_page=1"); STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion); RUN_ID=$(echo "$RESPONSE" | jq -r .workflow_runs[0].id); echo "GitHub CI status $STATUS (run ID=$RUN_ID)"; if [ "$STATUS" = "null" ]; then echo "Run in progress, retrying in 5 minutes..."; sleep 300; fi; done
     - if [ "$STATUS" != "success" ]; then JOBS=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/runs/$RUN_ID/jobs"); echo "Failed/incomplete jobs"; echo "$JOBS" | jq -r '.jobs[] | select(.conclusion != "success" and .conclusion != null) | [.name, .conclusion] | @tsv'; exit 1; fi
-
-    # - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates curl jq
-    # - RESPONSE=$(curl -s -H "Accept:application/vnd.github+json" "https://api.github.com/repos/correaa/boost-multi/actions/workflows/ci.yml/runs?branch=${CI_COMMIT_BRANCH}&per_page=1")
-    # - echo "GitHub API response $RESPONSE"
-    # - STATUS=$(echo "$RESPONSE" | jq -r .workflow_runs[0].conclusion)
-    # - echo "GitHub CI status $STATUS"
-    # - test "$STATUS" = "success"
 
 include:
   - local: '.gitlab-ci.yml'
