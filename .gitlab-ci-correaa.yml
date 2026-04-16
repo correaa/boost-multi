@@ -32,7 +32,7 @@ variables:
   APT_CACHE_DIR: "$CI_PROJECT_DIR/.apt-cache"
   APT_CONFIG: "$CI_PROJECT_DIR/.apt.conf"
   CMAKE_GENERATOR: "Ninja"  # or CMAKE_GENERATOR: "Unix Makefiles"s
-  CMAKE_BUILD_PARALLEL_LEVEL: "6"
+  # CMAKE_BUILD_PARALLEL_LEVEL: "6"
   CTEST_PARALLEL_LEVEL: "4"
 
 before_script:
