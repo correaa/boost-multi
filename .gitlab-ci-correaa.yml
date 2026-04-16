@@ -523,7 +523,7 @@ clang++-latest tidy iwyu everything:
     - iwyu --version
     - clang-format --version
     - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
   needs: ["clang++"]
 
@@ -537,7 +537,7 @@ g++-testing c++20:
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
   needs: ["g++"]
 
