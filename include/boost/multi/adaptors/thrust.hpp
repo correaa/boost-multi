@@ -84,7 +84,7 @@
 
 namespace boost::multi {
 template<class Alloc> struct allocator_traits;
-}
+}  // namespace boost::multi
 
 namespace boost::multi {
 
@@ -478,7 +478,8 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 
 namespace mr {
 template<class T, multi::dimensionality_type D, class MR> using array = array<T, D, ::thrust::mr::allocator<T, MR>>;
-}
+}  // end namespace mr
+
 namespace pmr {
 template<class T, multi::dimensionality_type D, class Pointer> using array = mr::array<T, D, ::thrust::mr::memory_resource<Pointer>>;
 template<class T, multi::dimensionality_type D> using universal_array      = pmr::array<T, D, ::thrust::universal_ptr<void>>;

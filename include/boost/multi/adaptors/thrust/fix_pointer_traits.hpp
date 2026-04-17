@@ -79,7 +79,7 @@ struct rebind_reference<::thrust::tagged_reference<T, Tag>, U> {
 }  // namespace boost::multi::detail
 
 template<class T, class Tag, class Ref, class Derived>
-struct std::pointer_traits<::thrust::pointer<T, Tag, Ref, Derived>> {
+struct std::pointer_traits<::thrust::pointer<T, Tag, Ref, Derived>> {  // NOLINT(cert-dcl58-cpp)
 	using element_type    = T;
 	using pointer         = ::thrust::pointer<T, Tag, Ref, Derived>;
 	using difference_type = typename ::thrust::pointer<T, Tag, Ref, Derived>::difference_type;
