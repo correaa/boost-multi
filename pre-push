@@ -21,7 +21,8 @@
 set -x  # echo on
 
 export CMAKE_GENERATOR=Ninja
-
+export NINJA_STATUS="[%f/%t||%r] "
+export CMAKE_COLOR_DIAGNOSTICS="ON"
 export CMAKE_CUDA_COMPILER_LAUNCHER="ccache"
 export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 export CMAKE_C_COMPILER_LAUNCHER="ccache"

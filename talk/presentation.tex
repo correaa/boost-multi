@@ -253,6 +253,84 @@ B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
 \end{frame}
 
 
+\begin{frame}[fragile]{General lazy arrays: function restricted to a domain}
+
+A \lstinline|multi::restriction| 
+is the restriction (in the mathematical sense) of a function to a bounded index domain.
+
+\begin{lstlisting}
+// lazy 2x3 array R[i][j] = i + j, no memory allocated
+auto R = multi::restriction({2, 3}, [](auto i, auto j) { return i + j; });
+
+// equivalent idiomatic form using the ^ operator ("restricted to")
+auto R = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{2, 3};
+
+R[1][2];           // 3         (computed on access)
+R.size();          // 2
+R.num_elements();  // 6
++R;                // materialize into multi::array<int, 2>
+\end{lstlisting}
+
+\medskip
+Models the Multi array concept --- it has \lstinline|extents|, iterators, \lstinline|operator[]|, etc.\\
+Structural operations compose (still) without allocating: \lstinline|transposed|, \lstinline|repeated|, \lstinline|diagonal|, \lstinline|partitioned|, \lstinline|reversed|, \lstinline|rotated|, \lstinline|transformed|, \lstinline|element_transformed|.
+\end{frame}
+
+\begin{frame}[fragile]{\lstinline|multi::restriction|: composition}
+
+\begin{lstlisting}
+auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
+// iota   :  {0, 1, 2, 3, 4}
+
+auto M = iota.repeated(4);       // lazy 4x5, all rows equal to iota
+auto D = ([](auto i, auto j) { return i*i + j*j; }
+         ^ multi::extensions_t<2>(3, 3)).diagonal();   // {0, 2, 8}
+
+// softmax via lazy restrictions (no temporaries)
+using multi::elementwise::operator-; using multi::elementwise::operator/;
+auto x = exp(~mat - (mat | maxR1));   // row-wise subtract max
+auto y = ~(x / ((~x) | sumR1));       // normalize
+\end{lstlisting}
+
+\medskip
+\begin{itemize}
+  \item A \lstinline|restriction| is essentially a lambda + an \lstinline|extensions_t<D>|.
+  \item Passes through \lstinline|transposed|, \lstinline|diagonal|, etc.\ by rebinding arguments.
+  \item Composable with owning \lstinline|multi::array| via elementwise operators.
+  \item Materialize with \lstinline|+R| or assignment into an \lstinline|array|.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Aliasing, and how functional idioms partially solve it}
+
+Classic pitfall: two pointers/references may refer to the \emph{same} memory; the compiler must assume they do, and optimizations (vectorization, reordering, fusion) are disabled.
+
+\begin{lstlisting}
+multi::array<double, 1> y = /* ... */;
+y = M * y;               // self-aliasing: y is both source and destination
+A = A.transposed();      // writes overlap with reads
+\end{lstlisting}
+
+Usual patches --- C's \lstinline|restrict|, \lstinline|__restrict__|, expression templates with bookkeeping --- are brittle and non-portable. A value-based, pointer-free expression \emph{cannot} alias by construction.
+
+\begin{lstlisting}
+auto R = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{N, N};
+auto T = R + R.transposed();          // lazy: no memory, no pointers
+
+multi::array<int, 2> out = T;         // single write into a fresh array
+\end{lstlisting}
+
+\begin{itemize}
+  \item No intermediate buffers $\Rightarrow$ no aliasing between stages.
+  \item Materialization is the \emph{only} write --- compiler sees a pure nested loop.
+  \item \emph{Partial}: assigning back into an array whose storage backs the RHS still aliases; lambda captures-by-reference can re-introduce it.
+\end{itemize}
+
+\end{frame}
+
+
 \begin{frame}[fragile]{Algorithm Dispatching}{
 How does the library call the right \lstinline|copy_n| for CPU vs GPU?
 }
@@ -406,6 +484,34 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 
 \end{frame}
 
+
+\begin{frame}[fragile]{OpenMP via Thrust Backend}
+
+Use Thrust's OMP backend for parallel CPU execution --- no GPU required:
+
+\begin{lstlisting}
+#include <boost/multi/adaptors/thrust/omp.hpp>
+
+// array backed by thrust::omp::allocator
+multi::thrust::omp::array<double, 1> arr(64);  // <double, 1, thrust::omp::allocator<double>>
+
+// parallel fill with OpenMP
+#pragma omp parallel for
+for(int i = 0; i < arr.size(); ++i)
+  arr[i] = double(i) * double(i);
+
+// thrust::reduce with OMP execution policy
+auto sum = thrust::reduce(thrust::omp::par,
+  arr.begin(), arr.end(), 0.0);
+\end{lstlisting}
+
+\begin{itemize}
+  \item \lstinline|multi::thrust::omp::array<T, D>| = \lstinline|multi::array<T, D, thrust::omp::allocator<T>>|
+  \item Thrust algorithms dispatch to OpenMP automatically via allocator tag
+  \item Same code structure as CUDA --- swap allocator to switch backend
+\end{itemize}
+
+\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{...but I need my 3D structure}

@@ -10,7 +10,7 @@
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__CUDACC__) ||     \
 	defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || \
-	defined(__HIPCC__) || __has_include(<thrust/version.h>) || defined(BOOST_MULTI_HAS_THRUST)
+	defined(__HIPCC__) || (defined(__has_include) && __has_include(<thrust/version.h>)) || defined(BOOST_MULTI_HAS_THRUST)
 #define BOOST_MULTI_ADL_HAS_THRUST 1
 #endif
 
@@ -23,12 +23,18 @@
 #pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
 #endif
 
+#include <exception>  // for std::terminate, fixes a bug un Thrust 2
+
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>
 #include <thrust/detail/memory_algorithms.h>
 #include <thrust/equal.h>
 #include <thrust/swap.h>
 #include <thrust/uninitialized_copy.h>
+
+namespace thrust {
+template<class... Ts> void thrust_involved(Ts const&... /*unused*/) {}
+}  // namespace thrust
 
 #if defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
 #if THRUST_VERSION >= 300102
@@ -351,13 +357,14 @@ inline constexpr adl_uninitialized_copy_t adl_uninitialized_copy;
 class adl_uninitialized_copy_n_t {
 	template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const BOOST_MULTI_DECLRET(std::uninitialized_copy_n(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRET(uninitialized_copy_n(std::forward<As>(args)...))
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-		template<
-			class It, class Size, class ItFwd,
-			class ValueType = typename std::iterator_traits<ItFwd>::value_type,
-			class           = std::enable_if_t<!std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference>>>
-		constexpr auto _(priority<3> /**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
+	template<
+		class It, class Size, class ItFwd,
+		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
+		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >  // NOLINT(modernize-use-constraints) for C++20
+	>
+	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
-			return ::thrust::copy_n(first, count, d_first);
+			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
 		} else {
 			return ::thrust::uninitialized_copy_n(first, count, d_first);
 		}
@@ -675,13 +682,12 @@ class alloc_uninitialized_move_n_t {
 inline constexpr alloc_uninitialized_move_n_t adl_alloc_uninitialized_move_n;
 
 class uninitialized_fill_n_t {
- template<class... As> static constexpr auto _(priority<1> /**/, As&&... args) BOOST_MULTI_DECLRET(std::uninitialized_fill_n(std::forward<As>(args)...)) template<class... As> static constexpr auto _(priority<2> /**/, As&&... args) BOOST_MULTI_DECLRET(uninitialized_fill_n(std::forward<As>(args)...))
+	template<class... As>          static constexpr auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET((              std::   uninitialized_fill_n(std::forward<As>(args)...)))
+	template<class... As>          static constexpr auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET((                      uninitialized_fill_n(std::forward<As>(args)...)))
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-	 template<class... As>
-	 static constexpr auto _(priority<3> /**/, As&&... args) BOOST_MULTI_DECLRET(::thrust::uninitialized_fill_n(std::forward<As>(args)...))
+	template<class... As>          static constexpr auto _(priority<3>/**/,          As&&... args) BOOST_MULTI_DECLRET(( thrust_involved(args...),::thrust::uninitialized_fill_n(std::forward<As>(args)...)))
 #endif
-		 template<class T, class... As>
-		 constexpr auto _(priority<4> /**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...))
+	template<class T, class... As> static constexpr auto _(priority<4>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(( std::forward<T>(arg).uninitialized_fill_n(std::forward<As>(args)...)))
 
 			 public : template<class T1, class... As>
 					  constexpr auto operator()(T1&& arg, As&&... args) const BOOST_MULTI_DECLRET(_(priority<4>(), std::forward<T1>(arg), std::forward<As>(args)...))
