@@ -896,7 +896,9 @@ rocm:
     - docker
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
+  before_script: []
   script:
+    - apt-get -qq update
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
