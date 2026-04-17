@@ -599,7 +599,9 @@ oneapi-2022.2:
   only:
     refs:
       - develop
+  before_script: []
   script:
+    - apt-get update
     - apt-get install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
