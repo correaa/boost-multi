@@ -598,7 +598,9 @@ oneapi-2022.2:
       - develop
   before_script: []
   script:
-    - apt-get update --allow-unauthenticated=false && apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get install --no-install-recommends -y ca-certificates
+    - apt-get update --allow-unauthenticated=false
+    - apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl g++ libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - ninja --version
     - icpx --version
@@ -1342,9 +1344,6 @@ antora:
   image: antora/antora
   stage: build
   allow_failure: true
-  needs:
-    - job: pages-presentation
-      artifacts: true
   only:
     refs:
       - develop
@@ -1375,7 +1374,9 @@ antora:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
-  needs: ["clang++"]
+  needs:
+    - job: pages-presentation
+      artifacts: true
 
 # this is a specially named workflow to populates the pages site
 pages:
