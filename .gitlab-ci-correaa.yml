@@ -77,7 +77,7 @@ g++-omp-thrust:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake ninja-build g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
     - g++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CPP"
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP"
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["g++"]
