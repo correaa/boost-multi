@@ -502,6 +502,7 @@ clang++-m32:
       - develop
   script:
     - dpkg --add-architecture i386
+    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ g++-multilib git cmake ninja-build make libboost-serialization-dev:i386 tar wget pkg-config > /dev/null
     - mkdir build && cd build
     - c++ --version
