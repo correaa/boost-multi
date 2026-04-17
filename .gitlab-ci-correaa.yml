@@ -94,6 +94,7 @@ g++-m32 sanitize:
     - x86_64  # for g++-multilib in image
   script:
     - dpkg --add-architecture i386
+    - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates g++ git g++-multilib cmake ninja-build libboost-serialization-dev:i386 libfftw3-dev:i386 make tar wget
     - mkdir build && cd build
     - c++ --version
