@@ -305,11 +305,9 @@ visual-studio-windows:
       - develop
   allow_failure: true  # runner not always available
   variables:
-    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
     # BOOST_INCLUDEDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/include
     # BOOST_LIBRARYDIR: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/lib
     VCPKG_ROOT: ${CI_PROJECT_DIR}/vcpkg
-    BOOST_ROOT: ${CI_PROJECT_DIR}/vcpkg/installed/x64-windows
     CMAKE_GENERATOR: ""
   cache:
     key: vcpkg-windows
@@ -1361,6 +1359,9 @@ pages:
   needs:
     - job: pages-presentation
       artifacts: true
+    - job: headers
+    - job: g++
+    - job: clang++
   only:
     refs:
       - develop
@@ -1424,7 +1425,6 @@ pages:
     paths:
     - public
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
-  needs: ["headers", "g++", "clang++","pages-presentation"]
 
 conan:
   stage: build
