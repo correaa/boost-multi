@@ -690,7 +690,8 @@ struct dynamic_array                                                            
 		deallocate();
 	}
 
-	using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element_type const>;
+	// using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element_type const>;
+	using element_const_ptr = typename std::allocator_traits<allocator_type>::const_pointer;
 	using element_move_ptr  = multi::move_ptr<typename dynamic_array::element_ptr>;
 
 	using reference = std::conditional_t<
