@@ -249,6 +249,36 @@ clang++ ubsan:  # more UB is detected on Release
     - ctest --output-on-failure
   needs: ["clang++"]
 
+# clang++-18 mull-18:  # mull-18 crashes
+#   image: ubuntu:24.04
+#   stage: build
+#   tags:
+#     - x86_64  # for mull
+#     - large-memory-space
+#     - non-shared
+#   allow_failure: false
+#   only:
+#     refs:
+#       - develop
+#   script:
+#     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake ninja-build file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
+#     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+#     - apt-get -qq update
+#     - apt search mull
+#     - apt-get -qq install --no-install-recommends -y --quiet mull-18 libclang-cpp18
+#     - mkdir build && cd build
+#     - clang++-18 --version
+#     - which mull-runner-18
+#     - ls -all `which mull-runner-18`
+#     - file `which mull-runner-18`
+#     - mull-runner-18 --version
+#     - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"
+#     - cmake --build . || cmake --build . --parallel 1 --verbose
+#     - ctest
+#     - cd test
+#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+#   needs: ["clang++", "g++"]
+
 clang++-18 mull-18:  # mull-18 crashes
   image: ubuntu:24.04
   stage: build
@@ -256,12 +286,14 @@ clang++-18 mull-18:  # mull-18 crashes
     - x86_64  # for mull
     - large-memory-space
     - non-shared
+  interruptible: true
   allow_failure: false
   only:
     refs:
       - develop
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake ninja-build file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
     - apt-get -qq update
     - apt search mull
@@ -470,6 +502,8 @@ vs2022-shell cuda:
   only:
     refs:
       - develop
+  variables:
+    CMAKE_GENERATOR: ""   # override for windows
   before_script: []  # override for windows
   script:
     - whoami
