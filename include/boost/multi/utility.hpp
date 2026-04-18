@@ -330,7 +330,7 @@ constexpr auto reinterpret_pointer_cast(U* other)                               
 	-> decltype(reinterpret_cast<TPointer>(other)) { return reinterpret_cast<TPointer>(other); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template<class T, std::size_t N>
-constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::size_type>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::ssize_t>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, typename = typename T::get_allocator>
 auto        has_get_allocator_aux(T const&) -> std::true_type;
@@ -713,7 +713,7 @@ auto extensions(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto stride(std::array<T, N> const& /*arr*/) {
-	return static_cast<multi::size_type>(1U);  // multi::stride_type?
+	return static_cast<multi::ssize_t>(1U);  // multi::stride_type?
 }
 
 template<class T, std::size_t N, std::size_t M>
@@ -787,7 +787,7 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 
 template<class T>
 constexpr auto extensions(std::initializer_list<T> const& il) {
-	return multi::extensions_t<1>{static_cast<multi::size_t>(il.size())};
+	return multi::extensions_t<1>{static_cast<multi::ssize_t>(il.size())};
 }
 
 template<class T>
@@ -799,7 +799,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const&
 	// for(std::size_t i = 1; i != il.size(); ++i) {
 	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
 	// }
-	return multi::extensions_t<2>{static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size())};
+	return multi::extensions_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
 }
 
 template<class T>
@@ -817,7 +817,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<std::initi
 	// 	return multi::extensions_t<3>{il.size(), 0, 0};
 	// }
 
-	return static_cast<multi::size_t>(il.size()) * extensions(*il.begin());
+	return static_cast<multi::ssize_t>(il.size()) * extensions(*il.begin());
 	// return multi::extensions_t<3>{
 	// 	static_cast<multi::size_t>(il.size()),
 	// 	static_cast<multi::size_t>(il.begin()->size()),
@@ -831,7 +831,7 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 		multi::layout_t<0>(multi::extensions_t<0>{}),
 		1,
 		0,
-		static_cast<multi::size_t>(il.size())
+		static_cast<multi::ssize_t>(il.size())
 	};
 }
 
@@ -843,9 +843,9 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 	if(il.size() == 1) {
 		return multi::layout_t<2>(
 			layout(*il.begin()),
-			static_cast<multi::size_t>(il.size()),
+			static_cast<multi::ssize_t>(il.size()),
 			0,
-			static_cast<multi::size_t>(il.size())  // * il.begin()->size())
+			static_cast<multi::ssize_t>(il.size())  // * il.begin()->size())
 		);
 	}
 	auto strd =
@@ -859,7 +859,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 		layout(*il.begin()),
 		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size()) * strd
+		static_cast<multi::ssize_t>(il.size()) * strd
 	);
 }
 
@@ -873,7 +873,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<std::initializ
 		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size()),
+		static_cast<multi::ssize_t>(il.size()),
 	};
 }
 

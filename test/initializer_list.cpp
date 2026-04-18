@@ -26,7 +26,7 @@ namespace boost::multi {
 
 template<class T>
 auto operator+(std::initializer_list<T> il) {  // NOLINT(misc-use-anonymous-namespace,misc-use-internal-linkage)
-	multi::array<T, 1> ret({static_cast<multi::size_t>(il.size())}, T{});
+	multi::array<T, 1> ret({static_cast<multi::ssize_t>(il.size())}, T{});
 	std::copy(il.begin(), il.end(), ret.begin());
 	return ret;
 }
@@ -35,7 +35,7 @@ template<class T>
 auto operator+(std::initializer_list<std::initializer_list<T>> il) {  // NOLINT(misc-use-anonymous-namespace,misc-use-internal-linkage)
 	auto const size2 = il.size() == 0 ? 0 : std::max_element(il.begin(), il.end(), [](auto const& a, auto const& b) { return a.size() < b.size(); })->size();
 
-	multi::array<T, 2> ret({static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(size2)}, T{});
+	multi::array<T, 2> ret({static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(size2)}, T{});
 	std::copy(il.begin(), il.end(), ret.begin());
 	return ret;
 }

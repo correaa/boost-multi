@@ -406,7 +406,7 @@ constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
 	return extension_t<IndexType, IndexTypeLast>{first, last};
 }
 
-template<class IndexType = boost::multi::size_t>
+template<class IndexType = multi::index>
 constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;
