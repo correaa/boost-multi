@@ -292,6 +292,7 @@ clang++-18 mull-18:  # mull-18 crashes
     refs:
       - develop
   script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
