@@ -371,6 +371,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	using difference_type = typename extensions_t<D>::difference_type;
 	using index           = typename extensions_t<D>::index;
+	using size_type       = typename extensions_t<D>::size_type;
 
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
@@ -464,7 +465,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(multi::index /*unused*/, Ts... rest) const noexcept -> element { return proj_(rest...); }
 	};
 
-	BOOST_MULTI_HD auto repeated(multi::size_t n) const -> restriction<D + 1, bind_repeat_t> {
+	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
 		return bind_repeat_t{proj_} ^ (n * extensions());
 	}
 
