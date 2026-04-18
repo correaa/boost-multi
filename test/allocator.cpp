@@ -144,7 +144,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),

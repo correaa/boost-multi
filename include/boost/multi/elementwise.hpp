@@ -196,17 +196,17 @@ struct default_zero_f {
 };
 
 template<class T, class ZF>
-constexpr auto eye(multi::size_t size, T unit, ZF zero_f) {
+constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
 	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extensions_t<2>({size, size}));
 }
 
 template<class T, class ZF = default_zero_f<T>>
-constexpr auto eye(multi::size_t size, T unit) {
+constexpr auto eye(multi::ssize_t size, T unit) {
 	return eye(size, unit, default_zero_f<T>{});
 }
 
 template<class T = int>
-constexpr auto eye(multi::size_t size) {
+constexpr auto eye(multi::ssize_t size) {
 	return eye(size, T{1});
 }
 

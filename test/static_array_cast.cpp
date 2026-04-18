@@ -286,7 +286,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr1 == arr2  );
 	}
 	{
-		multi::array<int, 2> const arr(std::array<multi::size_t, 2>{
+		multi::array<int, 2> const arr(std::array<multi::ssize_t, 2>{
 			{3, 4}
 		});
 		BOOST_TEST( arr.size() == 3 );
