@@ -470,6 +470,7 @@ vs2022-shell cuda:
   only:
     refs:
       - develop
+  before_script: []  # override for windows
   script:
     - whoami
     - nvidia-smi
