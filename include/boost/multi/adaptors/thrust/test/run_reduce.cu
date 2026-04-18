@@ -35,7 +35,7 @@ inline
 namespace multi = boost::multi;
 
 template<class kernel_type, class array_type>
-__global__ void reduce_kernel_vr(multi::size_t sizex, multi::size_t sizey, kernel_type kernel, array_type odata) {
+__global__ void reduce_kernel_vr(multi::ssize_t sizex, multi::ssize_t sizey, kernel_type kernel, array_type odata) {
 
 	extern __shared__ char shared_mem[];
 	auto                   reduction_buffer = (typename array_type::element*)shared_mem;  // {blockDim.x, blockDim.y}
@@ -75,26 +75,26 @@ template<class type, size_t dim, class allocator = thrust::universal_allocator<t
 using array = boost::multi::array<type, dim, allocator>;
 
 struct reduce {
-	explicit reduce(multi::size_t arg_size) : size(arg_size) {
+	explicit reduce(multi::ssize_t arg_size) : size(arg_size) {
 	}
-	multi::size_t size;
+	multi::ssize_t size;
 };
 
 template<typename array_type>
 struct array_access {
 	array_type array;
 
-	__host__ __device__ auto operator()(multi::size_t ii) const {
+	__host__ __device__ auto operator()(multi::ssize_t ii) const {
 		return array[ii];
 	}
 
-	__host__ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
+	__host__ __device__ auto operator()(multi::ssize_t ix, multi::ssize_t iy) const {
 		return array[ix][iy];
 	}
 };
 
 template<class type, class kernel_type>
-auto run(multi::size_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
+auto run(multi::ssize_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::array<decltype(kernel(0, 0)), 1>*/ {
 
 	auto const sizey = redy.size;
 
@@ -104,8 +104,8 @@ auto run(multi::size_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::
 
 	gpu::array<type, 1> accumulator(sizex, 0.0);
 
-	for(multi::size_t iy = 0; iy < sizey; iy++) {
-		for(multi::size_t ix = 0; ix < sizex; ix++) {
+	for(multi::ssize_t iy = 0; iy < sizey; iy++) {
+		for(multi::ssize_t ix = 0; ix < sizex; ix++) {
 			accumulator[ix] += kernel(ix, iy);
 		}
 	}
@@ -177,26 +177,26 @@ auto run(multi::size_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu::
 }  // namespace gpu
 
 struct prod {
-	/*__host__*/ __device__ auto operator()(multi::size_t ix, multi::size_t iy) const {
+	/*__host__*/ __device__ auto operator()(multi::ssize_t ix, multi::ssize_t iy) const {
 		return double(ix) * double(iy);
 	}
 };
 
 auto main() -> int {
 	#ifdef NDEBUG
-	multi::size_t const maxsize = 39062;
-	multi::size_t const nmax = 1000;
+	multi::ssize_t const maxsize = 39062;
+	multi::ssize_t const nmax = 1000;
 	#else
-	multi::size_t const maxsize = 390;  // 390625;
-	multi::size_t const nmax = 100;  // 10000;
+	multi::ssize_t const maxsize = 390;  // 390625;
+	multi::ssize_t const nmax = 100;  // 10000;
 	#endif
 	auto pp = [] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); };
 
 	std::chrono::microseconds mus{0};
-	std::size_t FLOPs = 0;
+	std::ssize_t FLOPs = 0;
 
-	for(multi::size_t nx = 1; nx <= nmax; nx *= 10) {
-		for(multi::size_t ny = 1; ny <= maxsize; ny *= 5) {
+	for(multi::ssize_t nx = 1; nx <= nmax; nx *= 10) {
+		for(multi::ssize_t ny = 1; ny <= maxsize; ny *= 5) {
 
 			multi::thrust::device_array<double, 2> M = [&]() {
 				multi::thrust::universal_array<double, 2> ret({nx, ny});
@@ -238,5 +238,6 @@ auto main() -> int {
 			sums
 		);
 	}
+
 	return boost::report_errors();
 }
