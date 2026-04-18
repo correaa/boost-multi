@@ -587,7 +587,10 @@ struct dynamic_array                                                            
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
 	}
 
-	constexpr dynamic_array(dynamic_array const& other)  // 5b
+	/// Copy constructor. Allocates new storage and copies all elements from @p other.
+	/// The allocator is obtained respecting allocator propagation traits.
+	/// @note O(n) where n is `other.num_elements()`.
+	constexpr dynamic_array(dynamic_array const& other)
 	: array_alloc(
 		  multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
 	  ),
@@ -1312,15 +1315,18 @@ struct array : dynamic_array<T, D, Alloc> {
 		return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
 	}
 
-	// move this to dynamic_array
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>                          // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	constexpr explicit operator TTN const&() const& { return this->template to_carray_<TTN>(); }  // cppcheck-suppress duplInheritedMember ; to override
+	/// Obtain a reference to a constant C-array reference (`T(&)[N]`) by casting
+	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>               // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	constexpr explicit operator CArray&() & { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>                // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	constexpr explicit operator TTN&() && { return this->template to_carray_<TTN>(); }  // cppcheck-suppress duplInheritedMember ; to override
+	// TODO(correaa) move this to dynamic_array
+	/// Obtain a reference to a constant C-array reference (`T(const&)[N]`) by casting
+	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                          // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	constexpr explicit operator CArray const&() const& { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	template<class TTN, std::enable_if_t<std::is_array_v<TTN>, int> = 0>               // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	constexpr explicit operator TTN&() & { return this->template to_carray_<TTN>(); }  // cppcheck-suppress duplInheritedMember ; to override
+	/// Obtain a reference to a constant C-array reference (`T(&)[N]`) by casting (from an r-value)
+	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17-20 ?
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
