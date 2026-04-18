@@ -1307,9 +1307,9 @@ pages-presentation:
 headers:
   stage: build
   allow_failure: true
-  only:
-    refs:
-      - develop
+  # only:
+  #   refs:
+  #     - develop
   tags:
     - non-shared
     - docker
@@ -1348,15 +1348,13 @@ headers:
   needs: ["g++", "clang++"]
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
-
-# this is a specially named workflow to populates the pages site
 antora:
   image: antora/antora
   stage: build
-  allow_failure: true
-  only:
-    refs:
-      - develop
+  allow_failure: false
+  # only:
+  #   refs:
+  #     - develop
   tags:
     - non-shared
     - docker
@@ -1388,7 +1386,7 @@ antora:
     - job: pages-presentation
       artifacts: true
 
-# this is a specially named workflow to populates the pages site
+# this is a specially named workflow ("pages") populates the pages site
 pages:
   stage: build
   allow_failure: true
