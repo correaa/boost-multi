@@ -95,9 +95,11 @@ class axpy_range {
 	Context ctxt_;
 	Scale alpha_;
 	ItX x_begin_;
-	size_type count_;
+	typename ItX::difference_type count_;
 
  public:
+	using size_type = typename ItX::difference_type;
+
 	axpy_range(axpy_range const&) = delete;
 	axpy_range(axpy_range&&) noexcept = delete;
 	~axpy_range() = default;

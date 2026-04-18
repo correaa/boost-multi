@@ -91,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto const ext = multi::make_extension_t(10L);
 
-			multi::array<multi::size_t, 1> vec(ext.begin(), ext.end());
+			multi::array<multi::ssize_t, 1> vec(ext.begin(), ext.end());
 
 			BOOST_TEST( ext.size() == vec.size() );
 			BOOST_TEST( vec[1] == 1L );

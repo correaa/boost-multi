@@ -1205,6 +1205,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
+	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
+
 	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
 
@@ -1311,7 +1313,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
 
-	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
+	constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
 		return {this->base(), std::abs(this->hull_size())};
 	}
 
@@ -1536,17 +1538,17 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated();
 	}
 
-	constexpr auto elements_at(size_type idx) const& -> decltype(auto) {
+	constexpr auto elements_at(multi::ssize_t idx) const& -> decltype(auto) {
 		BOOST_MULTI_ASSERT(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
-	constexpr auto elements_at(size_type idx) && -> decltype(auto) {
+	constexpr auto elements_at(multi::ssize_t idx) && -> decltype(auto) {
 		BOOST_MULTI_ASSERT(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
-	constexpr auto elements_at(size_type idx) & -> decltype(auto) {
+	constexpr auto elements_at(multi::ssize_t idx) & -> decltype(auto) {
 		BOOST_MULTI_ASSERT(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
@@ -1635,25 +1637,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 		return this->diagonal_aux_();
 	}
 
-	// template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	// constexpr auto diagonal() const& -> const_subarray<T, D-1, typename const_subarray::element_const_ptr> {
-	//  using std::get;  // for C++17 compatibility
-	//  auto const square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // parenthesis min for MSVC macros
-	//  multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
-	//  new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();
-	//  new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
-	//  return {new_layout, types::base_};
-	// }
-
-	// friend constexpr auto diagonal(const_subarray const& self) {return           self .diagonal();}
-	// friend constexpr auto diagonal(const_subarray&       self) {return           self .diagonal();}
-	// friend constexpr auto diagonal(const_subarray&&      self) {return std::move(self).diagonal();}
-
-	// using partitioned_type       = const_subarray<T, D+1, element_ptr      >;
-	// using partitioned_const_type = const_subarray<T, D+1, element_const_ptr>;
-
  private:
-	BOOST_MULTI_HD constexpr auto partitioned_aux_(size_type n) const {
+	BOOST_MULTI_HD constexpr auto partitioned_aux_(multi::ssize_t n) const {
 		BOOST_MULTI_ASSERT(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// vvv TODO(correaa) should be size() here?
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
@@ -2099,6 +2084,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
+	using typename const_subarray<T, D, ElementPtr, Layout>::size_type;
+
 	subarray(subarray const&) = delete;
 
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
@@ -2795,6 +2782,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using element_cref = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
 	using iterator     = detail::array_iterator<T, 0, ElementPtr>;
 
+	using size_type = typename array_types<T, 0, ElementPtr, Layout>::size_type;
+
 	using layout_type = Layout;
 
 	constexpr auto operator=(element const& elem) & -> const_subarray& {
@@ -2984,6 +2973,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	using default_allocator_type = typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type;
 
+	using typename array_types<T, 1, ElementPtr, Layout>::size_type;
+
 	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type { return default_allocator_of(const_subarray::base()); }
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
@@ -3110,12 +3101,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		return const_subarray<T, 2, ElementPtr, multi::layout_t<2>>(new_layout, types::base_);
 	}
 
-	constexpr auto repeated(multi::size_t n) && {
+	constexpr auto repeated(size_type n) && {
 		auto exts = this->extensions();  // mull-ignore: cxx_init_const
 		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * exts);
 	}
 
-	constexpr auto repeated(multi::size_t n) const& {
+	constexpr auto repeated(size_type n) const& {
 		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
 	}
 
@@ -3590,8 +3581,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 			.rotated();
 	}
 
-	/// Serializes elements into @p arxiv. Does not save the shape; the caller is responsible for managing extensions.
-	/// Compatible with Boost.Serialization and Cereal.
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
@@ -3653,6 +3642,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using layout_type = typename subarray_base::layout_t;
 	using iterator    = typename subarray_base::iterator;
+
+	using typename subarray_base::size_type;
 
 	constexpr array_ref() = delete;  // because reference cannot be unbound
 

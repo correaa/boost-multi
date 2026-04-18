@@ -250,7 +250,7 @@ int main() {
 	{
 		std::initializer_list<int> il = {1, 2, 3};
 
-		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::size_t>(il.size()));
+		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::ssize_t>(il.size()));
 		BOOST_TEST( il_res[1] == 2 );
 	}
 	{
