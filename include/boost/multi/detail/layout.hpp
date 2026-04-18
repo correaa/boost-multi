@@ -687,7 +687,7 @@ template<> struct extensions_t<0> : tuple<> {
 
 	using nelems_type = index;
 	using difference_type = index;
-	using size_type = multi::ssize_t;
+	using size_type = index_extension::size_type;  // TODO(correaa) or void?
 
 	explicit BOOST_MULTI_HD constexpr extensions_t(tuple<> const& tup)
 	: base_{tup} {}
