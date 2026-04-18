@@ -3590,6 +3590,8 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 			.rotated();
 	}
 
+	/// Serializes elements into @p arxiv. Does not save the shape; the caller is responsible for managing extensions.
+	/// Compatible with Boost.Serialization and Cereal.
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;

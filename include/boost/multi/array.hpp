@@ -780,9 +780,9 @@ struct dynamic_array                                                            
 		return *this;
 	}
 
+	/// Serializes elements into @p arxiv. Delegates to the base `array_ref::serialize`; shape is not saved.
 	template<class Archive>
-	// cppcheck-suppress duplInheritedMember ; to override
-	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }
+	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }	// cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	void swap_(dynamic_array& other) noexcept { operator()().swap(other()); }  // cppcheck-suppress functionStatic
@@ -1289,6 +1289,9 @@ struct array : dynamic_array<T, D, Alloc> {
 	// cppcheck-suppress duplInheritedMember ; to override  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 
+	/// Serializes the array shape and elements into @p arxiv.
+	/// On save: writes extensions then elements. On load: reads extensions and resizes the array if needed before loading elements.
+	/// Compatible with Boost.Serialization and Cereal.
 	template<class Archive, class ArTraits = multi::archive_traits<Archive>>
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
 		auto extensions_ = this->extensions();
@@ -1315,16 +1318,16 @@ struct array : dynamic_array<T, D, Alloc> {
 		return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
 	}
 
-	/// Obtain a reference to a constant C-array reference (`T(&)[N]`) by casting
+	// TODO(correaa) move this to dynamic_array
+	/// Obtain a reference to a C-array reference (`T(&)[N]`) by casting
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>               // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray&() & { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	// TODO(correaa) move this to dynamic_array
 	/// Obtain a reference to a constant C-array reference (`T(const&)[N]`) by casting
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                          // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray const&() const& { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	/// Obtain a reference to a constant C-array reference (`T(&)[N]`) by casting (from an r-value)
+	/// Obtain a reference to a C-array reference (`T(&)[N]`) by casting (from an r-value)
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
