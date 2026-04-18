@@ -51,7 +51,7 @@ int main() {
 
 ## Learn about Multi
 
-* [Online documentation](https://correaa.gitlab.io/boost-multi/multi.html)
+* [Online documentation](https://correaa.github.io/boost-multi/multi/intro.html)
 
 ## Try Multi
 
