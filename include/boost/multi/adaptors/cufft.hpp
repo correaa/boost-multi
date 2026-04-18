@@ -1,4 +1,4 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -423,7 +423,7 @@ class cached_plan {
 
 	~cached_plan() = default;
 
-	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::size_type> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
+	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::size_type> in, boost::multi::layout_t<D, boost::multi::ssize_t> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
 		thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>;
 		it_                                                                                                                         = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
 		if(it_ == LEAKY_cache.end()) {
