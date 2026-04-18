@@ -6,7 +6,9 @@
 #define BOOST_MULTI_ADAPTORS_BLAS_GEMV_HPP
 
 #include "boost/multi/adaptors/blas/core.hpp"
-#include "boost/multi/adaptors/blas/dot.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"
+
+// #include "boost/multi/adaptors/blas/dot.hpp" TODO(correaa) implement ranges GEMV
 
 #include "boost/multi/utility.hpp"
 

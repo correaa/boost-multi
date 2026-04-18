@@ -6,7 +6,8 @@
 #define BOOST_MULTI_DETAIL_ADL_HPP
 // #pragma once
 
-#include "boost/multi/detail/what.hpp"
+// #include "boost/multi/detail/what.hpp"
+#include "boost/multi/utility.hpp"
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__CUDACC__) ||     \
 	defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || \
@@ -23,7 +24,7 @@
 #pragma nv_diag_suppress = 20015  // deep inside Thrust: calling a constexpr __host__ function from a __host__ __device__ function is not allowed
 #endif
 
-#include <exception>  // for std::terminate, fixes a bug un Thrust 2
+#include <exception>  // IWYU pragma: keep  // for std::terminate, fixes a bug un Thrust 2
 
 #include <thrust/copy.h>
 #include <thrust/detail/allocator/destroy_range.h>

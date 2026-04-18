@@ -2,59 +2,26 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #pragma once
 #ifndef BOOST_MULTI_DETAIL_EXTENTS_HPP
 #define BOOST_MULTI_DETAIL_EXTENTS_HPP
+// #pragma once
 
-#include "boost/multi/detail/config/NODISCARD.hpp"
-#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
+// #include "boost/multi/detail/config/NODISCARD.hpp"
+// #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 #include "boost/multi/detail/index_range.hpp"  // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include "boost/multi/detail/interfaces.hpp"
 #include "boost/multi/detail/operators.hpp"      // IWYU pragma: export  // for equality_comparable
 #include "boost/multi/detail/serialization.hpp"  // IWYU pragma: export  // for archive_traits
 #include "boost/multi/detail/tuple_zip.hpp"      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include "boost/multi/detail/types.hpp"          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
-#include "boost/multi/detail/what.hpp"
 
-// #include <algorithm>         // for max
-// #include <array>             // for array
-// #include <cassert>           // for assert
-
-// #ifdef __HIP_PLATFORM_AMD__
-// #include <hip/hip_runtime.h>  // it seems that AMD, HIP, ROCM 6.4, clang 21 needs this to have a working assert in host device functions
-// #endif
-
-// #include <cstddef>           // for size_t, ptrdiff_t, __GLIBCXX__
-// #include <cstdlib>           // for abs
-// #include <initializer_list>  // for initializer_list
-// #include <iterator>
-// #include <memory>       // for swap
 #include <tuple>  // for tuple_element, tuple, tuple_size, tie, make_index_sequence, index_sequence
-// #include <type_traits>  // for enable_if_t, integral_constant, decay_t, declval, make_signed_t, common_type_t
-// #include <utility>      // for forward
-
-// #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
-// #if !defined(__clang_major__) || !(__clang_major__ == 16)
-// #include <ranges>    // IWYU pragma: keep
-// #endif
-// #endif
-
-// // clang-format off
-// namespace boost::multi { template <boost::multi::dimensionality_type D, typename SSize = multi::size_type> struct layout_t; }
-// namespace boost::multi::detail { template <class ...Ts> class tuple; }
-// // clang-format on
 
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
 #define BOOST_MULTI_HD
 #endif
-
-// #ifdef _MSC_VER
-// #pragma warning(push)
-// #pragma warning(disable : 4514)  // inline function removed, in MSVC C++17 mode
-// #pragma warning(disable : 5045)  // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
-// #endif
 
 namespace boost::multi {
 

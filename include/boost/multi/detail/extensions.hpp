@@ -6,7 +6,7 @@
 #define BOOST_MULTI_DETAIL_EXTENSIONS_HPP
 // #pragma once
 
-#include "boost/multi/detail/index_range.hpp"
+// #include "boost/multi/detail/index_range.hpp"
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && !defined(_MSC_VER) && __has_include(<format>)
 #include <format>

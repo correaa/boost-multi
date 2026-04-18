@@ -6,7 +6,7 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP
 // #pragma once
 
-#include <exception>
+// #include <exception>
 
 #include "boost/multi/array.hpp"
 
@@ -47,7 +47,7 @@
 // #include <hip_runtime_api.h>                                  // for cudaGetDevice, cudaMemPrefetchAsync, cudaPointerGetAttributes
 #endif
 
-#include "boost/multi/adaptors/thrust/fix_pointer_traits.hpp"
+// #include "boost/multi/adaptors/thrust/fix_pointer_traits.hpp"
 
 #include <cassert>
 #include <iterator>  // for iterator_traits

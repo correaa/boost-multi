@@ -8,7 +8,7 @@
 #include "boost/multi/array.hpp"
 
 #include <thrust/system/omp/memory.h> // for ::thrust::omp::allocator
-#include <type_traits>
+// #include <type_traits>
 
 namespace boost::multi::thrust::omp {
 	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::omp::allocator<T>>;

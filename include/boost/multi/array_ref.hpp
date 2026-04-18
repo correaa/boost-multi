@@ -30,42 +30,10 @@
 #pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
 #endif
 
-namespace boost::multi {
-
-template<class Element>
-inline constexpr bool force_element_trivial = false;
-
-template<class Element>
-inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
-
-template<class Element>
-inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
-
-#ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
-template<class T>
-inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
-
-template<class T>
-inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
-
-template<class T>
-inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
-
-template<> inline constexpr bool force_element_trivial<std::complex<double>>                      = true;
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<double>> = true;
-template<> inline constexpr bool force_element_trivial_destruction<std::complex<double>>          = true;
-
-template<> inline constexpr bool force_element_trivial<std::complex<float>>                      = true;
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float>> = true;
-template<> inline constexpr bool force_element_trivial_destruction<std::complex<float>>          = true;
-#endif
-
-}  // end namespace boost::multi
-
 #include "boost/multi/detail/adl.hpp"  // TODO(correaa) remove instantiation of force_element_trivial in this header
 #include "boost/multi/detail/config/ASSERT.hpp"
 #include "boost/multi/detail/layout.hpp"          // IWYU pragma: export
-#include "boost/multi/detail/memory.hpp"          // for pointer_traits
+// #include "boost/multi/detail/memory.hpp"          // for pointer_traits
 #include "boost/multi/detail/operators.hpp"       // for random_iterable
 #include "boost/multi/detail/pointer_traits.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/serialization.hpp"
@@ -74,7 +42,7 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 #include <algorithm>   // for copy_n
 #include <array>       // for std::array
 #include <cstring>     // for std::memset in reinterpret_cast
-#include <functional>  // for std::invoke
+// #include <functional>  // for std::invoke
 #include <iterator>    // for std::next
 #include <memory>      // for std::pointer_traits
 #include <new>         // for std::launder
