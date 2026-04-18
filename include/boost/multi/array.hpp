@@ -782,7 +782,7 @@ struct dynamic_array                                                            
 
 	/// Serializes elements into @p arxiv. Delegates to the base `array_ref::serialize`; shape is not saved.
 	template<class Archive>
-	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }	// cppcheck-suppress duplInheritedMember ; to override
+	void serialize(Archive& arxiv, unsigned int const version) { ref::serialize(arxiv, version); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	void swap_(dynamic_array& other) noexcept { operator()().swap(other()); }  // cppcheck-suppress functionStatic
