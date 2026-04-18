@@ -193,7 +193,7 @@ auto main() -> int {
 	auto pp = [] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); };
 
 	std::chrono::microseconds mus{0};
-	std::ssize_t FLOPs = 0;
+	std::size_t FLOPs = 0;
 
 	for(multi::ssize_t nx = 1; nx <= nmax; nx *= 10) {
 		for(multi::ssize_t ny = 1; ny <= maxsize; ny *= 5) {
