@@ -773,7 +773,8 @@ struct dynamic_array                                                            
 #pragma clang diagnostic pop
 #endif
 
-	template<class TT, class... As>
+	/// Copy assignment from @p other array of a related typed
+	template<class TT, class... As, std::enable_if_t<std::is_assignable_v<T, TT>, int> =0>  // NOLINT(modernize-type-traits) for C++20
 	auto operator=(dynamic_array<TT, D, As...> const& other) & -> dynamic_array& {
 		assert(extensions(other) == dynamic_array::extensions());
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
