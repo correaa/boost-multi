@@ -746,6 +746,9 @@ struct dynamic_array                                                            
 		assert(this->stride() != 0);
 		return *this;
 	}
+
+	// (Restricted) copy-assignment, copies each element from the @p other array. Source and destination extents should match
+	// @note Linear complexity in the number of elements
 	auto operator=(dynamic_array const& other) & -> dynamic_array& {
 		if(std::addressof(other) == this) {
 			return *this;
@@ -762,6 +765,8 @@ struct dynamic_array                                                            
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
+	// Element-move (deep move) assignment, moves each element from the @p other array. Source and destination extents should match
+	// @note Linear complexity in the number of elements (cheaper than copy assignment if elements are effectively movable)
 	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {                               // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		assert(extensions(other) == dynamic_array::extensions());                                              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
@@ -774,7 +779,7 @@ struct dynamic_array                                                            
 #endif
 
 	/// Copy assignment from @p other array of a related typed
-	template<class TT, class... As, std::enable_if_t<std::is_assignable_v<T, TT>, int> =0>  // NOLINT(modernize-type-traits) for C++20
+	template<class TT, class... As>  // , std::enable_if_t<std::is_assignable_v<T, TT>, int> = 0>  // NOLINT(modernize-type-traits) for C++20
 	auto operator=(dynamic_array<TT, D, As...> const& other) & -> dynamic_array& {
 		assert(extensions(other) == dynamic_array::extensions());
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
