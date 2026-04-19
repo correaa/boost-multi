@@ -907,6 +907,7 @@ rocm:
   tags:
     - non-shared
     - docker
+    - amdrocm
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
   before_script: []
