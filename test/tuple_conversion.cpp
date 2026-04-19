@@ -12,17 +12,17 @@ namespace multi = boost::multi;
 
 auto main() -> int {
 	{
-		multi::array<int, 1> A = {1, 2, 3, 4};
+		multi::array<int, 1> const A = {1, 2, 3, 4};
 		BOOST_TEST( A.size() == 4 );
 	}
 	{
 		auto const tup = std::make_tuple(1, 2, 3);
-		multi::array<int, 1> A(tup);
+		multi::array<int, 1> const A(tup);
 		BOOST_TEST( A.size() == 3 );
 	}
 	{
-		multi::array<int, 2> B({3, 2}, 0);
-		multi::array<int, 1> Bsizes(B.sizes());
+		multi::array<int, 2> const B({3, 2}, 0);
+		multi::array<int, 1> const Bsizes(B.sizes());
 		BOOST_TEST( Bsizes.size() == 2 );
 	}
 
