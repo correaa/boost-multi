@@ -622,7 +622,7 @@ struct dynamic_array                                                            
 private:
 	template<class Fun, class Tup>
 	static auto std_apply_(Fun&& fun, Tup&& tup) {
-		// using std::apply;
+		using std::apply;
 		return apply(std::forward<Fun>(fun), std::forward<Tup>(tup));
 	}
 
