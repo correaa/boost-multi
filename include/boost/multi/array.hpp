@@ -89,7 +89,7 @@ struct array_allocator {
 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, n);
 		}
-		return adl_copy_n(first, count, d_first);
+		return adl_copy_n(first, n, d_first);
 #else
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, d_first);
 #endif
