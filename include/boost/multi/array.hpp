@@ -619,6 +619,33 @@ struct dynamic_array                                                            
 	constexpr dynamic_array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)
 	: dynamic_array{(values.size() == 0) ? array<T, D>() : array<T, D>(values.begin(), values.end())} {}  // construct all with default constructor and copy to special memory at the end
 
+private:
+	template<class Fun, class Tup>
+	static auto std_apply_(Fun&& fun, Tup&& tup) {
+		// using std::apply;
+		return apply(std::forward<Fun>(fun), std::forward<Tup>(tup));
+	}
+
+public:
+
+	template<
+		class Tuple,
+		std::size_t = std::tuple_size<Tuple>::value,
+		std::enable_if_t<
+			detail::all_elements_convertible_to<T, Tuple>::value
+			&& !multi::has_size<Tuple>::value
+			, int> = 0
+		>
+	explicit constexpr dynamic_array(Tuple const& tup)
+	: dynamic_array( 
+		std_apply_(
+			[](auto const&... elems) {
+				return dynamic_array<T, 1, DummyAlloc>({static_cast<T const&>(elems)...});
+			},
+			tup
+		)
+	) {}
+
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr dynamic_array(std::initializer_list<std::initializer_list<TT>> values)

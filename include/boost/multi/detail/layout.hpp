@@ -582,7 +582,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 		BOOST_MULTI_HD constexpr auto operator[](index idx) const { return begin()[idx]; }
 
-		auto size() const { return xs_.num_elements(); }
+		BOOST_MULTI_HD constexpr auto  size() const noexcept { return xs_.num_elements(); }
+		BOOST_MULTI_HD constexpr auto ssize() const noexcept { return size(); }
+		BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(size()); }
 	};
 
 	constexpr auto elements() const { return elements_t{*this}; }
@@ -593,7 +595,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
-	BOOST_MULTI_HD constexpr auto size() const { return this->get<0>().size(); }
+	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
 	}
