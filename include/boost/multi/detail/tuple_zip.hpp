@@ -564,6 +564,13 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) 
 	);
 }
 
+template<class T, class Tuple, class = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+struct all_elements_convertible_to;
+
+template<class T, class Tuple, std::size_t... Is>
+struct all_elements_convertible_to<T, Tuple, std::index_sequence<Is...>>
+: std::conjunction<std::is_convertible<std::tuple_element_t<Is, Tuple>, T>...> {};
+
 }  // end namespace detail
 
 using detail::tie;
