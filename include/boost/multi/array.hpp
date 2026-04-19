@@ -626,7 +626,7 @@ struct dynamic_array                                                            
 		using std::apply;
 		return apply(std::forward<Fun>(fun), std::forward<Tup>(tup));
 	}
-	struct make_from_tuple_ {
+	struct make_from_tuple {
 		template<typename... Elems>
 		BOOST_MULTI_HD constexpr auto operator()(Elems... elems) const {
 			return dynamic_array({static_cast<T const&>(elems)...});
@@ -640,7 +640,7 @@ struct dynamic_array                                                            
 		std::enable_if_t<  // NOLINT(modernize-use-constraints)
 			detail::all_elements_convertible_to<T, Tuple>::value && !multi::has_size<Tuple>::value, int> = 0>
 	explicit constexpr dynamic_array(Tuple const& tup)
-	: dynamic_array(std_apply_(make_from_tuple_{}, tup)) {}
+	: dynamic_array(std_apply_(make_from_tuple{}, tup)) {}
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	template<class TT = T, class = decltype(const_subarray<TT, D>(std::declval<std::initializer_list<std::initializer_list<TT>>>())), std::enable_if_t<multi::detail::is_implicitly_convertible_v<TT, T> && D == 2, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
