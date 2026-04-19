@@ -315,7 +315,7 @@ template<typename T, typename = std::enable_if_t<has_rank<T>{}>>
 constexpr auto rank_aux(T const&) -> typename T::rank;
 
 template<typename T, typename = std::enable_if_t<!has_rank<T>::value>>
-constexpr auto rank_aux(T const&) -> std::integral_constant<size_t, std::rank_v<T>>;
+constexpr auto rank_aux(T const&) -> std::integral_constant<std::size_t, std::rank_v<T>>;
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 

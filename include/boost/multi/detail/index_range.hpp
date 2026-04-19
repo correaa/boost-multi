@@ -244,7 +244,9 @@ class range {
 	#pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator std::streamoff") from a __host__ __device__ function("size") is not allowed.  // TODO(correaa) implement HD integral_constant
 	#endif
 
-	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto  size() const noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto ssize() const noexcept { return size(); }
+	BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(size()); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop

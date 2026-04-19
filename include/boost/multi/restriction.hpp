@@ -349,7 +349,7 @@ class restriction_elements_t {
 	auto begin() const { return iterator{elems_.begin(), proj_}; }
 	auto end() const { return iterator{elems_.end(), proj_}; }
 
-	auto size() const { return elems_.size(); }
+	auto size() const noexcept { return elems_.size(); }
 };
 
 template<dimensionality_type D, class Proj>
@@ -662,7 +662,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
-	constexpr auto size() const { return xs_.size(); }
+	constexpr auto size() const noexcept { return xs_.size(); }
+
 	constexpr auto sizes() const { return xs_.sizes(); }
 
 	constexpr auto               extension() const { return xs_.extension(); }
