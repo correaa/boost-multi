@@ -241,8 +241,8 @@ clang++ ubsan:  # more UB is detected on Release
     refs:
       - develop
   script:
+    - apt-get -qq install --no-install-recommends -y --quiet procps clang libclang-rt-dev cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - sysctl -w vm.mmap_rnd_bits=28 || true
-    - apt-get -qq install --no-install-recommends -y --quiet clang libclang-rt-dev cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - export UBSAN_OPTIONS=print_stacktrace=1
     - mkdir build && cd build
     - clang++ --version

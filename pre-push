@@ -1,6 +1,6 @@
 #!/bin/bash
 # sudo dpkg --add-architecture i386
-# sudo apt install ccache clang clang-tidy cmake cppcheck g++ git iwyu lcov libblas-dev pkg-config libfftw3-dev libboost-test-dev libboost-timer-dev libopenblas-dev libtbb-dev make ninja-build valgrind libboost-test-dev:i386 libboost-timer-dev:i386
+# sudo apt install lld ccache clang clang-tidy cmake cppcheck g++ git iwyu lcov libblas-dev pkg-config libfftw3-dev libboost-test-dev libboost-timer-dev libopenblas-dev libtbb-dev make ninja-build valgrind libboost-test-dev:i386 libboost-timer-dev:i386
 # sudo dnf install boost-devel blas-devel ccache clang clang-tools-extra cmake cppcheck fftw-devel git lcov libasan liblas-devel libubsan ninja-build valgrind
 # install circle # mkdir -p $HOME/bin && wget https://www.circle-lang.org/linux/build_latest.tgz -P $HOME/tmp/ && tar zxvf $HOME/tmp/build_latest.tgz --directory $HOME/bin/ && $HOME/bin/circle --version
 # install nvc++
@@ -46,7 +46,7 @@ export PMIX_MCA_gds=hash
 export UBSAN_OPTIONS=print_stacktrace=1
 
  ([ -d .build.g++ ]            || CXX=g++                           cmake -S . -B .build.g++            -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.g++            $CMT && (ctest --test-dir .build.g++   --rerun-failed $CTR || ctest --test-dir .build.g++            --rerun-failed $CTR) ) || exit 666
- ([ -d .build.clang++-rel ]    || CXX=clang++                       cmake -S . -B .build.clang++-rel    -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON                                           && cmake --build .build.clang++-rel    $CMT && (ctest --test-dir .build.clang++-rel          $CTR || ctest --test-dir .build.clang++-rel    --rerun-failed $CTR) ) || exit 666
+ ([ -d .build.clang++-rel ]    || CXX=clang++                       cmake -S . -B .build.clang++-rel    -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=gold -Wl,--detect-odr-violations" && cmake --build .build.clang++-rel    $CMT && (ctest --test-dir .build.clang++-rel          $CTR || ctest --test-dir .build.clang++-rel    --rerun-failed $CTR) ) || exit 666
  ([ -d .build.clang++-16 ]     || CXX=clang++-16                    cmake -S . -B .build.clang++-16     -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_STANDARD=20                                     && cmake --build .build.clang++-16     $CMT && (ctest --test-dir .build.clang++-16           $CTR || ctest --test-dir .build.clang++-16     --rerun-failed $CTR) ) || exit 666
  ([ -d .build.clang++ ]        || CXX=clang++ CXXFLAGS=-Weverything cmake -S . -B .build.clang++        -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.clang++        $CMT && (ctest --test-dir .build.clang++              $CTR || ctest --test-dir .build.clang++        --rerun-failed $CTR) ) || exit 666
  ([ -d .build.clang++.c++23 ]  || CXX=clang++                       cmake -S . -B .build.clang++.c++23  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23                                     && cmake --build .build.clang++.c++23  $CMT && (ctest --test-dir .build.clang++.c++23        $CTR || ctest --test-dir .build.clang++.c++23  --rerun-failed $CTR) ) || exit 666
