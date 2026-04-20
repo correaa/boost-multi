@@ -651,7 +651,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && *this->ptr_.layout() == (*(other.ptr_)).layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == (*(other.ptr_)).layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
@@ -1522,7 +1522,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
 	constexpr auto stenciled(iextension iex) && -> const_subarray { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
@@ -3221,7 +3221,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		return const_subarray{this->layout().slice(first, last), this->base_ + (first * this->layout().stride() /*- this->layout().offset()*/)};  // TODO(correaa) fix need for offset
+		return const_subarray{this->layout().slice(first, last), this->base_ + /*(*/ first * this->layout().stride() /*- this->layout().offset())*/};  // TODO(correaa) fix need for offset
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop

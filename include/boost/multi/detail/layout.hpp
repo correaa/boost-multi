@@ -952,7 +952,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr auto operator==(extensions_t const& other) const { return base() == other.base(); }
 	BOOST_MULTI_HD constexpr auto operator!=(extensions_t const& other) const { return base() != other.base(); }
 
-	BOOST_MULTI_HD constexpr auto size() const -> size_type { return this->base().head().size(); }
+	BOOST_MULTI_HD constexpr auto size() const noexcept -> size_type { return this->base().head().size(); }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return size(); }
 
