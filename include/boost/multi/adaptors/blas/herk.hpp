@@ -185,7 +185,7 @@ herk(AA alpha, A2D const& a) {                       // NOLINT(readability-ident
 
 template<class T> struct numeric_limits : std::numeric_limits<T> {};
 template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<std::complex<T>> {
-	static auto quiet_NaN() -> std::complex<T> {
+	static auto quiet_NaN() -> std::complex<T> {  // NOLINT(readability-identifier-naming) to follow STL name convention
 		auto nana = numeric_limits<T>::quiet_NaN();
 		return {nana, nana};
 	}  // NOLINT(readability-identifier-naming) conventional std name
