@@ -43,7 +43,7 @@ fi
 if [[ $OSTYPE != "darwin"* ]]; then
 
 export PMIX_MCA_gds=hash
-export UBSAN_OPTIONS=print_stacktrack=1
+export UBSAN_OPTIONS=print_stacktrace=1
 
  ([ -d .build.g++ ]            || CXX=g++                           cmake -S . -B .build.g++            -DCMAKE_BUILD_TYPE=Debug                                                               && cmake --build .build.g++            $CMT && (ctest --test-dir .build.g++   --rerun-failed $CTR || ctest --test-dir .build.g++            --rerun-failed $CTR) ) || exit 666
  ([ -d .build.clang++-rel ]    || CXX=clang++                       cmake -S . -B .build.clang++-rel    -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON                                           && cmake --build .build.clang++-rel    $CMT && (ctest --test-dir .build.clang++-rel          $CTR || ctest --test-dir .build.clang++-rel    --rerun-failed $CTR) ) || exit 666
