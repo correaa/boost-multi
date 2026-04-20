@@ -6,8 +6,6 @@
 #ifndef BOOST_MULTI_DETAIL_EXTENTS_HPP
 #define BOOST_MULTI_DETAIL_EXTENTS_HPP
 
-#include "boost/multi/detail/config/NODISCARD.hpp"
-#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 #include "boost/multi/detail/index_range.hpp"  // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
 #include "boost/multi/detail/interfaces.hpp"
 #include "boost/multi/detail/operators.hpp"      // IWYU pragma: export  // for equality_comparable

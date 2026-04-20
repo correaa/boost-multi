@@ -42,14 +42,7 @@ class auto_timer : std::chrono::high_resolution_clock {
 	auto operator=(auto_timer&&) -> auto_timer&      = delete;
 
 	auto_timer() : auto_timer("") {}
-	// auto elapsed() const {
-	// 	cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
-	// 	struct {
-	// 		long long wall;
-	// 	} ret{std::chrono::duration_cast<std::chrono::nanoseconds>(now() - start_)
-	// 			  .count()};
-	// 	return ret;
-	// }
+
 	~auto_timer() {
 		cudaDeviceSynchronize() == cudaSuccess ? void() : assert(0);
 		auto const count = std::chrono::duration<double>(now() - start_).count();
@@ -69,8 +62,8 @@ auto main()
 		{
 			auto_timer const _{"std::for_each"};
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {
-				for(auto&& row : plane) {  // NOLINT(altera-unroll-loops)
-					for(auto&& elem : row) {
+				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
 						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 					}
 				}
@@ -88,8 +81,8 @@ auto main()
 		// }
 		{
 			auto_timer const _{"thrust::for_each(thrust::cuda::par, elements)"};
-			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& e) {
-				e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& elem) {
+				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
 			});
 		}
 	}
