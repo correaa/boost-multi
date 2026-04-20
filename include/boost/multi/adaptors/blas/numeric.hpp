@@ -10,17 +10,16 @@
 #include "boost/multi/adaptors/blas/complex_traits.hpp"
 #include "boost/multi/adaptors/blas/numeric/is_complex.hpp"
 #include "boost/multi/adaptors/complex/adl.hpp"
-
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"  // for BOOST_MULTI_NO_UNIQUE_ADDRESS
 // #include "boost/multi/detail/pointer_traits.hpp"
 
 #include <complex>  // for complex
 // #include <cstddef>                                           // for nullptr_t
-#include <functional>                                        // for negate
-#include <iterator>                                          // for iterator...
-#include <memory>                                            // for pointer_...
-#include <type_traits>                                       // for decay_t
-#include <utility>                                           // for declval
+#include <functional>   // for negate
+#include <iterator>     // for iterator...
+#include <memory>       // for pointer_...
+#include <type_traits>  // for decay_t
+#include <utility>      // for declval
 // IWYU pragma: no_include <version>                                    // for nullptr_t
 
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
@@ -57,9 +56,8 @@ auto imag(A&& array)
 	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag);
 }
 
-template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type,
-	class = std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-auto real_doubled(ComplexArr&& array) {  // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
+template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type, class = std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+auto real_doubled(ComplexArr&& array) {                                                                                                                                                                                                 // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
 	return std::forward<ComplexArr>(array).template reinterpret_array_cast<RealElem>(2).rotated().flatted().unrotated();
 }
 
@@ -78,7 +76,7 @@ class involuted {
 #pragma warning(disable : 4820)  // 7 bytes padding added after f_
 #endif
 	BOOST_MULTI_NO_UNIQUE_ADDRESS Involution f_;
-	Ref        r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+	Ref                                      r_;  // [[no_unique_address]]  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -137,13 +135,11 @@ class involuted {
 		return other != self.operator decay_type();
 	}
 
-	template<class DecayType,
-		std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class DecayType, std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	friend constexpr auto operator==(DecayType const& other, involuted const& self) {
 		return other == self.operator decay_type();
 	}
-	template<class DecayType,
-		std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	template<class DecayType, std::enable_if_t<!std::is_base_of_v<involuted, DecayType>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	friend constexpr auto operator!=(DecayType const& other, involuted const& self) {
 		return other != self.operator decay_type();
 	}
@@ -183,8 +179,8 @@ class involuter {
 #pragma warning(push)
 #pragma warning(disable : 4820)  // 7 bytes padding added after f_
 #endif
-	BOOST_MULTI_NO_UNIQUE_ADDRESS F  f_;
-	It it_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
+	It                              it_;
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -251,7 +247,7 @@ class involuter {
 	explicit operator bool() const { return it_; }
 	using underlying_type = It;
 	friend /*constexpr*/ auto underlying(involuter const& self) -> underlying_type { return self.it_; }
-	constexpr explicit operator It() const { return underlying(*this); }
+	constexpr explicit        operator It() const { return underlying(*this); }
 
 	friend auto default_allocator_of(involuter const& inv) {
 		using multi::default_allocator_of;
@@ -305,11 +301,11 @@ template<class T> auto real(involuted<T, conjugate> const& inv) { return inv.dec
 
 template<class T> auto has_imag_fun_aux(T const& value) -> decltype((void)imag(value), std::true_type{});
 inline auto            has_imag_fun_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 template<class T> auto has_imag_mem_aux(T const& value) -> decltype((void)value.imag(), std::true_type{});
 inline auto            has_imag_mem_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} || has_imag_mem<T>{})> {};
 
@@ -322,27 +318,25 @@ template<class It>
 auto        is_conjugated_aux(conjugater<It> const& /*self*/) -> std::true_type;
 inline auto is_conjugated_aux(...) -> std::false_type;
 
-template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-	template<class AA> constexpr auto operator()(AA&& /*unused*/) { return is_conjugated_aux((std::declval<A>()).base()); }  // NOLINT(cppcoreguidelines-missing-std-forward)
-};
+template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())){// NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+																										template<class AA> constexpr auto operator()(AA&& /*unused*/){return is_conjugated_aux((std::declval<A>()).base());
+}  // namespace multi::blas
+};  // namespace boost
 
-template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr,
-	std::enable_if_t<!is_complex_array<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr, std::enable_if_t<!is_complex_array<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> A&& {
 	return std::forward<A>(array);
 }
 
 template<
 	class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
-	typename Ptr = std::decay_t<decltype(std::declval<A&&>().base())>,
-	std::enable_if_t<!is_conjugated<A>{} && is_complex_array<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	typename Ptr                                                        = std::decay_t<decltype(std::declval<A&&>().base())>,
+	std::enable_if_t<!is_conjugated<A>{} && is_complex_array<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> decltype(auto) {
 	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
-template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type,
-         typename Ptr = typename decltype(std::declval<A&&>().base())::underlying_type,
-		 std::enable_if_t<is_conjugated<A>{}, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename decltype(std::declval<A&&>().base())::underlying_type, std::enable_if_t<is_conjugated<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array)
 	-> decltype(std::forward<A>(array).template static_array_cast<Elem, Ptr>()) {
 	return std::forward<A>(array).template static_array_cast<Elem, Ptr>();
