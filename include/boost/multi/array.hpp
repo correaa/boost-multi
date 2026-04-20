@@ -637,7 +637,7 @@ struct dynamic_array                                                            
 	template<
 		class Tuple,
 		std::size_t                                                                                      = std::tuple_size<Tuple>::value,  // NOLINT(modernize-type-traits) TODO(correaa) remove or use tuple_size_v
-		std::enable_if_t<  // NOLINT(modernize-use-constraints)
+		std::enable_if_t<                                                                                                                  // NOLINT(modernize-use-constraints)
 			detail::all_elements_convertible_to<T, Tuple>::value && !multi::has_size<Tuple>::value, int> = 0>
 	explicit constexpr dynamic_array(Tuple const& tup)
 	: dynamic_array(std_apply_(make_from_tuple{}, tup)) {}
