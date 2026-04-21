@@ -331,23 +331,58 @@ multi::array<int, 2> out = T;         // single write into a fresh array
 \end{frame}
 
 
+{
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[plain]{The Good, The Bad, and The UB}
+\begin{center}
+\includegraphics[height=0.85\textheight]{gbu}
+\end{center}
+\end{frame}
+}
+
+\begin{frame}[fragile]{Out-of-bounds pointer formation in strided iteration}
+
+Boost.Multi provides STL-compatible strided iterators --- \lstinline|.begin()|, \lstinline|.end()|, range-for loops.\\
+But computing \lstinline|.end()| can form a pointer \emph{past} the allocation:
+
+\begin{lstlisting}
+multi::array<double, 1> A(10);   // 10-element allocation [base, base+10)
+
+auto strided = A.strided(3);    // elements {0, 3, 6, 9}
+strided.end();                   // computes base + 3*4 = base + 12
+                                 // 2 past the allocation: UB under [expr.add]
+\end{lstlisting}
+
+Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation; \lstinline|.transposed()| iterators may overshoot when columns $\times$ row-stride $>$ total elements.
+
+\medskip
+\begin{itemize}
+  \item The UB is in \emph{forming} the pointer, not dereferencing it.
+  \item Index-based access (\lstinline|A[i][j]|, \lstinline|A(i,j)|) is \emph{not} affected.
+  \item \lstinline|multi::restriction|s are not affected --- no pointer arithmetic involved.
+  \item No compiler currently exploits this, but \lstinline|constexpr| and sanitizers can flag it.
+  \item Other libraries (\lstinline|std::mdspan|, Eigen, Kokkos) avoid this by not providing strided iterators at all.
+\end{itemize}
+
+\end{frame}
+
+
 \begin{frame}[fragile]{Algorithm Dispatching}{
-How does the library call the right \lstinline|copy_n| for CPU vs GPU?
+How does the library call the right \texttt{copy\_n} for CPU vs GPU?
 }
 
 
 \medskip
 \begin{lstlisting}
 class adl_copy_n_t {
-  auto _(priority<0>, auto... as)->decltype(...) { return std::copy_n(...); }  // CPU fallback
-  auto _(priority<1>, auto... as)->decltype(...) { return thrust::copy_n(...); }  // GPU, if available
-  auto _(priority<2>, auto... as)->decltype(...) { return copy_n via(...); } // ADL
-  auto _(priority<3>, auto first, auto... rst) { return decltype(first)::copy_n(...); } // static member
-  auto _(priority<4>, auto first, auto... rst) { return first.copy_n(...); } // from member function
+  auto _(priority<0>, auto... as) ... {return std::copy_n(...);}    // CPU fallback
+  auto _(priority<1>, auto... as) ... {return thrust::copy_n(...);} // GPU
+  auto _(priority<2>, auto... as) ... {return copy_n via(...);}     // ADL
+  auto _(priority<3>, auto it, auto... rst) ... {return it.copy_n(...); } // member
 public:
   template<class... As>
   auto operator()(As&&... as) const
-    -> decltype(...) { return _(priority<4>(), std::forward<As>(as)...)); }
+    -> decltype(...) { return _(priority<3>(), std::forward<As>(as)...)); }
 };
 inline constexpr adl_copy_n_t adl_copy_n;
 \end{lstlisting}
