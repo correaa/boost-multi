@@ -945,6 +945,7 @@ rocm-release:
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
+    - rocm-smi
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - /opt/rocm/llvm/bin/clang++ --version
     - cmake --version
