@@ -185,6 +185,7 @@ class restriction_iterator {
 		++(*this);
 		return ret;
 	}
+
 	constexpr auto operator--(int) {
 		restriction_iterator ret{*this};
 		--(*this);
@@ -222,7 +223,7 @@ class restriction_iterator {
 		}
 	}
 
-	BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 };
 
 template<dimensionality_type D, class Proj>
@@ -496,7 +497,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
 	};
 
-	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
+	BOOST_MULTI_HD constexpr auto rotated() const { return restriction(extensions(), bind_rotated_t{proj_, size()}); }
 
 	template<class Proj2>
 	struct bind_element_transformed_t {
@@ -656,7 +657,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			}
 		}
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> reference { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
 	};
 
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }

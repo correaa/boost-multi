@@ -933,6 +933,9 @@ rocm-release:
   stage: build
   image: rocm/dev-ubuntu-24.04
   allow_failure: true
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker

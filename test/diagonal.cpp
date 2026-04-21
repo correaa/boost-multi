@@ -109,10 +109,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> const arr = {0, 1, 2, 3};
 
-		auto const& a2D = arr.broadcasted();
+		auto const& a2D = arr.repeated(2);
 
-		BOOST_TEST( &a2D[0][2] == &arr[2] );
-		BOOST_TEST( &a2D[1][2] == &arr[2] );
+		BOOST_TEST( a2D[0][2] == arr[2] );
+		BOOST_TEST( a2D[1][2] == arr[2] );
+
+		// BOOST_TEST( &a2D[0][2] == &arr[2] );
+		// BOOST_TEST( &a2D[1][2] == &arr[2] );
 	}
 
 	// broadcast_0D

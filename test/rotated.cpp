@@ -24,7 +24,7 @@ namespace multi = boost::multi;
 
 template<class X1D, class Y1D>
 auto meshgrid(X1D const& x, Y1D const& y) {
-	return std::pair{x.broadcasted().rotated(), y.broadcasted()};
+	return std::pair{x.repeated(y.size()).rotated(), y.repeated(x.size())};
 }
 
 template<class X1D, class Y1D>
