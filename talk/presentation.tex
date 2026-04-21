@@ -323,22 +323,19 @@ multi::array<int, 2> out = T;         // single write into a fresh array
 \end{lstlisting}
 
 \begin{itemize}
-  \item No intermediate buffers $\Rightarrow$ no aliasing between stages.
+  \item No intermediate buffers \(\Rightarrow\) no aliasing between stages.
   \item Materialization is the \emph{only} write --- compiler sees a pure nested loop.
   \item \emph{Partial}: assigning back into an array whose storage backs the RHS still aliases; lambda captures-by-reference can re-introduce it.
 \end{itemize}
 
 \end{frame}
 
-
-{
-\setbeamertemplate{navigation symbols}{}
 \begin{frame}[plain]{The Good, The Bad, and The UB}
 \begin{center}
-\includegraphics[height=0.85\textheight]{gbu}
+\includegraphics[height=0.7\textheight]{gbu.pdf}
 \end{center}
+The C++ abstract machine is hostile to multidimensional array iteration
 \end{frame}
-}
 
 \begin{frame}[fragile]{Out-of-bounds pointer formation in strided iteration}
 
