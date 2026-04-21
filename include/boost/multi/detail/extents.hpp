@@ -12,7 +12,6 @@
 #include "boost/multi/detail/serialization.hpp"  // IWYU pragma: export  // for archive_traits
 #include "boost/multi/detail/tuple_zip.hpp"      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
 #include "boost/multi/detail/types.hpp"          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
-#include "boost/multi/detail/what.hpp"
 
 // #include <algorithm>         // for max
 // #include <array>             // for array
