@@ -640,70 +640,55 @@ auto row_maxs = multi::reduce_by_index(M,
 All executed with full GPU parallelism.
 \end{frame}
 
-\begin{frame}[fragile]{\texttt{multi::inplace\_array}: stack-allocated multidimensional arrays}
+\begin{frame}{Adaptors}
 
-No heap allocation --- sizes are bounded at compile time, storage lives on the stack.
+Boost.Multi ships optional adaptors that integrate the array with external libraries:
+
+\begin{table}
+\small
+\begin{tabular}{lll}
+\textbf{Header} & \textbf{Library} & \textbf{Purpose} \\
+\hline
+\lstinline|adaptors/blas.hpp|    & BLAS (cuBLAS, rocBLAS) & matrix/vector algebra \\
+\lstinline|adaptors/lapack.hpp|  & LAPACK               & linear algebra (SVD, etc.) \\
+\lstinline|adaptors/fftw.hpp|    & FFTW3                & FFT on CPU \\
+\lstinline|adaptors/cufft.hpp|   & cuFFT                & FFT on NVIDIA GPU \\
+\lstinline|adaptors/hipfft.hpp|  & hipFFT               & FFT on AMD GPU (ROCm) \\
+\lstinline|adaptors/thrust.hpp|  & Thrust               & GPU/OMP parallel algorithms \\
+\lstinline|adaptors/tblis.hpp|   & TBLIS                & tensor contractions \\
+\lstinline|adaptors/mpi.hpp|     & MPI                  & distributed arrays \\
+\lstinline|adaptors/fft.hpp|     & (generic)            & backend-agnostic FFT \\
+\lstinline|adaptors/totalview.hpp| & TotalView          & debugger visualization \\
+\end{tabular}
+\end{table}
+
+\begin{block}{}
+  Adaptors are header-only and opt-in --- include only what you use.
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Adaptor example: BLAS}
 
 \begin{lstlisting}
-// maximum capacity encoded in C-array syntax
-multi::inplace_array<double[4][4]> A = {
-    {1.0, 2.0},
-    {3.0, 4.0}
-};  // 2x2 actual size, 4x4 max capacity, all on the stack
+#include <boost/multi/adaptors/blas.hpp>
 
-A.reextent({3, 3});  // grow to 3x3 (still within 4x4 budget)
+multi::array<double, 2> A({3, 3}), B({3, 3}), C({3, 3});
+// ...
+namespace blas = boost::multi::blas;
+blas::gemm(1.0, A, B, 0.0, C);   // C = A * B
+auto At = blas::T(A);             // lazy transpose view
+auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
 \end{lstlisting}
 
-\medskip
 \begin{itemize}
-  \item Sizes are dynamic (can \lstinline|reextent|) but bounded by the compile-time maximum
-  \item Useful for small, fixed-budget arrays: rotation matrices, stencils, tile buffers
-  \item Same interface as \lstinline|multi::array| --- algorithms, views, slicing all work
-  \item Non-transferable (pinned): cannot be moved, storage is part of the object
-  \item Implemented via \lstinline|dynamic_array| + a \lstinline|static_allocator| that holds the buffer inline
+  \item Works with CPU BLAS, cuBLAS, and rocBLAS --- same code, different allocator
+  \item Lazy \lstinline|blas::T(A)| and \lstinline|blas::H(A)| avoid copies
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Implementing \texttt{multi::inplace\_array}. How hard can it be?}
-\pause
-\begin{center}
-\includegraphics[height=0.7\textheight]{inplace_vector_how_hard.png}
-\end{center}
-Spoiler: very hard
-\end{frame}
-
-\begin{frame}[fragile]{Key to implementation}
-I want to \lstinline|multi::inplace_array| to have the same interface as \lstinline|multi::array|
-without having to maintain two different classes.
-
-Method: introduce auxiliary allocator 
-
-\begin{lstlisting}
-template<class T, std::size_t N>
-class detail::static_allocator {
-    alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;  // inline storage      
-
-public:
-    using value_type = T;
-    using pointer    = T*;
-
-    auto allocate(std::size_t n) -> pointer { assert(n<=N); returns &buffer_; }
-    static void deallocate(pointer, std::size_t) { /*no-op*/ }
-    // non-transferable: copy/move assignment deleted
-    // propagate_on_container_{move,copy,swap} = false_type                          
-};
-\end{lstlisting}
-
-Then define:
-\begin{lstlisting}
-template<class T>
-using inplace_array = dynamic_array<T, static_allocator<T, Capacity>>;
-\end{lstlisting}
-
-\end{frame}
-
-\begin{frame}{Real world uses of the Multi library}
+\begin{frame}{Real world uses}
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
