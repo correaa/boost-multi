@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <initializer_list>  // for initializer_list
 #include <iterator>          // for size
-#include <tuple>             // for get  // NOLINT(misc-include-cleaner)
+#include <tuple>             // IWYU pragma: keep  // for get
 #include <type_traits>       // for make_unsigned_t
 #include <utility>           // for move
 #include <vector>            // for vector

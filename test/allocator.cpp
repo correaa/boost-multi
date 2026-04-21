@@ -20,11 +20,11 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
+#include <new>      // IWYU pragma: keep  // for operator new
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
-// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <version>  // for __GLIBCXX__
 
 namespace multi = boost::multi;
 
