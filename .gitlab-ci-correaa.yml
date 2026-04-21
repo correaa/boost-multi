@@ -858,9 +858,9 @@ cuda-13.2.0 cccl-2:
     - non-shared
     - nvidia-gpu
     - arch75
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   script:
     - nvidia-smi
     - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
