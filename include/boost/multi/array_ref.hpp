@@ -64,20 +64,20 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 
 #include "boost/multi/detail/adl.hpp"  // TODO(correaa) remove instantiation of force_element_trivial in this header
 #include "boost/multi/detail/config/ASSERT.hpp"
-#include "boost/multi/detail/layout.hpp"          // IWYU pragma: export
-#include "boost/multi/detail/memory.hpp"          // for pointer_traits
+#include "boost/multi/detail/layout.hpp"  // IWYU pragma: export
+// #include "boost/multi/detail/memory.hpp"          // for pointer_traits
 #include "boost/multi/detail/operators.hpp"       // for random_iterable
 #include "boost/multi/detail/pointer_traits.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/serialization.hpp"
 #include "boost/multi/detail/types.hpp"  // for dimensionality_type  // IWYU pragma: export
 
-#include <algorithm>   // for copy_n
-#include <array>       // for std::array
-#include <cstring>     // for std::memset in reinterpret_cast
-#include <functional>  // for std::invoke
-#include <iterator>    // for std::next
-#include <memory>      // for std::pointer_traits
-#include <new>         // for std::launder
+#include <algorithm>  // for copy_n
+#include <array>      // for std::array
+#include <cstring>    // for std::memset in reinterpret_cast
+// #include <functional>  // for std::invoke
+#include <iterator>  // for std::next
+#include <memory>    // for std::pointer_traits
+#include <new>       // for std::launder
 
 #if __has_include(<span>)
 #if !defined(_MSVC_LANG) || (_MSVC_LANG > 202002L)
