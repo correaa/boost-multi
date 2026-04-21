@@ -121,7 +121,6 @@ template<dimensionality_type D>
 using sizes_t = typename extensions_t<D>::sizes_type;
 
 /// A multidimensional array value
-///
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam Alloc Allocator type
