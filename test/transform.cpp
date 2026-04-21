@@ -14,7 +14,7 @@
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
-#include <string>       // for to_string  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <string>       // IWYU pragma: keep  // for to_string
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 

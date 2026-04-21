@@ -16,14 +16,6 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
-// NOLINTBEGIN(misc-include-cleaner)
-// #include <boost/concept/assert.hpp>              // for BOOST_CONCEPT_ASSERT  // IWYU pragma: keep
-// #include <boost/concept_check.hpp>               // for Assignable, CopyCons...  // IWYU pragma: keep
-// #include <boost/iterator/iterator_facade.hpp>    // for operator-  // IWYU pragma: keep
-// #include <boost/multi_array.hpp>                 // for multi_array  // IWYU pragma: keep
-// #include <boost/multi_array/concept_checks.hpp>  // for ConstMultiArrayConcept  // IWYU pragma: keep
-// NOLINTEND(misc-include-cleaner)
-
 #ifdef __clang__
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)

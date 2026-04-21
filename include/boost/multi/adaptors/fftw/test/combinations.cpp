@@ -41,7 +41,6 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 	~watch() { std::cerr << label_ << ": " << elapsed_sec() << " sec" << '\n'; }
 };
 
-
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

@@ -1,10 +1,8 @@
-// Copyright 2022-2025 Alfredo A. Correa
+// Copyright 2022-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-
-// #include <boost/multi/adaptors/fftw.hpp>  // includes fftw3.hpp
 
 #include <complex>
 #include <functional>

@@ -314,7 +314,7 @@ template<class T> constexpr auto abs(std::initializer_list<std::initializer_list
 // #endif
 }  // end namespace elementwise
 
-namespace broadcast = elementwise;
+// namespace broadcast = elementwise;
 
 }  // end namespace boost::multi
 
