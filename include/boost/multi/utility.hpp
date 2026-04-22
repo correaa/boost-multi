@@ -345,6 +345,11 @@ constexpr auto get_allocator(T* const& /*t*/)
 	return std::allocator<typename std::iterator_traits<T*>::value_type>{};
 }
 
+template<class Array>
+constexpr auto get_allocator(Array const& arr) -> decltype(arr.get_allocator()) {
+	return arr.get_allocator();
+}
+
 template<class T>
 constexpr auto default_allocator_of(T* /*unused*/) {
 	return std::allocator<typename std::iterator_traits<T*>::value_type>{};
