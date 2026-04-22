@@ -739,7 +739,7 @@ struct dynamic_array                                                            
 	using iterator       = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr>;
 	using const_iterator = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
 
-	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
+	// friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }
@@ -750,9 +750,9 @@ struct dynamic_array                                                            
 	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return std::make_move_iterator(this->base_); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array const& self) { return self.data_elements(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array& self) { return self.data_elements(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array&& self) { return std::move(self).data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array const& self) { return self.data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array& self) { return self.data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array&& self) { return std::move(self).data_elements(); }
 
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref::base(); }
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref::base()}; }
