@@ -9,5 +9,4 @@
 *.fls
 *.synctex*
 *.vrb
-
-
+*.pdf_tex
