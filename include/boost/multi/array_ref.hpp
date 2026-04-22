@@ -1563,9 +1563,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& { return strided_aux_(diff).as_const(); }
-	// constexpr auto strided(difference_type diff) && -> const_subarray { return strided_aux_(diff); }
-	// constexpr auto strided(difference_type diff) & -> const_subarray { return strided_aux_(diff); }
+	constexpr auto strided(difference_type by) const& { return strided_aux_(by).as_const(); }
 
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index stride_
@@ -2176,8 +2174,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto strided(difference_type diff) && { return this->strided_aux_(diff); }
-	constexpr auto strided(difference_type diff) & { return this->strided_aux_(diff); }
+	constexpr auto strided(difference_type by) && { return this->strided_aux_(by); }
+	constexpr auto strided(difference_type by) & { return this->strided_aux_(by); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;
