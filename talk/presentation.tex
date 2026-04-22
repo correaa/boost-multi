@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[scale=0.85]{FiraMono}
 \usepackage{ulem}
+\usepackage{svg}
 
 \beamertemplatenavigationsymbolsempty
 
@@ -332,7 +333,7 @@ multi::array<int, 2> out = T;         // single write into a fresh array
 
 \begin{frame}[plain]{The Good, The Bad, and The UB}
 \begin{center}
-\includegraphics[height=0.7\textheight]{gbu.pdf}
+\includesvg[height=0.7\textheight]{gbu}
 \end{center}
 The C++ abstract machine is hostile to multidimensional array iteration
 \end{frame}
