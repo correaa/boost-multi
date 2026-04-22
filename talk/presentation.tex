@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[scale=0.85]{FiraMono}
 \usepackage{ulem}
+\usepackage{svg}
 
 \beamertemplatenavigationsymbolsempty
 
@@ -25,7 +26,7 @@
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{red},
   keywordstyle=[2]\color{kwblue}\bfseries,
-  morekeywords=[2]{array,subarray,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
+  morekeywords=[2]{array,subarray,inplace_array,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
   morekeywords=[3]{multi},
   keywordstyle=[3]\color{kwblue},
   backgroundcolor=\color{codebackground},
@@ -332,7 +333,7 @@ multi::array<int, 2> out = T;         // single write into a fresh array
 
 \begin{frame}[plain]{The Good, The Bad, and The UB}
 \begin{center}
-\includegraphics[height=0.7\textheight]{gbu.pdf}
+\includesvg[height=0.7\textheight]{gbu}
 \end{center}
 The C++ abstract machine is hostile to multidimensional array iteration
 \end{frame}
@@ -406,8 +407,8 @@ Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a c
 \begin{frame}[fragile]{Algorithms}
   Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
-for(auto&& plane : A) {
-
+for(auto&& plane : A                  )
+                  {
     for(auto&& row : plane) {
       for(auto&& elem : row) {
         elem = op(elem);
@@ -422,7 +423,7 @@ for(auto&& plane : A) {
 \begin{frame}[fragile]{Algorithms (optimized)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
-std::for_each(A.begin(), A.end(), 
+std::for_each(     A.begin(), A.end(),
   [](auto&& plane) {
     for(auto&& row : plane) {
       for(auto&& elem : row) {
