@@ -739,7 +739,7 @@ struct dynamic_array                                                            
 	using iterator       = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr>;
 	using const_iterator = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
 
-	// friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
+	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	// cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }
