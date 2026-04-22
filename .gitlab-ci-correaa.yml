@@ -1327,9 +1327,11 @@ pages-presentation:
     - non-shared
     - docker
   script:
+    - apt-get update > /dev/null && apt-get install -y inkscape > /dev/null
     - mkdir public
     - cd talk
-    - pdflatex presentation.tex
+    - ls -all
+    - pdflatex -shell-escape presentation.tex
     - cp presentation.pdf ../public/
   artifacts:
     paths:

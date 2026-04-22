@@ -51,9 +51,7 @@ In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivale
 [#technical_iteration]
 == Out-of-bounds pointer formation in the abstract machine
 
-The C++ abstract machine imposes strict rules on pointer arithmetic ([expr.add]):
-given a pointer `p` to element `i` of an array of `n` elements, the expression `p + k` is defined only when `0 \<= i + k \<= n`.
-In particular, forming a pointer more than one position past the end of an array object is undefined behavior -- even if the pointer is never dereferenced.
+The C++ abstract machine imposes strict rules on pointer arithmetic ([expr.add]): In particular, forming a pointer more than one position past the end of an allocation is undefined behavior -- even if the pointer is never dereferenced.
 
 Since this library's iteration is pointer-based (iterators are thin wrappers over pointers with stride information), these restrictions apply to its iterators as well.
 
@@ -83,12 +81,24 @@ This issue is specific to libraries that expose pointer-based strided iterators 
 Boost.Multi is unusual in providing both: STL-compatible strided iterators (which are subject to this issue) and index-based access (which is not).
 
 No tested compiler complains about the illegality of these transiently out-of-bounds pointer values, and the affected code behaves correctly on all tested platforms.
-However, sanitizers (e.g., AddressSanitizer) and `constexpr` contexts can in principle flag the formation of such pointers
+However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers.
+(`constexpr` contexts can also reject this situation.)
 
-(Possible mitigations at the library level include, at a cost, over-allocating (padding the allocation so that strided `.end()` pointers remain in-bounds), using integer offset arithmetic internally and forming pointers only at the point of dereference, or representing `.end()` as a sentinel/count rather than a pointer.)
+=== Library-level mitigations
 
-(The `multi::restriction`s are not affected by this problem because they do manipulate pointer.
-Operations like `.transposed()`, `.strided()`, and `.reversed()` on a restriction simply rebind the index mapping; no pointer arithmetic is involved.)
+Possible mitigations at the library level include, at a cost:
+
+- Over-allocating (padding the allocation so that strided `.end()` pointers remain in-bounds).
+- Using integer offset arithmetic internally and forming pointers only at the point of dereference.
+- Representing `.end()` as a sentinel or count rather than a pointer.
+- Clearly state (and debug-check) that stride that do not divide the size are undefined behavior.
+
+These mitigations are not implemented, but the library is prepared to adopt them if necessary.
+
+=== Unaffected: functional (lazy) views
+
+`multi::restriction` objects are not affected by this problem because they do not manipulate pointers.
+Operations like `.transposed()`, `.strided()`, and `.reversed()` on a restriction simply rebind the index mapping; no pointer arithmetic is involved.
 
 [#technical_change_dimensionality]
 == Can I change the dimensionality of an array dynamically?
