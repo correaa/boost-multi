@@ -677,7 +677,7 @@ Boost.Multi ships optional adaptors that integrate the array with external libra
 multi::array<double, 2> A({3, 3}), B({3, 3}), C({3, 3});
 // ...
 namespace blas = boost::multi::blas;
-blas::gemm(1.0, A, B, 0.0, C);   // C = A * B
+blas::gemm(1.0, A, B, 0.0, C);   // C = 1.0 A * B + 0.0 C
 auto At = blas::T(A);             // lazy transpose view
 auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
 \end{lstlisting}
@@ -693,7 +693,7 @@ auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
-    \item CoQuí: Correlated Quantum (post-DFT: GW, RPA, THC-AFQMC) Flariron Institute, NY
+    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flariron Institute, NY
     \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
     \item a manufacturing company in Québec, Canada
   \end{itemize}
