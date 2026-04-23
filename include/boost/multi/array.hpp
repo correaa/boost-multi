@@ -1384,7 +1384,7 @@ struct array : dynamic_array<T, D, Alloc> {
 							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
 
-	array() = default;	///< Default constructor of an empty array (doesn't allocate, doesn't throw)
+	array() = default;  ///< Default constructor of an empty array (doesn't allocate, doesn't throw)
 
 	/// Copy constructor (gnenerally allocate, may throw)
 	array(array const&) = default;
