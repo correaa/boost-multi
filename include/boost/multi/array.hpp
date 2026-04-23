@@ -1386,7 +1386,7 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	array() = default;  ///< Default constructor of an empty array (doesn't allocate, doesn't throw)
 
-	/// Copy constructor (gnenerally allocate, may throw)
+	/// Copy constructor (generally allocates)
 	array(array const&) = default;
 
 	~array() = default;
