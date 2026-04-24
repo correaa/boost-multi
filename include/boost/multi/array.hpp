@@ -1364,19 +1364,19 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	: dynamic_(
-		  (values.size() == 0) ? array<T, D>{}
-							   : array<T, D>(values.begin(), values.end())
-	  ) {
-	}
+	// constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	// : dynamic_(
+	// 	  (values.size() == 0) ? array<T, D>{}
+	// 						   : array<T, D>(values.begin(), values.end())
+	//   ) {
+	// }
 
-	/// Initializer list constructor from a list of subarrays (or, in 1D, elements) @p values (allocates)
+	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
 		class Sub,
-		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
+		std::enable_if_t<                                                                                                                                                           // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, Sub> && !std::is_convertible_v<Sub, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: dynamic_(
 		  (values.size() == 0) ? array<T, D>()()
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
@@ -1388,15 +1388,16 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Copy constructor from @p other array (generally allocates)
 	array(array const&) = default;
 
-	~array() = default;
+	// Destructor, deallocates memory and destroys elements
+	~array() noexcept = default;
 
-	auto reshape(typename array::extensions_type extensions) & -> array& {
-		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
-		assert(new_layout.num_elements() == this->num_elements());
-		this->layout_mutable() = new_layout;
-		assert(this->stride() != 0);
-		return *this;
-	}
+	// auto reshape(typename array::extensions_type extensions) & -> array& {
+	// 	typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
+	// 	assert(new_layout.num_elements() == this->num_elements());
+	// 	this->layout_mutable() = new_layout;
+	// 	assert(this->stride() != 0);
+	// 	return *this;
+	// }
 
 	/// Clear the values of array, making it empty (doesn't throw)
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
@@ -1409,10 +1410,10 @@ struct array : dynamic_array<T, D, Alloc> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
-	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
+	// friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	/// Copy constructor from @p other and sets the allocator @p alloc (generally allocates)
+	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
 	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {}
 
@@ -1507,7 +1508,12 @@ struct array : dynamic_array<T, D, Alloc> {
 		if(array::extensions() == other.extensions()) {
 			this->operator()() = std::forward<Range>(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
-			reshape(other.extensions());
+			typename array::layout_t const new_layout{other.extensions()};
+			assert(new_layout.num_elements() == this->num_elements());
+			this->layout_mutable() = new_layout;
+			assert(this->stride() != 0);
+			// return *this;
+			// reshape(other.extensions());
 			this->operator()() = std::forward<Range>(other);
 		} else {
 			operator=(static_cast<array>(std::forward<Range>(other)));
