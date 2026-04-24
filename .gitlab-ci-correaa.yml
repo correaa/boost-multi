@@ -344,7 +344,7 @@ mingw-w64:
     - non-shared
     - docker
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build g++-mingw-w64-x86-64 git make
+    - apt-get -qq install --no-install-recommends -y --quiet libboost-dev ca-certificates cmake ninja-build g++-mingw-w64-x86-64 git make
     - x86_64-w64-mingw32-g++ --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1
