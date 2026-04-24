@@ -1375,7 +1375,7 @@ struct array : dynamic_array<T, D, Alloc> {
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
 
-#if defined(__circle_build__)
+#ifdef(__circle_build__)
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	: dynamic_(
 		  (values.size() == 0) ? array<T, D>{}
