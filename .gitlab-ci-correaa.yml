@@ -333,6 +333,26 @@ clang++-16 c++20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
+mingw-w64:
+  stage: build
+  image: debian:latest
+  only:
+    refs:
+      - develop
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build g++-mingw-w64-x86-64 git make
+    - x86_64-w64-mingw32-g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1
+        -DCMAKE_SYSTEM_NAME=Windows
+        -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+        -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+  needs: ["g++"]
+
 visual-studio-windows:
   stage: build
   only:
@@ -458,12 +478,12 @@ vs2022-shell clang-cl:
   #   refs:
   #     - develop
   script:
-    # - winget install Microsoft.VisualStudio.2022.BuildTools --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset --quiet --norestart"
-    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - winget install LLVM.LLVM --silent --accept-package-agreements --accept-source-agreements
+    - $env:Path += ";C:\Program Files\LLVM\bin;C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - mkdir build
     - cmake --version
     - clang-cl --version
-    - cmake -S . -B build -T ClangCL -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="/W4 /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_COMPILER="clang-cl" -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="/W4 /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1 /EHsc" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure --build-config Debug
   tags:
