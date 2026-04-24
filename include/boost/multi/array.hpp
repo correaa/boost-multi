@@ -1374,19 +1374,21 @@ struct array : dynamic_array<T, D, Alloc> {
 	  ) {
 	}
 
+	/// Initializer list constructor from a list of subarrays (allocates)
 	template<
 		class OtherT,
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<OtherT> ilv)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<OtherT> values)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: dynamic_(
-		  (ilv.size() == 0) ? array<T, D>()()
-							: array<T, D>(ilv.begin(), ilv.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
+		  (values.size() == 0) ? array<T, D>()()
+							: array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
 
-	array() = default;  ///< Default constructor of an empty array (doesn't allocate, doesn't throw)
+	/// Default constructor of an empty array (doesn't allocates, doesn't throw)
+	array() = default;
 
-	/// Copy constructor (generally allocates)
+	/// Copy constructor from @p other (generally allocates)
 	array(array const&) = default;
 
 	~array() = default;
