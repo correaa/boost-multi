@@ -1364,25 +1364,23 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	/// Constructs the array from a nested initializer list.
-	///
-	/// @param nested_values Nested initializer list of elements (must be rectangular, not ragged); allows assignment-like syntax such as `array<int, 2> A = {{1, 2}, {3, 4}}`.
-	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> nested_values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	/// Initializer list constructor from a list of subarray @p values (allocates)
+	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	: dynamic_(
-		  (nested_values.size() == 0) ? array<T, D>{}
-									  : array<T, D>(nested_values.begin(), nested_values.end())
+		  (values.size() == 0) ? array<T, D>{}
+							   : array<T, D>(values.begin(), values.end())
 	  ) {
 	}
 
-	/// Initializer list constructor from a list of subarrays (allocates)
+	/// Initializer list constructor from a list of subarray @p values (allocates)
 	template<
 		class OtherT,
 		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<OtherT> values)                                                                                                                           // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<OtherT> values)                                                                                                                        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
 	: dynamic_(
 		  (values.size() == 0) ? array<T, D>()()
-							: array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
+							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
 
 	/// Default constructor of an empty array (doesn't allocates, doesn't throw)
@@ -1401,12 +1399,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Clear the values of array, making it empty (doesn't throw)
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
 	}
-	friend auto clear(array& self) noexcept -> array& { return self.clear(); }
+	// friend auto clear(array& self) noexcept -> array& { return self.clear(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
@@ -1415,6 +1414,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
+	/// Copy constructor from @p other and sets the allocator @p alloc (generally allocates)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
 	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {}
 
@@ -1422,6 +1422,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 	}
 
+	/// Swaps the contents of this array with @p other (doesn't throw)
 	void swap(array& other) noexcept {
 		using std::swap;
 		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
@@ -1451,11 +1452,12 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Copy assignment from @p other (allocates, unless extents are equal)
 	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
-			if(this == &other) {
+			if(this == &other) { // required by cert-oop54-cpp
 				return *this;
-			}  // required by cert-oop54-cpp
+			}
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
