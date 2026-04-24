@@ -1455,7 +1455,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Copy assignment from @p other (allocates, unless extents are equal)
 	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
-			if(this == &other) { // required by cert-oop54-cpp
+			if(this == &other) {  // required by cert-oop54-cpp
 				return *this;
 			}
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
