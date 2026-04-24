@@ -1446,17 +1446,15 @@ struct array : dynamic_array<T, D, Alloc> {
 			this->alloc() = std::move(other.alloc());
 		}
 		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extensions_type{}));
-		assert(this->stride() != 0);
-		assert(other.stride() != 0);
 		return *this;
 	}
 
-	/// Copy assignment from @p other (allocates, unless extents are equal)
+	/// Copy assignment from @p other array (allocates unless extents are already equal)
 	auto operator=(array const& other) -> array& {
+		if(this == &other) {  // required by cert-oop54-cpp
+			return *this;
+		}
 		if(array::extensions() == other.extensions()) {
-			if(this == &other) {  // required by cert-oop54-cpp
-				return *this;
-			}
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
@@ -1571,6 +1569,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 
+	// Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
 	auto operator=(std::initializer_list<value_type> values) -> array& {
 		if(values.size() == 0) {
 			this->clear();
@@ -1580,12 +1579,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& extensions) && -> array&& {  // NOLINT(readability-redundant-typename)
-		if(extensions == this->extensions()) {
+	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
+	auto reextent(typename array::extensions_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
+		if(exts == this->extensions()) {
 			return std::move(*this);
 		}
 
-		auto new_layout = typename array::layout_t{extensions};
+		auto new_layout = typename array::layout_t{exts};
 
 		if(new_layout.num_elements() != this->layout().num_elements()) {
 			this->destroy();
