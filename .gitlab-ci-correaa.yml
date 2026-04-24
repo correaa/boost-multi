@@ -333,6 +333,28 @@ clang++-16 c++20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
+mingw-w64:
+  stage: build
+  image: debian:latest
+  allow_failure: true  # runner not always available
+  # only:
+  #   refs:
+  #     - develop
+  tags:
+    - non-shared
+    - docker
+  cache: []
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet libboost-dev ca-certificates cmake ninja-build g++-mingw-w64-x86-64 git make
+    - x86_64-w64-mingw32-g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1
+        -DCMAKE_SYSTEM_NAME=Windows
+        -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+        -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+  needs: ["g++"]
+
 visual-studio-windows:
   stage: build
   only:
@@ -404,6 +426,7 @@ vs2022-shell c++17:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
+  cache: []
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
@@ -429,6 +452,7 @@ vs2022-shell c++23:
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
   allow_failure: false
+  cache: []
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   only:
     refs:
@@ -440,7 +464,31 @@ vs2022-shell c++23:
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - mkdir build
     - cmake --version
-    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/MP /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1" -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_FLAGS="/MP /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1 /analyze /analyze:WX- /wd6326" -DCMAKE_CXX_STANDARD=23 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - ctest -j 4 --test-dir build --output-on-failure --build-config Debug
+  tags:
+    - windows, shell
+  needs: ["vs2022-shell"]
+  timeout: 30 minutes
+
+vs2022-shell clang-cl:
+  stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job
+  allow_failure: true  # clang-cl may have issues with some Boost headers
+  cache: []
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
+  # only:
+  #   refs:
+  #     - develop
+  script:
+    # - winget install LLVM.LLVM --silent --accept-package-agreements --accept-source-agreements
+    - $env:Path += ";C:\Program Files\LLVM\bin;C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - mkdir build
+    - cmake --version
+    - clang-cl --version
+    - cmake -S . -B build -DCMAKE_CXX_COMPILER="clang-cl" -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="/W4 /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1 /EHsc" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure --build-config Debug
   tags:
