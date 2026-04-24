@@ -343,6 +343,8 @@ mingw-w64:
   tags:
     - non-shared
     - docker
+  cache: []
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   script:
     - apt-get -qq install --no-install-recommends -y --quiet libboost-dev ca-certificates cmake ninja-build g++-mingw-w64-x86-64 git make
     - x86_64-w64-mingw32-g++ --version
@@ -484,7 +486,7 @@ vs2022-shell clang-cl:
     - mkdir build
     - cmake --version
     - clang-cl --version
-    - cmake -S . -B build -DCMAKE_CXX_COMPILER="clang-cl" -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="/W4 /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1 /EHsc" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake -S . -B build -DCMAKE_CXX_COMPILER="clang-cl" -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="/W4 /wd4514 /wd5045 /D_MSVC_STL_HARDENING=1 /EHsc" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure --build-config Debug
   tags:
