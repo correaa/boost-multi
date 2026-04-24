@@ -651,7 +651,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == (*(other.ptr_)).layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == (*other.ptr_).layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
@@ -1526,7 +1526,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
 	constexpr auto stenciled(iextension iex) const& -> basic_const_array { return blocked(iex.first(), iex.last()); }
 	constexpr auto stenciled(iextension iex, iextension iex1) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
@@ -2330,7 +2330,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
-	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // TODO(correaa) make conditionally noexcept
+	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // NOLINT(bugprone-unsafe-to-allow-exceptions) TODO(correaa) make conditionally noexcept
 		// if(this == std::addressof(other)) { return *this; }
 		BOOST_MULTI_ASSERT(this->extension() == other.extension());
 		this->elements() = std::move(other).elements();
