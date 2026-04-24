@@ -1364,13 +1364,6 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
-	// constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	// : dynamic_(
-	// 	  (values.size() == 0) ? array<T, D>{}
-	// 						   : array<T, D>(values.begin(), values.end())
-	//   ) {
-	// }
-
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
 		class Sub,
@@ -1381,6 +1374,15 @@ struct array : dynamic_array<T, D, Alloc> {
 		  (values.size() == 0) ? array<T, D>()()
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
+
+#if defined(__circle_build__)
+	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
+	: dynamic_(
+		  (values.size() == 0) ? array<T, D>{}
+							   : array<T, D>(values.begin(), values.end())
+	  ) {
+	}
+#endif
 
 	/// Default constructor of an empty array (doesn't allocate, doesn't throw)
 	array() noexcept = default;
@@ -1484,12 +1486,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Assignment from @p other array of a different element type (allocates, unless extents are already equal or the number of elements is the same)
 	template<class TT, class AAlloc>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			dynamic_::operator=(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
-			reshape(other.extensions());
+			this->layout_mutable() = typename array::layout_t(other.extensions());
 			dynamic_::operator=(other);
 		} else {
 			operator=(static_cast<array>(other));
@@ -1497,6 +1500,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Assignment from @p other multdimensional range (allocates, unless extents are already equal or the number of elements is the same)
 	template<
 		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
