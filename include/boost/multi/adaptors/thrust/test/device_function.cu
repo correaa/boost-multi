@@ -43,18 +43,20 @@ template<class T> using vector = multi::thrust::host_array<T, 1>;
 int main() {
 	int const N = 8;
 
-	vector<int> d_out(N);
+	{
+		vector<int> d_out(N);
 
-	auto first = thrust::counting_iterator<int>(0);
-	auto last  = first + N;
+		auto first = thrust::counting_iterator<int>(0);
+		auto last  = first + N;
 
-	thrust::transform(
-		thrust::device,
-		first,
-		last,
-		d_out.begin(),
-		[] DEV(int x) { return x * x; }
-	);
+		thrust::transform(
+			thrust::device,
+			first,
+			last,
+			d_out.begin(),
+			[] DEV(int x) { return x * x; }
+		);
+	}
 
 	// auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), [a = 5] __device__(int x) { return x * x + a; });
 	// auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), multi::thrust::device_function<int>([a = 5] __device__(int x) { return x * x + a; }));
@@ -133,7 +135,7 @@ int main() {
 	// CPU memory and execution, iterator holds function by POINTER semantics
 	{
 		auto restr = multi::restricted<1>(
-			[a = 5, b = 0](auto x) { int c = a, d = b; return  x * x + c + d; },
+			[a = 5, b = 0](auto x) -> int { int c = a, d = b; return  x * x + c + d; },
 			{N}
 		);
 
@@ -147,7 +149,7 @@ int main() {
 
 	// CPU memory and execution, iterator holds function by POINTER semantics
 	{
-		auto fun   = [a = 5, b = 0](auto x) { int c = a, d = b; return  x * x + c + d; };
+		auto fun   = [a = 5, b = 0](auto x) -> int { int c = a, d = b; return  x * x + c + d; };
 		auto restr = multi::restricted<1>(
 			multi::val(fun),
 			{N}
