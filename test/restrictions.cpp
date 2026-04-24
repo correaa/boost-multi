@@ -2,15 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// vvv this has no effect, needs to be passed directly from compilation line "-Wno-psabi"
-// #ifdef __GNUC__
-// #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
-// #endif
-
-#if defined(__GNUC__) && (__GNUC__ == 15)
-// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
@@ -307,7 +298,7 @@ int main() {
 	}
 	{
 		multi::array<double, 3> arr;
-		arr = [](auto i, auto j, auto k) { return i + j + k; } ^ multi::extensions_t<3>(2, 3, 4);
+		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extensions_t<3>(2, 3, 4);
 	}
 
 	return boost::report_errors();
