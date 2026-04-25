@@ -651,7 +651,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == (*other.ptr_).layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == *other.ptr_.layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
@@ -3101,11 +3101,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extensions();  // mull-ignore: cxx_init_const
-		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * exts);
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ /*(*/ n * exts /*)*/;
 	}
 
 	constexpr auto repeated(size_type n) const& {
-		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
+		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n * this->extensions() /*)*/;
 	}
 
 	template<template<class...> class Container = std::vector, class... As>
@@ -3199,7 +3199,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
 		return const_subarray(
-			this->layout().drop(count), this->base_ + (count * this->layout().stride() /*- this->layout().offset()*/)  // TODO(correaa) fix need for offset  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			this->layout().drop(count), this->base_ + /*(*/ count * this->layout().stride() /*- this->layout().offset()*/ /*)*/  // TODO(correaa) fix need for offset  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
