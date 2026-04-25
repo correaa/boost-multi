@@ -119,7 +119,7 @@ struct array_allocator {
 #ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // return alloc_ copies std::allocator which NVCC treats as __host__-only
-#pragma nv_exec_check_disable      // suppress the NVCC-frontend "detected during instantiation" variant of the same issue
+#pragma nv_exec_check_disable     // suppress the NVCC-frontend "detected during instantiation" variant of the same issue
 #endif
 	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
 #ifdef __NVCC__
