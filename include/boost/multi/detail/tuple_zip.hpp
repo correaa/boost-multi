@@ -155,6 +155,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  private:
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
@@ -165,6 +168,9 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD  // BOOST_MULTI_DEV
 	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
@@ -441,6 +447,9 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 template<class F, class Tuple, std::size_t... I>
 BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC

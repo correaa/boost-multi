@@ -689,6 +689,41 @@ auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
 
 \end{frame}
 
+\begin{frame}[fragile]{Adaptor example: TBLIS (tensor contractions)}
+
+Without the adaptor, setting up a TBLIS tensor is manual and error-prone:
+\begin{lstlisting}
+double data_A[10*9*2*5];
+tblis::tblis_tensor A;
+tblis::tblis_init_tensor_d(&A, 4,
+    (tblis::len_type[]){10,9,2,5}, data_A,
+    (tblis::stride_type[]){1,10,90,180});  // strides by hand!
+tblis::tblis_tensor_mult(NULL, NULL, &A, "cebf", &B, "afed", &C, "abcd");
+\end{lstlisting}
+
+With the adaptor, \lstinline|multi::array| wraps directly --- strides are derived automatically:
+\begin{lstlisting}
+#include <boost/multi/adaptors/tblis.hpp>
+
+multi::array<double, 4> A({10,9,2,5}), B({7,5,9,8});
+multi::array<double, 4> C({8,10,2,7}, 0.0);
+
+namespace tblis = boost::multi::tblis;
+using namespace tblis::indices;
+
+// C[abcd] += A[cebf] * B[afed]  (Einstein summation)
+tblis::mult( tblis::tensor(A)(c,e,b,f),
+             tblis::tensor(B)(a,f,e,d),
+             tblis::tensor(C)(a,b,c,d) );
+\end{lstlisting}
+
+\begin{itemize}
+  \item Repeated indices are contracted automatically; order is irrelevant
+  \item Supports \lstinline|float|, \lstinline|double|, \lstinline|complex<float/double>|
+\end{itemize}
+
+\end{frame}
+
 \begin{frame}{Real world uses}
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
