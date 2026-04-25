@@ -151,8 +151,7 @@ void move_element_1d_total_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		using std::move;
-		auto vec = move(arr)[2];
+		auto vec = multi::move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 
 		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
