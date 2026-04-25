@@ -116,7 +116,14 @@ struct array_allocator {
 	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
  public:
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 20011  // return alloc_ copies std::allocator which NVCC treats as __host__-only
+#endif
 	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 };
 
 }  // end namespace detail
