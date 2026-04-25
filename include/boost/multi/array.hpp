@@ -704,6 +704,9 @@ struct dynamic_array                                                            
 		assert(this->size() == 0);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable  // TODO(correaa) understand why this is necessary
+#endif
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	constexpr ~dynamic_array()
 #else
