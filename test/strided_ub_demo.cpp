@@ -44,6 +44,11 @@ void test_transposed_subarray_overshoot() {
 	BOOST_TEST( row4[1] == 9 );
 	BOOST_TEST( row4.size() == 2 );
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	// row4.end() forms a pointer at base + 4 + 5*2 = base + 14,
 	// but allocation ends at base + 10.  This is 4 elements past the allocation.
 	// UB under [expr.add], but works on all tested platforms.
@@ -51,6 +56,9 @@ void test_transposed_subarray_overshoot() {
 		(row4.base() + (row4.stride() * row4.size())) - (arr.base() + arr.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)  // readability-math-missing-parentheses
 
 	BOOST_TEST( overshoot == 4 );  // 14 - 10 = 4
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 	// Iteration works because stride divides the subarray's nelems:
 	auto end = row4.end();
