@@ -1062,6 +1062,9 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 	}
 
 	// dynamic_array(dynamic_array&& other) = delete;
+#ifdef __NVCC__
+#pragma nv_exec_check_disable  // noexcept makes NVCC synthesise __host__ __device__; get_allocator() copies std::allocator which is __host__-only
+#endif
 	dynamic_array(dynamic_array&& other) noexcept
 	: array_alloc{other.get_allocator()}, ref(std::exchange(other.base_, nullptr), other.extensions()) {  // should this move the elements? or move the object? or should be deleted?
 		other.layout_mutable() = {};                                                                      // TODO(correaa) eliminate use of mutable member
