@@ -10,6 +10,12 @@
 
 \beamertemplatenavigationsymbolsempty
 
+\AtBeginSection[]{
+  \begin{frame}{Outline}
+  \tableofcontents[currentsection]
+  \end{frame}
+}
+
 \definecolor{kwblue}{RGB}{0,102,204}      % Keywords: blue
 \definecolor{varblack}{RGB}{32,32,32}     % Variables: near-black
 \definecolor{symbolGray}{RGB}{100,100,100} % Operators/symbols: dark gray
@@ -54,6 +60,12 @@
 }
 
 \frame{\titlepage}
+
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
 
 \begin{frame}{A bit about myself}
 \begin{itemize}
@@ -179,6 +191,8 @@ Why proposed to Boost?
 \end{itemize}
 \end{frame}
 
+\section{Array Model}
+
 \begin{frame}{Fundamental View/Layout operations}
 \begin{itemize}
 \item Rotate (indices)\\
@@ -206,6 +220,8 @@ Why proposed to Boost?
   \lstinline|A[_, i]| = \lstinline|A.rotated()[i].unrotated()| \\
 \end{itemize}
 \end{frame}
+
+\section{Lazy Arrays}
 
 \begin{frame}[fragile]{Lazy sequences, the evolution of iota}
 
@@ -331,6 +347,8 @@ multi::array<int, 2> out = T;         // single write into a fresh array
 
 \end{frame}
 
+\section{Undefined Behavior}
+
 \begin{frame}[plain]{The Good, The Bad, and The UB}
 \begin{center}
 \includesvg[height=0.7\textheight]{gbu}
@@ -364,6 +382,8 @@ Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation;
 
 \end{frame}
 
+
+\section{Algorithms \& Performance}
 
 \begin{frame}[fragile]{Algorithm Dispatching}{
 How does the library call the right \texttt{copy\_n} for CPU vs GPU?
@@ -640,6 +660,8 @@ auto row_maxs = multi::reduce_by_index(M,
 
 All executed with full GPU parallelism.
 \end{frame}
+
+\section{Adaptors}
 
 \begin{frame}{Adaptors}
 

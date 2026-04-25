@@ -705,7 +705,9 @@ struct dynamic_array                                                            
 	}
 
 #ifdef __NVCC__
-#pragma nv_exec_check_disable  // TODO(correaa) understand why this is necessary
+#pragma nv_diagnostic push
+// #pragma nv_exec_check_disable  // TODO(correaa) understand why this is necessary
+#pragma nv_diag_suppress = 20011  // implicit subobject destructor calls __host__ ~dynamic_array() from __host__ __device__ context
 #endif
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	constexpr ~dynamic_array()
@@ -718,6 +720,9 @@ struct dynamic_array                                                            
 		assert(this->stride() != 0);
 		deallocate();
 	}
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 
 	// using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element_type const>;
 	using element_const_ptr = typename std::allocator_traits<allocator_type>::const_pointer;
@@ -1392,7 +1397,14 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Copy constructor from @p other (generally allocates)
 	array(array const&) = default;
 
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 20011  // implicit __host__ __device__ ~array calls __host__ ~dynamic_array() [subobject]
+#endif
 	~array() = default;
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 
 	auto reshape(typename array::extensions_type extensions) & -> array& {
 		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
