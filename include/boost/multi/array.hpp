@@ -683,6 +683,10 @@ struct dynamic_array                                                            
 	constexpr auto max_size() const noexcept { return static_cast<typename dynamic_array::size_type>(multi::allocator_traits<allocator_type>::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
  protected:
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 20011  // NVCC attributes the implicit __host__ __device__ ~dynamic_array [subobject] error here
+#endif
 	constexpr void deallocate() {
 		assert(this->stride() != 0);
 		if(this->num_elements()) {
@@ -704,11 +708,6 @@ struct dynamic_array                                                            
 		assert(this->size() == 0);
 	}
 
-#ifdef __NVCC__
-#pragma nv_diagnostic push
-// #pragma nv_exec_check_disable  // TODO(correaa) understand why this is necessary
-#pragma nv_diag_suppress = 20011  // implicit subobject destructor calls __host__ ~dynamic_array() from __host__ __device__ context
-#endif
 #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 	constexpr ~dynamic_array()
 #else
@@ -1372,6 +1371,10 @@ struct array : dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename dynamic_array<T, D, Alloc>::value_type;
 
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 20011  // NVCC attributes the implicit __host__ __device__ ~array error to temporaries destroyed inside these constructors
+#endif
 	/// Initializer list constructor from a list of subarray @p values (allocates)
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	: dynamic_(
@@ -1397,10 +1400,6 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Copy constructor from @p other (generally allocates)
 	array(array const&) = default;
 
-#ifdef __NVCC__
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = 20011  // implicit __host__ __device__ ~array calls __host__ ~dynamic_array() [subobject]
-#endif
 	~array() = default;
 #ifdef __NVCC__
 #pragma nv_diagnostic pop
