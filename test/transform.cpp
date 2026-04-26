@@ -18,6 +18,12 @@
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
+#ifndef BOOST_MULTI_HD
+#define BOOST_MULTI_HD __host__ __device__
+#else
+#define BOOST_MULTI_HD
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4626)  // assignment operator was implicitly defined as deleted
 #endif
@@ -105,6 +111,7 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
+	BOOST_MULTI_HD
 	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }

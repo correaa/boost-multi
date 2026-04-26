@@ -415,12 +415,5 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-
-		target_compile_options(allocator.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(minimalistic_ptr.cpp.x  PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(move.cpp.x              PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(member_array_cast.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(transform.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(conor.cpp.x             PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-psabi> )
 	endif()
 endif()
