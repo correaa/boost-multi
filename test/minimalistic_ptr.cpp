@@ -12,12 +12,6 @@
 #include <memory>       // for allocator
 #include <type_traits>  // for is_same, is_convertible, enable...
 
-#ifndef BOOST_MULTI_HD
-#define BOOST_MULTI_HD __host__ __device__
-#else
-#define BOOST_MULTI_HD
-#endif
-
 namespace multi = boost::multi;
 
 namespace minimalistic {
@@ -36,7 +30,7 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ;
-	BOOST_MULTI_HD ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 
@@ -77,7 +71,7 @@ class ptr2 : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-link
 	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
-	BOOST_MULTI_HD ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
