@@ -1393,22 +1393,12 @@ struct array : dynamic_array<T, D, Alloc> {
 							   : array<T, D>(values.begin(), values.end())
 	  ) {
 	}
+#endif
 
-	/// Initializer list constructor from a list of subarray @p values (allocates)
-	template<
-		class OtherT,
-		std::enable_if_t<                                                                                                                                                                 // NOLINT(modernize-use-constraints) for C++20
-			std::is_constructible_v<typename dynamic_array<T, D>::value_type, OtherT> && !std::is_convertible_v<OtherT, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<OtherT> values)                                                                                                                        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
-	: dynamic_(
-		  (values.size() == 0) ? array<T, D>()()
-							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
-	  ) {}
+	/// Default constructor of an empty array (doesn't allocate, doesn't throw)
+	array() noexcept = default;
 
-	/// Default constructor of an empty array (doesn't allocates, doesn't throw)
-	array() = default;
-
-	/// Copy constructor from @p other (generally allocates)
+	/// Copy constructor from @p other array (generally allocates)
 	array(array const&) = default;
 
 	~array() = default;
@@ -1416,13 +1406,13 @@ struct array : dynamic_array<T, D, Alloc> {
 #pragma nv_diagnostic pop
 #endif
 
-	auto reshape(typename array::extensions_type extensions) & -> array& {
-		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
-		assert(new_layout.num_elements() == this->num_elements());
-		this->layout_mutable() = new_layout;
-		assert(this->stride() != 0);
-		return *this;
-	}
+	// auto reshape(typename array::extensions_type extensions) & -> array& {
+	// 	typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
+	// 	assert(new_layout.num_elements() == this->num_elements());
+	// 	this->layout_mutable() = new_layout;
+	// 	assert(this->stride() != 0);
+	// 	return *this;
+	// }
 
 	/// Clear the values of array, making it empty (doesn't throw)
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
@@ -1430,16 +1420,15 @@ struct array : dynamic_array<T, D, Alloc> {
 		assert(this->stride() != 0);
 		return *this;
 	}
-	// friend auto clear(array& self) noexcept -> array& { return self.clear(); }
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
-	friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
+	// friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
 	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
-	/// Copy constructor from @p other and sets the allocator @p alloc (generally allocates)
+	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
 	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {}
 
@@ -1472,17 +1461,15 @@ struct array : dynamic_array<T, D, Alloc> {
 			this->alloc() = std::move(other.alloc());
 		}
 		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extensions_type{}));
-		assert(this->stride() != 0);
-		assert(other.stride() != 0);
 		return *this;
 	}
 
-	/// Copy assignment from @p other (allocates, unless extents are equal)
+	/// Copy assignment from @p other array (allocates unless extents are already equal)
 	auto operator=(array const& other) -> array& {
+		if(this == &other) {  // required by cert-oop54-cpp
+			return *this;
+		}
 		if(array::extensions() == other.extensions()) {
-			if(this == &other) {  // required by cert-oop54-cpp
-				return *this;
-			}
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
@@ -1512,12 +1499,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Assignment from @p other array of a different element type (allocates, unless extents are already equal or the number of elements is the same)
 	template<class TT, class AAlloc>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			dynamic_::operator=(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
-			reshape(other.extensions());
+			this->layout_mutable() = typename array::layout_t(other.extensions());
 			dynamic_::operator=(other);
 		} else {
 			operator=(static_cast<array>(other));
@@ -1525,6 +1513,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
+	/// Assignment from @p other multdimensional range (allocates, unless extents are already equal or the number of elements is the same)
 	template<
 		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
@@ -1534,7 +1523,12 @@ struct array : dynamic_array<T, D, Alloc> {
 		if(array::extensions() == other.extensions()) {
 			this->operator()() = std::forward<Range>(other);
 		} else if(this->num_elements() == other.extensions().num_elements()) {
-			reshape(other.extensions());
+			typename array::layout_t const new_layout{other.extensions()};
+			assert(new_layout.num_elements() == this->num_elements());
+			this->layout_mutable() = new_layout;
+			assert(this->stride() != 0);
+			// return *this;
+			// reshape(other.extensions());
 			this->operator()() = std::forward<Range>(other);
 		} else {
 			operator=(static_cast<array>(std::forward<Range>(other)));
@@ -1592,6 +1586,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 
+	// Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
 	auto operator=(std::initializer_list<value_type> values) -> array& {
 		if(values.size() == 0) {
 			this->clear();
@@ -1601,12 +1596,13 @@ struct array : dynamic_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& extensions) && -> array&& {  // NOLINT(readability-redundant-typename)
-		if(extensions == this->extensions()) {
+	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
+	auto reextent(typename array::extensions_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
+		if(exts == this->extensions()) {
 			return std::move(*this);
 		}
 
-		auto new_layout = typename array::layout_t{extensions};
+		auto new_layout = typename array::layout_t{exts};
 
 		if(new_layout.num_elements() != this->layout().num_elements()) {
 			this->destroy();
