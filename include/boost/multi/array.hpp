@@ -116,6 +116,9 @@ struct array_allocator {
 	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
  public:
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
 };
 
@@ -683,6 +686,10 @@ struct dynamic_array                                                            
 	constexpr auto max_size() const noexcept { return static_cast<typename dynamic_array::size_type>(multi::allocator_traits<allocator_type>::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
  protected:
+#ifdef __NVCC__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = 20011  // implicit __host__ __device__ ~dynamic_array [subobject] calls __host__ ~dynamic_array(); error attributed to deallocate() body
+#endif
 	constexpr void deallocate() {
 		assert(this->stride() != 0);
 		if(this->num_elements()) {
@@ -715,6 +722,9 @@ struct dynamic_array                                                            
 		assert(this->stride() != 0);
 		deallocate();
 	}
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 
 	// using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element_type const>;
 	using element_const_ptr = typename std::allocator_traits<allocator_type>::const_pointer;
@@ -1391,6 +1401,9 @@ struct array : dynamic_array<T, D, Alloc> {
 	array(array const&) = default;
 
 	// Destructor, deallocates memory and destroys elements
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	~array() noexcept = default;
 
 	// auto reshape(typename array::extensions_type extensions) & -> array& {
