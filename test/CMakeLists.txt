@@ -63,7 +63,7 @@ else()
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		#remove Xcompile for Windows?
 		#-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
-		#--Werror=cross-execution-space-call
+		--Werror=cross-execution-space-call
 		#--Werror ext-lambda-captures-this
 		#--use_fast_math --extra-device-vectorization --restrict
 		-Xcudafe=--display_error_number
@@ -415,12 +415,5 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-
-		target_compile_options(allocator.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(minimalistic_ptr.cpp.x  PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(move.cpp.x              PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(member_array_cast.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(transform.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(conor.cpp.x             PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-psabi> )
 	endif()
 endif()

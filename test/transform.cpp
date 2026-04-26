@@ -105,7 +105,7 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
-	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
+	constexpr explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
 	// cppcheck-suppress redundantPointerOp ; lib idiom
