@@ -182,9 +182,11 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PR
 install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
-  find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+#  find_package(Boost QUIET COMPONENTS headers)
+# find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost CONFIG QUIET)  # you can use your own Boost with `cmake -DBOOST_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
-    message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
+    message(WARNING "Cannot find Boost, Multi library will not be fully tested.\n  Install with: sudo apt install --no-install-recommends libboost-dev")
   else()
     enable_testing()
 
