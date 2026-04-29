@@ -1133,7 +1133,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(marr[5] == 99);
 		}
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-#if defined(__cpp_lib_span)
+#ifdef __cpp_lib_span
 #if !defined(__clang__) || (__clang_major__ > 14)
 #if defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 11
 		{

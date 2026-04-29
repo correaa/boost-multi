@@ -199,10 +199,10 @@ class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(corre
 		// 	};
 	};
 
-	constexpr auto begin() const {
+	constexpr auto begin() const noexcept {
 		return iterator{
 			stdx::head(static_cast<std::tuple<Ext, Exts...> const&>(*this)).begin(),
-			std::apply([](auto... xs) { return extents_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
+			std::apply([](auto... xs) noexcept { return extents_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
 		};
 	}
 

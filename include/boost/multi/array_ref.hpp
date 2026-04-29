@@ -404,7 +404,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 #endif
 
 	ElementPtr                                                 base_;
-	typename std::iterator_traits<ElementPtr>::difference_type offset_;  // = []() { assert(0); return 0; } ();
+	typename std::iterator_traits<ElementPtr>::difference_type offset_;
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -651,7 +651,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == (*other.ptr_).layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == *other.ptr_.layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
@@ -3101,11 +3101,11 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extensions();  // mull-ignore: cxx_init_const
-		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ (n * exts);
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ /*(*/ n * exts /*)*/;
 	}
 
 	constexpr auto repeated(size_type n) const& {
-		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ (n * this->extensions());
+		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n * this->extensions() /*)*/;
 	}
 
 	template<template<class...> class Container = std::vector, class... As>
@@ -3197,11 +3197,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-
 		return const_subarray(
-			this->layout().drop(count), this->base_ + (count * this->layout().stride() /*- this->layout().offset()*/)  // TODO(correaa) fix need for offset  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			this->layout().drop(count), this->base_ + /*(*/ count * this->layout().stride() /*- this->layout().offset()*/ /*)*/  // TODO(correaa) fix need for offset  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);
-
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
@@ -3680,7 +3678,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-#if defined(__cpp_lib_span)
+#ifdef __cpp_lib_span
 	template<class Dummy = void*, std::enable_if_t<sizeof(Dummy) && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// explicit converts a more primitive type into a more powerful type (also removing explicit generates a problem with nvc++ 26)
 	explicit constexpr array_ref(std::span<typename array_ref::element_type>&& data_ref)
