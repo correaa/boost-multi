@@ -651,8 +651,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 #ifdef __CUDA_ARCH__
 				return (const_cast<decltype(*Pproj_)&>(*Pproj_))(get<0>(*it_));  // workaround for __nv_dl_wrapper_t<__nv_dl_tag<int (*)(), main, 4>, int, int> >
 #else
-				// return (*Pproj_)(get<0>(*it_));
-				return Pproj_->operator()(get<0>(*it_));
+				return (*Pproj_)(get<0>(*it_));  // NOLINT(readability-redundant-parentheses) // bug in clang-tidy, can't be -> for CUDA
 #endif
 			}
 		}
