@@ -362,7 +362,7 @@ class adl_uninitialized_copy_n_t {
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
 		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >  // NOLINT(modernize-use-constraints) for C++20
 	>
-	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {
+	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
 		} else {
@@ -630,18 +630,19 @@ class adl_destroy_n_t {
 inline constexpr adl_destroy_n_t adl_destroy_n;
 
 class adl_alloc_destroy_n_t {
- template<class Alloc, class... As> constexpr auto _(priority<1> /**/, Alloc&& /*unused*/, As&&... args) const BOOST_MULTI_DECLRET(adl_destroy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
-#ifdef BOOST_MULTI_ADL_HAS_THRUST
-	 template<class Alloc, class It, class Size>
-	 constexpr auto _(priority<2> /**/, Alloc& alloc, It first, Size n) const BOOST_MULTI_DECLRET((thrust::detail::destroy_range(alloc, first, first + n)))
-#endif
-		 template<class... As>
-		 constexpr auto _(priority<3> /**/, As&&... args) const BOOST_MULTI_DECLRET(multi::alloc_destroy_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
-	 template<class... As>
-	 constexpr auto _(priority<4> /**/, As&&... args) const BOOST_MULTI_DECLRET(alloc_destroy_n(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<5> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::alloc_destroy_n(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_destroy_n(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<1> /**/, Alloc&& /*unused*/, As&&... args) const BOOST_MULTI_DECLRET(adl_destroy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
+	#ifdef BOOST_MULTI_ADL_HAS_THRUST  // CLANG_FORMAT_OFF
+	template<class Alloc, class It, class Size>
+	constexpr auto _(priority<2> /**/, Alloc& alloc, It first, Size n) const BOOST_MULTI_DECLRET((thrust::detail::destroy_range(alloc, first, first + n)))  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	#endif  // DO_NOT_FORMAT
+	template<class... As>
+	constexpr auto _(priority<3> /**/, As&&... args) const BOOST_MULTI_DECLRET(multi::alloc_destroy_n(std::forward<As>(args)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>
+	constexpr auto _(priority<4> /**/, As&&... args) const BOOST_MULTI_DECLRET(alloc_destroy_n(std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<5> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::alloc_destroy_n(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_destroy_n(std::forward<As>(args)...))
 
-		 public : template<class... As>
-				  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
+ public:
+ 	template<class... As>
+	constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
 };
 inline constexpr adl_alloc_destroy_n_t adl_alloc_destroy_n;
 
