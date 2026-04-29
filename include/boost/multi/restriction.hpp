@@ -466,14 +466,14 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
 	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
-		return bind_repeat_t{proj_} ^ (n * extensions());
+		return bind_repeat_t{proj_} ^ n * extensions();
 	}
 
 	struct bind_partitioned_t {
 		Proj      proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(ii * nn_ + jj, rest...); }
 	};
 
 	BOOST_MULTI_HD constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t> {
@@ -651,7 +651,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 #ifdef __CUDA_ARCH__
 				return (const_cast<decltype(*Pproj_)&>(*Pproj_))(get<0>(*it_));  // workaround for __nv_dl_wrapper_t<__nv_dl_tag<int (*)(), main, 4>, int, int> >
 #else
-				return (*Pproj_)(get<0>(*it_));
+				return (*Pproj_)(get<0>(*it_));  // NOLINT(readability-redundant-parentheses) // bug in clang-tidy, can't be -> for CUDA
 #endif
 			}
 		}
