@@ -54,7 +54,7 @@ template<class R, class V = stdr::range_value_t<R>>
 constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-naming,misc-use-internal-linkage)
 	// fmt::print("M");
 	std::cout << 'M';
-#if defined(__cpp_lib_ranges_fold)
+#ifdef __cpp_lib_ranges_fold
 	return stdr::fold_left(rng, std::numeric_limits<V>::lowest(), stdr::max);
 #else
 	return std::accumulate(rng.begin(), rng.end(), std::numeric_limits<V>::lowest(), stdr::max);
@@ -64,7 +64,7 @@ constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-
 constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOLINT(fuchsia-default-arguments-declarations)
 	// fmt::print("S");
 	std::cout << 'S';
-#if defined(__cpp_lib_ranges_fold)
+#ifdef __cpp_lib_ranges_fold
 	return stdr::fold_left(rng, zero, std::plus<>{});
 #else
 	return std::accumulate(rng.begin(), rng.end(), zero);

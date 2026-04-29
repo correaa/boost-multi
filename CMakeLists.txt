@@ -106,6 +106,7 @@ if(NOT ENABLE_CIRCLE)
       -Wno-c++17-extensions
       -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
       -Wno-padded
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-nrvo>
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
     >
     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
@@ -184,7 +185,7 @@ install(DIRECTORY "include/" TYPE INCLUDE)
 if(MULTI_BUILD_TESTS)
 #  find_package(Boost QUIET COMPONENTS headers)
 # find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
-  find_package(Boost CONFIG QUIET)  # you can use your own Boost with `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost CONFIG QUIET)  # you can use your own Boost with `cmake -DBoost_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
     message(WARNING "Cannot find Boost, Multi library will not be fully tested.\n  Install with: sudo apt install --no-install-recommends libboost-dev")
   else()

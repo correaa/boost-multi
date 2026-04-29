@@ -50,7 +50,7 @@ if(NOT PKG_CONFIG_FOUND)
 	return()
 endif()
 
-pkg_search_module(
+pkg_search_module(  # install fftw if necessary: sudo apt install libfftw3-dev 
 	FFTW
 	REQUIRED
 	fftw3

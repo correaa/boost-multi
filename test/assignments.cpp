@@ -27,7 +27,7 @@ constexpr auto make_ref(int* ptr) {
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator const& alloc) {
 	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
-	std::fill(ret.diagonal().begin(), ret.diagonal().end(), 1);
+	std::fill(ret.diagonal().begin(), ret.diagonal().end(), T{1});
 	return ret;
 }
 
