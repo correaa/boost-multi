@@ -434,7 +434,7 @@ struct dynamic_array                                                            
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extensions()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)                                                                              // fill constructor
+	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)
 	: dynamic_array(extension, value, allocator_type{}) {}
 
 	explicit dynamic_array(::boost::multi::extensions_t<D> const& extensions, allocator_type const& alloc)
@@ -541,15 +541,15 @@ struct dynamic_array                                                            
 	constexpr dynamic_array(multi::subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: dynamic_array(std::move(other), allocator_type{}) {}
 
-	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-																																											   // cppcheck-suppress noExplicitConstructor ; to allow terse syntax
+	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
+	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>  // cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>& other)                                                                                                                  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...>& other)                                                                                                                    // moLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...>& other)
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
 	}
@@ -1643,12 +1643,17 @@ struct array : dynamic_array<T, D, Alloc> {
 		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element_type> || multi::force_element_trivial_default_construction<typename array::element_type>)) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
+
 		auto const is = intersection(this->extensions(), extensions);
+
 		tmp.apply(is) = this->apply(is);  // TODO(correaa) : use (and implement) `.move();`
+
 		this->destroy();
 		this->deallocate();
+
 		this->base_            = tmp.base();
 		this->layout_mutable() = tmp.layout();
+
 		return *this;
 	}
 
