@@ -1745,7 +1745,7 @@ struct layout_t
 			this->sub(),
 			this->stride(),
 			this->offset(),
-			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
+			this->is_empty() ? 0 : this->nelems() / this->size() * (last - first)
 		);
 	}
 
