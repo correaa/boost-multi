@@ -786,9 +786,9 @@ cuda-11.6.1:
     - non-shared
     - nvidia-gpu
     - x86_64
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
