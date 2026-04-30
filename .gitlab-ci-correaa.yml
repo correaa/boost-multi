@@ -339,9 +339,9 @@ mingw-w64:
   stage: build
   image: debian:latest
   allow_failure: true  # runner not always available
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker
