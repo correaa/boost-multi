@@ -542,7 +542,8 @@ struct dynamic_array                                                            
 	: dynamic_array(std::move(other), allocator_type{}) {}
 
 	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
-	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>  // cppcheck-suppress noExplicitConstructor ; to allow terse syntax
+	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
 	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>& other)                                                                                                                  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
