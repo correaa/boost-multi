@@ -19,6 +19,10 @@ else()
 
 	enable_testing()
 
+	if(MSVC)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+	endif()
+
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 	# option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
