@@ -674,8 +674,8 @@ inline constexpr adl_alloc_uninitialized_copy_n_t adl_alloc_uninitialized_copy_n
 
 class alloc_uninitialized_move_n_t {
 	// TODO(correaa) : fallback to no alloc version
-	template<class... As> static constexpr auto _(priority<1> /**/, As&&... args) { return (xtd::alloc_uninitialized_move_n(std::forward<As>(args)...)); }
- template<class... As> static constexpr auto    _(priority<2> /**/, As&&... args) BOOST_MULTI_DECLRET(alloc_uninitialized_move_n(std::forward<As>(args)...)) template<class T, class... As> static constexpr auto _(priority<3> /**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
+	template<class... As> static constexpr auto _(priority<1> /**/, As&&... args) { return xtd::alloc_uninitialized_move_n(std::forward<As>(args)...); }
+	template<class... As> static constexpr auto _(priority<2> /**/, As&&... args) BOOST_MULTI_DECLRET(alloc_uninitialized_move_n(std::forward<As>(args)...)) template<class T, class... As> static constexpr auto _(priority<3> /**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_move_n(std::forward<As>(args)...))
 
 	 public : template<class... As>
 			  constexpr auto operator()(As&&... args) const { return _(priority<3>(), std::forward<As>(args)...); }
