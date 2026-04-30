@@ -56,7 +56,7 @@ class iterator_facade {
 
 	// friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
 
-	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
+	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return self < other || self == other; }
 	friend constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
 	friend constexpr auto operator>=(self_type const& self, self_type const& other) { return !(self < other); }
 
