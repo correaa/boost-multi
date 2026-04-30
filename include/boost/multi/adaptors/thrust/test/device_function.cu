@@ -135,7 +135,7 @@ int main() {
 	// CPU memory and execution, iterator holds function by POINTER semantics
 	{
 		auto restr = multi::restricted<1>(
-			[a = 5, b = 0](auto x) -> int { int c = a, d = b; return  x * x + c + d; },
+			[a = 5, b = 0](auto x) -> int { int c = a, d = b; return static_cast<int>(x * x + c + d); },
 			{N}
 		);
 
@@ -149,7 +149,7 @@ int main() {
 
 	// CPU memory and execution, iterator holds function by POINTER semantics
 	{
-		auto fun   = [a = 5, b = 0](auto x) -> int { int c = a, d = b; return  x * x + c + d; };
+		auto fun   = [a = 5, b = 0](auto x) -> int { int c = a, d = b; return static_cast<int>(x * x + c + d); };
 		auto restr = multi::restricted<1>(
 			multi::val(fun),
 			{N}
