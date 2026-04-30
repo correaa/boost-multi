@@ -19,8 +19,8 @@ else()
 
 	enable_testing()
 
-	if(MSVC)
-		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+	if(MSVC AND CMAKE_CUDA_COMPILER)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 	endif()
 
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
