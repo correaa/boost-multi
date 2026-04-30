@@ -339,9 +339,9 @@ mingw-w64:
   stage: build
   image: debian:latest
   allow_failure: true  # runner not always available
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker
@@ -481,9 +481,9 @@ vs2022-shell clang-cl:
   allow_failure: true  # clang-cl may have issues with some Boost headers
   cache: []
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   script:
     # - winget install LLVM.LLVM --silent --accept-package-agreements --accept-source-agreements
     - $env:Path += ";C:\Program Files\LLVM\bin;C:/vcpkg/installed/x64-windows/bin;${CI_PROJECT_DIR}/vcpkg/installed/x64-windows/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
@@ -786,9 +786,9 @@ cuda-11.6.1:
     - non-shared
     - nvidia-gpu
     - x86_64
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
