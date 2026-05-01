@@ -1,6 +1,9 @@
 \documentclass[t,aspectratio=169,handout]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
+\usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings}
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage[T1]{fontenc}
@@ -8,7 +11,36 @@
 \usepackage{ulem}
 \usepackage{svg}
 
+\usepackage{emoji}
+\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
+
 \beamertemplatenavigationsymbolsempty
+
+% define some styles
+\tikzset{
+   paper/.style={draw=black!10, blur shadow,
+                 lower left=white, upper left=black!5, upper right=white, lower right=white},
+   irregular border/.style={decoration={random steps, segment length=3mm, amplitude=1mm},
+           decorate,
+     },
+   ragged border/.style={ decoration={random steps, segment length=7mm, amplitude=2mm},
+           decorate,
+   }
+}
+
+% Macro to draw the shape behind the text, when it fits completly in the
+% page
+\def\tornpaper#1{
+\tikz{
+  \node[inner sep=0em] (A) {#1};  % Draw the text of the node
+  \begin{pgfonlayer}{background}  % Draw the shape behind
+  \fill[paper] % recursively decorate the bottom border
+        decorate[irregular border]{decorate{decorate{decorate{decorate[ragged border]{
+        ($(A.south east) - (0, random*5mm)$) -- ($(A.south west) - (0, random*5mm)$)
+        }}}}}
+        -- (A.north west) -- (A.north east) -- cycle;
+  \end{pgfonlayer}}
+}
 
 \AtBeginSection[]{
   \begin{frame}{Outline}
@@ -32,7 +64,7 @@
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{red},
   keywordstyle=[2]\color{kwblue}\bfseries,
-  morekeywords=[2]{array,subarray,inplace_array,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
+  morekeywords=[2]{array,array_ref,restriction,dynamic_array,subarray,const_subarray,inplace_array,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
   morekeywords=[3]{multi},
   keywordstyle=[3]\color{kwblue},
   backgroundcolor=\color{codebackground},
@@ -42,7 +74,7 @@
   literate={->}{{$\rightarrow$}}2
 }
 
-\lstMakeShortInline[backgroundcolor=\color{codebackground}]|
+%\lstMakeShortInline[backgroundcolor=\color{codebackground}]|
 
 \title{Generic Programming for Multidimensional Arrays}
 \author{Alfredo A. Correa}
@@ -68,23 +100,62 @@
 \section{Introduction}
 
 \begin{frame}{A bit about myself}
-\begin{itemize}
-  \item Physicist
-  \item Group Leader at the `Quantum Simulations Group' at Lawrence Livermore Lab
-  \item UC Berkeley -> LLNL -> Stanford -> LLNL
-  \item Simulating Quantum Mechanics (with Classical Computers, for now)
-\end{itemize}
+  \begin{itemize}
+    \item Physicist, (Condensed Matter Physics)
+    \item Group Leader at the \textit{Quantum Simulations Group} at Lawrence Livermore Lab (California)
+    %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
+    \item Simulating Quantum Mechanics (with Classical Computers, HPC, GPUs) \\
+      ~
+    \item LLNL Representative at the C++ Standards Committee \\
+      ~
+    % \item \textsc{Multi} Multi-dimensional arrays in C++
+    % \item \textsc{B-MPI3} C++ wrapper for the MPI 3.0 standard (MP, RMA, ShMem) \\
+    %   ~
+    \item \textsc{Inq} Electronic structure code for ground state and time dependent
+    \item \textsc{QMCPACK} Quantum Montecarlo for accurate energies of molecules
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{My C++ journey}
 \begin{itemize}
-  \item Solid state physics (materials simulations)
+  \item Condensed Matter Physics (materials simulations)
   \item Community is historically FORTRAN-based
   \item Always in search for the perfect language for simulations (tried Mathematica, C, Smalltalk, Matlab)
   \item Many false starts with C++, object-oriented, pointless template MP, multiple dispatching, DSLs
   \item ...until I found Stepanov's works, understood the STL, all clicked
   \item Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
 \end{itemize}
+\end{frame}
+
+\begin{frame}{Family tree of languages at Computer History Museum, San José, CA}
+  \centering
+  \includegraphics[width=7cm]{programming-languages}
+  \includegraphics[width=5cm]{fortran-for-precedent}
+\end{frame}
+
+\begin{frame}{Don't worry, we are still programming in Fortran, sort of.}
+	\centering
+	\includesvg[scale=0.85, pretex=\tiny]{languages}
+
+	{\footnotesize ``John [Backus] was very impressed... he always knew that... he needed to figure out how to work mutation into functional programming
+	and... generic programming is functional programming with a well-defined way to handle mutation.''
+	(Sean Parent, 2018, \emph{`Greatest Common Measure'}, \href{https://youtu.be/FtZEU9zv9eM}{\texttt{youtu.be/FtZEU9zv9eM}})}
+\end{frame}
+
+\begin{frame}{We need philosophy (mathematics) to program, specially libraries}
+
+	\begin{quote}
+		What kind of programs are not mathematical? Programs that are insecure, programs that
+		crash, programs that cannot be easily modified are examples of non-mathematical software.
+		There is, of course, a solid economic reason for producing such programs: they assure
+		world domination on a large scale and job security on a small scale. -- Alex Stepanov, \emph{Notes on the foundations of programming, 2005}
+	\end{quote}
+
+	\noindent\makebox[\linewidth]{\resizebox{0.3333\linewidth}{1pt}{$\bullet$}}\pause
+
+	\begin{quote}
+		[Guys!] We should use formal methods even when we write XML stuff. -- Alex Stepanov (2003), \href{https://youtu.be/fanm5y00joc?t=6723}{\texttt{youtu.be/fanm5y00joc}}
+	\end{quote}
 \end{frame}
 
 \begin{frame}{Multidimensional Arrays}
@@ -102,7 +173,7 @@
   }
 
   % --- 2D ---
-  \node[anchor=east] at (4.0, 2.65) {\textbf{2D}};
+  \node[anchor=east] at (4.0, 2.15) {\textbf{2D}};
   % row 0
   \draw (4.2, 1.7) rectangle (5.1, 2.6); \node at (4.65, 2.15) {f};
   \draw (5.1, 1.7) rectangle (6.0, 2.6); \node at (5.55, 2.15) {g};
@@ -162,9 +233,149 @@
 
 \bigskip
 \begin{alertblock}{2026}
-  \large Is 2026 \textbf{the year of C++ as an array language}?
+  \large Is 2026 \textbf{the year of C++ as an array language}? :)
 \end{alertblock}
 
+\end{frame}
+
+\begin{frame}[fragile]{Semiregular types (Stepanov Regularity, EoP)}
+	\begin{center}\includegraphics[height=3cm]{eop}\end{center}
+	\begin{lstlisting}
+struct SR {
+	 SR();  // default constructible
+	 SR(SR const& other);  // copy constructible
+	~SR();  // destructible
+	auto operator=(SR const& r) -> R&;  // assignment
+};
+\end{lstlisting}
+	... and also the semantics is the expected one.
+
+	Available algorithms: \emph{swap} (\lstinline{std::swap})
+\end{frame}
+
+\begin{frame}[fragile]{Regular = Semiregular + has equality}
+
+	\begin{lstlisting}
+struct R { ...
+	auto operator==(R const& other) const -> bool;
+	auto operator!=(R const& other) const -> bool;  // neg
+};
+\end{lstlisting}
+	\pause
+	in C++20
+	\begin{lstlisting}
+struct R { ...
+	auto operator==(R const& other) const -> bool;  // = default;  
+	// ^^^ synthesizes !=
+};
+\end{lstlisting}
+
+	Some types might not have equality in practice because it could be prohibitivelly expensive or the algorithm for equality is not known.
+
+	Available algorithms: \emph{linear-search} (\lstinline{std::find})
+\end{frame}
+
+\begin{frame}[fragile]{PartialOrder = Regular + has order}
+
+	\begin{lstlisting}
+struct PO { ...
+	bool operator< (PO const& other) const;
+	bool operator> (PO const& other) const;
+	bool operator>=(PO const& other) const; 
+	bool operator<=(PO const& other) const; 
+};
+\end{lstlisting}
+	\pause
+	in C++20
+	\begin{lstlisting}
+struct PO { ...
+	auto operator== (P const& other) const = default;
+	auto operator<  (P const& other) const = default;
+	auto operator<=>(P const& other) const = default;
+	// ^^^ synthesizes <=, >=, >,
+};
+\end{lstlisting}
+
+	Available algorithms: \emph{sort} (\lstinline{std::sort}), \emph{binary-search} (\lstinline{std::lower_bound})
+\end{frame}
+
+\begin{frame}[fragile]{TotalOrder = PartialOrder + has tricotomy}
+
+	tricotomy: Not $a < b$ and not $a > b$ $\Rightarrow a == b$
+
+	\begin{lstlisting}
+struct TO { ...
+	bool operator< (TO const& other) const;
+	bool operator> (TO const& other) const;
+	bool operator>=(TO const& other) const; 
+	bool operator<=(TO const& other) const; 
+};
+\end{lstlisting}
+
+	in C++20
+	\begin{lstlisting}
+struct TO { ...
+	auto operator<  (TO const& other) const = default;
+	auto operator<=>(TO const& other) const = default;
+	// ^^^ synthesizes ==, !=, >, <=, >=
+};
+\end{lstlisting}
+
+Available algorithms: same as before, but can be more efficient.
+
+\end{frame}
+
+\begin{frame}[fragile]{Claim: 	(Semi)Regular types are amenable to equational reasoning.}
+
+	\underline{Modern C++ is based around them}
+
+	\begin{alertblock}{Litmus test for your type \lstinline{T}}
+		Quick test for your types, does this compile? does it do the expected thing?
+		\begin{lstlisting}
+std::vector<T> v = {r1, r2, r3};
+std::sort( v.begin(), v.end() );
+assert( std::is_sorted(v.begin(), v.end() );
+\end{lstlisting}
+	\end{alertblock}
+\pause
+	A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
+	\begin{lstlisting}
+coocooLib::array a; coocooLib::array b;
+a = b;  // look how smart (?), a now "points" to b
+a.copy(b);  // inflation of syntax
+a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Values = Regular + platonic / persistent}
+
+	Values are Regular types that are also amenable to \emph{mathematical}, \emph{equational}, \emph{logical} reasoning, e.g. \emph{arithmetic}.
+	Mathematics and numerical mathematics is based around them.
+
+\pause
+
+	Values = Regular + saving/loading to a medium (serialization)
+
+	\begin{lstlisting}
+struct Value { ...
+	void save(Archive& ar) const;
+	void load(Archive& ar);
+};
+\end{lstlisting}
+	\begin{lstlisting}
+void print(Value const&); void read(Value &);
+\end{lstlisting}
+	\begin{lstlisting}
+auto operator<<(std::ostream& out, Value const& self) {...}
+auto operator>>(std::istream& out, Value &      self) {...}
+\end{lstlisting}
+
+	\begin{alertblock}{Drawback}
+		There is no standard way to serialize in C++.
+		It is up to us to adopt a convention, protocol(s) or a standard.
+	\end{alertblock}
+
+	Boost.Serialization, Cereal, Google's protobuf, ...
 \end{frame}
 
 \begin{frame}
@@ -226,12 +437,13 @@ A(1, 2) = 3.14;  // equivalent
 \begin{table}
 \small
 \begin{tabular}{llll}
-\textbf{Type} & \textbf{Owns?} & \textbf{Mutable?} & \textbf{Returned by} \\
+\textbf{Type} & \textbf{Owns?} & \textbf{Mutable elements?} & \textbf{Returned by} \\
 \hline
-\lstinline|array<T, D>|          & Yes & Yes & you create it \\
-\lstinline|array_ref<T, D>|      & No  & Yes & wrapping raw pointer \\
-\lstinline|subarray<T, D>|       & No  & Yes & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
-\lstinline|const_subarray<T, D>| & No  & No  & from \lstinline|const| array \\
+\lstinline|multi::array<T, D>|          & Yes & Yes & you create it \\
+\lstinline|multi::array_ref<T, D>|      & No  & Yes & wrapping raw pointer \\
+\lstinline|multi::subarray<T, D>|       & No  & Yes & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
+\lstinline|multi::const_subarray<T, D>| & No  & No  & from \lstinline|const| array \\
+\lstinline|multi::dynamic_array<T, D>|  & Yes & Yes & from \lstinline|const| array \\
 \end{tabular}
 \end{table}
 
@@ -328,6 +540,39 @@ B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
 
 \end{frame}
 
+
+\begin{frame}[fragile]{}
+    \begin{center}
+    \tornpaper{
+        \includegraphics[height=0.4\textheight]{parent_coordinates}
+    }
+    \end{center}
+\pause
+    \begin{itemize}
+    \item[\emoji{thinking-face}] \lstinline|multi::array<int, 2> A({10, 10}); set_from_coordinates(A, [](auto i, auto j) { return i + j; });| ???
+    \item[\emoji{thinking-face}] \lstinline|multi::array<int, 2> const A({10, 10}, [](auto i, auto j) { return i + j; });| ???
+    \item[\emoji{light-bulb}]    \lstinline|multi::array<int, 2> const A( ...special range with coordinates... ); A = ...|
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Restriction (mathematics)}{from Wikipedia}
+
+\begin{quote}
+  [...] In mathematics, the restriction of a function \(f\) 
+  is a new function, denoted \(f |_A\) or \(f \upharpoonright A\), 
+  obtained by choosing a smaller domain \(A\) 
+  for the original function \(f\).
+  The function \(f\) is then said to extend \(f \upharpoonright A\). [...]
+\end{quote}
+
+\begin{lstlisting}
+multi::???({2, 3}, [](auto i, auto j) { return i + j; });
+
+[](auto i, auto j) { return i + j; } ^ multi::extents_t{2, 3};
+\end{lstlisting}
+
+\end{frame}
 
 \begin{frame}[fragile]{General lazy arrays: function restricted to a domain}
 
