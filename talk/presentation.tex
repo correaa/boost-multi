@@ -566,10 +566,21 @@ B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
   The function \(f\) is then said to extend \(f \upharpoonright A\). [...]
 \end{quote}
 
+
+Translated to C++, \(f\) could be function object object that maps coordinates to values, and
+\(A\) can be a cartesian set of points (of the array)
+
+\pause
+
 \begin{lstlisting}
 multi::???({2, 3}, [](auto i, auto j) { return i + j; });
 
 [](auto i, auto j) { return i + j; } ^ multi::extents_t{2, 3};
+
+// {
+//   { f(0, 0), f(0, 1), f(0, 2) },  // <-- .begin()
+//   { f(1, 0), f(1, 1), f(1, 2) }
+// }
 \end{lstlisting}
 
 \end{frame}

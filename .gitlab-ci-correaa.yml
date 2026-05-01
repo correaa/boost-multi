@@ -1384,7 +1384,7 @@ pages-presentation:
     - mkdir public
     - cd talk
     - ls -all
-    - pdflatex -shell-escape presentation.tex
+    - lualatex -shell-escape presentation.tex
     - cp presentation.pdf ../public/
   artifacts:
     paths:
