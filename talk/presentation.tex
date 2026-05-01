@@ -104,7 +104,7 @@
     \item Physicist, (Condensed Matter Physics)
     \item Group Leader at the \textit{Quantum Simulations Group} at Lawrence Livermore Lab (California)
     %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
-    \item Simulating Quantum Mechanics (with Classical Computers, HPC, GPUs) \\
+    \item Simulating Quantum Mechanics using Classical Computers, HPC, and GPUs \\
       ~
     \item LLNL Representative at the C++ Standards Committee \\
       ~
@@ -121,7 +121,7 @@
   \item Condensed Matter Physics (materials simulations)
   \item Community is historically FORTRAN-based
   \item Always in search for the perfect language for simulations (tried Mathematica, C, Smalltalk, Matlab)
-  \item Many false starts with C++, object-oriented, pointless template MP, multiple dispatching, DSLs
+  \item Many false starts with C++: object-oriented design, pointless template metaprogramming, multiple dispatching, DSLs
   \item ...until I found Stepanov's works, understood the STL, all clicked
   \item Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
 \end{itemize}
@@ -356,7 +356,7 @@ a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
 
 	Values = Regular + saving/loading to a medium (serialization)
 
-	\begin{lstlisting}
+\begin{lstlisting}
 struct Value { ...
 	void save(Archive& ar) const;
 	void load(Archive& ar);
@@ -980,7 +980,7 @@ All executed with full GPU parallelism.
 
 \begin{frame}{Adaptors}
 
-Boost.Multi ships optional adaptors that integrate the array with external libraries:
+Boost.Multi ships optional adaptors that integrate arrays with external libraries:
 
 \begin{table}
 \small
@@ -1051,6 +1051,15 @@ auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
     \item Cross-references to the source on GitLab
     \item Inherited members from base classes
     \item Searchable (Lunr index)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Thoughts about AI}
+  \begin{itemize}
+    \item No AI was used to develop the library
+    \item After Boost Review (conditionally accepted), AI was used to proof read documentation
+    \item The irony isn't lost on me: I'm probably documenting mainly for AI
+    \item ... but I'd prefer AI that learns to code using Generic Programming
   \end{itemize}
 \end{frame}
 
