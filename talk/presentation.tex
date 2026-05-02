@@ -1,4 +1,4 @@
-\documentclass[t,aspectratio=169,handout]{beamer}
+\documentclass[t,aspectratio=169]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
 \usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings}
@@ -12,6 +12,7 @@
 \usepackage{svg}
 
 \usepackage{emoji}
+\usepackage{multimedia}
 %\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
 
 \beamertemplatenavigationsymbolsempty
@@ -158,6 +159,40 @@
 	\end{quote}
 \end{frame}
 
+\begin{frame}{Why Arrays?}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textbf{Scientific computing is array computing}
+      \begin{itemize}
+        \item Discretized PDEs: 2D/3D grids
+        \item Quantum chemistry: matrices, tensors
+        \item Signal processing: time $\times$ frequency
+        \item Machine learning: batches $\times$ features $\times$ channels
+      \end{itemize}
+      \vspace{0.8em}
+      \textbf{Performance lives in arrays}
+      \begin{itemize}
+        \item Contiguous memory $\Rightarrow$ cache efficiency
+        \item SIMD vectorization, GPU parallelism
+        \item BLAS/LAPACK operate on array layouts
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Arrays are the natural abstraction}
+      \begin{itemize}
+        \item Most algorithms iterate over index ranges
+        \item Fortran, APL, Matlab, NumPy built around them
+        \item C++ STL: ranges of elements --- but only 1D
+      \end{itemize}
+      \vspace{0.8em}
+      \begin{alertblock}{The gap}
+        C++ has no standard multidimensional array with
+        value semantics, subarrays, and algorithm support.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 \begin{frame}{Multidimensional Arrays}
 \begin{center}
 \begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
@@ -220,6 +255,13 @@
 
 \end{tikzpicture}
 \end{center}
+\end{frame}
+
+\begin{frame}[plain]{Movie: Electron density reacts to swift atomic motion}
+  \centering
+  \movie[width=0.7\textwidth, height=0.537\textwidth, autostart, loop]{%
+    \includegraphics[width=0.7\textwidth]{diff-movie_v1p8au_contour}%
+  }{diff-movie_v1p8au_contour.mp4}
 \end{frame}
 
 \begin{frame}
@@ -337,7 +379,7 @@ std::sort( v.begin(), v.end() );
 assert( std::is_sorted(v.begin(), v.end() );
 \end{lstlisting}
 	\end{alertblock}
-\pause
+
 	A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
 	\begin{lstlisting}
 coocooLib::array a; coocooLib::array b;
