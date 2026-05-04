@@ -812,7 +812,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			return ht_tuple(idx_, rest_.base());
 			}
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
@@ -885,9 +885,8 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			BOOST_MULTI_HD constexpr auto operator<(iterator const& other) const { return base_() < other.base_(); }
 			BOOST_MULTI_HD constexpr auto operator<=(iterator const& other) const { return base_() <= other.base_(); }
 
-			BOOST_MULTI_HD auto operator[](difference_type n) const { return *((*this) + n); }
+			BOOST_MULTI_HD auto operator[](difference_type n) const { return *(*this + n); }
 		};
-		// using const_iterator = iterator;
 
 		BOOST_MULTI_HD constexpr auto begin() const noexcept -> iterator { return iterator{rng_.begin()}; }
 		BOOST_MULTI_HD constexpr auto end() const noexcept -> iterator { return iterator{rng_.end()}; }
@@ -897,7 +896,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 		using value_type      = iterator::value_type;
 		using reference       = iterator::reference;
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const noexcept(noexcept(*(std::declval<iterator>()+n))) -> reference { return *(begin()+n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const noexcept(noexcept(*(std::declval<iterator>() + n))) -> reference { return *(begin() + n); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
 
 		BOOST_MULTI_HD constexpr auto size() const -> size_type { return end() - begin(); }
 
@@ -1260,10 +1259,10 @@ class contiguous_layout {
 
 	BOOST_MULTI_HD constexpr auto slice(index first, index last) const {
 		return contiguous_layout(
-			/*this->*/sub(),
-			/*this->*/stride(),
-			/*this->*/offset(),
-			(this->is_empty()) ? 0 : this->nelems() / this->size() * (last - first)
+			/*this->*/ sub(),
+			/*this->*/ stride(),
+			/*this->*/ offset(),
+			this->is_empty() ? 0 : this->nelems() / this->size() * (last - first)
 		);
 	}
 };
@@ -1633,18 +1632,16 @@ struct layout_t
 	}
 	template<class... Indexes>
 	constexpr auto reindexed(index first, Indexes... idxs) const {
-		return ((reindexed(first).rotate()).reindexed(idxs...)).unrotate();
+		return reindexed(first).rotate().reindexed(idxs...).unrotate();
 	}
 
-	BOOST_MULTI_HD constexpr auto        num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
-	// friend BOOST_MULTI_HD constexpr auto num_elements(layout_t const& self) noexcept -> size_type { return self.num_elements(); }
+	BOOST_MULTI_HD constexpr auto num_elements() const noexcept -> size_type { return size() * sub_.num_elements(); }  // TODO(correaa) investigate mutation * -> /
 
-	BOOST_MULTI_HD constexpr auto        is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
-	// friend BOOST_MULTI_HD constexpr auto is_empty(layout_t const& self) noexcept { return self.is_empty(); }
+	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }  // mull-ignore: cxx_eq_to_ne
 
+	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` for clarity instead")
 	BOOST_MULTI_HD constexpr auto empty() const noexcept { return is_empty(); }
 
-	// friend BOOST_MULTI_HD constexpr auto         size(layout_t const& self) noexcept -> size_type { return self.size(); }
 	BOOST_MULTI_HD constexpr  auto size() const noexcept -> size_type {
 		if(nelems_ == 0) {
 			return 0;
@@ -1659,14 +1656,9 @@ struct layout_t
 	BOOST_MULTI_HD constexpr auto stride() -> stride_type& { return stride_; }
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type const& { return stride_; }
 
-	// friend BOOST_MULTI_HD constexpr auto stride(layout_t const& self) -> index { return self.stride(); }
-
 	BOOST_MULTI_HD constexpr auto        strides() const -> strides_type { return strides_type{stride(), sub_.strides()}; }
-	// friend BOOST_MULTI_HD constexpr auto strides(layout_t const& self) -> strides_type { return self.strides(); }
 
-	// constexpr BOOST_MULTI_HD auto        offset(dimensionality_type dim) const -> index { return (dim != 0) ? sub_.offset(dim - 1) : offset_; }
 	BOOST_MULTI_HD constexpr auto        offset() const -> index { return offset_; }
-	// friend BOOST_MULTI_HD constexpr auto offset(layout_t const& self) -> index { return self.offset(); }
 
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
