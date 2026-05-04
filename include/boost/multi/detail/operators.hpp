@@ -124,7 +124,7 @@ struct weakly_incrementable : selfable<T> {
 
  public:
 	constexpr auto operator++(int) -> T {
-		auto ret{this->self()}; ++(this->self()); return ret;
+		auto ret{this->self()}; ++ this->self(); return ret;
 	}
 };
 
