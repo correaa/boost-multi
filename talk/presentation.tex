@@ -233,12 +233,17 @@ note: most examples in this talk are 2D for simplicity
 \end{frame}
 }
 
-\begin{frame}[plain]{Movie: Electron density reacts to swift atomic motion}
-  \centering
-  \movie[width=0.7\textwidth, height=0.537\textwidth, autostart, loop]{%
-    \includegraphics[width=0.7\textwidth]{diff-movie_v1p8au_contour}%
+\begin{frame}[plain]{Motivating example: Electron density \(\rho\) reacts to swift atomic motion}
+\begin{columns}
+  \begin{column}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{electron_density}
+  \end{column}
+  \begin{column}{0.6\textwidth}
+     \movie[width=1.05\textwidth, height=0.8055\textwidth, autostart, loop]{%
+    \includegraphics[width=1.05\textwidth]{diff-movie_v1p8au_contour}%
   }{diff-movie_v1p8au_contour.mp4}
-  \( \rho(\mathbf{r}, t) = \sum_i^{N_\text{electrons}} |\phi_i(\mathbf{r}, t)|^2 \)
+  \end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}
@@ -253,7 +258,7 @@ note: most examples in this talk are 2D for simplicity
   \item `Typed linear algebra' by François Carouge
   \item \textsc{Parrot} library by Conor Hoekstra (Nvidia) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
   \item CUDA Tile soon to be available for C++
-  \item \textsc{Boost.Multi} (this work) accepted? \emoji{crossed-fingers}
+  \item \textsc{Boost.Multi} (this work) fully accepted? \emoji{crossed-fingers}
 \end{itemize}
 
 \bigskip
@@ -263,8 +268,75 @@ note: most examples in this talk are 2D for simplicity
 
 \end{frame}
 
-\begin{frame}{Arrays as a data structure}
+\begin{frame}{Strided arrays as a data structure, subarray subblock}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock}
+ 
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
 
+\begin{frame}{Strided arrays as a data structure, row subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_row}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure, column subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_col}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure}
+\begin{center}
+\lstinline|element i, j ->   base + stride1*i + stride2*j|
+\end{center}
+
+Pros:
+\begin{itemize}
+  \item Maintains as a much as possible symmetry between dimensions
+  \item Memory of arrays and subarrays is compact, regular, an often contiguous
+  \item Compatible with legacy libraries, FFTW, BLAS, Lapack, CUFFT, CUBLAS, MPI
+\end{itemize}
+Cons:
+\begin{itemize}
+  \item Not available in the language
+  \item Not support from STL algorithms
+  \item Not easy to grow
+\end{itemize}
+
+\begin{alertblock}{Other datastructures (layouts) also maintain symmetry}
+  Tiled, Zig-zag, Hilbert curve filling
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}{Multidimensionality via nested contatainers (the wrong way)}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\lstinline|std::vector<std::vector<T> >|
+
+\includegraphics[scale=0.8]{nested_vector}
+\end{column}
+\begin{column}{0.5\textwidth}
+Pros (mostly traps)
+\begin{itemize}
+  \item \texttt{B[i][j]} works out of the box
+  \item Iterator access available (but only if you access things the right way)
+  \item Easy to grow (in the first dimension)
+\end{itemize}
+Cons:
+\begin{itemize}
+  \item Distict logic for different dimensions
+  \item Memory all over the place
+  \item Has to maintain invariant (rectangular size)
+  \item Not compatible with legacy libraries
+  \item Gets worst with higher dimensionality
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Semiregular types (Stepanov Regularity, EoP)}
@@ -367,13 +439,14 @@ assert( std::is_sorted(v.begin(), v.end() );
 \end{lstlisting}
 \end{alertblock}
 
-	A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
-	\begin{lstlisting}
-coocooLib::array a; coocooLib::array b;
+A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
+\begin{lstlisting}
+coocooLib_array a; coocooLib_array b;
 a = b;  // look how smart (?), a now "points" to b
 a.copy(b);  // inflation of syntax
 a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
 \end{lstlisting}
+
 \end{frame}
 
 \begin{frame}[fragile]{Values = Regular + platonic / persistent}
@@ -410,15 +483,15 @@ auto operator>>(std::istream& out, Value &      self) {...}
 \begin{frame}
 \frametitle{As a proposal}
 
-Why \textbf{not} proposed for Standard?
+Why \textbf{not} proposed for Standard or Beaman?
 \begin{itemize}
   \item Can't promise ABI compatibility
   \item Controversial idioms (some hacks) \emoji{hot-pepper}
   \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
   \item Enough overlap with \texttt{std::span} and \texttt{std::mdarray}
-  \item Long time horizon
+  \item Short time horizon (I am stuck in C++17/20 for compatibility with GPUs)
 \end{itemize}
- 
+
 Why proposed to Boost?
 \begin{itemize}
   \item Ideal balance between risk (innovation) and requirements (quality, guidelines)
@@ -442,16 +515,17 @@ namespace multi = boost::multi;
 // from extents (uninitialized)
 multi::array<double, 2> A({3, 4});
 
-// from initializer list
+// from a (rectangular) initializer list
 multi::array<int, 2> B = {{1, 2, 3}, {4, 5, 6}};
 
 // from existing memory (no allocation, no ownership)
 double data[12] = {};
-multi::array_ref<double, 2> R(data, {3, 4});
+multi::array_ref<double, 2> R({3, 4}, data);
 
 // element access
 A[1][2] = 3.14;
 A(1, 2) = 3.14;  // equivalent
+A[1, 2] = 3.14;  // equivalent C++26
 \end{lstlisting}
 
 \begin{itemize}
@@ -461,22 +535,72 @@ A(1, 2) = 3.14;  // equivalent
 
 \end{frame}
 
+\begin{frame}[fragile]{Proxy subarray-reference}
+\begin{lstlisting}
+multi::array<double, 2> A({3, 4});
+
+auto row_it = A.begin() + 1;
+??? row = A[1];  // same as A(1, _) or *row_it
+
+// auto                       row = ...  // misleading
+// multi::subarray<double, 1> row = ...  // too verbose
+// multi::array<double, 1>    row = ...  // makes a copy
+\end{lstlisting}
+
+\begin{alertblock}{The problem with \texttt{auto}: "Implicit Evaluation of 'auto' Variables."}
+P0672R0 (2017) by Joël Falcou, Herb Sutter et al.
+(\texttt{std::vector<bool>}, proxy objects)
+\end{alertblock}
+
+My recommendation \emoji{hot-pepper}: use the provided `auto-plus operator' \texttt{auto ... = + ...;}
+\begin{lstlisting}
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{My recommendation (unenforceable, opt-in)}
+\begin{itemize}
+  \item Use provied `auto-plus' operator
+  \item Rely on lifetime extensions \emoji{hot-pepper} to document naming of reference-subarrays
+\end{itemize}
+\begin{lstlisting}
+multi::array<double, 2> A({3, 4});
+
+auto        row = + A[1];  // multi::array<double, 1>          row = A[1];
+auto&&      row =   A[1];  // multi::subarray<double, 1>       row = A[1];
+auto const& row =   A[1];  // multi::const_subarray<double, 1> row = A[1];
+\end{lstlisting}
+
+Prefer forward (universal) references:
+\begin{lstlisting}
+template<class Array2D>
+  // constrains, e.g. dimensionality == 2
+auto f(Array2D&& arr) { ... }
+\end{lstlisting}
+
+What to avoid bloat?
+\begin{lstlisting}
+auto g(multi::subarray<int, 2> arr) { ... }
+\end{lstlisting}
+\end{frame}
+
 \begin{frame}[fragile]{Type hierarchy: ownership and mutability}
 
 \begin{table}
 \small
 \begin{tabular}{clllll}
-\textbf{Type}                              & \textbf{Owns?} & \textbf{Copyable} & \textbf{Movable} & \textbf{Mutable elems?} & \textbf{Returned by}                          \\
+\textbf{Type}                              & \textbf{Owns} & \textbf{Copy} & \textbf{Move} & \textbf{Mutable elems?} & \textbf{Returned by}                          \\
 \hline
-\lstinline|multi::const_subarray<T, D, P>| & No             & No                & No               & No                      & from \lstinline|const| array                  \\
-                          ↑                &                &                   &                  &                         &                                               \\ 
-\lstinline|multi::subarray<T, D, P>|       & No             & No                & No               & Yes                     & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
-                          ↑                &                &                   &                  &                         &                                               \\ 
-\lstinline|multi::array_ref<T, D, P>|      & No             & No                & No               & Yes                     & wrapping raw pointer                          \\
-                          ↑                &                &                   &                  &                         &                                               \\
-\lstinline|multi::dynamic_array<T, D, A>|  & Yes            & Yes               & No               & Yes                     & from \lstinline|const| array                  \\
-                          ↑                &                &                   &                  &                         &                                               \\ 
-\lstinline|multi::array<T, D, A>|          & Yes            & Yes               & Yes              & Yes                     & you create it                                 \\
+\lstinline|multi::const_subarray<T, D, P>| & No            & No            & No            & No                      & from \lstinline|const| array                  \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::subarray<T, D, P>|       & No            & No            & No            & Yes                     & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::array_ref<T, D, P>|      & No            & No            & No            & Yes                     & wrapping raw pointer                          \\
+                          ↑                &               &               &               &                         &                                               \\
+\lstinline|multi::dynamic_array<T, D, A>|  & Yes           & Yes           & No            & Yes                     & from \lstinline|const| array                  \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::array<T, D, A>|          & Yes           & Yes           & Yes           & Yes                     & you create it                                 \\
 \end{tabular}
 \end{table}
 

@@ -7,7 +7,7 @@
    width="604.724"
    height="340.15732"
    viewBox="0 0 604.724 340.15732"
-   sodipodi:docname="strided_arrays.svg"
+   sodipodi:docname="strided_subblock_stride.svg"
    inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -155,9 +155,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.1803362"
-     inkscape:cx="180.03345"
-     inkscape:cy="182.5751"
+     inkscape:zoom="1.6692475"
+     inkscape:cx="172.2333"
+     inkscape:cy="227.34796"
      inkscape:window-width="1853"
      inkscape:window-height="1011"
      inkscape:window-x="67"
@@ -532,7 +532,7 @@
          id="tspan226"
          style="font-variant:normal;font-weight:700;font-size:13.2835px;font-family:'Latin Modern Sans';writing-mode:lr-tb;fill:#808000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333"
          x="10.601906"
-         y="213.33751">B({1, 3}, {1, 5})</tspan></text>
+         y="213.33751">B({1, 3}, {1, 5, 2})</tspan></text>
     <path
        id="path226"
        d="m 143.20177,241.01277 v -26.53283 h 26.53284 v 26.53283 z"
@@ -676,7 +676,7 @@
        sodipodi:nodetypes="cc" />
     <path
        style="opacity:1;fill:none;stroke:#008000;stroke-width:1;stroke-linecap:butt;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#Triangle)"
-       d="m 208.69122,222.31328 c 0,0 14.18905,-23.32619 28.59355,-0.63541"
+       d="m 181.73296,249.27154 c 0,0 24.07374,15.01444 52.55645,1.76088"
        id="path258"
        sodipodi:nodetypes="cc" />
     <path
@@ -782,12 +782,12 @@
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';fill:#000000;stroke:none"
          id="tspan270">  .<tspan
    style="fill:#008000"
-   id="tspan269">stride2</tspan> = 1</tspan><tspan
+   id="tspan269">stride2</tspan> = 2</tspan><tspan
          sodipodi:role="line"
          x="362.94635"
          y="280.48651"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';fill:#000000;stroke:none"
-         id="tspan277">  .nelem1 = 12</tspan><tspan
+         id="tspan277">  .nelem1 = 6</tspan><tspan
          sodipodi:role="line"
          x="362.94635"
          y="295.74002"
@@ -821,11 +821,18 @@
        x="142.88277"
        y="83.260513" />
     <rect
-       style="opacity:0.128169;fill:#808000;stroke:#808000;stroke-width:0.586035;stroke-linecap:butt;stroke-dasharray:none;stroke-dashoffset:0"
+       style="opacity:0.128169;fill:#808000;stroke:#808000;stroke-width:0.309809;stroke-linecap:butt;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect274"
-       width="111.24235"
-       height="58.523983"
-       x="167.84735"
-       y="238.02232" />
+       width="30.943342"
+       height="58.800209"
+       x="167.70924"
+       y="237.88422" />
+    <rect
+       style="opacity:0.128169;fill:#808000;stroke:#808000;stroke-width:0.309809;stroke-linecap:butt;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2"
+       width="30.943342"
+       height="58.800209"
+       x="220.51112"
+       y="237.88422" />
   </g>
 </svg>
