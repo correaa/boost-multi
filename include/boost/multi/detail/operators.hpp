@@ -236,7 +236,7 @@ struct dereferenceable {
 
 	using reference = Reference;
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return * self().operator->(); }
 };
 
 #ifdef _MSC_VER
