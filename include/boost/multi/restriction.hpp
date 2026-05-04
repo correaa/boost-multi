@@ -452,7 +452,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
-		return bind_diagonal_t{proj_} ^ (std::min(get<0>(sizes()), get<1>(sizes())) * extensions().sub().sub());
+		return bind_diagonal_t{proj_} ^ std::min(get<0>(sizes()), get<1>(sizes())) * extensions().sub().sub();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
@@ -645,7 +645,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk (May 2026)
 			} else {
 				using std::get;
 #ifdef __CUDA_ARCH__
