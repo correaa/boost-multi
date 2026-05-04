@@ -252,10 +252,10 @@ class range {
 	#pragma nv_diagnostic pop
 	#endif
 
+	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
 	}
-	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
 
 	[[nodiscard]]  // ("find returns an iterator to the sequence, that is the only effect")]] for C++20
 	constexpr auto find(value_type const& value) const -> const_iterator {

@@ -124,7 +124,7 @@ struct weakly_incrementable : selfable<T> {
 
  public:
 	constexpr auto operator++(int) -> T {
-		auto ret{this->self()}; ++(this->self()); return ret;
+		auto ret{this->self()}; ++ this->self(); return ret;
 	}
 };
 
@@ -236,7 +236,7 @@ struct dereferenceable {
 
 	using reference = Reference;
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return * self().operator->(); }
 };
 
 #ifdef _MSC_VER
