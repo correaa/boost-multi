@@ -30,7 +30,7 @@
    }
 }
 
-% Macro to draw the shape behind the text, when it fits completly in the
+% Macro to draw the shape behind the text, when it fits completely in the
 % page
 \def\tornpaper#1{
 \tikz{
@@ -99,7 +99,7 @@
   \tableofcontents
 \end{frame}
 
-\section{Introduction}
+\section{Introduction \& Motivation}
 
 \begin{frame}{A bit about myself}
   \begin{itemize}
@@ -108,13 +108,15 @@
     %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
     \item Simulating Quantum Mechanics using Classical Computers, HPC, and GPUs \\
       ~
-    \item LLNL Representative at the C++ Standards Committee (secondary)\\
+    \item Research oriented \\
       ~
     % \item \textsc{Multi} Multi-dimensional arrays in C++
     % \item \textsc{B-MPI3} C++ wrapper for the MPI 3.0 standard (MP, RMA, ShMem) \\
     %  ~
-    \item \textsc{Inq} Electronic structure code for ground state and time dependent (C++/MPI/CUDA)
-    \item \textsc{QMCPACK} Quantum Montecarlo for accurate energies of molecules
+    \item \textsc{Inq} Electronic structure code for ground state and time dependent (C++/MPI/CUDA) \\
+      ``A Modern GPU-Accelerated Computational Framework for (Time-Dependent) Density Functional Theory'',
+      Andrade et al. J.Chem.Theory Comput. (2021)
+    \item \textsc{QMCPACK} Quantum Monte Carlo for accurate energies of molecules
   \end{itemize}
 \end{frame}
 
@@ -122,8 +124,9 @@
 \begin{itemize}
   \item Condensed Matter Physics (materials simulations)
   \item Community is historically FORTRAN-based
-  \item Always in search for the perfect language for simulations (Mathematica, C, Smalltalk, Matlab)
-  \item Many false starts with C++: object-oriented design, pointless template metaprogramming, virtual polymorphism, multiple dispatching, DSLs
+  \item Always in search of the perfect language for physical simulations (expressiveness, correctness, high performance)\\
+    Mathematica, C, Smalltalk, Matlab
+  \item Many false starts with C++: object-oriented design, pointless template metaprogramming, virtual polymorphism, multiple dispatching, DSLs...
   \item ...until I found Stepanov's works, understood the STL, all clicked... start of a journey
 \end{itemize}
 \begin{alertblock}{}
@@ -132,8 +135,8 @@
 
 \begin{itemize}
 \item LLNL Representative at the C++ Standards Committee (secondary/alternate)
-\item First LEWGI P3879 on \lstinline|std::overload| (with Branden Ganetsky)
-\item Boost.Multi (this work), B.MPI3, Covariant (functional with variant types)
+\item First LEWGI draft P3879 on \lstinline|std::overload| (with Branden Ganetsky)
+\item libraries: Boost.Multi (this work), B.MPI3, B.Covariant (func. prog. with variant types)
 \end{itemize}
 \end{frame}
 
@@ -152,7 +155,7 @@
 	(Sean Parent, 2018, \emph{`Greatest Common Measure'}, \href{https://youtu.be/FtZEU9zv9eM}{\texttt{youtu.be/FtZEU9zv9eM}})}
 \end{frame}
 
-\begin{frame}{We need philosophy (mathematics) to program, specially libraries}
+\begin{frame}{We need philosophy (mathematics) to program, especially libraries}
 
 	\begin{quote}
 		What kind of programs are not mathematical? Programs that are insecure, programs that
@@ -212,12 +215,13 @@
 \begin{lstlisting}
   assert( A[1] == 'b' );         // A(1) ???
   assert( B[1][2] == 'n' );      // B(1, 2) ??
-  assert( C[1][0]][2] == 'w' );  // C(1, 0, 2) ??
+  assert( C[1][0][2] == 'w' );  // C(1, 0, 2) ??
 \end{lstlisting}
 \begin{alertblock}{Visualization is only a convention}
-  Desired symmetry between rotated (transposed) illustration of the arrays.
+  Desired symmetry between rotated (transposed) illustrations of the arrays.
+  Implies a symmetry in the indices.
 \end{alertblock}
-note: most examples in this talk are 2D for simplicity
+note: most examples in this talk are 2D for simplicity, imagine the ND generalization
 \end{frame}
 
 \begin{frame}[fragile]{Multidimensional Arrays}
@@ -226,7 +230,7 @@ note: most examples in this talk are 2D for simplicity
   assert( A != B[0] );
   assert( C(0, {0, 2}, {0, 2}) != B );
 \end{lstlisting}
-\begin{alertblock}{Expected behavior across dimensiona}
+\begin{alertblock}{Expected behavior across dimensions}
   Desire to look for relations across dimensions
 \end{alertblock}
 note: most examples in this talk are 2D for simplicity
@@ -247,11 +251,11 @@ note: most examples in this talk are 2D for simplicity
 \end{frame}
 
 \begin{frame}
-\frametitle{C++ and arrays in 2026\ldots}
+\frametitle{C++ and multidimensional arrays in 2026\ldots}
 
 \begin{block}{Keynote: ``Making C++ Standard Parallelism Multidimensional''}
   \begin{itemize}
-    \item Don't miss this keynote by Mark Hoemmen (Nvidia)
+    \item Do not miss this keynote by Mark Hoemmen (Nvidia)
   \end{itemize}
 \end{block}
 \begin{itemize}
@@ -296,14 +300,14 @@ note: most examples in this talk are 2D for simplicity
 
 Pros:
 \begin{itemize}
-  \item Maintains as a much as possible symmetry between dimensions
-  \item Memory of arrays and subarrays is compact, regular, an often contiguous
+  \item Maintains as much as possible symmetry between dimensions
+  \item Memory of arrays and subarrays is compact, regular, and often contiguous
   \item Compatible with legacy libraries, FFTW, BLAS, Lapack, CUFFT, CUBLAS, MPI
 \end{itemize}
 Cons:
 \begin{itemize}
   \item Not available in the language
-  \item Not support from STL algorithms
+  \item No support from STL algorithms
   \item Not easy to grow
 \end{itemize}
 
@@ -313,7 +317,7 @@ Cons:
 
 \end{frame}
 
-\begin{frame}{Multidimensionality via nested contatainers (the wrong way)}
+\begin{frame}{Multidimensionality via nested containers (the wrong way)}
 \begin{columns}[T]
 \begin{column}{0.5\textwidth}
 \lstinline|std::vector<std::vector<T> >|
@@ -329,15 +333,17 @@ Pros (mostly traps)
 \end{itemize}
 Cons:
 \begin{itemize}
-  \item Distict logic for different dimensions
+  \item Distinct logic for different dimensions
   \item Memory all over the place
   \item Has to maintain invariant (rectangular size)
   \item Not compatible with legacy libraries
-  \item Gets worst with higher dimensionality
+  \item Gets worse with higher dimensionality
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
+
+\section{Generic Programming Foundations}
 
 \begin{frame}[fragile]{Semiregular types (Stepanov Regularity, EoP)}
 	\begin{center}\includegraphics[height=3cm]{eop}\end{center}
@@ -371,9 +377,9 @@ struct R { ...
 };
 \end{lstlisting}
 
-	Some types might not have equality in practice because it could be prohibitivelly expensive or the algorithm for equality is not known.
+Some types might not have equality in practice because it could be prohibitively expensive or the algorithm for equality is not known.
 
-	Available algorithms: \emph{linear-search} (\lstinline{std::find})
+Available algorithms: \emph{linear-search} (\lstinline{std::find})
 \end{frame}
 
 \begin{frame}[fragile]{PartialOrder = Regular + has order}
@@ -400,11 +406,11 @@ struct PO { ...
 	Available algorithms: \emph{sort} (\lstinline{std::sort}), \emph{binary-search} (\lstinline{std::lower_bound})
 \end{frame}
 
-\begin{frame}[fragile]{TotalOrder = PartialOrder + has tricotomy}
+\begin{frame}[fragile]{TotalOrder = PartialOrder + has trichotomy}
 
-	tricotomy: Not $a < b$ and not $a > b$ $\Rightarrow a == b$
+trichotomy: Not $a < b$ and not $a > b$ $\Rightarrow a == b$
 
-	\begin{lstlisting}
+\begin{lstlisting}
 struct TO { ...
 	bool operator< (TO const& other) const;
 	bool operator> (TO const& other) const;
@@ -480,15 +486,16 @@ auto operator>>(std::istream& out, Value &      self) {...}
 	Boost.Serialization, Cereal, Google's protobuf, ...
 \end{frame}
 
-\begin{frame}
-\frametitle{As a proposal}
+\section{Array Model}
 
-Why \textbf{not} proposed for Standard or Beaman?
+\begin{frame}
+\frametitle{\textsc{Multi} proposed to Boost}
+Why \textbf{not} proposed for Standard (or Beaman)?
 \begin{itemize}
-  \item Can't promise ABI compatibility
+  \item Can't promise (ABI) compatibility
   \item Controversial idioms (some hacks) \emoji{hot-pepper}
   \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
-  \item Enough overlap with \texttt{std::span} and \texttt{std::mdarray}
+  \item Enough overlap with \texttt{std::span}, \texttt{std::mdspan} and \texttt{std::mdarray}
   \item Short time horizon (I am stuck in C++17/20 for compatibility with GPUs)
 \end{itemize}
 
@@ -497,35 +504,31 @@ Why proposed to Boost?
   \item Ideal balance between risk (innovation) and requirements (quality, guidelines)
   \item \emph{Peer reviewed}
   \item Still good distribution model and visibility
-  \item No need for compiler-magic (although new language features would help)
+  \item No need for compiler-magic
   \item Moderate time horizon
   \item Can eventually benefit from low level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
   \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
 \end{itemize}
 \end{frame}
 
-\section{Array Model}
-
 \begin{frame}[fragile]{Construction and basic usage}
-
 \begin{lstlisting}
 #include <boost/multi/array.hpp>
 namespace multi = boost::multi;
-
-// from extents (uninitialized)
-multi::array<double, 2> A({3, 4});
+// from extents
+multi::array<int, 2> A({3, 4});  // a 3 x 4
 
 // from a (rectangular) initializer list
 multi::array<int, 2> B = {{1, 2, 3}, {4, 5, 6}};
 
 // from existing memory (no allocation, no ownership)
-double data[12] = {};
-multi::array_ref<double, 2> R({3, 4}, data);
+int data[12] = {};
+multi::array_ref<int, 2> C({3, 4}, data);
 
 // element access
-A[1][2] = 3.14;
-A(1, 2) = 3.14;  // equivalent
-A[1, 2] = 3.14;  // equivalent C++26
+A(1, 2) = 5;  // equivalent
+A[1, 2] = 5;  // equivalent C++23
+A[1][2] = 5;  // intermediate object?
 \end{lstlisting}
 
 \begin{itemize}
@@ -537,12 +540,12 @@ A[1, 2] = 3.14;  // equivalent C++26
 
 \begin{frame}[fragile]{Proxy subarray-reference}
 \begin{lstlisting}
-multi::array<double, 2> A({3, 4});
+multi::array<int, 2> A({3, 4});
 
 auto row_it = A.begin() + 1;
 ??? row = A[1];  // same as A(1, _) or *row_it
 
-// auto                       row = ...  // misleading
+// auto                       row = ...  // misleading, valid but not recommended
 // multi::subarray<double, 1> row = ...  // too verbose
 // multi::array<double, 1>    row = ...  // makes a copy
 \end{lstlisting}
@@ -551,17 +554,14 @@ auto row_it = A.begin() + 1;
 P0672R0 (2017) by Joël Falcou, Herb Sutter et al.
 (\texttt{std::vector<bool>}, proxy objects)
 \end{alertblock}
-
-My recommendation \emoji{hot-pepper}: use the provided `auto-plus operator' \texttt{auto ... = + ...;}
 \begin{lstlisting}
 \end{lstlisting}
 
 \end{frame}
 
-
 \begin{frame}[fragile]{My recommendation (unenforceable, opt-in)}
 \begin{itemize}
-  \item Use provied `auto-plus' operator
+  \item Use the provided `auto-plus' operator
   \item Rely on lifetime extensions \emoji{hot-pepper} to document naming of reference-subarrays
 \end{itemize}
 \begin{lstlisting}
@@ -579,7 +579,7 @@ template<class Array2D>
 auto f(Array2D&& arr) { ... }
 \end{lstlisting}
 
-What to avoid bloat? (or work across compilation boundaries?)
+Want to avoid bloat? (or work across compilation boundaries?)
 \begin{lstlisting}
 auto g(multi::subarray<int, 2> arr) { ... }
 \end{lstlisting}
@@ -589,72 +589,236 @@ auto g(multi::subarray<int, 2> arr) { ... }
 
 \begin{table}
 \small
-\begin{tabular}{clllll}
-\textbf{Type}                              & \textbf{Owns} & \textbf{Copy} & \textbf{Move} & \textbf{Mutable elems?} & \textbf{Returned by}                          \\
+\begin{tabular}{cllllll}
+\textbf{Type}                              & \textbf{Owns} & \textbf{Copyable}     & \textbf{Move} & \textbf{Swap} & \textbf{Mutable elems?} & \textbf{Resizable} \\
 \hline
-\lstinline|multi::const_subarray<T, D, P>| & No            & No            & No            & No                      & from \lstinline|const| array                  \\
-                          ↑                &               &               &               &                         &                                               \\ 
-\lstinline|multi::subarray<T, D, P>|       & No            & No            & No            & Yes                     & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
-                          ↑                &               &               &               &                         &                                               \\ 
-\lstinline|multi::array_ref<T, D, P>|      & No            & No            & No            & Yes                     & wrapping raw pointer                          \\
-                          ↑                &               &               &               &                         &                                               \\
-\lstinline|multi::dynamic_array<T, D, A>|  & Yes           & Yes           & No            & Yes                     & from \lstinline|const| array                  \\
-                          ↑                &               &               &               &                         &                                               \\ 
-\lstinline|multi::array<T, D, A>|          & Yes           & Yes           & Yes           & Yes                     & you create it                                 \\
+\lstinline|multi::const_subarray<T, D, P>| & No            & No \emoji{hot-pepper} & No            & No            & No                      & No                 \\
+                          ↑                &               &                       &               &               &                         &                    \\ 
+\lstinline|multi::subarray<T, D, P>|       & No            & No \emoji{hot-pepper} & No            & O(N)          & Yes                     & No                 \\
+                          ↑                &               &                       &               &               &                         &                    \\ 
+\lstinline|multi::array_ref<T, D, P>|      & No            & No \emoji{hot-pepper} & No            & O(N)          & Yes                     & No                 \\
+                          ↑                &               &                       &               &               &                         &                    \\
+\lstinline|multi::dynamic_array<T, D, A>|  & Yes           & Yes                   & No            & O(N)          & Yes                     & No                 \\
+                          ↑                &               &                       &               &               &                         &                    \\ 
+\lstinline|multi::array<T, D, A>|          & Yes           & Yes                   & Yes           & Yes           & Yes                     & Yes                \\
 \end{tabular}
 \end{table}
 
-\begin{alertblock}{Inhetiance for composition ()}
-  Made it \texttt{public} because I found it useful.
+\begin{alertblock}{Inheritance for composition (usually a bad idea)}
+  Made it \texttt{public} inheritance \emoji{hot-pepper} because I found it useful.
   It is opt-in.
 \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{multi::dynamic\_array}: pinned owning array}
+
+\lstinline|multi::dynamic_array<T, D, A>| owns memory, is copyable, but \textbf{not movable}:
 
 \begin{lstlisting}
-multi::array<double, 2> A({3, 4});
-
-auto row = A[1];            // subarray<double, 1> -- a mutable view
-auto block = A({0, 2}, {1, 3}); // subarray<double, 2> -- 2x2 sub-block
-
-row[0] = 99.0;              // modifies A[1][0]
-A[1][0];                    // 99.0
+multi::dynamic_array<double, 2> D({3, 4});  // allocates, fixed size
+multi::dynamic_array<double, 2> E = D;      // ok: deep copy
+multi::dynamic_array<double, 2> F = std::move(D);  // ok, but O(N)
 \end{lstlisting}
 
 \begin{itemize}
-  \item Views are lightweight (pointer + layout), no data copied
-  \item Indexing peels dimensions: \lstinline|A[i]| returns a (D-1)-dimensional subarray
+  \item Size is fixed at construction (no \lstinline|resize|, no reallocation)
+  \item Iterators and pointers are \textbf{never invalidated} after construction
+  \item Iterators, subarrays, and pointers never invalidated unless the object is destroyed
 \end{itemize}
+
+\begin{block}{Inspired by \texttt{std::dynarray} (proposed for C++14, N3467, Stroustrup et al.)}
+  \texttt{std::dynarray} was proposed as a fixed-size heap array
+  but did not make it into the standard.
+  \texttt{multi::dynamic\_array} generalizes the idea to $N$ dimensions.
+\end{block}
 
 \end{frame}
 
-\begin{frame}{Fundamental View/Layout operations}
+\begin{frame}{Fundamental access/layout operations}
+Indicing
 \begin{itemize}
-\item Rotate (indices)\\
-  \lstinline|A[i][j][k]...[x][y][z]| $\to$ \lstinline|A[z][i][j]...[x][y]|
+\item Index\\
+  \lstinline|A[i]| removes (binds) first dimension
+\item Slice\\
+  \lstinline|A.sliced(first, last)| range subarrays (equal dimension) semiopen interval \([\mathrm{first}, \mathrm{last}) \)
+\end{itemize}
+
+Fundamental
+\begin{itemize}
+\item Rotate (indices) \\
+  \lstinline|A.rotated()[i][j][k] == A[k][i][j]|
+\item Unrotate (indices) \\
+  \lstinline|A.unrotated()[i][j][k] == A[j][k][i]|
 \item Transpose (first two indices) \\
-  \lstinline|A[i][j][k]...| $\to$ \lstinline|A[j][i][k]...|
+  \lstinline|A.transposed()[i][j][k] == A[j][i][k]|
+\item Strided
+  \lstinline|A.strided(n)[i] == A[n*i]|
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Recursive Indexing}
-  \lstinline|A[i]| removes one dimension \\
-  \lstinline|A[i][j]| removes two dimensions \\
-  \ldots
-\end{frame}
-
-\begin{frame}{Positional indexing}
-  \lstinline|A[3, _]| \(\equiv\) \lstinline|A[3]| \\
-  \lstinline|A[_, 3]| \(\equiv\) \lstinline|A.rotated()[3].unrotated()| \\
-\end{frame}
-
-\begin{frame}{Implement positional indices}
+\begin{frame}[fragile]{Derived and positional indexing}
 \begin{itemize}
-\item Recursive Indexing (leading dimensions)
-\item Positional Indexing (leading dimensions)
-  \lstinline|A[_, i]| = \lstinline|A.rotated()[i].unrotated()| \\
+  \item Indexing (with parenthesis)
+    \lstinline|A(i) -> A[i]|
+  \item Sliced (terse)
+    \lstinline|A({first, last}) -> A.sliced(first, last)|
+  \item Generalized slice:\\
+    \lstinline|A({first, last, every}) -> A.sliced(first, last).strided(every)|
+  \item Row\\
+    \lstinline|A(i, _) -> A[i](_) -> A[i]| \\
+  \item Column\\
+    \lstinline|A(_, i) -> A.rotated()[i].unrotated()| \\
+  \item Partial column\\
+    \lstinline|A({first, last}, i) -> A.rotated()[i].unrotated()({first, last})| \\
 \end{itemize}
+
+\begin{block}{}
+Modern compilers can elide these temporary objects
+\end{block}
+
+\begin{alertblock}{}
+  Since C++23 you can use multidimensional square brackets \lstinline|A[i, j, k]|
+\end{alertblock}
 \end{frame}
 
-\section{Lazy Arrays}
+\begin{frame}{Relations between types, recursion across dimensions (simplified)}
+\centering
+\includegraphics[scale=0.8]{types_relations}
+
+\begin{alertblock}{}
+  Looks complicated, intuitive for the most part in practice.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Wait! \texttt{multi::subarray}'s are not copyable? How to "store" subarrays?}
+\centering
+\includegraphics{store_subarrays}
+
+\begin{lstlisting}
+std::vector sas = {B({0, 2}, {0, 2}), B({1, 4}, {1, 4}), B({0, 2}, {4, 6})};
+// error! subarray<int, 2> is no copyable
+\end{lstlisting}
+
+\begin{lstlisting}
+std::vector saps = {&B({0, 2}, {0, 2}), &B({1, 4}, {1, 4}), &B({0, 2}, {4, 6})};
+// std::vector<multi::subarray_ptr<T, 2>> sarrps = ...
+for(auto sap : saps) {
+  std::ranges::fill(sap->elements(), 0);
+}
+\end{lstlisting}
+{\raggedleft\href{https://godbolt.org/z/E1EsKn8o5}{\texttt{godbolt.org/z/E1EsKn8o5}}\par}
+\end{frame}
+
+\begin{frame}{\textit{``Copy or copy not; there is no shallow. -- Master Yoda''} -- Tony Van Eerd}
+\centering
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\includegraphics[trim=0 600 0 0, clip, scale=0.5]{nospan} 
+\end{column}
+\begin{column}{0.5\textwidth}
+\includegraphics[trim=0 0 0 195, clip, scale=0.37]{nospan} 
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Looks complicated, does it work? Test 1/2}
+Regularity of \lstinline|multi::array<T, D>|:
+
+The \textit{litmus} test for Regular types:
+\begin{lstlisting}
+std::vector<multi::array<int, 2>> V = { a1, a2, a3 };
+std::sort( V.begin(), V.end() );
+std::is_sorted( V.begin(), V.end() );
+\end{lstlisting}
+{\raggedleft\href{https://godbolt.org/z/df634c63G}{\texttt{godbolt.org/z/df634c63G}}\par}
+
+{
+\setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
+\setbeamercolor{block body alerted}{bg=green!10}
+\begin{alertblock}{Passes!}
+  Arrays have total order (if elements have total order),
+  and behave like Regular
+\end{alertblock}
+}
+\end{frame}
+
+\begin{frame}[fragile]{Looks complicated, does it work? Test 2/2}
+
+The \textit{acid} test (``[...] STL algorithms [...] exist to implement in-place stable sort'' -- Sean Parent, \emph{No Raw Loops} (2023))
+
+\begin{lstlisting}
+multi::array<int, 2> A = {{ 8, 6,  7},
+                          {30, 1,  2},
+                          { 8, 9, 11}};
+std::sort( A.begin(), A.end() );
+std::is_sorted( A.begin(), A.end() );
+// {{ 8, 6,  7},
+//  { 8, 9, 11},
+//  {30, 1,  2}}
+\end{lstlisting}
+{\raggedleft\href{https://godbolt.org/z/eGK1T5j4M}{\texttt{godbolt.org/z/eGK1T5j4M}}\par}
+
+{
+\setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
+\setbeamercolor{block body alerted}{bg=green!10}
+\begin{alertblock}{Passes!}
+  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+\end{alertblock}
+}
+\end{frame}
+
+\begin{frame}[fragile]{Looks complicated, does it work? Bonus Test}
+\begin{lstlisting}
+multi::array<int, 2> A = {{ 8, 6,  7},
+                          {30, 1,  2},
+                          { 8, 9, 11}};
+std::sort( A.transposed().begin(), A.transposed().end() );
+assert( std::is_sorted( A.transposed().begin(), A.transposed().end() ) );
+// {{6,  7,  8},
+//  {1,  2, 30},
+//  {9, 11,  8}}
+\end{lstlisting}
+{\raggedleft\href{https://godbolt.org/z/1zdEfnPK9}{\texttt{godbolt.org/z/1zdEfnPK9}}\par}
+
+{
+\setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
+\setbeamercolor{block body alerted}{bg=green!10}
+\begin{alertblock}{Passes!}
+  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+\end{alertblock}
+}
+
+\begin{block}{}
+  Also works with std::ranges algorithms, filters, etc
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Allocator support (The allocator controls where memory lives)}
+
+\lstinline|multi::array<T, D, Allocator>| --- the allocator controls where memory lives:
+
+Standard:
+\begin{itemize}
+  \item Classic (stateless allocators)
+  \item Scoped allocators (propagated nested allocators)
+  \item Polymorphic allocators \lstinline|std::pmr::polymorphic_allocator -> multi::pmr::array<T,D>|
+\end{itemize}
+
+Fancy:
+\begin{itemize}
+  \item Interprocess Allocator (memory mapped) \lstinline|boost::interprocess::allocator|
+\end{itemize}
+
+Special purpose:
+\begin{itemize}
+  \item \lstinline|thrust::device_allocator -> multi::thrust::device_array<T,D>| (device memory)
+  \item \lstinline|thrust::universal_allocator -> multi::thrust::universal_array<T,D>| (unified memory)
+  \item \lstinline|thrust::mr::allocator| (with custom memory resources)
+\end{itemize}
+
+\end{frame}
+
+\section{Lazy Arrays \& Restrictions}
 
 \begin{frame}[fragile]{Lazy sequences, the evolution of iota}
 
@@ -695,13 +859,12 @@ B.extent|\uline{s}|();
 // }
 
 B.extent|\uline{s}|().elements();  // {tuple{0, 0}, tuple{0, 1}, tuple{0, 2}, tuple{1, 0},...}
-B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
+B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 
 // std::views::cartesian_product( get<0>(B.extents()), get<1>(B.extents()) );
 \end{lstlisting}
 
 \end{frame}
-
 
 \begin{frame}[fragile]{}
     \begin{center}
@@ -729,7 +892,7 @@ B.extent|\uline{s}|().elements().begin() --^^^      ... .end()
 \end{quote}
 
 
-Translated to C++, \(f\) could be function object object that maps coordinates to values, and
+Translated to C++, \(f\) could be function object that maps coordinates to values, and
 \(A\) can be a cartesian set of points (of the array)
 
 \pause
@@ -1001,9 +1164,9 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \end{tabular}
 \end{table}
 
-\begin{alertblock}{title}
-  Prefer algorithms to raw loops,
-  prefer to fuse loops
+\begin{alertblock}{}
+  Prefer algorithms to raw loops.
+  Prefer to fuse loops
 \end{alertblock}
 
   \begin{lstlisting}
@@ -1194,6 +1357,30 @@ Boost.Multi ships optional adaptors that integrate arrays with external librarie
   Adaptors are header-only and opt-in --- include only what you use.
 \end{block}
 
+\end{frame}
+
+\begin{frame}[fragile]{Generic Serialization}
+
+Arrays integrate with \textbf{Boost.Serialization} and \textbf{Cereal} out of the box.
+No extra code needed:
+
+\begin{lstlisting}
+#include <boost/multi/array.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+
+multi::array<double, 2> A({10, 10});
+
+std::fstream ofs{"data.xml"};
+boost::archive::xml_oarchive{ofs} << boost::nvp("A", A);
+
+multi::array<double, 2> B;
+std::ifstream ifs{"data.xml"};
+boost::archive::xml_iarchive{ifs} >> B;
+assert(A == B);
+\end{lstlisting}
+
+\includegraphics{serialization}
 \end{frame}
 
 \begin{frame}[fragile]{Adaptor example: BLAS}
