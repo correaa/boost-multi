@@ -373,6 +373,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	using index           = typename extensions_t<D>::index;
 	using size_type       = typename extensions_t<D>::size_type;
 
+	using indices_type = typename extensions_t<D>::indices_type;
+
+	using indices = typename extensions_t<D>::element;
+
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
  private:
