@@ -103,7 +103,7 @@
 
 \begin{frame}{A bit about myself}
   \begin{itemize}
-    \item Physicist, (Condensed Matter Physics)
+    \item Physicist (Condensed Matter Physics)
     \item Group Leader at the \textit{Quantum Simulations Group} at Lawrence Livermore Lab (California)
     %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
     \item Simulating Quantum Mechanics using Classical Computers, HPC, and GPUs \\
@@ -113,7 +113,7 @@
     % \item \textsc{Multi} Multi-dimensional arrays in C++
     % \item \textsc{B-MPI3} C++ wrapper for the MPI 3.0 standard (MP, RMA, ShMem) \\
     %  ~
-    \item \textsc{Inq} Electronic structure code for ground state and time dependent (C++/MPI/CUDA) \\
+    \item \textsc{Inq} Electronic structure code for ground state and time-dependent (C++/MPI/CUDA) \\
       ``A Modern GPU-Accelerated Computational Framework for (Time-Dependent) Density Functional Theory'',
       Andrade et al. J.Chem.Theory Comput. (2021)
     \item \textsc{QMCPACK} Quantum Monte Carlo for accurate energies of molecules
@@ -230,7 +230,7 @@
   assert( C(0, {0, 2}, {0, 2}) != B );
 \end{lstlisting}
 \begin{alertblock}{Expected behavior across dimensions}
-  Desire to look for relations across dimensions
+  There are relations across dimensions
 \end{alertblock}
 note: most examples in this talk are 2D for simplicity, imagine the ND generalization
 \end{frame}
@@ -254,12 +254,12 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
 
 \begin{block}{Keynote: ``Making C++ Standard Parallelism Multidimensional''}
   \begin{itemize}
-    \item Do not miss this keynote by Mark Hoemmen (Nvidia)
+    \item Do not miss this keynote by Mark Hoemmen (NVIDIA)
   \end{itemize}
 \end{block}
 \begin{itemize}
   \item `Typed linear algebra' by François Carouge
-  \item \textsc{Parrot} library by Conor Hoekstra (Nvidia) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
+  \item \textsc{Parrot} library by Conor Hoekstra (NVIDIA) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
   \item CUDA Tile soon to be available for C++
   \item \textsc{Boost.Multi} (this work) fully accepted? \emoji{crossed-fingers}
 \end{itemize}
@@ -299,9 +299,9 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
 
 Pros:
 \begin{itemize}
-  \item Maintains as much as possible symmetry between dimensions
+  \item Maintains symmetry as much as possible between dimensions
   \item Memory of arrays and subarrays is compact, regular, and often contiguous
-  \item Compatible with legacy libraries, FFTW, BLAS, Lapack, CUFFT, CUBLAS, MPI
+  \item Compatible with legacy libraries, FFTW, BLAS, LAPACK, CUFFT, CUBLAS, MPI
 \end{itemize}
 Cons:
 \begin{itemize}
@@ -310,7 +310,7 @@ Cons:
   \item Not easy to grow
 \end{itemize}
 
-\begin{alertblock}{Other datastructures (layouts) also maintain symmetry}
+\begin{alertblock}{Other data structures (layouts) also maintain symmetry}
   Tiled, Zig-zag, Hilbert curve filling
 \end{alertblock}
 
@@ -354,7 +354,7 @@ struct SR {
 	auto operator=(SR const& r) -> R&;  // assignment
 };
 \end{lstlisting}
-	... and also the semantics is the expected one.
+  ... and also the semantics should be as expected
 
 	Available algorithms: \emph{swap} (\lstinline{std::swap})
 \end{frame}
@@ -376,7 +376,7 @@ struct R { ...
 };
 \end{lstlisting}
 
-Some types might not have equality in practice because it could be prohibitively expensive or the algorithm for equality is not known.
+Some types might not have equality in practice because equality could be prohibitively expensive or the algorithm for equality is not known.
 
 Available algorithms: \emph{linear-search} (\lstinline{std::find})
 \end{frame}
@@ -427,20 +427,20 @@ struct TO { ...
 };
 \end{lstlisting}
 
-Available algorithms: same as before, but can be more efficient.
+Available algorithms: same as before, but they can be more efficient.
 
 \end{frame}
 
-\begin{frame}[fragile]{Claim: 	(Semi)Regular types are amenable to equational reasoning.}
+\begin{frame}[fragile]{Claim: (Semi)Regular types are amenable to equational reasoning.}
 
 	\underline{Modern C++ is based around them}
 
 	\begin{alertblock}{Litmus test for your specific type \lstinline{Type}}
-		Quick test for your types, does this compile? does it do the expected thing?
+		Quick test for your types, does this compile? Does it do the expected thing?
 \begin{lstlisting}
 std::vector<Type> v = {r1, r2, r3};
 std::sort( v.begin(), v.end() );
-assert( std::is_sorted(v.begin(), v.end() );
+assert( std::is_sorted(v.begin(), v.end() ) );
 \end{lstlisting}
 \end{alertblock}
 
@@ -457,7 +457,7 @@ a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
 \begin{frame}[fragile]{Values = Regular + platonic / persistent}
 
 Values are Regular types that are also amenable to \emph{mathematical}, \emph{equational}, \emph{logical} reasoning, e.g. \emph{arithmetic}.
-Mathematics and numerical mathematics is based around them.
+Mathematics and numerical mathematics are based around them.
 
 \pause
 
@@ -487,7 +487,7 @@ auto operator>>(std::istream& out, Value &      self) {...}
 
 \section{Array Model}
 
-\begin{frame}{\textsc{Multi} was proposed to Boost (2016) and conditionally accepted}
+\begin{frame}{\textsc{Multi} was proposed to Boost (2026) and conditionally accepted}
 \centering
 \url{gitlab.com/correaa/boost-multi}\\
 \includegraphics[scale=0.1]{gitlab}\\
@@ -513,7 +513,7 @@ Why proposed to Boost?
   \item Still good distribution model and visibility
   \item No need for compiler-magic
   \item Moderate time horizon
-  \item Can eventually benefit from low level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
+  \item Can eventually benefit from low-level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
   \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
 \end{itemize}
 \end{frame}
@@ -523,7 +523,7 @@ Why proposed to Boost?
 #include <boost/multi/array.hpp>
 namespace multi = boost::multi;
 // from extents
-multi::array<int, 2> A({3, 4});  // a 3 x 4
+multi::array<int, 2> A({3, 4});  // a 3 x 4 array
 
 // from a (rectangular) initializer list
 multi::array<int, 2> B = {{1, 2, 3}, {4, 5, 6}};
@@ -587,12 +587,12 @@ auto g(multi::subarray<int, 2> arr) { ... }
 \end{frame}
 
 \begin{frame}{Fundamental access/layout operations}
-Indicing
+Indexing
 \begin{itemize}
 \item Index\\
   \lstinline|A[i]| removes (binds) first dimension
 \item Slice\\
-  \lstinline|A.sliced(first, last)| range subarrays (equal dimension) semiopen interval \([\mathrm{first}, \mathrm{last}) \)
+  \lstinline|A.sliced(first, last)| range subarrays (equal dimension) half-open interval \([\mathrm{first}, \mathrm{last}) \)
 \end{itemize}
 
 Fundamental
@@ -610,7 +610,7 @@ Fundamental
 
 \begin{frame}[fragile]{Derived and positional indexing}
 \begin{itemize}
-  \item Indexing (with parenthesis)
+  \item Indexing (with parentheses)
     \lstinline|A(i) -> A[i]|
   \item Sliced (terse)
     \lstinline|A({first, last}) -> A.sliced(first, last)|
@@ -624,8 +624,8 @@ Fundamental
     \lstinline|A({first, last}, i) -> A.rotated()[i].unrotated()({first, last})| \\
 \end{itemize}
 
-\begin{block}{}
-Modern compilers can elide these temporary objects
+\begin{block}{Too many temporaries objects?}
+Modern compilers can elide these temporary objects.
 \end{block}
 
 \begin{alertblock}{}
@@ -662,8 +662,8 @@ Modern compilers can elide these temporary objects
 \centering
 \includegraphics[scale=0.8]{types_relations}
 
-\begin{alertblock}{}
-  Looks complicated, intuitive for the most part in practice.
+\begin{alertblock}{It looks complicated}
+Intuitive for the most part in practice. Perhaps arrays deserve this level of complexity.
 \end{alertblock}
 \end{frame}
 
@@ -763,7 +763,7 @@ std::is_sorted( A.begin(), A.end() );
 \setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
 \setbeamercolor{block body alerted}{bg=green!10}
 \begin{alertblock}{Passes!}
-  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+  Indicates that our iterators work correctly with \lstinline|swap|, \lstinline|std::rotate|, \lstinline|stable_partition|
 \end{alertblock}
 }
 \end{frame}
@@ -785,12 +785,12 @@ assert( std::is_sorted( A.transposed().begin(), A.transposed().end() ) );
 \setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
 \setbeamercolor{block body alerted}{bg=green!10}
 \begin{alertblock}{Passes!}
-  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+  Indicates that our iterators work correctly with \lstinline|swap|, \lstinline|std::rotate|, \lstinline|stable_partition|
 \end{alertblock}
 }
 
 \begin{block}{}
-  Also works with std::ranges algorithms, filters, etc
+  Also works with std::ranges algorithms, filters, etc.
 \end{block}
 \end{frame}
 
@@ -803,7 +803,7 @@ assert( std::is_sorted( A.transposed().begin(), A.transposed().end() ) );
 
 multi::array<int, 2> A({10, 10});
 std::ofstream ofs{"data.xml"};
-boost::archive::xml_oarchive xoa{ofs}
+boost::archive::xml_oarchive xoa{ofs};
 xoa << boost::make_nvp("A", A);
 \end{lstlisting}
 \end{column}
@@ -813,7 +813,7 @@ xoa << boost::make_nvp("A", A);
 
 multi::array<int, 2> B;
 std::ifstream ifs{"data.xml"};
-boost::archive::xml_iarchive xia{ifs}
+boost::archive::xml_iarchive xia{ifs};
 xia >> B;
 \end{lstlisting}
 \end{column}
@@ -870,7 +870,7 @@ Special purpose:
 
 \begin{alertblock}{From WHERE to HOW}
 The library propagates the pointer type throughout subarrays, iterators,
-and element references all carry the allocator's pointer.
+and references; all carry the allocator's pointer.
 There is compile-time information on HOW to run.
 \end{alertblock}
 
@@ -900,7 +900,7 @@ B = A;
 \end{column}
 \end{columns}
 \begin{lstlisting}
-template<typename T, dimenensionality_type D, class Alloc>
+template<typename T, dimensionality_type D, class Alloc>
 class array {
  using element_ptr = std::allocator_traits<Alloc>::pointer;
  auto operator=(array const& other) -> array& {
@@ -920,7 +920,7 @@ class adl_copy_n_t {
   auto _(priority<3>, auto it, auto... rst) ... {return it.copy_n(...); } // member
 public:
   template<class... As> auto operator()(As&&... as) const -> decltype(...) { 
-    return _(priority<3>(), std::forward<As>(as)...));
+    return _(priority<3>(), std::forward<As>(as)...);
   }
 };
 inline constexpr adl_copy_n_t adl_copy_n;
@@ -930,7 +930,6 @@ inline constexpr adl_copy_n_t adl_copy_n;
 \begin{itemize}
   \item Overload resolution picks the \emph{highest priority} that compiles (SFINAE)
   \item Same call site works for CPU (\lstinline|std::|), GPU (\lstinline|thrust::|), or user types
-  \item Extensible (non-intrusive but dangerous): add a \lstinline|copy_n| free function found via ADL
   \item Extensible (intrusive): add members: add a \lstinline|copy_n| member function
 \end{itemize}
 
@@ -972,7 +971,7 @@ Standard:
 std::iota(c.begin(), c.end(), 0);  // c = {0, 1, 2, 3, ...}
   \end{lstlisting}
   \begin{lstlisting}
-std::views::iota(1, 10);  // {0, 1, ..., 10}
+std::views::iota(1, 10);  // {1, ..., 9}
   \end{lstlisting}
 
 In the library:
@@ -999,9 +998,9 @@ B.extent|\xout{s}|();  // leading dimension {0, 1, 2, 3, ..., B.size() - 1}
   \begin{lstlisting}[escapechar=|]
 multi::array<char, 2> B = {
   {'a', 'b', 'c'},
-  {'d', 'e', 'c'}
+  {'d', 'e', 'f'}
 };
-B.extent|\uline{s}|();
+B.extent|\uline{s}|();  // structured Cartesian product
 // {
 //   { tuple{0, 0}, tuple{0, 1}, tuple{0, 2} },  // <-- B.extents().begin()
 //   { tuple{1, 0}, tuple{1, 1}, tuple{1, 2} }
@@ -1041,8 +1040,8 @@ B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 \end{quote}
 
 
-Translated to C++, \(f\) could be function object that maps coordinates to values, and
-\(A\) can be a cartesian set of points (of the array)
+Translated to C++, \(f\) could be a function object that maps coordinates to values, and
+\(A\) can be a Cartesian set of points (of the array)
 
 \pause
 
@@ -1225,7 +1224,7 @@ STL (leading dimension)                         & 2.6 & 1.0x \\
 Parallel STL (leading dimension)                & 1.4 & 1.9x \\
 \hline
 thrust::for\_each ([cuda::par, ] flat elements) & 0.3 & 8.7x \\
-std::for\_each (std::par, flat elements)        & 0.6 & 3.7x \\
+std::for\_each (std::par, flat elements)        & 0.7 & 3.7x \\
 std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \end{tabular}
 \end{table}
@@ -1298,7 +1297,7 @@ Given a 2D array, reduce each row:
 auto M    = multi::array<double, 2, thrust::device_allocator<double> >({100, 1000});
 auto sums = multi::array<double, 1, thrust::device_allocator<double> >(M.size(0));
 
-thrust::transform(M.begin(), M.end(), row_sums.begin(),
+thrust::transform(M.begin(), M.end(), sums.begin(),
   [](auto const& row) {
     return thrust::reduce(row.begin(), row.end());
   }
@@ -1403,8 +1402,8 @@ Boost.Multi ships optional adaptors that integrate arrays with external librarie
 \begin{frame}[fragile]{Philosophy behind adaptors (BLAS/CUDA BLAS example)}
 
 \begin{itemize}
-  \item When possible same code should work for different backends
-  \item Functional style of programming (deviates from \texttt{std::linalg})
+  \item When possible, the same code should work for different backends
+  \item Uses functional style of programming (deviates from \texttt{std::linalg})
   \item Efficient (no surprises)
 \end{itemize}
 
@@ -1440,7 +1439,7 @@ C = blas::gemm(1.0, A, B);  // C = A*B, shouldn't allocate
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
-    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flariron Institute, NY
+    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
     \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
     %\item a manufacturing company in Québec, Canada
   \end{itemize}
@@ -1468,7 +1467,7 @@ C = blas::gemm(1.0, A, B);  // C = A*B, shouldn't allocate
 \begin{frame}{Thoughts about AI}
   \begin{itemize}
     \item No AI was used to develop the library
-    \item After Boost Review (conditionally accepted), AI was used to proof read documentation
+    \item After Boost Review (conditionally accepted), AI was used to proofread documentation
     \item The irony isn't lost on me: I'm probably documenting mainly for AI
     \item ... but I'd prefer AI that learns to code using Generic Programming
   \end{itemize}

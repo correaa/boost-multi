@@ -1205,6 +1205,8 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
+	using indices_type = typename extensions_t<D>::indices_type;
+
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
 	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
