@@ -213,12 +213,11 @@
 \begin{frame}[fragile]{Multidimensional Arrays}
 \vspace{3cm}
 \begin{lstlisting}
-  assert( A[1] == 'b' );         // A(1) ???
-  assert( B[1][2] == 'n' );      // B(1, 2) ??
-  assert( C[1][0][2] == 'w' );  // C(1, 0, 2) ??
+  assert( A[1] == 'b' );         // A(1)
+  assert( B[1][2] == 'n' );      // B(1, 2)
+  assert( C[1][0][2] == 'w' );   // C(1, 0, 2)
 \end{lstlisting}
 \begin{alertblock}{Visualization is only a convention}
-  Desired symmetry between rotated (transposed) illustrations of the arrays.
   Implies a symmetry in the indices.
 \end{alertblock}
 \end{frame}
@@ -292,6 +291,13 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
+\begin{frame}{Strided arrays as a data structure, strided subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock_stride}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
 \begin{frame}{Strided arrays as a data structure}
 \begin{center}
 \lstinline|element i, j ->   base + stride1*i + stride2*j|
@@ -305,7 +311,7 @@ Pros:
 \end{itemize}
 Cons:
 \begin{itemize}
-  \item Not available in the language
+  \item Not available in the language; needs library solutions
   \item No support from STL algorithms
   \item Not easy to grow
 \end{itemize}
@@ -488,11 +494,19 @@ auto operator>>(std::istream& out, Value &      self) {...}
 \section{Array Model}
 
 \begin{frame}{\textsc{Multi} was proposed to Boost (2026) and conditionally accepted}
-\centering
-\url{gitlab.com/correaa/boost-multi}\\
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\href{https://gitlab.com/correaa/boost-multi}{\texttt{gitlab.com/correaa/boost-multi}}\\
 \includegraphics[scale=0.1]{gitlab}\\
-\url{github.com/correaa/boost-multi}\\
+\href{https://github.com/correaa/boost-multi}{\texttt{github.com/correaa/boost-multi}}\\
 \includegraphics[scale=0.1]{github}\\
+\end{column}
+\begin{column}{0.4\textwidth}
+\href{https://correaa.github.io/boost-multi}{\texttt{correaa.github.io/boost-multi}}\\
+\includegraphics[scale=0.1]{documentation}\\
+\end{column}
+\end{columns}
+
 \end{frame}
 
 \begin{frame}
@@ -503,7 +517,7 @@ Why \textbf{not} proposed for Standard (or Beaman)?
   \item Controversial idioms (some hacks) \emoji{hot-pepper}
   \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
   \item Enough overlap with \texttt{std::span}, \texttt{std::mdspan} and \texttt{std::mdarray}
-  \item Short time horizon (I am stuck in C++17/20 for compatibility with GPUs)
+  \item Long time horizon (I am stuck in C++17/20 for compatibility with GPUs)
 \end{itemize}
 
 Why proposed to Boost?
@@ -540,12 +554,14 @@ A[1][2] = 5;  // intermediate object?
 \end{frame}
 
 \begin{frame}[fragile]{Proxy subarray-reference}
+\begin{center}
+\includegraphics[scale=0.7]{strided_row_small}
+\end{center}
 \begin{lstlisting}
-multi::array<int, 2> A({3, 4});
+multi::array<int, 2> A({4, 6});
 
 auto row_it = A.begin() + 1;
 ??? row = A[1];  // same as A(1, _) or *row_it
-
 // auto                       row = ...  // misleading, valid but not recommended
 // multi::subarray<double, 1> row = ...  // too verbose
 // multi::array<double, 1>    row = ...  // makes a copy
@@ -653,14 +669,14 @@ Modern compilers can elide these temporary objects.
 \end{table}
 
 \begin{alertblock}{Inheritance for composition (usually a bad idea)}
-  Made it \texttt{public} inheritance \emoji{hot-pepper} because I found it useful.
+  I made it \texttt{public} inheritance \emoji{hot-pepper} because I found it useful.
   It is opt-in.
 \end{alertblock}
 \end{frame}
 
 \begin{frame}{Relations between types, recursion across dimensions (simplified)}
 \centering
-\includegraphics[scale=0.8]{types_relations}
+\includegraphics[scale=0.75]{types_relations}
 
 \begin{alertblock}{It looks complicated}
 Intuitive for the most part in practice. Perhaps arrays deserve this level of complexity.
@@ -698,29 +714,34 @@ for(auto sap : saps) {
 \end{columns}
 \end{frame}
 
-% \begin{frame}[fragile]{\texttt{multi::dynamic\_array}: pinned owning array}
+\begin{frame}[fragile]{\texttt{multi::dynamic\_array}: pinned owning array, \texttt{multi::inplace\_array}}
 
-% \lstinline|multi::dynamic_array<T, D, A>| owns memory, is copyable, but \textbf{not movable}:
+\lstinline|multi::dynamic_array<T, D, A>| owns memory, is copyable, but \textbf{not movable}:
 
-% \begin{lstlisting}
-% multi::dynamic_array<double, 2> D({3, 4});  // allocates, fixed size
-% multi::dynamic_array<double, 2> E = D;      // ok: deep copy
-% multi::dynamic_array<double, 2> F = std::move(D);  // ok, but O(N)
-% \end{lstlisting}
+\begin{lstlisting}
+multi::dynamic_array<double, 2> D({3, 4});  // allocates, fixed size
+multi::dynamic_array<double, 2> E = D;      // ok: deep copy
+multi::dynamic_array<double, 2> F = std::move(D);  // ok, but O(N)
+\end{lstlisting}
 
-% \begin{itemize}
-%   \item Size is fixed at construction (no \lstinline|resize|, no reallocation)
-%   \item Iterators and pointers are \textbf{never invalidated} after construction
-%   \item Iterators, subarrays, and pointers never invalidated unless the object is destroyed
-% \end{itemize}
+\begin{itemize}
+  \item Size is fixed at construction (no \lstinline|resize|, no reallocation)
+  \item Iterators and pointers are \textbf{never invalidated} after construction
+  \item Iterators, subarrays, and pointers never invalidated unless the object is destroyed
+\end{itemize}
 
-% \begin{block}{Inspired by \texttt{std::dynarray} (proposed for C++14, N3467, Stroustrup et al.)}
-%   \texttt{std::dynarray} was proposed as a fixed-size heap array
-%   but did not make it into the standard.
-%   \texttt{multi::dynamic\_array} generalizes the idea to $N$ dimensions.
-% \end{block}
+\begin{block}{Inspired by \texttt{std::dynarray} (proposed for C++14, N3467, Stroustrup et al.)}
+  \texttt{std::dynarray} was proposed as a fixed-size heap array
+  but did not make it into the standard.
+  \texttt{multi::dynamic\_array} generalizes the idea to $N$ dimensions.
+\end{block}
 
-% \end{frame}
+\begin{lstlisting}
+template<class T, dimensionality_type D, std::size_t Capacity = 32>
+using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+\end{lstlisting}
+
+\end{frame}
 
 \begin{frame}[fragile]{Looks complicated, does it work? Test 1/2}
 Regularity of \lstinline|multi::array<T, D>|:
@@ -1321,7 +1342,6 @@ thrust::transform(M.begin(), M.end(), sums.begin(),
 template<class ExecutionPolicy, class T, class S>
 auto reduce_by_row(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
   assert(M.extension() == sums.extension());
-
   auto row_idx = []__host__ __device__ (int i, int j){return i;} ^ M.extensions();
 
   ::thrust::reduce_by_key(
@@ -1366,7 +1386,7 @@ reduce_by_row(
         \emoji{down-arrow}\\
       Parallelize your algorithm (std::execution::par)\\
           \emoji{down-arrow}\\
-      Change your memory space (use custom libraries if necessary, e.g. Thrust)
+      Change your memory space (use custom libraries if necessary, e.g. Thrust)\\
           \emoji{down-arrow}\\
       Keep looking for algorithms
   \end{center}
@@ -1433,6 +1453,9 @@ C = blas::gemm(1.0, A, B);  // C = A*B, shouldn't allocate
 \begin{center}
 \includegraphics{dispatching_blas}
 \end{center}
+
+\lstinline|multi::blas::gemm| produces a "gemm" ranges;
+fun fact: custom \lstinline|copy_n| calls actual GEMM operation
 \end{frame}
 
 \begin{frame}{Real world uses}
@@ -1476,7 +1499,7 @@ C = blas::gemm(1.0, A, B);  // C = A*B, shouldn't allocate
 \begin{frame}{Takeaways}
 
 \begin{enumerate}
-  \item \textbf{Generic programming works for arrays. (if you make some concession)}\\
+  \item \textbf{Generic programming works for arrays. (If you make some concessions \emoji{hot-pepper})}\\
     The same code handles 1D\ldots ND, CPU and GPU, owned and borrowed memory.
 
   \item \textbf{Views are cheap, copies are explicit.} (no need for reference counting or pointer/shallow semantics)\\
