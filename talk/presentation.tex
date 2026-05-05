@@ -10,6 +10,7 @@
 \usepackage[scale=0.85]{FiraMono}
 \usepackage{ulem}
 \usepackage{svg}
+\svgsetup{inkscapeversion=1.4}
 
 \usepackage{emoji}
 \usepackage{multimedia}
@@ -107,12 +108,12 @@
     %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
     \item Simulating Quantum Mechanics using Classical Computers, HPC, and GPUs \\
       ~
-    \item LLNL Representative at the C++ Standards Committee \\
+    \item LLNL Representative at the C++ Standards Committee (secondary)\\
       ~
     % \item \textsc{Multi} Multi-dimensional arrays in C++
     % \item \textsc{B-MPI3} C++ wrapper for the MPI 3.0 standard (MP, RMA, ShMem) \\
-    %   ~
-    \item \textsc{Inq} Electronic structure code for ground state and time dependent
+    %  ~
+    \item \textsc{Inq} Electronic structure code for ground state and time dependent (C++/MPI/CUDA)
     \item \textsc{QMCPACK} Quantum Montecarlo for accurate energies of molecules
   \end{itemize}
 \end{frame}
@@ -121,10 +122,18 @@
 \begin{itemize}
   \item Condensed Matter Physics (materials simulations)
   \item Community is historically FORTRAN-based
-  \item Always in search for the perfect language for simulations (tried Mathematica, C, Smalltalk, Matlab)
-  \item Many false starts with C++: object-oriented design, pointless template metaprogramming, multiple dispatching, DSLs
-  \item ...until I found Stepanov's works, understood the STL, all clicked
-  \item Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
+  \item Always in search for the perfect language for simulations (Mathematica, C, Smalltalk, Matlab)
+  \item Many false starts with C++: object-oriented design, pointless template metaprogramming, virtual polymorphism, multiple dispatching, DSLs
+  \item ...until I found Stepanov's works, understood the STL, all clicked... start of a journey
+\end{itemize}
+\begin{alertblock}{}
+    Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
+\end{alertblock}
+
+\begin{itemize}
+\item LLNL Representative at the C++ Standards Committee (secondary/alternate)
+\item First LEWGI P3879 on \lstinline|std::overload| (with Branden Ganetsky)
+\item Boost.Multi (this work), B.MPI3, Covariant (functional with variant types)
 \end{itemize}
 \end{frame}
 
@@ -172,7 +181,7 @@
       \vspace{0.8em}
       \textbf{Performance lives in arrays}
       \begin{itemize}
-        \item Contiguous memory $\Rightarrow$ cache efficiency
+        \item Contiguous/Regular memory $\Rightarrow$ cache efficiency
         \item SIMD vectorization, GPU parallelism
         \item BLAS/LAPACK operate on array layouts
       \end{itemize}
@@ -193,91 +202,141 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Multidimensional Arrays}
-\begin{center}
-\begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
-
-  % All diagrams share top y = 2.8 (index labels), cells start at y = 2.4 down
-
-  % --- 1D ---
-  \node[anchor=east] at (-0.2, 2.15) {\textbf{1D}};
-  \foreach \i/\val in {0/a, 1/b, 2/c} {
-    \draw (\i*1.1, 1.7) rectangle (\i*1.1+1.0, 2.7);
-    \node at (\i*1.1+0.5, 2.2) {\val};
-    \node[font=\tiny] at (\i*1.1+0.5, 2.85) {\i};
+{
+  \usebackgroundtemplate{
+    \includegraphics{arrays_1D_2D_3D_4D_ND}
+    %\includesvg[width=\paperwidth]{arrays_1D_2D_3D_4D_ND.svg}
   }
-
-  % --- 2D ---
-  \node[anchor=east] at (4.0, 2.15) {\textbf{2D}};
-  % row 0
-  \draw (4.2, 1.7) rectangle (5.1, 2.6); \node at (4.65, 2.15) {f};
-  \draw (5.1, 1.7) rectangle (6.0, 2.6); \node at (5.55, 2.15) {g};
-  \draw (6.0, 1.7) rectangle (6.9, 2.6); \node at (6.45, 2.15) {h};
-  % row 1
-  \draw (4.2, 0.8) rectangle (5.1, 1.7); \node at (4.65, 1.25) {i};
-  \draw (5.1, 0.8) rectangle (6.0, 1.7); \node at (5.55, 1.25) {j};
-  \draw (6.0, 0.8) rectangle (6.9, 1.7); \node at (6.45, 1.25) {k};
-  % col indices
-  \foreach \col in {0,1,2} { \node[font=\tiny] at (4.65+\col*0.9, 2.85) {\col}; }
-  % row indices
-  \node[font=\tiny] at (3.95, 2.15) {0};
-  \node[font=\tiny] at (3.95, 1.25) {1};
-
-  % --- 3D ---
-  \node[anchor=east] at (8.2, 2.65) {\textbf{3D}};
-  \def\ox{8.4} \def\oy{0.8} \def\oz{0.55}
-  \foreach \layer in {1, 0} {
-    \foreach \row in {0, 1} {
-      \foreach \col in {0, 1, 2} {
-        \pgfmathsetmacro{\x}{\ox + \col*0.82 + \layer*\oz}
-        \pgfmathsetmacro{\y}{\oy + (1-\row)*0.82 + \layer*\oz}
-        \draw[fill=white] (\x, \y) rectangle (\x+0.75, \y+0.75);
-      }
-    }
-  }
-  % layer 0 labels
-  \node at (8.78, 1.17) {p}; \node at (9.60, 1.17) {q}; \node at (10.42, 1.17) {r};
-  \node at (8.78, 1.99) {m}; \node at (9.60, 1.99) {n}; \node at (10.42, 1.99) {o};
-  % layer 1 labels
-  \node at (9.33, 1.72) {u}; \node at (10.15, 1.72) {v}; \node at (10.97, 1.72) {w};
-  \node at (9.33, 2.54) {x}; \node at (10.15, 2.54) {y}; \node at (10.97, 2.54) {z};
-  % col indices (top)
-  \foreach \col in {0,1,2} { \node[font=\tiny] at (8.78+\col*0.82, 2.85) {\col}; }
-  % row indices
-  \node[font=\tiny] at (8.05, 1.99) {0};
-  \node[font=\tiny] at (8.05, 1.17) {1};
-  % depth indices
-  \node[font=\tiny] at (9.15, 2.72) {0};
-  \node[font=\tiny] at (9.70, 2.72) {1};
-
-  % ND label
-  \node[font=\normalsize] at (12.4, 1.8) {\textbf{4D\ldots ND}};
-
-\end{tikzpicture}
-\end{center}
+\begin{frame}[fragile]{Multidimensional Arrays}
+\vspace{3cm}
+\begin{lstlisting}
+  assert( A[1] == 'b' );         // A(1) ???
+  assert( B[1][2] == 'n' );      // B(1, 2) ??
+  assert( C[1][0]][2] == 'w' );  // C(1, 0, 2) ??
+\end{lstlisting}
+\begin{alertblock}{Visualization is only a convention}
+  Desired symmetry between rotated (transposed) illustration of the arrays.
+\end{alertblock}
+note: most examples in this talk are 2D for simplicity
 \end{frame}
 
-\begin{frame}[plain]{Movie: Electron density reacts to swift atomic motion}
-  \centering
-  \movie[width=0.7\textwidth, height=0.537\textwidth, autostart, loop]{%
-    \includegraphics[width=0.7\textwidth]{diff-movie_v1p8au_contour}%
+\begin{frame}[fragile]{Multidimensional Arrays}
+\vspace{3cm}
+\begin{lstlisting}
+  assert( A != B[0] );
+  assert( C(0, {0, 2}, {0, 2}) != B );
+\end{lstlisting}
+\begin{alertblock}{Expected behavior across dimensiona}
+  Desire to look for relations across dimensions
+\end{alertblock}
+note: most examples in this talk are 2D for simplicity
+\end{frame}
+}
+
+\begin{frame}[plain]{Motivating example: Electron density \(\rho\) reacts to swift atomic motion}
+\begin{columns}
+  \begin{column}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{electron_density}
+  \end{column}
+  \begin{column}{0.6\textwidth}
+     \movie[width=1.05\textwidth, height=0.8055\textwidth, autostart, loop]{%
+    \includegraphics[width=1.05\textwidth]{diff-movie_v1p8au_contour}%
   }{diff-movie_v1p8au_contour.mp4}
+  \end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}
-\frametitle{Also at C++Now 2026\ldots}
+\frametitle{C++ and arrays in 2026\ldots}
 
-\begin{block}{Keynote: Making C++ Standard Parallelism Multidimensional}
+\begin{block}{Keynote: ``Making C++ Standard Parallelism Multidimensional''}
   \begin{itemize}
     \item Don't miss this keynote by Mark Hoemmen (Nvidia)
   \end{itemize}
 \end{block}
+\begin{itemize}
+  \item `Typed linear algebra' by François Carouge
+  \item \textsc{Parrot} library by Conor Hoekstra (Nvidia) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
+  \item CUDA Tile soon to be available for C++
+  \item \textsc{Boost.Multi} (this work) fully accepted? \emoji{crossed-fingers}
+\end{itemize}
 
 \bigskip
 \begin{alertblock}{2026}
-  \large Is 2026 \textbf{the year of C++ as an array language}? :)
+  \large Is 2026 \textbf{the year of C++ as an array language}? \emoji{smiley}
 \end{alertblock}
 
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure, subarray subblock}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock}
+ 
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure, row subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_row}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure, column subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_col}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
+\begin{frame}{Strided arrays as a data structure}
+\begin{center}
+\lstinline|element i, j ->   base + stride1*i + stride2*j|
+\end{center}
+
+Pros:
+\begin{itemize}
+  \item Maintains as a much as possible symmetry between dimensions
+  \item Memory of arrays and subarrays is compact, regular, an often contiguous
+  \item Compatible with legacy libraries, FFTW, BLAS, Lapack, CUFFT, CUBLAS, MPI
+\end{itemize}
+Cons:
+\begin{itemize}
+  \item Not available in the language
+  \item Not support from STL algorithms
+  \item Not easy to grow
+\end{itemize}
+
+\begin{alertblock}{Other datastructures (layouts) also maintain symmetry}
+  Tiled, Zig-zag, Hilbert curve filling
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}{Multidimensionality via nested contatainers (the wrong way)}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\lstinline|std::vector<std::vector<T> >|
+
+\includegraphics[scale=0.8]{nested_vector}
+\end{column}
+\begin{column}{0.5\textwidth}
+Pros (mostly traps)
+\begin{itemize}
+  \item \texttt{B[i][j]} works out of the box
+  \item Iterator access available (but only if you access things the right way)
+  \item Easy to grow (in the first dimension)
+\end{itemize}
+Cons:
+\begin{itemize}
+  \item Distict logic for different dimensions
+  \item Memory all over the place
+  \item Has to maintain invariant (rectangular size)
+  \item Not compatible with legacy libraries
+  \item Gets worst with higher dimensionality
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Semiregular types (Stepanov Regularity, EoP)}
@@ -371,32 +430,33 @@ Available algorithms: same as before, but can be more efficient.
 
 	\underline{Modern C++ is based around them}
 
-	\begin{alertblock}{Litmus test for your type \lstinline{T}}
+	\begin{alertblock}{Litmus test for your specific type \lstinline{Type}}
 		Quick test for your types, does this compile? does it do the expected thing?
-		\begin{lstlisting}
-std::vector<T> v = {r1, r2, r3};
+\begin{lstlisting}
+std::vector<Type> v = {r1, r2, r3};
 std::sort( v.begin(), v.end() );
 assert( std::is_sorted(v.begin(), v.end() );
 \end{lstlisting}
-	\end{alertblock}
+\end{alertblock}
 
-	A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
-	\begin{lstlisting}
-coocooLib::array a; coocooLib::array b;
+A number of classes in libraries (or frameworks) do \textbf{not} pass the litmus test.
+\begin{lstlisting}
+coocooLib_array a; coocooLib_array b;
 a = b;  // look how smart (?), a now "points" to b
 a.copy(b);  // inflation of syntax
 a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
 \end{lstlisting}
+
 \end{frame}
 
 \begin{frame}[fragile]{Values = Regular + platonic / persistent}
 
-	Values are Regular types that are also amenable to \emph{mathematical}, \emph{equational}, \emph{logical} reasoning, e.g. \emph{arithmetic}.
-	Mathematics and numerical mathematics is based around them.
+Values are Regular types that are also amenable to \emph{mathematical}, \emph{equational}, \emph{logical} reasoning, e.g. \emph{arithmetic}.
+Mathematics and numerical mathematics is based around them.
 
 \pause
 
-	Values = Regular + saving/loading to a medium (serialization)
+Values = Regular + saving/loading to a medium (serialization)
 
 \begin{lstlisting}
 struct Value { ...
@@ -423,15 +483,15 @@ auto operator>>(std::istream& out, Value &      self) {...}
 \begin{frame}
 \frametitle{As a proposal}
 
-Why not proposed for Standard?
+Why \textbf{not} proposed for Standard or Beaman?
 \begin{itemize}
   \item Can't promise ABI compatibility
-  \item Controversial idioms (some hacks)
+  \item Controversial idioms (some hacks) \emoji{hot-pepper}
   \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
   \item Enough overlap with \texttt{std::span} and \texttt{std::mdarray}
-  \item Long time horizon
+  \item Short time horizon (I am stuck in C++17/20 for compatibility with GPUs)
 \end{itemize}
- 
+
 Why proposed to Boost?
 \begin{itemize}
   \item Ideal balance between risk (innovation) and requirements (quality, guidelines)
@@ -455,16 +515,17 @@ namespace multi = boost::multi;
 // from extents (uninitialized)
 multi::array<double, 2> A({3, 4});
 
-// from initializer list
+// from a (rectangular) initializer list
 multi::array<int, 2> B = {{1, 2, 3}, {4, 5, 6}};
 
 // from existing memory (no allocation, no ownership)
 double data[12] = {};
-multi::array_ref<double, 2> R(data, {3, 4});
+multi::array_ref<double, 2> R({3, 4}, data);
 
 // element access
 A[1][2] = 3.14;
 A(1, 2) = 3.14;  // equivalent
+A[1, 2] = 3.14;  // equivalent C++26
 \end{lstlisting}
 
 \begin{itemize}
@@ -474,20 +535,79 @@ A(1, 2) = 3.14;  // equivalent
 
 \end{frame}
 
+\begin{frame}[fragile]{Proxy subarray-reference}
+\begin{lstlisting}
+multi::array<double, 2> A({3, 4});
+
+auto row_it = A.begin() + 1;
+??? row = A[1];  // same as A(1, _) or *row_it
+
+// auto                       row = ...  // misleading
+// multi::subarray<double, 1> row = ...  // too verbose
+// multi::array<double, 1>    row = ...  // makes a copy
+\end{lstlisting}
+
+\begin{alertblock}{The problem with \texttt{auto}: "Implicit Evaluation of 'auto' Variables."}
+P0672R0 (2017) by Joël Falcou, Herb Sutter et al.
+(\texttt{std::vector<bool>}, proxy objects)
+\end{alertblock}
+
+My recommendation \emoji{hot-pepper}: use the provided `auto-plus operator' \texttt{auto ... = + ...;}
+\begin{lstlisting}
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{My recommendation (unenforceable, opt-in)}
+\begin{itemize}
+  \item Use provied `auto-plus' operator
+  \item Rely on lifetime extensions \emoji{hot-pepper} to document naming of reference-subarrays
+\end{itemize}
+\begin{lstlisting}
+multi::array<double, 2> A({3, 4});
+
+auto        row = + A[1];  // multi::array<double, 1>          row = A[1];
+auto&&      row =   A[1];  // multi::subarray<double, 1>       row = A[1];
+auto const& row =   A[1];  // multi::const_subarray<double, 1> row = A[1];
+\end{lstlisting}
+
+Prefer forward (universal) references:
+\begin{lstlisting}
+template<class Array2D>
+  // constrains, e.g. dimensionality == 2
+auto f(Array2D&& arr) { ... }
+\end{lstlisting}
+
+What to avoid bloat? (or work across compilation boundaries?)
+\begin{lstlisting}
+auto g(multi::subarray<int, 2> arr) { ... }
+\end{lstlisting}
+\end{frame}
+
 \begin{frame}[fragile]{Type hierarchy: ownership and mutability}
 
 \begin{table}
 \small
-\begin{tabular}{llll}
-\textbf{Type} & \textbf{Owns?} & \textbf{Mutable elements?} & \textbf{Returned by} \\
+\begin{tabular}{clllll}
+\textbf{Type}                              & \textbf{Owns} & \textbf{Copy} & \textbf{Move} & \textbf{Mutable elems?} & \textbf{Returned by}                          \\
 \hline
-\lstinline|multi::array<T, D>|          & Yes & Yes & you create it \\
-\lstinline|multi::array_ref<T, D>|      & No  & Yes & wrapping raw pointer \\
-\lstinline|multi::subarray<T, D>|       & No  & Yes & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
-\lstinline|multi::const_subarray<T, D>| & No  & No  & from \lstinline|const| array \\
-\lstinline|multi::dynamic_array<T, D>|  & Yes & Yes & from \lstinline|const| array \\
+\lstinline|multi::const_subarray<T, D, P>| & No            & No            & No            & No                      & from \lstinline|const| array                  \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::subarray<T, D, P>|       & No            & No            & No            & Yes                     & \lstinline|A[i]|, \lstinline|A.sliced()|, ... \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::array_ref<T, D, P>|      & No            & No            & No            & Yes                     & wrapping raw pointer                          \\
+                          ↑                &               &               &               &                         &                                               \\
+\lstinline|multi::dynamic_array<T, D, A>|  & Yes           & Yes           & No            & Yes                     & from \lstinline|const| array                  \\
+                          ↑                &               &               &               &                         &                                               \\ 
+\lstinline|multi::array<T, D, A>|          & Yes           & Yes           & Yes           & Yes                     & you create it                                 \\
 \end{tabular}
 \end{table}
+
+\begin{alertblock}{Inhetiance for composition ()}
+  Made it \texttt{public} because I found it useful.
+  It is opt-in.
+\end{alertblock}
 
 \begin{lstlisting}
 multi::array<double, 2> A({3, 4});
@@ -742,9 +862,7 @@ Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation;
 
 \section{Algorithms \& Performance}
 
-\begin{frame}[fragile]{Algorithm Dispatching}{
-How does the library call the right \texttt{copy\_n} for CPU vs GPU?
-}
+\begin{frame}[fragile]{Algorithm Dispatching}{How does the library call the right \texttt{copy\_n} for CPU vs GPU?}
 
 
 \medskip
@@ -982,20 +1100,50 @@ thrust::transform(M.begin(), M.end(), row_sums.begin(),
 
 \begin{frame}[fragile]{Solution: reduce\_by\_index}
 
-Use Thrust's built-in parallelism:
 \begin{lstlisting}
-auto row_sums = multi::reduce_by_index(M);
-// Massively parallel! All rows reduce simultaneously
+namespace mt = multi::thrust;
+
+mt::device_array<double, 2> M({nx, ny});  // on GPU
+mt::device_array<double, 1> sums(nx);     // result
+
+mt::reduce_by_index(M, sums);             // parallel row sums
 \end{lstlisting}
 
-\textbf{How it works:}
-\begin{itemize}
-  \item Maps each element to its row index
-  \item Uses \lstinline|thrust::reduce_by_key| (GPU-native)
-  \item Parallelizes across all rows at once
-\end{itemize}
+\textbf{How it works internally:}
+\begin{lstlisting}
+// row ID of element at flat position p = p / ny
+auto row_ids = thrust::make_transform_iterator(
+    thrust::make_counting_iterator(0L),
+    divide_by{ny}
+);
+thrust::reduce_by_key(
+    row_ids, row_ids + nx*ny,
+    M.elements().begin(),
+    thrust::discard_iterator(), sums.begin()
+);
+\end{lstlisting}
 
-\textbf{Speedup:} Parallelization across all \(N\) rows vs. serialized $N$ iterations
+All \(N_x \times N_y\) elements processed in parallel; no serial loop over rows.
+\end{frame}
+
+\begin{frame}[fragile]{reduce\_by\_index: lazy arrays}
+
+Works directly on \lstinline|restriction|s --- no intermediate storage:
+\begin{lstlisting}
+mt::device_array<double, 1> sums(nx);
+
+mt::reduce_by_index(
+    [](multi::index ix, multi::index iy) { return ix * iy; }
+    ^ multi::extensions_t<2>(nx, ny),   // lazy 2D array
+    sums
+);
+\end{lstlisting}
+
+\begin{itemize}
+  \item No \lstinline|device_array<double, 2>| ever allocated
+  \item Values generated on-the-fly by each GPU thread
+  \item Combines lazy evaluation with massively parallel reduction
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Custom Binary Operations}
@@ -1084,7 +1232,8 @@ auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
   \vspace{1em}
   \begin{center}
     \Large
-    \href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}
+    \href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}\\
+    \href{https://correaa.github.io/boost-multi/}{\texttt{correaa.github.io/boost-multi}}
   \end{center}
   \vspace{1em}
 
