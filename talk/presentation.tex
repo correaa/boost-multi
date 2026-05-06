@@ -11,7 +11,7 @@
 \usepackage{ulem}
 \usepackage{svg}
 \svgsetup{inkscapeversion=1.4}
-
+\transduration{0}
 \usepackage{emoji}
 \usepackage{multimedia}
 %\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
@@ -103,7 +103,7 @@
 
 \begin{frame}{A bit about myself}
   \begin{itemize}
-    \item Physicist, (Condensed Matter Physics)
+    \item Physicist (Condensed Matter Physics)
     \item Group Leader at the \textit{Quantum Simulations Group} at Lawrence Livermore Lab (California)
     %\item UC Berkeley \textrightarrow{} Stanford \textrightarrow{} LLNL
     \item Simulating Quantum Mechanics using Classical Computers, HPC, and GPUs \\
@@ -113,7 +113,7 @@
     % \item \textsc{Multi} Multi-dimensional arrays in C++
     % \item \textsc{B-MPI3} C++ wrapper for the MPI 3.0 standard (MP, RMA, ShMem) \\
     %  ~
-    \item \textsc{Inq} Electronic structure code for ground state and time dependent (C++/MPI/CUDA) \\
+    \item \textsc{Inq} Electronic structure code for ground state and time-dependent (C++/MPI/CUDA) \\
       ``A Modern GPU-Accelerated Computational Framework for (Time-Dependent) Density Functional Theory'',
       Andrade et al. J.Chem.Theory Comput. (2021)
     \item \textsc{QMCPACK} Quantum Monte Carlo for accurate energies of molecules
@@ -171,7 +171,7 @@
 	\end{quote}
 \end{frame}
 
-\begin{frame}{Why Arrays?}
+\begin{frame}{Why Multidimensional Arrays?}
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \textbf{Scientific computing is array computing}
@@ -190,10 +190,10 @@
       \end{itemize}
     \end{column}
     \begin{column}{0.5\textwidth}
-      \textbf{Arrays are the natural abstraction}
+      \textbf{Arrays are a natural abstraction}
       \begin{itemize}
         \item Most algorithms iterate over index ranges
-        \item Fortran, APL, Matlab, NumPy built around them
+        \item Lingua franca: Fortran, APL, Matlab, NumPy built around them
         \item C++ STL: ranges of elements --- but only 1D
       \end{itemize}
       \vspace{0.8em}
@@ -213,15 +213,13 @@
 \begin{frame}[fragile]{Multidimensional Arrays}
 \vspace{3cm}
 \begin{lstlisting}
-  assert( A[1] == 'b' );         // A(1) ???
-  assert( B[1][2] == 'n' );      // B(1, 2) ??
-  assert( C[1][0][2] == 'w' );  // C(1, 0, 2) ??
+  assert( A[1] == 'b' );         // A(1)
+  assert( B[1][2] == 'n' );      // B(1, 2)
+  assert( C[1][0][2] == 'w' );   // C(1, 0, 2)
 \end{lstlisting}
 \begin{alertblock}{Visualization is only a convention}
-  Desired symmetry between rotated (transposed) illustrations of the arrays.
   Implies a symmetry in the indices.
 \end{alertblock}
-note: most examples in this talk are 2D for simplicity, imagine the ND generalization
 \end{frame}
 
 \begin{frame}[fragile]{Multidimensional Arrays}
@@ -231,9 +229,9 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
   assert( C(0, {0, 2}, {0, 2}) != B );
 \end{lstlisting}
 \begin{alertblock}{Expected behavior across dimensions}
-  Desire to look for relations across dimensions
+  There are relations across dimensions
 \end{alertblock}
-note: most examples in this talk are 2D for simplicity
+note: most examples in this talk are 2D for simplicity, imagine the ND generalization
 \end{frame}
 }
 
@@ -255,12 +253,12 @@ note: most examples in this talk are 2D for simplicity
 
 \begin{block}{Keynote: ``Making C++ Standard Parallelism Multidimensional''}
   \begin{itemize}
-    \item Do not miss this keynote by Mark Hoemmen (Nvidia)
+    \item Do not miss this keynote by Mark Hoemmen (NVIDIA)
   \end{itemize}
 \end{block}
 \begin{itemize}
   \item `Typed linear algebra' by François Carouge
-  \item \textsc{Parrot} library by Conor Hoekstra (Nvidia) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
+  \item \textsc{Parrot} library by Conor Hoekstra (NVIDIA) \href{https://github.com/NVlabs/parrot}{\texttt{github.com/NVlabs/parrot}}
   \item CUDA Tile soon to be available for C++
   \item \textsc{Boost.Multi} (this work) fully accepted? \emoji{crossed-fingers}
 \end{itemize}
@@ -293,6 +291,13 @@ note: most examples in this talk are 2D for simplicity
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
+\begin{frame}{Strided arrays as a data structure, strided subarray}
+\vspace{-1.4cm}
+\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock_stride}
+
+\url{https://godbolt.org/z/1M3Eb3fhj}
+\end{frame}
+
 \begin{frame}{Strided arrays as a data structure}
 \begin{center}
 \lstinline|element i, j ->   base + stride1*i + stride2*j|
@@ -300,18 +305,18 @@ note: most examples in this talk are 2D for simplicity
 
 Pros:
 \begin{itemize}
-  \item Maintains as much as possible symmetry between dimensions
+  \item Maintains symmetry as much as possible between dimensions
   \item Memory of arrays and subarrays is compact, regular, and often contiguous
-  \item Compatible with legacy libraries, FFTW, BLAS, Lapack, CUFFT, CUBLAS, MPI
+  \item Compatible with legacy libraries, FFTW, BLAS, LAPACK, CUFFT, CUBLAS, MPI
 \end{itemize}
 Cons:
 \begin{itemize}
-  \item Not available in the language
+  \item Not available in the language; needs library solutions
   \item No support from STL algorithms
   \item Not easy to grow
 \end{itemize}
 
-\begin{alertblock}{Other datastructures (layouts) also maintain symmetry}
+\begin{alertblock}{Other data structures (layouts) also maintain symmetry}
   Tiled, Zig-zag, Hilbert curve filling
 \end{alertblock}
 
@@ -355,7 +360,7 @@ struct SR {
 	auto operator=(SR const& r) -> R&;  // assignment
 };
 \end{lstlisting}
-	... and also the semantics is the expected one.
+  ... and also the semantics should be as expected
 
 	Available algorithms: \emph{swap} (\lstinline{std::swap})
 \end{frame}
@@ -377,7 +382,7 @@ struct R { ...
 };
 \end{lstlisting}
 
-Some types might not have equality in practice because it could be prohibitively expensive or the algorithm for equality is not known.
+Some types might not have equality in practice because equality could be prohibitively expensive or the algorithm for equality is not known.
 
 Available algorithms: \emph{linear-search} (\lstinline{std::find})
 \end{frame}
@@ -428,20 +433,20 @@ struct TO { ...
 };
 \end{lstlisting}
 
-Available algorithms: same as before, but can be more efficient.
+Available algorithms: same as before, but they can be more efficient.
 
 \end{frame}
 
-\begin{frame}[fragile]{Claim: 	(Semi)Regular types are amenable to equational reasoning.}
+\begin{frame}[fragile]{Claim: (Semi)Regular types are amenable to equational reasoning.}
 
 	\underline{Modern C++ is based around them}
 
 	\begin{alertblock}{Litmus test for your specific type \lstinline{Type}}
-		Quick test for your types, does this compile? does it do the expected thing?
+		Quick test for your types, does this compile? Does it do the expected thing?
 \begin{lstlisting}
 std::vector<Type> v = {r1, r2, r3};
 std::sort( v.begin(), v.end() );
-assert( std::is_sorted(v.begin(), v.end() );
+assert( std::is_sorted(v.begin(), v.end() ) );
 \end{lstlisting}
 \end{alertblock}
 
@@ -458,7 +463,7 @@ a.deep_copy(); a.really_copy(b); a.NoJoke_copy(b);
 \begin{frame}[fragile]{Values = Regular + platonic / persistent}
 
 Values are Regular types that are also amenable to \emph{mathematical}, \emph{equational}, \emph{logical} reasoning, e.g. \emph{arithmetic}.
-Mathematics and numerical mathematics is based around them.
+Mathematics and numerical mathematics are based around them.
 
 \pause
 
@@ -488,6 +493,23 @@ auto operator>>(std::istream& out, Value &      self) {...}
 
 \section{Array Model}
 
+\begin{frame}{\textsc{Multi} was proposed to Boost (2026) and conditionally accepted}
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\href{https://gitlab.com/correaa/boost-multi}{\texttt{gitlab.com/correaa/boost-multi}}\\
+\includegraphics[scale=0.1]{gitlab}\\
+\href{https://github.com/correaa/boost-multi}{\texttt{github.com/correaa/boost-multi}}\\
+\includegraphics[scale=0.1]{github}\\
+\end{column}
+\begin{column}{0.4\textwidth}
+\href{https://correaa.github.io/boost-multi}{\texttt{correaa.github.io/boost-multi}}\\
+\includegraphics[scale=0.1]{documentation}\\
+\footnotesize{Thanks Matt Borland @ CPPAlliance!}
+\end{column}
+\end{columns}
+
+\end{frame}
+
 \begin{frame}
 \frametitle{\textsc{Multi} proposed to Boost}
 Why \textbf{not} proposed for Standard (or Beaman)?
@@ -496,7 +518,7 @@ Why \textbf{not} proposed for Standard (or Beaman)?
   \item Controversial idioms (some hacks) \emoji{hot-pepper}
   \item Too restrictive for compatibility with exotic 3rd parties (Thrust, BLAS, CUDA, cuLibs)
   \item Enough overlap with \texttt{std::span}, \texttt{std::mdspan} and \texttt{std::mdarray}
-  \item Short time horizon (I am stuck in C++17/20 for compatibility with GPUs)
+  \item Long time horizon (I am stuck in C++17/20 for compatibility with GPUs)
 \end{itemize}
 
 Why proposed to Boost?
@@ -506,7 +528,7 @@ Why proposed to Boost?
   \item Still good distribution model and visibility
   \item No need for compiler-magic
   \item Moderate time horizon
-  \item Can eventually benefit from low level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
+  \item Can eventually benefit from low-level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
   \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
 \end{itemize}
 \end{frame}
@@ -516,7 +538,7 @@ Why proposed to Boost?
 #include <boost/multi/array.hpp>
 namespace multi = boost::multi;
 // from extents
-multi::array<int, 2> A({3, 4});  // a 3 x 4
+multi::array<int, 2> A({3, 4});  // a 3 x 4 array
 
 // from a (rectangular) initializer list
 multi::array<int, 2> B = {{1, 2, 3}, {4, 5, 6}};
@@ -530,21 +552,17 @@ A(1, 2) = 5;  // equivalent
 A[1, 2] = 5;  // equivalent C++23
 A[1][2] = 5;  // intermediate object?
 \end{lstlisting}
-
-\begin{itemize}
-  \item Dimensionality is compile-time, sizes are runtime
-  \item \lstinline|array| owns memory; \lstinline|array_ref| borrows it
-\end{itemize}
-
 \end{frame}
 
 \begin{frame}[fragile]{Proxy subarray-reference}
+\begin{center}
+\includegraphics[scale=0.7]{strided_row_small}
+\end{center}
 \begin{lstlisting}
-multi::array<int, 2> A({3, 4});
+multi::array<int, 2> A({4, 6});
 
 auto row_it = A.begin() + 1;
 ??? row = A[1];  // same as A(1, _) or *row_it
-
 // auto                       row = ...  // misleading, valid but not recommended
 // multi::subarray<double, 1> row = ...  // too verbose
 // multi::array<double, 1>    row = ...  // makes a copy
@@ -585,6 +603,75 @@ auto g(multi::subarray<int, 2> arr) { ... }
 \end{lstlisting}
 \end{frame}
 
+\begin{frame}{Fundamental access/layout operations}
+Indexing
+\begin{itemize}
+\item Index\\
+  \lstinline|A[i]| removes (binds) first dimension
+\item Slice\\
+  \lstinline|A.sliced(first, last)| range subarrays (equal dimension) half-open interval \([\mathrm{first}, \mathrm{last}) \)
+\end{itemize}
+
+Fundamental
+\begin{itemize}
+\item Rotate (indices) \\
+  \lstinline|A.rotated()[i][j][k] == A[k][i][j]|
+\item Unrotate (indices) \\
+  \lstinline|A.unrotated()[i][j][k] == A[j][k][i]|
+\item Transpose (first two indices) \\
+  \lstinline|A.transposed()[i][j][k] == A[j][i][k]|
+\item Strided
+  \lstinline|A.strided(n)[i] == A[n*i]|
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Derived and positional indexing}
+\begin{itemize}
+  \item Indexing (with parentheses)
+    \lstinline|A(i) -> A[i]|
+  \item Sliced (terse)
+    \lstinline|A({first, last}) -> A.sliced(first, last)|
+  \item Generalized slice:\\
+    \lstinline|A({first, last, every}) -> A.sliced(first, last).strided(every)|
+  \item Row\\
+    \lstinline|A(i, _) -> A[i](_) -> A[i]| \\
+  \item Column\\
+    \lstinline|A(_, i) -> A.rotated()[i].unrotated()| \\
+  \item Partial column\\
+    \lstinline|A({first, last}, i) -> A.rotated()[i].unrotated()({first, last})| \\
+\end{itemize}
+
+\begin{block}{Too many temporaries objects?}
+Modern compilers can elide these temporary objects.
+\end{block}
+
+\begin{alertblock}{}
+  Since C++23 you can use multidimensional square brackets \lstinline|A[i, j, k]|
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Aliasing and how to break it}
+\begin{lstlisting}
+  multi::array<int, 2> A({3, 3});
+  multi::array<int, 2> B({3, 3});
+  multi::array<int, 2> C;
+
+  B = A.transposed();  // ok  allocates?
+  C = A.transposed();  // ok  allocates?
+
+  A = A.transposed();  // ok? aliasing!
+
+  A = + A.transposed();  // ok allocates?
+\end{lstlisting}
+
+\begin{alertblock}{Dual purpose of operator+}
+  \begin{itemize}
+    \item Help \texttt{auto}
+    \item Materialize [sub]array-references
+  \end{itemize}
+\end{alertblock}
+\end{frame}
+
 \begin{frame}[fragile]{Type hierarchy: ownership and mutability}
 
 \begin{table}
@@ -605,88 +692,17 @@ auto g(multi::subarray<int, 2> arr) { ... }
 \end{table}
 
 \begin{alertblock}{Inheritance for composition (usually a bad idea)}
-  Made it \texttt{public} inheritance \emoji{hot-pepper} because I found it useful.
+  I made it \texttt{public} inheritance \emoji{hot-pepper} because I found it useful.
   It is opt-in.
-\end{alertblock}
-\end{frame}
-
-\begin{frame}[fragile]{\texttt{multi::dynamic\_array}: pinned owning array}
-
-\lstinline|multi::dynamic_array<T, D, A>| owns memory, is copyable, but \textbf{not movable}:
-
-\begin{lstlisting}
-multi::dynamic_array<double, 2> D({3, 4});  // allocates, fixed size
-multi::dynamic_array<double, 2> E = D;      // ok: deep copy
-multi::dynamic_array<double, 2> F = std::move(D);  // ok, but O(N)
-\end{lstlisting}
-
-\begin{itemize}
-  \item Size is fixed at construction (no \lstinline|resize|, no reallocation)
-  \item Iterators and pointers are \textbf{never invalidated} after construction
-  \item Iterators, subarrays, and pointers never invalidated unless the object is destroyed
-\end{itemize}
-
-\begin{block}{Inspired by \texttt{std::dynarray} (proposed for C++14, N3467, Stroustrup et al.)}
-  \texttt{std::dynarray} was proposed as a fixed-size heap array
-  but did not make it into the standard.
-  \texttt{multi::dynamic\_array} generalizes the idea to $N$ dimensions.
-\end{block}
-
-\end{frame}
-
-\begin{frame}{Fundamental access/layout operations}
-Indicing
-\begin{itemize}
-\item Index\\
-  \lstinline|A[i]| removes (binds) first dimension
-\item Slice\\
-  \lstinline|A.sliced(first, last)| range subarrays (equal dimension) semiopen interval \([\mathrm{first}, \mathrm{last}) \)
-\end{itemize}
-
-Fundamental
-\begin{itemize}
-\item Rotate (indices) \\
-  \lstinline|A.rotated()[i][j][k] == A[k][i][j]|
-\item Unrotate (indices) \\
-  \lstinline|A.unrotated()[i][j][k] == A[j][k][i]|
-\item Transpose (first two indices) \\
-  \lstinline|A.transposed()[i][j][k] == A[j][i][k]|
-\item Strided
-  \lstinline|A.strided(n)[i] == A[n*i]|
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Derived and positional indexing}
-\begin{itemize}
-  \item Indexing (with parenthesis)
-    \lstinline|A(i) -> A[i]|
-  \item Sliced (terse)
-    \lstinline|A({first, last}) -> A.sliced(first, last)|
-  \item Generalized slice:\\
-    \lstinline|A({first, last, every}) -> A.sliced(first, last).strided(every)|
-  \item Row\\
-    \lstinline|A(i, _) -> A[i](_) -> A[i]| \\
-  \item Column\\
-    \lstinline|A(_, i) -> A.rotated()[i].unrotated()| \\
-  \item Partial column\\
-    \lstinline|A({first, last}, i) -> A.rotated()[i].unrotated()({first, last})| \\
-\end{itemize}
-
-\begin{block}{}
-Modern compilers can elide these temporary objects
-\end{block}
-
-\begin{alertblock}{}
-  Since C++23 you can use multidimensional square brackets \lstinline|A[i, j, k]|
 \end{alertblock}
 \end{frame}
 
 \begin{frame}{Relations between types, recursion across dimensions (simplified)}
 \centering
-\includegraphics[scale=0.8]{types_relations}
+\includegraphics[scale=0.75]{types_relations}
 
-\begin{alertblock}{}
-  Looks complicated, intuitive for the most part in practice.
+\begin{alertblock}{It looks complicated}
+Intuitive for the most part in practice. Perhaps arrays deserve this level of complexity.
 \end{alertblock}
 \end{frame}
 
@@ -696,7 +712,7 @@ Modern compilers can elide these temporary objects
 
 \begin{lstlisting}
 std::vector sas = {B({0, 2}, {0, 2}), B({1, 4}, {1, 4}), B({0, 2}, {4, 6})};
-// error! subarray<int, 2> is no copyable
+// error! subarray<int, 2> is not copyable
 \end{lstlisting}
 
 \begin{lstlisting}
@@ -719,6 +735,35 @@ for(auto sap : saps) {
 \includegraphics[trim=0 0 0 195, clip, scale=0.37]{nospan} 
 \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{multi::dynamic\_array}: pinned owning array, \texttt{multi::inplace\_array}}
+
+\lstinline|multi::dynamic_array<T, D, A>| owns memory, is copyable, but \textbf{not movable}:
+
+\begin{lstlisting}
+multi::dynamic_array<double, 2> D({3, 4});  // allocates, fixed size
+multi::dynamic_array<double, 2> E = D;      // ok: deep copy
+multi::dynamic_array<double, 2> F = std::move(D);  // ok, but O(N)
+\end{lstlisting}
+
+\begin{itemize}
+  \item Size is fixed at construction (no \lstinline|resize|, no reallocation)
+  \item Iterators and pointers are \textbf{never invalidated} after construction
+  \item Iterators, subarrays, and pointers never invalidated unless the object is destroyed
+\end{itemize}
+
+\begin{block}{Inspired by \texttt{std::dynarray} (proposed for C++14, N3467, Stroustrup et al.)}
+  \texttt{std::dynarray} was proposed as a fixed-size heap array
+  but did not make it into the standard.
+  \texttt{multi::dynamic\_array} generalizes the idea to $N$ dimensions.
+\end{block}
+
+\begin{lstlisting}
+template<class T, dimensionality_type D, std::size_t Capacity = 32>
+using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, Capacity>>;
+\end{lstlisting}
+
 \end{frame}
 
 \begin{frame}[fragile]{Looks complicated, does it work? Test 1/2}
@@ -762,7 +807,7 @@ std::is_sorted( A.begin(), A.end() );
 \setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
 \setbeamercolor{block body alerted}{bg=green!10}
 \begin{alertblock}{Passes!}
-  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+  Indicates that our iterators work correctly with \lstinline|swap|, \lstinline|std::rotate|, \lstinline|stable_partition|
 \end{alertblock}
 }
 \end{frame}
@@ -784,13 +829,43 @@ assert( std::is_sorted( A.transposed().begin(), A.transposed().end() ) );
 \setbeamercolor{block title alerted}{fg=white, bg=green!60!black}
 \setbeamercolor{block body alerted}{bg=green!10}
 \begin{alertblock}{Passes!}
-  Indicates that \lstinline|swap|, \lstinline|rotate|, \lstinline|stable_partition|
+  Indicates that our iterators work correctly with \lstinline|swap|, \lstinline|std::rotate|, \lstinline|stable_partition|
 \end{alertblock}
 }
 
 \begin{block}{}
-  Also works with std::ranges algorithms, filters, etc
+  Also works with std::ranges algorithms, filters, etc.
 \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Generic Serialization (\textbf{Boost.Serialization} and \textbf{Cereal})}
+
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\begin{lstlisting}
+#include <boost/archive/xml_oarchive.hpp>
+
+multi::array<int, 2> A({10, 10});
+std::ofstream ofs{"data.xml"};
+boost::archive::xml_oarchive xoa{ofs};
+xoa << boost::make_nvp("A", A);
+\end{lstlisting}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{lstlisting}
+#include <boost/archive/xml_iarchive.hpp>
+
+multi::array<int, 2> B;
+std::ifstream ifs{"data.xml"};
+boost::archive::xml_iarchive xia{ifs};
+xia >> B;
+\end{lstlisting}
+\end{column}
+\end{columns}
+
+\begin{center}
+  \includegraphics{serialization}
+\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{Allocator support (The allocator controls where memory lives)}
@@ -815,23 +890,140 @@ Special purpose:
   \item \lstinline|thrust::universal_allocator -> multi::thrust::universal_array<T,D>| (unified memory)
   \item \lstinline|thrust::mr::allocator| (with custom memory resources)
 \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Allocator $\Rightarrow$ pointer type $\Rightarrow$ memory location}
+
+\lstinline|std::allocator_traits<A>::pointer| is not always \lstinline|T*|:
+
+\medskip
+\begin{tabular}{@{}lll@{}}
+\hline
+\textbf{Allocator} & \textbf{Pointer type} & \textbf{Memory} \\
+\hline
+\lstinline|std::allocator<T>|                        & \lstinline|T*|                                 & CPU \\
+\lstinline|std::pmr::polymorphic_allocator<T>|       & \lstinline|T*|                                 & PMR \\
+\lstinline|thrust::device_allocator<T>|              & \lstinline|thrust::device_ptr<T>|              & GPU \\
+\lstinline|thrust::universal_allocator<T>|           & \lstinline|thrust::universal_ptr<T>|           & CPU+GPU \\
+\lstinline|thrust::omp::allocator<T>|                & \lstinline|thrust::omp::pointer<T>|            & OpenMP \\
+\lstinline|boost::interprocess::allocator<T,...>|    & \lstinline|boost::interprocess::offset_ptr<T>| & Shared memory \\
+\hline
+\end{tabular}
+
+\medskip
+
+\begin{alertblock}{From WHERE to HOW}
+The library propagates the pointer type throughout subarrays, iterators,
+and references; all carry the allocator's pointer.
+There is compile-time information on HOW to run.
+\end{alertblock}
+
+Both the library and the user can exploit this information.
 
 \end{frame}
+
+\begin{frame}[t,fragile]{Algorithm Dispatching inside the library}
+\begin{columns}[T]
+\begin{column}{0.4\textwidth}
+\begin{lstlisting}
+
+multi::array<int, 2> A({10, 10});
+multi::array<int, 2> B({10, 10});
+
+B = A;
+\end{lstlisting}
+\end{column}
+\begin{column}{0.6\textwidth}
+\begin{lstlisting}
+using alloc = thrust::device_allocator<int>;
+multi::array<int, 2, alloc> A({10, 10});
+multi::array<int, 2, alloc> B({10, 10});
+
+B = A;
+\end{lstlisting}
+\end{column}
+\end{columns}
+\begin{lstlisting}
+template<typename T, dimensionality_type D, class Alloc>
+class array {
+ using element_ptr = std::allocator_traits<Alloc>::pointer;
+ auto operator=(array const& other) -> array& {
+   adl_copy_n(other.elements().begin(), other.elements().end(), elements().begin());
+\end{lstlisting}
+\begin{center}
+\includegraphics{dispatching}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Algorithm Dispatching inside the library}
+\begin{lstlisting}
+class adl_copy_n_t {
+  auto _(priority<0>, auto... as) ... {return std::copy_n(...);}    // CPU fallback
+  auto _(priority<1>, auto... as) ... {return thrust::copy_n(...);} // GPU
+  auto _(priority<2>, auto... as) ... {return copy_n(...);}         // ADL
+  auto _(priority<3>, auto it, auto... rst) ... {return it.copy_n(...); } // member
+public:
+  template<class... As> auto operator()(As&&... as) const -> decltype(...) { 
+    return _(priority<3>(), std::forward<As>(as)...);
+  }
+};
+inline constexpr adl_copy_n_t adl_copy_n;
+\end{lstlisting}
+
+\medskip
+\begin{itemize}
+  \item Overload resolution picks the \emph{highest priority} that compiles (SFINAE)
+  \item Same call site works for CPU (\lstinline|std::|), GPU (\lstinline|thrust::|), or user types
+  \item Extensible (intrusive): add members: add a \lstinline|copy_n| member function
+\end{itemize}
+
+\end{frame}
+
+% \begin{frame}[fragile]{OpenMP via Thrust Backend}
+% Use Thrust's OMP backend for parallel CPU execution --- no GPU required:
+
+% \begin{lstlisting}
+% #include <boost/multi/adaptors/thrust/omp.hpp>
+
+% // array backed by thrust::omp::allocator
+% multi::thrust::omp::array<double, 1> arr(64);  // <double, 1, thrust::omp::allocator<double>>
+
+% // parallel fill with OpenMP
+% #pragma omp parallel for
+% for(int i = 0; i < arr.size(); ++i)
+%   arr[i] = double(i) * double(i);
+
+% // thrust::reduce with OMP execution policy
+% auto sum = thrust::reduce(thrust::omp::par,
+%   arr.begin(), arr.end(), 0.0);
+% \end{lstlisting}
+
+% \begin{itemize}
+%   \item \lstinline|multi::thrust::omp::array<T, D>| = \lstinline|multi::array<T, D, thrust::omp::allocator<T>>|
+%   \item Thrust algorithms dispatch to OpenMP automatically via allocator tag
+%   \item Same code structure as CUDA --- swap allocator to switch backend
+% \end{itemize}
+
+% \end{frame}
 
 \section{Lazy Arrays \& Restrictions}
 
 \begin{frame}[fragile]{Lazy sequences, the evolution of iota}
 
+Standard:
   \begin{lstlisting}
 std::iota(c.begin(), c.end(), 0);  // c = {0, 1, 2, 3, ...}
   \end{lstlisting}
   \begin{lstlisting}
-std::views::iota(1, 10);  // {0, 1, ..., 10}
+std::views::iota(1, 10);  // {1, ..., 9}
   \end{lstlisting}
+
+In the library:
   \begin{lstlisting}
 multi::array<char, 1> A = ...;
 A            // {'a', 'b', 'c', 'd'}
 A.extent();  // {  0,   1,   2,   3}
+A.size();    //   4
   \end{lstlisting}
   \begin{lstlisting}
 multi::array<int, 2> B = ...;
@@ -850,9 +1042,9 @@ B.extent|\xout{s}|();  // leading dimension {0, 1, 2, 3, ..., B.size() - 1}
   \begin{lstlisting}[escapechar=|]
 multi::array<char, 2> B = {
   {'a', 'b', 'c'},
-  {'d', 'e', 'c'}
+  {'d', 'e', 'f'}
 };
-B.extent|\uline{s}|();
+B.extent|\uline{s}|();  // structured Cartesian product
 // {
 //   { tuple{0, 0}, tuple{0, 1}, tuple{0, 2} },  // <-- B.extents().begin()
 //   { tuple{1, 0}, tuple{1, 1}, tuple{1, 2} }
@@ -866,7 +1058,7 @@ B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 
 \end{frame}
 
-\begin{frame}[fragile]{}
+\begin{frame}[fragile]{Initialize from coordinates function}
     \begin{center}
     \tornpaper{
         \includegraphics[height=0.4\textheight]{parent_coordinates}
@@ -892,8 +1084,8 @@ B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 \end{quote}
 
 
-Translated to C++, \(f\) could be function object that maps coordinates to values, and
-\(A\) can be a cartesian set of points (of the array)
+Translated to C++, \(f\) could be a function object that maps coordinates to values, and
+\(A\) can be a Cartesian set of points (of the array)
 
 \pause
 
@@ -933,127 +1125,44 @@ Models the Multi array concept --- it has \lstinline|extents|, iterators, \lstin
 Structural operations compose (still) without allocating: \lstinline|transposed|, \lstinline|repeated|, \lstinline|diagonal|, \lstinline|partitioned|, \lstinline|reversed|, \lstinline|rotated|, \lstinline|transformed|, \lstinline|element_transformed|.
 \end{frame}
 
-\begin{frame}[fragile]{\lstinline|multi::restriction|: composition}
+% \section{Undefined Behavior}
 
-\begin{lstlisting}
-auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
-// iota   :  {0, 1, 2, 3, 4}
+% \begin{frame}[plain]{The Good, The Ugly, and The UB}
+% \begin{center}
+% \includesvg[height=0.7\textheight]{gbu}
+% \end{center}
+% The C++ abstract machine is hostile to multidimensional array iteration
+% \end{frame}
 
-auto M = iota.repeated(4);       // lazy 4x5, all rows equal to iota
-auto D = ([](auto i, auto j) { return i*i + j*j; }
-         ^ multi::extensions_t<2>(3, 3)).diagonal();   // {0, 2, 8}
+% \begin{frame}[fragile]{Out-of-bounds pointer formation in strided iteration}
 
-// softmax via lazy restrictions (no temporaries)
-using multi::elementwise::operator-; using multi::elementwise::operator/;
-auto x = exp(~mat - (mat | maxR1));   // row-wise subtract max
-auto y = ~(x / ((~x) | sumR1));       // normalize
-\end{lstlisting}
+% Boost.Multi provides STL-compatible strided iterators --- \lstinline|.begin()|, \lstinline|.end()|, range-for loops.\\
+% But computing \lstinline|.end()| can form a pointer \emph{past} the allocation:
 
-\medskip
-\begin{itemize}
-  \item A \lstinline|restriction| is essentially a lambda + an \lstinline|extensions_t<D>|.
-  \item Passes through \lstinline|transposed|, \lstinline|diagonal|, etc.\ by rebinding arguments.
-  \item Composable with owning \lstinline|multi::array| via elementwise operators.
-  \item Materialize with \lstinline|+R| or assignment into an \lstinline|array|.
-\end{itemize}
+% \begin{lstlisting}
+% multi::array<double, 1> A(10);   // 10-element allocation [base, base+10)
 
-\end{frame}
+% auto strided = A.strided(3);    // elements {0, 3, 6, 9}
+% strided.end();                   // computes base + 3*4 = base + 12
+%                                  // 2 past the allocation: UB under [expr.add]
+% \end{lstlisting}
 
+% Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation; \lstinline|.transposed()| iterators may overshoot when columns $\times$ row-stride $>$ total elements.
 
-\begin{frame}[fragile]{Aliasing, and how functional idioms partially solve it}
+% \medskip
+% \begin{itemize}
+%   \item The UB is in \emph{forming} the pointer, not dereferencing it.
+%   \item Index-based access (\lstinline|A[i][j]|, \lstinline|A(i,j)|) is \emph{not} affected.
+%   \item \lstinline|multi::restriction|s are not affected --- no pointer arithmetic involved.
+%   \item No compiler currently exploits this, but \lstinline|constexpr| and sanitizers can flag it.
+%   \item Other libraries (\lstinline|std::mdspan|, Eigen, Kokkos) avoid this by not providing strided iterators at all.
+% \end{itemize}
 
-Classic pitfall: two pointers/references may refer to the \emph{same} memory; the compiler must assume they do, and optimizations (vectorization, reordering, fusion) are disabled.
-
-\begin{lstlisting}
-multi::array<double, 1> y = /* ... */;
-y = M * y;               // self-aliasing: y is both source and destination
-A = A.transposed();      // writes overlap with reads
-\end{lstlisting}
-
-Usual patches --- C's \lstinline|restrict|, \lstinline|__restrict__|, expression templates with bookkeeping --- are brittle and non-portable. A value-based, pointer-free expression \emph{cannot} alias by construction.
-
-\begin{lstlisting}
-auto R = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{N, N};
-auto T = R + R.transposed();          // lazy: no memory, no pointers
-
-multi::array<int, 2> out = T;         // single write into a fresh array
-\end{lstlisting}
-
-\begin{itemize}
-  \item No intermediate buffers \(\Rightarrow\) no aliasing between stages.
-  \item Materialization is the \emph{only} write --- compiler sees a pure nested loop.
-  \item \emph{Partial}: assigning back into an array whose storage backs the RHS still aliases; lambda captures-by-reference can re-introduce it.
-\end{itemize}
-
-\end{frame}
-
-\section{Undefined Behavior}
-
-\begin{frame}[plain]{The Good, The Bad, and The UB}
-\begin{center}
-\includesvg[height=0.7\textheight]{gbu}
-\end{center}
-The C++ abstract machine is hostile to multidimensional array iteration
-\end{frame}
-
-\begin{frame}[fragile]{Out-of-bounds pointer formation in strided iteration}
-
-Boost.Multi provides STL-compatible strided iterators --- \lstinline|.begin()|, \lstinline|.end()|, range-for loops.\\
-But computing \lstinline|.end()| can form a pointer \emph{past} the allocation:
-
-\begin{lstlisting}
-multi::array<double, 1> A(10);   // 10-element allocation [base, base+10)
-
-auto strided = A.strided(3);    // elements {0, 3, 6, 9}
-strided.end();                   // computes base + 3*4 = base + 12
-                                 // 2 past the allocation: UB under [expr.add]
-\end{lstlisting}
-
-Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation; \lstinline|.transposed()| iterators may overshoot when columns $\times$ row-stride $>$ total elements.
-
-\medskip
-\begin{itemize}
-  \item The UB is in \emph{forming} the pointer, not dereferencing it.
-  \item Index-based access (\lstinline|A[i][j]|, \lstinline|A(i,j)|) is \emph{not} affected.
-  \item \lstinline|multi::restriction|s are not affected --- no pointer arithmetic involved.
-  \item No compiler currently exploits this, but \lstinline|constexpr| and sanitizers can flag it.
-  \item Other libraries (\lstinline|std::mdspan|, Eigen, Kokkos) avoid this by not providing strided iterators at all.
-\end{itemize}
-
-\end{frame}
-
+% \end{frame}
 
 \section{Algorithms \& Performance}
 
-\begin{frame}[fragile]{Algorithm Dispatching}{How does the library call the right \texttt{copy\_n} for CPU vs GPU?}
-
-
-\medskip
-\begin{lstlisting}
-class adl_copy_n_t {
-  auto _(priority<0>, auto... as) ... {return std::copy_n(...);}    // CPU fallback
-  auto _(priority<1>, auto... as) ... {return thrust::copy_n(...);} // GPU
-  auto _(priority<2>, auto... as) ... {return copy_n via(...);}     // ADL
-  auto _(priority<3>, auto it, auto... rst) ... {return it.copy_n(...); } // member
-public:
-  template<class... As>
-  auto operator()(As&&... as) const
-    -> decltype(...) { return _(priority<3>(), std::forward<As>(as)...)); }
-};
-inline constexpr adl_copy_n_t adl_copy_n;
-\end{lstlisting}
-
-\medskip
-\begin{itemize}
-  \item Overload resolution picks the \emph{highest priority} that compiles (SFINAE)
-  \item Same call site works for CPU (\lstinline|std::|), GPU (\lstinline|thrust::|), or user types
-  \item Extensible (non-intrusive but dangerous): add a \lstinline|copy_n| free function found via ADL
-  \item Extensible (intrusive): add members: add a \lstinline|copy_n| member function
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Algorithms}
+\begin{frame}{Algorithms (raw loops)}
 Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
 
 \begin{center}
@@ -1062,7 +1171,7 @@ Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a c
 
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms}
+\begin{frame}[fragile]{Algorithms (raw loops)}
   Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 for(auto&& plane : A                  )
@@ -1078,7 +1187,7 @@ for(auto&& plane : A                  )
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (optimized)}
+\begin{frame}[fragile]{Algorithms (algorithm seasoning)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(     A.begin(), A.end(),
@@ -1094,7 +1203,7 @@ std::for_each(     A.begin(), A.end(),
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (optimized)}
+\begin{frame}[fragile]{Algorithms (algorithm parallelization)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(std::execution::par, A.begin(), A.end(),
@@ -1110,7 +1219,7 @@ std::for_each(std::execution::par, A.begin(), A.end(),
   timing: \textbf{1.4 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (optimized)}
+\begin{frame}[fragile]{Algorithms (attempt to parallelize in the GPU)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
@@ -1159,48 +1268,19 @@ STL (leading dimension)                         & 2.6 & 1.0x \\
 Parallel STL (leading dimension)                & 1.4 & 1.9x \\
 \hline
 thrust::for\_each ([cuda::par, ] flat elements) & 0.3 & 8.7x \\
-std::for\_each (std::par, flat elements)        & 0.6 & 3.7x \\
+std::for\_each (std::par, flat elements)        & 0.7 & 3.7x \\
 std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 \end{tabular}
 \end{table}
 
 \begin{alertblock}{}
   Prefer algorithms to raw loops.
-  Prefer to fuse loops
+  Prefer to fuse loops.
 \end{alertblock}
 
   \begin{lstlisting}
   algorithm(... A.elements() ...);
   \end{lstlisting}
-
-\end{frame}
-
-
-\begin{frame}[fragile]{OpenMP via Thrust Backend}
-
-Use Thrust's OMP backend for parallel CPU execution --- no GPU required:
-
-\begin{lstlisting}
-#include <boost/multi/adaptors/thrust/omp.hpp>
-
-// array backed by thrust::omp::allocator
-multi::thrust::omp::array<double, 1> arr(64);  // <double, 1, thrust::omp::allocator<double>>
-
-// parallel fill with OpenMP
-#pragma omp parallel for
-for(int i = 0; i < arr.size(); ++i)
-  arr[i] = double(i) * double(i);
-
-// thrust::reduce with OMP execution policy
-auto sum = thrust::reduce(thrust::omp::par,
-  arr.begin(), arr.end(), 0.0);
-\end{lstlisting}
-
-\begin{itemize}
-  \item \lstinline|multi::thrust::omp::array<T, D>| = \lstinline|multi::array<T, D, thrust::omp::allocator<T>>|
-  \item Thrust algorithms dispatch to OpenMP automatically via allocator tag
-  \item Same code structure as CUDA --- swap allocator to switch backend
-\end{itemize}
 
 \end{frame}
 
@@ -1229,8 +1309,7 @@ std::for_each(
 \onslide<2| handout:1>
 \begin{lstlisting}
 std::transform(
-  A.extents().elements().begin(),
-  A.extents().elements().end(),
+  A.extents().elements().begin(), A.extents().elements().end(),
   A.elements().begin(),
   [](auto ijk) { auto [i, j, k] = ijk;
     return fun(i + j + k);
@@ -1243,49 +1322,62 @@ Note: \lstinline|A.extents().elements().size() == A.elements().size()|
 
 \end{frame}
 
+\begin{frame}{Recipe to `port' your array code}
+\begin{center}
+  Convert your loops into algorithms (discover)\\
+        \emoji{down-arrow}\\
+      Flatten your algorithms (\lstinline|.elements()|, \lstinline|.extensions()|, lazy arrays)\\
+        \emoji{down-arrow}\\
+      Parallelize your algorithm (std::execution::par)\\
+          \emoji{down-arrow}\\
+      Change your memory space (use custom libraries if necessary, e.g. Thrust)
+\end{center}
+\end{frame}
+
 \begin{frame}[fragile]{The Problem: Row-wise Reduction}
 
-Given a 2D array, reduce each row independently:
+Given a 2D array, reduce each row:
 \begin{lstlisting}
-multi::array<double, 2> M({100, 1000});
-auto row_sums = multi::array<double, 1>(M.size(0));
+auto M    = multi::array<double, 2, thrust::device_allocator<double> >({100, 1000});
+auto sums = multi::array<double, 1, thrust::device_allocator<double> >(M.size(0));
 
-// Better: use transform instead of raw loop
-thrust::transform(M.begin(), M.end(), row_sums.begin(),
+thrust::transform(M.begin(), M.end(), sums.begin(),
   [](auto const& row) {
     return thrust::reduce(row.begin(), row.end());
   }
 );
 \end{lstlisting}
+\centering
+\includegraphics[scale=1.2]{reduce_by_row}
 
-\textbf{Problem:} Even with transform, each row reduction still happens one at a time — the reductions are \emph{serialized}
+\textbf{Problem:} Missed opportunity for parallelization
 \end{frame}
 
-\begin{frame}[fragile]{Solution: reduce\_by\_index}
+\begin{frame}[fragile]{Solution: use Thrust's \texttt{reduce\_by\_key}}
+\centering
+\includegraphics[scale=0.15]{reduce_by_key_doc}
+~\includegraphics[scale=1.4]{reduce_by_key}
+\end{frame}
+
+\begin{frame}[fragile]{Solution: Implement \texttt{reduce\_by\_row} }
 
 \begin{lstlisting}
-namespace mt = multi::thrust;
+template<class ExecutionPolicy, class T, class S>
+auto reduce_by_row(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
+  assert(M.extension() == sums.extension());
+  auto row_idx = []__host__ __device__ (int i, int j){return i;} ^ M.extensions();
 
-mt::device_array<double, 2> M({nx, ny});  // on GPU
-mt::device_array<double, 1> sums(nx);     // result
-
-mt::reduce_by_index(M, sums);             // parallel row sums
-\end{lstlisting}
-
-\textbf{How it works internally:}
-\begin{lstlisting}
-// row ID of element at flat position p = p / ny
-auto row_ids = thrust::make_transform_iterator(
-    thrust::make_counting_iterator(0L),
-    divide_by{ny}
-);
-thrust::reduce_by_key(
-    row_ids, row_ids + nx*ny,
+  ::thrust::reduce_by_key(
+    ep,
+    row_idx.elements().begin(), row_idx.elements().end(),
     M.elements().begin(),
-    thrust::discard_iterator(), sums.begin()
-);
-\end{lstlisting}
+    ::thrust::make_discard_iterator(),
+    sums.begin()
+  );
 
+  return std::forward<S>(sums);
+}
+\end{lstlisting}
 All \(N_x \times N_y\) elements processed in parallel; no serial loop over rows.
 \end{frame}
 
@@ -1293,9 +1385,9 @@ All \(N_x \times N_y\) elements processed in parallel; no serial loop over rows.
 
 Works directly on \lstinline|restriction|s --- no intermediate storage:
 \begin{lstlisting}
-mt::device_array<double, 1> sums(nx);
+multi::array<double, 1, thrust::device_allocator<double> > sums(nx);
 
-mt::reduce_by_index(
+reduce_by_row(
     [](multi::index ix, multi::index iy) { return ix * iy; }
     ^ multi::extensions_t<2>(nx, ny),   // lazy 2D array
     sums
@@ -1303,30 +1395,24 @@ mt::reduce_by_index(
 \end{lstlisting}
 
 \begin{itemize}
-  \item No \lstinline|device_array<double, 2>| ever allocated
+  \item No \lstinline|multi::array<double, 2>| ever allocated
   \item Values generated on-the-fly by each GPU thread
   \item Combines lazy evaluation with massively parallel reduction
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Custom Binary Operations}
-
-\begin{lstlisting}
-// Default: addition
-auto sum = multi::reduce_by_index(M);
-
-// Custom: product
-auto prod = multi::reduce_by_index(M,
-  [](double a, double b) { return a * b; }
-);
-
-// Custom: max element per row
-auto row_maxs = multi::reduce_by_index(M,
-  thrust::maximum<double>{}
-);
-\end{lstlisting}
-
-All executed with full GPU parallelism.
+\begin{frame}{Recipe to `port' your array code (revisited)}
+\begin{center}
+  Convert your loops into algorithms (discover)\\
+        \emoji{down-arrow}\\
+      Flatten your algorithms (\lstinline|.elements()|, \lstinline|.extensions()|, lazy arrays)\\
+        \emoji{down-arrow}\\
+      Parallelize your algorithm (std::execution::par)\\
+          \emoji{down-arrow}\\
+      Change your memory space (use custom libraries if necessary, e.g. Thrust)\\
+          \emoji{down-arrow}\\
+      Keep looking for algorithms
+  \end{center}
 \end{frame}
 
 \section{Adaptors \& Ecosystem}
@@ -1344,98 +1430,86 @@ Boost.Multi ships optional adaptors that integrate arrays with external librarie
 \lstinline|adaptors/lapack.hpp|  & LAPACK               & linear algebra (SVD, etc.) \\
 \lstinline|adaptors/fftw.hpp|    & FFTW3                & FFT on CPU \\
 \lstinline|adaptors/cufft.hpp|   & cuFFT                & FFT on NVIDIA GPU \\
-\lstinline|adaptors/hipfft.hpp|  & hipFFT               & FFT on AMD GPU (ROCm) \\
 \lstinline|adaptors/thrust.hpp|  & Thrust               & GPU/OMP parallel algorithms \\
 \lstinline|adaptors/tblis.hpp|   & TBLIS                & tensor contractions \\
 \lstinline|adaptors/mpi.hpp|     & MPI                  & distributed arrays \\
-\lstinline|adaptors/fft.hpp|     & (generic)            & backend-agnostic FFT \\
-\lstinline|adaptors/totalview.hpp| & TotalView          & debugger visualization \\
 \end{tabular}
 \end{table}
 
 \begin{block}{}
-  Adaptors are header-only and opt-in --- include only what you use.
+  Adaptors are header-only and opt-in. Include only what you use.
 \end{block}
 
 \end{frame}
 
-\begin{frame}[fragile]{Generic Serialization}
-
-Arrays integrate with \textbf{Boost.Serialization} and \textbf{Cereal} out of the box.
-No extra code needed:
-
-\begin{lstlisting}
-#include <boost/multi/array.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-
-multi::array<double, 2> A({10, 10});
-
-std::fstream ofs{"data.xml"};
-boost::archive::xml_oarchive{ofs} << boost::nvp("A", A);
-
-multi::array<double, 2> B;
-std::ifstream ifs{"data.xml"};
-boost::archive::xml_iarchive{ifs} >> B;
-assert(A == B);
-\end{lstlisting}
-
-\includegraphics{serialization}
-\end{frame}
-
-\begin{frame}[fragile]{Adaptor example: BLAS}
-
-\begin{lstlisting}
-#include <boost/multi/adaptors/blas.hpp>
-
-multi::array<double, 2> A({3, 3}), B({3, 3}), C({3, 3});
-// ...
-namespace blas = boost::multi::blas;
-blas::gemm(1.0, A, B, 0.0, C);   // C = 1.0 A * B + 0.0 C
-auto At = blas::T(A);             // lazy transpose view
-auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
-\end{lstlisting}
+\begin{frame}[fragile]{Philosophy behind adaptors (BLAS/CUDA BLAS example)}
 
 \begin{itemize}
-  \item Works with CPU BLAS, cuBLAS, and rocBLAS --- same code, different allocator
-  \item Lazy \lstinline|blas::T(A)| and \lstinline|blas::H(A)| avoid copies
+  \item When possible, the same code should work for different backends
+  \item Uses functional style of programming (deviates from \texttt{std::linalg})
+  \item Efficient (no surprises)
 \end{itemize}
 
+\begin{columns}[T]
+\begin{column}{0.45\textwidth}
+\begin{lstlisting}
+
+multi::array<double, 2>
+  A({3, 3}), B({3, 3}), C({3, 3});
+\end{lstlisting}
+\end{column}
+\begin{column}{0.55\textwidth}
+\begin{lstlisting}
+multi::array<double, 2, thrust::device_allocator<int>>
+  A({3, 3}), B({3, 3}), C({3, 3});
+\end{lstlisting}
+\end{column}
+\end{columns}
+\begin{lstlisting}
+C = blas::gemm(1.0, A, B);  // C = 1.0*A*B, shouldn't allocate
+A = + blas::gemm(1.0, A, B);  // operator+ to break aliasing
+\end{lstlisting}
+\begin{center}
+\includegraphics[scale=0.7]{dispatching_blas}
+\end{center}
+
+\lstinline|multi::blas::gemm| produces a "gemm" ranges;
+custom \lstinline|copy_n| calls actual GEMM operation
 \end{frame}
 
 \begin{frame}{Real world uses}
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
-    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flariron Institute, NY
+    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
     \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
-    \item a manufacturing company in Québec, Canada
+    %\item a manufacturing company in Québec, Canada
   \end{itemize}
 \end{frame}
 
-\begin{frame}{API reference (autogenerated)}
-  Full API reference is generated from the source using \textbf{MrDocs} and published via \textbf{Antora} on GitLab Pages:
+% \begin{frame}{API reference (autogenerated)}
+%   Full API reference is generated from the source using \textbf{MrDocs} and published via \textbf{Antora} on GitLab Pages:
 
-  \vspace{1em}
-  \begin{center}
-    \Large
-    \href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}\\
-    \href{https://correaa.github.io/boost-multi/}{\texttt{correaa.github.io/boost-multi}}
-  \end{center}
-  \vspace{1em}
+%   \vspace{1em}
+%   \begin{center}
+%     \Large
+%     \href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}\\
+%     \href{https://correaa.github.io/boost-multi/}{\texttt{correaa.github.io/boost-multi}}
+%   \end{center}
+%   \vspace{1em}
 
-  \begin{itemize}
-    \item Classes, member functions, overloads, and template parameters
-    \item Cross-references to the source on GitLab
-    \item Inherited members from base classes
-    \item Searchable (Lunr index)
-  \end{itemize}
-\end{frame}
+%   \begin{itemize}
+%     \item Classes, member functions, overloads, and template parameters
+%     \item Cross-references to the source on GitLab
+%     \item Inherited members from base classes
+%     \item Searchable (Lunr index)
+%   \end{itemize}
+% \end{frame}
 
 \begin{frame}{Thoughts about AI}
   \begin{itemize}
     \item No AI was used to develop the library
-    \item After Boost Review (conditionally accepted), AI was used to proof read documentation
+    \item After Boost Review (conditionally accepted), AI was used to proofread documentation
     \item The irony isn't lost on me: I'm probably documenting mainly for AI
     \item ... but I'd prefer AI that learns to code using Generic Programming
   \end{itemize}
@@ -1444,25 +1518,23 @@ auto nrm = blas::nrm2(A[0]);      // L2 norm of a row
 \begin{frame}{Takeaways}
 
 \begin{enumerate}
-  \item \textbf{Generic programming works for arrays.}\\
+  \item \textbf{Generic programming works for arrays. (If you make some concessions \emoji{hot-pepper})}\\
     The same code handles 1D\ldots ND, CPU and GPU, owned and borrowed memory.
 
-  \item \textbf{Views are cheap, copies are explicit.}\\
+  \item \textbf{Views are cheap, copies are explicit.} (no need for reference counting or pointer/shallow semantics)\\
     Slicing, transposing, striding --- all return lightweight views over the same data.
 
-  \item \textbf{Compose with the STL, don't replace it.}\\
+  \item \textbf{Compose/expand with the STL, don't replace it with frameworks}\\
     Standard algorithms, execution policies, and iterators work out of the box.
 
-  \item \textbf{Allocator = backend.}\\
+  \item \textbf{Allocator = backend}\\
     Swap the allocator to move between CPU, CUDA, OpenMP --- no code changes.
-
-  \item \textbf{Functional views eliminate aliasing.}\\
-    \texttt{multi::restriction} builds expressions without pointers --- no temporaries, no aliasing.
 \end{enumerate}
-
 \vfill
 \begin{center}
-  \Large\href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}
+  Documentation\\
+  \Large\href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}\\
+  \Large\href{https://correaa.github.io/boost-multi/}{\texttt{correaa.github.io/boost-multi}}
 \end{center}
 
 \end{frame}
