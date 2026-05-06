@@ -11,7 +11,7 @@
 \usepackage{ulem}
 \usepackage{svg}
 \svgsetup{inkscapeversion=1.4}
-
+\transduration{0}
 \usepackage{emoji}
 \usepackage{multimedia}
 %\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
@@ -504,6 +504,7 @@ auto operator>>(std::istream& out, Value &      self) {...}
 \begin{column}{0.4\textwidth}
 \href{https://correaa.github.io/boost-multi}{\texttt{correaa.github.io/boost-multi}}\\
 \includegraphics[scale=0.1]{documentation}\\
+\footnotesize{Thanks Matt Borland @ CPPAlliance!}
 \end{column}
 \end{columns}
 
@@ -646,6 +647,28 @@ Modern compilers can elide these temporary objects.
 
 \begin{alertblock}{}
   Since C++23 you can use multidimensional square brackets \lstinline|A[i, j, k]|
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Aliasing and how to break it}
+\begin{lstlisting}
+  multi::array<int, 2> A({3, 3});
+  multi::array<int, 2> B({3, 3});
+  multi::array<int, 2> C;
+
+  B = A.transposed();  // ok  allocates?
+  C = A.transposed();  // ok  allocates?
+
+  A = A.transposed();  // ok? aliasing!
+
+  A = + A.transposed();  // ok allocates?
+\end{lstlisting}
+
+\begin{alertblock}{Dual purpose of operator+}
+  \begin{itemize}
+    \item Help \texttt{auto}
+    \item Materialize [sub]array-references
+  \end{itemize}
 \end{alertblock}
 \end{frame}
 
@@ -1431,31 +1454,27 @@ Boost.Multi ships optional adaptors that integrate arrays with external librarie
 \begin{column}{0.45\textwidth}
 \begin{lstlisting}
 
-
-multi::array<double, 2> A({3, 3});
-multi::array<double, 2> B({3, 3});
-multi::array<double, 2> C({3, 3});
+multi::array<double, 2>
+  A({3, 3}), B({3, 3}), C({3, 3});
 \end{lstlisting}
 \end{column}
 \begin{column}{0.55\textwidth}
 \begin{lstlisting}
-using alloc = thrust::device_allocator<int>;
-
-multi::array<double, 2, alloc> A({3, 3});
-multi::array<double, 2, alloc> B({3, 3});
-multi::array<double, 2, alloc> C({3, 3});
+multi::array<double, 2, thrust::device_allocator<int>>
+  A({3, 3}), B({3, 3}), C({3, 3});
 \end{lstlisting}
 \end{column}
 \end{columns}
 \begin{lstlisting}
-C = blas::gemm(1.0, A, B);  // C = A*B, shouldn't allocate
+C = blas::gemm(1.0, A, B);  // C = 1.0*A*B, shouldn't allocate
+A = + blas::gemm(1.0, A, B);  // operator+ to break aliasing
 \end{lstlisting}
 \begin{center}
-\includegraphics{dispatching_blas}
+\includegraphics[scale=0.7]{dispatching_blas}
 \end{center}
 
 \lstinline|multi::blas::gemm| produces a "gemm" ranges;
-fun fact: custom \lstinline|copy_n| calls actual GEMM operation
+custom \lstinline|copy_n| calls actual GEMM operation
 \end{frame}
 
 \begin{frame}{Real world uses}
