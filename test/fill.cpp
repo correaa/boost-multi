@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, all_of, transform
+#include <complex>      // for complex
 #include <cstddef>      // for ptrdiff_t
 #include <cstdint>      // for uint64_t
 #include <iterator>     // for begin, end, size, next
@@ -227,5 +228,63 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[7] ==  7 );
 	}
 
+	{
+		namespace multi = boost::multi;
+
+		multi::array<std::complex<double>, 3> const olap({5, 5, 3}, std::complex<double>{1.0, 3.0});
+
+		multi::array<double, 2> vel_gold;
+
+		{
+			multi::array<double, 2> vel({5, 5});
+			for(int i = 0; i != vel.size(); ++i) {
+				for(int j = 0; j != vel.size(); ++j) {
+					vel[i][j] = 0.0;
+					for(int idir = 0; idir != 3; ++idir) {  // NOLINT(altera-unroll-loops)
+						vel[i][j] += std::norm(olap[i][j][idir]);
+					}
+				}
+			}
+
+			vel_gold = vel;
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			auto [is, js] = vel.extensions();
+			for(auto i : is) {
+				for(auto j : js) {  // NOLINT(altera-unroll-loops)
+					// using std::norm;
+					vel[i][j] = norm(olap[i][j][0]) + norm(olap[i][j][1]) + norm(olap[i][j][2]);
+				}
+			}
+
+			BOOST_TEST( vel == vel_gold );
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			// using std::norm;
+			std::transform(
+				olap.flatted().begin(), olap.flatted().end(),
+				vel.flatted().begin(),
+				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
+			);
+
+			BOOST_TEST( vel == vel_gold );
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			// using std::norm; using std::transform
+			transform(
+				olap.flatted().begin(), olap.flatted().end(),
+				vel.flatted().begin(),
+				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
+			);
+
+			BOOST_TEST( vel == vel_gold );
+		}
+	}
 	return boost::report_errors();
 }

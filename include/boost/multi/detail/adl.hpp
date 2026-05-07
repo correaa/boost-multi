@@ -198,6 +198,25 @@ class fill_t {
 			  auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<5>{}, std::forward<As>(args)...))
 };
 inline constexpr fill_t fill;
+
+class transform_t {
+//  template<class InputIt, class OutputIt, class = std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+// 		  >
+//  constexpr auto _(priority<1> /**/, InputIt first, InputIt last, OutputIt d_first) const BOOST_MULTI_DECLRET(std::copy(first, last, d_first))  // cppcheck-suppress functionStatic ; TODO(correaa) consider making these functions static
+	template<         class... As> static constexpr auto _(priority<1> /**/,          As&&... args) BOOST_MULTI_DECLRET(              ::std::transform(                      std::forward<As>(args)...))
+#ifdef BOOST_MULTI_ADL_HAS_THRUST
+	template<         class... As> static constexpr auto _(priority<2> /**/,          As&&... args) BOOST_MULTI_DECLRET(           ::thrust::transform(                      std::forward<As>(args)...))
+#endif
+	template<         class... As> static constexpr auto _(priority<3> /**/,          As&&... args) BOOST_MULTI_DECLRET(                     transform(                      std::forward<As>(args)...))
+	template<class T, class... As> static constexpr auto _(priority<4> /**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(    std::decay_t<T>::transform(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> static constexpr auto _(priority<5> /**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::forward<T>(arg).transform(                      std::forward<As>(args)...))
+
+ public : template<class... As>
+	constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<5>(), std::forward<As>(args)...))
+};
+inline constexpr transform_t transform;
+
+
 }  // end namespace adl
 
 namespace xtd {
