@@ -8,8 +8,8 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, all_of, transform
-#include <complex>      // for complex
 #include <cmath>        // for abs
+#include <complex>      // for complex
 #include <cstddef>      // for ptrdiff_t
 #include <cstdint>      // for uint64_t
 #include <iterator>     // for begin, end, size, next
