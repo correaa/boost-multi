@@ -38,6 +38,8 @@ auto main() -> int {
 		);
 
 		vel_gold = vel;
+
+		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
 	// {
 	// 	multi::thrust::universal_array<double, 2> vel({5, 5});
