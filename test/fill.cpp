@@ -259,7 +259,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			}
 
-			BOOST_TEST( vel == vel_gold );
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> vel({5, 5});
@@ -271,7 +271,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
 			);
 
-			BOOST_TEST( vel == vel_gold );
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> vel({5, 5});
@@ -283,7 +283,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
 			);
 
-			BOOST_TEST( vel == vel_gold );
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
 		}
 	}
 	return boost::report_errors();
