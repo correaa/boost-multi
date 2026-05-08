@@ -41,12 +41,26 @@ auto main() -> int {
 
 		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
+	// {
+	// 	multi::array<double, 2> vel({5, 5});
+
+	// 	thrust::transform(
+	// 		olap.reinterpret_array_cast<std::array<thrust::complex<double>, 3>>().flatted().begin(),
+	// 		olap.reinterpret_array_cast<std::array<thrust::complex<double>, 3>>().flatted().end(),
+	// 		vel.flatted().begin(),
+	// 		[] __device__ (auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
+	// 	);
+
+	// 	vel_gold = vel;
+
+	// 	BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
+	// }
 	{
 		multi::thrust::universal_array<double, 2> vel({5, 5});
 
 		// thrust::transform cannot iterate over multi subarrays (proxy types), so
 		// we use counting_iterator and index into olap.base() directly.
-		auto const* olap_base = thrust::raw_pointer_cast(olap.base());
+		auto olap_base = thrust::raw_pointer_cast(olap.base());
 		using std::get;
 		auto const  inner     = get<2>(olap.sizes());  // == 3
 
