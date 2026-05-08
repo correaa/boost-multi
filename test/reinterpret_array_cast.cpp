@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -38,6 +38,41 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int_class, 2> arr2d({3, 3}, int_class{});
 		arr2d[0][0].val_ = 5;
 		BOOST_TEST( arr2d.reinterpret_array_cast<int>()[0][0] == 5 );
+	}
+
+	//
+	{
+		struct vec3 {
+			int x;
+			int y;
+			int z;
+		};
+
+		// clang-format off
+		multi::array<int, 3> data = {
+			{ { 1,  2,  3}, { 4,  5,  6}, { 7,  8,  9} },
+			{ {10, 11, 12}, {13, 14, 15}, {16, 17, 18} },
+			{ {19, 20, 21}, {22, 23, 24}, {25, 26, 27} },
+		};
+		// clang-format on
+
+		auto const& data2 = data.unrotated().strided(3).reinterpret_array_cast<vec3>().flatted();
+
+		BOOST_TEST( &data2[1][2].y == &data[1][2][1] );
+
+		BOOST_TEST( data2[1][2].x == data[1][2][0] );
+		BOOST_TEST( data2[1][2].y == data[1][2][1] );
+		BOOST_TEST( data2[1][2].z == data[1][2][2] );
+
+		BOOST_TEST( data2[2][0].x == data[2][0][0] );
+		BOOST_TEST( data2[2][0].y == data[2][0][1] );
+		BOOST_TEST( data2[2][0].z == data[2][0][2] );
+
+		auto const& data3 = data2.reinterpret_array_cast<int>(3);
+
+		BOOST_TEST( data3[1][2][0] == data[1][2][0] );
+		BOOST_TEST( data3[1][2][1] == data[1][2][1] );
+		BOOST_TEST( data3[1][2][2] == data[1][2][2] );
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension)
