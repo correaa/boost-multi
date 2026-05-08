@@ -76,8 +76,9 @@ auto main() -> int {
 			thrust::make_counting_iterator(olap.flatted().begin()),
 			thrust::make_counting_iterator(olap.flatted().end()),
 			vel.elements().begin(),
-			[] __device__ (auto const& e) {
-				return norm((*e)[0]) + norm((*e)[1]) + norm((*e)[2]);
+			[] __device__ (auto e) {
+				auto const& ev = *e;
+				return norm(ev[0]) + norm(ev[1]) + norm(ev[2]);
 			}
 		);
 
