@@ -46,6 +46,7 @@ set(TEST_SRCS
 	set_identity_kernel.cu
 	speed.cu
 	speed_algo.cu
+	transform.cu
 	universal.cu
 	vector.cu
 )
