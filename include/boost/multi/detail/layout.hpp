@@ -888,7 +888,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			BOOST_MULTI_HD constexpr auto operator<(iterator const& other) const { return base_() < other.base_(); }
 			BOOST_MULTI_HD constexpr auto operator<=(iterator const& other) const { return base_() <= other.base_(); }
 
-			BOOST_MULTI_HD auto operator[](difference_type n) const { return *(*this + n); }
+			BOOST_MULTI_HD auto operator[](difference_type n) const { return *(*this + n); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk
 		};
 
 		BOOST_MULTI_HD constexpr auto begin() const noexcept -> iterator { return iterator{rng_.begin()}; }
