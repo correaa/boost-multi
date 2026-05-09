@@ -644,7 +644,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	friend constexpr auto intersection(extensions_t const& self, extensions_t const& other) -> extensions_t {
 		using boost::multi::detail::get;
-		return extensions_t{
+		return extensions_t(
 			multi::detail::ht_tuple(
 				index_extension(intersection(get<0>(self.base()), get<0>(other.base()))),
 				intersection(
@@ -652,7 +652,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 					extensions_t<D - 1>(other.base().tail())
 				).base()
 			)
-		};
+		);
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -815,7 +815,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			return ht_tuple(idx_, rest_.base());
 			}
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }  // NOLINT(readability-redundant-parentheses)
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }
