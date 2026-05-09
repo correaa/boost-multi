@@ -580,7 +580,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		BOOST_MULTI_HD constexpr auto operator[](index idx) const { return begin()[idx]; }
 
 		BOOST_MULTI_HD constexpr auto  size() const noexcept { return xs_.num_elements(); }
-		BOOST_MULTI_HD constexpr auto ssize() const noexcept { return xs_.num_elements(); }
+		BOOST_MULTI_HD constexpr auto ssize() const noexcept { return size(); }
 		BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(xs_.num_elements()); }
 	};
 
