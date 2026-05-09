@@ -644,7 +644,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
 		friend auto operator<(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
 		friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >= other.it_; }
 
 		BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 			if constexpr(D != 1) {

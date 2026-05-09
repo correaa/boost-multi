@@ -18,7 +18,7 @@ template<class To, class From, std::enable_if_t<std::is_convertible_v<From, To>,
 constexpr auto implicit_cast(From&& ref) -> To {return static_cast<To>(std::forward<From&&>(ref));}
 
 template<class To, class From, std::enable_if_t<std::is_constructible_v<To, From> &&  ! std::is_convertible_v<From, To>, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-constexpr auto explicit_cast(From&& ref) -> To {return static_cast<To>(std::forward<From&&>(ref));}
+constexpr auto explicit_cast(From&& ref) -> To {return static_cast<To>(std::forward<From&&>(ref));}  //-V::524 the body is the same as implicit_cast
 
 }  // end namespace boost::multi::detail
 #endif  // BOOST_MULTI_DETAIL_IMPLICIT_CAST_HPP

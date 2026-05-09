@@ -307,7 +307,7 @@ class device_restriction_iterator {
 	friend auto operator<=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
 	friend auto operator<(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
 	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ >= other.it_; }
 
 	__host__ __device__ constexpr auto operator*() -> int {
 		// decltype(auto) {
