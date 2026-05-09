@@ -17,7 +17,7 @@ namespace multi = boost::multi;
 auto main() -> int {
 	namespace multi = boost::multi;
 
-	multi::thrust::universal_array<thrust::complex<double>, 3> olap({5, 5, 3}, thrust::complex<double>{1.0, 2.0});
+	multi::thrust::device_array<thrust::complex<double>, 3> olap({5, 5, 3}, thrust::complex<double>{1.0, 2.0});
 
 	// ::thrust::tabulate(olap.elements().begin(), olap.elements().end(), [seed = 42] __device__ (multi::index i) {
 	// 	thrust::default_random_engine rng(seed);
@@ -26,13 +26,14 @@ auto main() -> int {
 	// 	return thrust::complex<double>(dist(rng), dist(rng));
 	// });
 
-	multi::thrust::universal_array<double, 2> vel_gold;
+	multi::thrust::device_array<double, 2> vel_gold;
 
 	{
+		multi::array<thrust::complex<double>, 3> olap_cpu(olap);
 		multi::array<double, 2> vel({5, 5});
 
 		std::transform(
-			olap.flatted().begin(), olap.flatted().end(),
+			olap_cpu.flatted().begin(), olap_cpu.flatted().end(),
 			vel.flatted().begin(),
 			[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
 		);
@@ -63,14 +64,18 @@ auto main() -> int {
 			vel.elements().extent().end(),
 			vel.elements().begin(),
 			[olap_base = olap.flatted().home()] __device__ (int mm) {
-				return norm(olap_base[mm][0]) + norm(olap_base[mm][1]) + norm(olap_base[mm][2]);
+				return
+					  thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][0])) 
+					+ thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][1])) 
+					+ thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][2]))
+					;
 			}
 		);
 
 		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
 	{
-		multi::thrust::universal_array<double, 2> vel({5, 5});
+		multi::thrust::device_array<double, 2> vel({5, 5});
 
 		thrust::transform(
 			thrust::make_counting_iterator(olap.flatted().begin()),
@@ -78,7 +83,7 @@ auto main() -> int {
 			vel.elements().begin(),
 			[] __device__ (auto e) {
 				auto const& ev = *e;
-				return norm(ev[0]) + norm(ev[1]) + norm(ev[2]);
+				return norm(static_cast<thrust::complex<double>>(ev[0])) + norm(static_cast<thrust::complex<double>>(ev[1])) + norm(static_cast<thrust::complex<double>>(ev[2]));
 			}
 		);
 
