@@ -1386,6 +1386,8 @@ pages-presentation:
     - cd talk
     - ls -all
     - lualatex -shell-escape presentation.tex
+    - lualatex -shell-escape presentation.tex
+    - lualatex -shell-escape presentation.tex
     - cp presentation.pdf ../public/
   artifacts:
     paths:
