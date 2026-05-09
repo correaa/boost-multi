@@ -20,11 +20,11 @@
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
+#include <new>      // IWYU pragma: keep  // for operator new
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
-// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <version>  // for __GLIBCXX__
 
 namespace multi = boost::multi;
 
@@ -144,7 +144,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -187,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),

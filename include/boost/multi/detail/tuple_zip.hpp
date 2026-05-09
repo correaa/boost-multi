@@ -155,16 +155,25 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  private:
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_DEV constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD  // BOOST_MULTI_DEV
 	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
@@ -441,6 +450,9 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 template<class F, class Tuple, std::size_t... I>
 BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
@@ -563,6 +575,13 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) 
 		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
+
+template<class T, class Tuple, class = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+struct all_elements_convertible_to;
+
+template<class T, class Tuple, std::size_t... Is>
+struct all_elements_convertible_to<T, Tuple, std::index_sequence<Is...>>
+: std::conjunction<std::is_convertible<std::tuple_element_t<Is, Tuple>, T>...> {};
 
 }  // end namespace detail
 

@@ -2,15 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// vvv this has no effect, needs to be passed directly from compilation line "-Wno-psabi"
-// #ifdef __GNUC__
-// #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
-// #endif
-
-#if defined(__GNUC__) && (__GNUC__ == 15)
-// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
@@ -250,7 +241,7 @@ int main() {
 	{
 		std::initializer_list<int> il = {1, 2, 3};
 
-		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::size_t>(il.size()));
+		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::ssize_t>(il.size()));
 		BOOST_TEST( il_res[1] == 2 );
 	}
 	{
@@ -301,8 +292,13 @@ int main() {
 		multi::iextension k(64);
 		multi::iextension n(96);
 
-		// NOLINTNEXTLINE(runtime/threadsafe_f)
-		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n});
+		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
+			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n}
+		);
+	}
+	{
+		multi::array<double, 3> arr;
+		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extensions_t<3>(2, 3, 4);
 	}
 
 	return boost::report_errors();

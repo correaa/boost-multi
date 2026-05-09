@@ -1,4 +1,4 @@
-// Copyright 2018-2024 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -110,8 +110,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( size(marr) == 10 );
 
-		BOOST_TEST( static_cast<multi::size_t>(carr.size()) == size(marr) );
-		BOOST_TEST( static_cast<multi::size_t>(aarr.size()) == size(marr) );
+		BOOST_TEST( static_cast<multi::ssize_t>(carr.size()) == size(marr) );
+		BOOST_TEST( static_cast<multi::ssize_t>(aarr.size()) == size(marr) );
 
 		BOOST_TEST( carr[7] == marr[7] );
 		BOOST_TEST( varr[7] == marr[7] );
@@ -162,7 +162,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array_ref<int, 2> marr(&carr[0][0], {3, 10});  // NOLINT(readability-container-data-pointer) tests access
 
-		BOOST_TEST( static_cast<multi::size_t>(carr.size()) == size(marr) );
+		BOOST_TEST( static_cast<multi::ssize_t>(carr.size()) == size(marr) );
 
 		BOOST_TEST( carr[1][7] == marr[1][7] );
 

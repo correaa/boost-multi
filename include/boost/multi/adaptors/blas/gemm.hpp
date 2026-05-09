@@ -180,8 +180,10 @@ class gemm_reference {  // TODO(correaa) implement this in terms of gemv_range?
 
  public:
 	explicit gemm_reference(Ext exts) : exts_{std::move(exts)} {}
-	auto extensions() const {return exts_;}
-	friend auto extensions(gemm_reference const& self) {return self.extensions();}
+	auto extensions() const { return exts_; }
+	[[nodiscard]] constexpr auto extents() const { return exts_; }
+
+	// friend auto extensions(gemm_reference const& self) {return self.extensions();}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB>
@@ -292,7 +294,9 @@ class gemm_range {
 	auto size() const -> size_type {return a_end_ - a_begin_;}
 
 	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
-	friend auto extensions(gemm_range const& self) {return self.extensions();}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
+
+	// friend auto extensions(gemm_range const& self) {return self.extensions();}
 
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>

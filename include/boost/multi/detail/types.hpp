@@ -11,10 +11,13 @@
 
 namespace boost::multi {
 
-using size_t    = std::make_signed_t<std::size_t>;
-using size_type = std::make_signed_t<std::size_t>;
+using ssize_t    = std::make_signed_t<std::size_t>;
+using usize_t = std::make_unsigned_t<multi::ssize_t>;
 
-using index           = std::make_signed_t<size_type>;
+using size_type [[deprecated("use boost::multi::ssize_t (for the default multi size type (signed) or std::size_t for the default STL size type (unsiged)")]] = std::make_signed_t<std::size_t>;
+using size_t [[deprecated("use boost::multi::ssize_t (for the default multi size type (signed) or std::size_t for the default STL size type (unsiged)")]] = std::make_signed_t<std::size_t>;
+
+using index           = std::make_signed_t<ssize_t>;
 using difference_type = std::make_signed_t<index>;
 
 using dimensionality_t    = index;

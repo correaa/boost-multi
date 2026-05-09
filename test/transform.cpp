@@ -14,7 +14,7 @@
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
-#include <string>       // for to_string  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <string>       // IWYU pragma: keep  // for to_string
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
@@ -105,7 +105,7 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
-	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
+	constexpr explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
 	// cppcheck-suppress redundantPointerOp ; lib idiom

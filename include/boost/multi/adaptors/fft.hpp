@@ -129,6 +129,11 @@ class dft_range {
 				using std::get;
 				return get<0>(extensions());
 			}
+			[[nodiscard]] auto extent() const {
+				using std::get;
+				return get<0>(extensions());
+			}
+
 			auto size() const { return extension().size(); }
 		};
 

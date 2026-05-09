@@ -868,9 +868,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// 	BOOST_TEST( sizes3 == 3 );
 		// }
 		{
-			multi::size_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
-			multi::size_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
-			multi::size_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::ssize_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::ssize_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+			multi::ssize_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
 			multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 			BOOST_TEST( sizes1 == 4 );
@@ -1133,7 +1133,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(marr[5] == 99);
 		}
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-#if defined(__cpp_lib_span)
+#ifdef __cpp_lib_span
 #if !defined(__clang__) || (__clang_major__ > 14)
 #if defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 11
 		{

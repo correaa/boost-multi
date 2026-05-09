@@ -19,7 +19,7 @@ auto flatted_last(Array&& arr) {
 }
 
 template<class Array>
-auto partitioned_last(Array&& arr, multi::size_type n) {
+auto partitioned_last(Array&& arr, multi::ssize_t n) {
 	return std::forward<Array>(arr).reversed().partitioned(n).transposed().transposed().reversed();
 }
 }  // end unnamed namespace

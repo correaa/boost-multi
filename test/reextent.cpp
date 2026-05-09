@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <initializer_list>  // for initializer_list
 #include <iterator>          // for size
-#include <tuple>             // for get  // NOLINT(misc-include-cleaner)
+#include <tuple>             // IWYU pragma: keep  // for get
 #include <type_traits>       // for make_unsigned_t
 #include <utility>           // for move
 #include <vector>            // for vector
@@ -335,12 +335,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<double> const vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{
-			multi::array<double, 1> const arr(static_cast<multi::size_t>(vec.size()));
+			multi::array<double, 1> const arr(static_cast<multi::ssize_t>(vec.size()));
 			BOOST_TEST( comp_equal(arr.size(), vec.size()) );
 		}
 		{
-			multi::array<double, 1> const arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion
-			// multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
+			multi::array<double, 1> const arr(multi::iextensions<1>(static_cast<multi::ssize_t>(vec.size())));  // warning: sign-conversion
 			BOOST_TEST( comp_equal(arr.size(), vec.size()) );
 		}
 	}

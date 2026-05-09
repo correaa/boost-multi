@@ -56,7 +56,7 @@ class iterator_facade {
 
 	// friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
 
-	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
+	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return self < other || self == other; }
 	friend constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
 	friend constexpr auto operator>=(self_type const& self, self_type const& other) { return !(self < other); }
 
@@ -244,16 +244,18 @@ class range {
 	#pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator std::streamoff") from a __host__ __device__ function("size") is not allowed.  // TODO(correaa) implement HD integral_constant
 	#endif
 
-	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto  size() const noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto ssize() const noexcept { return size(); }
+	BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(size()); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
 
+	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
 	}
-	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
 
 	[[nodiscard]]  // ("find returns an iterator to the sequence, that is the only effect")]] for C++20
 	constexpr auto find(value_type const& value) const -> const_iterator {
@@ -406,7 +408,7 @@ constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
 	return extension_t<IndexType, IndexTypeLast>{first, last};
 }
 
-template<class IndexType = boost::multi::size_t>
+template<class IndexType = multi::index>
 constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;

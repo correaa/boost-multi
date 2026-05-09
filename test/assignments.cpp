@@ -27,7 +27,7 @@ constexpr auto make_ref(int* ptr) {
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator const& alloc) {
 	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
-	std::fill(ret.diagonal().begin(), ret.diagonal().end(), 1);
+	std::fill(ret.diagonal().begin(), ret.diagonal().end(), T{1});
 	return ret;
 }
 
@@ -91,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto const ext = multi::make_extension_t(10L);
 
-			multi::array<multi::size_t, 1> vec(ext.begin(), ext.end());
+			multi::array<multi::ssize_t, 1> vec(ext.begin(), ext.end());
 
 			BOOST_TEST( ext.size() == vec.size() );
 			BOOST_TEST( vec[1] == 1L );

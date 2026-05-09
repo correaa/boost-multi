@@ -89,6 +89,7 @@ auto copy(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 		auto end() const { return iterator{x_.end()}; }
 		auto size() const { return x_.size(); }
 		auto extensions() const { return x_.extensions(); }
+		[[nodiscard]] constexpr auto extents() const { return x_.extensions(); }
 	};
 	return ref{x};
 }
