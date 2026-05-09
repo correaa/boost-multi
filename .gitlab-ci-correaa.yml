@@ -237,6 +237,7 @@ clang++ ubsan:  # more UB is detected on Release
   tags:
     - non-shared
     - docker
+    - x86_64  # ubsan doesn't work in arm
   only:
     refs:
       - develop

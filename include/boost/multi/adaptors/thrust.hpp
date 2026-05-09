@@ -169,6 +169,11 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 namespace thrust {
 
+// template<class T>
+// auto operator+(::thrust::device_reference<T const> const& ref) {
+// 	return static_cast<T>(ref);
+// }
+
 template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
 
 template<class FF>
