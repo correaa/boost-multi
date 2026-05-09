@@ -815,7 +815,7 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 			return ht_tuple(idx_, rest_.base());
 			}
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }  // NOLINT(readability-redundant-parentheses)
+		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk
 
 		friend constexpr auto operator==(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ == other.idx_; }
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ != other.idx_; }

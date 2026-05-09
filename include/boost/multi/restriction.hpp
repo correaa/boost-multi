@@ -215,7 +215,8 @@ class restriction_iterator {
 		if constexpr(D != 1) {
 			using std::get;
 			// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			// return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>(it_->tail()), bind_front_t<Proj>(get<0>(*it_), *Pproj_));
 		} else {
 			using std::get;
 			return (*Pproj_)(get<0>(*it_));
