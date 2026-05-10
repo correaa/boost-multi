@@ -129,8 +129,8 @@ auto main() -> int {
 			thrust::make_zip_iterator(A.begin(), B.begin()),
 			thrust::make_zip_iterator(A.end(), B.end()),
 			C.begin(),
-			[] __device__ (auto const& ab) { auto [a, b] = ab;
-				return a + b;
+			[] __device__ (auto const& ab) {
+				return static_cast<int>(thrust::get<0>(ab)) + static_cast<int>(thrust::get<1>(ab));
 			}
 		);
 
@@ -156,8 +156,8 @@ auto main() -> int {
 				thrust::make_zip_iterator(A.begin(), B.begin()),
 				thrust::make_zip_iterator(A.end(), B.end()),
 				C.begin(),
-				[] __device__ (auto const& ab) { auto [a, b] = ab;
-					return a + b;
+				[] __device__ (auto const& ab) {
+					return thrust::get<0>(ab) + thrust::get<1>(ab);
 				}
 			);
 
