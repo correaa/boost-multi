@@ -14,6 +14,14 @@
 
 namespace multi = boost::multi;
 
+template <typename T>
+T* start_lifetime_as_array_approx(void* p, std::size_t n) {
+    // memmove to self is a "blessed" operation that 
+    // implicitly starts lifetimes for implicit-lifetime types.
+    std::memmove(p, p, sizeof(T) * n);
+    return reinterpret_cast<T*>(p);
+}
+
 auto main() -> int {
 	namespace multi = boost::multi;
 
@@ -112,6 +120,72 @@ auto main() -> int {
 
 	// 	BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	// }
+	{
+		multi::thrust::device_array<int, 1> A({100}, 3);
+		multi::thrust::device_array<int, 1> B({100}, 2);
+		multi::thrust::device_array<int, 1> C({100}, -1);
+
+		thrust::transform(
+			thrust::make_zip_iterator(A.begin(), B.begin()),
+			thrust::make_zip_iterator(A.end(), B.end()),
+			C.begin(),
+			[] __device__ (auto const& ab) { auto [a, b] = ab;
+				return a + b;
+			}
+		);
+
+		BOOST_TEST( C[21] == 5 );
+
+		multi::array<int, 1> C_cpu(C);
+		std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
+		BOOST_TEST( C_cpu[21] == 5 );
+	}
+	{
+		multi::thrust::device_array<int, 2> AB({100, 2}, -1);
+
+		auto&& A = AB(multi::_, 0);
+		auto&& B = AB(multi::_, 1);
+		
+		thrust::fill(A.begin(), A.end(), 3);
+		thrust::fill(B.begin(), B.end(), 2);
+
+		{
+			multi::thrust::device_array<int, 1> C({100}, -1);
+
+			thrust::transform(
+				thrust::make_zip_iterator(A.begin(), B.begin()),
+				thrust::make_zip_iterator(A.end(), B.end()),
+				C.begin(),
+				[] __device__ (auto const& ab) { auto [a, b] = ab;
+					return a + b;
+				}
+			);
+
+			BOOST_TEST( C[21] == 5 );
+
+			multi::array<int, 1> C_cpu(C);
+			std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
+			BOOST_TEST( C_cpu[21] == 5 );
+		}
+		// {
+		// 	multi::thrust::device_array<int, 1> C({100}, -1);
+
+		// 	thrust::transform(
+		// 		AB.begin(),
+		// 		AB.end(),
+		// 		C.begin(),
+		// 		[] __device__ (auto const& ab) {
+		// 			return ab[0] + ab[1];
+		// 		}
+		// 	);
+
+		// 	BOOST_TEST( C[21] == 5 );
+
+		// 	multi::array<int, 1> C_cpu(C);
+		// 	std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
+		// 	BOOST_TEST( C_cpu[21] == 5 );
+		// }
+	}
 
 	return boost::report_errors();
 }
