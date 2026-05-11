@@ -23,8 +23,8 @@ namespace boost::multi::detail {
 
 template<class T, typename Diff = typename std::pointer_traits<T*>::difference_type>
 class offset_ptr {
-	T* ptr;
-	Diff offset;
+	T* ptr_;
+	Diff offset_;
 
  public:
 	using element_type = typename std::pointer_traits<T*>::element_type;
@@ -32,7 +32,7 @@ class offset_ptr {
 	using reference = typename std::pointer_traits<T*>::reference;
 	using pointer = T*;
 
-	constexpr pointer   operator->() const noexcept { return ptr + offset; }
+	constexpr pointer   operator->() const noexcept { return ptr_ + offset_; }
 	constexpr reference operator*() const noexcept { return *operator->(); }
 };
 
