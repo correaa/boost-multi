@@ -185,7 +185,6 @@ auto main() -> int {
 			BOOST_TEST( C[21] == 5 );
 
 			multi::array<int, 1> C_cpu(C);
-			std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
 			BOOST_TEST( C_cpu[21] == 5 );
 #endif
 		}

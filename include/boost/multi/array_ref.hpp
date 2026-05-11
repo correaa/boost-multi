@@ -1777,18 +1777,16 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
-	using pointer       = 
+	using pointer =
 		typename std::conditional_t<
-		(D > 1),
-		void,
-		typename std::iterator_traits<ElementPtr>::pointer>
-	;  // ptr;
-	using const_pointer = 
-			typename std::conditional_t<
-		(D > 1),
-		void,
-		typename std::iterator_traits<ElementPtr>::pointer>
-	;  // const_ptr;
+			(D > 1),
+			void,
+			typename std::iterator_traits<ElementPtr>::pointer>;  // ptr;
+	using const_pointer =
+		typename std::conditional_t<
+			(D > 1),
+			void,
+			typename std::iterator_traits<ElementPtr>::pointer>;  // const_ptr;
 
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
