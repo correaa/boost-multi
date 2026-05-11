@@ -22,10 +22,11 @@ namespace boost::multi::detail {
 #endif
 
 template<class T, typename Diff = typename std::pointer_traits<T*>::difference_type>
-struct offset_ptr {
+class offset_ptr {
 	T* ptr;
 	Diff offset;
 
+ public:
 	using element_type = typename std::pointer_traits<T*>::element_type;
 	using difference_type = Diff;
 	using reference = typename std::pointer_traits<T*>::reference;
