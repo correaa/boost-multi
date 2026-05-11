@@ -313,7 +313,7 @@ struct dynamic_array                                                            
 		class = decltype(std::declval<Range const&>().end()),
 		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>>                                                // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 	requires std::is_convertible_v<std::ranges::range_reference_t<std::decay_t<std::ranges::range_reference_t<Range>>>, T>  //
-		explicit dynamic_array(Range const& rng)                                                                            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+		explicit dynamic_array(Range const& rng)                                                                            // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax  // NOSONAR
 	: dynamic_array() {
 		if(rng.size() == 0) {
 			return;
@@ -357,7 +357,7 @@ struct dynamic_array                                                            
 		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 		>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use assignment for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	/*explicit*/ dynamic_array(Range const& rng)        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax  // NOSONAR
+	/*explicit*/ dynamic_array(Range const& rng)        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax  // NOSONAR
 	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
@@ -496,7 +496,7 @@ struct dynamic_array                                                            
 
 	template<class F>  // ArrayElementsLike, class = typename ArrayElementsLike::elements_t>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr dynamic_array(multi::restriction<D, F> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow terse syntax
+	constexpr dynamic_array(multi::restriction<D, F> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow terse syntax
 	: dynamic_array(other, allocator_type{}) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element_type>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename dynamic_array::iterator>()))>
@@ -519,32 +519,32 @@ struct dynamic_array                                                            
 		class TT, class EElementPtr, class LLayout, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
 		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename dynamic_array::iterator>()))>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*implicit*/ dynamic_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	constexpr /*implicit*/ dynamic_array(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: dynamic_array(other, allocator_type{}) {}
 
 	template<
 		class TT, class EElementPtr, class LLayout, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<multi::subarray<TT, D, EElementPtr, LLayout> const&>().base()), T>, int> = 0,
 		class = decltype(adl_copy(std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().begin(), std::declval<multi::const_subarray<TT, D, EElementPtr, LLayout> const&>().end(), std::declval<typename dynamic_array::iterator>()))>
 	// cppcheck-suppress noExplicitConstructor  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*implicit*/ dynamic_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	constexpr /*implicit*/ dynamic_array(multi::subarray<TT, D, EElementPtr, LLayout>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: dynamic_array(std::move(other), allocator_type{}) {}
 
 	// cppcheck-suppress noExplicitConstructor ; see below
-	constexpr dynamic_array(multi::subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr dynamic_array(multi::subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: dynamic_array(other, allocator_type{}) {}
 
 	// cppcheck-suppress noExplicitConstructor ; see below
-	constexpr dynamic_array(multi::const_subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr dynamic_array(multi::const_subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type> const&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: dynamic_array(other, allocator_type{}) {}
 
 	// cppcheck-suppress noExplicitConstructor ; see below
-	constexpr dynamic_array(multi::subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	constexpr dynamic_array(multi::subarray<T, D, typename dynamic_array::element_ptr, typename dynamic_array::layout_type>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: dynamic_array(std::move(other), allocator_type{}) {}
 
 	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
 	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&>().base()), T>, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
 	}
@@ -558,7 +558,7 @@ struct dynamic_array                                                            
 	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
 	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&&>().base()), T>, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	/*mplct*/ dynamic_array(array_ref<TT, D, Args...>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		assert(this->stride() != 0);
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
@@ -574,7 +574,7 @@ struct dynamic_array                                                            
 	// NOLINTNEXTLINE(modernize-use-constraints) TODO(correaa) for C++20
 	template<class TT, class... Args, std::enable_if_t<multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	/*mplct*/ dynamic_array(array_ref<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR
+	/*mplct*/ dynamic_array(array_ref<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: array_alloc{}, ref{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		assert(this->stride() != 0);
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
@@ -1013,7 +1013,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 		class Singleton, std::enable_if_t<!std::is_base_of_v<dynamic_array, Singleton> && !std::is_same_v<Singleton, typename dynamic_array::element_type>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
 		class = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename dynamic_array::element_ptr{}))>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax  // NOLINTNEXTLINE(runtime/explicit)
-	/*implict*/ dynamic_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) this is used by the
+	/*implict*/ dynamic_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this is used by the
 	: ref(dynamic_array::allocate(1), typename dynamic_array::extensions_type{}) {
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type> && !multi::force_element_trivial_default_construction<typename dynamic_array::element_type>) {
@@ -1111,17 +1111,17 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.origin(); }
 
 	// NOSONAR
-	constexpr operator typename std::iterator_traits<typename dynamic_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr operator typename std::iterator_traits<typename dynamic_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 		return *(this->base_);
 	}
 
 	// NOSONAR
-	constexpr operator std::add_rvalue_reference_t<typename std::iterator_traits<typename dynamic_array::element_ptr>::reference>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr operator std::add_rvalue_reference_t<typename std::iterator_traits<typename dynamic_array::element_ptr>::reference>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 		return std::move(*(this->base_));
 	}
 
 	// NOSONAR
-	constexpr operator typename std::iterator_traits<typename dynamic_array::element_ptr>::reference() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr operator typename std::iterator_traits<typename dynamic_array::element_ptr>::reference() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 		return *(this->base_);
 	}
 
@@ -1345,7 +1345,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	}
 
 	// vvv workaround for MSVC 14.3 and ranges, TODO(correaa) good solution would be to inherit from const_subarray
-	BOOST_MULTI_HD operator subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&() const {     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD operator subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&() const {     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 		return reinterpret_cast<subarray<T, D, typename array::element_const_ptr, typename array::layout_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
@@ -1380,7 +1380,7 @@ struct array : dynamic_array<T, D, Alloc> {
 		class Sub,
 		std::enable_if_t<                                                                                                                                                           // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, Sub> && !std::is_convertible_v<Sub, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) inherit explicitness of conversion from the elements
+	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
 	: dynamic_(
 		  (values.size() == 0) ? array<T, D>()()
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
