@@ -49,7 +49,7 @@ struct move_ptr : private std::move_iterator<Ptr> {
 
 	using std::move_iterator<Ptr>::move_iterator;
 
-	BOOST_MULTI_HD constexpr /**/ operator Ptr() const { return std::move_iterator<Ptr>::base(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) decay to lvalue should be easy
+	BOOST_MULTI_HD constexpr /**/ operator Ptr() const { return std::move_iterator<Ptr>::base(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) decay to lvalue should be easy
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> move_ptr& {
 		static_cast<std::move_iterator<Ptr>&>(*this) += n;
@@ -146,7 +146,7 @@ struct transform_ptr {
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709)
+	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709)
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr>
 	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
