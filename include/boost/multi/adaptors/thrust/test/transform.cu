@@ -167,24 +167,36 @@ auto main() -> int {
 			std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
 			BOOST_TEST( C_cpu[21] == 5 );
 		}
-		// {
-		// 	multi::thrust::device_array<int, 1> C({100}, -1);
+		{
+			using iter1d = decltype(std::declval<multi::thrust::device_array<int,1>>().begin());
+			static_assert(std::is_same_v<
+				typename thrust::iterator_system<iter1d>::type,
+				thrust::device_system_tag
+			>, "1D iterator should be device");
 
-		// 	thrust::transform(
-		// 		AB.begin(),
-		// 		AB.end(),
-		// 		C.begin(),
-		// 		[] __device__ (auto const& ab) {
-		// 			return ab[0] + ab[1];
-		// 		}
-		// 	);
+			using iter2d = decltype(std::declval<multi::thrust::device_array<int,2>>().begin());
+			static_assert(std::is_same_v<
+				typename thrust::iterator_system<iter2d>::type,
+				thrust::device_system_tag
+			>, "2D iterator should be device");
 
-		// 	BOOST_TEST( C[21] == 5 );
+			multi::thrust::device_array<int, 1> C({100}, -1);
 
-		// 	multi::array<int, 1> C_cpu(C);
-		// 	std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
-		// 	BOOST_TEST( C_cpu[21] == 5 );
-		// }
+			thrust::transform(
+				AB.begin(),
+				AB.end(),
+				C.begin(),
+				[] __device__ (auto const& ab) {
+					return ab[0] + ab[1];
+				}
+			);
+
+			BOOST_TEST( C[21] == 5 );
+
+			multi::array<int, 1> C_cpu(C);
+			std::cout << "C_cpu[21] = " << C_cpu[21] << '\n';
+			BOOST_TEST( C_cpu[21] == 5 );
+		}
 	}
 
 	return boost::report_errors();

@@ -87,15 +87,15 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple(tuple const&) = default;
 
 	// this is horrible hack and can produce ODR reported by Circle
-	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
-	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
-	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
@@ -103,7 +103,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
 	BOOST_MULTI_HD constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
 	template<class TT0 = T0,
@@ -111,10 +111,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
 	>
 	// cppcheck-suppress noExplicitConstructor ; see below
-	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
