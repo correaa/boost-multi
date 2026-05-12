@@ -103,7 +103,7 @@ template<class T> struct ref_add_const<T&> {
 #endif
 
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
-struct transform_ptr {
+struct transform_ptr {  //-V::690
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
 	using value_type        = std::decay_t<Ref>;  // typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer           = Ptr;
@@ -201,6 +201,7 @@ struct transform_ptr {
 
 	auto operator=(transform_ptr&&) -> transform_ptr& = default;
 
+	// auto operator=(transform_ptr const& other) -> transform_ptr& = default;
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
 		// assert(f_ == other.f_);
 		p_ = other.p_;
