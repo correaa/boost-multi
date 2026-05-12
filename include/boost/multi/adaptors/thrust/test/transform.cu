@@ -188,6 +188,47 @@ auto main() -> int {
 			BOOST_TEST( C_cpu[21] == 5 );
 #endif
 		}
+		{
+#ifndef _WIN32
+			multi::thrust::device_array<int, 1> C({100}, -1);
+
+			thrust::transform(
+				thrust::cuda::par,
+				AB.begin(),
+				AB.end(),
+				C.begin(),
+				[] __device__(auto const& ab) {
+					return ab[0] + ab[1];
+				}
+			);
+
+			BOOST_TEST( C[21] == 5 );
+
+			multi::array<int, 1> C_cpu(C);
+			BOOST_TEST( C_cpu[21] == 5 );
+#endif
+		}
+		{
+#ifndef _WIN32
+			multi::thrust::device_array<int, 1> C({100}, -1);
+
+			thrust::transform(
+				thrust::cuda::par,
+				AB.begin(),
+				AB.end(),
+				C.begin(),
+				[] __device__ (auto const& ab) {
+					return ab[0] + ab[1];
+				}
+			);
+
+			BOOST_TEST( C[21] == 5 );
+
+			multi::array<int, 1> C_cpu(C);
+			BOOST_TEST( C_cpu[21] == 5 );
+#endif
+		}
+
 	}
 
 	return boost::report_errors();
