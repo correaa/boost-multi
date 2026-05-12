@@ -10,8 +10,10 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 if(MSVC)
-	set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
+	set(CMAKE_CUDA_RUNTIME_LIBRARY "None")  # "Shared"
 endif()
+
+find_package(CUDAToolkit REQUIRED)
 
 # set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,6 +68,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
+	target_link_libraries(${TEST_EXE} PRIVATE CUDA::cudart)
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
     if(ENABLE_CUDA)
 	    add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
