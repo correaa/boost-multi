@@ -31,6 +31,8 @@ When using the library, it is simpler to start from `array`, and other types are
 however, it is convenient for documentation to present the classes in a different order since the classes `array`, `dynamic_array`, `array_ref`, and `subarray` have an *is-a* relationship (from left to right), through C++ public inheritance.
 For example, `array_ref` has all the methods available to `subarray`, and `array` has all the operations of `array_ref, etc.
 
+image::types_relations.svg[Type relations diagram,opts=inline]
+
 [#ref_subarray]
 === Subarrays
 

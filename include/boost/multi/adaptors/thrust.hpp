@@ -6,9 +6,36 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP
 // #pragma once
 
-#include <exception>
+#include <thrust/detail/raw_reference_cast.h>
 
 #include "boost/multi/array.hpp"
+
+namespace thrust {
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout> const&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout>&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout>&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>&& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
+raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+
+}  // namespace thrust
+
+
+#include <exception>
 
 #include <thrust/device_allocator.h>
 #include <thrust/universal_allocator.h>
@@ -73,47 +100,6 @@
 
 // }  // end namespace std
 // // end of nvcc thrust 11.5 workaround
-
-#include <thrust/detail/raw_reference_cast.h>
-
-// namespace thrust::detail {
-
-// template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-// struct raw_reference<boost::multi::subarray<T, D, ElementPtr, Layout>>
-//     : identity<boost::multi::subarray<T, D, ElementPtr, Layout>> {};
-
-// template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-// struct raw_reference<boost::multi::subarray<T, D, ElementPtr, Layout> const>
-//     : identity<boost::multi::subarray<T, D, ElementPtr, Layout> const> {};
-
-// template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-// struct raw_reference<boost::multi::const_subarray<T, D, ElementPtr, Layout>>
-//     : identity<boost::multi::const_subarray<T, D, ElementPtr, Layout>> {};
-
-// template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-// struct raw_reference<boost::multi::const_subarray<T, D, ElementPtr, Layout> const>
-//     : identity<boost::multi::const_subarray<T, D, ElementPtr, Layout> const> {};
-
-// }  // namespace thrust::detail
-
-namespace thrust {
-
-template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-__host__ __device__
-boost::multi::subarray<T, D, ElementPtr, Layout> const&
-raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
-
-template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-__host__ __device__
-boost::multi::subarray<T, D, ElementPtr, Layout>&
-raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>& ref) { return ref; }
-
-template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
-__host__ __device__
-boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
-raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
-
-}  // namespace thrust
 
 #if !defined(MULTI_USE_HIP)
 #define HICUP cuda
@@ -476,17 +462,24 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 
 }  // end namespace thrust
 
-#if THRUST_VERSION >= 300200  // CCCL 2
+#if THRUST_VERSION >= 200000
+// #if THRUST_VERSION >= 300200  // CCCL 2
 namespace thrust::detail {
 
-// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
-// struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
-// 	using type = std::conditional_t<D == 1,
-// 		std::conditional_t<IsConst,
-// 			std::add_const_t<typename pointer_element<ElementPtr>::type>,
-// 			typename pointer_element<ElementPtr>::type>,
-// 		void>;
-// };
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+	using type = std::conditional_t<D == 1,
+		std::conditional_t<IsConst,
+			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
+			typename thrust::detail::pointer_element<ElementPtr>::type
+		>,
+		std::conditional_t<IsConst,
+			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
+			::boost::multi::subarray<T, D, ElementPtr, Layout>
+		>
+		// void
+	>;
+};
 
 }  // end namespace thrust::detail
 #endif

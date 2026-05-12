@@ -4,6 +4,7 @@
 
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/array.hpp>
+#include <boost/multi/detail/what.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -70,15 +71,55 @@ auto main()
 			});
 		}
 
-		auto gpu_par = multi::thrust::device_array<T, 3>({64, 64, 64}, 0);
+		auto gpu_par = multi::thrust::device_array<T, 3>({64, 64, 64}, 0.0);
+		{
+			auto_timer t{"nested thrust::for_each(thrust::cuda::par)"};
+			for(auto&& plane : gpu_par) {     // NOLINT(altera-unroll-loops)
+				for(auto&& row : std::forward<decltype(plane)>(plane)) {     // NOLINT(altera-unroll-loops)
+					thrust::for_each(
+						thrust::cuda::par,
+						row.begin(), row.end(), [] __device__ (auto& elem) {
+							elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+						});
+				}
+			}
+		}
 		// {
 		// 	auto_timer t{"thrust::for_each(thrust::cuda::par)"};
-		// 	thrust::for_each(gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& row) {
-		// 		for(auto&& e : row) {
-		// 			e += std::sqrt(std::pow(e, 1.5) + std::sin(e));
+		// 	thrust::for_each(
+		// 		thrust::cuda::par,
+		// 		gpu_par.begin(), gpu_par.end(), [] __device__ (auto&& plane) {
+		// 		for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+		// 			for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+		// 				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+		// 			}
 		// 		}
 		// 	});
 		// }
+		{
+			auto_timer t{"counting thrust::for_each(thrust::cuda::par)"};
+			thrust::for_each(
+				thrust::cuda::par,
+				thrust::counting_iterator{gpu_par.begin()},
+				thrust::counting_iterator{gpu_par.end()},  [] __device__ (auto it_plane) { auto&& plane = *it_plane;
+				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
+				}
+			});
+		}
+		{
+			auto_timer t{"iterator thrust::for_each(thrust::cuda::par)"};
+			thrust::for_each(thrust::cuda::par, gpu_par.extension().begin(), gpu_par.extension().end(), [gpu_par = gpu_par.begin()] __device__ (auto iplane) {
+				auto&& plane = gpu_par[iplane]; 
+				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
+					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));
+					}
+				}
+			});
+		}
 		{
 			auto_timer const _{"thrust::for_each(thrust::cuda::par, elements)"};
 			thrust::for_each(thrust::cuda::par, gpu_par.elements().begin(), gpu_par.elements().end(), [] __device__(auto& elem) {
