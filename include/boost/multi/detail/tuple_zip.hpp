@@ -76,7 +76,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  public:
 	BOOST_MULTI_HD constexpr auto head() const& -> T0 const& { return head_; }
-	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }
+	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }  //-V::659 this function moves the elements, not the whole object
 	BOOST_MULTI_HD constexpr auto head() & -> T0& { return head_; }
 
 	BOOST_MULTI_HD constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
@@ -398,7 +398,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 }
 
 template<std::size_t N, class T0, class... Ts>
-BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  //-V::659 overload for move
 	if constexpr(N == 0) {
 		return std::move(std::move(tup)).head();
 	} else {

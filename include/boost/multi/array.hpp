@@ -230,7 +230,7 @@ struct dynamic_array                                                            
 			other.num_elements(),
 			this->data_elements()
 		);
-		(void)std::move(other);
+		(void)std::move(other);  //-V::530 this function moves the elements, not the whole object
 	}
 
 	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept
@@ -1070,7 +1070,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 		//      other.num_elements(),
 		//      this->data_elements()
 		//  );
-		(void)std::move(other);
+		(void)std::move(other);  //-V::530 this function moves the elements, not the whole object
 	}
 
  protected:
