@@ -144,7 +144,7 @@ class range {
 	                  detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 	         )*                                                                    = nullptr>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
+	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	template<
@@ -173,7 +173,7 @@ class range {
 
 		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
 		// cppcheck-suppress noExplicitConstructor ; see below
-		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 		BOOST_MULTI_HD constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		BOOST_MULTI_HD constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
@@ -357,18 +357,9 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: extension_t{other.first(), other.last()} {}
 
-	// template<
-	// class OtherExtension,
-	// 	decltype(
-	// 		detail::explicit_cast<IndexType>(std::declval<OtherExtension>().first()),
-	// 		detail::explicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
-	// 	)* = nullptr
-	// >
-	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
-	// : extension_t{other.first(), other.last()} {}
 	using index = IndexTypeLast;
 
 	template<class OtherExtension>
@@ -379,8 +370,6 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 
 	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 	constexpr extension_t() = default;
-
-	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max;

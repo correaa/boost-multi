@@ -1259,14 +1259,14 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
-	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints) for C++20
+	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	explicit const_subarray(il_<TT> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	explicit const_subarray(il_<il_<TT>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	explicit const_subarray(il_<il_<il_<TT>>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
-	// NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints) for C++20
+	// NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
 
 #if defined(__cpp_deleted_function) && (__cpp_deleted_function >= 202403L) && (__cplusplus > 202302L)
 #define BM_DELETE(ReasoN) delete (ReasoN)
@@ -2632,7 +2632,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	template<
 		bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 		>
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	BOOST_MULTI_HD constexpr array_iterator(array_iterator<Element, 1, Ptr, OtherIsConst, IsMove, Stride> const& other)
 	: ptr_{other.base()}, stride_{other.stride()} {}
 
@@ -3678,7 +3678,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	template<class OtherPtr, class = std::enable_if_t<!std::is_same_v<OtherPtr, ElementPtr>>, decltype(multi::detail::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
-	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)         // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,bugprone-use-after-move,hicpp-invalid-access-moved)
+	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)         // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor,bugprone-use-after-move,hicpp-invalid-access-moved)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
@@ -3715,7 +3715,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	template<class TT, std::size_t N>
 	// cppcheck-suppress noExplicitConstructor ; see below
-	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions) : for backward compatibility // NOSONAR
+	constexpr array_ref(TT (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : for backward compatibility // NOSONAR
 	: array_ref(
 		  ::boost::multi::extensions(arr),
 		  ::boost::multi::data_elements(arr)
@@ -4064,7 +4064,7 @@ struct array_ptr
 		std::enable_if_t<std::is_convertible_v<decltype(data_elements(std::declval<TT (&)[N]>())), Ptr>, int> = 0  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) support legacy c-arrays TODO(correaa) for C++20
 		>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr array_ptr(TT (*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
+	constexpr array_ptr(TT (*array)[N]) : array_ptr{data_elements(*array), extensions(*array)} {}  // NOLINT(modernize-use-constraints,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) array_ptr is more general than pointer c-array support legacy c-arrays  TODO(correaa) for C++20  // NOSONAR
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
