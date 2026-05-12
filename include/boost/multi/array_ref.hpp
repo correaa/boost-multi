@@ -897,15 +897,16 @@ struct elements_iterator_t
 
 	elements_iterator_t(elements_iterator_t const&) = default;
 
-	BOOST_MULTI_HD constexpr auto operator=(elements_iterator_t const& other) -> elements_iterator_t& {  // fixes (?) warning: definition of implicit copy assignment operator for 'elements_iterator_t<boost::multi::array<double, 3> *, boost::multi::layout_t<1>>' is deprecated because it has a user-declared copy constructor [-Wdeprecated-copy]
-		if(&other == this) {
-			return *this;
-		}  // for cert-oop54-cpp
-		base_ = other.base_;
-		xs_   = other.xs_;
-		n_    = other.n_;
-		return *this;
-	}
+	auto operator=(elements_iterator_t const&) -> elements_iterator_t& = default;
+	// BOOST_MULTI_HD constexpr auto operator=(elements_iterator_t const& other) -> elements_iterator_t& {  // fixes (?) warning: definition of implicit copy assignment operator for 'elements_iterator_t<boost::multi::array<double, 3> *, boost::multi::layout_t<1>>' is deprecated because it has a user-declared copy constructor [-Wdeprecated-copy]
+	// 	if(&other == this) {
+	// 		return *this;
+	// 	}  // for cert-oop54-cpp
+	// 	base_ = other.base_;
+	// 	xs_   = other.xs_;
+	// 	n_    = other.n_;
+	// 	return *this;
+	// }
 
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
 		apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
