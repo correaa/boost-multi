@@ -505,7 +505,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto CC = C;
 
-		auto const [is, js] = C.extensions();
+		auto const [is, js] = C.extents();
 		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 			std::for_each(Js.begin(), Js.end(), [&](auto jj) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 				C[ii][jj] *= 0.0;

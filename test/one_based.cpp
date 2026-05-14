@@ -168,7 +168,7 @@ auto main() -> int {
 		BOOST_TEST( &Ar2[1][1] == arr[0].data() );
 		BOOST_TEST( &Ar2[2][4] == &arr[1][3] );
 
-		BOOST_TEST( Ar2.extensions() != Ar.extensions() );
+		BOOST_TEST( Ar2.extents() != Ar.extents() );
 		BOOST_TEST( !(Ar2 == Ar) );
 		BOOST_TEST( Ar2 != Ar );
 	}

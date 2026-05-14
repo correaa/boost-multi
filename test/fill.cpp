@@ -252,7 +252,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> vel({5, 5});
 
-			auto [is, js] = vel.extensions();
+			auto [is, js] = vel.extents();
 			for(auto i : is) {
 				for(auto j : js) {  // NOLINT(altera-unroll-loops)
 					// using std::norm;

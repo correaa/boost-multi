@@ -90,8 +90,8 @@ struct apply_bind_t<F, A, B> {
 
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
-	auto const xs = arr.extensions();  // TODO(correaa) consider storing home() cursor only
-	assert(((xs == arrs.extensions()) && ...));
+	auto const xs = arr.extents();  // TODO(correaa) consider storing home() cursor only
+	assert(((xs == arrs.extents()) && ...));
 	return multi::restricted(apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
 }
 
@@ -264,10 +264,10 @@ class exp_bind_t {
 
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 
-template<class A, std::enable_if_t<multi::has_extensions<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	// shouldn't get to this point for scalars
-	auto xs = alpha.extensions();  // mull-ignore: cxx_init_const
+	auto xs = alpha.extents();  // mull-ignore: cxx_init_const
 	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
@@ -288,7 +288,7 @@ class log_bind_t {
 
 template<class A> log_bind_t(A) -> log_bind_t<A>;
 
-template<class A, std::enable_if_t<multi::has_extensions<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto log(A&& alpha) {
 	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
 	return log_bind_t<A>(std::forward<A>(alpha)) ^ xs;
@@ -306,7 +306,7 @@ struct abs_bind_t {
 };
 
 template<class A>
-constexpr auto abs(A const& a) { return abs_bind_t<decltype(a.home())>{a.home()} ^ a.extensions(); }
+constexpr auto abs(A const& a) { return abs_bind_t<decltype(a.home())>{a.home()} ^ a.extents(); }
 
 template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(multi::array<T, 1>{il}); }
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }

@@ -115,12 +115,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);
 
-			BOOST_TEST( (*arrP).extensions() == multi::extensions(arr) );  // cppcheck-suppress danglingTemporaryLifetime ;
-			BOOST_TEST( arrP->extensions() == multi::extensions(arr) );
-			BOOST_TEST( extensions(*arrP) == multi::extensions(arr) );
+			BOOST_TEST( (*arrP).extents() == multi::extents(arr) );  // cppcheck-suppress danglingTemporaryLifetime ;
+			BOOST_TEST( arrP->extents() == multi::extents(arr) );
+			BOOST_TEST( extents(*arrP) == multi::extents(arr) );
 
-			using multi::extensions;
-			BOOST_TEST( extensions(*arrP) == extensions(arr) );
+			using multi::extents;
+			BOOST_TEST( extents(*arrP) == extents(arr) );
 
 			BOOST_TEST( &(*arrP).operator[](1)[1] == &arr[1][1] );
 			BOOST_TEST( &arrP->operator[](1)[1] == &arr[1][1] );

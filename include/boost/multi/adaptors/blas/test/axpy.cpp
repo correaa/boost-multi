@@ -112,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const I = complex{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 
 		multi::array<complex, 1> AC = {1.0 + 2.0 * I, 3.0 + 4.0 * I, 4.0 - 8.0 * I};
-		multi::array<complex, 1> BC(extensions(AC), complex{0.0, 0.0});
+		multi::array<complex, 1> BC(extents(AC), complex{0.0, 0.0});
 
 		blas::axpy(+1.0, blas::real(AC), blas::real(BC));
 		blas::axpy(-1.0, blas::imag(AC), blas::imag(BC));

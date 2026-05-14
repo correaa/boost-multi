@@ -1242,7 +1242,7 @@ int main() {
 			// blas::gemm({1.0, 0.0}, A, blas::J(B), {0.0, 0.0}, C);
 			blas::gemm({1.0, 0.0}, blas::T(B), blas::H(A), {0.0, 0.0}, C_copy);
 			{
-				auto const [is, js] = C.extensions();
+				auto const [is, js] = C.extents();
 				for(auto i : is) {
 					for(auto j : js) {
 						C[i][j] *= 0.0;

@@ -451,7 +451,7 @@ auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 	-> decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, in.layout(), out.layout() /*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	if constexpr(D == 4) {
 		if(which == std::array<bool, D>{true, true, true, true}) {
-			auto const [is, js, ks, ls] = in.extensions();
+			auto const [is, js, ks, ls] = in.extents();
 			for(auto i : is)
 				for(auto j : js) {
 					cufft::dft({true, true}, in[i][j], out[i][j], sgn);
@@ -492,7 +492,7 @@ template<typename In, typename R = multi::array<typename In::element_type, In::d
 BOOST_MULTI_NODISCARD("when first argument is const")
 auto dft(In const& in, int sgn) -> R {
 	static_assert(std::is_trivially_default_constructible<typename In::element_type>{});
-	R ret(extensions(in), get_allocator(in));
+	R ret(extents(in), get_allocator(in));
 	cufft::dft(in, ret, sgn);
 	// if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};
 	return ret;
@@ -511,7 +511,7 @@ constexpr auto array_tail(Array const& arr)
 
 template<typename In, std::size_t D = In::dimensionality>
 BOOST_MULTI_NODISCARD("when passing a const argument")
-auto dft(std::array<bool, D> which, In const& in, int sign) -> std::decay_t<decltype(dft(which, in, typename In::decay_type(extensions(in), get_allocator(in)), sign))> { return dft(which, in, typename In::decay_type(extensions(in), get_allocator(in)), sign); }
+auto dft(std::array<bool, D> which, In const& in, int sign) -> std::decay_t<decltype(dft(which, in, typename In::decay_type(extents(in), get_allocator(in)), sign))> { return dft(which, in, typename In::decay_type(extents(in), get_allocator(in)), sign); }
 
 template<typename In, std::size_t D = In::dimensionality>
 auto dft(std::array<bool, D> which, In&& in, int sign)

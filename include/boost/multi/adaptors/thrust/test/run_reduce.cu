@@ -200,7 +200,7 @@ auto main() -> int {
 
 			multi::thrust::device_array<double, 2> M = [&]() {
 				multi::thrust::universal_array<double, 2> ret({nx, ny});
-				auto const [xs, ys] = ret.extensions();
+				auto const [xs, ys] = ret.extents();
 				for(auto ix : xs) {
 					for(auto iy : ys) {
 						ret[ix][iy] = pp(ix, iy);

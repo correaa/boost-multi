@@ -42,7 +42,7 @@ namespace {
 
 namespace {
 void zip_iterator_test(multi::array<complex, 2> const& in_cpu) {
-	multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+	multi::array<complex, 2> fw_cpu_out(in_cpu.extents());
 	auto                     zit = multi::fftw::io_zip_iterator(
         {{true}},
         in_cpu.begin(),
@@ -80,7 +80,7 @@ auto main() -> int {            // NOLINT(bugprone-exception-escape,readability-
 		{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I},
 	};
 
-	auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+	auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 	multi::fftw::dft_forward({
 								 {true, true}
     },
@@ -96,13 +96,13 @@ auto main() -> int {            // NOLINT(bugprone-exception-escape,readability-
         },
 										  in_cpu, multi::fft::forward);
 
-		BOOST_TEST( dft.extensions() == in_cpu.extensions() );
+		BOOST_TEST( dft.extents() == in_cpu.extents() );
 		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
-		BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
+		BOOST_TEST( (*dft.begin()).extents() == (*in_cpu.begin()).extents() );
 	}
 	// assignment with right size
 	{
-		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+		multi::array<complex, 2> fw_cpu_out(in_cpu.extents());
 		complex const* const     persistent_base = fw_cpu_out.base();
 
 		fw_cpu_out = multi::fft::dft({
@@ -150,13 +150,13 @@ auto main() -> int {            // NOLINT(bugprone-exception-escape,readability-
         },
 										  in_cpu, multi::fft::forward);
 
-		BOOST_TEST( dft.extensions() == in_cpu.extensions() );
+		BOOST_TEST( dft.extents() == in_cpu.extents() );
 		BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
-		BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
+		BOOST_TEST( (*dft.begin()).extents() == (*in_cpu.begin()).extents() );
 	}
 	// assignment with right size
 	{
-		multi::array<complex, 2> fw_cpu_out(in_cpu.extensions());
+		multi::array<complex, 2> fw_cpu_out(in_cpu.extents());
 		complex const* const      persistent_base = fw_cpu_out.base();
 
 		fw_cpu_out = multi::fft::dft(

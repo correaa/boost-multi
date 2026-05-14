@@ -131,7 +131,7 @@ auto energy_nested_reduce(Array1D const& positions, Array2D const& neighbors) {
 // auto energy_flatten_par_reduce(auto const& positions, auto const& neighbors) {
 // 	return std::transform_reduce(
 // 		std::execution::par,
-// 		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
+// 		neighbors.extents().elements().begin(), neighbors.extents().elements().end(),
 // 		0.0,
 // 		std::plus<>{},
 // 		[&positions, &neighbors](multi::array<int, 2>::indexes c) {
@@ -162,7 +162,7 @@ template<class Arr1D, class Arr2D>
 auto energy_flatten_gpu_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
-		neighbors.extensions().elements().begin(), neighbors.extensions().elements().end(),
+		neighbors.extents().elements().begin(), neighbors.extents().elements().end(),
 #ifdef _MSC_VER
 		inner_coordinates{positions.begin(), neighbors.begin()},
 #else

@@ -82,7 +82,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(static_cast<std::size_t>(19586));
 		BOOST_TEST(arr.size() == 19586);
-		multi::array<std::complex<double>, 1> res(arr.extensions());
+		multi::array<std::complex<double>, 1> res(arr.extents());
 		BOOST_TEST(res.size() == 19586);
 
 		auto fdft = fftw::plan::forward({{true}}, arr.base(), arr.layout(), res.base(), res.layout());

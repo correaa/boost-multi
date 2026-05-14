@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using int_element = multi::index;
 		multi::array<int_element, 2> arr({5, 5}, 0);
 
-		auto [is, js] = extensions(arr);
+		auto [is, js] = extents(arr);
 
 		// NOLINTNEXTLINE(altera-unroll-loops) testing loops
 		for(auto i : is) {

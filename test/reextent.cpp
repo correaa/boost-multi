@@ -237,7 +237,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> arr({2, 3});
 
-		arr = multi::array<int, 2>(extensions(arr), 1230);
+		arr = multi::array<int, 2>(extents(arr), 1230);
 		BOOST_TEST( arr[1][2] == 1230 );
 
 		arr.clear();
@@ -278,7 +278,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_reextent_0D)
 	{
 		multi::array<int, 0> arr({}, 40);
-		arr.reextent(arr.extensions());
+		arr.reextent(arr.extents());
 		BOOST_TEST( *arr.data_elements() == 40 );
 	}
 
@@ -359,8 +359,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( Carr[1] == 1 );
 		BOOST_TEST( Carr[9] == 9 );
 
-		multi::array<multi::array<double, 1>::index, 1> const Darr(Aarr.extensions());
-		BOOST_TEST( Darr.extensions() == Aarr.extensions() );
+		multi::array<multi::array<double, 1>::index, 1> const Darr(Aarr.extents());
+		BOOST_TEST( Darr.extents() == Aarr.extents() );
 	}
 
 #ifndef __INTEL_COMPILER
@@ -368,7 +368,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> const Aarr({11, 13});
 
-		auto const Aext = Aarr.extensions();
+		auto const Aext = Aarr.extents();
 
 		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
