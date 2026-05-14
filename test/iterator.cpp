@@ -97,6 +97,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::array<double, 2>::iterator>));
 		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::array<double, 2>::iterator>));
 
+		static_assert(std::is_trivially_copyable_v<multi::array<double, 1>::iterator>);
+		static_assert(std::is_trivially_copyable_v<multi::array<double, 2>::iterator>);
+		static_assert(std::is_trivially_copyable_v<multi::array<double, 2>::elements_iterator>);
+
 		{
 			multi::array<double, 2> const arr({120, 140}, 99.0);
 
