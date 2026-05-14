@@ -31,7 +31,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	multi::array<int, 2> const AA = rst;
 
 	BOOST_TEST( AA.size() == rst.size() );
-	BOOST_TEST( AA.extensions() == rst.extensions() );
+	BOOST_TEST( AA.extents() == rst.extents() );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 	multi::array<int, 2> const BB(rst | std::ranges::views::reverse);

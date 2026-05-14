@@ -417,7 +417,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			using std::get;
-			auto [is, js] = barr.extensions();
+			auto [is, js] = barr.extents();
 			for(auto i : is) {
 				for(auto j : js) {  // NOLINT(altera-unroll-loops)
 					BOOST_TEST(

@@ -526,12 +526,12 @@ auto extension(Container const& cont)                                           
 }
 
 template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extension<Container>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-auto extensions(Container const& cont) {
+auto extents(Container const& cont) {
 	if constexpr(Rank == 0) {
 		return multi::extensions_t<0>{};
 	} else {
 		using std::size;
-		return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extensions<Rank - 1>(cont.front());
+		return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extents<Rank - 1>(cont.front());
 	}
 }
 
@@ -547,16 +547,16 @@ inline auto has_elements_aux(...) -> std::false_type;
 
 template<class T> struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
-template<class T, typename = decltype(std::declval<T const&>().extensions())>
-auto        has_extensions_aux(T const&) -> std::true_type;
-inline auto has_extensions_aux(...) -> std::false_type;
+template<class T, typename = decltype(std::declval<T const&>().extents())>
+auto        has_extents_aux(T const&) -> std::true_type;
+inline auto has_extents_aux(...) -> std::false_type;
 
-template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
+template<class T> struct has_extents : decltype(has_extents_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
-template<class T, std::enable_if_t<has_extensions<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-[[nodiscard]] constexpr auto extensions(T const& array) -> std::decay_\
-t<decltype(array.extensions())> {
-	return array.extensions();
+template<class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+[[nodiscard]] constexpr auto extents(T const& array) -> std::decay_\
+t<decltype(array.extents())> {
+	return array.extents();
 }
 
 template<class BoostMultiArray, std::size_t... I>
@@ -566,13 +566,13 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 	);
 }
 
-template<class Element, class T, std::enable_if_t<has_extensions<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-[[nodiscard]] auto extensions_of(T const& array) {
+template<class Element, class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+[[nodiscard]] auto extents_of(T const& array) {
 	if constexpr(std::is_convertible_v<T const&, Element>) {
 		return boost::multi::extensions_t<0>{};
 	}
 	if constexpr(std::is_convertible_v<typename T::reference, Element>) {
-		return boost::multi::extensions_t<1>{array.extension()};
+		return boost::multi::extensions_t<1>{array.extents()};
 	}
 }
 
@@ -583,23 +583,23 @@ auto transposed(Arr2D&& arr)
 }
 
 // template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>::value && !has_extensions<BoostMultiArray>::value, int> =0>
-// constexpr auto extensions(BoostMultiArray const& array) {
+// constexpr auto extents(BoostMultiArray const& array) {
 //  return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
 // }
 
-template<class T, std::enable_if_t<!has_extensions<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type { return {}; }
+template<class T, std::enable_if_t<!has_extents<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extensions_type { return {}; }
 
 template<class T, std::size_t N>
-constexpr auto extensions(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return index_extension{N} * extensions(array[0]);
+constexpr auto extents(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+	return index_extension{N} * extents(array[0]);
 }
 
 template<dimensionality_type D>
 struct extensions_aux {
 	template<class T>
 	static auto call(T const& array) {
-		return array.extension() * extensions<D - 1>(array);
+		return array.extension() * extents<D - 1>(array);
 		// return tuple_cat(std::make_tuple(array.extension()), extensions<D-1>(array));
 	}
 };
@@ -609,7 +609,7 @@ template<> struct extensions_aux<0> {
 };
 
 template<dimensionality_type D, class T, std::enable_if_t<has_extension<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-auto extensions(T const& array) {
+auto extents(T const& array) {
 	return extensions_aux<D>::call(array);
 }
 
@@ -642,7 +642,7 @@ template<class T, typename = std::enable_if_t<!has_layout_member<T const&>{}>>  
 auto layout(T const& /*unused*/) -> layout_t<0> { return {}; }
 
 template<class T, std::size_t N>
-constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>{multi::extensions(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
+constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>{multi::extents(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
 template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
@@ -702,10 +702,10 @@ constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boo
 	return 1 + dimensionality(arr[0]);
 }
 
-template<class T, std::size_t N>
-constexpr auto extensions(std::array<T, N> const& /*arr*/) {
-	return multi::extensions_t<1>{multi::index_extension(0, N)};
-}
+// template<class T, std::size_t N>
+// constexpr auto extents(std::array<T, N> const& /*arr*/) {
+// 	return multi::extensions_t<1>{multi::index_extension(0, N)};
+// }
 
 template<class T, std::size_t N>
 [[nodiscard]] constexpr auto extents(std::array<T, N> const& /*arr*/) {
@@ -713,8 +713,8 @@ template<class T, std::size_t N>
 }
 
 template<class T, std::size_t N, std::size_t M>
-auto extensions(std::array<std::array<T, N>, M> const& arr) {
-	return multi::iextension{M} * extensions(arr[0]);
+auto extents(std::array<std::array<T, N>, M> const& arr) {
+	return multi::iextension{M} * extents(arr[0]);
 }
 
 template<class T, std::size_t N>
@@ -735,7 +735,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
-	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
+	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extents(arr)};
 }
 
 #ifdef __clang__
@@ -792,12 +792,12 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 #endif
 
 template<class T>
-constexpr auto extensions(std::initializer_list<T> const& il) {
+constexpr auto extents(std::initializer_list<T> const& il) {
 	return multi::extensions_t<1>{static_cast<multi::ssize_t>(il.size())};
 }
 
 template<class T>
-constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const& il) {
+constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il) {
 	if(il.size() == 0) {
 		return multi::extensions_t<2>{0, 0};
 	}
@@ -809,7 +809,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const&
 }
 
 template<class T>
-constexpr auto extensions(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
+constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
 	if(il.size() == 0) {
 		return multi::extensions_t<3>{0, 0, 0};
 	}
@@ -823,7 +823,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<std::initi
 	// 	return multi::extensions_t<3>{il.size(), 0, 0};
 	// }
 
-	return static_cast<multi::ssize_t>(il.size()) * extensions(*il.begin());
+	return static_cast<multi::ssize_t>(il.size()) * extents(*il.begin());
 	// return multi::extensions_t<3>{
 	// 	static_cast<multi::size_t>(il.size()),
 	// 	static_cast<multi::size_t>(il.begin()->size()),

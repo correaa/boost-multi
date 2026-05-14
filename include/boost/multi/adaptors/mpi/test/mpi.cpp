@@ -433,7 +433,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				 }
 			};
 
-			multi::array<int, 3> brr(arr.extensions(), 666);
+			multi::array<int, 3> brr(arr.extents(), 666);
 			auto                 arr_begin = multi::mpi::begin(arr);
 			auto                 brrt      = brr.rotated().transposed().unrotated();
 

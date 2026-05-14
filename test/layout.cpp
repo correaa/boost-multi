@@ -230,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& rot = sub.rotated();
 
-		auto const [is, js, ks] = rot.extensions();
+		auto const [is, js, ks] = rot.extents();
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -261,12 +261,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{10, 20, 30}
 		);
 
-		BOOST_TEST((  25 % extensions(arr) == decltype(  25 % extensions(arr)){0, 0, 25} ));
-		BOOST_TEST((  55 % extensions(arr) == decltype(  55 % extensions(arr))(0, 1, 25) ));
-		BOOST_TEST(( 655 % extensions(arr) == decltype( 655 % extensions(arr))(1, 1, 25) ));
-		BOOST_TEST((1255 % extensions(arr) == decltype(1255 % extensions(arr))(2, 1, 25) ));
+		BOOST_TEST((  25 % extents(arr) == decltype(  25 % extents(arr)){0, 0, 25} ));
+		BOOST_TEST((  55 % extents(arr) == decltype(  55 % extents(arr))(0, 1, 25) ));
+		BOOST_TEST(( 655 % extents(arr) == decltype( 655 % extents(arr))(1, 1, 25) ));
+		BOOST_TEST((1255 % extents(arr) == decltype(1255 % extents(arr))(2, 1, 25) ));
 
-		auto const point = arr.extensions().from_linear(655);
+		auto const point = arr.extents().from_linear(655);
 		//  BOOST_TEST( p == std::make_tuple(1, 1, 25) );
 		using multi::detail::get;
 		BOOST_TEST( get<0>(point) ==  1 );
@@ -526,8 +526,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::dimensionality;
 		static_assert(dimensionality(arr) == 3);
 
-		using multi::extensions;
-		auto xA = extensions(arr);
+		using multi::extents;
+		auto xA = extents(arr);
 
 		using std::get;  // needed for C++17
 		using std::size;

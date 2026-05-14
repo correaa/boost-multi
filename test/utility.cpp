@@ -27,9 +27,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( multi::dimensionality(arr) == 3 );
 
-		BOOST_TEST(( multi::extensions(arr) == (decltype(multi::extensions(arr))({3, 4, 5})) ));
-		BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr))({3, 4, 5})  ));
-		BOOST_TEST(( multi::extensions(arr) ==  decltype(multi::extensions(arr)) {3, 4, 5}   ));
+		BOOST_TEST(( multi::extents(arr) == (decltype(multi::extents(arr))({3, 4, 5})) ));
+		BOOST_TEST(( multi::extents(arr) ==  decltype(multi::extents(arr))({3, 4, 5})  ));
+		BOOST_TEST(( multi::extents(arr) ==  decltype(multi::extents(arr)) {3, 4, 5}   ));
 
 		using multi::data_elements;
 		BOOST_TEST( data_elements(arr) == &arr[0][0][0] );     // NOLINT(readability-container-data-pointer)
@@ -42,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::layout;
 		BOOST_TEST( layout(arr) == layout(marr) );
 
-		BOOST_TEST( multi::extensions(arr) == extensions(marr) );
+		BOOST_TEST( multi::extents(arr) == extents(marr) );
 	}
 
 	// BOOST_AUTO_TEST_CASE(std_array_extensions_2d)
@@ -54,8 +54,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::dimensionality;
 		BOOST_TEST( dimensionality(arr) == 2 );
 
-		using multi::extensions;
-		BOOST_TEST(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
+		using multi::extents;
+		BOOST_TEST(( extents(arr) == decltype(extents(arr)){3, 4} ));
 
 		using multi::data_elements;
 		BOOST_TEST( data_elements(arr) == &arr[0][0] );          // NOLINT(readability-container-data-pointer) test access
@@ -69,7 +69,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::layout;
 		BOOST_TEST( layout(arr) == layout(marr) );
 
-		BOOST_TEST( extensions(arr) == extensions(marr) );
+		BOOST_TEST( extents(arr) == extents(marr) );
 	}
 
 	// BOOST_AUTO_TEST_CASE(std_array_extensions_1d)
@@ -84,8 +84,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// using multi::extension;
 		// BOOST_TEST( extension(arr) == 4 );
 
-		using multi::extensions;
-		BOOST_TEST(( extensions(arr) == decltype(extensions(arr)){multi::iextension{4}} ));
+		using multi::extents;
+		BOOST_TEST(( extents(arr) == decltype(extents(arr)){multi::iextension{4}} ));
 
 		using multi::data_elements;
 		BOOST_TEST( data_elements(arr) == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
@@ -182,7 +182,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::corigin;
 		using multi::dimensionality;
 		using multi::extension;
-		using multi::extensions;
+		using multi::extents;
 		using multi::num_elements;
 		using multi::size;
 		using multi::sizes;

@@ -124,21 +124,23 @@ class dft_range {
 			public:
 			explicit fake_array(multi::extensions_t<dimensionality - 1> ext) : extensions_{ext} {}
 			auto extensions() const { return extensions_; }
+			auto extents() const { return extensions_; }
+
 			//  multi::size_t size_;
 			auto extension() const {
 				using std::get;
-				return get<0>(extensions());
+				return get<0>(extents());
 			}
 			[[nodiscard]] auto extent() const {
 				using std::get;
-				return get<0>(extensions());
+				return get<0>(extents());
 			}
 
 			auto size() const { return extension().size(); }
 		};
 
 		auto operator*() const -> fake_array {
-			fake_array fa{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extensions()};
+			fake_array fa{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extents()};
 			return fa;
 		}
 
@@ -198,6 +200,8 @@ class dft_range {
 	}
 
 	auto extensions() const { return in_.extensions(); }
+	auto extents() const { return in_.extents(); }
+
 	auto size() const { return in_.size(); }
 };
 

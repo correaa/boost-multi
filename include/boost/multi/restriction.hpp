@@ -41,17 +41,17 @@ template<class Fun> struct function_system {
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return [il](multi::index i0) { return il.begin()[i0]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& il) {
-	return [il](multi::index i0, multi::index i1) { return il.begin()[i0].begin()[i1]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return [il](multi::index i0, multi::index i1) { return il.begin()[i0].begin()[i1]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 template<class T>
 constexpr auto make_restriction(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	return [il](multi::index i0, multi::index i1, multi::index i2) { return il.begin()[i0].begin()[i1].begin()[i2]; } ^ multi::extensions(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return [il](multi::index i0, multi::index i1, multi::index i2) { return il.begin()[i0].begin()[i1].begin()[i2]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 #ifdef __clang__
@@ -439,13 +439,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	// };
 
 	BOOST_MULTI_HD constexpr auto transposed() && {
-		return bind_transposed_t<Proj>{std::move(proj_)} ^ layout_t<D>(extensions()).transpose().extensions();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
+		return bind_transposed_t<Proj>{std::move(proj_)} ^ layout_t<D>(extents()).transpose().extents();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
 	}
 
 	BOOST_MULTI_HD constexpr auto transposed() const& -> restriction<D, bind_transposed_t<Proj const&>> {
-		return bind_transposed_t<Proj const&>{proj_} ^ layout_t<D>(extensions()).transpose().extensions();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
+		return bind_transposed_t<Proj const&>{proj_} ^ layout_t<D>(extents()).transpose().extents();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
 	}
 
 	struct bind_diagonal_t {
@@ -457,8 +457,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
-		return bind_diagonal_t{proj_} ^ std::min(get<0>(sizes()), get<1>(sizes())) * extensions().sub().sub();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
+		return bind_diagonal_t{proj_} ^ std::min(get<0>(sizes()), get<1>(sizes())) * extents().sub().sub();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator~() && { return std::move(*this).transposed(); }
@@ -471,7 +471,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
 	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
-		return bind_repeat_t{proj_} ^ n * extensions();
+		return bind_repeat_t{proj_} ^ n * extents();
 	}
 
 	struct bind_partitioned_t {
@@ -482,7 +482,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
 	BOOST_MULTI_HD constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t> {
-		return bind_partitioned_t{proj_, size() / nn} ^ layout_t<D>(extensions()).partition(nn).extensions();
+		return bind_partitioned_t{proj_, size() / nn} ^ layout_t<D>(extents()).partition(nn).extents();
 	}
 
 	struct bind_reversed_t {
@@ -492,7 +492,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
 	};
 
-	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extensions(); }
+	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extents(); }
 
 	struct bind_rotated_t {
 		Proj      proj_;
@@ -501,7 +501,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
 	};
 
-	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extensions(); }
+	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
 
 	template<class Proj2>
 	struct bind_element_transformed_t {
@@ -513,7 +513,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	template<class Proj2>
 	BOOST_MULTI_HD auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2>> {
-		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extensions();
+		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extents();
 	}
 
 	template<class Proj2>
@@ -553,7 +553,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
 	auto home() const {
-		auto cur = extensions().home();
+		auto cur = extents().home();
 		return cursor_t<decltype(cur), D>{&proj_, cur};
 	}
 

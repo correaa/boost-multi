@@ -112,7 +112,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{13, 14, 15, 16}
 		}));
 
-		BOOST_TEST((  arr.halved().extensions() == multi::extensions_t{2, 2, 4} ));
+		BOOST_TEST((  arr.halved().extents() == multi::extensions_t{2, 2, 4} ));
 		BOOST_TEST(( arr.halved() == multi::array<int, 3>{
 			{
 				{ 1,  2,  3,  4},
@@ -305,7 +305,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A2_ref = A1.partitioned(2);
 
-		auto [is, js] = A2_ref.extensions();
+		auto [is, js] = A2_ref.extents();
 		BOOST_TEST( is.size() == 2 );
 		BOOST_TEST( js.size() == 3 );
 
@@ -499,8 +499,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #ifndef _MSC_VER  // problem with MSVC 14.3 c++17
 		auto&& A4 = arr.reinterpret_array_cast<double>(1);
 
-		BOOST_TEST(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
-		BOOST_TEST(( A4.extensions() == decltype(A4.extensions()){2, 4, 6, 1} ));
+		BOOST_TEST(( arr.extents() == decltype(arr.extents()){2, 4, 6} ));
+		BOOST_TEST(( A4.extents() == decltype(A4.extents()){2, 4, 6, 1} ));
 
 		//  BOOST_TEST( A4.is_flattable() );
 		//  BOOST_TEST( A4.flatted().is_flattable() );

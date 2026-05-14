@@ -31,7 +31,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 	BOOST_TEST( &A2D() == &A2D(A2Dx) );
 
-	auto const A2Dxs = A2D.extensions();
+	auto const A2Dxs = A2D.extents();
 
 	using std::get;
 
@@ -41,7 +41,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( get<0>(A2Dxs) == A2Dx );
 	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extension() );
 
-	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extensions()), get<1>(A2D.extensions())) );
+	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extents()), get<1>(A2D.extents())) );
 	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );
 
 	BOOST_TEST( A2Dxs.size() == A2D.size() );
@@ -72,16 +72,16 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	multi::array<int, 1> const A1D({37}, 1);
 	BOOST_TEST( A1D.size() == 37 );
 	BOOST_TEST( A1D.num_elements() == 37 );
-	BOOST_TEST( A1D.extensions().num_elements() == 37 );
+	BOOST_TEST( A1D.extents().num_elements() == 37 );
 
-	BOOST_TEST( A1D.extensions().elements().size() == A1D.extensions().num_elements() );
+	BOOST_TEST( A1D.extents().elements().size() == A1D.extents().num_elements() );
 	{
-		auto it = A1D.extensions().elements().begin();
+		auto it = A1D.extents().elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
 		++it;
 		BOOST_TEST( get<0>(*it) == 1 );
 
-		it = A1D.extensions().elements().end();
+		it = A1D.extents().elements().end();
 		--it;
 		BOOST_TEST( get<0>(*it) == 36 );
 	}
@@ -398,7 +398,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 2> const arr({3, 4});
 
-		auto const& xs = arr.extensions();
+		auto const& xs = arr.extents();
 
 		using std::get;
 		BOOST_TEST( get<0>(xs[0][0]) == 0 );
@@ -417,10 +417,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		++it;
 		BOOST_TEST( *it == xs[1] );
 
-		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extensions();
+		auto const& values = [](auto ii, auto jj) { return ii + jj; } ^ arr.extents();
 
 		BOOST_TEST( values.dimensionality == 2 );
-		BOOST_TEST( values.extensions() == arr.extensions() );
+		BOOST_TEST( values.extents() == arr.extents() );
 		BOOST_TEST( *values.elements().begin() == 0 );
 		BOOST_TEST( values.elements().begin() < values.elements().end() );
 		BOOST_TEST( values.elements().begin() != values.elements().end() );
@@ -428,19 +428,19 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( values.begin() != values.end() );
 
 		{
-			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extents());
 
 			arr2.elements() = values.elements();
 			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
 		}
 		{
-			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extents());
 
 			arr2() = values;
 			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
 		}
 		{
-			auto arr2 = multi::array<boost::multi::index, 2>(arr.extensions());
+			auto arr2 = multi::array<boost::multi::index, 2>(arr.extents());
 
 			arr2 = values;
 			BOOST_TEST( std::equal(arr2.elements().begin(), arr2.elements().end(), values.elements().begin(), values.elements().end()) );
@@ -598,7 +598,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 				 multi::extensions_t(6))
 					.partitioned(2);
 
-			auto [matrix_is, matrix_js] = matrix.extensions();
+			auto [matrix_is, matrix_js] = matrix.extents();
 			BOOST_TEST( matrix_is.size() == 2 );
 			BOOST_TEST( matrix_js.size() == 3 );
 
@@ -612,7 +612,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extensions_t<2> const x2D(6, 5);
-		multi::extensions_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extensions();
+		multi::extensions_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extents();
 
 		using std::get;
 		BOOST_TEST( get<0>(p3D).size() == 2 );
@@ -625,7 +625,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto something = exts[-1];
 		// (void)something;
 
-		BOOST_TEST( exts.extensions() == exts );
+		BOOST_TEST( exts.extents() == exts );
 
 		static_assert(std::is_default_constructible_v<decltype(exts.elements())::iterator>);
 

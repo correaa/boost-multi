@@ -528,7 +528,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<double, 2> aref({multi::iextension(1, 3), multi::iextension(1, 4)}, vec.data());
 
 		{
-			auto exts                 = aref.extensions();
+			auto exts                 = aref.extents();
 			auto const [exts0, exts1] = exts;
 			BOOST_TEST( exts0 == multi::iextension(1, 3) );
 
@@ -540,7 +540,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
-			auto exts = aref.extensions();
+			auto exts = aref.extents();
 
 			using std::get;
 
@@ -551,7 +551,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
-			auto const exts = aref.extensions();
+			auto const exts = aref.extents();
 
 			using std::get;
 
@@ -563,7 +563,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
-			auto const exts = aref.extensions();
+			auto const exts = aref.extents();
 			BOOST_TEST( exts.get<0>() == multi::iextension(1, 3) );
 			BOOST_TEST( exts.get<1>().first()  == 1 );
 			BOOST_TEST( exts.get<1>().last () == 4 );
@@ -571,7 +571,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(( exts == decltype(exts){multi::iextension(1, 3), multi::iextension(1, 4)} ));
 		}
 		{
-			auto const exts = aref.extensions();
+			auto const exts = aref.extents();
 
 			using std::get;
 
@@ -585,13 +585,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
-			BOOST_TEST( get<0>(aref.extensions()) == multi::iextension(1, 3) );
+			BOOST_TEST( get<0>(aref.extents()) == multi::iextension(1, 3) );
 
-			BOOST_TEST( get<1>(aref.extensions()).first()  == 1 );
-			BOOST_TEST( get<1>(aref.extensions()).last () == 4 );
+			BOOST_TEST( get<1>(aref.extents()).first()  == 1 );
+			BOOST_TEST( get<1>(aref.extents()).last () == 4 );
 
-			BOOST_TEST( get<1>(aref.extensions()) == multi::iextension(1, 4) );
-			BOOST_TEST( aref.extensions() == decltype(aref.extensions())(multi::iextension(1, 3), multi::iextension(1, 4)) );
+			BOOST_TEST( get<1>(aref.extents()) == multi::iextension(1, 4) );
+			BOOST_TEST( aref.extents() == decltype(aref.extents())(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
 			using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]

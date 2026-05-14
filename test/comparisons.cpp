@@ -76,8 +76,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {1.2, 1.1},  {2.4, 1.0}},
 		};
 
-		multi::array_ref<double, 3>  ref(arr.data_elements(), extensions(arr));
-		multi::array_cref<double, 3> cref(data_elements(arr), extensions(arr));
+		multi::array_ref<double, 3>  ref(arr.data_elements(), extents(arr));
+		multi::array_cref<double, 3> cref(data_elements(arr), extents(arr));
 
 		BOOST_TEST( arr ==  arr );
 		BOOST_TEST( !(arr !=  arr) );
@@ -105,9 +105,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {12, 11},  {24, 10}},
 		};
 
-		multi::array_ref<int, 3> ref(arr.data_elements(), extensions(arr));
+		multi::array_ref<int, 3> ref(arr.data_elements(), extents(arr));
 
-		multi::array_cref<int, 3> cref(data_elements(arr), extensions(arr));
+		multi::array_cref<int, 3> cref(data_elements(arr), extents(arr));
 
 		BOOST_TEST(  arr[0]    <=  arr[1] );
 		BOOST_TEST(  ref[0]    <=  arr[1] );
@@ -135,6 +135,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( cbegin(arr) < cend(arr) );
 
 		BOOST_TEST(  end(arr) -  begin(arr) == size(arr) );
+	}
+	{
+		struct range_1d {  // a type that has .extensions() and .elements() but is NOT a const_subarray
+			multi::array<int, 1> data_;
+
+			auto extents() const { return data_.extents(); }
+			auto elements() const { return data_.elements(); }
+		};
+
+		multi::array<int, 1> const a = {1, 2, 3};
+		range_1d const             b = {
+            multi::array<int, 1>{1, 2, 3}
+        };
+		range_1d const c = {
+			multi::array<int, 1>{1, 2, 4}
+		};
+
+		BOOST_TEST( !(a != b) );
+		BOOST_TEST(   a != c  );
 	}
 
 	return boost::report_errors();

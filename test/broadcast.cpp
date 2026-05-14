@@ -78,7 +78,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexit,bugprone-except
 		using multi::elementwise::exp;
 		auto c = exp(r);
 
-		BOOST_TEST( c.extensions() == r.extensions() );
+		BOOST_TEST( c.extents() == r.extents() );
 
 		BOOST_TEST( std::abs(c[0] - std::exp(1.0)) < 1e-4 );
 		BOOST_TEST( std::abs(c[1] - std::exp(2.0)) < 1e-4 );
@@ -90,7 +90,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexit,bugprone-except
 		using multi::elementwise::abs;
 		auto const& c = abs(a);
 
-		BOOST_TEST( c.extensions() == a.extensions() );
+		BOOST_TEST( c.extents() == a.extents() );
 
 		BOOST_TEST( c[0] == std::abs(a[0]) );
 		BOOST_TEST( c[1] == std::abs(a[1]) );
@@ -98,7 +98,7 @@ int main() {  // NOLINT(readability-function-cognitive-complexit,bugprone-except
 
 		multi::array<int, 1> const c_copy1 = c;
 
-		BOOST_TEST( c_copy1.extensions() == c.extensions() );
+		BOOST_TEST( c_copy1.extents() == c.extents() );
 
 		multi::array const c_copy2 = c;
 		BOOST_TEST( c_copy2 == c_copy1 );

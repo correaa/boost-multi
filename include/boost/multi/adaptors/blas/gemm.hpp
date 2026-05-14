@@ -209,7 +209,7 @@ class gemm_iterator {
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = std::nullptr_t;
-	using reference = gemm_reference<decltype((*b_begin_).extensions())>;
+	using reference = gemm_reference<decltype((*b_begin_).extents())>;
 	using iterator_category = std::random_access_iterator_tag;
 
 	auto operator+=(difference_type n) -> gemm_iterator& { a_it_ += n; return *this; }
@@ -258,7 +258,7 @@ class gemm_iterator {
 		return uninitialized_copy_n(first, last - first, d_first);
 	}
 
-	auto operator*() const {return reference{(*b_begin_).extensions()};}
+	auto operator*() const {return reference{(*b_begin_).extents()};}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
@@ -293,8 +293,8 @@ class gemm_range {
 
 	auto size() const -> size_type {return a_end_ - a_begin_;}
 
-	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
-	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
+	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extents();}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extents();}
 
 	// friend auto extensions(gemm_range const& self) {return self.extensions();}
 

@@ -61,7 +61,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			});
 			{
 				multi::array<complex, 2> out = in;
-				multi::array<complex, 2> aux(out.extensions());
+				multi::array<complex, 2> aux(out.extents());
 				{
 					watch const unnamed("auxiliary copy           %ws wall, CPU (%p%)\n"s);  // NOLINT(misc-include-cleaner) bug in clang-tidy 18
 					aux = ~out;

@@ -112,8 +112,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		}
 		{
 			std::for_each(
-				cpu.extensions().elements().begin(),
-				cpu.extensions().elements().end(),
+				cpu.extents().elements().begin(),
+				cpu.extents().elements().end(),
 				[&cpu](auto const& coords) {
 					auto [i, j, k] = coords;
 
@@ -124,8 +124,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		}
 		{
 			std::transform(
-				cpu.extensions().elements().begin(),
-				cpu.extensions().elements().end(),
+				cpu.extents().elements().begin(),
+				cpu.extents().elements().end(),
 				cpu.elements().begin(),
 				[](auto const& coords) {
 					auto [i, j, k] = coords;
