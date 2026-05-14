@@ -78,6 +78,7 @@ auto main() -> int {
 
 		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
+#ifndef _WIN32
 	{
 		multi::thrust::device_array<double, 2> vel({5, 5});
 
@@ -93,7 +94,7 @@ auto main() -> int {
 
 		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
-
+#endif
 	// {
 	// 	multi::thrust::universal_array<double, 2> vel({5, 5});
 

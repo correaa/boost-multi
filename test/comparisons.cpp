@@ -141,19 +141,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 1> impl_;
 		
 		 public:
-			range_1d(multi::array<int, 1> impl) : impl_(std::move(impl)) {}
+			explicit range_1d(multi::array<int, 1> impl) : impl_(std::move(impl)) {}
 
 			auto extents() const { return impl_.extents(); }
 			auto elements() const { return impl_.elements(); }
 		};
 
 		multi::array<int, 1> const a = {1, 2, 3};
-		range_1d const             b = {
-            multi::array<int, 1>{1, 2, 3}
-        };
-		range_1d const c = {
-			multi::array<int, 1>{1, 2, 4}
-		};
+		range_1d const b(multi::array<int, 1>{1, 2, 3});
+		range_1d const c(multi::array<int, 1>{1, 2, 4});
 
 		BOOST_TEST( !(a != b) );
 		BOOST_TEST(   a != c  );

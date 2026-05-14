@@ -121,7 +121,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using AllocatorT = thrust::cuda::allocator<T>;
 
 		multi::array<T, 2, AllocatorT> src({n, n});
-		multi::array<T, 2, AllocatorT> dst(extensions(src));
+		multi::array<T, 2, AllocatorT> dst(extents(src));
 
 		auto const threshold = 0.10;
 
@@ -197,7 +197,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using AllocatorT = thrust::cuda::universal_allocator<T>;
 
 		multi::array<T, 2, AllocatorT> src({n, n});
-		multi::array<T, 2, AllocatorT> dst(extensions(src));
+		multi::array<T, 2, AllocatorT> dst(extents(src));
 
 		auto const threshold = 0.10;
 

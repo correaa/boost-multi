@@ -86,11 +86,11 @@ auto main() -> int try {
 		};
 
 		{
-			auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+			auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 			multi::fftw::dft_forward({true, true}, in_cpu, fw_cpu);
 
 			auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
-			auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+			auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
 
 			BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 			BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
@@ -104,9 +104,9 @@ auto main() -> int try {
 			// TODO(correaa) test funcional interface for GPU
 			// auto const& dft = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
 
-			// BOOST_TEST( dft.extensions() == in_cpu.extensions() );
+			// BOOST_TEST( dft.extents() == in_cpu.extents() );
 			// BOOST_TEST( (*dft.begin()).size() == (*in_cpu.begin()).size() );
-			// BOOST_TEST( (*dft.begin()).extensions() == (*in_cpu.begin()).extensions() );
+			// BOOST_TEST( (*dft.begin()).extents() == (*in_cpu.begin()).extents() );
 
 			// multi::array<complex, 2> const fw_cpu_out = multi::fft::DFT({true, true}, in_cpu, multi::fft::forward);
 		}
@@ -114,7 +114,7 @@ auto main() -> int try {
 	{
 		auto const in_cpu = std::invoke([] {
 			multi::array<complex, 4> ret({20, 20, 20, 20});
-			auto const [is, js, ks, ls] = ret.extensions();
+			auto const [is, js, ks, ls] = ret.extents();
 			for(auto i : is)
 				for(auto j : js)
 					for(auto k : ks)
@@ -134,7 +134,7 @@ auto main() -> int try {
 			norm_t{}, 0.0, thrust::plus<>{}
 		);
 
-		auto fw_gpu = multi::thrust::cuda::array<complex, 4>(in_gpu.extensions());
+		auto fw_gpu = multi::thrust::cuda::array<complex, 4>(in_gpu.extents());
 		fw_gpu      = in_gpu;
 		// multi::cufft::plan<4>({true, true, true, true}, in_gpu.layout(), fw_gpu.layout())
 		//  .execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
@@ -157,11 +157,11 @@ auto main() -> int try {
 			{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I}
 		};
 
-		auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
-		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
 
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
@@ -180,11 +180,11 @@ auto main() -> int try {
 			{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I}
 		};
 
-		auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
-		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
 
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
@@ -205,13 +205,13 @@ auto main() -> int try {
 			{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I}
 		};
 
-		auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu  = multi::thrust::cuda::array<complex, 2>{in_cpu};
-		auto       fw_gpu  = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
-		auto       fw_gpu2 = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
-		auto       fw_gpu3 = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+		auto       fw_gpu  = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
+		auto       fw_gpu2 = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
+		auto       fw_gpu3 = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
 
 		BOOST_TEST( fw_cpu[3][2].real() != 0.0 );
 		BOOST_TEST( fw_cpu[3][2].imag() != 0.0 );
@@ -236,7 +236,7 @@ auto main() -> int try {
 			{ 3.0 - 1.0 * I,  8.0 + 7.0 * I,  2.0 + 1.0 * I},
 			{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I}
 		};
-		auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 		multi::fftw::dft({false, true}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
@@ -254,16 +254,16 @@ auto main() -> int try {
 			{ 3.0 - 1.0 * I,  8.0 + 7.0 * I,  2.0 + 1.0 * I},
 			{31.0 - 1.0 * I, 18.0 + 7.0 * I, 2.0 + 10.0 * I}
 		};
-		auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 		multi::fftw::dft({true, false}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
 		auto const fw_gpu = multi::cufft::dft({true, false}, in_gpu, multi::cufft::forward);
 
-		BOOST_TEST( fw_cpu.extensions() == in_cpu.extensions() );
+		BOOST_TEST( fw_cpu.extents() == in_cpu.extents() );
 		BOOST_TEST( abs(fw_cpu[3][2]) != 0.0 );
 
-		BOOST_TEST( fw_gpu.extensions() == in_gpu.extensions() );
+		BOOST_TEST( fw_gpu.extents() == in_gpu.extents() );
 		BOOST_TEST( abs(complex(fw_gpu[3][2]) - fw_cpu[3][2]) < 1e-10 );
 		BOOST_TEST( abs(complex(fw_gpu[2][1]) - fw_cpu[2][1]) < 1e-10 );
 	}
@@ -293,8 +293,8 @@ auto main() -> int try {
 			BOOST_TEST( complex(in_gpu[31]).real() == in_cpu[31].real() );
 			BOOST_TEST( complex(in_gpu[31]).imag() == in_cpu[31].imag() );
 
-			auto fw_cpu = multi::array<complex, 1>(extensions(in_cpu));
-			auto fw_gpu = multi::thrust::cuda::array<complex, 1>(extensions(in_gpu));
+			auto fw_cpu = multi::array<complex, 1>(extents(in_cpu));
+			auto fw_gpu = multi::thrust::cuda::array<complex, 1>(extents(in_gpu));
 
 			auto p_cpu = multi::fftw::plan::forward(c, in_cpu.base(), in_cpu.layout(), fw_cpu.base(), fw_cpu.layout());
 			auto p_gpu = multi::cufft::plan<1>(c, in_gpu.layout(), fw_gpu.layout());
@@ -333,11 +333,11 @@ auto main() -> int try {
 				{ true, false},
 				{false,  true}, //  {false, false}
         }) {
-			auto fw_cpu = multi::array<complex, 2>(extensions(in_cpu));
+			auto fw_cpu = multi::array<complex, 2>(extents(in_cpu));
 			multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
 
 			auto const in_gpu = multi::thrust::cuda::array<complex, 2>{in_cpu};
-			auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extensions(in_gpu));
+			auto       fw_gpu = multi::thrust::cuda::array<complex, 2>(extents(in_gpu));
 
 			BOOST_TEST( abs(fw_cpu[2][1]) != 0.0 );
 
@@ -414,11 +414,11 @@ auto main() -> int try {
 				{false, false,  true}  //,
 									  //  {false, false, false}
         }) {
-			auto       fw_cpu = multi::array<complex, 3>(extensions(in_cpu));
+			auto       fw_cpu = multi::array<complex, 3>(extents(in_cpu));
 			auto const in_gpu = multi::thrust::cuda::array<complex, 3>{in_cpu};
 
 			multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
-			auto fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu));
+			auto fw_gpu = multi::thrust::cuda::array<complex, 3>(extents(in_gpu));
 
 			multi::cufft::dft(c, in_gpu, fw_gpu, multi::cufft::forward);
 
@@ -515,11 +515,11 @@ auto main() -> int try {
 				{false, false, false,  true}  //,
 				//  {false, false, false, false}
         }) {
-			auto fw_cpu = multi::array<complex, 4>(extensions(in_cpu));
+			auto fw_cpu = multi::array<complex, 4>(extents(in_cpu));
 			multi::fftw::dft(c, in_cpu, fw_cpu, multi::fftw::forward);
 
 			auto const in_gpu = multi::thrust::cuda::array<complex, 4>{in_cpu};
-			auto       fw_gpu = multi::thrust::cuda::array<complex, 4>(extensions(in_gpu));
+			auto       fw_gpu = multi::thrust::cuda::array<complex, 4>(extents(in_gpu));
 
 			BOOST_TEST( abs(fw_cpu[4][3][2][1]) != 0 );
 
@@ -546,11 +546,11 @@ auto main() -> int try {
 			return ret;
 		});
 
-		auto fw_cpu = multi::array<complex, 4>(extensions(in_cpu));
+		auto fw_cpu = multi::array<complex, 4>(extents(in_cpu));
 		multi::fftw::dft({false, true, true, false}, in_cpu, fw_cpu, multi::fftw::forward);
 
 		auto const in_gpu = multi::thrust::cuda::array<complex, 4>{in_cpu};
-		auto       fw_gpu = multi::thrust::cuda::array<complex, 4>(extensions(in_gpu));
+		auto       fw_gpu = multi::thrust::cuda::array<complex, 4>(extents(in_gpu));
 
 		BOOST_TEST( abs(fw_cpu[4][3][2][1]) != 0.0 );
 
@@ -598,8 +598,8 @@ auto main() -> int try {
 //  multi::array<std   ::complex<double>, 1> const s_in = {1.0 + I*2.0, 2.0 + I*3.0, 3.0 + I*4.0};
 //  multi::array<thrust::complex<double>, 1> const t_in = {1.0 + I*2.0, 2.0 + I*3.0, 3.0 + I*4.0};
 
-//  multi::array<std   ::complex<double>, 1>       s_out(s_in.extensions());
-//  multi::array<thrust::complex<double>, 1>       t_out(t_in.extensions());
+//  multi::array<std   ::complex<double>, 1>       s_out(s_in.extents());
+//  multi::array<thrust::complex<double>, 1>       t_out(t_in.extents());
 
 //  multi::fftw::plan::forward({true}, s_in.base(), s_in.layout(), s_out.base(), s_out.layout()).execute(s_in.base(), s_out.base());
 //  multi::fftw::plan::forward({true}, t_in.base(), t_in.layout(), t_out.base(), t_out.layout()).execute(t_in.base(), t_out.base());
@@ -612,8 +612,8 @@ auto main() -> int try {
 //  multi::array<thrust::complex<double>, 1> const cpu_in = {1.0 + I*2.0, 2.0 + I*3.0, 3.0 + I*4.0};
 //  multi::thrust::cuda::array<thrust::complex<double>, 1> const gpu_in = {1.0 + I*2.0, 2.0 + I*3.0, 3.0 + I*4.0};
 
-//  multi::array<thrust::complex<double>, 1> cpu_out(cpu_in.extensions());
-//  multi::thrust::cuda::array<thrust::complex<double>, 1> gpu_out(gpu_in.extensions());
+//  multi::array<thrust::complex<double>, 1> cpu_out(cpu_in.extents());
+//  multi::thrust::cuda::array<thrust::complex<double>, 1> gpu_out(gpu_in.extents());
 
 //  multi::fftw::plan::forward({true}, cpu_in.base(), cpu_in.layout(), cpu_out.base(), cpu_out.layout()).execute        (cpu_in.base(), cpu_out.base());
 //  multi::cufft::plan<1>     ({true},                gpu_in.layout(),                 gpu_out.layout()).execute_forward(gpu_in.base(), gpu_out.base());
@@ -625,7 +625,7 @@ auto main() -> int try {
 //  {
 //      auto const in_cpu = multi::array<complex, 3>(x, 10.0);
 //      BOOST_ASSERT( in_cpu.num_elements()*sizeof(complex) < 2e9 );
-//      auto       fw_cpu = multi::array<complex, 3>(extensions(in_cpu), 99.0);
+//      auto       fw_cpu = multi::array<complex, 3>(extents(in_cpu), 99.0);
 //      {
 //      //  boost::timer::auto_cpu_timer t;  // 1.041691s wall, 1.030000s user + 0.000000s system = 1.030000s CPU (98.9%)
 //          multi::fftw::dft_forward({true, true}, in_cpu, fw_cpu);
@@ -635,7 +635,7 @@ auto main() -> int try {
 //      auto const in_gpu = multi::thrust::cuda::array<complex, 3>{in_cpu};  // (x, 10.0);
 //      cudaDeviceSynchronize()==cudaSuccess?void():assert(0);
 //      {
-//          auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extensions(in_gpu), 99.0);
+//          auto       fw_gpu = multi::thrust::cuda::array<complex, 3>(extents(in_gpu), 99.0);
 //          cudaDeviceSynchronize()==cudaSuccess?void():assert(0);
 //      //  boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
 //          boost::multi::cufft::dft({true, true}, in_gpu, fw_gpu, multi::cufft::forward);
@@ -655,10 +655,10 @@ auto main() -> int try {
 // #if 1
 //  {
 //      multi::thrust::cuda::universal_array<complex, 3> const in_gpu(x, 10.);
-//      multi::thrust::cuda::universal_array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
+//      multi::thrust::cuda::universal_array<complex, 3> fw_gpu(extents(in_gpu), 99.);
 
 //      // multi::cuda::managed::array<complex, 3> const in_gpu(x, 10.);
-//      // multi::cuda::managed::array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
+//      // multi::cuda::managed::array<complex, 3> fw_gpu(extents(in_gpu), 99.);
 //      {
 //      //  boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
 //          multi::cufft::dft({true, true}, in_gpu, fw_gpu, multi::cufft::forward);
@@ -715,7 +715,7 @@ auto main() -> int try {
 //          //  what(out_mov);
 //          //  BOOST_TEST( abs( static_cast<multi::complex<double>>(out_mov[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );
 //              BOOST_REQUIRE( is_empty(in_rw2) );
-//              BOOST_REQUIRE( extensions(out_mov) == extensions(in) );
+//              BOOST_REQUIRE( extents(out_mov) == extents(in) );
 //          }();
 //      }
 
@@ -723,7 +723,7 @@ auto main() -> int try {
 //          auto const out_cpy = multi::fftw::dft_forward(c, in);
 //          BOOST_TEST( abs( static_cast<std::complex<double>>(out_cpy[5][4][3][1]) - std::complex<double>(out[5][4][3][1]) ) == 0. );
 //      }();
-//      multi::thrust::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
+//      multi::thrust::cuda::array<complex, 4> out_gpu(extents(in_gpu));
 //      [&, _ = watch{"gpu_opl "}]{
 //          multi::cufft::dft(c, in_gpu   , out_gpu, multi::cufft::forward);
 //          BOOST_TEST( abs( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
@@ -756,7 +756,7 @@ auto main() -> int try {
 //      [&, _ = watch{"gpu_new "}]{
 //          multi::thrust::cuda::array<complex, 4> const out_cpy = multi::cufft::dft(c, in_gpu, multi::cufft::forward);
 //      }();
-//      multi::thrust::cuda::universal_array<complex, 4> out_mng(extensions(in_mng));
+//      multi::thrust::cuda::universal_array<complex, 4> out_mng(extents(in_mng));
 //      [&, _ = watch{"mng_cld "}]{
 //          multi::cufft::dft(c, in_mng, out_mng, multi::cufft::forward);
 //          BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
@@ -790,12 +790,12 @@ auto main() -> int try {
 //  }();
 
 //  multi::thrust::cuda::array<complex, 4> const in = in_cpu;
-//  multi::thrust::cuda::array<complex, 4>       out(extensions(in));
+//  multi::thrust::cuda::array<complex, 4>       out(extents(in));
 
 // #if 0
 //  multi::cufft::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), +1);
 
-//  multi::array<complex, 4> out_cpu(extensions(in));
+//  multi::array<complex, 4> out_cpu(extents(in));
 //  multi::fft::many_dft(begin(unrotated(in_cpu)), end(unrotated(in_cpu)), begin(unrotated(out_cpu)), +1);
 
 //  BOOST_TEST( imag( static_cast<complex>(out[5][4][3][2]) - out_cpu[5][4][3][2]) == 0. );
@@ -812,12 +812,12 @@ auto main() -> int try {
 //      return ret;
 //  }();
 
-//  multi::array<complex, 3> out(extensions(in));
+//  multi::array<complex, 3> out(extents(in));
 // //  multi::fftw::dft({true, false, true}, in, out, multi::fftw::forward);
 //  multi::fftw::many_dft(begin(in.rotated()), end(in.rotated()), begin(out.rotated()), multi::fftw::forward);
 
 //  multi::thrust::cuda::array<complex, 3> in_gpu = in;
-//  multi::thrust::cuda::array<complex, 3> out_gpu(extensions(in));
+//  multi::thrust::cuda::array<complex, 3> out_gpu(extents(in));
 
 // //  multi::cufft::dft({true, false, true}, in_gpu, out_gpu, multi::fft::forward);//multi::cufft::forward);
 //  // multi::cufft::many_dft(begin(in_gpu.rotated()), end(in_gpu.rotated()), begin( out_gpu.rotated() ), multi::fftw::forward);
