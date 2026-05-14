@@ -802,7 +802,7 @@ struct dynamic_array                                                            
 	// Element-move (deep move) assignment, moves each element from the @p other array. Source and destination extents should match
 	// @note Linear complexity in the number of elements (cheaper than copy assignment if elements are effectively movable)
 	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {                               // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		assert(other.extents() == dynamic_array::extents());                                              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert(other.extents() == dynamic_array::extents());                                                   // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
@@ -1061,7 +1061,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 	// dynamic_array(dynamic_array&& other) = delete;
 	dynamic_array(dynamic_array&& other) noexcept
 	: array_alloc{other.get_allocator()}, ref(std::exchange(other.base_, nullptr), other.extents()) {  // should this move the elements? or move the object? or should be deleted?
-		other.layout_mutable() = {};                                                                      // TODO(correaa) eliminate use of mutable member
+		other.layout_mutable() = {};                                                                   // TODO(correaa) eliminate use of mutable member
 		// other.layout_t<0>::operator=({});
 		// , ref(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extents()) {
 		//  adl_alloc_uninitialized_move_n(
@@ -1518,7 +1518,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	template<
 		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<!has_data_elements<std::decay_t<Range>>::value, int> = 0,
-		std::enable_if_t<has_extents<std::decay_t<Range>>::value, int>     = 0,
+		std::enable_if_t<has_extents<std::decay_t<Range>>::value, int>        = 0,
 		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
 	auto operator=(Range&& other) -> array& {
 		if(array::extents() == other.extents()) {

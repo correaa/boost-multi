@@ -2307,7 +2307,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		class                                                  = std::enable_if_t<!detail::is_subarray<MultiRange>::value>,   // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 		std::enable_if_t<has_elements<MultiRange>::value, int> = 0>                                                           // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(MultiRange const& mrng) & -> subarray& {                                                         // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		BOOST_MULTI_ASSERT(this->extents() == mrng.extents());                                                          // TODO(correaa) or use std::cmp_equal?
+		BOOST_MULTI_ASSERT(this->extents() == mrng.extents());                                                                // TODO(correaa) or use std::cmp_equal?
 		adl_copy_n(mrng.elements().begin(), this->num_elements(), this->elements().begin());
 		return *this;
 	}
@@ -3424,7 +3424,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
 	template<
 		class Range,
-		std::enable_if_t<!has_extents<std::decay_t<Range>>::value, int>      = 0,
+		std::enable_if_t<!has_extents<std::decay_t<Range>>::value, int>         = 0,
 		std::enable_if_t<!detail::is_subarray<std::decay_t<Range>>::value, int> = 0,
 		class                                                                   = decltype((void)std::declval<Range>().begin(), std::declval<Range>().end()),
 		class                                                                   = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
