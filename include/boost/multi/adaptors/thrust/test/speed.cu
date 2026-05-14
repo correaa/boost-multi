@@ -43,7 +43,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const n = 8000;
 
 		multi::array<T, 2, thrust::cuda::universal_allocator<T>> src({n, n});
-		multi::array<T, 2, thrust::cuda::universal_allocator<T>> dst(extensions(src));
+		multi::array<T, 2, thrust::cuda::universal_allocator<T>> dst(extents(src));
 
 		auto const threshold = 0.30;
 

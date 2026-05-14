@@ -1503,10 +1503,10 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Assignment from @p other array of a different element type (allocates, unless extents are already equal or the number of elements is the same)
 	template<class TT, class AAlloc>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {
-		if(array::extensions() == other.extensions()) {
+		if(array::extents() == other.extents()) {
 			dynamic_::operator=(other);
-		} else if(this->num_elements() == other.extensions().num_elements()) {
-			this->layout_mutable() = typename array::layout_t(other.extensions());
+		} else if(this->num_elements() == other.extents().num_elements()) {
+			this->layout_mutable() = typename array::layout_t(other.extents());
 			dynamic_::operator=(other);
 		} else {
 			operator=(static_cast<array>(other));
@@ -1555,7 +1555,7 @@ struct array : dynamic_array<T, D, Alloc> {
 	friend void swap(array& self, array& other) noexcept(true /*noexcept(self.swap(other))*/) { self.swap(other); }
 
 	void assign(typename array::extensions_type extensions, typename array::element_type const& elem) {
-		if(array::extensions() == extensions) {
+		if(array::extents() == extensions) {
 			adl_fill_n(this->base_, this->num_elements(), elem);
 		} else {
 			this->clear();
@@ -1752,12 +1752,12 @@ auto operator+(Reference const& ref) -> decltype(array<typename Reference::eleme
 
 #endif  // ends defined(__cpp_deduction_guides)
 
-template<class T, std::size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-auto decay(T const (&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return multi::array_cref<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
-}
+// template<class T, std::size_t N>
+// // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+// auto decay(T const (&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
+// 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+// 	return multi::array_cref<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>>(data_elements(arr), extents(arr));
+// }
 
 template<class T, std::size_t N>
 struct detail::array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility

@@ -137,11 +137,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  end(arr) -  begin(arr) == size(arr) );
 	}
 	{
-		struct range_1d {  // a type that has .extensions() and .elements() but is NOT a const_subarray
-			multi::array<int, 1> data_;
+		class range_1d {  // a type that has .extensions() and .elements() but is NOT a const_subarray
+			multi::array<int, 1> impl_;
+		
+		 public:
+			range_1d(multi::array<int, 1> impl) : impl_(std::move(impl)) {}
 
-			auto extents() const { return data_.extents(); }
-			auto elements() const { return data_.elements(); }
+			auto extents() const { return impl_.extents(); }
+			auto elements() const { return impl_.elements(); }
 		};
 
 		multi::array<int, 1> const a = {1, 2, 3};
