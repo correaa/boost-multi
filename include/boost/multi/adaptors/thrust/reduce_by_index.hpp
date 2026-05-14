@@ -33,7 +33,7 @@ auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
 	// ;
 	// auto const row_ids_end = row_ids_begin + M.elements().size();
 
-	auto row_index = [] __host__ __device__ (int i, int j) {return i;} ^ M.extensions();
+	auto row_index = [] __host__ __device__ (int i, int j) {return i;} ^ M.extents();
 
 	auto const row_ids_begin = row_index.elements().begin();
 	auto const row_ids_end   = row_index.elements().end();
@@ -102,17 +102,17 @@ auto reduce_by_index(T const& M, S&& sums, BinOp&& op) -> S&& {
 
 template<class T>
 auto reduce_by_index(T const& M) {
-    multi::array<typename T::element, T::dimensionality - 1, typename T::allocator_type> ret(M[0].extensions(), M.get_allocator());
+    multi::array<typename T::element, T::dimensionality - 1, typename T::allocator_type> ret(M[0].extents(), M.get_allocator());
     return reduce_by_index(M, std::move(ret));
 }
 
 template<
 	class T, class BinOp, class TE = typename T::element,
-	std::enable_if_t<! multi::has_extensions<std::decay_t<BinOp>>::value> =0,
+	std::enable_if_t<! multi::has_extents<std::decay_t<BinOp>>::value> =0,
 	class = decltype(std::declval<BinOp>()(std::declval<TE>(), std::declval<TE>()))
 >
 auto reduce_by_index(T const& M, BinOp&& op) {
-    multi::array<TE, T::dimensionality - 1, typename T::allocator_type> ret(M.layout().sub().extensions(), M.get_allocator());
+    multi::array<TE, T::dimensionality - 1, typename T::allocator_type> ret(M.layout().sub().extents(), M.get_allocator());
     return reduce_by_index(M, std::move(ret), std::forward<BinOp>(op));
 }
 
