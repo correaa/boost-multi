@@ -147,12 +147,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto elements() const { return impl_.elements(); }
 		};
 
-		multi::array<int, 1> const a = {1, 2, 3};
-		range_1d const b(multi::array<int, 1>{1, 2, 3});
-		range_1d const c(multi::array<int, 1>{1, 2, 4});
+		multi::array<int, 1> const arr = {1, 2, 3};
+		range_1d const brr(multi::array<int, 1>{1, 2, 3});
+		range_1d const crr(multi::array<int, 1>{1, 2, 4});
 
-		BOOST_TEST( !(a != b) );
-		BOOST_TEST(   a != c  );
+		BOOST_TEST( !(arr != brr) );
+		BOOST_TEST(   arr != crr  );
 	}
 
 	return boost::report_errors();

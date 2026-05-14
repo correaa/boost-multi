@@ -559,6 +559,12 @@ t<decltype(array.extents())> {
 	return array.extents();
 }
 
+template<class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+[[deprecated("use extents(arr)")]] constexpr auto extensions(T const& array) -> std::decay_\
+t<decltype(array.extents())> {
+	return array.extents();
+}
+
 template<class BoostMultiArray, std::size_t... I>
 constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
 	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(

@@ -426,11 +426,11 @@ struct dynamic_array                                                            
 		}
 	}
 
-	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                           // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                          // fill constructor
+	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                        // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                    // fill constructor
 	: array_alloc{alloc}, ref(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(extension * value.extents()).num_elements())), extension * value.extents()) {  // NOLINT(readability-redundant-typename)
-		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>);                                                 // TODO(correaa) not implemented for non-trivial types,
-		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                            // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
+		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>);                                           // TODO(correaa) not implemented for non-trivial types,
+		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                      // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20

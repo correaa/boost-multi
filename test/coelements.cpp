@@ -25,7 +25,7 @@ namespace multi = boost::multi;
 template<class Arr2D>
 std::generator<typename Arr2D::indexes>
 co_extensions_elements(Arr2D const& arr2d) {
-	auto const [is, js] = arr2d.extensions();
+	auto const [is, js] = arr2d.extents();
 	for(auto const i : is) {
 		for(auto const j : js) {
 			co_yield typename Arr2D::indexes{i, j};
@@ -36,7 +36,7 @@ co_extensions_elements(Arr2D const& arr2d) {
 template<class Arr2D>
 std::generator<typename Arr2D::element_cref>
 co_celements(Arr2D const& arr2d) {
-	auto const [is, js] = arr2d.extensions();
+	auto const [is, js] = arr2d.extents();
 	for(auto const i : is) {
 		for(auto const j : js) {
 			co_yield arr2d[i][j];
