@@ -32,16 +32,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	using std::get;
 	std::cout
-        << get<0>(M.extensions()[1][1]) << ' '
-        << get<1>(M.extensions()[1][1]) << '\n'
+        << get<0>(M.extents()[1][1]) << ' '
+        << get<1>(M.extents()[1][1]) << '\n'
     ;
 
 	BOOST_TEST(true);
-	// M.extensions().elements();
+	// M.extents().elements();
 
 	auto row_ids_begin_ref =
 	    thrust::make_transform_iterator(
-			M.extensions().elements().begin(),
+			M.extents().elements().begin(),
 	        [] __host__ __device__ (decltype(M)::indexes e) -> std::ptrdiff_t { using std::get; return get<0>(e); }
 	    )
 	;
