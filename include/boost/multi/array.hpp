@@ -854,7 +854,7 @@ struct dynamic_array                                                            
 #if defined(__NVCOMPILER)
 #pragma diag_pop
 #endif
-	template<class Ptr, std::enable_if_t<!std::is_pointer_v<Ptr>, int> =0>
+	template<class Ptr, std::enable_if_t<!std::is_pointer_v<Ptr>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 
  public:
