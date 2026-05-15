@@ -834,6 +834,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( left.size() == 3 );
 		BOOST_TEST( right.size() == 4 );
 	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
+
+		auto const& A2 = A1.strided(2);
+		BOOST_TEST( A2.size() == 4 );
+
+		auto&& [left, right] = A2.split();
+
+		BOOST_TEST( left.size() == 2 );
+		BOOST_TEST( right.size() == 2 );
+	}
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
