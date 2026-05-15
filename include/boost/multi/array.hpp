@@ -830,6 +830,7 @@ struct dynamic_array                                                            
  public:
 	friend void swap(dynamic_array& lhs, dynamic_array& rhs) noexcept { lhs.swap_(rhs); }
 
+ private:
 #if defined(__NVCOMPILER)
 #pragma diag_push
 #pragma diag_suppress malloc_returns_non_pointer
