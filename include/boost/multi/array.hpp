@@ -866,12 +866,11 @@ struct dynamic_array                                                            
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-
 	BOOST_MULTI_HD constexpr auto split() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems()/this->layout().stride()/2*this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems()/this->layout().stride()+1)/2*this->layout().stride());
-		auto p1 = mallocate_me_(this->base_);
-		auto p2 = mallocate_me_(this->base_ + l1.nelems());
+		auto p1 = mallocate_me_(this->base_);  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{{
 			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
 			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
