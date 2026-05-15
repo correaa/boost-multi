@@ -126,6 +126,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const arrlast = arrend - 1;
 
 			BOOST_TEST( arrlast + 1 == arrend );
+
+			// cross-const iterator comparison: begin() == cbegin() for 2D array
+			// (exercises operator== between iterator and const_iterator at D>=2)
+			multi::array<double, 2> arr2({3, 4}, 1.0);
+			BOOST_TEST( arr2.begin()  == arr2.cbegin() );
+			BOOST_TEST( arr2.cbegin() == arr2.begin()  );
+			BOOST_TEST( arr2.end()    == arr2.cend()   );
 		}
 		{
 			std::vector<int>         vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
