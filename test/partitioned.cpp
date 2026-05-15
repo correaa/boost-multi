@@ -826,7 +826,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( left.size() == 3 );
 		BOOST_TEST( right.size() == 3 );
 
-		BOOST_TEST( A1[1] == 10 );
+		// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
 	}
 	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60};
