@@ -657,7 +657,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && *this->ptr_.layout() == *other.ptr_.layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && (*this->ptr_).layout() == (*other.ptr_).layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
