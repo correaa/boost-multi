@@ -660,6 +660,11 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && (*this->ptr_).layout() == (*other.ptr_).layout();
 	}
 
+	template<bool OtherIsConst, std::enable_if_t<(IsConst != OtherIsConst), int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
+	BOOST_MULTI_HD constexpr auto operator!=(array_iterator<Element, D, ElementPtr, OtherIsConst> const& other) const -> bool {
+		return !operator==(other);
+	}
+
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		BOOST_MULTI_ASSERT(this->ptr_->layout() == other.ptr_->layout());
@@ -2763,6 +2768,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 		return this->ptr_ == other.ptr_;
 	}
 
+	template<bool OtherIsConst, std::enable_if_t<OtherIsConst != IsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr auto operator!=(array_iterator<Element, 1, Ptr, OtherIsConst> const& other) const -> bool {
+		return !operator==(other);
+	}
+
 	BOOST_MULTI_HD constexpr auto operator<(array_iterator const& other) const -> bool {
 		return 0 < other - *this;
 	}
@@ -3363,6 +3373,33 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> const_subarray<T, 2, element_ptr> { return partitioned_aux_(size); }
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
+ private:
+	BOOST_MULTI_HD constexpr auto split_aux_() const {
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems()/this->layout().stride()/2*this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems()/this->layout().stride()+1)/2*this->layout().stride());
+		return std::array<subarray<T, 1, element_ptr>, 2>{{
+			subarray<T, 1, element_ptr>(l1, types::base_),
+			subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())
+		}};
+	}
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic pop
+#endif
+
+ public:
+	BOOST_MULTI_HD constexpr auto split() const -> 
+		std::array<const_subarray<T, 1, element_ptr>, 2>
+	{
+		return std::array<const_subarray<T, 1, element_ptr>, 2>{{
+			std::get<0>(split_aux_()),
+			std::get<1>(split_aux_())
+		}};
+	}
 
  private:
 	BOOST_MULTI_HD constexpr auto chunked_aux_(size_type size) const {
