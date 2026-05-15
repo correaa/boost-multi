@@ -831,11 +831,11 @@ struct dynamic_array                                                            
 	friend void swap(dynamic_array& lhs, dynamic_array& rhs) noexcept { lhs.swap_(rhs); }
 
  private:
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diag_push
 #pragma diag_suppress malloc_returns_non_pointer
 #endif
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #endif
@@ -843,43 +843,47 @@ struct dynamic_array                                                            
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
-	template<class Ptr, std::enable_if_t<std::is_pointer_v<Ptr>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class Ptr, std::enable_if_t<std::is_pointer_v<Ptr>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 #ifndef _MSC_VER
 	[[gnu::malloc]]
 #endif
-	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
+	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr {
+		return std::move(me);
+	}
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#if defined(__NVCOMPILER)
+#ifdef __NVCOMPILER
 #pragma diag_pop
 #endif
-	template<class Ptr, std::enable_if_t<!std::is_pointer_v<Ptr>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class Ptr, std::enable_if_t<!std::is_pointer_v<Ptr>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 
  public:
 	BOOST_MULTI_HD constexpr auto split() & -> decltype(auto) { return ref::split(); }
+
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 	BOOST_MULTI_HD constexpr auto split() && {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems()/this->layout().stride()/2*this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems()/this->layout().stride()+1)/2*this->layout().stride());
-		auto p1 = mallocate_me_(this->base_);  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{{
-			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
-		}};
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+
+		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+
+		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{
+			{subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			 subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)}
+		};
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
-
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
