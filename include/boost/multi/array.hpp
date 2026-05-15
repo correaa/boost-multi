@@ -844,7 +844,10 @@ struct dynamic_array                                                            
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 	template<class Ptr, std::enable_if_t<std::is_pointer_v<Ptr>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	[[gnu::malloc]] BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
+#ifndef _MSC_VER
+	[[gnu::malloc]]
+#endif
+	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
