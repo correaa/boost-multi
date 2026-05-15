@@ -2,7 +2,7 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches: ["master"]  # main Trigger on push to the main branch
+    branches: ["develop", "master"]  # main Trigger on push to the active branches
   workflow_dispatch:  # Allow manual runs
 
 permissions:
@@ -34,9 +34,9 @@ jobs:
 
       - name: Install MrDocs
         run: |
-          wget -q https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-0.0.4-Linux.tar.gz
-          tar xzf MrDocs-0.0.4-Linux.tar.gz
-          echo "$PWD/MrDocs-0.0.4-Linux/bin" >> $GITHUB_PATH
+          wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+          tar xzf MrDocs-0.8.0-Linux.tar.gz
+          echo "$PWD/MrDocs-0.8.0-Linux/bin" >> $GITHUB_PATH
 
       - name: Generate compile_commands.json for MrDocs
         run: |
