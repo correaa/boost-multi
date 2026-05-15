@@ -52,8 +52,8 @@ void test_transposed_subarray_overshoot() {
 	// row4.end() forms a pointer at base + 4 + 5*2 = base + 14,
 	// but allocation ends at base + 10.  This is 4 elements past the allocation.
 	// UB under [expr.add], but works on all tested platforms.
-	std::ptrdiff_t const overshoot =
-		(row4.base() + (row4.stride() * row4.size())) - (arr.base() + arr.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)  // readability-math-missing-parentheses
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	std::ptrdiff_t const overshoot = (row4.base() + (row4.stride() * row4.size())) - (arr.base() + arr.num_elements());
 
 	BOOST_TEST( overshoot == 4 );  // 14 - 10 = 4
 #ifdef __clang__

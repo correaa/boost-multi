@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		class range_1d {  // a type that has .extensions() and .elements() but is NOT a const_subarray
 			multi::array<int, 1> impl_;
-		
+
 		 public:
 			explicit range_1d(multi::array<int, 1> impl) : impl_(std::move(impl)) {}
 
@@ -148,6 +148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		multi::array<int, 1> const arr = {1, 2, 3};
+
 		range_1d const brr(multi::array<int, 1>{1, 2, 3});
 		range_1d const crr(multi::array<int, 1>{1, 2, 4});
 
