@@ -3380,25 +3380,23 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
  private:
 	BOOST_MULTI_HD constexpr auto split_aux_() const {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems()/this->layout().stride()/2*this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems()/this->layout().stride()+1)/2*this->layout().stride());
-		return std::array<subarray<T, 1, element_ptr>, 2>{{
-			subarray<T, 1, element_ptr>(l1, types::base_),
-			subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())
-		}};
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, ((this->layout().nelems() / this->layout().stride()) + 1) / 2 * this->layout().stride());
+		return std::array<subarray<T, 1, element_ptr>, 2>{
+			{subarray<T, 1, element_ptr>(l1, types::base_),
+			 subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())}  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		};
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
  public:
-	BOOST_MULTI_HD constexpr auto split() const -> 
-		std::array<const_subarray<T, 1, element_ptr>, 2>
-	{
-		return std::array<const_subarray<T, 1, element_ptr>, 2>{{
-			std::get<0>(split_aux_()),
-			std::get<1>(split_aux_())
-		}};
+	BOOST_MULTI_HD constexpr auto split() const -> std::array<const_subarray<T, 1, element_ptr>, 2> {
+		return std::array<const_subarray<T, 1, element_ptr>, 2>{
+			{std::get<0>(split_aux_()),
+			 std::get<1>(split_aux_())}
+		};
 	}
 
  private:
