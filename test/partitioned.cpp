@@ -812,6 +812,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma GCC diagnostic pop
 #endif
 	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+		auto&& [left, right] = A1.split();
+		BOOST_TEST( left.size() == 3 );
+		BOOST_TEST( right.size() == 3 );
+
+		BOOST_TEST( A1[1] == 10 );
+	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+		auto&& [left, right] = std::move(A1).split();
+		BOOST_TEST( left.size() == 3 );
+		BOOST_TEST( right.size() == 3 );
+
+		// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
+	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60};
+		auto&& [left, right] = A1.split();
+		BOOST_TEST( left.size() == 3 );
+		BOOST_TEST( right.size() == 4 );
+	}
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
