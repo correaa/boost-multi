@@ -82,7 +82,7 @@ struct _complex {  // NOLINT(readability-identifier-naming) deprecating this
 				std::is_assignable_v<typename T::value_type&, decltype(std::declval<T>().real())> &&
 				std::is_assignable_v<typename T::value_type&, decltype(std::declval<T>().imag())>,
 			int> = 0>
-	constexpr explicit operator T&() & { return reinterpret_cast<T const&>(*this); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	constexpr explicit operator T&() & { return reinterpret_cast<T&>(*this); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
 	constexpr auto std() const& -> std::complex<value_type> const& {
 		return reinterpret_cast<std::complex<value_type> const&>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)

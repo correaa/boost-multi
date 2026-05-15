@@ -2905,7 +2905,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
 	BOOST_MULTI_HD constexpr auto operator&() const& {  // NOLINT(google-runtime-operator)
-		return /*TODO(correaa) add const*/ detail::subarray_ptr<T, 0, ElementPtr, Layout, false>(this->base_, this->layout());
+		return detail::subarray_ptr<T, 0, typename std::pointer_traits<ElementPtr>::template rebind<T const>, Layout, false>(this->base_, this->layout());
 	}  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
