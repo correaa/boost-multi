@@ -27,6 +27,17 @@ class offset_ptr {
 	Diff offset_;
 
  public:
+	explicit offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
+	explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
+
+	offset_ptr(offset_ptr const&) = default;
+	offset_ptr(offset_ptr&&) = default;
+
+	auto operator=(offset_ptr const&) -> offset_ptr& = default;
+	auto operator=(offset_ptr&&) -> offset_ptr& = default;
+	
+	~offset_ptr() = default;
+
 	using element_type = typename std::pointer_traits<T*>::element_type;
 	using difference_type = Diff;
 	using reference = typename std::pointer_traits<T*>::reference;
@@ -34,6 +45,7 @@ class offset_ptr {
 
 	constexpr pointer   operator->() const noexcept { return ptr_ + offset_; }
 	constexpr reference operator*() const noexcept { return *operator->(); }
+
 };
 
 template<class T, std::size_t N>

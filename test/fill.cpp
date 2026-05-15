@@ -237,7 +237,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> vel_gold;
 
 		{
-			multi::array<double, 2> vel({5, 5});
+			multi::array<double, 2> vel({5, 5}, 0.0);
 			for(int i = 0; i != vel.size(); ++i) {
 				for(int j = 0; j != vel.size(); ++j) {
 					vel[i][j] = 0.0;
