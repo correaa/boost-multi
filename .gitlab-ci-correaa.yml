@@ -1553,7 +1553,7 @@ pages:
     - tree .
     - cd ..
     - mkdir -p public
-    - cp -r doc/html public/
+    # - cp -r doc/html public/
     - echo '<meta http-equiv="refresh" content="0; url=multi/intro.html">' > public/index.html
     - ls public/
     - tree public/
