@@ -32,15 +32,24 @@
 
 namespace boost::multi {
 
+/// When specialized to `true` for an element type, the library
+/// treats that type as if it were trivially default-constructible *and* trivially
+/// destructible. This is a performance opt-in for types that are
+/// technically non-trivial under the language rules (such as std::complex).
 template<class Element>
 inline constexpr bool force_element_trivial = false;
 
+/// When specialized to `true`, skip the per-element destructor loop on array teardown.
 template<class Element>
 inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
 
+/// When specialized to `true`, skip the per-element default-construction loop on array allocation.
 template<class Element>
 inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
 
+/// Opt-in specializations for `std::complex<T>`, enabled by defining
+/// `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` at compile time treats std::complex
+/// types as trivially constructible/destructible.
 #ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
 template<class T>
 inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
