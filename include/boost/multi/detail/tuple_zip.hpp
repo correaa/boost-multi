@@ -245,7 +245,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #ifdef __NVCC__
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#elif defined(__NVCOMPILER)
+#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
 	#pragma diagnostic push
 	#pragma diag_suppress = implicit_return_from_non_void_function
 #elif (defined(__GNUC__) && !defined(__EDG__))
@@ -274,7 +274,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
 #ifdef __NVCC__
 #pragma nv_diagnostic pop
-#elif defined(__NVCOMPILER)
+#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
 #pragma diagnostic pop
 #elif (defined(__GNUC__) && !defined(__EDG__))
 #pragma GCC diagnostic pop
@@ -341,7 +341,7 @@ struct tuple_prepend<T0, tuple<Ts...>> {
 };
 
 template<class T0, class Tuple>
-using tuple_prepend_t = typename tuple_prepend<T0, Tuple>::type;
+using tuple_prepend_t = typename tuple_prepend<T0, Tuple>::type;  // NOLINT(readability-redundant-typename) for C++20
 
 template<class T0, class... Ts>
 constexpr auto head(tuple<T0, Ts...> const& t) -> decltype(auto) {  // NOLINT(readability-identifier-length) std naming
@@ -370,7 +370,7 @@ BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { 
 #ifdef __NVCC__
 	#pragma nv_diagnostic push
 	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#elif defined(__NVCOMPILER)
+#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
 	#pragma diagnostic push
 	#pragma diag_suppress = implicit_return_from_non_void_function
 #elif defined(__GNUC__) && !defined(__EDG__)
@@ -408,7 +408,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  //-V::659
 
 #ifdef __NVCC__
 	#pragma nv_diagnostic pop
-#elif defined(__NVCOMPILER)
+#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
 	#pragma diagnostic pop
 #elif defined(__GNUC__) && !defined(__EDG__)
 	#pragma GCC diagnostic pop

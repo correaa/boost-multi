@@ -1534,13 +1534,13 @@ pages:
   stage: build
   allow_failure: true
   needs:
+    - job: antora                # provides built site in public/
+      artifacts: true
     - job: pages-presentation
       artifacts: true
     - job: headers
     - job: g++
     - job: clang++
-    - job: mrdocs
-      artifacts: true
   only:
     refs:
       - develop
@@ -1549,14 +1549,9 @@ pages:
     - docker
   script:
     - apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates
-    - cd doc
-    - tree .
-    - cd ..
-    - mkdir -p public
-    # - cp -r doc/html public/
+    - tree -L 2 public/ || true                                  # show what antora gave us
     - echo '<meta http-equiv="refresh" content="0; url=multi/intro.html">' > public/index.html
     - ls public/
-    - tree public/
   artifacts:
     paths:
     - public
