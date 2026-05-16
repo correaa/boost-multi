@@ -1461,7 +1461,7 @@ headers:
 
 mrdocs:
   stage: build
-  allow_failure: true  # docs shouldn't block the rest of the pipeline
+  allow_failure: false
   tags:
     - non-shared
     - docker
