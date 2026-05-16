@@ -1459,6 +1459,32 @@ headers:
   needs: ["g++", "clang++"]
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
+mrdocs:
+  stage: build
+  allow_failure: true  # docs shouldn't block the rest of the pipeline
+  tags:
+    - non-shared
+    - docker
+    - x86_64  # for MrDocs binary
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates wget
+    - wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+    - tar zxf MrDocs-0.8.0-Linux.tar.gz
+    - export PATH=$PWD/MrDocs-0.8.0-Linux/bin:$PATH
+    - mrdocs --version
+    - cmake -B build-mrdocs
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        -DCMAKE_BUILD_TYPE=Release
+        -DMULTI_BUILD_TESTS=OFF
+        -DMULTI_BUILD_PACKAGE=OFF
+    - mrdocs mrdocs.yml
+    - tree doc/modules/reference/pages | head -50
+  artifacts:
+    paths:
+      - doc/modules/reference/pages
+    expire_in: 1 week
+
 antora:
   image: antora/antora
   stage: build
