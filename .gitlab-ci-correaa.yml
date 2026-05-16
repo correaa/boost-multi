@@ -1484,6 +1484,7 @@ mrdocs:
     paths:
       - doc/modules/reference/pages
     expire_in: 1 week
+  needs: ["clang++"]
 
 antora:
   image: antora/antora
