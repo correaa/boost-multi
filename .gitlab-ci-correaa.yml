@@ -1541,22 +1541,15 @@ pages:
     - job: clang++
     - job: mrdocs
       artifacts: true
-      optional: true
   only:
     refs:
       - develop
   tags:
     - non-shared
     - docker
-    - x86_64  # for MrDocs binary
   script:
-    # MrDocs API reference is provided by the `mrdocs` job artifacts (doc/modules/reference/pages).
-    # If that job failed (allow_failure), Antora still runs without API pages.
-    - apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates npm asciidoctor sed git
-    - npm i -q @antora/cli @antora/site-generator
+    - apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates
     - cd doc
-    - tree .
-    - npx antora multi-playbook.yml
     - tree .
     - cd ..
     - cp -r doc/html .public
