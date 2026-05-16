@@ -1459,6 +1459,33 @@ headers:
   needs: ["g++", "clang++"]
   # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
+mrdocs:
+  stage: build
+  allow_failure: false
+  tags:
+    - non-shared
+    - docker
+    - x86_64  # for MrDocs binary
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates wget
+    - wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+    - tar zxf MrDocs-0.8.0-Linux.tar.gz
+    - export PATH=$PWD/MrDocs-0.8.0-Linux/bin:$PATH
+    - mrdocs --version
+    - cmake -B build-mrdocs
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        -DCMAKE_BUILD_TYPE=Release
+        -DMULTI_BUILD_TESTS=OFF
+        -DMULTI_BUILD_PACKAGE=OFF
+    - mrdocs mrdocs.yml
+    - tree -L 3 doc/modules/reference/pages  # avoid piping to head (SIGPIPE + pipefail fails the job)
+  artifacts:
+    paths:
+      - doc/modules/reference/pages
+    expire_in: 1 week
+  needs: ["clang++"]
+
 antora:
   image: antora/antora
   stage: build
@@ -1496,6 +1523,9 @@ antora:
   needs:
     - job: pages-presentation
       artifacts: true
+    - job: mrdocs
+      artifacts: true
+      optional: true  # mrdocs is allow_failure; antora can still run without its artifacts
 
 # this is a specially named workflow ("pages") populates the pages site
 pages:
@@ -1507,6 +1537,9 @@ pages:
     - job: headers
     - job: g++
     - job: clang++
+    - job: mrdocs
+      artifacts: true
+      optional: true
   only:
     refs:
       - develop
@@ -1515,16 +1548,13 @@ pages:
     - docker
     - x86_64  # for MrDocs binary
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge
+    # MrDocs API reference is provided by the `mrdocs` job artifacts (doc/modules/reference/pages).
+    # If that job failed (allow_failure), Antora still runs without API pages.
+    - apt-get -qq install --no-install-recommends -y --quiet tree ca-certificates npm asciidoctor sed git
     - npm i -q @antora/cli @antora/site-generator
-    - wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
-    - tar zxvf MrDocs-0.8.0-Linux.tar.gz
-    - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
-    # - truncate -s 0 doc/modules/.gitignore  # allow Antora to see MrDocs-generated pages
     - cd doc
     - tree .
-    - chmod +x antora_docs.sh
-    - ./antora_docs.sh
+    - npx antora multi-playbook.yml
     - tree .
     - cd ..
     - cp -r doc/html .public
