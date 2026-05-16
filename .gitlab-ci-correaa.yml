@@ -1552,10 +1552,8 @@ pages:
     - cd doc
     - tree .
     - cd ..
-    - cp -r doc/html .public
-    - echo '<meta http-equiv="refresh" content="0; url=multi/intro.html">' > .public/index.html
     - mkdir -p public
-    - mv .public/* public/
+    - echo '<meta http-equiv="refresh" content="0; url=multi/intro.html">' > public/index.html
     - ls public/
     - tree public/
   artifacts:
