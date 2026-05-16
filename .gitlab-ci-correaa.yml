@@ -1468,9 +1468,11 @@ mrdocs:
     - x86_64  # for MrDocs binary
   script:
     - apt-get -qq install --no-install-recommends -y --quiet make clang cmake ninja-build tree ca-certificates wget
-    - wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
-    - tar zxf MrDocs-0.8.0-Linux.tar.gz
-    - export PATH=$PWD/MrDocs-0.8.0-Linux/bin:$PATH
+    - wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-develop-Linux.tar.gz
+    #- wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+    - tar zxf MrDocs-develop-Linux.tar.gz
+    # - tar zxf MrDocs-0.8.0-Linux.tar.gz
+    - export PATH=$PWD/MrDocs-develop-Linux/bin:$PATH
     - mrdocs --version
     - cmake -B build-mrdocs
         -DCMAKE_CXX_COMPILER=clang++
