@@ -1479,7 +1479,7 @@ mrdocs:
         -DMULTI_BUILD_TESTS=OFF
         -DMULTI_BUILD_PACKAGE=OFF
     - mrdocs mrdocs.yml
-    - tree doc/modules/reference/pages | head -50
+    - tree -L 3 doc/modules/reference/pages  # avoid piping to head (SIGPIPE + pipefail fails the job)
   artifacts:
     paths:
       - doc/modules/reference/pages
