@@ -135,6 +135,7 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 #pragma diagnostic push
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
+
 #ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
@@ -148,16 +149,14 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 
 #ifdef __NVCC__
 #pragma nv_diagnostic pop
-#elif defined(__NVCOMPILER)
+#endif
+
+#ifdef __NVCOMPILER
 #pragma diagnostic pop
 #endif
 
 #ifndef _MSC_VER
 #pragma GCC diagnostic pop
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(pop)
 #endif
 
 template<class UTArr, class B2D>
