@@ -11,7 +11,7 @@
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 // #include "boost/multi/detail/is_trivial.hpp"
 #include "boost/multi/detail/memory.hpp"
-#include "boost/multi/detail/static_allocator.hpp"  // TODO(correaa) export IWYU
+#include "boost/multi/detail/static_allocator.hpp"   // IWYU pragma: export
 #include "boost/multi/restriction.hpp"
 
 #include <iterator>  // for std::sentinel_for
