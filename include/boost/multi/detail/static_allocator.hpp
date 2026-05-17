@@ -8,6 +8,7 @@
 
 #include "boost/multi/detail/config/NODISCARD.hpp"
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
+#include "boost/multi/detail/implicit_cast.hpp"
 
 #include <array>
 #include <cassert>
@@ -26,12 +27,25 @@ class offset_ptr {
 	T* ptr_;
 	Diff offset_;
 
+	template<class, typename> friend class offset_ptr;
+
  public:
 	explicit offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
 	explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
+	// cppcheck-suppress noExplicitConstructor ; nullptr should convert implicitly, like for raw pointers
+	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) match raw-pointer behavior
 
 	offset_ptr(offset_ptr const&) = default;
 	offset_ptr(offset_ptr&&) = default;
+
+	template<class U, std::enable_if_t<std::is_convertible_v<U*, T*>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
+	constexpr /*mplct*/ offset_ptr(offset_ptr<U, Diff> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) propagate implicitness of T*->U*
+	: ptr_{other.ptr_}, offset_{other.offset_} {}
+
+	template<class U, std::enable_if_t<std::is_constructible_v<T*, U*> && !std::is_convertible_v<U*, T*>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr explicit offset_ptr(offset_ptr<U, Diff> const& other)
+	: ptr_{static_cast<T*>(other.ptr_)}, offset_{other.offset_} {}
 
 	auto operator=(offset_ptr const&) -> offset_ptr& = default;
 	auto operator=(offset_ptr&&) -> offset_ptr& = default;
@@ -40,15 +54,59 @@ class offset_ptr {
 
 	using element_type = typename std::pointer_traits<T*>::element_type;
 	using difference_type = Diff;
-	using reference = typename std::pointer_traits<T*>::reference;
+	using reference = std::add_lvalue_reference_t<T>;  // T& for non-void T; void for T=void (T& would be ill-formed)
 	using pointer = T*;
+	using value_type = std::decay_t<T>;
+using iterator_category = std::random_access_iterator_tag;
+#if defined(__cpp_lib_concepts) && (__cpp_lib_concepts >= 202002L)
+    using iterator_concept = std::contiguous_iterator_tag;
+#endif
 
-	constexpr pointer   operator->() const noexcept { return ptr_ + offset_; }
+#if defined(__clang_major__) && __clang_major__ >= 16
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
+#endif
+	constexpr pointer operator->() const noexcept { return ptr_ + offset_; }
+	constexpr operator T*() const noexcept { assert(ptr_ != nullptr || offset_ == 0); return ptr_ + offset_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
+
+#if defined(__clang_major__) && __clang_major__ >= 16
+#pragma clang diagnostic pop
+#endif
 	constexpr reference operator*() const noexcept { return *operator->(); }
+
+	constexpr auto operator-(offset_ptr const& other) const noexcept -> difference_type {
+		assert(ptr_ == other.ptr_);
+		return offset_ - other.offset_;
+	}
+
+	constexpr auto operator-(difference_type n) const noexcept -> offset_ptr { return offset_ptr{*this} -= n; }
+	constexpr auto operator+(difference_type n) const noexcept -> offset_ptr { return offset_ptr{*this} += n; }
+
+	friend constexpr auto operator+(difference_type n, offset_ptr const& p) noexcept -> offset_ptr { return p + n; }
+
+	auto operator++() -> offset_ptr& { assert(ptr_ != nullptr); ++offset_; return *this; }
+	auto operator--() -> offset_ptr& { assert(ptr_ != nullptr); --offset_; return *this; }
+
+	constexpr auto operator+=(difference_type n) noexcept -> offset_ptr& { assert(ptr_ != nullptr); offset_ += n; return *this; }
+	constexpr auto operator-=(difference_type n) noexcept -> offset_ptr& { assert(ptr_ != nullptr); offset_ -= n; return *this; }
+
+	friend constexpr auto operator==(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		return lhs.ptr_ == rhs.ptr_ && lhs.offset_ == rhs.offset_;
+	}
+	friend constexpr auto operator!=(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		return !(lhs == rhs);
+	}
+
+	friend constexpr auto operator==(offset_ptr const& lhs, std::nullptr_t const& rhs) noexcept -> bool {
+		return lhs.ptr_ == rhs;
+	}
+	friend constexpr auto operator!=(offset_ptr const& lhs, std::nullptr_t const& rhs) noexcept -> bool {
+		return !(lhs == rhs);
+	}
 
 };
 
-template<class T, std::size_t N>
+template<class T, std::size_t N, typename Ptr = offset_ptr<T> >
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
 #ifdef _MSC_VER
 	#pragma warning(push)
@@ -81,7 +139,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 
  public:
 	using value_type = T;
-	using pointer    = T*;
+	using pointer    = Ptr;
 
 	template<class TT> struct rebind {
 		using other = static_allocator<TT, N>;
@@ -141,7 +199,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 		// dirty_ = true;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"        // buffer_ is aligned as T
-		return reinterpret_cast<pointer>(&buffer_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return pointer(reinterpret_cast<T*>(&buffer_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 #pragma GCC diagnostic pop
 	}
 #ifdef _MSC_VER

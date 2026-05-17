@@ -18,5 +18,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( a2d.size() == 2 );
 	BOOST_TEST( a2d[1][1] == 4 );
 
+	BOOST_TEST( (~a2d)[1].begin() != (~a2d)[1].end() );
+	BOOST_TEST( (~a2d)[1].begin() + 2 == (~a2d)[1].end() );
+
 	return boost::report_errors();
 }

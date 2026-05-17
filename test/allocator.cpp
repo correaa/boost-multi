@@ -347,7 +347,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using T = int;
 		multi::detail::static_allocator<T, 32> sa{};
 
-		auto* pp = sa.allocate(10);
+		auto pp = sa.allocate(10);
 
 		new (std::next(pp, 8)) T{42};
 
@@ -532,8 +532,8 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( ww[3][3] == 42 );
 		BOOST_TEST( ww.base() != vv.base() );
 
-		auto const* wwb = ww.base();
-		auto const* vvb = vv.base();
+		auto const wwb = ww.base();
+		auto const vvb = vv.base();
 
 		ww[3][3] = 51;
 
