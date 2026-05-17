@@ -532,6 +532,12 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( ww[3][3] == 42 );
 		BOOST_TEST( ww.base() != vv.base() );
 
+		BOOST_TEST( vv[0].end() - vv[0].begin() == vv[0].size() );
+	
+		auto vv0end = vv[0].end();
+		--vv0end;
+		BOOST_TEST( vv0end == vv[0].end() - 1 );
+
 		auto const wwb = ww.base();
 		auto const vvb = vv.base();
 

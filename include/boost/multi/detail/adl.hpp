@@ -444,7 +444,7 @@ auto alloc_uninitialized_copy_n(Alloc& alloc, InputIt first, Size count, Forward
 template<class Alloc, class InputIt, class Size, class ForwardIt>
 // [[deprecated("check")]]
 auto alloc_uninitialized_move_n(Alloc& alloc, InputIt first, Size count, ForwardIt d_first) {
-	ForwardIt current = d_first;
+	ForwardIt current = d_first;  // possible mull-19 false positive
 	try {
 		// NOLINTNEXTLINE(altera-unroll-loops,cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) consider using an algorithm
 		for(; count > 0; ++first, ++current, --count) {  // mull-ignore: cxx_gt_to_ge
