@@ -888,8 +888,8 @@ struct dynamic_array                                                            
 #endif
 #endif
 		return std::pair<
-			subarray<T, 1, typename dynamic_array::element_ptr>&&,
-			subarray<T, 1, typename dynamic_array::element_ptr>&&
+			subarray<T, 1, typename dynamic_array::element_ptr>,
+			subarray<T, 1, typename dynamic_array::element_ptr>
 		>{
 			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
 			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)

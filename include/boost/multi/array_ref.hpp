@@ -3403,9 +3403,10 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 
  public:
 	BOOST_MULTI_HD constexpr auto splitted() const -> std::array<const_subarray<T, 1, element_ptr>, 2> {
-		return std::array<const_subarray<T, 1, element_ptr>, 2>{
-			{std::get<0>(splitted_aux_()),
-			 std::get<1>(splitted_aux_())}
+		return
+		std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr> >{
+			std::get<0>(splitted_aux_()),
+			std::get<1>(splitted_aux_())
 		};
 	}
 
