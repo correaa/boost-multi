@@ -105,20 +105,19 @@ class offset_ptr {
 		return *this;
 	}
 	auto operator--() -> offset_ptr& {
+		assert(0);
 		assert(ptr_ != nullptr);
 		--offset_;
 		return *this;
 	}
 
 	constexpr auto operator+=(difference_type n) noexcept -> offset_ptr& {
-		assert(ptr_ != nullptr);
+		assert(ptr_ != nullptr || n == 0);
 		offset_ += n;
 		return *this;
 	}
 	constexpr auto operator-=(difference_type n) noexcept -> offset_ptr& {
-		assert(ptr_ != nullptr);
-		offset_ -= n;
-		return *this;
+		return *this += -n;
 	}
 
 	friend constexpr auto operator==(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
