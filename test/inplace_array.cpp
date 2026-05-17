@@ -18,8 +18,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( a2d.size() == 2 );
 	BOOST_TEST( a2d[1][1] == 4 );
 
-	BOOST_TEST( (~a2d)[1].begin() != (~a2d)[1].end() );
-	BOOST_TEST( (~a2d)[1].begin() + 2 == (~a2d)[1].end() );
+	// UB probe: form a pointer that is *past* one-past-end of a transposed
+	{
+		multi::inplace_array<int[2][2]> b2d = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+			{1, 2},
+			{3, 4}
+		};
+		auto const end = (~b2d)[1].end();  // UB: forms a pointer past one-past-end
+		BOOST_TEST( end != (~b2d)[1].begin() );  // observe the pointer so the optimizer can't drop the arithmetic
+	}
 
 	return boost::report_errors();
 }
