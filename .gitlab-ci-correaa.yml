@@ -189,7 +189,7 @@ g++ cppcheck cpplint memcheck lto:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-    - (ctest --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/../.valgrind-suppressions -T memcheck) || (cat /builds/correaa/boost-multi/build/Testing/Temporary/MemoryChecker.*.log && exit 666)
+    - (ctest --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/../.valgrind-suppressions -T memcheck) || (cat $PWD/Testing/Temporary/MemoryChecker.*.log && exit 666)
   needs: ["g++"]
 
 g++-9-bullseye:
@@ -209,8 +209,8 @@ g++-9-bullseye:
     - g++ --version
     - g++-9 --version
     - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build build/ || cmake --build . --parallel 1 --verbose
-    - cmake --build build/ --target test  # - ctest --output-on-failure
+    - cmake --build build/ || cmake --build build/ --parallel 1 --verbose
+    - cmake --build build/ --target test
   needs: ["g++"]
 
 g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
@@ -284,7 +284,7 @@ clang++ ubsan:  # more UB is detected on Release
 #     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
 #   needs: ["clang++", "g++"]
 
-clang++-18 mull-18:  # mull-18 crashes
+clang++-18 mull-18:
   image: ubuntu:24.04
   stage: build
   tags:
@@ -315,6 +315,43 @@ clang++-18 mull-18:  # mull-18 crashes
     - ctest
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+  needs: ["clang++", "g++"]
+
+clang++-19 mull-19:
+  image: ubuntu:24.04
+  stage: build
+  tags:
+    - x86_64  # for mull
+    - large-memory-space
+    - non-shared
+  interruptible: true
+  allow_failure: true
+  # only:
+  #   refs:
+  #     - develop
+  script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates lsb-release software-properties-common cmake file make libboost-timer-dev libboost-serialization-dev > /dev/null
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 19
+    - apt-get -qq install --no-install-recommends -y --quiet clang-19 libclang-rt-19-dev libclang-cpp19
+    - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+    - apt-get -qq update
+    - apt search mull
+    - apt-get -qq install --no-install-recommends -y --quiet mull-19
+    - mkdir build && cd build
+    - clang++-19 --version
+    - which mull-runner-19
+    - ls -all `which mull-runner-19`
+    - file `which mull-runner-19`
+    - mull-runner-19 --version
+    - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest
+    - cd test
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
 
 clang++-16 c++20:
@@ -420,7 +457,8 @@ vs2022-shell:
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
     - ctest -j 4 --test-dir build --output-on-failure -C Debug
   tags:
-    - windows, shell
+    - windows
+    - shell
   # needs: ["clang++", "g++"]
   timeout: 20 minutes
 
@@ -765,10 +803,9 @@ cuda:
   tags:
     - non-shared
     - nvidia-gpu
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  only:
+    refs:
+      - develop
   script:
     - nvidia-smi
     - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
@@ -1377,7 +1414,7 @@ sonar:
     # Download sonar-scanner, from https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/
     - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip -O sonar-scanner.zip
     - unzip -o sonar-scanner.zip
-    - mv sonar-scanner-6.2.1.4610-linux-x64 sonar-scanner
+    - mv sonar-scanner-*-linux-x64 sonar-scanner
     # - Download build-wrapper
     - curl -sSLo ./build-wrapper-linux-x86.zip "${SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip"
     - unzip -oj build-wrapper-linux-x86.zip -d ./build-wrapper
