@@ -13,9 +13,21 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 namespace boost::multi::detail {
+
+// smallest unsigned integer type that can represent all values in [0, N]
+template<std::uint64_t N>
+using uint_for_bound_t =
+	std::conditional_t<                             //
+		(N <= 0xFFu), std::uint8_t,                 //
+		std::conditional_t<                         //
+			(N <= 0xFFFFu), std::uint16_t,          //
+			std::conditional_t<                     //
+				(N <= 0xFFFFFFFFu), std::uint32_t,  //
+				std::uint64_t>>>;
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -24,7 +36,7 @@ namespace boost::multi::detail {
 
 template<class T, typename Diff = typename std::pointer_traits<T*>::difference_type>
 class offset_ptr {
-	T* ptr_;
+	T*   ptr_;
 	Diff offset_;
 
 	template<class, typename> friend class offset_ptr;
@@ -36,7 +48,7 @@ class offset_ptr {
 	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) match raw-pointer behavior
 
 	offset_ptr(offset_ptr const&) = default;
-	offset_ptr(offset_ptr&&) = default;
+	offset_ptr(offset_ptr&&)      = default;
 
 	template<class U, std::enable_if_t<std::is_convertible_v<U*, T*>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
@@ -48,18 +60,18 @@ class offset_ptr {
 	: ptr_{static_cast<T*>(other.ptr_)}, offset_{other.offset_} {}
 
 	auto operator=(offset_ptr const&) -> offset_ptr& = default;
-	auto operator=(offset_ptr&&) -> offset_ptr& = default;
-	
+	auto operator=(offset_ptr&&) -> offset_ptr&      = default;
+
 	~offset_ptr() = default;
 
-	using element_type = typename std::pointer_traits<T*>::element_type;
-	using difference_type = Diff;
-	using reference = std::add_lvalue_reference_t<T>;  // T& for non-void T; void for T=void (T& would be ill-formed)
-	using pointer = T*;
-	using value_type = std::decay_t<T>;
-using iterator_category = std::random_access_iterator_tag;
+	using element_type      = typename std::pointer_traits<T*>::element_type;
+	using difference_type   = Diff;
+	using reference         = std::add_lvalue_reference_t<T>;  // T& for non-void T; void for T=void (T& would be ill-formed)
+	using pointer           = T*;
+	using value_type        = std::decay_t<T>;
+	using iterator_category = std::random_access_iterator_tag;
 #if defined(__cpp_lib_concepts) && (__cpp_lib_concepts >= 202002L)
-    using iterator_concept = std::contiguous_iterator_tag;
+	using iterator_concept = std::contiguous_iterator_tag;
 #endif
 
 #if defined(__clang_major__) && __clang_major__ >= 16
@@ -67,7 +79,10 @@ using iterator_category = std::random_access_iterator_tag;
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
 #endif
 	constexpr pointer operator->() const noexcept { return ptr_ + offset_; }
-	constexpr operator T*() const noexcept { assert(ptr_ != nullptr || offset_ == 0); return ptr_ + offset_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
+	constexpr         operator T*() const noexcept {
+        assert(ptr_ != nullptr || offset_ == 0);
+        return ptr_ + offset_;
+	}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
 
 #if defined(__clang_major__) && __clang_major__ >= 16
 #pragma clang diagnostic pop
@@ -84,11 +99,27 @@ using iterator_category = std::random_access_iterator_tag;
 
 	friend constexpr auto operator+(difference_type n, offset_ptr const& p) noexcept -> offset_ptr { return p + n; }
 
-	auto operator++() -> offset_ptr& { assert(ptr_ != nullptr); ++offset_; return *this; }
-	auto operator--() -> offset_ptr& { assert(ptr_ != nullptr); --offset_; return *this; }
+	auto operator++() -> offset_ptr& {
+		assert(ptr_ != nullptr);
+		++offset_;
+		return *this;
+	}
+	auto operator--() -> offset_ptr& {
+		assert(ptr_ != nullptr);
+		--offset_;
+		return *this;
+	}
 
-	constexpr auto operator+=(difference_type n) noexcept -> offset_ptr& { assert(ptr_ != nullptr); offset_ += n; return *this; }
-	constexpr auto operator-=(difference_type n) noexcept -> offset_ptr& { assert(ptr_ != nullptr); offset_ -= n; return *this; }
+	constexpr auto operator+=(difference_type n) noexcept -> offset_ptr& {
+		assert(ptr_ != nullptr);
+		offset_ += n;
+		return *this;
+	}
+	constexpr auto operator-=(difference_type n) noexcept -> offset_ptr& {
+		assert(ptr_ != nullptr);
+		offset_ -= n;
+		return *this;
+	}
 
 	friend constexpr auto operator==(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
 		return lhs.ptr_ == rhs.ptr_ && lhs.offset_ == rhs.offset_;
@@ -103,38 +134,37 @@ using iterator_category = std::random_access_iterator_tag;
 	friend constexpr auto operator!=(offset_ptr const& lhs, std::nullptr_t const& rhs) noexcept -> bool {
 		return !(lhs == rhs);
 	}
-
 };
 
-template<class T, std::size_t N, typename Ptr = offset_ptr<T> >
+template<class T, std::size_t N, typename Ptr = offset_ptr<T>>
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
 #ifdef _MSC_VER
-	#pragma warning(push)
-	#pragma warning(disable : 4324)  // Warning that the structure is padded due to the below
+#pragma warning(push)
+#pragma warning(disable : 4324)  // Warning that the structure is padded due to the below
 #endif
 
-// #if defined(__clang__)
-// #pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wpadded"
-// #endif
+	// #if defined(__clang__)
+	// #pragma clang diagnostic push
+	// #pragma clang diagnostic ignored "-Wpadded"
+	// #endif
 
 	BOOST_MULTI_NO_UNIQUE_ADDRESS alignas(T) std::array<std::byte, sizeof(T) * N> buffer_;
 
-// #if defined(__clang__)
-// #pragma clang diagnostic pop
-// #endif
+	// #if defined(__clang__)
+	// #pragma clang diagnostic pop
+	// #endif
 
 #ifdef _MSC_VER
-	#pragma warning(pop)
+#pragma warning(pop)
 #endif
 
 #ifdef _MSC_VER
-	#pragma warning(push)
-	#pragma warning(disable : 4820)  // warning C4820: 'boost::multi::detail::static_allocator<main::T,32>': '3' bytes padding added after data member 'boost::multi::detail::static_allocator<main::T,32>::dirty_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\allocator.cpp.x.vcxproj]
+#pragma warning(push)
+#pragma warning(disable : 4820)  // warning C4820: 'boost::multi::detail::static_allocator<main::T,32>': '3' bytes padding added after data member 'boost::multi::detail::static_allocator<main::T,32>::dirty_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\allocator.cpp.x.vcxproj]
 #endif
 	bool dirty_ = false;
 #ifdef _MSC_VER
-	#pragma warning(pop)
+#pragma warning(pop)
 #endif
 
  public:
@@ -165,8 +195,8 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 
 	// [[deprecated("don't move dynamic container with static_allocator")]]
 	static_allocator(static_allocator&& /*other*/)  // this is called *by the elements* during move construction of a vector
-		// = delete;
-		// {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
+													// = delete;
+													// {throw std::runtime_error("don't move dynamic container with static_allocator");}  // this is called *by the elements* during move construction of a vector
 		noexcept {}
 	// noexcept {std::memmove(buffer_.data(), other.buffer_.data(), sizeof(T)*N);}
 	// noexcept : buffer_{std::move(other.buffer_)} {}
@@ -189,21 +219,21 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	static constexpr auto capacity() -> size_type { return N; }
 
 #ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable : 4068)  // bug in MSVC 14.2/14.3
+#pragma warning(push)
+#pragma warning(disable : 4068)  // bug in MSVC 14.2/14.3
 #endif
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate([[maybe_unused]] size_type n) -> pointer {
 		assert(n <= N);
 		assert(!dirty_);  // do not attempt to resize a vector with static_allocator
-		// dirty_ = true;
+						  // dirty_ = true;
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"        // buffer_ is aligned as T
+#pragma GCC diagnostic ignored "-Wcast-align"            // buffer_ is aligned as T
 		return pointer(reinterpret_cast<T*>(&buffer_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 #pragma GCC diagnostic pop
 	}
 #ifdef _MSC_VER
-#pragma warning( pop ) 
+#pragma warning(pop)
 #endif
 
 	static void deallocate(pointer /*ptr*/, [[maybe_unused]] size_type n) {
