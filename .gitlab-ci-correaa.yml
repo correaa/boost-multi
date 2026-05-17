@@ -1532,15 +1532,14 @@ antora:
 # this is a specially named workflow ("pages") populates the pages site
 pages:
   stage: build
-  allow_failure: true
+  allow_failure: false
   needs:
-    - job: antora                # provides built site in public/
+    - job: antora                # provides built HTML site (public/multi/*, etc.)
       artifacts: true
-    - job: pages-presentation
+    - job: pages-presentation    # provides public/presentation/*
       artifacts: true
-    - job: headers
-    - job: g++
-    - job: clang++
+    - job: headers               # provides public/boost-multi.hpp and boost-multi-ref.hpp
+      artifacts: true
   only:
     refs:
       - develop
