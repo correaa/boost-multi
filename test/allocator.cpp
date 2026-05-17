@@ -548,8 +548,8 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( vv0end1 == vv0end2 );
 
 		auto vv0beg1 = vv[1].begin();
-		--vv0beg1;
-		--vv0beg1;
+		++vv0beg1;
+		++vv0beg1;
 
 		auto vv0beg2 = vv[1].begin();
 		vv0beg2 += 2;
