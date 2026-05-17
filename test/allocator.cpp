@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
+#include <boost/multi/detail/static_allocator.hpp>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 
