@@ -863,37 +863,58 @@ struct dynamic_array                                                            
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 
  public:
-	BOOST_MULTI_HD constexpr auto split() & -> decltype(auto) { return ref::split(); }
+	BOOST_MULTI_HD constexpr auto splitted() & -> decltype(auto) { return ref::splitted(); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 #ifdef __GNUC__
-[[gnu::always_inline]]
+	[[gnu::always_inline]]
 #endif
-	BOOST_MULTI_HD constexpr auto split() && {
+	BOOST_MULTI_HD constexpr auto splitted() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
 		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
+#ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
+#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
 			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
-    		std::less_equal<>{}(p2 + l2.nelems(), p1)
+			std::less_equal<>{}(p2 + l2.nelems(), p1)
 		)]];
-		#endif
-
-		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{
-			{subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			 subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)}
+#endif
+#endif
+		return std::pair<
+			subarray<T, 1, typename dynamic_array::element_ptr>&&,
+			subarray<T, 1, typename dynamic_array::element_ptr>&&
+		>{
+			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
 		};
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
+
+// Clang consumed-typestate analysis: enable with -Wconsumed.
+// Calling split() on an rvalue array consumes it; clang will warn if the
+// moved-from object is then used. Requires the enclosing class to be
+// marked [[clang::consumable("unconsumed")]] for the analysis to fire.
+#if defined(__clang__)
+#  define BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED [[clang::callable_when("unconsumed")]]
+#  define BOOST_MULTI_SET_CONSUMED              [[clang::set_typestate("consumed")]]
+#else
+#  define BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED
+#  define BOOST_MULTI_SET_CONSUMED
+#endif
+
+	BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED BOOST_MULTI_SET_CONSUMED
+	BOOST_MULTI_HD constexpr auto split() & {
+		return std::move(*this).splitted();
+	}
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
