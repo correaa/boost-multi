@@ -22,11 +22,11 @@ namespace boost::multi::detail {
 template<std::uint64_t N>
 using uint_for_bound_t =
 	std::conditional_t<                             //
-		(N <= 0xFFu), std::uint8_t,                 //
+		(N <= 0xFFU), std::uint8_t,                 //
 		std::conditional_t<                         //
-			(N <= 0xFFFFu), std::uint16_t,          //
+			(N <= 0xFFFFU), std::uint16_t,          //
 			std::conditional_t<                     //
-				(N <= 0xFFFFFFFFu), std::uint32_t,  //
+				(N <= 0xFFFFFFFFU), std::uint32_t,  //
 				std::uint64_t>>>;
 
 #ifdef __clang__
@@ -79,10 +79,10 @@ class offset_ptr {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
 #endif
 	constexpr pointer operator->() const noexcept { return ptr_ + offset_; }
-	constexpr         operator T*() const noexcept {
+	constexpr         operator T*() const noexcept {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
         assert(ptr_ != nullptr || offset_ == 0);
-        return ptr_ + offset_;
-	}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
+        return ptr_ + offset_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
 
 #if defined(__clang_major__) && __clang_major__ >= 16
 #pragma clang diagnostic pop
