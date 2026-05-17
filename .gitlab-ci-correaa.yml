@@ -803,9 +803,6 @@ cuda:
   tags:
     - non-shared
     - nvidia-gpu
-  only:
-    refs:
-      - develop
   script:
     - nvidia-smi
     - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
