@@ -78,7 +78,7 @@ class offset_ptr {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
 #endif
-	constexpr pointer operator->() const noexcept { return ptr_ + offset_; }
+	constexpr pointer operator->() const noexcept { return *this; }
 	constexpr         operator T*() const noexcept {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
         assert(ptr_ != nullptr || offset_ == 0);
         return ptr_ + offset_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
