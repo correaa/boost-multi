@@ -873,5 +873,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( right.size() == 2 );
 	}
 
+	// -Wconsumed probe: split() is annotated [[clang::set_typestate("consumed")]],
+	// so using `A` after the call must trigger a clang -Wconsumed warning.
+	// Behavior gate:
+	//   - default                  : noisy warning (informational)
+	//   - -DMULTI_EXPECT_CONSUMED_WARNING with -Werror=consumed : turns into a
+	//     hard error if the warning ever stops firing (regression detector)
+	{
+		multi::array<int, 1> A = {0, 10, 20, 30};
+
+		auto&& [left, right] = A.split();   // A is now in "consumed" typestate
+		BOOST_TEST( left.size() == 2 );
+		BOOST_TEST( right.size() == 2 );
+
+#if defined(MULTI_EXPECT_CONSUMED_WARNING)
+		// any use of A here should fire -Wconsumed; we exercise a few:
+		BOOST_TEST( A.size() == 4 );  // expected: warning: invalid invocation of method 'size' on object 'A' while it is in the 'consumed' state
+		BOOST_TEST( A[0] == 0 );      // expected: warning: invalid invocation of method 'operator[]' ...
+#endif
+	}
+
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)

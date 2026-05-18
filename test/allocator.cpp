@@ -609,22 +609,22 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	{
 		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-		auto p = arr.base();
+		auto ptr = arr.base();
 
-		p += 2;
-		--p;
+		ptr += 2;
+		--ptr;
 
-		BOOST_TEST( *p == 20 );
+		BOOST_TEST( *ptr == 20 );
 
-		auto& r = --p;
-		BOOST_TEST( &r == &p );
-		BOOST_TEST( *p == 10 );
+		auto& rtr = --ptr;
+		BOOST_TEST( &rtr == &ptr );
+		BOOST_TEST( *ptr == 10 );
 
-		auto q = arr.data_elements();
-		++q;
-		--q;
-		BOOST_TEST( *q == 10 );
-		BOOST_TEST( q == arr.base() );
+		auto qtr = arr.base();
+		++qtr;
+		--qtr;
+		BOOST_TEST( *qtr == 10 );
+		BOOST_TEST( qtr == arr.base() );
 	}
 
 	// BOOST_AUTO_TEST_CASE(props_of_static_allocator)
