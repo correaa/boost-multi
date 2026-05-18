@@ -42,7 +42,7 @@ class offset_ptr {
 	template<class, typename> friend class offset_ptr;
 
  public:
-	explicit offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
+	offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
 	explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
 	// cppcheck-suppress noExplicitConstructor ; nullptr should convert implicitly, like for raw pointers
 	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) match raw-pointer behavior
@@ -83,11 +83,12 @@ class offset_ptr {
         assert(ptr_ != nullptr || offset_ == 0);
         return ptr_ + offset_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
-
 #if defined(__clang_major__) && __clang_major__ >= 16
 #pragma clang diagnostic pop
 #endif
-	constexpr reference operator*() const noexcept { return *operator->(); }
+	constexpr auto operator*() const noexcept -> reference { return *operator->(); }
+	constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
+
 
 	constexpr auto operator-(offset_ptr const& other) const noexcept -> difference_type {
 		assert(ptr_ == other.ptr_);
@@ -134,8 +135,29 @@ class offset_ptr {
 	friend constexpr auto operator==(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
 		return lhs.ptr_ == rhs.ptr_ && lhs.offset_ == rhs.offset_;
 	}
+
 	friend constexpr auto operator!=(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
 		return !(lhs == rhs);
+	}
+
+	friend constexpr auto operator<(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		assert(lhs.ptr_ == rhs.ptr_);
+		return lhs.offset_ < rhs.offset_;
+	}
+
+	friend constexpr auto operator<=(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		assert(lhs.ptr_ == rhs.ptr_);
+		return lhs.offset_ <= rhs.offset_;
+	}
+
+	friend constexpr auto operator>(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		assert(lhs.ptr_ == rhs.ptr_);
+		return lhs.offset_ > rhs.offset_;
+	}
+
+	friend constexpr auto operator>=(offset_ptr const& lhs, offset_ptr const& rhs) noexcept -> bool {
+		assert(lhs.ptr_ == rhs.ptr_);
+		return lhs.offset_ > rhs.offset_;
 	}
 
 	friend constexpr auto operator==(offset_ptr const& lhs, std::nullptr_t const& rhs) noexcept -> bool {
