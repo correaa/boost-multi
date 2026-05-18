@@ -106,7 +106,7 @@ class offset_ptr {
 	}
 	auto operator--() -> offset_ptr& {
 		assert(ptr_ != nullptr);
-		++offset_;
+		--offset_;
 		return *this;
 	}
 
