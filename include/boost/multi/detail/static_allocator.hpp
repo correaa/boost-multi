@@ -43,7 +43,7 @@ class offset_ptr {
 
  public:
 	offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
-	explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
+	constexpr explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
 	// cppcheck-suppress noExplicitConstructor ; nullptr should convert implicitly, like for raw pointers
 	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) match raw-pointer behavior
 
@@ -100,24 +100,25 @@ class offset_ptr {
 
 	friend constexpr auto operator+(difference_type n, offset_ptr const& p) noexcept -> offset_ptr { return p + n; }
 
-	auto operator++() -> offset_ptr& {
+	constexpr auto operator++() -> offset_ptr& {
 		assert(ptr_ != nullptr);
 		++offset_;
 		return *this;
 	}
-	auto operator--() -> offset_ptr& {
+
+	constexpr auto operator--() -> offset_ptr& {
 		assert(ptr_ != nullptr);
 		--offset_;
 		return *this;
 	}
 
-	auto operator++(int) -> offset_ptr {
+	constexpr auto operator++(int) -> offset_ptr {
 		auto ret = *this;
 		++(*this);
 		return ret;
 	}
 
-	auto operator--(int) -> offset_ptr {
+	constexpr auto operator--(int) -> offset_ptr {
 		auto ret = *this;
 		--(*this);
 		return ret;
