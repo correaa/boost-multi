@@ -110,6 +110,18 @@ class offset_ptr {
 		return *this;
 	}
 
+	auto operator++(int) -> offset_ptr {
+		auto ret = *this;
+		++(*this);
+		return ret;
+	}
+
+	auto operator--(int) -> offset_ptr {
+		auto ret = *this;
+		--(*this);
+		return ret;
+	}
+
 	constexpr auto operator+=(difference_type n) noexcept -> offset_ptr& {
 		assert(ptr_ != nullptr || n == 0);
 		offset_ += n;
