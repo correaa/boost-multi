@@ -537,7 +537,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 
 		BOOST_TEST( vv[1].end() - vv[1].begin() == vv[1].size() );
 		BOOST_TEST( vv[1].end() - (vv[1].begin() + 1) == vv[1].size() - 1 );
-	
+
 		auto vv0end1 = vv[0].end();
 		--vv0end1;
 		--vv0end1;
@@ -605,6 +605,27 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		}
 	}
 #endif
+
+	{
+		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+		auto p = arr.base();
+
+		p += 2;
+		--p;
+
+		BOOST_TEST( *p == 20 );
+
+		auto& r = --p;
+		BOOST_TEST( &r == &p );
+		BOOST_TEST( *p == 10 );
+
+		auto q = arr.data_elements();
+		++q;
+		--q;
+		BOOST_TEST( *q == 10 );
+		BOOST_TEST( q == arr.base() );
+	}
 
 	// BOOST_AUTO_TEST_CASE(props_of_static_allocator)
 	{
