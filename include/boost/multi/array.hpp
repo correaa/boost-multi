@@ -130,11 +130,11 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct
+struct  // // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
 #if defined(__clang__)
 	[[clang::consumable(unconsumed)]]  // enables -Wconsumed typestate tracking; required for [[clang::callable_when]]/[[clang::set_typestate]] on members
 #endif
-	dynamic_array                                                            // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
+	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
 , public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>

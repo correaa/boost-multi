@@ -679,5 +679,33 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( arr[0][0] == 11 );
 	}
 
+	// offset_ptr::operator-= — kills mutants like cxx_sub_assign_to_add_assign
+	// and the implicit -= -> += -n delegation path
+	{
+		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto ptr = arr.base();
+		ptr += 2;
+
+		ptr -= 1;
+		BOOST_TEST( *ptr == 20 );
+
+		auto& rtr = (ptr -= 1);
+		BOOST_TEST( &rtr == &ptr );
+		BOOST_TEST( *ptr == 10 );
+
+		// -= 0 is a no-op
+		auto const before = ptr;
+		ptr -= 0;
+		BOOST_TEST( ptr == before );
+		BOOST_TEST( *ptr == 10 );
+
+		// chain: += n then -= n returns to original
+		auto qtr = arr.base();
+		qtr += 2;
+		qtr -= 2;
+		BOOST_TEST( qtr == arr.base() );
+		BOOST_TEST( *qtr == 10 );
+	}
+
 	return boost::report_errors();
 }
