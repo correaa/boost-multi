@@ -1361,7 +1361,11 @@ using inplace_array = typename detail::inplace_array_impl<T>::type;
 /// @tparam T Element type
 /// @tparam Alloc Allocator type
 template<typename T, class Alloc>
-struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
+struct
+#if defined(__clang__)
+	[[clang::consumable(unconsumed)]]  // propagate consumed-state analysis from dynamic_array base
+#endif
+	array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;
 
 	using dynamic_array<T, 0, Alloc>::operator=;
@@ -1402,7 +1406,11 @@ struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 #endif
 
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
-struct array : dynamic_array<T, D, Alloc> {
+struct
+#if defined(__clang__)
+	[[clang::consumable(unconsumed)]]  // propagate consumed-state analysis from dynamic_array base
+#endif
+	array : dynamic_array<T, D, Alloc> {
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 
