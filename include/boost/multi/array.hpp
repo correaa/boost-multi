@@ -130,10 +130,7 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct  // // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
-#if defined(__clang__)
-	[[clang::consumable(unconsumed)]]  // enables -Wconsumed typestate tracking; required for [[clang::callable_when]]/[[clang::set_typestate]] on members
-#endif
+struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -903,19 +900,6 @@ struct  // // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : u
 #pragma clang diagnostic pop
 #endif
 
-// Clang consumed-typestate analysis: enable with -Wconsumed.
-// Calling split() on an rvalue array consumes it; clang will warn if the
-// moved-from object is then used. Requires the enclosing class to be
-// marked [[clang::consumable("unconsumed")]] for the analysis to fire.
-#if defined(__clang__)
-#  define BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED [[clang::callable_when(unconsumed)]]
-#  define BOOST_MULTI_SET_CONSUMED              [[clang::set_typestate(consumed)]]
-#else
-#  define BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED
-#  define BOOST_MULTI_SET_CONSUMED
-#endif
-
-	BOOST_MULTI_CALLABLE_WHEN_UNCONSUMED BOOST_MULTI_SET_CONSUMED
 	BOOST_MULTI_HD constexpr auto split() & {
 		return std::move(*this).splitted();
 	}
@@ -1362,9 +1346,6 @@ using inplace_array = typename detail::inplace_array_impl<T>::type;
 /// @tparam Alloc Allocator type
 template<typename T, class Alloc>
 struct
-#if defined(__clang__)
-	[[clang::consumable(unconsumed)]]  // propagate consumed-state analysis from dynamic_array base
-#endif
 	array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;
 
@@ -1406,11 +1387,7 @@ struct
 #endif
 
 template<class T, ::boost::multi::dimensionality_type D, class Alloc>
-struct
-#if defined(__clang__)
-	[[clang::consumable(unconsumed)]]  // propagate consumed-state analysis from dynamic_array base
-#endif
-	array : dynamic_array<T, D, Alloc> {
+struct array : dynamic_array<T, D, Alloc> {
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 
