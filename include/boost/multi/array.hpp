@@ -870,7 +870,7 @@ struct dynamic_array                                                            
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 #ifdef __GNUC__
-[[gnu::always_inline]]
+	[[gnu::always_inline]]
 #endif
 	BOOST_MULTI_HD constexpr auto split() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
@@ -879,12 +879,12 @@ struct dynamic_array                                                            
 		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
+#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
 			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
-    		std::less_equal<>{}(p2 + l2.nelems(), p1)
+			std::less_equal<>{}(p2 + l2.nelems(), p1)
 		)]];
-		#endif
+#endif
 
 		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{
 			{subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),

@@ -20,11 +20,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// UB probe: form a pointer that is *past* one-past-end of a transposed
 	{
-		multi::inplace_array<int[2][2]> b2d = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::inplace_array<int[2][2]> b2d = {
 			{1, 2},
 			{3, 4}
 		};
-		auto const end = (~b2d)[1].end();  // UB: forms a pointer past one-past-end
+		auto const end = (~b2d)[1].end();    // UB: forms a pointer past one-past-end
 		BOOST_TEST( end != (~b2d)[1].begin() );  // observe the pointer so the optimizer can't drop the arithmetic
 	}
 
