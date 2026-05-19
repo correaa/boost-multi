@@ -11,7 +11,7 @@
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 // #include "boost/multi/detail/is_trivial.hpp"
 #include "boost/multi/detail/memory.hpp"
-#include "boost/multi/detail/static_allocator.hpp"  // TODO(correaa) export IWYU
+#include "boost/multi/detail/static_allocator.hpp"   // IWYU pragma: export
 #include "boost/multi/restriction.hpp"
 
 #include <iterator>  // for std::sentinel_for
@@ -130,7 +130,8 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct dynamic_array                                                            // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
+struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
+	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
 , public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
@@ -863,7 +864,7 @@ struct dynamic_array                                                            
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 
  public:
-	BOOST_MULTI_HD constexpr auto split() & -> decltype(auto) { return ref::split(); }
+	BOOST_MULTI_HD constexpr auto splitted() & -> decltype(auto) { return ref::splitted(); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -872,28 +873,36 @@ struct dynamic_array                                                            
 #ifdef __GNUC__
 	[[gnu::always_inline]]
 #endif
-	BOOST_MULTI_HD constexpr auto split() && {
+	BOOST_MULTI_HD constexpr auto splitted() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
 		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
+#ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
 #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
 			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
 			std::less_equal<>{}(p2 + l2.nelems(), p1)
 		)]];
 #endif
-
-		return std::array<subarray<T, 1, typename dynamic_array::element_ptr>, 2>{
-			{subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			 subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)}
+#endif
+		return std::pair<
+			subarray<T, 1, typename dynamic_array::element_ptr>,
+			subarray<T, 1, typename dynamic_array::element_ptr>
+		>{
+			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
 		};
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
+
+	BOOST_MULTI_HD constexpr auto split() & {
+		return std::move(*this).splitted();
+	}
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
@@ -1336,7 +1345,8 @@ using inplace_array = typename detail::inplace_array_impl<T>::type;
 /// @tparam T Element type
 /// @tparam Alloc Allocator type
 template<typename T, class Alloc>
-struct array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
+struct
+	array<T, 0, Alloc> : dynamic_array<T, 0, Alloc> {
 	using dynamic_array<T, 0, Alloc>::dynamic_array;
 
 	using dynamic_array<T, 0, Alloc>::operator=;

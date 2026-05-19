@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/static_allocator.hpp>  // TODO(correaa) export IWYU
+#include <boost/multi/detail/static_allocator.hpp>  // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -347,7 +347,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using T = int;
 		multi::detail::static_allocator<T, 32> sa{};
 
-		auto* pp = sa.allocate(10);
+		auto pp = sa.allocate(10);
 
 		new (std::next(pp, 8)) T{42};
 
@@ -532,8 +532,32 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( ww[3][3] == 42 );
 		BOOST_TEST( ww.base() != vv.base() );
 
-		auto const* wwb = ww.base();
-		auto const* vvb = vv.base();
+		BOOST_TEST( vv[0].end() - vv[0].begin() == vv[0].size() );
+		BOOST_TEST( vv[0].end() - (vv[0].begin() + 1) == vv[0].size() - 1 );
+
+		BOOST_TEST( vv[1].end() - vv[1].begin() == vv[1].size() );
+		BOOST_TEST( vv[1].end() - (vv[1].begin() + 1) == vv[1].size() - 1 );
+
+		auto vv0end1 = vv[0].end();
+		--vv0end1;
+		--vv0end1;
+
+		auto vv0end2 = vv[0].end();
+		vv0end2 -= 2;
+
+		BOOST_TEST( vv0end1 == vv0end2 );
+
+		auto vv0beg1 = vv[1].begin();
+		++vv0beg1;
+		++vv0beg1;
+
+		auto vv0beg2 = vv[1].begin();
+		vv0beg2 += 2;
+
+		BOOST_TEST( vv0beg1 == vv0beg2 );
+
+		auto const wwb = ww.base();
+		auto const vvb = vv.base();
 
 		ww[3][3] = 51;
 
@@ -581,6 +605,27 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		}
 	}
 #endif
+
+	{
+		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+		auto ptr = arr.base();
+
+		ptr += 2;
+		--ptr;
+
+		BOOST_TEST( *ptr == 20 );
+
+		auto& rtr = --ptr;
+		BOOST_TEST( &rtr == &ptr );
+		BOOST_TEST( *ptr == 10 );
+
+		auto qtr = arr.base();
+		++qtr;
+		--qtr;
+		BOOST_TEST( *qtr == 10 );
+		BOOST_TEST( qtr == arr.base() );
+	}
 
 	// BOOST_AUTO_TEST_CASE(props_of_static_allocator)
 	{
@@ -632,6 +677,34 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		arr = arr2;
 
 		BOOST_TEST( arr[0][0] == 11 );
+	}
+
+	// offset_ptr::operator-= — kills mutants like cxx_sub_assign_to_add_assign
+	// and the implicit -= -> += -n delegation path
+	{
+		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		auto ptr = arr.base();
+		ptr += 2;
+
+		ptr -= 1;
+		BOOST_TEST( *ptr == 20 );
+
+		auto& rtr = (ptr -= 1);
+		BOOST_TEST( &rtr == &ptr );
+		BOOST_TEST( *ptr == 10 );
+
+		// -= 0 is a no-op
+		auto const before = ptr;
+		ptr -= 0;
+		BOOST_TEST( ptr == before );
+		BOOST_TEST( *ptr == 10 );
+
+		// chain: += n then -= n returns to original
+		auto qtr = arr.base();
+		qtr += 2;
+		qtr -= 2;
+		BOOST_TEST( qtr == arr.base() );
+		BOOST_TEST( *qtr == 10 );
 	}
 
 	return boost::report_errors();

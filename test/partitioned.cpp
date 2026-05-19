@@ -815,7 +815,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& [left, right] = A1.split();
+		auto&& [left, right] = A1.splitted();
 
 		BOOST_TEST( left.size() == 3 );
 		BOOST_TEST( right.size() == 3 );
@@ -825,7 +825,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& [left, right] = std::move(A1).split();
+		auto&& [left, right] = std::move(A1).splitted();
+
+		BOOST_TEST( left.size() == 3 );
+		BOOST_TEST( right.size() == 3 );
+
+		// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
+	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+
+		auto&& [left, right] = A1.split();
 
 		BOOST_TEST( left.size() == 3 );
 		BOOST_TEST( right.size() == 3 );
@@ -835,7 +845,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60};
 
-		auto&& [left, right] = A1.split();
+		auto&& [left, right] = A1.splitted();
 
 		BOOST_TEST( left.size() == 3 );
 		BOOST_TEST( right.size() == 4 );
@@ -846,10 +856,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const& A2 = A1.strided(2);
 		BOOST_TEST( A2.size() == 4 );
 
-		auto&& [left, right] = A2.split();
+		auto&& [left, right] = A2.splitted();
 
 		BOOST_TEST( left.size() == 2 );
 		BOOST_TEST( right.size() == 2 );
+	}
+	{
+		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
+
+		auto const& A2 = A1.strided(2);
+		BOOST_TEST( A2.size() == 4 );
+
+		auto&& [left, right] = A2.splitted();
+
+		BOOST_TEST( left.size() == 2 );
+		BOOST_TEST( right.size() == 2 );
+	}
+
+	// -Wconsumed probe: split() is annotated [[clang::set_typestate(consumed)]],
+	// so using `A` after the call must trigger a clang -Wconsumed warning.
+	// Behavior gate:
+	//   - default                  : noisy warning (informational)
+	//   - -DMULTI_EXPECT_CONSUMED_WARNING with -Werror=consumed : turns into a
+	//     hard error if the warning ever stops firing (regression detector)
+	{
+		multi::array<int, 1> arr = {0, 10, 20, 30};
+
+		auto&& [left, right] = arr.split();   // A is now in "consumed" typestate
+		BOOST_TEST( left.size() == 2 );
+		BOOST_TEST( right.size() == 2 );
+
+		// any use of A here should fire -Wconsumed; we exercise a few:
+		BOOST_TEST( arr.size() == 4 );  // expected: warning: invalid invocation of method 'size' on object 'A' while it is in the 'consumed' state
+		BOOST_TEST( arr[0] == 0 );      // expected: warning: invalid invocation of method 'operator[]' ...
 	}
 
 	return boost::report_errors();
