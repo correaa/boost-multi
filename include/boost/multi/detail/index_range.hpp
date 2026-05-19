@@ -56,7 +56,7 @@ class iterator_facade {
 
 	// friend constexpr auto operator!=(self_type const& self, self_type const& other) { return !(self == other); }
 
-	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return (self < other) || (self == other); }
+	friend constexpr auto operator<=(self_type const& self, self_type const& other) { return self < other || self == other; }
 	friend constexpr auto operator>(self_type const& self, self_type const& other) { return !(self <= other); }
 	friend constexpr auto operator>=(self_type const& self, self_type const& other) { return !(self < other); }
 
@@ -144,7 +144,7 @@ class range {
 	                  detail::implicit_cast<IndexTypeLast>(std::declval<Range&&>().last())
 	         )*                                                                    = nullptr>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
+	constexpr /*implicit*/ range(Range&& other)  // NOLINT(bugprone-forwarding-reference-overload,google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) ranges are implicitly convertible if elements are implicitly convertible
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	template<
@@ -173,7 +173,7 @@ class range {
 
 		template<class OtherConstIterator, class = decltype(std::declval<typename const_iterator::value_type&>() = *OtherConstIterator{})>
 		// cppcheck-suppress noExplicitConstructor ; see below
-		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		const_iterator(OtherConstIterator const& other) : curr_{*other} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 		BOOST_MULTI_HD constexpr auto operator==(const_iterator const& other) const -> bool { return curr_ == other.curr_; }
 		BOOST_MULTI_HD constexpr auto operator!=(const_iterator const& other) const -> bool { return curr_ != other.curr_; }
@@ -232,8 +232,8 @@ class range {
 	[[nodiscard]] constexpr auto rbegin() const { return reverse_iterator{end()}; }
 	[[nodiscard]] constexpr auto rend() const { return reverse_iterator{begin()}; }
 
-	[[nodiscard]] constexpr auto begin() const -> const_iterator { return cbegin(); }
-	[[nodiscard]] constexpr auto end() const -> const_iterator { return cend(); }
+	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return cbegin(); }
+	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return cend(); }
 
 	BOOST_MULTI_HD constexpr auto        is_empty() const& noexcept { return first_ == last_; }
 
@@ -244,16 +244,18 @@ class range {
 	#pragma nv_diag_suppress = 20013  // calling a constexpr __host__ function("operator std::streamoff") from a __host__ __device__ function("size") is not allowed.  // TODO(correaa) implement HD integral_constant
 	#endif
 
-	BOOST_MULTI_HD constexpr auto        size() const& noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto  size() const noexcept -> size_type { return last_ - first_; }
+	BOOST_MULTI_HD constexpr auto ssize() const noexcept { return size(); }
+	BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(size()); }
 
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
 
+	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
 	friend BOOST_MULTI_HD constexpr auto operator==(range const& self, range const& other) {
 		return (self.empty() && other.empty()) || (self.first_ == other.first_ && self.last_ == other.last_);
 	}
-	friend BOOST_MULTI_HD constexpr auto operator!=(range const& self, range const& other) { return !(self == other); }
 
 	[[nodiscard]]  // ("find returns an iterator to the sequence, that is the only effect")]] for C++20
 	constexpr auto find(value_type const& value) const -> const_iterator {
@@ -344,7 +346,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 //	BOOST_MULTI_HD constexpr extension_t(extension_t::size_type size) : extensions_t(IndexType{}, IndexType{} + size) {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) allow terse syntax
+	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
 	template<
@@ -355,18 +357,9 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: extension_t{other.first(), other.last()} {}
 
-	// template<
-	// class OtherExtension,
-	// 	decltype(
-	// 		detail::explicit_cast<IndexType>(std::declval<OtherExtension>().first()),
-	// 		detail::explicit_cast<IndexTypeLast>(std::declval<OtherExtension>().last())
-	// 	)* = nullptr
-	// >
-	// BOOST_MULTI_HD constexpr explicit extension_t(OtherExtension const& other) noexcept
-	// : extension_t{other.first(), other.last()} {}
 	using index = IndexTypeLast;
 
 	template<class OtherExtension>
@@ -377,8 +370,6 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 
 	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 	constexpr extension_t() = default;
-
-	// friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type { return self.size(); }
 
 	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max;
@@ -406,7 +397,7 @@ constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
 	return extension_t<IndexType, IndexTypeLast>{first, last};
 }
 
-template<class IndexType = boost::multi::size_t>
+template<class IndexType = multi::index>
 constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;

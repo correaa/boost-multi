@@ -99,16 +99,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 			// clang-format on
 
-			multi::array_ptr<double, 2> const arrP{&arr};
+			auto const arrP = &multi::array_ref<double, 2>(arr);
 
-			static_assert(std::is_trivially_copy_assignable_v<multi::array_ptr<double, 2>>);
-			static_assert(std::is_trivially_copyable_v<multi::array_ptr<double, 2>>);
+			static_assert(std::is_trivially_copy_assignable_v<decltype(&std::declval<multi::array_ref<double, 2>&&>())>);
+			static_assert(std::is_trivially_copyable_v<decltype(&std::declval<multi::array_ref<double, 2>&&>())>);
 
-			// #ifndef _MSC_VER
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<1>>);
 			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<2>>);
-			// #endif
 
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<0>>);
 			static_assert(std::is_trivially_copyable_v<multi::layout_t<1>>);
@@ -117,7 +115,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);
 
-			BOOST_TEST( (*arrP).extensions() == multi::extensions(arr) );
+			BOOST_TEST( (*arrP).extensions() == multi::extensions(arr) );  // cppcheck-suppress danglingTemporaryLifetime ;
 			BOOST_TEST( arrP->extensions() == multi::extensions(arr) );
 			BOOST_TEST( extensions(*arrP) == multi::extensions(arr) );
 
@@ -127,13 +125,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &(*arrP).operator[](1)[1] == &arr[1][1] );
 			BOOST_TEST( &arrP->operator[](1)[1] == &arr[1][1] );
 
-			multi::array_ptr<double, 2> const arrP2{&arr};
-			BOOST_TEST( arrP == arrP2 );
+			auto const arrP2 = &multi::array_ref<double, 2>(arr);
+			BOOST_TEST( arrP == arrP2 );  // cppcheck-suppress danglingTemporaryLifetime ;
 			BOOST_TEST( !(arrP != arrP2) );
 
 			std::array<std::array<double, 5>, 4> arr2{};
-			multi::array_ptr<double, 2>          arr2P{&arr2};
-			BOOST_TEST( arr2P != arrP );
+
+			auto arr2P = &multi::array_ref<double, 2>{arr2};
+
+			BOOST_TEST( arr2P != arrP );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime] ;
 			BOOST_TEST( !(arr2P == arrP) );
 
 			arr2P = arrP;
@@ -143,15 +143,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(  (*arrP).operator==(*arrP) );
 			BOOST_TEST(  arrP->operator==(*arrP) );
 
-			auto&& arrR = *arrP;
-			BOOST_TEST( &arrR[1][1] == &arr[1][1] );
-			BOOST_TEST( arrR == *arrP );
+			auto&& arrR = *arrP;                  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( &arrR[1][1] == &arr[1][1] );  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( arrR == *arrP );              // cppcheck-suppress danglingTempReference
 
-			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );
-			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );
+			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );  // cppcheck-suppress danglingTempReference
+			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );      // cppcheck-suppress danglingTempReference
 
-			BOOST_TEST( arrR.size() == (*arrP).size() );
-			BOOST_TEST( size(arrR) == arrP->size() );
+			BOOST_TEST( arrR.size() == (*arrP).size() );  // cppcheck-suppress danglingTempReference ;
+			BOOST_TEST( size(arrR) == arrP->size() );     // cppcheck-suppress danglingTempReference ;
 		}
 		{
 			// clang-format off
@@ -163,7 +163,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}};
 			// clang-format on
 
-			std::vector<multi::array_ptr<int, 1>> ptrs;
+			std::vector<decltype(&std::declval<multi::array_ref<int, 1>&&>())> ptrs;
 			ptrs.emplace_back(&arr[0][0], 5);  // NOLINT(readability-container-data-pointer) test access
 			ptrs.emplace_back(arr[2].data(), 5);
 			ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
@@ -176,10 +176,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::vector<int>       v1(100, 30);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> const v2(100, 40);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-			multi::array_ptr<int, 2> const  v1P2D(v1.data(), {10, 10});
-			multi::array_cptr<int, 2> const v2P2D(v2.data(), {10, 10});
+			auto const v1P2D = &multi::array_ref<int, 2>({10, 10}, v1.data());
+			auto const v2P2D = &multi::array_cref<int, 2>({10, 10}, v2.data());
 
-			*v1P2D = *v2P2D;
+			*v1P2D = *v2P2D;  // cppcheck-suppress danglingTemporaryLifetime
 			(*v1P2D).operator=(*v2P2D);
 			BOOST_TEST( v1[8] == 40 );
 

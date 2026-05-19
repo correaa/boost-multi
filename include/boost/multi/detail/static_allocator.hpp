@@ -21,6 +21,21 @@ namespace boost::multi::detail {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+template<class T, typename Diff = typename std::pointer_traits<T*>::difference_type>
+class offset_ptr {
+	T* ptr_;
+	Diff offset_;
+
+ public:
+	using element_type = typename std::pointer_traits<T*>::element_type;
+	using difference_type = Diff;
+	using reference = typename std::pointer_traits<T*>::reference;
+	using pointer = T*;
+
+	constexpr pointer   operator->() const noexcept { return ptr_ + offset_; }
+	constexpr reference operator*() const noexcept { return *operator->(); }
+};
+
 template<class T, std::size_t N>
 class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special semantics
 #ifdef _MSC_VER
@@ -60,7 +75,11 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 		using other = static_allocator<TT, N>;
 	};
 
-	static constexpr auto max_size() noexcept -> std::size_t { return N; }
+	// using size_type = std::conditional_t<(N <= 0xFFFF), std::uint16_t, std::uint32_t>;
+
+	using size_type = std::conditional_t<(N <= 0xFFFF), std::uint16_t, std::uint32_t>;
+
+	static constexpr auto max_size() noexcept -> size_type { return N; }
 
 	static_allocator() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) buffer_ is not initialized
 
@@ -97,14 +116,14 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 	using propagate_on_container_copy_assignment = std::false_type;
 	using propagate_on_container_swap            = std::false_type;
 
-	static constexpr auto capacity() { return N; }
+	static constexpr auto capacity() -> size_type { return N; }
 
 #ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning( disable : 4068)  // bug in MSVC 14.2/14.3
 #endif
 	BOOST_MULTI_NODISCARD("because otherwise it will generate a memory leak")
-	auto allocate([[maybe_unused]] std::size_t n) -> pointer {
+	auto allocate([[maybe_unused]] size_type n) -> pointer {
 		assert(n <= N);
 		assert(!dirty_);  // do not attempt to resize a vector with static_allocator
 		// dirty_ = true;
@@ -117,7 +136,7 @@ class static_allocator {  // NOSONAR(cpp:S4963) this allocator has special seman
 #pragma warning( pop ) 
 #endif
 
-	static void deallocate(pointer /*ptr*/, [[maybe_unused]] std::size_t n) {
+	static void deallocate(pointer /*ptr*/, [[maybe_unused]] size_type n) {
 		assert(n <= N);
 	}
 

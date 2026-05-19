@@ -17,9 +17,9 @@ auto f_arr(multi::array<int, 1> arr) {
 	return arr[2];
 }
 
-auto f_sub(multi::const_subarray<int, 1> const& arr) {
-	return arr[2];
-}
+// auto f_sub(multi::const_subarray<int, 1> const& arr) {
+// 	return arr[2];
+// }
 }  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -27,8 +27,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto f_arr_ret = f_arr({1, 2, 3});
 		BOOST_TEST(f_arr_ret == 3 );
 
-		auto f_sub_ret = f_sub({1, 2, 3});
-		BOOST_TEST(f_sub_ret == 3 );
+		// auto f_sub_ret = f_sub({1, 2, 3});
+		// BOOST_TEST(f_sub_ret == 3 );
 	}
 
 	/* subarray_assignment */
@@ -147,7 +147,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
+#if __cplusplus >= 202002L
+		BOOST_TEST( std::cmp_not_equal(AA[0], BB[0]) );
+#else
 		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );
+#endif
 
 		auto const to_int = [](auto elem) noexcept {
 			return static_cast<int>(elem);

@@ -19,6 +19,10 @@ else()
 
 	enable_testing()
 
+	if(MSVC AND CMAKE_CUDA_COMPILER)
+		set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
+	endif()
+
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 	# option(CMAKE_COMPILE_WARNING_AS_ERROR "Compile warnings as errors" ON)
@@ -44,9 +48,20 @@ else()
 		if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 		  set(CMAKE_CUDA_ARCHITECTURES native)
 		endif()
+		foreach(_thrust_dir ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} /usr/include)
+			if(EXISTS "${_thrust_dir}/thrust/version.h")
+				file(STRINGS "${_thrust_dir}/thrust/version.h" _thrust_ver_line REGEX "#define THRUST_VERSION ")
+				string(REGEX MATCH "[0-9]+" _thrust_ver "${_thrust_ver_line}")
+				math(EXPR _thrust_major "${_thrust_ver} / 100000")
+				math(EXPR _thrust_minor "(${_thrust_ver} / 100) % 1000")
+				math(EXPR _thrust_patch "${_thrust_ver} % 100")
+				message(STATUS "Thrust ${_thrust_major}.${_thrust_minor}.${_thrust_patch} (${_thrust_dir})")
+				break()
+			endif()
+		endforeach()
 	endif()
 
-#   find_package(TBB)
+	find_package(TBB)
 
 	enable_testing()
 	include(CTest)
@@ -63,15 +78,15 @@ else()
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 		#remove Xcompile for Windows?
 		#-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wno-missing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wno-unknown-pragmas,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
-		#--Werror=cross-execution-space-call
-		#--Werror ext-lambda-captures-this
-		#--use_fast_math --extra-device-vectorization --restrict
+		--Werror=cross-execution-space-call
+		--Werror=ext-lambda-captures-this
 		-Xcudafe=--display_error_number
+		#--use_fast_math --extra-device-vectorization --restrict
 		#-Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
-		$<$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,12>:
-			-Xcudafe=--diag_suppress=20011 # for std::string in test/allocator.cpp, more?
-			-Xcudafe=--diag_suppress=20014
-		>
+		# $<$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,12>:
+		# 	-Xcudafe=--diag_suppress=20011 # for std::string in test/allocator.cpp, more?
+		# 	-Xcudafe=--diag_suppress=20014
+		# >
 		#-Xcudafe=--diag_suppress=1427  # for member_array_cast.cpp in msvc
 	>
 	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: # -Werror
@@ -370,7 +385,7 @@ else()
 	)
 
 	if(NOT Boost_FOUND)
-		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
+		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Core (for Boost.LightweightTest), for example please run:\n    sudo apt install libboost-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
@@ -415,12 +430,5 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
-
-		target_compile_options(allocator.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(minimalistic_ptr.cpp.x  PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(move.cpp.x              PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(member_array_cast.cpp.x PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(transform.cpp.x         PRIVATE $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcudafe=--diag_suppress=20014>)
-		target_compile_options(conor.cpp.x             PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-psabi> )
 	endif()
 endif()

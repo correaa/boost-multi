@@ -30,7 +30,7 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ;
-	ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 
@@ -71,7 +71,7 @@ class ptr2 : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-link
 	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
-	ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -109,8 +109,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( buffer.size() == 400 );  // cppcheck-suppress knownConditionTrueFalse ; for test
 
 		using pointer_type = minimalistic::ptr<int>;
-		multi::array_ptr<int, 2, pointer_type> const CCP(pointer_type{buffer.data()}, {20, 20});
-		(*CCP)[2];  // requires operator+
+
+		auto const CCP = &multi::array_ref<int, 2, pointer_type>({20, 20}, pointer_type{buffer.data()});
+
+		(*CCP)[2];  // cppcheck-suppress danglingTemporaryLifetime
 		(*CCP)[1][1];
 		(*CCP)[1][1] = 9;
 
@@ -128,13 +130,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( pcd == pd );
 
 		{
-			auto&& REF = *CCP;
-			(void)REF;
+			auto&& REF = *CCP;  // cppcheck-suppress danglingTempReference ;
+			(void)REF;          // cppcheck-suppress danglingTempReference ;
+
+			// cppcheck-suppress danglingTempReference ;
 			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int>>);
 		}
 		{
-			auto const& REF = *CCP;
-			(void)REF;
+			auto const& REF = *CCP;  // cppcheck-suppress danglingTempReference ;
+			(void)REF;               // cppcheck-suppress danglingTempReference ;
+
+			// cppcheck-suppress danglingTempReference ;
 			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
 		}
 	}

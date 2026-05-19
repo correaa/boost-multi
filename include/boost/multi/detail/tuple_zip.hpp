@@ -76,7 +76,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  public:
 	BOOST_MULTI_HD constexpr auto head() const& -> T0 const& { return head_; }
-	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }
+	BOOST_MULTI_HD constexpr auto head() && -> T0&& { return std::move(head_); }  //-V::659 this function moves the elements, not the whole object
 	BOOST_MULTI_HD constexpr auto head() & -> T0& { return head_; }
 
 	BOOST_MULTI_HD constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
@@ -87,15 +87,15 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple(tuple const&) = default;
 
 	// this is horrible hack and can produce ODR reported by Circle
-	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() & {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
-	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
-	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	// operator std::tuple<T0&, Ts&...>() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// 	using std::apply;
 	// 	return apply([](auto&&... ts) {return std::tuple<T0&, Ts&...>{std::forward<decltype(ts)>(ts)...}; }, *this);
 	// }
@@ -103,7 +103,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	// TODO(correaa) make conditional explicit constructor depending on the conversions for T0, Ts...
 	BOOST_MULTI_HD constexpr explicit tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)}, head_{std::move(head)} {}
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
 	template<class TT0 = T0,
@@ -111,10 +111,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
 	>
 	// cppcheck-suppress noExplicitConstructor ; see below
-	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) to allow bracket function calls
+	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
@@ -155,16 +155,25 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  private:
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) const& -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_DEV constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) & -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fn)(this->get<I>()...);
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD  // BOOST_MULTI_DEV
 	constexpr auto apply_impl_(F&& fn, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
@@ -389,7 +398,7 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>& tup) -> auto& {
 }
 
 template<std::size_t N, class T0, class... Ts>
-BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {
+BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  //-V::659 overload for move
 	if constexpr(N == 0) {
 		return std::move(std::move(tup)).head();
 	} else {
@@ -441,6 +450,9 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 	using type = tuple_element_t<N - 1, boost::multi::detail::tuple<Ts...>>;
 };
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 template<class F, class Tuple, std::size_t... I>
 BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fn, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
@@ -563,6 +575,13 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4, T5&& tup5) 
 		std::make_index_sequence<std::tuple_size_v<std::decay_t<T1>>>()
 	);
 }
+
+template<class T, class Tuple, class = std::make_index_sequence<std::tuple_size_v<Tuple>>>
+struct all_elements_convertible_to;
+
+template<class T, class Tuple, std::size_t... Is>
+struct all_elements_convertible_to<T, Tuple, std::index_sequence<Is...>>
+: std::conjunction<std::is_convertible<std::tuple_element_t<Is, Tuple>, T>...> {};
 
 }  // end namespace detail
 

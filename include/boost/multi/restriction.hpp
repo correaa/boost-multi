@@ -89,7 +89,7 @@ class initializer_array : public restriction_idl<T, D> {
 	// detail::init_list_t<T, D> ild_;
  public:
 	// cppcheck-suppress noExplicitConstructor ;
-	constexpr initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr initializer_array(detail::init_list_t<T, D> ild)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: base_(detail::make_restriction(ild)) {}
 };
 
@@ -215,7 +215,8 @@ class restriction_iterator {
 		if constexpr(D != 1) {
 			using std::get;
 			// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			// return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>(it_->tail()), bind_front_t<Proj>(get<0>(*it_), *Pproj_));
 		} else {
 			using std::get;
 			return (*Pproj_)(get<0>(*it_));
@@ -349,7 +350,7 @@ class restriction_elements_t {
 	auto begin() const { return iterator{elems_.begin(), proj_}; }
 	auto end() const { return iterator{elems_.end(), proj_}; }
 
-	auto size() const { return elems_.size(); }
+	auto size() const noexcept { return elems_.size(); }
 };
 
 template<dimensionality_type D, class Proj>
@@ -371,6 +372,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	using difference_type = typename extensions_t<D>::difference_type;
 	using index           = typename extensions_t<D>::index;
+	using size_type       = typename extensions_t<D>::size_type;
+
+	using indices_type = typename extensions_t<D>::indices_type;
+
+	using indices = typename extensions_t<D>::element;
 
 	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
@@ -451,7 +457,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
-		return bind_diagonal_t{proj_} ^ (std::min(get<0>(sizes()), get<1>(sizes())) * extensions().sub().sub());
+		return bind_diagonal_t{proj_} ^ std::min(get<0>(sizes()), get<1>(sizes())) * extensions().sub().sub();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extensions()).transpose().extensions();
 	}
 
@@ -464,15 +470,15 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(multi::index /*unused*/, Ts... rest) const noexcept -> element { return proj_(rest...); }
 	};
 
-	BOOST_MULTI_HD auto repeated(multi::size_t n) const -> restriction<D + 1, bind_repeat_t> {
-		return bind_repeat_t{proj_} ^ (n * extensions());
+	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
+		return bind_repeat_t{proj_} ^ n * extensions();
 	}
 
 	struct bind_partitioned_t {
 		Proj      proj_;
 		size_type nn_;
 		template<class T1, class T2, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_((ii * nn_) + jj, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(ii * nn_ + jj, rest...); }
 	};
 
 	BOOST_MULTI_HD constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t> {
@@ -638,19 +644,19 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
 		friend auto operator<(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
 		friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >= other.it_; }
 
 		BOOST_MULTI_HD constexpr auto operator*() const -> reference {
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk (May 2026)
 			} else {
 				using std::get;
 #ifdef __CUDA_ARCH__
 				return (const_cast<decltype(*Pproj_)&>(*Pproj_))(get<0>(*it_));  // workaround for __nv_dl_wrapper_t<__nv_dl_tag<int (*)(), main, 4>, int, int> >
 #else
-				return (*Pproj_)(get<0>(*it_));
+				return (*Pproj_)(get<0>(*it_));  // NOLINT(readability-redundant-parentheses) // bug in clang-tidy, can't be -> for CUDA
 #endif
 			}
 		}
@@ -661,11 +667,15 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
-	constexpr auto size() const { return xs_.size(); }
+	constexpr auto size() const noexcept { return xs_.size(); }
+
 	constexpr auto sizes() const { return xs_.sizes(); }
 
-	constexpr auto extension() const { return xs_.extension(); }
-	constexpr auto extensions() const { return xs_; }
+	constexpr auto               extension() const { return xs_.extension(); }
+	[[nodiscard]] constexpr auto extent() const { return xs_.extension(); }
+
+	constexpr auto               extensions() const { return xs_; }
+	[[nodiscard]] constexpr auto extents() const { return xs_; }
 
 	constexpr auto front() const { return *begin(); }
 	constexpr auto back() const { return *(begin() + (size() - 1)); }

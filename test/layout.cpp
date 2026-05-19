@@ -72,7 +72,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
-		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+		auto arr       = ArrayRef({static_cast<multi::ssize_t>(vec.size())}, vec.data());
 
 		BOOST_TEST( &arr[1] == &vec[1] );
 

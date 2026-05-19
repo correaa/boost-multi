@@ -49,7 +49,7 @@ struct move_ptr : private std::move_iterator<Ptr> {
 
 	using std::move_iterator<Ptr>::move_iterator;
 
-	BOOST_MULTI_HD constexpr /**/ operator Ptr() const { return std::move_iterator<Ptr>::base(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709) decay to lvalue should be easy
+	BOOST_MULTI_HD constexpr /**/ operator Ptr() const { return std::move_iterator<Ptr>::base(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) decay to lvalue should be easy
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> move_ptr& {
 		static_cast<std::move_iterator<Ptr>&>(*this) += n;
@@ -103,7 +103,7 @@ template<class T> struct ref_add_const<T&> {
 #endif
 
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
-struct transform_ptr {
+struct transform_ptr {  //-V::690
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
 	using value_type        = std::decay_t<Ref>;  // typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer           = Ptr;
@@ -146,7 +146,7 @@ struct transform_ptr {
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR(cpp:S1709)
+	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709)
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr>
 	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
@@ -201,6 +201,7 @@ struct transform_ptr {
 
 	auto operator=(transform_ptr&&) -> transform_ptr& = default;
 
+	// auto operator=(transform_ptr const& other) -> transform_ptr& = default;
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
 		// assert(f_ == other.f_);
 		p_ = other.p_;
@@ -228,6 +229,7 @@ struct transform_ptr {
 #pragma clang diagnostic pop
 #endif
 
+namespace detail {
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
 
@@ -239,6 +241,7 @@ struct array_traits {
 	using decay_type             = typename Array::decay_type;
 	using default_allocator_type = typename Array::default_allocator_type;
 };
+}  // namespace detail
 
 template<class Fun>
 class value_wrapper_ptr;
@@ -313,7 +316,7 @@ template<typename T, typename = std::enable_if_t<has_rank<T>{}>>
 constexpr auto rank_aux(T const&) -> typename T::rank;
 
 template<typename T, typename = std::enable_if_t<!has_rank<T>::value>>
-constexpr auto rank_aux(T const&) -> std::integral_constant<size_t, std::rank_v<T>>;
+constexpr auto rank_aux(T const&) -> std::integral_constant<std::size_t, std::rank_v<T>>;
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 
@@ -328,7 +331,7 @@ constexpr auto reinterpret_pointer_cast(U* other)                               
 	-> decltype(reinterpret_cast<TPointer>(other)) { return reinterpret_cast<TPointer>(other); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template<class T, std::size_t N>
-constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::size_type>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::ssize_t>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, typename = typename T::get_allocator>
 auto        has_get_allocator_aux(T const&) -> std::true_type;
@@ -341,6 +344,11 @@ template<class T>
 constexpr auto get_allocator(T* const& /*t*/)
 	-> decltype(std::allocator<typename std::iterator_traits<T*>::value_type>{}) {
 	return std::allocator<typename std::iterator_traits<T*>::value_type>{};
+}
+
+template<class Array>
+constexpr auto get_allocator(Array const& arr) -> decltype(arr.get_allocator()) {
+	return arr.get_allocator();
 }
 
 template<class T>
@@ -422,7 +430,7 @@ constexpr auto data_elements(T& value) -> decltype(&value) { return &value; }
 
 template<class A> struct num_elements_t : std::integral_constant<std::ptrdiff_t, 1> {};
 
-template<class T, std::size_t N> struct num_elements_t<T[N]> : std::integral_constant<std::ptrdiff_t, (N * num_elements_t<T>{})> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, std::size_t N> struct num_elements_t<T[N]> : std::integral_constant<std::ptrdiff_t, N * num_elements_t<T>{}> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N> struct num_elements_t<T (&)[N]> : num_elements_t<T[N]> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
@@ -639,8 +647,13 @@ constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>
 template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
+template<class Array>
+[[nodiscard]] auto strides(Array const& arr) -> decltype(arr.strides()) {
+	return arr.strides();
+}
+
 template<class T, std::size_t N>
-struct array_traits<std::array<T, N>> {
+struct detail::array_traits<std::array<T, N>> {
 	static constexpr auto dimensionality() -> dimensionality_type { return 1; }
 
 	using reference   = T&;
@@ -652,7 +665,7 @@ struct array_traits<std::array<T, N>> {
 };
 
 template<class T, std::size_t N, std::size_t M>
-struct array_traits<std::array<std::array<T, M>, N>> {
+struct detail::array_traits<std::array<std::array<T, M>, N>> {
 	static constexpr auto dimensionality() -> dimensionality_type { return 1 + array_traits<std::array<T, M>>::dimensionality(); }
 
 	using reference   = std::array<T, M>&;
@@ -694,6 +707,11 @@ constexpr auto extensions(std::array<T, N> const& /*arr*/) {
 	return multi::extensions_t<1>{multi::index_extension(0, N)};
 }
 
+template<class T, std::size_t N>
+[[nodiscard]] constexpr auto extents(std::array<T, N> const& /*arr*/) {
+	return multi::extensions_t<1>{multi::index_extension(0, N)};
+}
+
 template<class T, std::size_t N, std::size_t M>
 auto extensions(std::array<std::array<T, N>, M> const& arr) {
 	return multi::iextension{M} * extensions(arr[0]);
@@ -701,7 +719,7 @@ auto extensions(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto stride(std::array<T, N> const& /*arr*/) {
-	return static_cast<multi::size_type>(1U);  // multi::stride_type?
+	return static_cast<multi::ssize_t>(1U);  // multi::stride_type?
 }
 
 template<class T, std::size_t N, std::size_t M>
@@ -717,7 +735,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
-	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
+	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
 #ifdef __clang__
@@ -775,7 +793,7 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 
 template<class T>
 constexpr auto extensions(std::initializer_list<T> const& il) {
-	return multi::extensions_t<1>{static_cast<multi::size_t>(il.size())};
+	return multi::extensions_t<1>{static_cast<multi::ssize_t>(il.size())};
 }
 
 template<class T>
@@ -787,7 +805,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<T>> const&
 	// for(std::size_t i = 1; i != il.size(); ++i) {
 	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
 	// }
-	return multi::extensions_t<2>{static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size())};
+	return multi::extensions_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
 }
 
 template<class T>
@@ -805,7 +823,7 @@ constexpr auto extensions(std::initializer_list<std::initializer_list<std::initi
 	// 	return multi::extensions_t<3>{il.size(), 0, 0};
 	// }
 
-	return static_cast<multi::size_t>(il.size()) * extensions(*il.begin());
+	return static_cast<multi::ssize_t>(il.size()) * extensions(*il.begin());
 	// return multi::extensions_t<3>{
 	// 	static_cast<multi::size_t>(il.size()),
 	// 	static_cast<multi::size_t>(il.begin()->size()),
@@ -819,7 +837,7 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 		multi::layout_t<0>(multi::extensions_t<0>{}),
 		1,
 		0,
-		static_cast<multi::size_t>(il.size())
+		static_cast<multi::ssize_t>(il.size())
 	};
 }
 
@@ -831,9 +849,9 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 	if(il.size() == 1) {
 		return multi::layout_t<2>(
 			layout(*il.begin()),
-			static_cast<multi::size_t>(il.size()),
+			static_cast<multi::ssize_t>(il.size()),
 			0,
-			static_cast<multi::size_t>(il.size())  // * il.begin()->size())
+			static_cast<multi::ssize_t>(il.size())  // * il.begin()->size())
 		);
 	}
 	auto strd =
@@ -847,7 +865,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 		layout(*il.begin()),
 		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size()) * strd
+		static_cast<multi::ssize_t>(il.size()) * strd
 	);
 }
 
@@ -861,7 +879,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<std::initializ
 		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		0,
-		static_cast<multi::size_t>(il.size()),
+		static_cast<multi::ssize_t>(il.size()),
 	};
 }
 

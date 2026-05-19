@@ -95,9 +95,11 @@ class axpy_range {
 	Context ctxt_;
 	Scale alpha_;
 	ItX x_begin_;
-	size_type count_;
+	typename ItX::difference_type count_;
 
  public:
+	using size_type = typename ItX::difference_type;
+
 	axpy_range(axpy_range const&) = delete;
 	axpy_range(axpy_range&&) noexcept = delete;
 	~axpy_range() = default;
@@ -114,6 +116,7 @@ class axpy_range {
 
 	auto size() const -> size_type { return end() - begin(); }
 	auto extensions() const { return extensions_t<1>{ {0, size()} }; }
+	[[nodiscard]] constexpr auto extents() const { return extensions_t<1>{ {0, size()} }; }
 
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {

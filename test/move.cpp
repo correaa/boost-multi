@@ -151,8 +151,7 @@ void move_element_1d_total_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		using std::move;
-		auto vec = move(arr)[2];
+		auto vec = multi::move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 
 		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
@@ -268,7 +267,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<multi::array<int, 2>> Av(10, multi::array<int, 2>({4, 5}, 990));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		multi::array<int, 2>              arr2(std::move(Av[0]), std::allocator<int>{});
 
-		BOOST_TEST( is_empty(Av[0]) );
+		BOOST_TEST( Av[0].is_empty() );
 		BOOST_TEST( size(arr2) == 4 );
 		BOOST_TEST( arr2[1][2] == 990 );
 	}
@@ -282,7 +281,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
-		BOOST_TEST( is_empty(Av[4]) );
+		BOOST_TEST( Av[4].is_empty() );
 		BOOST_TEST( size(Bv[5]) == 4 );
 		BOOST_TEST( Bv[5][1][2] == 990 );
 	}
@@ -297,7 +296,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
-		BOOST_TEST( is_empty(Av[4]) );
+		BOOST_TEST( Av[4].is_empty() );
 		BOOST_TEST( size(Bv[5]) == 4 );
 		BOOST_TEST( Bv[5][1][2] == 990 );
 	}

@@ -4,8 +4,9 @@
 *.out
 *.snm
 *.toc
-*.pdf
+presentation.pdf
 *.fdb_latexmk
 *.fls
-*.synctex.gz
-
+*.synctex*
+*.vrb
+*.pdf_tex

@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -8,6 +8,8 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, all_of, transform
+#include <cmath>        // for abs
+#include <complex>      // for complex
 #include <cstddef>      // for ptrdiff_t
 #include <cstdint>      // for uint64_t
 #include <iterator>     // for begin, end, size, next
@@ -190,7 +192,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};  // NOSONAR
 
 		multi::array<int, 2> r2D({5, 5});
-		std::for_each(begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
+		std::for_each(  // NOLINT(llvm-use-ranges,modernize-use-ranges)
+			begin(r2D), end(r2D), [&](decltype(r2D)::reference elem) { std::generate(begin(elem), end(elem), rand); }
+		);
 	}
 
 	// BOOST_AUTO_TEST_CASE(fill_1D)
@@ -225,5 +229,63 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[7] ==  7 );
 	}
 
+	{
+		namespace multi = boost::multi;
+
+		multi::array<std::complex<double>, 3> const olap({5, 5, 3}, std::complex<double>{1.0, 3.0});
+
+		multi::array<double, 2> vel_gold;
+
+		{
+			multi::array<double, 2> vel({5, 5});
+			for(int i = 0; i != vel.size(); ++i) {
+				for(int j = 0; j != vel.size(); ++j) {
+					vel[i][j] = 0.0;
+					for(int idir = 0; idir != 3; ++idir) {  // NOLINT(altera-unroll-loops)
+						vel[i][j] += std::norm(olap[i][j][idir]);
+					}
+				}
+			}
+
+			vel_gold = vel;
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			auto [is, js] = vel.extensions();
+			for(auto i : is) {
+				for(auto j : js) {  // NOLINT(altera-unroll-loops)
+					// using std::norm;
+					vel[i][j] = norm(olap[i][j][0]) + norm(olap[i][j][1]) + norm(olap[i][j][2]);
+				}
+			}
+
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			// using std::norm;
+			std::transform(
+				olap.flatted().begin(), olap.flatted().end(),
+				vel.flatted().begin(),
+				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
+			);
+
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
+		}
+		{
+			multi::array<double, 2> vel({5, 5});
+
+			// using std::norm; using std::transform
+			transform(
+				olap.flatted().begin(), olap.flatted().end(),
+				vel.flatted().begin(),
+				[](auto const& e) { return norm(e[0]) + norm(e[1]) + norm(e[2]); }
+			);
+
+			BOOST_TEST( std::abs(vel[1][1] - vel_gold[1][1]) < 1e-12 );
+		}
+	}
 	return boost::report_errors();
 }

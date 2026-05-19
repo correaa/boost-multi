@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -12,7 +12,7 @@
 #include<complex>
 #include<cstdint>      // int64_t
 #include<cstring>      // std::memcpy
-#include<iostream>     // for debug
+// #include<iostream>     // for debug
 #include<limits>       // numeric_limits
 #include<type_traits>  // is_convertible
 

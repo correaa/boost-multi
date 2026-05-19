@@ -4,9 +4,38 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP
-#pragma once
+// #pragma once
+
+#include <thrust/detail/raw_reference_cast.h>
 
 #include "boost/multi/array.hpp"
+
+namespace thrust {
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout> const&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout>&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::subarray<T, D, ElementPtr, Layout>&
+raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>&& ref) { return ref; }
+
+template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
+__host__ __device__
+boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
+raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+
+}  // namespace thrust
+
+
+#include <exception>
 
 #include <thrust/device_allocator.h>
 #include <thrust/universal_allocator.h>
@@ -32,6 +61,11 @@
 #include <thrust/system/cuda/detail/execution_policy.h>  // for tag
 #include <thrust/system/cuda/memory_resource.h>          // for universal_memory_resource
 #include <thrust/system/cuda/pointer.h>                  // for universal_pointer
+
+#if THRUST_VERSION >= 300200  // CCCL 2
+#include <thrust/detail/type_traits/pointer_traits.h>  // needed for specialization for Thrust 3 (CUDA 13.2)
+#endif
+
 #else
 // #include <thrust/system/hip/detail/execution_policy.h>        // for tag
 // #include <thrust/system/hip/memory_resource.h>                // for universal_memory_resource
@@ -117,11 +151,19 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	using device_index = int;
 	static auto get_current_device_() -> device_index {
 		int device;  // NOLINT(cppcoreguidelines-init-variables) delayed init
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
 		switch(HICUP_(GetDevice)(&device)) {
 		case HICUP_(Success): break;
 		case HICUP_(ErrorInvalidValue): assert(0);  // NOLINT(bugprone-branch-clone)
+		// ... 125 cases not handled
 		default: assert(0);
 		}
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 		return device;
 	}
 	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
@@ -154,6 +196,11 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 namespace thrust {
 
+// template<class T>
+// auto operator+(::thrust::device_reference<T const> const& ref) {
+// 	return static_cast<T>(ref);
+// }
+
 template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
 
 template<class FF>
@@ -166,6 +213,8 @@ class result_helper{
 
  public:
 	using type = decltype(_(priority<4>{}, std::declval<FF>()));
+	result_helper() = default;
+	void dummy() const {}
 };
 
 template<class F, class R = void>
@@ -230,7 +279,6 @@ class device_restriction_iterator {
 	using difference_type = std::ptrdiff_t;
 	using value_type      = int;
 	//	std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>
-	;
 
 	using pointer = void;
 
@@ -286,7 +334,7 @@ class device_restriction_iterator {
 	friend auto operator<=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
 	friend auto operator<(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
 	friend auto operator>(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
-	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
+	friend auto operator>=(device_restriction_iterator const& self, device_restriction_iterator const& other) noexcept -> bool { return self.it_ >= other.it_; }
 
 	__host__ __device__ constexpr auto operator*() -> int {
 		// decltype(auto) {
@@ -345,8 +393,8 @@ namespace thrust {
 // template<class It> struct iterator_system;  // not needed in cuda 12.0, doesn't work on cuda 12.5
 
 template<class T, ::boost::multi::dimensionality_type D, class Pointer, bool IsConst, bool IsMove, typename Stride>
-struct iterator_system<::boost::multi::array_iterator<T, D, Pointer, IsConst, IsMove, Stride>> {
-	using type = typename ::thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer, IsConst, IsMove, Stride>::element_ptr>::type;
+struct iterator_system<::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride>> {
+	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride>::element_ptr>::type;
 };
 
 template<typename Pointer, class LayoutType>
@@ -413,6 +461,27 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 // }
 
 }  // end namespace thrust
+
+#if THRUST_VERSION >= 300200  // this is needed by CCCL 2
+namespace thrust::detail {
+
+template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+	using type = std::conditional_t<D == 1,
+		std::conditional_t<IsConst,
+			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
+			typename thrust::detail::pointer_element<ElementPtr>::type
+		>,
+		std::conditional_t<IsConst,
+			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
+			::boost::multi::subarray<T, D, ElementPtr, Layout>
+		>
+		// void
+	>;
+};
+
+}  // end namespace thrust::detail
+#endif
 
 namespace boost::multi::thrust {
 

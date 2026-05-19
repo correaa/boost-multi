@@ -25,7 +25,7 @@ void print(std::ostream& os, Array const& arr, std::string_view /*open*/, std::s
 	os << arr;
 }
 
-template<class Array, std::enable_if_t<has_dimensionality<Array>::value && (Array::dimensionality == 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+template<class Array, std::enable_if_t<has_dimensionality<Array>::value && Array::dimensionality == 0, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 void print(std::ostream& os, Array const& arr, std::string_view /*open*/, std::string_view /*sep*/, std::string_view /*close*/, std::string_view /*tag*/, int /*indent*/) {
 	assert(!arr.empty());
 	os << static_cast<typename Array::element_cref>(arr);
