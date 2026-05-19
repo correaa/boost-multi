@@ -785,6 +785,12 @@ std::is_sorted( V.begin(), V.end() );
   and behave like Regular
 \end{alertblock}
 }
+
+\begin{alertblock}{The test is not about sorting... (not often used for arrays)}
+  ... it is about showing that all the intermediate components work.
+\end{alertblock}
+}
+
 \end{frame}
 
 \begin{frame}[fragile]{Looks complicated, does it work? Test 2/2}
@@ -810,6 +816,14 @@ std::is_sorted( A.begin(), A.end() );
   Indicates that our iterators work correctly with \lstinline|swap|, \lstinline|std::rotate|, \lstinline|stable_partition|
 \end{alertblock}
 }
+
+\begin{alertblock}{The litmus/acis tests are similar but prove different things}
+\end{alertblock}
+
+\begin{alertblock}{Again, the test is not about sorting...}
+\end{alertblock}
+}
+
 \end{frame}
 
 \begin{frame}[fragile]{Looks complicated, does it work? Bonus Test}
