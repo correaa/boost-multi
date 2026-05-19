@@ -1446,7 +1446,7 @@ sonar:
 
 pages-presentation:
   stage: build
-  allow_failure: true
+  allow_failure: false
   # only:
   #   refs:
   #     - develop
