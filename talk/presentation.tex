@@ -568,12 +568,10 @@ auto row_it = A.begin() + 1;
 // multi::array<double, 1>    row = ...  // makes a copy
 \end{lstlisting}
 
-\begin{alertblock}{The problem with \texttt{auto}: "Implicit Evaluation of 'auto' Variables."}
-P0672R0 (2017) by Joël Falcou, Herb Sutter et al.
+\begin{alertblock}{The problem with \texttt{auto}: ``Implicit Evaluation of `auto' Variables.''}
+P0672R0 (2017) by Jo\"el Falcou, Herb Sutter et al.
 (\texttt{std::vector<bool>}, proxy objects)
 \end{alertblock}
-\begin{lstlisting}
-\end{lstlisting}
 
 \end{frame}
 
@@ -789,7 +787,6 @@ std::is_sorted( V.begin(), V.end() );
 \begin{alertblock}{The test is not about sorting... (not often used for arrays)}
   ... it is about showing that all the intermediate components work.
 \end{alertblock}
-}
 
 \end{frame}
 
@@ -824,7 +821,6 @@ std::is_sorted( A.begin(), A.end() );
 \begin{alertblock}{Again, the test is not about sorting...}
   ... it is about components.
 \end{alertblock}
-}
 
 \end{frame}
 
