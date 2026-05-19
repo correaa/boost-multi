@@ -443,7 +443,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	// constexpr_allocator
 	{
 		constexpr auto gg = g();
-		static_assert(gg == 10);
+		// static_assert(gg == 10);
 		BOOST_TEST( gg == 10 );
 	}
 #endif

@@ -74,7 +74,7 @@ class offset_ptr {
 	using iterator_concept = std::contiguous_iterator_tag;
 #endif
 
-#if defined(__clang_major__) && __clang_major__ >= 16
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
 #endif
@@ -83,7 +83,7 @@ class offset_ptr {
         assert(ptr_ != nullptr || offset_ == 0);
         return ptr_ + offset_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
-#if defined(__clang_major__) && __clang_major__ >= 16
+#ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 	constexpr auto operator*() const noexcept -> reference { return *operator->(); }

@@ -1529,6 +1529,7 @@ mrdocs:
     - ls -all
     - export PATH=$PWD/MrDocs-0.8.0-Linux/bin:$PATH
     - mrdocs --version
+    - mrdocs --help
     - cmake -B build-mrdocs
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -1542,14 +1543,12 @@ mrdocs:
       - doc/modules/reference/pages
     expire_in: 1 week
   needs: ["clang++"]
+# see result of MrDocs here: https://correaa.gitlab.io/boost-multi/multi/reference/index.html
 
 antora:
   image: antora/antora
   stage: build
   allow_failure: false
-  # only:
-  #   refs:
-  #     - develop
   tags:
     - non-shared
     - docker
@@ -1558,10 +1557,6 @@ antora:
   script:
     # - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet make clang cmake tree ca-certificates npm asciidoctor sed git pip python3 python3-venv wget  # pandoc ruby-rouge
     # - npm i -q @antora/cli @antora/site-generator
-    # - wget https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Darwin.tar.gz
-    # - tar zxvf MrDocs-0.8.0-Linux.tar.gz
-    # - export PATH=MrDocs-0.8.0-Linux/bin:$PATH
-    # - truncate -s 0 doc/modules/.gitignore  # allow Antora to see MrDocs-generated pages
     - cd doc
     - tree .
     - npm ci --ignore-scripts
@@ -1576,13 +1571,13 @@ antora:
   artifacts:
     paths:
     - public
-  # check for file here: https://correaa.gitlab.io/boost-multi/boost-multi.hpp
   needs:
     - job: pages-presentation
       artifacts: true
     - job: mrdocs
       artifacts: true
       optional: true  # mrdocs is allow_failure; antora can still run without its artifacts
+# see result of antora doc in https://correaa.gitlab.io/boost-multi/multi/intro.html
 
 # this is a specially named workflow ("pages") populates the pages site
 pages:
