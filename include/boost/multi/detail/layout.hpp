@@ -1481,6 +1481,8 @@ struct layout_t
 	using sub_type        = layout_t<D - 1>;
 	using size_type       = SSize;
 	using difference_type = std::make_signed_t<size_type>;
+
+	/// indexing type in the leading dimension (usually `std::ptrdiff_t`)
 	using index           = difference_type;
 
 	using index_extension = multi::index_extension;

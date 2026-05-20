@@ -1233,7 +1233,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
 
-	using basic_const_array = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
+	// using basic_const_array [[decprecated]] = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
 	const_subarray()                                         = default;
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
@@ -1470,7 +1470,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto taked(difference_type n) const& -> basic_const_array { return taked_aux_(n); }
+	constexpr auto taked(difference_type n) const& { return taked_aux_(n).as_const(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto halved_aux_() const {
@@ -1532,33 +1532,33 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> const_subarray { return sliced_aux_(first, last); }
 
-	constexpr auto blocked(index first, index last) const& -> basic_const_array { return sliced(first, last).reindexed(first); }
-	constexpr auto blocked(index first, index last) & -> const_subarray { return sliced(first, last).reindexed(first); }
+	constexpr auto blocked(index first, index last) const& { return sliced(first, last).reindexed(first).as_const(); }
+	constexpr auto blocked(index first, index last) & { return sliced(first, last).reindexed(first).as_const(); }
 
 	using iextension = typename const_subarray::index_extension;
 
-	constexpr auto stenciled(iextension iex) & -> const_subarray { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
+	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }
+	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
-	constexpr auto stenciled(iextension iex) && -> const_subarray { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
+	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }  // TODO(correaa) fix const
+	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
-	constexpr auto stenciled(iextension iex) const& -> basic_const_array { return blocked(iex.first(), iex.last()); }
-	constexpr auto stenciled(iextension iex, iextension iex1) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
+	constexpr auto stenciled(iextension iex) const& { return blocked(iex.first(), iex.last()).as_const(); }
+	constexpr auto stenciled(iextension iex, iextension iex1) const& { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated().as_const(); }
 
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& -> basic_const_array {
-		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated();
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& {
+		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
 	constexpr auto elements_at(multi::ssize_t idx) const& -> decltype(auto) {
@@ -1697,7 +1697,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
 
  public:
-	constexpr auto reversed() const& -> basic_const_array { return reversed_aux_(); }
+	constexpr auto reversed() const& { return reversed_aux_().as_const(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
 
@@ -1848,10 +1848,10 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an (explicitly const-)iterator to the end
 
+ private:
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        ///< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  ///< Cursor for constant access to the array
 
- private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
@@ -2128,11 +2128,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
 
+	/// `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T&`)
 	using reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference>;
 
+	/// `multi::const_subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
 	using const_reference = typename std::conditional_t<
 		(D > 1),
 		const_subarray<element, D - 1, element_ptr>,
@@ -3000,7 +3002,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
+	/// `std::allocator_traits<Allocator>::const_pointer` for 1D arrays
 	using const_pointer   = element_const_ptr;
+	/// `std::allocator_traits<Allocator>::pointer` for 1D arrays
 	using pointer         = element_ptr;
 	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
 	using reference       = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
@@ -3265,12 +3269,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
 
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
-
-	using elements_range       = elements_range_t<element_ptr, layout_type>;
-	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
-
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
  private:
 	auto to_mdspan_aux_() const {
@@ -3299,6 +3297,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
  private:
+	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+
+	using elements_range       = elements_range_t<element_ptr, layout_type>;
+	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
 	constexpr auto elements_aux_() const { return elements_range{this->base_, this->layout()}; }
 
  public:
