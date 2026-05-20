@@ -1386,10 +1386,25 @@ struct
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, ::boost::multi::dimensionality_type D, class Alloc>
-struct array : dynamic_array<T, D, Alloc> {
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
+class unique_array : public dynamic_array<T, D, Alloc> {
+	using dynamic_ = dynamic_array<T, D, Alloc>;
+	
+ public:
+	using dynamic_::dynamic_;
+	// unique_array(unique_array const&) = default;
+
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
+    ~unique_array() noexcept = default;   // pins execution space to match dynamic_array (host-only)
+};
+
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
+struct array : unique_array<T, D, Alloc> {
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
+	using unique_ = unique_array<T, D, Alloc>;
 
 	static_assert(
 		std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T> || std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,
@@ -1447,8 +1462,8 @@ struct array : dynamic_array<T, D, Alloc> {
 	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17-20 ?
-	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
-	using typename dynamic_array<T, D, Alloc>::value_type;
+	using unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	using typename unique_array<T, D, Alloc>::value_type;
 
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
@@ -1476,19 +1491,11 @@ struct array : dynamic_array<T, D, Alloc> {
 	/// Copy constructor from @p other array (generally allocates)
 	array(array const&) = default;
 
-	// Destructor, deallocates memory and destroys elements
+	/// Destructor, deallocates memory and destroys elements
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif
 	~array() noexcept = default;
-
-	// auto reshape(typename array::extensions_type extensions) & -> array& {
-	// 	typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
-	// 	assert(new_layout.num_elements() == this->num_elements());
-	// 	this->layout_mutable() = new_layout;
-	// 	assert(this->stride() != 0);
-	// 	return *this;
-	// }
 
 	/// Clear the values of array, making it empty (doesn't throw)
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
@@ -1506,9 +1513,9 @@ struct array : dynamic_array<T, D, Alloc> {
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
-	: dynamic_array<T, D, Alloc>{std::move(other), alloc} {}
+	: unique_array<T, D, Alloc>{std::move(other), alloc} {}
 
-	BOOST_MULTI_HD constexpr array(array&& other) noexcept : dynamic_array<T, D, Alloc>{std::move(other)} {
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : unique_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
 
