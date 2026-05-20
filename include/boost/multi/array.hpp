@@ -1392,7 +1392,12 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	
  public:
 	using dynamic_::dynamic_;
+
 	unique_array(unique_array const&) = default;
+	unique_array(unique_array&&) = default;
+
+	auto operator=(unique_array const&) -> unique_array& = default;
+	auto operator=(unique_array&&) -> unique_array& = default;
 
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
