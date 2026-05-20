@@ -87,9 +87,9 @@ class offset_ptr {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
 	constexpr auto operator*() const noexcept -> reference { return *operator->(); }
 	constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
-
 
 	constexpr auto operator-(offset_ptr const& other) const noexcept -> difference_type {
 		assert(ptr_ == other.ptr_);
