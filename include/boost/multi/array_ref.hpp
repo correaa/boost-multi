@@ -3269,13 +3269,6 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
 
- private:
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
-
-	using elements_range       = elements_range_t<element_ptr, layout_type>;
-	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
-
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
  private:
 	auto to_mdspan_aux_() const {
@@ -3304,6 +3297,12 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 #endif
 
  private:
+	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+
+	using elements_range       = elements_range_t<element_ptr, layout_type>;
+	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
 	constexpr auto elements_aux_() const { return elements_range{this->base_, this->layout()}; }
 
  public:
