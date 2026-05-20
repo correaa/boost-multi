@@ -185,6 +185,15 @@ class adl_copy_t {
 
 		 public : template<class... As>
 				  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
+	// If constexpr std::copy/std::sort (C++20/26) hit a non-constexpr thrust::copy in the priority cascade,
+	// route to std::copy during constant evaluation. Keep the trailing return type for SFINAE-friendliness.
+	// public: template<class... As>
+	// constexpr auto operator()(As&&... args) const -> decltype(_(priority<6>(), std::forward<As>(args)...)) {
+	// #if defined(__cpp_lib_is_constant_evaluated) && (__cpp_lib_is_constant_evaluated >= 201811L)
+	//   if(std::is_constant_evaluated()) { return std::copy(std::forward<As>(args)...); }
+	// #endif
+	//   return _(priority<6>(), std::forward<As>(args)...);
+	// }
 };
 inline constexpr adl_copy_t adl_copy;
 

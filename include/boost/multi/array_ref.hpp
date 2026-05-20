@@ -1153,7 +1153,7 @@ struct elements_range_t {
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 
-	auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?  // NOLINT(bugprone-unsafe-to-allow-exceptions)
+	BOOST_MULTI_HD constexpr auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?  // NOLINT(bugprone-unsafe-to-allow-exceptions)
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
 		}
