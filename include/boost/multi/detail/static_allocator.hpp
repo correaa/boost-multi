@@ -76,7 +76,8 @@ class offset_ptr {
 
 #ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // offset_ptr does T*+Diff arithmetic by design
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 	constexpr pointer operator->() const noexcept { return *this; }
 	constexpr         operator T*() const noexcept {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
