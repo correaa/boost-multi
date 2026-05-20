@@ -1471,14 +1471,14 @@ struct array : unique_array<T, D, Alloc> {
 		std::enable_if_t<                                                                                                                                                           // NOLINT(modernize-use-constraints) for C++20
 			std::is_constructible_v<typename dynamic_array<T, D>::value_type, Sub> && !std::is_convertible_v<Sub, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
 	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
-	: dynamic_(
+	: unique_(
 		  (values.size() == 0) ? array<T, D>()()
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
 	  ) {}
 
 #ifdef __circle_build__
 	constexpr array(std::initializer_list<typename dynamic_array<T, D>::dynamic_value_type> values)  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-	: dynamic_(
+	: unique_(
 		  (values.size() == 0) ? array<T, D>{}
 							   : array<T, D>(values.begin(), values.end())
 	  ) {
