@@ -26,9 +26,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	// BOOST_AUTO_TEST_CASE(iterator_2d)
 	{
-		static_assert(std::is_trivially_default_constructible_v<multi::array<double, 2>::cursor>);
-		static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 2>::cursor>);
-		static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 2>::cursor>);
+		// static_assert(std::is_trivially_default_constructible_v<multi::array<double, 2>::cursor>);
+		// static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 2>::cursor>);
+		// static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 2>::cursor>);
 
 		// {
 		//  multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);

@@ -1848,6 +1848,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an (explicitly const-)iterator to the end
 
+ private:
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        ///< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  ///< Cursor for constant access to the array
 
@@ -3265,6 +3266,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
 
+ private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
