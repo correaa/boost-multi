@@ -1391,7 +1391,7 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 	
  public:
-	using dynamic_::dynamic_;
+	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) false positive on inherited &&-taking constructor
 
 	unique_array(unique_array const&) = default;
 	unique_array(unique_array&&) = default;
