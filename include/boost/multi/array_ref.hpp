@@ -1852,7 +1852,6 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        ///< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  ///< Cursor for constant access to the array
 
- private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
@@ -2129,11 +2128,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
 
+	/// `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T&`)
 	using reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference>;
 
+	/// `multi::const_subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
 	using const_reference = typename std::conditional_t<
 		(D > 1),
 		const_subarray<element, D - 1, element_ptr>,
@@ -3001,7 +3002,9 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
+	/// `std::allocator_traits<Allocator>::const_pointer` for 1D arrays
 	using const_pointer   = element_const_ptr;
+	/// `std::allocator_traits<Allocator>::pointer` for 1D arrays
 	using pointer         = element_ptr;
 	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
 	using reference       = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
