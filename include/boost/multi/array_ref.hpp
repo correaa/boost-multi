@@ -127,7 +127,7 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 
 namespace boost::multi {
 
-/// Read-only `D`-dimensional view into a subarray
+/// Read-only `D`-dimensional subarray-reference (view into a subarray)
 ///
 /// Provides the same interface as `subarray` but prevents modification of the referenced elements.
 /// Has reference semantics: cannot be rebound, assignments are deep, and size is immutable.
@@ -137,7 +137,7 @@ namespace boost::multi {
 /// @tparam ElementPtr Pointer-like type to const elements (default `T const*`)
 /// @tparam Layout Layout type describing strides and extensions
 template<typename T, dimensionality_type D, typename ElementPtr = T const*, class Layout = layout_t<D>>
-struct const_subarray;
+class const_subarray;
 
 namespace detail {
 template<class T, dimensionality_type D, class... Ts>
@@ -509,7 +509,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{std::move(base)} {}
 
-	template<typename, multi::dimensionality_type, typename, class> friend struct const_subarray;
+	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }
 
@@ -691,7 +691,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 	BOOST_MULTI_HD constexpr explicit array_iterator(typename subarray<element, D - 1, element_ptr>::element_ptr base, layout_t<D - 1> const& lyt, stride_type stride)
 	: ptr_(base, lyt), stride_{stride} {}
 
-	template<class, dimensionality_type, class, class> friend struct const_subarray;
+	template<class, dimensionality_type, class, class> friend class const_subarray;
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, As... args) const -> decltype(auto) { return this->operator[](idx)(args...); }
@@ -806,7 +806,7 @@ struct cursor_t {
 #pragma warning(pop)
 #endif
 
-	template<class, dimensionality_type, class, class> friend struct const_subarray;
+	template<class, dimensionality_type, class, class> friend class const_subarray;
 	template<class, dimensionality_type, class> friend struct cursor_t;
 
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
@@ -1213,13 +1213,15 @@ template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct 
 #endif
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-struct const_subarray : array_types<T, D, ElementPtr, Layout> {
-	using types = array_types<T, D, ElementPtr, Layout>;
+class const_subarray : public array_types<T, D, ElementPtr, Layout> {
+	using types = array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
+
+ public:
 	using ref_  = const_subarray;
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
-	friend struct const_subarray<typename types::element, D + 1, typename types::element_ptr>;
+	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
 	using typename types::element_type;
 	using types::layout;
@@ -1724,7 +1726,7 @@ struct const_subarray : array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
 
  private:
-	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct const_subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
@@ -2703,7 +2705,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 	: ptr_(std::move(base) /*, lyt*/), stride_{stride} {}
 
  private:
-	friend struct const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
+	friend class const_subarray<Element, 1, Ptr>;  // TODO(correaa) fix template parameters
 
 	element_ptr ptr_;
 #ifdef _MSC_VER
@@ -2959,9 +2961,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 /// ... a specialization for one dimension
 template<typename T, typename ElementPtr, class Layout>
-struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
-: multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, array_types<T, 1, ElementPtr, Layout> {
+class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
+: public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
+, public array_types<T, 1, ElementPtr, Layout> {
+ public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
@@ -3037,7 +3040,7 @@ struct const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inhe
 		);
 	}
 
-	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend struct const_subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend class const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct dynamic_array;  // TODO(correaa) check if this is necessary
 
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
@@ -3739,10 +3742,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
-	: subarray_base(typename subarray_base::types::layout_t(xs), dat) {}
+	: subarray_base(typename subarray_base::layout_t(xs), dat) {}
 
 	explicit constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
-	: subarray_base{typename array_ref::types::layout_t(exts), dat} {}
+	: subarray_base{typename array_ref::layout_t(exts), dat} {}
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 #ifdef __cpp_lib_span

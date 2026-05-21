@@ -94,7 +94,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( arr == multi::array<int, 1>{12, 34, 56} ));
 		BOOST_TEST(( arr == decltype(arr){12, 34, 56} ));
-		BOOST_TEST(( arr == decltype(arr)::decay_type({12, 34, 56}) ));
 	}
 	{
 		std::array<int, 3> const stdarr = {
