@@ -192,6 +192,7 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 | Rotate (2 places right)     | `-2 ⌽ A`                  | no (approx: use `std::rotate`)
 | Reversal                    | `⌽ V`                     | `V.reversed()`
 | column reversed             | `⌽ [1] A`                 | `~((~A).reversed())`
+|===
 
 inspired on: https://dl.acm.org/doi/epdf/10.1145/390015.808410
 
