@@ -9,7 +9,7 @@ AlignArrayOfStructures: Right
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossEmptyLines: false
-  AcrossComments: false
+  AcrossComments: true
 AlignConsecutiveDeclarations:
   Enabled: true
   AcrossEmptyLines: false

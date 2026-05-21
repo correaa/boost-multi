@@ -168,6 +168,33 @@ link:https://godbolt.org/z/77onne46W[((open with Compiler Explorer))]
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
+[#appendix_apl]
+== Multi for APL programmers
+
+|===
+|                             | APL                       | C++ Multi                                            
+
+| Indexing                    | `A[i, j]`                 | `A[i][j]` or `A(i, j)` or `A[i, j]` (C++23)
+| row `i`                     | `A[i;]`                   | `A(i, _)` or `A[i]` or `A[i, _]` (C++23)
+| column `j`                  | `A[;j]`                   | `A(_, j)` or `A[i, _]` (C++23)
+| subrange of indices `I`     | `V[I]`                    | `V(I)`
+| Compress                    | `U / V`                   | no (approx: https://godbolt.org/z/z8M6qhq5G)
+| Compress last axis          | `U / A`                   | no
+| Restructuring               | `,A`                      | `A.elements()`
+|                             | `3 4 ⍴ V`                 | `multi::array_ref<int, 2>(V.data_elements(), {3, 4})`
+|                             | `3 4 ⍴ A`                 | `multi::array_ref<int, 2>(A.data_elements(), {3, 4})`
+| Catenation                  | `V, W`                    | no (approx: https://godbolt.org/z/cKcbWTooG)
+| Transposition               | `⍉ A`                     | `~A` or `A.transposed()`
+|                             | `1 1 ⍉ A`                 | no
+| Drop                        | `3 ↓ V`                   | `V.dropped(3)`
+|                             | `2 -1 ↓ A`                | `A.taked(A.size() - 1).dropped(2)`
+| Rotate (3 places left)      | `3 ⌽ A`                   | no (approx: use `std::rotate`)
+| Rotate (2 places right)     | `-2 ⌽ A`                  | no (approx: use `std::rotate`)
+| Reversal                    | `⌽ V`                     | `V.reversed()`
+| column reversed             | `⌽ [1] A`                 | `~((~A).reversed())`
+
+inspired on: https://dl.acm.org/doi/epdf/10.1145/390015.808410
+
 [#appendix_howtos]
 == How-Tos
 
