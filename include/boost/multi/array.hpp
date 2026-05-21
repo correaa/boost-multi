@@ -159,11 +159,10 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 	/// Associalted array value type (generally itself, `multi::array<element_type, dimensionality, allocator_type>`)
 	using decay_type     = array<T, D, allocator_type>;
 
- private:
-	auto operator new(std::size_t count) -> void* { return ::operator new(count); }
-	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
+	[[deprecated]] auto operator new(std::size_t count) -> void* { return ::operator new(count); }
+	[[deprecated]] auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
 
-	void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // this overrides the deleted delete operator in reference (base) class subarray
+	[[deprecated]] void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // this overrides the deleted delete operator in reference (base) class subarray
 
  protected:  // TODO(correaa) make private
 	/// Associated array reference type, also its base class  (generally `multi::array_ref<element_type, dimensionality, allocator_type>`)
@@ -431,7 +430,7 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type>) {
 			array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
 		} else {                                                                                                                             // this workaround allows constexpr arrays for simple types
-			adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename)
+			adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
 		}
 	}
 
