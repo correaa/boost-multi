@@ -2,7 +2,7 @@
 
 = Boost.Multi
 
-Alfredo A. Correa (last modified: {localdatetime} {docdatetime})
+Alfredo A. Correa (last modified: {localdatetime})
 
 [.badges]
 link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[GitHub,role=badge]]{nbsp}{nbsp}link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost--multi-blue%3Flogo%3Dgitlab?style=social&logo=gitlab[GitLab,role=badge]]
