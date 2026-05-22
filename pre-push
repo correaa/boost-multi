@@ -105,6 +105,6 @@ fi
 
 fi
 
-cache -s
+ccache -s
 
 # fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
