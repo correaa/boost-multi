@@ -15,7 +15,6 @@
 // clang 16 c++23 crashed when including ranges
 #include <iterator>     // for random_access_iterator  // IWYU pragma: keep
 #include <ranges>       // IWYU pragma: keep
-#include <type_traits>  // for void_t, false_type, true_type  // IWYU pragma: keep
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
