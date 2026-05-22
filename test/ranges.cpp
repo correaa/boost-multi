@@ -13,7 +13,9 @@
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 // clang 16 c++23 crashed when including ranges
-#include <ranges>  // IWYU pragma: keep
+#include <iterator>     // for random_access_iterator  // IWYU pragma: keep
+#include <ranges>       // IWYU pragma: keep
+#include <type_traits>  // for void_t, false_type, true_type  // IWYU pragma: keep
 #endif
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
@@ -33,6 +35,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( elem == 99 );
 		}
 	}
+
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+	// multi iterators must model the standard library ranges iterator/range concepts
+	{
+		static_assert(std::random_access_iterator<multi::array<int, 1>::iterator>);
+		static_assert(std::random_access_iterator<multi::array<int, 1>::const_iterator>);
+		static_assert(std::random_access_iterator<multi::array<int, 2>::iterator>);
+		static_assert(std::random_access_iterator<multi::array<int, 2>::const_iterator>);
+		static_assert(std::random_access_iterator<multi::array<int, 3>::iterator>);
+		static_assert(std::random_access_iterator<multi::array<int, 3>::const_iterator>);
+
+		static_assert(std::ranges::random_access_range<multi::array<int, 1>>);
+		static_assert(std::ranges::random_access_range<multi::array<int, 2>>);
+		static_assert(std::ranges::random_access_range<multi::array<int, 3>>);
+		static_assert(std::ranges::random_access_range<multi::array<int, 2> const>);
+	}
+#endif
 
 	// range accumulate
 	{
