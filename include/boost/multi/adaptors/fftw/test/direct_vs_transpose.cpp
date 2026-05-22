@@ -67,6 +67,8 @@ if constexpr(!std::is_const_v<Tp>) {  // NOLINT(bugprone-branch-clone)
 }  // end namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	multi::fftw::environment const env;  // destroyed last, runs fftw_cleanup() after the plan is gone
+
 	using complex = std::complex<double>;
 
 	auto in = [] {
