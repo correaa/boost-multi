@@ -490,7 +490,7 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    ...
-   obj:/usr/lib/aarch64-linux-gnu/libtbb.so.12.11
+   obj:*libtbb.so*
    ...
 }
 {

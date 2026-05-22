@@ -27,6 +27,8 @@ export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 export CMAKE_C_COMPILER_LAUNCHER="ccache"
 export CMAKE_COMPILE_WARNING_AS_ERROR="ON"
 
+ccache -z
+
 if [[ $OSTYPE == "darwin"* ]]; then
 	PHYS_CORES=$(sysctl -n hw.physicalcpu)
 else
@@ -75,7 +77,7 @@ fi
 #([ -d .build.clang++.consumed ] || CXX=clang++-20                    cmake -S . -B .build.clang++.consumed -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1 -DCMAKE_CXX_FLAGS="-Wconsumed -Werror=consumed") && cmake --build .build.clang++.consumed --target partitioned.cpp.x || exit 666
 #([ -d .build.g++-rel ]        || CXX=g++                           cmake -S . -B .build.g++-rel        -DCMAKE_BUILD_TYPE=Release -DENABLE_TBLIS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DCMAKE_CXX_FLAGS="-Wodr -Wlto-type-mismatch" -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=gold -Wl,--detect-odr-violations -Wodr -Wlto-type-mismatch" && cmake --build .build.g++-rel        $CMT && (ctest --test-dir .build.g++-rel              $CTR || ctest --test-dir .build.g++-rel        --rerun-failed $CTR) ) || exit 666
 
- nice -n 15 bash -c '([ -d .build.g++.plus ] || CXX=g++     cmake -S . -B .build.g++.plus     -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=1 -DBLA_VENDOR=OpenBLAS `#-DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=unhandledChar;--inline-suppr;--std=c++17;--checkers-report=cppcheck.report;--error-exitcode=1"` -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -DRUNNING_ON_VALGRIND -fconcepts-diagnostics-depth=4 -fimplicit-constexpr -Wlto-type-mismatch -Wodr -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free" && cmake --build .build.g++.plus     $CMT && (PMIX_MCA_gds=hash ctest --test-dir .build.g++.plus      --rerun-failed --overwrite MemoryCheckCommandOptions="--trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/.valgrind-suppressions -T memcheck $CTR))' || exit 666
+ nice -n 15 bash -c '([ -d .build.g++.plus ] || CXX=g++     cmake -S . -B .build.g++.plus     -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23 -DDISABLE_MPI=1 -DBLA_VENDOR=OpenBLAS `#-DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=unhandledChar;--inline-suppr;--std=c++17;--checkers-report=cppcheck.report;--error-exitcode=1"` -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -DRUNNING_ON_VALGRIND -fconcepts-diagnostics-depth=4 -fimplicit-constexpr -Wlto-type-mismatch -Wodr -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free" && cmake --build .build.g++.plus     $CMT && (PMIX_MCA_gds=hash ctest --test-dir .build.g++.plus      --rerun-failed --overwrite MemoryCheckCommandOptions="--trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/.valgrind-suppressions -T memcheck $CTR))' || exit 666
  ([ -d .build.clang++.plus ] || CXX=clang++ cmake -S . -B .build.clang++.plus -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1 -DBLA_VENDOR=Generic -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -DUBSAN=1" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" `#-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=/home/correaa/boost-multi/.iwyu-test.imp;-Xiwyu;--no_fwd_decls"`                                                                                                                                                                                                                         && cmake --build .build.clang++.plus $CMT && (                  ctest --test-dir .build.clang++.plus                                                                                                                                                                                                                                                                                        $CTR  || ctest --parallel 1 --rerun-failed $CTR)) || exit 666
 
 ## sudo setfacl --modify user:correaa:rw /var/run/docker.sock
@@ -102,5 +104,7 @@ if [[ $(uname -m) == 'arm64' ]]; then
 fi
 
 fi
+
+cache -s
 
 # fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
