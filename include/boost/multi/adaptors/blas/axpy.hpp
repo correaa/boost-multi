@@ -33,7 +33,7 @@ auto axpy_n(Context ctxt, typename It1::value_type alpha, It1 first, Size n, Out
 	return ctxt->axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n; }
 
 template<class Context, class X1DIt, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0, *X1DIt{} )>
-auto axpy(Context ctxt, typename X1DIt::element alpha, X1DIt x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
+auto axpy(Context ctxt, typename X1DIt::element_type alpha, X1DIt x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(                                                 std::forward<Y1D>(y)) {
 	return axpy_n(ctxt, alpha,   x,   size(y),   begin(y)), std::forward<Y1D>(y); }
 
@@ -43,7 +43,7 @@ auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // 
 	return axpy_n(ctxt, alpha,   x.begin(),   y.size(),   y.begin()), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
-auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
+auto axpy(typename X1D::element_type alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 -> decltype(auto)
 {
 	auto ctxtp = blas::default_context_of(x.base());
