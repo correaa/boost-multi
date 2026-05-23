@@ -595,9 +595,10 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 
 	using difference_type   = typename layout_t<D>::difference_type;
 	using element           = Element;
+	// using element_type      = Element;  // this creates a problem with std::ranges
 	using element_ptr       = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
-	using value_type        = typename subarray<element, D - 1, element_ptr>::decay_type;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<Element const>;
+	using value_type        = typename subarray<Element, D - 1, element_ptr>::decay_type;
 
 	using pointer   = void;  // subarray<element, D - 1, element_ptr>*;
 	using reference = std::conditional_t<
@@ -659,7 +660,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		ret += n;
 		return ret;
 	}
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> subarray<element, D - 1, element_ptr> { return *((*this) + n); }
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *((*this) + n); }
 
 	template<bool OtherIsConst, std::enable_if_t<(IsConst != OtherIsConst), int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator<Element, D, ElementPtr, OtherIsConst> const& other) const -> bool {
@@ -775,6 +776,7 @@ struct cursor_t {
 
 	using element_ptr  = ElementPtr;
 	using element_ref  = typename std::iterator_traits<element_ptr>::reference;
+	using element = typename std::iterator_traits<element_ptr>::value_type;
 	using element_type = typename std::iterator_traits<element_ptr>::value_type;
 
 	using pointer   = element_ptr;
@@ -1048,6 +1050,7 @@ struct elements_range_t {
 	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
 
 	using element = value_type;
+	using element_type = value_type;
 
  private:
 	pointer     base_;
@@ -1223,7 +1226,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
-	using typename types::element_type;
+	// using typename types::element_type;
 	using types::layout;
 
 	using layout_type = Layout;
@@ -1259,6 +1262,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	const_subarray(const_subarray const&) = delete;
 
 	using element           = typename types::element;
+	using element_type      = typename types::element_type;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
 	using element_ref       = typename types::element_ref;
@@ -2627,14 +2631,18 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
  public:
 	using stride_type = Stride;  // multi::index;
+
 	using reference   = std::conditional_t<
 		  IsMove,
 		  std::add_rvalue_reference_t<std::decay_t<reference_aux>>,
 		  reference_aux>;
 
 	using difference_type   = typename affine::difference_type;
+
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept  = typename stride_traits<Stride>::category;
+
+	using element      = Element;
 	using element_type      = typename std::pointer_traits<Ptr>::element_type;  // workaround for clang 15 and libc++ in c++20 mode
 
 	template<class Element2>
@@ -2694,8 +2702,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	// constexpr auto segment() const {}
 
-	using element     = Element;
-	using element_ptr = Ptr;
+	using element_ptr  = Ptr;
 
 	static constexpr dimensionality_type rank_v = 1;
 
@@ -2816,6 +2823,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using types::types;
 
 	using element      = typename types::element;
+	using element_type = typename types::element_type;
 	using element_ref  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
 	using element_cref = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
 	using iterator     = detail::array_iterator<T, 0, ElementPtr>;
@@ -2988,6 +2996,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	using layout_type = Layout;
 	using ref_        = const_subarray;
 
+	using element = T;
 	using element_type = T;
 
 	using element_ptr       = typename types::element_ptr;

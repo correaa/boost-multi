@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -67,6 +67,8 @@ if constexpr(!std::is_const_v<Tp>) {  // NOLINT(bugprone-branch-clone)
 }  // end namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+	multi::fftw::environment const env;  // destroyed last, runs fftw_cleanup() after the plan is gone
+
 	using complex = std::complex<double>;
 
 	auto in = [] {
