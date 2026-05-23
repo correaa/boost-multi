@@ -99,7 +99,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(std::is_trivially_copyable_v<multi::array<double, 1>::iterator>);
 		static_assert(std::is_trivially_copyable_v<multi::array<double, 2>::iterator>);
-		static_assert(std::is_trivially_copyable_v<multi::array<double, 2>::elements_iterator>);
+		static_assert(std::is_trivially_copyable_v<decltype(multi::array<double, 2>{}.elements().begin())>);
+		// static_assert(std::is_trivially_copyable_v<multi::array<double, 2>::elements_iterator>);
 
 		{
 			multi::array<double, 2> const arr({120, 140}, 99.0);
