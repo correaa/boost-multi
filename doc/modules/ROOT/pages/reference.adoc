@@ -111,7 +111,7 @@ Lexicographical order applies naturally if the extensions of `A` and `B` are dif
 |===
 | `dimensionality`  | static constant member, dimensionality of array `D`
 | `sizes`           | returns a tuple with the sizes in each dimension
-| `extensions`      | returns a tuple with the extensions in each dimension
+| `extents`         | returns a tuple with the extents (index ranges) in each dimension
 | `size`            | returns the number of subarrays contained in the first dimension
 | `extension`       | returns a contiguous index range describing the set of valid indices
 | `num_elements`    | returns the total number of elements
