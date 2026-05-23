@@ -2134,13 +2134,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
 
-	/// `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T&`)
+	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T&`)
 	using reference = typename std::conditional_t<
 		(D > 1),
 		subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference>;
 
-	/// `multi::const_subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::rebind<T const>::reference` (usually `T const&`)
+	/// Subarray immutable reference after binding first index, `multi::const_subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T const&`)
 	using const_reference = typename std::conditional_t<
 		(D > 1),
 		const_subarray<element, D - 1, element_ptr>,

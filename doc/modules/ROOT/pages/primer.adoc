@@ -51,7 +51,7 @@ copies are equal but independent (disjoint).
 multi::array<int, 2> B = A;                 // we make a copy
 
 assert(  B              ==  A              );  // copies are equal
-assert(  B.extensions() ==  A.extensions() );  // extensions (sizes) are equal
+assert(  B.extents() ==  A.extents() );  // extensions (sizes) are equal
 assert(  B[0][1]        ==  A[0][1]        );  // all elements are equal
 assert( &B[0][1]        != &A[0][1]        );  // elements are independent (different addresses)
 ----

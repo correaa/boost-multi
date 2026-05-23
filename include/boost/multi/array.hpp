@@ -738,6 +738,7 @@ struct                                                                          
 	using element_const_ptr = typename std::allocator_traits<allocator_type>::const_pointer;
 	using element_move_ptr  = multi::move_ptr<typename dynamic_array::element_ptr>;
 
+	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<pointer>::reference` (usually `T&`)
 	using reference = std::conditional_t<
 		(D > 1),
 		subarray<typename dynamic_array::element_type, D - 1, typename dynamic_array::element_ptr>,
@@ -746,6 +747,7 @@ struct                                                                          
 			typename std::iterator_traits<typename dynamic_array::element_ptr>::reference,
 			void>>;
 
+	/// Subarray immutable reference after binding first index, `multi::const_subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<const_pointer>::reference` (usually `T const&`)
 	using const_reference = std::conditional_t<
 		(D > 1),
 		const_subarray<typename dynamic_array::element_type, D - 1, typename dynamic_array::element_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?

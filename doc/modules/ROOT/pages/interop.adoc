@@ -475,7 +475,7 @@ void reduce_by_row(In2D const& in, OutputIt d_first) {
 	using index = typename In2D::index;
 	auto const& row_id = multi::restricted(
 		[] __host__ __device__ (index i, index j) { return i; },
-		in.extensions()
+		in.extents()
 	);  // or use "fun ^ ext" notation
 
 	::thrust::reduce_by_key(
@@ -632,7 +632,7 @@ Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) are "trivial t
 
 Cursors are a generalization of iterators for multiple dimensions.
 They are cheaply copied (like iterators) and they allow indexing.
-Also, they have no associated `.size()` or `.extensions()`, but this is generally fine for kernels.
+Also, they have no associated `.size()` or `.extents()`, but this is generally fine for kernels.
 (Since `cursors` have minimal information for indexing, they can save stack/register space in individual kernels.)
 
 Here it is an example implementation for matrix multiplication, in combination with Thrust and Multi,

@@ -540,7 +540,7 @@ As mentioned in other sections using `auto` and/or `+` appropriately can lead to
 | `auto const B = + A.element_transformed(fun);`           | Yes         | No  | Yes | Types and dimension are deduced, result is contiguous, preferred
 | `auto const B = A.element_transformed(fun);`               | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`, usually `const`, not recommended
 | `auto const& B = A.element_transformed(fun);`           | No         | No  | No (delayed) | Result is effective a reference, may dangle with `A`. Preferred way.
-| `multi::array<T, D> B(A.extensions()); B = A.element_transformed(fun);`           | Yes         | Yes (during construction)  | Yes | "Two-step" construction. `B` is mutable. Not recommended
+| `multi::array<T, D> B(A.extents()); B = A.element_transformed(fun);`           | Yes         | Yes (during construction)  | Yes | "Two-step" construction. `B` is mutable. Not recommended
 |===
 
 |===

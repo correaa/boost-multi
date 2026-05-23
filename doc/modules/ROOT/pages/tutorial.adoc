@@ -85,7 +85,7 @@ then we decompose it as the cartesian product of two 1-dimensional ranges of int
 ----
 #include <iostream>  // for print
 	...
-	auto [is, js] = d2D_ref.extensions();
+	auto [is, js] = d2D_ref.extents();
 	for(auto i : is) {
 		for(auto j : js) {
 			std::cout<< d2D_ref[i][j] <<' ';
@@ -377,7 +377,7 @@ Changing the size of arrays by `reextent`, `clear`, or assignment generally inva
 == Iteration
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
-For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extensions()`, and in the 2D case, `.extensions()` can be conveniently decomposed into two ranges, one for each dimension.
+For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extents()`, and in the 2D case, `.extents()` can be conveniently decomposed into two ranges, one for each dimension.
 
 [source,cpp]
 ----
@@ -386,7 +386,7 @@ For this type of usage, the valid range of indices in all the dimensions of an a
 		{4, 5, 6}
 	};
 
-	auto [is, js] = A.extensions();
+	auto [is, js] = A.extents();
 	for(auto i : is) {  // is == {0, 1} (range from 0 to 2, not included)
 		for(auto j : js) {  // ij = {0, 1, 2} (range from 0 to 3, not included)
 			A[i][j] = 5;
@@ -520,10 +520,10 @@ For example, the results of `A.extension()` is itself iterable and indexable; re
 `A.extension()` not only has a `.begin()` and `.end()`, but it also can be indexed, `A.extension()[1] == 1`.
 `A.extension()` is conceptually the sequence {0, 1}
 
-`A.extensions()` deserves special attention because manipulation of this object enables powerful constructs.
+`A.extents()` deserves special attention because manipulation of this object enables powerful constructs.
 As we described earlier, it can regarded as a product type of one-dimensional extensions, 
-henceforth decomposed as `auto [is, js] = A.extensions();` or as `std::get<0>(A.extensions())` and `std::get<1>(A.extensions())` (like a tuple).
-Furthermore `A.extensions()` can be regarded as an n-dimensional array whose elements are the cartesian product of valid indices.
+henceforth decomposed as `auto [is, js] = A.extents();` or as `std::get<0>(A.extents())` and `std::get<1>(A.extents())` (like a tuple).
+Furthermore `A.extents()` can be regarded as an n-dimensional array whose elements are the cartesian product of valid indices.
 In our example:
 
 ```
@@ -540,7 +540,7 @@ Combining these features we can write an assignment based on coordinates in a si
 
 [source,cpp]
 ----
-for(auto [i, j] : A.extensions().elements()) {
+for(auto [i, j] : A.extents().elements()) {
 	A[i][j] = i + 10*j;
 }
 ----
@@ -550,7 +550,7 @@ With algorithms this is
 [source,cpp]
 ----
 std::transform(
-	A.extensions().elements().begin(), A.extensions().elements().end(),  // source
+	A.extents().elements().begin(), A.extents().elements().end(),  // source
 	A.elements().begin(),  // destination
 	[](auto const& ij) { auto [i, j] = ij; return i + 10*j; }  // function of coordinates
 )
@@ -566,9 +566,9 @@ multi::array<double, 2> kernel = {
 	{1.0/16, 2.0/16, 1.0/16}
 };
 
-for(auto [i, j] : out.extensions().elements()) {  // go through all the indices of out
+for(auto [i, j] : out.extents().elements()) {  // go through all the indices of out
 	double sum = 0.0;
-	for(auto [k, l] : kernel.extensions().elements()) {  // go through all the indices of kernel
+	for(auto [k, l] : kernel.extents().elements()) {  // go through all the indices of kernel
 		// skip boundary elements here
 		sum += in[i + k - 1][j + l - 1] * kernel[k][l];
 	}
@@ -989,7 +989,7 @@ An straight forward use for restrictions is for generating concrete arrays from 
 ...
 multi::array<int, 2> A({3, 2});
 
-auto [is, js] = A.extensions();
+auto [is, js] = A.extents();
 
 for(auto i : is) {
  for(auto j : js) {
@@ -1207,7 +1207,7 @@ Custom functions can be applied by using the `multi::elementwise::mapping` funct
 auto const& AVE = multi::elementwise::mapping([](auto a, auto b) { return (a + b) / 2.0 ; }, A, B);
 ----
 
-Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extensions()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms (or used as part of other expressions)
+Note that lazy expression are themselves multidimensional arrays, and share their generic interface (`.extents()`, `.size()`, `.begin/end()`, etc) therefore they can be combined with algorithms (or used as part of other expressions)
 (e.g. https://godbolt.org/z/Ee1ohKxhW)
 
 // == Broadcast (infinite views)
@@ -1291,7 +1291,7 @@ Note that lazy expression are themselves multidimensional arrays, and share thei
 
 // ```cpp
 // auto hadamard = [](auto const& A, auto const& B, auto&& C) {
-//  auto const [is, js] = C.extensions();
+//  auto const [is, js] = C.extents();
 //  for(auto i : is) for(auto j : js) C[i][j] = A[i][j]*B[i][j];
 // };
 // ```
