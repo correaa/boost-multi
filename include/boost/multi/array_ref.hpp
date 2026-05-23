@@ -776,7 +776,7 @@ struct cursor_t {
 
 	using element_ptr  = ElementPtr;
 	using element_ref  = typename std::iterator_traits<element_ptr>::reference;
-	using element = typename std::iterator_traits<element_ptr>::value_type;
+	using element      = typename std::iterator_traits<element_ptr>::value_type;
 	using element_type = typename std::iterator_traits<element_ptr>::value_type;
 
 	using pointer   = element_ptr;
@@ -1049,7 +1049,7 @@ struct elements_range_t {
 	using iterator       = elements_iterator_t<pointer, layout_type>;
 	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
 
-	using element = value_type;
+	using element      = value_type;
 	using element_type = value_type;
 
  private:
@@ -1220,7 +1220,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
-	using ref_  = const_subarray;
+	using ref_ = const_subarray;
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
@@ -1550,8 +1550,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
 
-	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }  // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
+	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }                                                              // TODO(correaa) fix const
+	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                         // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
 	template<class... Xs>
@@ -1867,7 +1867,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		class Range,
 		std::enable_if_t<!has_extents<std::decay_t<Range>>::value, int> = 0,
 		//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
-		class = decltype(Range(std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()))>
+		class                                                           = decltype(Range(std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()))>
 	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
 
 	template<class TT, class... As>
@@ -2632,18 +2632,18 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
  public:
 	using stride_type = Stride;  // multi::index;
 
-	using reference   = std::conditional_t<
-		  IsMove,
-		  std::add_rvalue_reference_t<std::decay_t<reference_aux>>,
-		  reference_aux>;
+	using reference = std::conditional_t<
+		IsMove,
+		std::add_rvalue_reference_t<std::decay_t<reference_aux>>,
+		reference_aux>;
 
-	using difference_type   = typename affine::difference_type;
+	using difference_type = typename affine::difference_type;
 
 	using iterator_category = typename stride_traits<Stride>::category;
 	using iterator_concept  = typename stride_traits<Stride>::category;
 
 	using element      = Element;
-	using element_type      = typename std::pointer_traits<Ptr>::element_type;  // workaround for clang 15 and libc++ in c++20 mode
+	using element_type = typename std::pointer_traits<Ptr>::element_type;  // workaround for clang 15 and libc++ in c++20 mode
 
 	template<class Element2>
 	using rebind = array_iterator<std::decay_t<Element2>, 1, typename std::pointer_traits<Ptr>::template rebind<Element2>, IsConst, IsMove, Stride>;
@@ -2702,7 +2702,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchs
 
 	// constexpr auto segment() const {}
 
-	using element_ptr  = Ptr;
+	using element_ptr = Ptr;
 
 	static constexpr dimensionality_type rank_v = 1;
 
@@ -2996,7 +2996,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	using layout_type = Layout;
 	using ref_        = const_subarray;
 
-	using element = T;
+	using element      = T;
 	using element_type = T;
 
 	using element_ptr       = typename types::element_ptr;
@@ -3398,11 +3398,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	BOOST_MULTI_HD constexpr auto splitted_aux_() const {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, ((this->layout().nelems() / this->layout().stride()) + 1) / 2 * this->layout().stride());
-		return //std::array<subarray<T, 1, element_ptr>, 2>
-		std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr> >{
-			subarray<T, 1, element_ptr>(l1, types::base_),
-			subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		};
+		return  // std::array<subarray<T, 1, element_ptr>, 2>
+			std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr>>{
+				subarray<T, 1, element_ptr>(l1, types::base_),
+				subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			};
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -3410,8 +3410,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
  public:
 	BOOST_MULTI_HD constexpr auto splitted() const {
-		return
-		std::pair<const_subarray<T, 1, element_ptr>, const_subarray<T, 1, element_ptr> >{
+		return std::pair<const_subarray<T, 1, element_ptr>, const_subarray<T, 1, element_ptr>>{
 			std::get<0>(splitted_aux_()),
 			std::get<1>(splitted_aux_())
 		};
@@ -3613,6 +3612,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
 		auto&& r1 = (*(reinterpret_cast<typename const_subarray::element_type* const&>(const_subarray::base_))).*member;  // ->*pm;
 		auto*  p1 = &r1;
+
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
 		P2 p2 = reinterpret_cast<P2&>(p1);  // NOSONAR
 #else

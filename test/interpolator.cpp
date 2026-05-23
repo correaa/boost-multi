@@ -86,8 +86,8 @@ class uniform_cspline {  // NOLINT(misc-use-internal-linkage)
 		// for(std::size_t i = 0; i != K.size(); ++i) K[i] = {a[i], b[i], c[i], d[i]};
 	}
 	auto operator()(argument_type x) const -> result_type {
-		auto const i  = static_cast<index>((x - lower_) / dx_);
-		auto const Dx = x - (static_cast<double>(i) * dx_) - lower_;
+		auto const i   = static_cast<index>((x - lower_) / dx_);
+		auto const Dx  = x - (static_cast<double>(i) * dx_) - lower_;
 		// return a[i] + Dx*(b[i] + Dx*(c[i] + Dx*d[i]));
 		// auto const& Ki = K[i]; using std::get;
 		// return K[0][i] + Dx*(K[1][i] + Dx*(K[2][i] + Dx*K[3][i]));

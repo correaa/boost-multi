@@ -9,9 +9,8 @@
 #include "boost/multi/array_ref.hpp"  // IWYU pragma: export
 #include "boost/multi/detail/adl.hpp"
 #include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
-// #include "boost/multi/detail/is_trivial.hpp"
 #include "boost/multi/detail/memory.hpp"
-#include "boost/multi/detail/static_allocator.hpp"   // IWYU pragma: export
+#include "boost/multi/detail/static_allocator.hpp"  // IWYU pragma: export
 #include "boost/multi/restriction.hpp"
 
 #include <iterator>  // for std::sentinel_for
@@ -130,7 +129,7 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
+struct                                                                          // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -393,13 +392,13 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 	explicit dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element_type const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
-		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename)
+		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                          // NOLINT(readability-redundant-typename)
 	}
 
 	template<class Element>
 	// NOLINTNEXTLINE(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
 	explicit dynamic_array(Element const& elem, allocator_type const& alloc, std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element_type> && (D == 0), int> /*dummy*/ = 0)  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}  // NOLINT(readability-redundant-typename) for C++23
+	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}                                                                                                                       // NOLINT(readability-redundant-typename) for C++23
 
 	template<
 		class It,
@@ -429,16 +428,16 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 	  ) {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type>) {
 			array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
-		} else {                                                                                                                             // this workaround allows constexpr arrays for simple types
-			adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
+		} else {                                                                                                                                                    // this workaround allows constexpr arrays for simple types
+			adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename) for C++23
 		}
 	}
 
-	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                        // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                    // fill constructor
+	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                         // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                     // fill constructor
 	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t(extension * value.extents()).num_elements())), extension * value.extents()) {  // NOLINT(readability-redundant-typename)
-		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>);                                           // TODO(correaa) not implemented for non-trivial types,
-		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                      // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
+		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element_type> || multi::force_element_trivial_default_construction<typename dynamic_array::element_type>);                                            // TODO(correaa) not implemented for non-trivial types,
+		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                       // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -897,8 +896,7 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 #endif
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>
-		>{
+			subarray<T, 1, typename dynamic_array::element_ptr>>{
 			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
 			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
 		};
@@ -968,7 +966,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 
  protected:
 	using alloc_traits = typename multi::allocator_traits<allocator_type>;
-	using ref_          = array_ref<T, 0, typename multi::allocator_traits<typename multi::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+	using ref_         = array_ref<T, 0, typename multi::allocator_traits<typename multi::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;  // TODO(correaa) make private
 
 	auto uninitialized_value_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element_type> && !multi::force_element_trivial_default_construction<typename dynamic_array::element_type>) {
@@ -1018,12 +1016,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 		typename dynamic_array::element const& elem, allocator_type const& alloc
 	)
 	: array_alloc{alloc},
-	  ref_(dynamic_array::allocate(
-			  static_cast<typename multi::allocator_traits<allocator_type>::size_type>(
-				  typename dynamic_array::layout_t{extensions}.num_elements()
-			  )
-		  ),
-		  extensions) {
+	  ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_fill(elem);
 	}
 
@@ -1139,10 +1132,9 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-m
 		uninitialized_copy(other.data_elements());
 	}
 
-	// dynamic_array(dynamic_array&& other) = delete;
 	dynamic_array(dynamic_array&& other) noexcept
 	: array_alloc{other.get_allocator()}, ref_(std::exchange(other.base_, nullptr), other.extents()) {  // should this move the elements? or move the object? or should be deleted?
-		other.layout_mutable() = {};                                                                   // TODO(correaa) eliminate use of mutable member
+		other.layout_mutable() = {};                                                                    // TODO(correaa) eliminate use of mutable member
 		// other.layout_t<0>::operator=({});
 		// , ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), other.extents()) {
 		//  adl_alloc_uninitialized_move_n(
@@ -1396,27 +1388,27 @@ struct
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
 class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_ = dynamic_array<T, D, Alloc>;
-	
+
  public:
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) false positive on inherited &&-taking constructor
 
 	unique_array(unique_array const&) = default;
-	unique_array(unique_array&&) = default;
+	unique_array(unique_array&&)      = default;
 
 	auto operator=(unique_array const&) -> unique_array& = default;
-	auto operator=(unique_array&&) -> unique_array& = default;
+	auto operator=(unique_array&&) -> unique_array&      = default;
 
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif
-    ~unique_array() noexcept = default;   // pins execution space to match dynamic_array (host-only)
+	~unique_array() noexcept = default;  // pins execution space to match dynamic_array (host-only)
 };
 
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
 struct array : unique_array<T, D, Alloc> {
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
-	using unique_ = unique_array<T, D, Alloc>;
+	using unique_  = unique_array<T, D, Alloc>;
 
 	static_assert(
 		std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T> || std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,

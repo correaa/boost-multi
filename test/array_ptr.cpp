@@ -220,7 +220,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& aRef = *aP;  // cppcheck-suppress danglingTempReference ;  library idiom
 		// what(aP, aRef);
 		// (*aP)[0] = 990;
-		aRef[0] = 990;  // cppcheck-suppress danglingTempReference ;  library idiom
+		aRef[0]     = 990;  // cppcheck-suppress danglingTempReference ;  library idiom
 		BOOST_TEST( vec[2] == 990 );
 	}
 

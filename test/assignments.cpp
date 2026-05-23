@@ -177,10 +177,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			auto Bp = &multi::array_ref<int, 2>({5, 7}, wec.data());
 			// multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
+
 			make_ref(vec.data()) = *Bp;  // cppcheck-suppress danglingTemporaryLifetime
 
 			auto&& mref = make_ref(vec.data());
 			// mref        = (*Bp).sliced(0, 5);
+
 			mref = Bp->sliced(0, 5);
 
 			// make_ref(vec.data()) = (*Bp).sliced(0, 5);

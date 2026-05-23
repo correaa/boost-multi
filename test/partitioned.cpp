@@ -882,7 +882,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> arr = {0, 10, 20, 30};
 
-		auto&& [left, right] = arr.split();   // A is now in "consumed" typestate
+		auto&& [left, right] = arr.split();  // A is now in "consumed" typestate
 		BOOST_TEST( left.size() == 2 );
 		BOOST_TEST( right.size() == 2 );
 

@@ -106,7 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
 		// float const eff = dee;  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
 		// float const eff(dee);  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-		auto const eff = static_cast<double>(dee);
+		auto const eff  = static_cast<double>(dee);
 
 		BOOST_TEST( std::abs( eff - 5.0) < 1E-6 );
 
@@ -125,7 +125,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// float const eff{dee};  // -Wc++11-narrowing  // NOLINT(bugprone-narrowing-conversions)
 		// float const eff = dee;  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
 		// float const eff(dee);  // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-		auto const eff = static_cast<float>(dee);
+		auto const eff   = static_cast<float>(dee);
 
 		BOOST_TEST( std::abs( eff - 5.0F) < 1E-6F );
 

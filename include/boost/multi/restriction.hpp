@@ -385,7 +385,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	using element_type_ = std::decay_t<element_ref_>;
 
  public:
-	using element = element_type_;
+	using element      = element_type_;
 	using element_type = element_type_;
 
 	using value_type = std::conditional_t<
