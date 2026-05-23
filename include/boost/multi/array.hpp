@@ -207,7 +207,7 @@ struct  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used
 		array<typename dynamic_array::element_type, D - 1, allocator_type>,
 		typename dynamic_array::element_type>;
 
-	/// Signed integer type to represent difference between indices (usually `std::ptrdiff_t`) 
+	/// Signed integer type to represent difference between indices (usually `std::ptrdiff_t`)
 	using typename ref_::difference_type;
 	/// Integer type to represent sizes (usually `std::ptrdiff_t`)
 	using typename ref_::size_type;
