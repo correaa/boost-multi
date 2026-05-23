@@ -35,7 +35,7 @@ void print_2d(Array2D const& coll) {
 	// *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
 
 	std::for_each(std::begin(coll), std::end(coll), [](auto const& row) {
-		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
+		std::copy(std::begin(row), std::end(row), std::ostream_iterator<typename Array2D::element>(std::cout, ", "));
 		std::cout << '\n';
 	});
 }

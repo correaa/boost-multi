@@ -38,7 +38,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		NDArray const nda;
 		(void)nda;
 
-		static_assert(std::is_same_v<NDArray::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDArray::element, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDArray::element_ref, multi::array<double, 1>::reference>);
 
 		using NDRef = multi::array_ref<double, 1>;
@@ -53,7 +53,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_convertible<NDRef::const_reference, NDRef::value_type>::value);
 #endif
 
-		static_assert(std::is_same_v<NDRef::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDRef::element, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDRef::element_ref, multi::array<double, 1>::reference>);
 	}
 
@@ -64,7 +64,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		NDArray const nda;
 		(void)nda;
 
-		static_assert(std::is_same_v<NDArray::element_type, multi::array<double, 1>::value_type>);
+		// static_assert(std::is_same_v<NDArray::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDArray::element, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDArray::element_ref, multi::array<double, 1>::reference>);
 
 		using NDRef = multi::array_ref<double, 2>;
@@ -74,7 +75,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_convertible_v<NDRef::reference, NDRef::value_type>);
 		static_assert(std::is_convertible_v<NDRef::const_reference, NDRef::value_type>);
 
-		static_assert(std::is_same_v<NDRef::element_type, multi::array<double, 1>::value_type>);
+		// static_assert(std::is_same_v<NDRef::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDRef::element, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDRef::element_ref, multi::array<double, 1>::reference>);
 	}
 
@@ -85,7 +87,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		NDArray const nda;
 		(void)nda;
 
-		static_assert(std::is_same_v<NDArray::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDArray::element, multi::array<double, 1>::value_type>);
+		// static_assert(std::is_same_v<NDArray::element_type, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDArray::element_ref, multi::array<double, 1>::reference>);
 
 		using NDRef = multi::array_ref<double, 3>;
@@ -95,7 +98,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_convertible_v<NDRef::reference, NDRef::value_type>);
 		static_assert(std::is_convertible_v<NDRef::const_reference, NDRef::value_type>);
 
-		static_assert(std::is_same_v<NDRef::element_type, multi::array<double, 1>::value_type>);
+		// static_assert(std::is_same_v<NDRef::element_type, multi::array<double, 1>::value_type>);
+		static_assert(std::is_same_v<NDRef::element, multi::array<double, 1>::value_type>);
 		static_assert(std::is_same_v<NDRef::element_ref, multi::array<double, 1>::reference>);
 	}
 

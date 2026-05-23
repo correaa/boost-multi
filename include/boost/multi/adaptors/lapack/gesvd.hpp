@@ -72,7 +72,7 @@ void gesvd(AArray2D&& AA, UArray2D& UU, SArray1D& ss, VTArray2D& VV, Alloc alloc
 template<
 	template<typename> class AllocT = std::allocator,
 	class AArray2D, class UArray2D, class SArray1D, class VTArray2D,
-	class Alloc = AllocT<typename std::decay_t<AArray2D>::element_type>>
+	class Alloc = AllocT<typename std::decay_t<AArray2D>::element>>
 void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV) {
 	return gesvd(std::forward<AArray2D>(AA), std::forward<UArray2D>(UU), std::forward<SArray1D>(ss), std::forward<VTArray2D>(VV), Alloc{});
 }

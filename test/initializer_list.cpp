@@ -361,7 +361,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::dynamic_array arr({10, 20, 30});
 		multi::dynamic_array<int, 1> arr({10, 20, 30});
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( size(arr) == 3 && arr.num_elements() == 3 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1);

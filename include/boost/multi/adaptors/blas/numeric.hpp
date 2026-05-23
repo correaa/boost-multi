@@ -49,7 +49,7 @@ auto real(A&& array)
 }
 
 template<
-	class A, class Complex = typename std::decay_t<A>::element_type, typename T = typename complex_traits<Complex>::real_type,
+	class A, class Complex = typename std::decay_t<A>::element, typename T = typename complex_traits<Complex>::real_type,
 	class = std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto imag(A&& array)
 	-> decltype(std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag)) {

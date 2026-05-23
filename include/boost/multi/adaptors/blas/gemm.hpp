@@ -334,7 +334,7 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(rea
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
-template<class A2D, class B2D, class Scalar = typename A2D::element_type, class = decltype(Scalar{0.0})>
+template<class A2D, class B2D, class Scalar = typename A2D::element, class = decltype(Scalar{0.0})>
 auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	if constexpr(is_conjugated<A2D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(a.base()));

@@ -65,7 +65,7 @@ typename Array2D::decay_type syev(blas::filling uplo, Array2D const& a, Array1D&
 template<class Array2D>
 [[nodiscard]]  // "because input array is const, output gives eigenvalues"
 auto syev(blas::filling uplo, Array2D&& a) {
-	multi::array<typename std::decay_t<Array2D>::element_type, 1, decltype(get_allocator(a))> eigenvalues(size(a), get_allocator(a));
+	multi::array<typename std::decay_t<Array2D>::element, 1, decltype(get_allocator(a))> eigenvalues(size(a), get_allocator(a));
 	syev(uplo, std::forward<Array2D>(a), eigenvalues);
 	return eigenvalues;
 }

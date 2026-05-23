@@ -70,14 +70,6 @@ auto trace_array_deduce(multi::array<T, 2> const& arr) -> T {
 
 template int trace_array_deduce(multi::array<int, 2> const&);
 
-// template<class Array, typename T = typename Array::element_type>
-// auto trace_generic(Array const& arr) -> T {
-//  auto const& diag = arr.diagonal();
-//  return std::accumulate(diag.begin(), diag.end(), T{0});
-// }
-
-// template double trace_generic<multi::array<int, 2>>(multi::array<int, 2> const&);
-
 inline auto trace_separate_ref(multi::array_ref<int, 2> const& arr) -> int {
 	auto const& diag = arr.diagonal();
 	return std::accumulate(diag.begin(), diag.end(), 0);
@@ -1287,7 +1279,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const& asub = arr({0, 3}, {0, 3});
 
 		auto deduce_array = []<class Arr>(Arr const& a) {
-			return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element_type{0});
+			return std::accumulate(a.diagonal().begin(), a.diagonal().end(), typename Arr::element{0});
 		};  // NOLINT(readability/braces) bug in cpplint 1.6.1
 
 		BOOST_TEST( deduce_array(arr ) == 3 );
