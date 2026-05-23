@@ -1261,16 +1261,18 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray const&) = delete;
 
-	using element           = typename types::element;
-	using element_type      = typename types::element_type;
-	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename types::element_const_ptr;
-	using element_ref       = typename types::element_ref;
-	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
+	using element                     = typename types::element;
+	using element_type [[deprecated]] = typename types::element_type;
+	using element_ptr                 = typename types::element_ptr;
+	using element_const_ptr           = typename types::element_const_ptr;
+	using element_ref                 = typename types::element_ref;
+	using element_cref                = typename std::iterator_traits<element_const_ptr>::reference;
 
+ private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
+ public:
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
