@@ -3756,7 +3756,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #ifdef __cpp_lib_span
 	template<class Dummy = void*, std::enable_if_t<sizeof(Dummy) && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// explicit converts a more primitive type into a more powerful type (also removing explicit generates a problem with nvc++ 26)
-	explicit constexpr array_ref(std::span<typename array_ref::element_type>&& data_ref)
+	explicit constexpr array_ref(std::span<typename array_ref::element>&& data_ref)
 	: array_ref({static_cast<typename array_ref::size_type>(data_ref.size())}, data_ref.data()) { (void)std::move(data_ref); }
 #endif
 #endif
@@ -3883,8 +3883,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
-	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
+	using elements_type  = array_ref<typename array_ref::element, 1, typename array_ref::element_ptr>;
+	using celements_type = array_ref<typename array_ref::element, 1, typename array_ref::element_const_ptr>;
 
 	constexpr auto elements_aux_() const {
 		return elements_type(

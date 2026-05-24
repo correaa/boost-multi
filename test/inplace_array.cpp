@@ -3,19 +3,20 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>  // for array, dynamic_array, num_elements
-#include <boost/multi/detail/what.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 
 namespace multi = boost::multi;
 
-static auto fun(multi::subarray<int, 2, boost::multi::detail::offset_ptr<int, long int>>& arr2d) -> int {
+namespace {
+auto fun(multi::subarray<int, 2, boost::multi::detail::offset_ptr<int>>& arr2d) -> int {
 	return arr2d[1][1];
 }
 
-static auto gun(multi::subarray<int, 2> arr2d) -> int {
+auto gun(multi::subarray<int, 2> arr2d) -> int {
 	arr2d[1][0] = 0;
 	return arr2d[1][1];
+}
 }
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
