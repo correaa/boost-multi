@@ -4,9 +4,9 @@
 
 #include <boost/multi/array.hpp>  // for array, dynamic_array, num_elements
 
-#include <utility>  // for std::move
-
 #include <boost/core/lightweight_test.hpp>
+
+#include <utility>  // for std::move
 
 namespace multi = boost::multi;
 
