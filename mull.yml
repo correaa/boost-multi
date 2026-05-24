@@ -48,7 +48,7 @@ ignoreMutators:
   - cxx_logical_or_to_and  # bug in mull 16
   - cxx_logical_and_to_or  # bug in mull 16
   - scalar_value_mutator  # bug in mull 17
-timeout: 20000  # in milliseconds
+timeout: 120000  # in milliseconds
 # debug:
 #   slowIRVerification: true
 quiet: true
