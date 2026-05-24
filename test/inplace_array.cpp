@@ -17,7 +17,7 @@ auto gun(multi::subarray<int, 2> arr2d) -> int {
 	arr2d[1][0] = 0;
 	return arr2d[1][1];
 }
-}
+}  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
