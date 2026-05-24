@@ -2151,6 +2151,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	subarray(subarray&&) noexcept = default;
 	~subarray()                   = default;
 
+	template<
+		class Other,
+		class                                                                                                  = std::enable_if_t<!std::is_base_of_v<subarray, Other> && !std::is_base_of_v<Other, subarray>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		decltype(multi::detail::implicit_cast<typename subarray::element_ptr>(typename Other::element_ptr{}))* = nullptr,
+		decltype(std::declval<Other const&>().base())*                                                         = nullptr>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
+	BOOST_MULTI_HD constexpr /*mplct*/ subarray(Other&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to reproduce the implicitness of the argument
+	: subarray(other.layout(), other.base()) {}
+
 	using ptr = void;  // detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	// clang-format off
