@@ -78,7 +78,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 using core::trsm;
 
 template<class Context, class A2D, class B2D>
-auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b) // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) cognitive load 115, BLAS naming
+auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element alpha, A2D const& a, B2D&& b) // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) cognitive load 115, BLAS naming
 -> B2D&& {
 	if(a_side == blas::side::left ) {assert(size(~a) >= size( b));}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(a_side == blas::side::right) {assert(size( a) >= size(~b));}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -168,13 +168,13 @@ namespace operators {
 
 	template<class B2D, class UL>
 	auto operator/=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::right, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::right, typename std::decay_t<B2D>::element{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::right, typename std::decay_t<B2D>::element{1.0}, a, std::forward<B2D>(b)); }
 
 	template<class B2D, class UL>
 	auto operator|=(B2D&& b, UL const& a)  // NOLINT(readability-identifier-length) BLAS naming
-	->decltype(blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b))) {
-		return blas::trsm(blas::side::left, typename std::decay_t<B2D>::element_type{1.0}, a, std::forward<B2D>(b)); }
+	->decltype(blas::trsm(blas::side::left, typename std::decay_t<B2D>::element{1.0}, a, std::forward<B2D>(b))) {
+		return blas::trsm(blas::side::left, typename std::decay_t<B2D>::element{1.0}, a, std::forward<B2D>(b)); }
 
 	using blas::U;
 	using blas::L;

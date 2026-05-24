@@ -361,7 +361,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::dynamic_array arr({10, 20, 30});
 		multi::dynamic_array<int, 1> arr({10, 20, 30});
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( size(arr) == 3 && arr.num_elements() == 3 );
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1);
@@ -376,7 +376,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> arr({10, 20, 30});
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( arr.num_elements() == 3 );
@@ -390,7 +390,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(initializer_list_1d_b)
 	{
 		multi::array<int, 1> arr({10, 20});
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( arr.size() == 2 );
 		BOOST_TEST( arr.num_elements() == 2 );
@@ -405,7 +405,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
 		multi::array<int, 1> arr({0, 2});
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( size(arr) == 2 );
 		BOOST_TEST( arr.num_elements() == 2 );
@@ -420,7 +420,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
 		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( multi::rank<decltype(arr)>::value == 1 );
 		BOOST_TEST( arr.num_elements() == 1 );
@@ -433,7 +433,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array arr({90});  // multi::array arr = {90}; not working with CTAD
 		multi::array<int, 1> arr({90});  // multi::array arr = {90}; not working with CTAD
 
-		static_assert(std::is_same_v<decltype(arr)::element_type, int>);
+		static_assert(std::is_same_v<decltype(arr)::element, int>);
 
 		BOOST_TEST( size(arr) == 1 );
 		BOOST_TEST( arr.num_elements() == 1 );

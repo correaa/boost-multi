@@ -16,16 +16,16 @@ namespace multi = boost::multi;
 namespace {
 template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
-	typename Array2D::element_type sum{0};
-	for(auto i : extension(arr)) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += arr[i][i];           // cppcheck-suppress useStlAlgorithm ;
+	typename Array2D::element sum{0};
+	for(auto i : arr.extension()) {  // NOLINT(altera-unroll-loops) testing loops
+		sum += arr[i][i];            // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
 
 template<class Array2D>
 auto trace_with_diagonal(Array2D const& arr) {
-	typename Array2D::element_type sum{0};
+	typename Array2D::element sum{0};
 	for(auto aii : arr.diagonal()) {  // NOLINT(altera-unroll-loops) testing loops
 		sum += aii;                   // cppcheck-suppress useStlAlgorithm ;
 	}
@@ -34,7 +34,7 @@ auto trace_with_diagonal(Array2D const& arr) {
 
 template<class Array2D>
 auto trace_with_accumulate(Array2D const& arr) {
-	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), static_cast<typename Array2D::element_type>(0));
+	return std::accumulate(arr.diagonal().begin(), arr.diagonal().end(), static_cast<typename Array2D::element>(0));
 }
 }  // end unnamed namespace
 
@@ -44,7 +44,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using int_element = multi::index;
 		multi::array<int_element, 2> arr({5, 5}, 0);
 
-		auto [is, js] = extents(arr);
+		auto [is, js] = arr.extents();
 
 		// NOLINTNEXTLINE(altera-unroll-loops) testing loops
 		for(auto i : is) {

@@ -71,7 +71,7 @@ class dft_range {
  public:
 	static constexpr auto dimensionality = std::decay_t<In>::dimensionality;
 	auto                  operator+() const {
-        multi::array<typename std::decay_t<In>::element_type, dimensionality> ret = *this;
+        multi::array<typename std::decay_t<In>::element, dimensionality> ret = *this;
         return ret;
 	}
 

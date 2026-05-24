@@ -197,8 +197,8 @@ using array_iterator [[deprecated]] = typename detail::array_iterator<Element, D
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
-	using element      = T;
-	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
+	using element                                      = T;
+	using element_type [[deprecated("use ::element")]] = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
 	using element_ptr       = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
@@ -436,10 +436,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	using pointer         = subarray<T, D, ElementPtr, Layout>*;
-	using element_type    = typename subarray<T, D, ElementPtr, Layout>::decay_type;
+	using element         = typename subarray<T, D, ElementPtr, Layout>::decay_type;
 	using difference_type = typename Layout::difference_type;
 
-	using value_type = element_type;
+	using value_type = element;
 
 	using reference = std::conditional_t<
 		IsConst,
@@ -774,10 +774,10 @@ struct cursor_t {
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
 	using strides_type    = StridesType;
 
-	using element_ptr  = ElementPtr;
-	using element_ref  = typename std::iterator_traits<element_ptr>::reference;
-	using element      = typename std::iterator_traits<element_ptr>::value_type;
-	using element_type = typename std::iterator_traits<element_ptr>::value_type;
+	using element_ptr                                  = ElementPtr;
+	using element_ref                                  = typename std::iterator_traits<element_ptr>::reference;
+	using element                                      = typename std::iterator_traits<element_ptr>::value_type;
+	using element_type [[deprecated("use ::element")]] = typename std::iterator_traits<element_ptr>::value_type;
 
 	using pointer   = element_ptr;
 	using reference = element_ref;
@@ -1049,8 +1049,8 @@ struct elements_range_t {
 	using iterator       = elements_iterator_t<pointer, layout_type>;
 	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
 
-	using element      = value_type;
-	using element_type = value_type;
+	using element                                      = value_type;
+	using element_type [[deprecated("use ::element")]] = value_type;
 
  private:
 	pointer     base_;
@@ -1261,16 +1261,18 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray const&) = delete;
 
-	using element           = typename types::element;
-	using element_type      = typename types::element_type;
-	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename types::element_const_ptr;
-	using element_ref       = typename types::element_ref;
-	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
+	using element                                      = typename types::element;
+	using element_type [[deprecated("use ::element")]] = typename types::element;
+	using element_ptr                                  = typename types::element_ptr;
+	using element_const_ptr                            = typename types::element_const_ptr;
+	using element_ref                                  = typename types::element_ref;
+	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
 
+ private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
+ public:
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
@@ -1368,7 +1370,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
 	/// Associated type that this reference decays to (when true copies are needed)
-	using decay_type = array<std::decay_t<typename types::element_type>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<std::decay_t<typename types::element>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};
@@ -1995,7 +1997,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 				typename std::pointer_traits<P2>::template rebind<T2>,
 				typename std::pointer_traits<element_ptr>::template rebind<T2>> &&
 				std::is_same_v<  // check that only constness is changed
-					std::remove_const_t<typename std::pointer_traits<P2>::element_type>, std::remove_const_t<typename const_subarray::element_type>>,
+					std::remove_const_t<typename std::pointer_traits<P2>::element_type>, std::remove_const_t<typename const_subarray::element>>,
 			int> = 0>
 	constexpr auto const_array_cast() const {
 		if constexpr(std::is_pointer_v<P2>) {
@@ -2149,6 +2151,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	subarray(subarray&&) noexcept = default;
 	~subarray()                   = default;
 
+	template<
+		class Other,
+		class                                                                                                  = std::enable_if_t<!std::is_base_of_v<subarray, Other> && !std::is_base_of_v<Other, subarray>>,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-type-traits)  TODO(correaa) in C++20
+		decltype(multi::detail::implicit_cast<typename subarray::element_ptr>(typename Other::element_ptr{}))* = nullptr,
+		decltype(std::declval<Other const&>().base())*                                                         = nullptr>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
+	BOOST_MULTI_HD constexpr /*mplct*/ subarray(Other&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor,cppcoreguidelines-missing-std-forward) : to reproduce the implicitness of the argument
+	: subarray(other.layout(), other.base()) {}
+
 	using ptr = void;  // detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	// clang-format off
@@ -2199,16 +2210,16 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 	template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	template<class TT = typename subarray::element_type>
+	template<class TT = typename subarray::element>
 	constexpr auto fill(TT const& value) & -> decltype(auto) {
 		return adl_fill_n(this->begin(), this->size(), value), *this;
 	}
-	constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element_type{}); }
+	constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element{}); }
 
-	template<class TT = typename subarray::element_type>
+	template<class TT = typename subarray::element>
 	[[deprecated]] constexpr auto fill(TT const& value) && -> decltype(auto) { return std::move(this->fill(value)); }
 	[[deprecated]] constexpr auto fill() && -> decltype(auto) {
-		return std::move(*this).fill(typename subarray::element_type{});
+		return std::move(*this).fill(typename subarray::element{});
 	}
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
@@ -2822,11 +2833,11 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using types = array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
-	using element      = typename types::element;
-	using element_type = typename types::element_type;
-	using element_ref  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
-	using element_cref = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
-	using iterator     = detail::array_iterator<T, 0, ElementPtr>;
+	using element_type [[deprecated("use ::element")]] = typename types::element;
+	using element                                      = typename types::element;
+	using element_ref                                  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
+	using element_cref                                 = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
+	using iterator                                     = detail::array_iterator<T, 0, ElementPtr>;
 
 	using size_type = typename array_types<T, 0, ElementPtr, Layout>::size_type;
 
@@ -2996,14 +3007,13 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	using layout_type = Layout;
 	using ref_        = const_subarray;
 
-	using element      = T;
-	using element_type = T;
-
-	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>;
-	using element_move_ptr  = multi::move_ptr<element_type, element_ptr>;
-	using element_ref       = typename types::element_ref;
-	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
+	using element_type [[deprecated("use ::element")]] = T;
+	using element                                      = T;
+	using element_ptr                                  = typename types::element_ptr;
+	using element_const_ptr                            = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_move_ptr                             = multi::move_ptr<element, element_ptr>;
+	using element_ref                                  = typename types::element_ref;
+	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
 
 	/// `std::allocator_traits<Allocator>::const_pointer` for 1D arrays
 	using const_pointer   = element_const_ptr;
@@ -3020,14 +3030,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	BOOST_MULTI_FRIEND_CONSTEXPR
 	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
-	using decay_type = array<std::decay_t<typename types::element_type>, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+	using decay_type = array<std::decay_t<typename types::element>, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
 	constexpr auto                    decay() const -> decay_type { return decay_type{*this}; }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
 
 	using basic_const_array = const_subarray<
 		T, 1,
-		typename std::pointer_traits<ElementPtr>::template rebind<typename const_subarray::element_type const>,
+		typename std::pointer_traits<ElementPtr>::template rebind<typename const_subarray::element const>,
 		Layout>;
 
  protected:
@@ -3456,9 +3466,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
 
-	using iterator       = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
-	using const_iterator = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
-	using move_iterator  = typename multi::detail::array_iterator<element_type, 1, typename types::element_ptr, false, true>;
+	using iterator       = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
+	using const_iterator = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
+	using move_iterator  = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, true>;
 
 	using reverse_iterator [[deprecated]]       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;
@@ -3610,7 +3620,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-		auto&& r1 = (*(reinterpret_cast<typename const_subarray::element_type* const&>(const_subarray::base_))).*member;  // ->*pm;
+		auto&& r1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
 		auto*  p1 = &r1;
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
@@ -3719,7 +3729,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-	using element_type = typename array_ref::element_type;
+	using element_type = typename array_ref::element;
 	template<class U = element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator std::span<U const>() const { return std::span<U const>(this->data_elements(), this->size()); }
 
@@ -3746,7 +3756,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #ifdef __cpp_lib_span
 	template<class Dummy = void*, std::enable_if_t<sizeof(Dummy) && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// explicit converts a more primitive type into a more powerful type (also removing explicit generates a problem with nvc++ 26)
-	explicit constexpr array_ref(std::span<typename array_ref::element_type>&& data_ref)
+	explicit constexpr array_ref(std::span<typename array_ref::element>&& data_ref)
 	: array_ref({static_cast<typename array_ref::size_type>(data_ref.size())}, data_ref.data()) { (void)std::move(data_ref); }
 #endif
 #endif
@@ -3873,8 +3883,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	using elements_type  = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>;
-	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
+	using elements_type  = array_ref<typename array_ref::element, 1, typename array_ref::element_ptr>;
+	using celements_type = array_ref<typename array_ref::element, 1, typename array_ref::element_const_ptr>;
 
 	constexpr auto elements_aux_() const {
 		return elements_type(
@@ -4210,7 +4220,7 @@ template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename st
 
 template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size_v<Tuple>, It>;
 
-template<class It> const_subarray(It, It) -> const_subarray<typename It::element_type, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1>>;
+template<class It> const_subarray(It, It) -> const_subarray<typename It::element, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1>>;
 
 template<class T> const_subarray(std::initializer_list<T>) -> const_subarray<T, 1>;
 template<class T> const_subarray(std::initializer_list<std::initializer_list<T>>) -> const_subarray<T, 2>;

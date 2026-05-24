@@ -220,8 +220,8 @@ namespace operators {
 
 	template<class Matrix,
 		std::enable_if_t<Matrix::dimensionality == 2, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	auto operator*(typename Matrix::element_type aa, Matrix const& A) {  // NOLINT(readability-identifier-length) BLAS naming
-		return scaled_matrix<typename Matrix::element_type, Matrix const&>{aa, A};
+	auto operator*(typename Matrix::element aa, Matrix const& A) {  // NOLINT(readability-identifier-length) BLAS naming
+		return scaled_matrix<typename Matrix::element, Matrix const&>{aa, A};
 	}
 
 } // end namespace operators
