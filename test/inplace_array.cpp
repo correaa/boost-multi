@@ -42,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	fun(a2d);
 
-	multi::subarray<int, 2, boost::multi::detail::offset_ptr<int, long int>>& a2ds = a2d;
+	multi::subarray<int, 2, boost::multi::detail::offset_ptr<int>>& a2ds = a2d;
 
 	gun(std::move(a2ds));
 
