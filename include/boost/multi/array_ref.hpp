@@ -2153,7 +2153,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<
 		class Other,
-		class                                                                                                  = std::enable_if_t<!std::is_base_of_v<subarray, Other> && !std::is_base_of_v<Other, subarray>>,  // NOLINT(modernize-type-traits)  TODO(correaa) in C++20
+		class                                                                                                  = std::enable_if_t<!std::is_base_of_v<subarray, Other> && !std::is_base_of_v<Other, subarray>>,  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-type-traits)  TODO(correaa) in C++20
 		decltype(multi::detail::implicit_cast<typename subarray::element_ptr>(typename Other::element_ptr{}))* = nullptr,
 		decltype(std::declval<Other const&>().base())*                                                         = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
