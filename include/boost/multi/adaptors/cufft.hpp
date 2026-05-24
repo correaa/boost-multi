@@ -488,10 +488,10 @@ auto dft_backward(std::array<bool, +D> which, In const& in, Out&& out) -> Out&& 
 // //->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o)) {
 //  return cufft::cached_plan<D/*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, i.layout(), o.layout()/*, i.get_allocator()*/}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o); }
 
-template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+template<typename In, typename R = multi::array<typename In::element, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 BOOST_MULTI_NODISCARD("when first argument is const")
 auto dft(In const& in, int sgn) -> R {
-	static_assert(std::is_trivially_default_constructible<typename In::element_type>{});
+	static_assert(std::is_trivially_default_constructible<typename In::element>{});
 	R ret(extents(in), get_allocator(in));
 	cufft::dft(in, ret, sgn);
 	// if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};

@@ -77,7 +77,7 @@ void gesvd(AArray2D&& AA, UArray2D&& UU, SArray1D&& ss, VTArray2D&& VV) {
 	return gesvd(std::forward<AArray2D>(AA), std::forward<UArray2D>(UU), std::forward<SArray1D>(ss), std::forward<VTArray2D>(VV), Alloc{});
 }
 
-template<class Array2D, typename ElementType = typename Array2D::element_type>
+template<class Array2D, typename ElementType = typename Array2D::element>
 auto gesvd(Array2D const& AA) {
 	auto AA_copy = AA;
 	auto ret     = std::make_tuple(

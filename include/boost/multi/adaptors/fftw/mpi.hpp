@@ -73,7 +73,7 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 		local_ptr_  {alloc_.allocate(local_count_), local_extension_2d(ext, comm_)},
 		n0_{multi::layout_t<2>(ext).size()}
 	{
-		if(not std::is_trivially_default_constructible<element_type>{})
+		if(!std::is_trivially_default_constructible<element>{})
 			adl_alloc_uninitialized_default_construct_n(alloc_, local_ptr_->base(), local_ptr_->num_elements());
 	}
 	bmpi3::communicator& comm() const&{return comm_;}

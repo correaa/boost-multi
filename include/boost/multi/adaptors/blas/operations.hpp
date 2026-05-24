@@ -20,12 +20,12 @@ template<class A> auto identity(A&& array) -> decltype(auto) {return std::forwar
 template<class A> auto T(A&& arr) -> decltype(auto) {return std::forward<A>(arr).rotated();}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 template<class A> auto N(A&& arr) -> decltype(auto) {return std::forward<A>(arr)          ;}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 
-template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
+template<class A, typename D=std::decay_t<A>, typename E=typename D::element>
 auto conjugated_transposed(A&& arr) -> decltype(auto) {
 	return blas::T(blas::conj(std::forward<A>(arr)));
 }
 
-// template<class A, typename D=std::decay_t<A>, typename E=typename D::element_type>
+// template<class A, typename D=std::decay_t<A>, typename E=typename D::element>
 // auto conjugated(A&& array) -> decltype(auto) {
 //  return blas::conj(std::forward<A>(array));
 // }

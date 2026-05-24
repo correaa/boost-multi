@@ -436,10 +436,10 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 	// ~subarray_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	using pointer         = subarray<T, D, ElementPtr, Layout>*;
-	using element_type    = typename subarray<T, D, ElementPtr, Layout>::decay_type;
+	using element         = typename subarray<T, D, ElementPtr, Layout>::decay_type;
 	using difference_type = typename Layout::difference_type;
 
-	using value_type = element_type;
+	using value_type = element;
 
 	using reference = std::conditional_t<
 		IsConst,
