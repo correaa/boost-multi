@@ -898,10 +898,10 @@ struct                                                                          
 #endif
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>>{
+			subarray<T, 1, typename dynamic_array::element_ptr>>(
 			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
 			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
-		};
+		);
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
