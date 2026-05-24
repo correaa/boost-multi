@@ -871,6 +871,7 @@ Finally, the library offers a tag to explicitly state the intention of having un
 This syntax will compile only if elements are trivially-default constructible; 
 therefore and as an example `multi::arrray<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
+[#tutorial_const_correctness]
 == Const-correctness
 
 Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.

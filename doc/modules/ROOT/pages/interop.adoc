@@ -707,6 +707,34 @@ Algorithms are expected to work with oneAPI execution policies as well (not test
     std::fill(policy, vec.begin(), vec.end(), 42);
 ----
 
+[#interop_hpx]
+== HPX
+
+HPX (High Performance ParallelX) is a library for parallelism and concurrency that implements the C\++ parallel algorithms interface while extending it to distributed and asynchronous execution across multi-core and multi-node systems.
+
+Intranode parallelism works out of the box with this library.
+These are few examples, using reduction and for-each in 1D and 2D.
+
+[source,cpp]
+----
+	multi::array<int, 1> arr = {1, 2, 3, 4, 5, 6};
+	auto const total = hpx::reduce(hpx::execution::par, arr.begin(), arr.end(), 0);
+	assert(total == 1 + 2 + 3 + 4 + 5 + 6);
+----
+
+[source,cpp]
+----
+	multi::array<int, 2> arr({4, 5}, 0);
+
+	hpx::for_each(hpx::execution::par, arr.elements().begin(), arr.elements().end(), [](int& x) { x = 1; });
+
+	auto const total = hpx::reduce(hpx::execution::par, arr.elements().begin(), arr.elements().end(), 0);
+	assert(total == 4 * 5);
+----
+link:https://godbolt.org/z/Ps7bqc7vc[((open with Compiler Explorer))]
+
+Just as with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundamental for multidimensional arrays.
+
 [#interop_fmt]
 == Formatting (pass:[{fmt}] pretty printing)
 
