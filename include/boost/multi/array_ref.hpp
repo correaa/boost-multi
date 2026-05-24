@@ -2157,7 +2157,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		decltype(multi::detail::implicit_cast<typename subarray::element_ptr>(typename Other::element_ptr{}))* = nullptr,
 		decltype(std::declval<Other const&>().base())*                                                         = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	BOOST_MULTI_HD constexpr /*mplct*/ subarray(Other&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to reproduce the implicitness of the argument
+	BOOST_MULTI_HD constexpr /*mplct*/ subarray(Other&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor,cppcoreguidelines-missing-std-forward) : to reproduce the implicitness of the argument
 	: subarray(other.layout(), other.base()) {}
 
 	using ptr = void;  // detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
