@@ -1,4 +1,4 @@
-// Copyright 2021-2025 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -30,8 +30,8 @@ auto meshgrid(X1D const& x, Y1D const& y) {
 template<class X1D, class Y1D>
 auto meshgrid_copy(X1D const& x, Y1D const& y) {
 	auto ret = std::pair{
-		multi::array<typename X1D::element_type, 2>({x.size(), y.size()}),
-		multi::array<typename Y1D::element_type, 2>(std::ranges::views::repeat(y, x.size()))
+		multi::array<typename X1D::element, 2>({x.size(), y.size()}),
+		multi::array<typename Y1D::element, 2>(std::ranges::views::repeat(y, x.size()))
 	};
 
 	std::fill(ret.first.rotated().begin(), ret.first.rotated().end(), x);
