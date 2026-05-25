@@ -667,7 +667,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inhe
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && (*this->ptr_).layout() == (*other.ptr_).layout();
+		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && this->ptr_->layout() == other.ptr_->layout();
 	}
 
 	template<bool OtherIsConst, std::enable_if_t<(IsConst != OtherIsConst), int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
@@ -3409,10 +3409,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, ((this->layout().nelems() / this->layout().stride()) + 1) / 2 * this->layout().stride());
 		return  // std::array<subarray<T, 1, element_ptr>, 2>
-			std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr>>{
+			std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr>>(
 				subarray<T, 1, element_ptr>(l1, types::base_),
 				subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			};
+			);
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -3420,10 +3420,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
  public:
 	BOOST_MULTI_HD constexpr auto splitted() const {
-		return std::pair<const_subarray<T, 1, element_ptr>, const_subarray<T, 1, element_ptr>>{
+		return std::pair<const_subarray<T, 1, element_ptr>, const_subarray<T, 1, element_ptr>>(
 			std::get<0>(splitted_aux_()),
 			std::get<1>(splitted_aux_())
-		};
+		);
 	}
 
  private:

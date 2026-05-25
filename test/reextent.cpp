@@ -387,15 +387,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> arr;
 
-		std::vector<std::vector<int> > varr = {
+		std::vector<std::vector<int>> varr = {
 			std::vector<int>{1, 2},
 			std::vector<int>{3, 4}
 		};
 
-		arr.reextent({
-			static_cast<multi::array<int, 2>::size_type>(varr.size()),
-			static_cast<multi::array<int, 2>::size_type>(varr[0].size())
-		});
+		arr.reextent({static_cast<multi::array<int, 2>::size_type>(varr.size()), static_cast<multi::array<int, 2>::size_type>(varr[0].size())});
 	}
 	return boost::report_errors();
 }
