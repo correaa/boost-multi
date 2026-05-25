@@ -45,14 +45,14 @@ class offset_ptr {
 	offset_ptr() = default;  // cppcheck-suppress uninitMemberVar
 	constexpr explicit offset_ptr(T* ptr) : ptr_{ptr}, offset_{0} {}
 	// cppcheck-suppress noExplicitConstructor ; nullptr should convert implicitly, like for raw pointers
-	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) match raw-pointer behavior
+	constexpr offset_ptr(std::nullptr_t) noexcept : ptr_{nullptr}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) match raw-pointer behavior
 
 	offset_ptr(offset_ptr const&) = default;
 	offset_ptr(offset_ptr&&)      = default;
 
 	template<class U, std::enable_if_t<std::is_convertible_v<U*, T*>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	constexpr /*mplct*/ offset_ptr(offset_ptr<U, Diff> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) propagate implicitness of T*->U*
+	constexpr /*mplct*/ offset_ptr(offset_ptr<U, Diff> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) propagate implicitness of T*->U*
 	: ptr_{other.ptr_}, offset_{other.offset_} {}
 
 	template<class U, std::enable_if_t<std::is_constructible_v<T*, U*> && !std::is_convertible_v<U*, T*>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
