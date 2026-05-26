@@ -2007,10 +2007,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		}
 	}
 
-	/// Returns a const-element view of the array, preventing modification of elements.
-	constexpr auto as_const() const {
-		return rebind<element, element_const_ptr>{this->layout(), this->base()};
-	}
+	/// Returns a const-element view of the subarray, preventing modification of elements.
+	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
+	// return rebind<element, element_const_ptr>{this->layout(), this->base()};
 
  private:
 	template<class T2, class P2>
@@ -3031,6 +3030,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
 	using decay_type = array<std::decay_t<typename types::element>, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
+
+	/// Returns a const-element view of the subarray, preventing modification of elements
+	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
 
 	constexpr auto                    decay() const -> decay_type { return decay_type{*this}; }
 	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
