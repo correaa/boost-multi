@@ -174,10 +174,10 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 |===
 |                             | APL                       | C++ Multi                                            
 
-| Indexing                    | `A[i, j]`                 | `+A[i][j]+` or `+A(i, j)+` (or `+A[i, j]+` in C++23)
+| Indexing                    | `A[i;j]`                 | `+A[i][j]+` or `+A(i, j)+` (or `+A[i, j]+` in C++23)
 | row `i`                     | `A[i;]`                   | `+A(i, _)+` or `A[i]` or `A[i, _]` (C++23)
 | column `j`                  | `A[;j]`                   | `+A(_, j)+` (or `+A[_, j]+` in C++23)
-| subrange of indices `I`     | `V[I]`                    | `+V(I)+` (limited: `I` must be a integer interval (or strided interval) https://godbolt.org/z/zerjPa5KT) 
+| subrange of indices `I`     | `V[I]`                    | `+V(I)+` or `+V({f, l})+` (limited: `I` must be a integer interval (or strided interval) https://godbolt.org/z/EMvh7dv4a)
 | Compress                    | `U / V`                   | no (approx: https://godbolt.org/z/z8M6qhq5G)
 | Compress last axis          | `U / A`                   | no
 | Restructuring (elements)    | `,A`                      | `A.elements()`
