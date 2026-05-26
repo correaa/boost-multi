@@ -19,10 +19,12 @@ CheckOptions:
   - { key: readability-identifier-naming.PrivateMemberPrefix               , value: ''         }
   - { key: readability-identifier-naming.PrivateMemberSuffix               , value: _          }
   - { key: readability-identifier-naming.PrivateMethodSuffix               , value: _          }
+  - { key: readability-identifier-naming.PrivateTypedefSuffix              , value: _          }
   - { key: readability-identifier-naming.StructCase                        , value: lower_case }
   - { key: readability-identifier-naming.TemplateParameterCase             , value: CamelCase  }
   - { key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp, value: expr-type}
   - { key: readability-operators-representation.BinaryOperators            , value: '&&;&=;&;|;~;!;!=;||;|=;^;^='}
+# TODO(correaa) - { key: readability-identifier-naming.PrivateTypeAliasSuffix            , value: _          }
 # value: expr-type , bug in clang 16 in c++20 mode https://stackoverflow.com/a/75157215/225186
 
 Checks: '*,
