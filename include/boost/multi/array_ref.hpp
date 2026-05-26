@@ -1434,24 +1434,18 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	#endif
 	// clang-format on
 
-	// template<class Tuple = std::array<index, static_cast<std::size_t>(D)>,
-	// 		 typename    = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
-	// 		 >
-	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-	// 	-> decltype(operator[](detail::head(tup))[detail::tuple_tail(tup)]) {
-	// 	return operator[](detail::head(tup))[detail::tuple_tail(tup)];
-	// }
-
-	// template<class Tuple, typename = std::enable_if_t<(std::tuple_size<Tuple>::value == 1)>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& tup) const
-	// 	-> decltype(operator[](detail::head(tup))) {
-	// 	return operator[](detail::head(tup));
-	// }
-
-	/// Returns a const reference to the first element.
+	/// Returns an immutable reference to the front element.
 	/// \pre `!is_empty()`
-	constexpr auto front() const& -> const_reference { return *begin(); }
-	constexpr auto back() const& -> const_reference { return *(end() - 1); }  // std::prev(end(), 1);}
+	constexpr auto front() const& -> const_reference {
+		assert(!this->is_empty());
+		return *begin();
+	}
+	/// Returns an immutable reference to the back element.
+	/// \pre `!is_empty()`
+	constexpr auto back() const& -> const_reference {
+		assert(!this->is_empty());
+		return *(end() - 1);
+	}
 
 	using typename types::index;
 
@@ -1490,6 +1484,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }
 
  private:
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 	constexpr auto dropped_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT(n <= this->size());
 		typename types::layout_t const new_layout(
@@ -1499,19 +1497,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 			this->stride() * (this->size() - n)
 		);
 
-#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
-
 		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + n * this->layout().stride());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
-		// return const_subarray(new_layout, this->base_ + n * this->layout().stride() /*- this->layout().offset()*/);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
+	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
-	}
 
  public:
 	constexpr auto dropped(difference_type n) const& { return dropped_aux_(n).as_const(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -1605,8 +1595,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using index_range = typename const_subarray::index_range;
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }
-	// constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
-	// constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
 	[[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {

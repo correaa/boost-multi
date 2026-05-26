@@ -180,14 +180,14 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 | subrange of indices `I`     | `V[I]`                    | `V(I)`
 | Compress                    | `U / V`                   | no (approx: https://godbolt.org/z/z8M6qhq5G)
 | Compress last axis          | `U / A`                   | no
-| Restructuring               | `,A`                      | `A.elements()`
-|                             | `3 4 ⍴ V`                 | `multi::array_ref<int, 2>(V.data_elements(), {3, 4})`
-|                             | `3 4 ⍴ A`                 | `multi::array_ref<int, 2>(A.data_elements(), {3, 4})`
+| Restructuring (elements)    | `,A`                      | `A.elements()`
+| Restructuring (1D to 2D)    | `3 4 ⍴ V`                 | limited (approx: `multi::array_ref<int, 2>(V.data_elements(), {3, 4})`)
+| Restructuring (2D to 2D)    | `3 4 ⍴ A`                 | limited (approx: `multi::array_ref<int, 2>(A.data_elements(), {3, 4})`)
 | Catenation                  | `V, W`                    | no (approx: https://godbolt.org/z/cKcbWTooG)
 | Transposition               | `⍉ A`                     | `~A` or `A.transposed()`
-|                             | `1 1 ⍉ A`                 | no
+| Main diagonal               | `1 1 ⍉ A`                 | `A.diagonal()`
 | Drop                        | `3 ↓ V`                   | `V.dropped(3)`
-|                             | `2 -1 ↓ A`                | `A.taked(A.size() - 1).dropped(2)`
+| Drop (from both side)       | `2 -1 ↓ A`                | `A.taked(A.size() - 1).dropped(2)`
 | Rotate (3 places left)      | `3 ⌽ A`                   | no (approx: use `std::rotate`)
 | Rotate (2 places right)     | `-2 ⌽ A`                  | no (approx: use `std::rotate`)
 | Reversal                    | `⌽ V`                     | `V.reversed()`
