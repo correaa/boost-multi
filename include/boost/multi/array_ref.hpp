@@ -1639,32 +1639,19 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	constexpr auto diagonal_aux_() const -> subarray<T, D - 1, typename const_subarray::element_ptr> {
+	constexpr auto diagonal_aux_() const {
 		using boost::multi::detail::get;
 		auto                   square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D - 1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
 		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
-		return {new_layout, types::base_};
+		return subarray<T, D - 1, typename const_subarray::element_ptr>(new_layout, types::base_);
 	}
 
  public:
-	// TODO(correaa) : define a diagonal_aux
-	// constexpr auto diagonal()    && {return this->diagonal();}
-
-	// constexpr auto diagonal()     & -> const_subarray<T, D-1, typename const_subarray::element_ptr> {
-	//  using boost::multi::detail::get;
-	//  auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
-	//  multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
-	//  new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
-	//  new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
-	//  return {new_layout, types::base_};
-	// }
-
+	/// Subarray of lower dimension that represents the main diagonal of a square array
 	template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	constexpr auto diagonal() const& -> const_subarray<T, D - 1, typename const_subarray::element_ptr> {
-		return this->diagonal_aux_();
-	}
+	constexpr auto diagonal() const& { return this->diagonal_aux_().as_const(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto partitioned_aux_(multi::ssize_t n) const {
