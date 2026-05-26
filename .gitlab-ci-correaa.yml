@@ -312,9 +312,6 @@ clang++-18 mull-18:
     - non-shared
   interruptible: true
   allow_failure: false
-  only:
-    refs:
-      - develop
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
@@ -343,6 +340,9 @@ clang++-19 mull-19:
     - x86_64  # for mull
     - large-memory-space
     - non-shared
+  only:
+    refs:
+      - develop  
   interruptible: true
   allow_failure: true
   # only:
