@@ -1262,7 +1262,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	const_subarray(const_subarray const&) = delete;
 
-	using element                                      = typename types::element;
+	/// Element type (`T`)
+	using element                                      = T;
 	using element_type [[deprecated("use ::element")]] = typename types::element;
 	using element_ptr                                  = typename types::element_ptr;
 	using element_const_ptr                            = typename types::element_const_ptr;
