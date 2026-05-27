@@ -1776,21 +1776,25 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	template<class It>
 	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
+	
+	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
  public:
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
-	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
+	/// For `D == 1` it the pointer type to the elements, otherwise it is void
 	using pointer =
 		typename std::conditional_t<
 			(D > 1),
 			void,
-			typename std::iterator_traits<ElementPtr>::pointer>;  // ptr;
+			typename std::iterator_traits<ElementPtr>::pointer>;
+
+	/// For `D == 1` it the pointer type to the elements (as immutables), otherwise it is void
 	using const_pointer =
 		typename std::conditional_t<
 			(D > 1),
 			void,
-			typename std::iterator_traits<ElementPtr>::pointer>;  // const_ptr;
+			typename std::iterator_traits<ElementPtr>::pointer>;
 
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
