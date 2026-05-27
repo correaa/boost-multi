@@ -859,8 +859,10 @@ struct                                                                          
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 	template<class Ptr, std::enable_if_t<std::is_pointer_v<Ptr>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+#ifndef _BOOST_MULTI_SUPPRESS_GNU_MALLOC
 #ifndef _MSC_VER
 	[[gnu::malloc]]
+#endif
 #endif
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr {
 		return std::move(me);
@@ -878,7 +880,7 @@ struct                                                                          
 	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
 
  public:
-	BOOST_MULTI_HD constexpr auto splitted() & -> decltype(auto) { return ref_::splitted(); }
+	// BOOST_MULTI_HD constexpr auto splitted() & -> decltype(auto) { return ref_::splitted(); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -909,6 +911,30 @@ struct                                                                          
 			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
 		);
 	}
+
+	BOOST_MULTI_HD constexpr auto splitted() & {
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+
+		auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+
+#ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
+#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
+		[[assume(
+			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
+			std::less_equal<>{}(p2 + l2.nelems(), p1)
+		)]];
+#endif
+#endif
+		return std::pair<
+			subarray<T, 1, typename dynamic_array::element_ptr>,
+			subarray<T, 1, typename dynamic_array::element_ptr>>(
+			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+		);
+	}
+
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
