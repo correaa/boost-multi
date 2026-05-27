@@ -212,6 +212,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::rank_v;
 
+	/// Integer type to store dimensionality information (e.g. 1D, 2D, 3D)
 	using dimensionality_type = typename layout_t::dimensionality_type;
 	using layout_t::dimensionality;
 
