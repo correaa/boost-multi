@@ -1360,8 +1360,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	// using typename types::reference;
 
+ private:
 	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
 
+ public:
 	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type {
 		using multi::get_allocator;
 		return get_allocator(this->base());
