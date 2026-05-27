@@ -206,67 +206,67 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
-	using layout_t = Layout;
+	using layout_type = Layout;
 
-	using rank = typename layout_t::rank;
+	using rank = typename layout_type::rank;
 
-	using layout_t::rank_v;
+	using layout_type::rank_v;
 
 	/// Integer type to store dimensionality information (e.g. 1D, 2D, 3D)
-	using dimensionality_type = typename layout_t::dimensionality_type;
-	using layout_t::dimensionality;
+	using dimensionality_type = typename layout_type::dimensionality_type;
+	using layout_type::dimensionality;
 
-	using layout_t::stride;
-	using typename layout_t::stride_type;
+	using layout_type::stride;
+	using typename layout_type::stride_type;
 
-	using layout_t::num_elements;
-	using layout_t::offset;
+	using layout_type::num_elements;
+	using layout_type::offset;
 
-	using typename layout_t::index;
-	using typename layout_t::index_extension;
-	using typename layout_t::index_range;
+	using typename layout_type::index;
+	using typename layout_type::index_extension;
+	using typename layout_type::index_range;
 
-	using typename layout_t::strides_type;
+	using typename layout_type::strides_type;
 
 	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress functionStatic;
-		return layout_t::strides();
+		return layout_type::strides();
 	}
 
-	using typename layout_t::difference_type;
+	using typename layout_type::difference_type;
 
-	using layout_t::size;
-	using typename layout_t::size_type;
+	using layout_type::size;
+	using typename layout_type::size_type;
 
-	using layout_t::nelems;
+	using layout_type::nelems;
 
-	using layout_t::extension;
-	using layout_t::extent;
+	using layout_type::extension;
+	using layout_type::extent;
 
-	using typename layout_t::extension_type;
+	using typename layout_type::extension_type;
 
-	using layout_t::extensions;
-	using layout_t::extents;
+	using layout_type::extensions;
+	using layout_type::extents;
 
-	using typename layout_t::extensions_type;
+	using typename layout_type::extensions_type;
 
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`
 	/// (`extents_t<D>`), a tuple of `D` `index_extension` values each encoding `[first, last)`.
 	/// The result can be passed directly to array constructors or compared for shape equality.
 	/// Prefer this over the deprecated `extensions()`.
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_t const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	/// Deprecated, prefer `extents()`.
-	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_t const&>(*this).extents(); }
+	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }
 
-	using layout_t::empty;
-	using layout_t::is_empty;
+	using layout_type::empty;
+	using layout_type::is_empty;
 
-	using layout_t::sub;
+	using layout_type::sub;
 
-	using layout_t::sizes;
-	using typename layout_t::sizes_type;
+	using layout_type::sizes;
+	using typename layout_type::sizes_type;
 
-	using typename layout_t::indexes;
+	using typename layout_type::indexes;
 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
 	static constexpr auto num_dimensions() { return dimensionality; }
@@ -277,7 +277,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
-	using layout_t::is_compact;
+	using layout_type::is_compact;
 
 	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
@@ -288,7 +288,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
 
  protected:
-	constexpr auto layout_mutable() -> layout_t& { return static_cast<layout_t&>(*this); }
+	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
 
  public:
 	using value_type = typename std::conditional_t<
@@ -314,8 +314,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr& { return base_; }
 
-	BOOST_MULTI_HD constexpr auto layout() const -> layout_t const& { return *this; }
-	friend constexpr auto         layout(array_types const& self) -> layout_t const& { return self.layout(); }
+	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
+	friend constexpr auto         layout(array_types const& self) -> layout_type const& { return self.layout(); }
 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
 	// [[clang::unsafe_buffer_usage]]
@@ -346,7 +346,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	// BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
 	// : Layout{lyt}, base_{data} {}
-	BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr data)
+	BOOST_MULTI_HD constexpr array_types(layout_type const& lyt, element_ptr data)
 	: Layout{lyt}, base_{std::move(data)} {}
 
  protected:
@@ -1494,14 +1494,14 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 #endif
 	constexpr auto dropped_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT(n <= this->size());
-		typename types::layout_t const new_layout(
+		typename types::layout_type const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
 			this->stride() * (this->size() - n)
 		);
 
-		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, this->base_ + n * this->layout().stride());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return subarray<T, D, ElementPtr, typename types::layout_type>(new_layout, this->base_ + n * this->layout().stride());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1515,7 +1515,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		// TODO(correaa) remove first == last condition
 		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(first)) && ("sliced first out of bounds"));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(last - 1)) && ("sliced last  out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		typename types::layout_t new_layout = this->layout();
+		typename types::layout_type new_layout = this->layout();
 		new_layout.nelems()                 = this->stride() * (last - first);                                  // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
 
@@ -1582,9 +1582,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
 		// auto new_layout = this->layout().do_stride();
-		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
+		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
 		// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-		return subarray<T, D, ElementPtr, typename types::layout_t>(new_layout, types::base_);
+		return subarray<T, D, ElementPtr, typename types::layout_type>(new_layout, types::base_);
 	}
 
  public:
@@ -3216,7 +3216,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
  private:
 	BOOST_MULTI_HD constexpr auto taked_aux_(difference_type count) const {
 		BOOST_MULTI_ASSERT(count <= this->size());  // calculating size is expensive that is why
-		typename types::layout_t const new_layout(
+		typename types::layout_type const new_layout(
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -3323,7 +3323,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
-		auto const new_layout = typename types::layout_t{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
+		auto const new_layout = typename types::layout_type{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
 		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
 	}
 
@@ -3696,7 +3696,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
  public:
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-	using layout_type = typename subarray_base::layout_t;
+	using layout_type = typename subarray_base::layout_type;
 	using iterator    = typename subarray_base::iterator;
 
 	using typename subarray_base::size_type;
@@ -3732,10 +3732,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
-	: subarray_base(typename subarray_base::layout_t(xs), dat) {}
+	: subarray_base(typename subarray_base::layout_type(xs), dat) {}
 
 	explicit constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
-	: subarray_base{typename array_ref::layout_t(exts), dat} {}
+	: subarray_base{typename array_ref::layout_type(exts), dat} {}
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 #ifdef __cpp_lib_span
@@ -4097,11 +4097,11 @@ constexpr auto ref(
 namespace detail {
 template<class T, dimensionality_type D, typename Ptr /*= T* */>
 struct array_ptr
-: detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> {
-	using basic_ptr = detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false>;
+: detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_type, false> {
+	using basic_ptr = detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_type, false>;
 
 	constexpr array_ptr(Ptr data, multi::extensions_t<D> extensions)
-	: basic_ptr{data, typename array_ref<T, D, Ptr>::layout_t(extensions)} {}
+	: basic_ptr{data, typename array_ref<T, D, Ptr>::layout_type(extensions)} {}
 
 	constexpr explicit array_ptr(std::nullptr_t nil) : array_ptr{nil, multi::extensions_t<D>{}} {}
 
@@ -4118,8 +4118,8 @@ struct array_ptr
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator*() const -> array_ref<T, D, Ptr> {
-		return array_ref<T, D, Ptr>(static_cast<detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)->extents(), this->base());
-		// return array_ref<T, D, Ptr>((*static_cast<detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_t, false> const&>(*this)).extents(), this->base());  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
+		return array_ref<T, D, Ptr>(static_cast<detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_type, false> const&>(*this)->extents(), this->base());
+		// return array_ref<T, D, Ptr>((*static_cast<detail::subarray_ptr<T, D, Ptr, typename array_ref<T, D, Ptr>::layout_type, false> const&>(*this)).extents(), this->base());  // NOLINT(readability-redundant-parentheses) bug in clang-tidy
 	}
 };
 
