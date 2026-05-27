@@ -1,98 +1,3 @@
-\documentclass[t,aspectratio=169]{beamer}
-\usetheme{Madrid}  % or another theme
-\usepackage{tikz}
-\usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings}
-\pgfdeclarelayer{background}
-\pgfsetlayers{background,main}
-\usepackage{listings}
-\usepackage{xcolor}
-\usepackage[T1]{fontenc}
-\usepackage[scale=0.85]{FiraMono}
-\usepackage{ulem}
-\usepackage{svg}
-\svgsetup{inkscapeversion=1.4, inkscape=newer, inkscapelatex=false}
-\transduration{0}
-\usepackage{emoji}
-\usepackage{multimedia}
-%\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
-
-\beamertemplatenavigationsymbolsempty
-
-% define some styles
-\tikzset{
-   paper/.style={draw=black!10, blur shadow,
-                 lower left=white, upper left=black!5, upper right=white, lower right=white},
-   irregular border/.style={decoration={random steps, segment length=3mm, amplitude=1mm},
-           decorate,
-     },
-   ragged border/.style={ decoration={random steps, segment length=7mm, amplitude=2mm},
-           decorate,
-   }
-}
-
-% Macro to draw the shape behind the text, when it fits completely in the
-% page
-\def\tornpaper#1{
-\tikz{
-  \node[inner sep=0em] (A) {#1};  % Draw the text of the node
-  \begin{pgfonlayer}{background}  % Draw the shape behind
-  \fill[paper] % recursively decorate the bottom border
-        decorate[irregular border]{decorate{decorate{decorate{decorate[ragged border]{
-        ($(A.south east) - (0, random*5mm)$) -- ($(A.south west) - (0, random*5mm)$)
-        }}}}}
-        -- (A.north west) -- (A.north east) -- cycle;
-  \end{pgfonlayer}}
-}
-
-\AtBeginSection[]{
-  \begin{frame}{Outline}
-    \tableofcontents[currentsection]
-  \end{frame}
-}
-
-\definecolor{kwblue}{RGB}{0,102,204}      % Keywords: blue
-\definecolor{varblack}{RGB}{32,32,32}     % Variables: near-black
-\definecolor{symbolGray}{RGB}{100,100,100} % Operators/symbols: dark gray
-\definecolor{bracketGray}{RGB}{80,80,80}   % Brackets/delimiters
-\definecolor{typepur}{RGB}{153,0,153}     % Types: purple
-\definecolor{funcgreen}{RGB}{0,100,0}     % Function names: dark green
-\definecolor{codebackground}{RGB}{245,245,245} % Light gray background
-
-\lstset{
-  language=C++,
-  basicstyle=\ttfamily\small\color{varblack},
-  escapeinside={<@}{@>},
-  keywordstyle=\color{varblack}\bfseries,
-  commentstyle=\color{gray}\itshape,
-  stringstyle=\color{red},
-  keywordstyle=[2]\color{kwblue}\bfseries,
-  morekeywords=[2]{array,array_ref,restriction,dynamic_array,subarray,const_subarray,inplace_array,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
-  morekeywords=[3]{multi},
-  keywordstyle=[3]\color{kwblue},
-  backgroundcolor=\color{codebackground},
-  breaklines=true,
-  showstringspaces=false,
-  columns=fixed,
-  literate={->}{{$\rightarrow$}}2
-}
-
-%\lstMakeShortInline[backgroundcolor=\color{codebackground}]|
-
-\setbeamertemplate{footline}{%
-  \hfill\tiny\csname beamer@framecurrentlabel\endcsname\hspace{1em}\vspace{1em}
-}
-
-\title{Generic Programming for Multidimensional Arrays}
-\author{Alfredo A. Correa}
-\date{\today}
-
-\begin{document}
-\input{frames}
-\end{document}
-
-% DEAD CODE BELOW — kept for reference only
-\endinput
-
 {
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[plain]
@@ -110,7 +15,7 @@
 
 \section{Introduction \& Motivation}
 
-\begin{frame}{A bit about myself}
+\begin{frame}[label=aboutme]{A bit about myself}
   \begin{itemize}
     \item Physicist (Condensed Matter Physics)
     \item Group Leader at the \textit{Quantum Simulations Group} at Lawrence Livermore Lab (California)
@@ -129,7 +34,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{My C++ journey}
+\begin{frame}[label=aboutme2]{My C++ journey}
 \begin{itemize}
   \item Condensed Matter Physics (materials simulations)
   \item Community is historically FORTRAN-based
@@ -149,13 +54,13 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Family tree of languages at Computer History Museum, San José, CA}
+\begin{frame}[label=history1]{Family tree of languages at Computer History Museum, San José, CA}
   \centering
   \includegraphics[width=7cm]{programming-languages}
   \includegraphics[width=5cm]{fortran-for-precedent}
 \end{frame}
 
-\begin{frame}{Don't worry, we are still programming in Fortran, sort of.}
+\begin{frame}[label=history2]{Don't worry, we are still programming in Fortran, sort of.}
 	\centering
 	\includesvg[scale=0.85, pretex=\tiny]{languages}
 
@@ -164,8 +69,7 @@
 	(Sean Parent, 2018, \emph{`Greatest Common Measure'}, \href{https://youtu.be/FtZEU9zv9eM}{\texttt{youtu.be/FtZEU9zv9eM}})}
 \end{frame}
 
-\begin{frame}{We need philosophy (mathematics) to program, especially libraries}
-
+\begin{frame}[label=history3]{We need philosophy (mathematics) to program, especially libraries}
 	\begin{quote}
 		What kind of programs are not mathematical? Programs that are insecure, programs that
 		crash, programs that cannot be easily modified are examples of non-mathematical software.
@@ -180,7 +84,7 @@
 	\end{quote}
 \end{frame}
 
-\begin{frame}{Why Multidimensional Arrays?}
+\begin{frame}[label=motivation]{Why Multidimensional Arrays?}
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \textbf{Scientific computing is array computing}
@@ -190,13 +94,15 @@
         \item Signal processing: time $\times$ frequency
         \item Machine learning: batches $\times$ features $\times$ channels
       \end{itemize}
+      \pause
       \vspace{0.8em}
       \textbf{Performance lives in arrays}
       \begin{itemize}
         \item Contiguous/Regular memory $\Rightarrow$ cache efficiency
         \item SIMD vectorization, GPU parallelism
-        \item BLAS/LAPACK operate on array layouts
+        \item BLAS/LAPACK/FFTW operate on array layouts
       \end{itemize}
+      \pause
     \end{column}
     \begin{column}{0.5\textwidth}
       \textbf{Arrays are a natural abstraction}
@@ -206,7 +112,7 @@
         \item C++ STL: ranges of elements --- but only 1D
       \end{itemize}
       \vspace{0.8em}
-      \begin{alertblock}{The gap}
+      \begin{alertblock}{The gap (A blessing in disguise)}
         C++ has no standard multidimensional array with
         value semantics, subarrays, and algorithm support.
       \end{alertblock}
@@ -214,12 +120,25 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}[plain,label=motivation2]{Motivating example: Electron density \(\rho\) reacts to swift atomic motion}
+\begin{columns}
+  \begin{column}{0.4\textwidth}
+    \includesvg[width=\textwidth]{electron_density}
+  \end{column}
+  \begin{column}{0.6\textwidth}
+     \movie[width=1.05\textwidth, height=0.8055\textwidth, autostart, loop]{%
+    \includegraphics[width=1.05\textwidth]{diff-movie_v1p8au_contour}%
+  }{diff-movie_v1p8au_contour.mp4}
+  \end{column}
+\end{columns}
+\end{frame}
+
 {
   \usebackgroundtemplate{
-    \includegraphics{arrays_1D_2D_3D_4D_ND}
-    %\includesvg[width=\paperwidth]{arrays_1D_2D_3D_4D_ND.svg}
+    %\includegraphics{arrays_1D_2D_3D_4D_ND}
+    \includesvg[width=\paperwidth]{arrays_1D_2D_3D_4D_ND}
   }
-\begin{frame}[fragile]{Multidimensional Arrays}
+\begin{frame}[label=intro1,fragile]{What are multidimensional Arrays}
 \vspace{3cm}
 \begin{lstlisting}
   assert( A[1] == 'b' );         // A(1)
@@ -243,19 +162,6 @@
 note: most examples in this talk are 2D for simplicity, imagine the ND generalization
 \end{frame}
 }
-
-\begin{frame}[plain]{Motivating example: Electron density \(\rho\) reacts to swift atomic motion}
-\begin{columns}
-  \begin{column}{0.4\textwidth}
-    \includegraphics[width=\textwidth]{electron_density}
-  \end{column}
-  \begin{column}{0.6\textwidth}
-     \movie[width=1.05\textwidth, height=0.8055\textwidth, autostart, loop]{%
-    \includegraphics[width=1.05\textwidth]{diff-movie_v1p8au_contour}%
-  }{diff-movie_v1p8au_contour.mp4}
-  \end{column}
-\end{columns}
-\end{frame}
 
 \begin{frame}
 \frametitle{C++ and multidimensional arrays in 2026\ldots}
@@ -281,28 +187,28 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
 
 \begin{frame}{Strided arrays as a data structure, subarray subblock}
 \vspace{-1.4cm}
-\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock}
- 
+\includesvg[width=\paperwidth]{strided_subblock}
+
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
 \begin{frame}{Strided arrays as a data structure, row subarray}
 \vspace{-1.4cm}
-\includegraphics[width=\paperwidth, height=\paperheight]{strided_row}
+\includesvg[width=\paperwidth]{strided_row}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
 \begin{frame}{Strided arrays as a data structure, column subarray}
 \vspace{-1.4cm}
-\includegraphics[width=\paperwidth, height=\paperheight]{strided_col}
+\includesvg[width=\paperwidth]{strided_col}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
 \begin{frame}{Strided arrays as a data structure, strided subarray}
 \vspace{-1.4cm}
-\includegraphics[width=\paperwidth, height=\paperheight]{strided_subblock_stride}
+\includesvg[width=\paperwidth]{strided_subblock_stride}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
@@ -336,7 +242,7 @@ Cons:
 \begin{column}{0.5\textwidth}
 \lstinline|std::vector<std::vector<T> >|
 
-\includegraphics[scale=0.8]{nested_vector}
+\includesvg[scale=0.8]{nested_vector}
 \end{column}
 \begin{column}{0.5\textwidth}
 Pros (mostly traps)
@@ -386,7 +292,7 @@ struct R { ...
 	in C++20
 	\begin{lstlisting}
 struct R { ...
-	auto operator==(R const& other) const -> bool;  // = default;  
+	auto operator==(R const& other) const -> bool;  // = default;
 	// ^^^ synthesizes !=
 };
 \end{lstlisting}
@@ -402,8 +308,8 @@ Available algorithms: \emph{linear-search} (\lstinline{std::find})
 struct PO { ...
 	bool operator< (PO const& other) const;
 	bool operator> (PO const& other) const;
-	bool operator>=(PO const& other) const; 
-	bool operator<=(PO const& other) const; 
+	bool operator>=(PO const& other) const;
+	bool operator<=(PO const& other) const;
 };
 \end{lstlisting}
 	\pause
@@ -428,8 +334,8 @@ trichotomy: Not $a < b$ and not $a > b$ $\Rightarrow a == b$
 struct TO { ...
 	bool operator< (TO const& other) const;
 	bool operator> (TO const& other) const;
-	bool operator>=(TO const& other) const; 
-	bool operator<=(TO const& other) const; 
+	bool operator>=(TO const& other) const;
+	bool operator<=(TO const& other) const;
 };
 \end{lstlisting}
 
@@ -537,7 +443,7 @@ Why proposed to Boost?
   \item Still good distribution model and visibility
   \item No need for compiler-magic
   \item Moderate time horizon
-  \item Can eventually benefit from low-level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces) 
+  \item Can eventually benefit from low-level Boost tools (Boost.Hana, Boost.Assert, Boost.Align, Boost.STLInterfaces)
   \item Peer interaction with Boost.Serialization, Boost.JSON, Boost.QVM, Boost.YAP
 \end{itemize}
 \end{frame}
@@ -565,7 +471,7 @@ A[1][2] = 5;  // intermediate object?
 
 \begin{frame}[fragile]{Proxy subarray-reference}
 \begin{center}
-\includegraphics[scale=0.7]{strided_row_small}
+\includesvg[scale=0.7]{strided_row_small}
 \end{center}
 \begin{lstlisting}
 multi::array<int, 2> A({4, 6});
@@ -687,13 +593,13 @@ Modern compilers can elide these temporary objects.
 \textbf{Type}                              & \textbf{Owns} & \textbf{Copyable}     & \textbf{Move} & \textbf{Swap} & \textbf{Mutable elems?} & \textbf{Resizable} \\
 \hline
 \lstinline|multi::const_subarray<T, D, P>| & No            & No \emoji{hot-pepper} & No            & No            & No                      & No                 \\
-                          ↑                &               &                       &               &               &                         &                    \\ 
+                          ↑                &               &                       &               &               &                         &                    \\
 \lstinline|multi::subarray<T, D, P>|       & No            & No \emoji{hot-pepper} & No            & O(N)          & Yes                     & No                 \\
-                          ↑                &               &                       &               &               &                         &                    \\ 
+                          ↑                &               &                       &               &               &                         &                    \\
 \lstinline|multi::array_ref<T, D, P>|      & No            & No \emoji{hot-pepper} & No            & O(N)          & Yes                     & No                 \\
                           ↑                &               &                       &               &               &                         &                    \\
 \lstinline|multi::dynamic_array<T, D, A>|  & Yes           & Yes                   & No            & O(N)          & Yes                     & No                 \\
-                          ↑                &               &                       &               &               &                         &                    \\ 
+                          ↑                &               &                       &               &               &                         &                    \\
 \lstinline|multi::array<T, D, A>|          & Yes           & Yes                   & Yes           & Yes           & Yes                     & Yes                \\
 \end{tabular}
 \end{table}
@@ -715,7 +621,7 @@ Intuitive for the most part in practice. Perhaps arrays deserve this level of co
 
 \begin{frame}[fragile]{Wait! \texttt{multi::subarray}'s are not copyable? How to "store" subarrays?}
 \centering
-\includegraphics{store_subarrays}
+\includesvg{store_subarrays}
 
 \begin{lstlisting}
 std::vector sas = {B({0, 2}, {0, 2}), B({1, 4}, {1, 4}), B({0, 2}, {4, 6})};
@@ -736,10 +642,10 @@ for(auto sap : saps) {
 \centering
 \begin{columns}[T]
 \begin{column}{0.5\textwidth}
-\includegraphics[trim=0 600 0 0, clip, scale=0.5]{nospan} 
+\includegraphics[trim=0 600 0 0, clip, scale=0.5]{nospan}
 \end{column}
 \begin{column}{0.5\textwidth}
-\includegraphics[trim=0 0 0 195, clip, scale=0.37]{nospan} 
+\includegraphics[trim=0 0 0 195, clip, scale=0.37]{nospan}
 \end{column}
 \end{columns}
 \end{frame}
@@ -885,7 +791,7 @@ xia >> B;
 \end{columns}
 
 \begin{center}
-  \includegraphics{serialization}
+  \includesvg{serialization}
 \end{center}
 \end{frame}
 
@@ -972,7 +878,7 @@ class array {
    adl_copy_n(other.elements().begin(), other.elements().end(), elements().begin());
 \end{lstlisting}
 \begin{center}
-\includegraphics{dispatching}
+\includesvg{dispatching}
 \end{center}
 \end{frame}
 
@@ -984,7 +890,7 @@ class adl_copy_n_t {
   auto _(priority<2>, auto... as) ... {return copy_n(...);}         // ADL
   auto _(priority<3>, auto it, auto... rst) ... {return it.copy_n(...); } // member
 public:
-  template<class... As> auto operator()(As&&... as) const -> decltype(...) { 
+  template<class... As> auto operator()(As&&... as) const -> decltype(...) {
     return _(priority<3>(), std::forward<As>(as)...);
   }
 };
@@ -999,33 +905,6 @@ inline constexpr adl_copy_n_t adl_copy_n;
 \end{itemize}
 
 \end{frame}
-
-% \begin{frame}[fragile]{OpenMP via Thrust Backend}
-% Use Thrust's OMP backend for parallel CPU execution --- no GPU required:
-
-% \begin{lstlisting}
-% #include <boost/multi/adaptors/thrust/omp.hpp>
-
-% // array backed by thrust::omp::allocator
-% multi::thrust::omp::array<double, 1> arr(64);  // <double, 1, thrust::omp::allocator<double>>
-
-% // parallel fill with OpenMP
-% #pragma omp parallel for
-% for(int i = 0; i < arr.size(); ++i)
-%   arr[i] = double(i) * double(i);
-
-% // thrust::reduce with OMP execution policy
-% auto sum = thrust::reduce(thrust::omp::par,
-%   arr.begin(), arr.end(), 0.0);
-% \end{lstlisting}
-
-% \begin{itemize}
-%   \item \lstinline|multi::thrust::omp::array<T, D>| = \lstinline|multi::array<T, D, thrust::omp::allocator<T>>|
-%   \item Thrust algorithms dispatch to OpenMP automatically via allocator tag
-%   \item Same code structure as CUDA --- swap allocator to switch backend
-% \end{itemize}
-
-% \end{frame}
 
 \section{Lazy Arrays \& Restrictions}
 
@@ -1066,15 +945,15 @@ multi::array<char, 2> B = {
   {'d', 'e', 'f'}
 };
 B.extent|\uline{s}|();  // structured Cartesian product
-// {
-//   { tuple{0, 0}, tuple{0, 1}, tuple{0, 2} },  // <-- B.extents().begin()
-//   { tuple{1, 0}, tuple{1, 1}, tuple{1, 2} }
-// }
+% {
+%   { tuple{0, 0}, tuple{0, 1}, tuple{0, 2} },  % <-- B.extents().begin()
+%   { tuple{1, 0}, tuple{1, 1}, tuple{1, 2} }
+% }
 
-B.extent|\uline{s}|().elements();  // {tuple{0, 0}, tuple{0, 1}, tuple{0, 2}, tuple{1, 0},...}
+B.extent|\uline{s}|().elements();  % {tuple{0, 0}, tuple{0, 1}, tuple{0, 2}, tuple{1, 0},...}
 B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 
-// std::views::cartesian_product( get<0>(B.extents()), get<1>(B.extents()) );
+% std::views::cartesian_product( get<0>(B.extents()), get<1>(B.extents()) );
 \end{lstlisting}
 
 \end{frame}
@@ -1097,9 +976,9 @@ B.extent|\uline{s}|().elements().begin() -- ... -- .end()
 \begin{frame}[fragile]{Restriction (mathematics)}{from Wikipedia}
 
 \begin{quote}
-  [...] In mathematics, the restriction of a function \(f\) 
-  is a new function, denoted \(f |_A\) or \(f \upharpoonright A\), 
-  obtained by choosing a smaller domain \(A\) 
+  [...] In mathematics, the restriction of a function \(f\)
+  is a new function, denoted \(f |_A\) or \(f \upharpoonright A\),
+  obtained by choosing a smaller domain \(A\)
   for the original function \(f\).
   The function \(f\) is then said to extend \(f \upharpoonright A\). [...]
 \end{quote}
@@ -1115,71 +994,36 @@ multi::???({2, 3}, [](auto i, auto j) { return i + j; });
 
 [](auto i, auto j) { return i + j; } ^ multi::extents_t{2, 3};
 
-// {
-//   { f(0, 0), f(0, 1), f(0, 2) },  // <-- .begin()
-//   { f(1, 0), f(1, 1), f(1, 2) }
-// }
+% {
+%   { f(0, 0), f(0, 1), f(0, 2) },  % <-- .begin()
+%   { f(1, 0), f(1, 1), f(1, 2) }
+% }
 \end{lstlisting}
 
 \end{frame}
 
 \begin{frame}[fragile]{General lazy arrays: function restricted to a domain}
 
-A \lstinline|multi::restriction| 
+A \lstinline|multi::restriction|
 is the restriction (in the mathematical sense) of a function to a bounded index domain.
 
 \begin{lstlisting}
-// lazy 2x3 array R[i][j] = i + j, no memory allocated
+% lazy 2x3 array R[i][j] = i + j, no memory allocated
 auto R = multi::restriction({2, 3}, [](auto i, auto j) { return i + j; });
 
-// equivalent idiomatic form using the ^ operator ("restricted to")
+% equivalent idiomatic form using the ^ operator ("restricted to")
 auto R = [](auto i, auto j) { return i + j; } ^ multi::extensions_t{2, 3};
 
-R[1][2];           // 3         (computed on access)
-R.size();          // 2
-R.num_elements();  // 6
-+R;                // materialize into multi::array<int, 2>
+R[1][2];           % 3         (computed on access)
+R.size();          % 2
+R.num_elements();  % 6
++R;                % materialize into multi::array<int, 2>
 \end{lstlisting}
 
 \medskip
 Models the Multi array concept --- it has \lstinline|extents|, iterators, \lstinline|operator[]|, etc.\\
 Structural operations compose (still) without allocating: \lstinline|transposed|, \lstinline|repeated|, \lstinline|diagonal|, \lstinline|partitioned|, \lstinline|reversed|, \lstinline|rotated|, \lstinline|transformed|, \lstinline|element_transformed|.
 \end{frame}
-
-% \section{Undefined Behavior}
-
-% \begin{frame}[plain]{The Good, The Ugly, and The UB}
-% \begin{center}
-% \includesvg[height=0.7\textheight]{gbu}
-% \end{center}
-% The C++ abstract machine is hostile to multidimensional array iteration
-% \end{frame}
-
-% \begin{frame}[fragile]{Out-of-bounds pointer formation in strided iteration}
-
-% Boost.Multi provides STL-compatible strided iterators --- \lstinline|.begin()|, \lstinline|.end()|, range-for loops.\\
-% But computing \lstinline|.end()| can form a pointer \emph{past} the allocation:
-
-% \begin{lstlisting}
-% multi::array<double, 1> A(10);   // 10-element allocation [base, base+10)
-
-% auto strided = A.strided(3);    // elements {0, 3, 6, 9}
-% strided.end();                   // computes base + 3*4 = base + 12
-%                                  // 2 past the allocation: UB under [expr.add]
-% \end{lstlisting}
-
-% Similarly: \lstinline|.reversed()| forms a pointer \emph{before} the allocation; \lstinline|.transposed()| iterators may overshoot when columns $\times$ row-stride $>$ total elements.
-
-% \medskip
-% \begin{itemize}
-%   \item The UB is in \emph{forming} the pointer, not dereferencing it.
-%   \item Index-based access (\lstinline|A[i][j]|, \lstinline|A(i,j)|) is \emph{not} affected.
-%   \item \lstinline|multi::restriction|s are not affected --- no pointer arithmetic involved.
-%   \item No compiler currently exploits this, but \lstinline|constexpr| and sanitizers can flag it.
-%   \item Other libraries (\lstinline|std::mdspan|, Eigen, Kokkos) avoid this by not providing strided iterators at all.
-% \end{itemize}
-
-% \end{frame}
 
 \section{Algorithms \& Performance}
 
@@ -1369,7 +1213,7 @@ thrust::transform(M.begin(), M.end(), sums.begin(),
 );
 \end{lstlisting}
 \centering
-\includegraphics[scale=1.2]{reduce_by_row}
+\includesvg[scale=1.2]{reduce_by_row}
 
 \textbf{Problem:} Missed opportunity for parallelization
 \end{frame}
@@ -1377,7 +1221,7 @@ thrust::transform(M.begin(), M.end(), sums.begin(),
 \begin{frame}[fragile]{Solution: use Thrust's \texttt{reduce\_by\_key}}
 \centering
 \includegraphics[scale=0.15]{reduce_by_key_doc}
-~\includegraphics[scale=1.4]{reduce_by_key}
+~\includesvg[scale=1.4]{reduce_by_key}
 \end{frame}
 
 \begin{frame}[fragile]{Solution: Implement \texttt{reduce\_by\_row} }
@@ -1410,7 +1254,7 @@ multi::array<double, 1, thrust::device_allocator<double> > sums(nx);
 
 reduce_by_row(
     [](multi::index ix, multi::index iy) { return ix * iy; }
-    ^ multi::extensions_t<2>(nx, ny),   // lazy 2D array
+    ^ multi::extensions_t<2>(nx, ny),   % lazy 2D array
     sums
 );
 \end{lstlisting}
@@ -1487,8 +1331,8 @@ multi::array<double, 2, thrust::device_allocator<int>>
 \end{column}
 \end{columns}
 \begin{lstlisting}
-C = blas::gemm(1.0, A, B);  // C = 1.0*A*B, shouldn't allocate
-A = + blas::gemm(1.0, A, B);  // operator+ to break aliasing
+C = blas::gemm(1.0, A, B);  % C = 1.0*A*B, shouldn't allocate
+A = + blas::gemm(1.0, A, B);  % operator+ to break aliasing
 \end{lstlisting}
 \begin{center}
 \includegraphics[scale=0.7]{dispatching_blas}
@@ -1504,28 +1348,8 @@ custom \lstinline|copy_n| calls actual GEMM operation
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
     \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
     \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
-    %\item a manufacturing company in Québec, Canada
   \end{itemize}
 \end{frame}
-
-% \begin{frame}{API reference (autogenerated)}
-%   Full API reference is generated from the source using \textbf{MrDocs} and published via \textbf{Antora} on GitLab Pages:
-
-%   \vspace{1em}
-%   \begin{center}
-%     \Large
-%     \href{https://correaa.gitlab.io/boost-multi/}{\texttt{correaa.gitlab.io/boost-multi}}\\
-%     \href{https://correaa.github.io/boost-multi/}{\texttt{correaa.github.io/boost-multi}}
-%   \end{center}
-%   \vspace{1em}
-
-%   \begin{itemize}
-%     \item Classes, member functions, overloads, and template parameters
-%     \item Cross-references to the source on GitLab
-%     \item Inherited members from base classes
-%     \item Searchable (Lunr index)
-%   \end{itemize}
-% \end{frame}
 
 \begin{frame}{Thoughts about AI}
   \begin{itemize}
@@ -1559,5 +1383,3 @@ custom \lstinline|copy_n| calls actual GEMM operation
 \end{center}
 
 \end{frame}
-
-\end{document}
