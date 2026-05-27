@@ -5,8 +5,11 @@
 *.snm
 *.toc
 presentation.pdf
+hackathon.pdf
 *.fdb_latexmk
 *.fls
 *.synctex*
 *.vrb
 *.pdf_tex
+*_svg-raw.pdf
+
