@@ -1490,8 +1490,8 @@ struct array : unique_array<T, D, Alloc> {
 
 #ifdef __circle_build__
 	constexpr array(std::initializer_list<  // cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
-		std::conditional_t<(D != 1), dynamic_array<T, D - 1, typename array::allocator_type>, T>
-	> values)
+					std::conditional_t<(D != 1), dynamic_array<T, D - 1, typename array::allocator_type>, T>>
+						values)
 	: unique_(
 		  (values.size() == 0) ? array<T, D>{}
 							   : array<T, D>(values.begin(), values.end())
