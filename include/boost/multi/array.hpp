@@ -1602,7 +1602,7 @@ struct array : unique_array<T, D, Alloc> {
 		if(array::extents() == other.extents()) {
 			dynamic_::operator=(other);
 		} else if(this->num_elements() == other.extents().num_elements()) {
-			this->layout_mutable() = typename array::layout_t(other.extents());
+			this->layout_mutable() = typename array::layout_type(other.extents());
 			dynamic_::operator=(other);
 		} else {
 			operator=(static_cast<array>(other));
