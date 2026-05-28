@@ -1235,7 +1235,7 @@ class contiguous_layout {
 	BOOST_MULTI_HD constexpr auto size() const { return nelems_; }
 	BOOST_MULTI_HD constexpr auto sizes() const { return sizes_type{size()}; }
 
-	BOOST_MULTI_HD constexpr auto nelems() const { return nelems_; }
+	BOOST_MULTI_HD constexpr auto nelems() const noexcept { return nelems_; }
 
 	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const { return multi::extensions_t<1>{extension()}; }
 	BOOST_MULTI_HD constexpr auto extents() const { return multi::extensions_t<1>{extension()}; }
@@ -1608,9 +1608,9 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto        nelems() & -> nelems_type& { return nelems_; }
 	BOOST_MULTI_HD constexpr auto        nelems() const& -> nelems_type const& { return nelems_; }
-	friend BOOST_MULTI_HD constexpr auto nelems(layout_t const& self) -> nelems_type const& { return self.nelems(); }
+	// friend BOOST_MULTI_HD constexpr auto nelems(layout_t const& self) -> nelems_type const& { return self.nelems(); }
 
-	constexpr BOOST_MULTI_HD auto nelems(dimensionality_type dim) const { return (dim != 0) ? sub_.nelems(dim - 1) : nelems_; }
+	// constexpr BOOST_MULTI_HD auto nelems(dimensionality_type dim) const { return (dim != 0) ? sub_.nelems(dim - 1) : nelems_; }
 
 	friend BOOST_MULTI_HD constexpr auto operator==(layout_t const& self, layout_t const& other) -> bool {
 		return self.sub_ == other.sub_ && self.stride_ == other.stride_ && self.offset_ == other.offset_ && self.nelems_ == other.nelems_;
@@ -1957,7 +1957,7 @@ struct layout_t<0, SSize>
 
 	constexpr auto stride() const -> stride_type = delete;
 	constexpr auto offset() const -> offset_type { return offset_; }
-	constexpr auto nelems() const -> nelems_type { return nelems_; }
+	constexpr auto nelems() const noexcept -> nelems_type { return nelems_; }
 	constexpr auto sub() const -> sub_type = delete;
 
 	constexpr auto size() const -> size_type           = delete;

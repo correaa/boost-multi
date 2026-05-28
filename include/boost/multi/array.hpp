@@ -890,7 +890,7 @@ struct                                                                          
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-	BOOST_MULTI_HD constexpr auto splittod() && {
+	BOOST_MULTI_HD constexpr auto splitted() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
@@ -905,7 +905,7 @@ struct                                                                          
 		);
 	}
 
-	BOOST_MULTI_HD constexpr auto splittod() & {
+	BOOST_MULTI_HD constexpr auto splitted() & {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
@@ -927,7 +927,7 @@ struct                                                                          
 #ifdef __GNUC__
 	[[gnu::always_inline]]
 #endif
-	BOOST_MULTI_HD constexpr auto splitted() && {
+	BOOST_MULTI_HD constexpr auto fancy_splitted() && {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
@@ -950,7 +950,7 @@ struct                                                                          
 		);
 	}
 
-	BOOST_MULTI_HD constexpr auto splitted() & {
+	BOOST_MULTI_HD constexpr auto fancy_splitted() & {
 		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
 		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
