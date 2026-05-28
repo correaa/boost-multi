@@ -1790,7 +1790,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
  public:
-
 	/// For `D == 1` it the pointer type to the elements, otherwise it is void
 	using pointer =
 		typename std::conditional_t<
