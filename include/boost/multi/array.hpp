@@ -890,6 +890,40 @@ struct                                                                          
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
+	BOOST_MULTI_HD constexpr auto splittod() && {
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+
+		auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+
+		return std::pair<
+			subarray<T, 1, typename dynamic_array::element_ptr>,
+			subarray<T, 1, typename dynamic_array::element_ptr>>(
+			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+		);
+	}
+
+	BOOST_MULTI_HD constexpr auto splittod() & {
+		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+
+		auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+
+		return std::pair<
+			subarray<T, 1, typename dynamic_array::element_ptr>,
+			subarray<T, 1, typename dynamic_array::element_ptr>>(
+			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+		);
+	}
+
+#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#endif
 #ifdef __GNUC__
 	[[gnu::always_inline]]
 #endif
