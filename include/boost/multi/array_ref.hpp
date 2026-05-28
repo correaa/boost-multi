@@ -2116,7 +2116,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
 
- public:
 	using typename const_subarray<T, D, ElementPtr, Layout>::element;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
