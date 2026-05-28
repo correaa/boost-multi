@@ -738,10 +738,14 @@ struct                                                                          
 #pragma nv_diagnostic pop
 #endif
 
-	// using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element const>;
+	/// The pointer type to a constant element (`std::allocator_traits<allocator_type>::const_pointer`, usually `T const*`)
 	using element_const_ptr = typename std::allocator_traits<allocator_type>::const_pointer;
-	using element_move_ptr  = multi::move_ptr<typename dynamic_array::element_ptr>;
 
+ private:
+	/// A pointer wrapper that moves on dereferences
+	using element_move_ptr = multi::move_ptr<typename dynamic_array::element_ptr>;
+
+ public:
 	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<pointer>::reference` (usually `T&`)
 	using reference = std::conditional_t<
 		(D > 1),

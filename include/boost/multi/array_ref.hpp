@@ -1268,6 +1268,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using element_ptr                                  = typename types::element_ptr;
 	using element_const_ptr                            = typename types::element_const_ptr;
 	using element_ref                                  = typename types::element_ref;
+	/// `const`-qualified reference type to an element (usually `T const&`)
 	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
 
  private:
@@ -1275,7 +1276,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
-	using elements_range = elements_range_t<element_ptr, layout_type>;
+	using elements_range       = elements_range_t<element_ptr, layout_type>;
 
  public:
 	using index_gen [[deprecated("here to fulfill MultiArray concept")]]    = char*;
@@ -1780,11 +1781,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	template<class It>
 	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
-	
+
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
 
  public:
-	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
+	using ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	/// For `D == 1` it the pointer type to the elements, otherwise it is void
 	using pointer =
