@@ -1783,9 +1783,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
 
 	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
+	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
  public:
-	using ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
 	/// For `D == 1` it the pointer type to the elements, otherwise it is void
 	using pointer =
