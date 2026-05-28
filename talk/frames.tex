@@ -1342,13 +1342,28 @@ A = + blas::gemm(1.0, A, B);  % operator+ to break aliasing
 custom \lstinline|copy_n| calls actual GEMM operation
 \end{frame}
 
-\begin{frame}{Real world uses}
+\begin{frame}[label=uses1]{Real world uses}
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
     \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
     \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
   \end{itemize}
+\end{frame}
+
+\begin{frame}[label=uses2]{Abinitio C++ Codes INQ (DFT/TDDFT) \& QMCPACK (QMC/AFQMC)}
+	\centering
+	\includegraphics[width=0.75\columnwidth]{git_screenshots}
+	\begin{alertblock}{Fact of life}
+		C++ has become the \emph{de facto} standard for HPC. We better create a good ecosystem.
+	\end{alertblock}
+\end{frame}
+
+\begin{frame}[label=uses3]{INQ, electronic structure code for HPC systems}
+	\centering
+	\includesvg{dependencies}
+
+  Individual components can be shared and reused by other projects
 \end{frame}
 
 \begin{frame}{Thoughts about AI}

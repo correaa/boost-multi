@@ -1264,9 +1264,13 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	/// Element type (`T`)
 	using element                                      = T;
+	/// (deprecated, use `element`)
 	using element_type [[deprecated("use ::element")]] = typename types::element;
+	/// Pointer to element type (usually `T*`)
 	using element_ptr                                  = typename types::element_ptr;
+	/// Pointer to immutable element type (usually `T const*`)
 	using element_const_ptr                            = typename types::element_const_ptr;
+	/// Reference type to an element (usually `T&`)
 	using element_ref                                  = typename types::element_ref;
 	/// `const`-qualified reference type to an element (usually `T const&`)
 	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
@@ -1786,6 +1790,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
  public:
+
 	/// For `D == 1` it the pointer type to the elements, otherwise it is void
 	using pointer =
 		typename std::conditional_t<
