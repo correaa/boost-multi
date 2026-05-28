@@ -34,7 +34,7 @@ if [[ $OSTYPE == "darwin"* ]]; then
 else
 	PHYS_CORES=$(lscpu -p=core | grep -v '^#' | sort -u | wc -l)
 fi
-export CMAKE_BUILD_PARALLEL_LEVEL=$((PHYS_CORES - 1))
+export CMAKE_BUILD_PARALLEL_LEVEL=$((PHYS_CORES + 2))
 
 export CTEST_OUTPUT_ON_FAILURE=1
 export CTEST_PARALLEL_LEVEL=$PHYS_CORES

@@ -1521,7 +1521,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(first)) && ("sliced first out of bounds"));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(last - 1)) && ("sliced last  out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_type new_layout = this->layout();
-		new_layout.nelems()                 = this->stride() * (last - first);                                  // TODO(correaa) : reconstruct layout instead of mutating it
+		new_layout.nelems()                    = this->stride() * (last - first);                               // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
