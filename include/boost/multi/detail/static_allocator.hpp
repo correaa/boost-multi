@@ -80,7 +80,7 @@ class offset_ptr {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 	constexpr pointer operator->() const noexcept { return *this; }
-	constexpr         operator T*() const noexcept {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) implicit pointer-like conversion
+	constexpr         operator T*() const noexcept {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) implicit pointer-like conversion
         assert(ptr_ != nullptr || offset_ == 0);
         return ptr_ + offset_;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
