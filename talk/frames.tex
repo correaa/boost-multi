@@ -185,35 +185,35 @@ note: most examples in this talk are 2D for simplicity, imagine the ND generaliz
 
 \end{frame}
 
-\begin{frame}{Strided arrays as a data structure, subarray subblock}
+\begin{frame}[label=strided1]{Strided arrays as a data structure, subarray subblock}
 \vspace{-1.4cm}
 \includesvg[width=\paperwidth]{strided_subblock}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
-\begin{frame}{Strided arrays as a data structure, row subarray}
+\begin{frame}[label=strided2]{Strided arrays as a data structure, row subarray}
 \vspace{-1.4cm}
 \includesvg[width=\paperwidth]{strided_row}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
-\begin{frame}{Strided arrays as a data structure, column subarray}
+\begin{frame}[label=strided3]{Strided arrays as a data structure, column subarray}
 \vspace{-1.4cm}
 \includesvg[width=\paperwidth]{strided_col}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
-\begin{frame}{Strided arrays as a data structure, strided subarray}
+\begin{frame}[label=strided4]{Strided arrays as a data structure, strided subarray}
 \vspace{-1.4cm}
 \includesvg[width=\paperwidth]{strided_subblock_stride}
 
 \url{https://godbolt.org/z/1M3Eb3fhj}
 \end{frame}
 
-\begin{frame}{Strided arrays as a data structure}
+\begin{frame}[label=strided5]{Strided arrays as a data structure}
 \begin{center}
 \lstinline|element i, j ->   base + stride1*i + stride2*j|
 \end{center}
@@ -408,7 +408,7 @@ auto operator>>(std::istream& out, Value &      self) {...}
 
 \section{Array Model}
 
-\begin{frame}{\textsc{Multi} was proposed to Boost (2026) and conditionally accepted}
+\begin{frame}[label=boost1]{\textsc{Multi} was proposed to Boost (2026) and conditionally accepted}
 \begin{columns}
 \begin{column}{0.6\textwidth}
 \href{https://gitlab.com/correaa/boost-multi}{\texttt{gitlab.com/correaa/boost-multi}}\\
@@ -425,7 +425,7 @@ auto operator>>(std::istream& out, Value &      self) {...}
 
 \end{frame}
 
-\begin{frame}
+\begin{frame}[label=boost2]
 \frametitle{\textsc{Multi} proposed to Boost}
 Why \textbf{not} proposed for Standard (or Beaman)?
 \begin{itemize}
