@@ -43,7 +43,7 @@ auto axpy(Context ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // 
 	return axpy_n(ctxt, alpha,   x.begin(),   y.size(),   y.begin()), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
-auto axpy(typename X1D::element_type alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
+auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 -> decltype(auto)
 {
 	auto ctxtp = blas::default_context_of(x.base());

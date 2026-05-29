@@ -323,7 +323,7 @@ template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std:
 	constexpr auto operator()(AA const& /*unused*/) const { return is_conjugated_aux((std::declval<A>()).base()); }
 };
 
-template<class A, class D = std::decay_t<A>, typename Elem = typename D::element_type, typename Ptr = typename D::element_ptr, std::enable_if_t<!is_complex_array<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+template<class A, class D = std::decay_t<A>, typename Elem = typename D::element, typename Ptr = typename D::element_ptr, std::enable_if_t<!is_complex_array<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto conj(A&& array) -> A&& {
 	return std::forward<A>(array);
 }

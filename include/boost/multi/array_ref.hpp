@@ -228,7 +228,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::strides_type;
 
-	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress functionStatic;
+	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress [functionStatic,duplInheritedMember];
 		return layout_type::strides();
 	}
 
@@ -256,7 +256,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	/// Deprecated, prefer `extents()`.
-	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }
+	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	using layout_type::empty;
 	using layout_type::is_empty;
@@ -512,7 +512,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
 
-	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }
+	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }  // cppcheck-suppress returnByReference;
 
 	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
 
@@ -1481,7 +1481,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto taked(difference_type n) const& { return taked_aux_(n).as_const(); }
+	constexpr auto taked(difference_type n) const& { return taked_aux_(n).as_const(); }  // cppcheck-suppress duplInheritedMember;
 
  private:
 	BOOST_MULTI_HD constexpr auto halved_aux_() const {

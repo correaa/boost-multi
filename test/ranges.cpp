@@ -19,7 +19,6 @@
 
 #if defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 #include <complex>      // for complex, real, operator==, imag  // IWYU pragma: keep
-#include <iterator>     // for size, begin, end  // IWYU pragma: keep
 #include <numeric>      // for iota  // IWYU pragma: keep
 #include <type_traits>  // for is_same_v  // IWYU pragma: keep
 #include <utility>      // for pair  // IWYU pragma: keep

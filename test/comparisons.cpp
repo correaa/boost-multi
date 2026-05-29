@@ -140,7 +140,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		class range_1d {  // a type that has .extensions() and .elements() but is NOT a const_subarray
 			multi::array<int, 1> impl_;
 
-		 public:
+		 public:  // NOLINT(whitespace/indent)
 			explicit range_1d(multi::array<int, 1> impl) : impl_(std::move(impl)) {}
 
 			auto extents() const { return impl_.extents(); }

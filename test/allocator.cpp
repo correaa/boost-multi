@@ -616,7 +616,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 
 		BOOST_TEST( *ptr == 20 );
 
-		auto& rtr = --ptr;
+		auto const& rtr = --ptr;
 		BOOST_TEST( &rtr == &ptr );
 		BOOST_TEST( *ptr == 10 );
 
@@ -690,14 +690,14 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		ptr -= 1;
 		BOOST_TEST( *ptr == 20 );
 
-		auto& rtr = (ptr -= 1);
+		auto const& rtr = (ptr -= 1);
 		BOOST_TEST( &rtr == &ptr );
 		BOOST_TEST( *ptr == 10 );
 
 		// -= 0 is a no-op
 		auto const before = ptr;
 		ptr -= 0;
-		BOOST_TEST( ptr == before );
+		BOOST_TEST( ptr == before );  // cppcheck-suppress knownConditionTrueFalse;
 		BOOST_TEST( *ptr == 10 );
 
 		// chain: += n then -= n returns to original
