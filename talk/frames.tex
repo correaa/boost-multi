@@ -49,7 +49,7 @@
 
 \begin{itemize}
 \item LLNL Representative at the C++ Standards Committee (secondary/alternate)
-\item First LEWGI draft P3879 on \lstinline|std::overload| (with Branden Ganetsky)
+\item First LEWGI draft P3879 on \lstinline{std::overload} (with Branden Ganetsky)
 \item libraries: Boost.Multi (this work), B.MPI3, B.Covariant (func. prog. with variant types)
 \end{itemize}
 \end{frame}
@@ -136,7 +136,7 @@
 {
   \usebackgroundtemplate{
     %\includegraphics{arrays_1D_2D_3D_4D_ND}
-    \includesvg[width=\paperwidth]{arrays_1D_2D_3D_4D_ND}
+    \includesvg[width=\paperwidth,inkscapelatex=false]{arrays_1D_2D_3D_4D_ND}
   }
 \begin{frame}[label=intro1,fragile]{What are multidimensional Arrays}
 \vspace{3cm}
@@ -1338,8 +1338,8 @@ A = + blas::gemm(1.0, A, B);  % operator+ to break aliasing
 \includegraphics[scale=0.7]{dispatching_blas}
 \end{center}
 
-\lstinline|multi::blas::gemm| produces a "gemm" ranges;
-custom \lstinline|copy_n| calls actual GEMM operation
+\lstinline{multi::blas::gemm} produces a "gemm" ranges;
+custom \lstinline{copy_n} calls actual GEMM operation
 \end{frame}
 
 \begin{frame}[label=uses1]{Real world uses}
@@ -1359,11 +1359,192 @@ custom \lstinline|copy_n| calls actual GEMM operation
 	\end{alertblock}
 \end{frame}
 
-\begin{frame}[label=uses3]{INQ, electronic structure code for HPC systems}
+\begin{frame}[label=inq0]{INQ, electronic structure code for HPC systems}
 	\centering
 	\includesvg{dependencies}
 
   Individual components can be shared and reused by other projects
+\end{frame}
+
+
+\begin{frame}[fragile,label=inq1]{\texttt{gpu::array}: Portable CPU/GPU Arrays via a Type Alias}
+\begin{lstlisting}
+// external_libs/gpurun/include/gpu/array.hpp:112
+
+template<class type, size_t dim,
+#ifdef ENABLE_GPU
+    class allocator = caching_allocator<type>  // unified GPU memory
+#else
+    class allocator = std::allocator<type>     // ordinary CPU heap
+#endif
+>
+using array = boost::multi::array<type, dim, allocator>;
+\end{lstlisting}
+\vspace{0.5em}
+\begin{itemize}
+  \item \texttt{gpu::array<T,N>} \textbf{is} a \texttt{boost::multi::array<T,N,Alloc>}
+  \item The allocator switches at compile time: GPU builds use
+        \texttt{thrust::universal\_allocator} (visible to both CPU and GPU);
+        CPU builds use \texttt{std::allocator}
+  \item All multi indexing, slicing, and algorithm support is inherited unchanged
+  \item No code change needed between CPU and GPU paths
+\end{itemize}
+
+\vspace{0.3em}
+\tiny\texttt{external\_libs/gpurun/include/gpu/array.hpp:119}
+\end{frame}
+
+\begin{frame}[fragile,label=inq2]{Custom-Typed 1D Arrays for Atomic Properties}
+\begin{lstlisting}
+// Arrays of physical quantities -- element type can be anything
+multi::array<vector3<double>, 1> forces(geo.size());
+multi::array<double, 1>         charges(geo.size());
+
+for(int ii = 0; ii < geo.size(); ii++)
+    charges[ii] = atomic_pot
+        .pseudo_for_element(geo.species(ii))
+        .valence_charge();
+
+interaction_energy(geo.size(), cell, charges,
+                   geo.positions(), atomic_pot.range_separation(),
+                   energy, forces);
+\end{lstlisting}
+\textit{multi arrays are generic: \texttt{vector3<double>} is a valid element type,
+giving a 1D array of 3-vectors representing per-atom forces.}
+
+\vspace{0.3em}
+\tiny\texttt{src/ionic/interaction.hpp:317}
+\end{frame}
+
+\begin{frame}[fragile,label=inq3]{Dynamic Resizing: k-points $\times$ Eigenstates}
+\begin{lstlisting}
+gpu::array<double, 2> eigenvalues_;
+gpu::array<double, 2> occupations_;
+...
+// 2D arrays sized at runtime from MPI-distributed k-point data
+eigenvalues_.reextent({n_kpin, max_local_spinor_set_size_});
+occupations_.reextent({n_kpin, max_local_spinor_set_size_});
+\end{lstlisting}
+\vspace{0.5em}
+\begin{itemize}
+  \item \texttt{reextent} resizes without invalidating the element type
+  \item Dimensions come from the MPI partition of k-points and states
+  \item The same syntax works for CPU and GPU arrays (\texttt{gpu::array})
+\end{itemize}
+
+\vspace{0.3em}
+\tiny\texttt{src/systems/electrons.hpp:188}
+\end{frame}
+
+\begin{frame}[fragile,label=inq4]{4D Fields: Reinterpretation and Axis Rotation}
+\begin{lstlisting}[language=C++]
+// phi is a 4D array: [ix][iy][iz][istate]
+// vector field stores complex3 elements; cast to scalar complex
+// then rotate axes so [istate] becomes the leading dimension
+
+auto&& fphi_as_scalar =
+    fphi.hypercubic()
+        .template reinterpret_array_cast<complex>(3)
+        .rotated().rotated().rotated()  // bring [istate] to front
+        .flatted()                      // merge spatial dims
+        .rotated();                     // final layout for FFT
+
+to_fourier_array(phi.basis(), fphi.basis(),
+                 phi_as_scalar, fphi_as_scalar);
+\end{lstlisting}
+\textit{No data is copied: every operation returns a zero-cost view
+with a different layout. The FFT routine sees a plain 2D array.}
+
+\vspace{0.3em}
+\tiny\texttt{src/operations/transform.hpp:206}
+\end{frame}
+
+\begin{frame}[fragile,label=inq5,shrink]{FFTW / cuFFT via a Unified Multi Adaptor}
+\begin{lstlisting}
+// operations/transform.hpp:23-25, 68-104
+
+// {true,true,true,false}: transform dims 0,1,2 -- batch over dim 3 (states)
+fft::dft_forward ({true, true, true, false}, array_rs, array_fs);
+fft::dft_backward({true, true, true, false}, array_fs, array_rs);
+
+// MPI-parallel: split into 1D + 2D passes with a transpose in between
+fft::dft_forward({true, false, false, false}, array_rs, tmp);
+parallel::transpose_forward(comm, ...);
+fft::dft_forward({true, true,  false, false}, tmp, array_fs);
+
+fft::dft_backward({true, true,  false, false}, array_fs, tmp);
+parallel::transpose_backward(comm, ...);
+fft::dft_backward({true, false, false, false}, tmp, array_rs);
+\end{lstlisting}
+\begin{itemize}
+  \item The boolean mask selects \textit{which dimensions} to transform
+  \item \texttt{fft::} and \texttt{fftw::} share the same interface ---
+        only the \texttt{\#include} and namespace alias change
+  \item MPI-distributed FFT is decomposed manually into 1D passes
+        separated by an all-to-all transpose
+\end{itemize}
+\tiny\texttt{src/operations/transform.hpp:68}
+\end{frame}
+
+\begin{frame}[fragile,label=inq6,shrink]{BLAS / cuBLAS via the Multi BLAS Adaptor}
+\begin{lstlisting}
+// operations/overlap.hpp:33-45
+namespace blas = boost::multi::blas;
+
+// Overlap matrix: S_ij = dV * sum_k conj(phi1[k][i]) * phi2[k][j]
+//   blas::H()  -- conjugate transpose (Hermitian adjoint)
+//   gemm()     -- dispatches to BLAS (CPU) or cuBLAS (GPU)
+
+// serial case: single gemm into the result block
+olap.block() = blas::gemm(basis.volume_element(),
+                           blas::H(phi1_matrix),
+                           phi2_matrix);
+
+// parallel case: compute locally, then MPI-reduce by block
+auto array = +blas::gemm(basis.volume_element(),
+                          blas::H(phi1_matrix),
+                          phi2_matrix);
+\end{lstlisting}
+\begin{itemize}
+  \item \texttt{blas::gemm} and \texttt{blas::H} work on any \texttt{multi} array,
+        CPU or GPU --- no code change needed
+  \item The \texttt{+} prefix forces immediate evaluation into an owning array
+  \item The same adaptor also provides \texttt{blas::nrm2}, \texttt{blas::gemv},
+        \texttt{blas::trsm}, \ldots
+\end{itemize}
+\tiny\texttt{src/operations/overlap.hpp:33}
+\end{frame}
+
+\begin{frame}[label=adaptors]{Multiparadigm}
+\centering
+\begin{tikzpicture}[
+    mindmap,
+    scale=0.45, transform shape,
+    concept color = red!30,
+    every node/.style = {concept},
+    grow cyclic,
+    level 1/.append style = {
+        level distance = 4.5cm,
+        sibling angle = 120
+    },
+    level 2/.append style = {
+        level distance = 3cm,
+        sibling angle = 45}
+]
+\node {\textsc{Multi}}
+    child {node [concept color = blue!30] {First idea}
+        child {node {Fact 1}}
+        child {node {Fact 2}}
+    }
+    child [concept color = green!30] {node {Second idea}
+        child {node {Sub-idea}}
+    }
+    child {node [concept color = magenta!30] {Third idea}
+            child [concept color = magenta!50!black] {node {Note 1}}
+            child [concept color = magenta!60!black] {node {Note 2}}
+            child [concept color = magenta!70!black] {node {Note 3}}
+    };
+\end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Thoughts about AI}

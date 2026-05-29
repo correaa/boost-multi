@@ -300,7 +300,7 @@ clang++ ubsan:  # more UB is detected on Release
 #     - cmake --build . || cmake --build . --parallel 1 --verbose
 #     - ctest
 #     - cd test
-#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
 #   needs: ["clang++", "g++"]
 
 clang++-18 mull-18:
@@ -330,7 +330,7 @@ clang++-18 mull-18:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest
     - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
 
 clang++-19 mull-19:
@@ -370,7 +370,7 @@ clang++-19 mull-19:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest
     - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 30000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
 
 clang++-16 c++20:

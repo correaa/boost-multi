@@ -68,36 +68,39 @@ link:https://godbolt.org/z/555893MqW[((open with Compiler Explorer))].
 |===
 
 [#appendix_fortran]
-== Multi for FORTRAN programmers
+== Multi for Fortran programmers
 
-This section summarizes simple cases translated from FORTRAN syntax to C++ using the library.
-The library strives to give a familiar feeling to those who use multidimensional arrays in FORTRAN.
-Arrays can be indexed using square brackets or parenthesis, which would be more familiar to FORTRAN syntax.
-The most significant differences are that array indices in FORTRAN start at `1`, and that index ranges are specified as closed intervals, while in Multi, they start by default at `0`, and ranges are half-open, following C++ conventions.
-Like in FORTRAN, arrays are not initialized automatically for simple types (e.g., numeric); such initialization needs to be explicit.
+This section summarizes simple cases translated from Fortran syntax to C++ using the library.
+The library strives to give a familiar feeling to those who use multidimensional arrays in Fortran.
+Arrays can be indexed using square brackets (`[]`) or parentheses (`()`), which would be more familiar to Fortran syntax.
+The most significant differences are that array indices in Fortran start at `1`, and that index ranges are specified as closed intervals, while in Multi, they start by default at `0`, and ranges are half-open, following C++ conventions.
+Like in Fortran, arrays are not initialized automatically for simple types (e.g., numeric); such initialization needs to be explicit.
 
 |===
-|                             | FORTRAN                                          | C++ Multi                                            
+|                             | Fortran                                            | C++ Multi
 
-| Declaration/Construction 1D | `real, dimension(2) :: numbers` (at top)         | `multi::array<double, 1> numbers(2);` (at scope)    
-| Initialization (2 elements) | `real, dimension(2) :: numbers = [ 1.0, 2.0 ]`   | `multi::array<double, 1> numbers = { 1.0, 2.0 };`    
-| Element assignment          | `numbers(3) = 99.0`                              | `numbers[2] = 99.0;`               
-| Element access (print 2nd)  | `print *, numbers(3)`                            | `std::cout << numbers(2) << '\n';`
-| Printing                    | `print *, numbers`                               | `std::cout << numbers;` (needs `multi/io.hpp`) or  `std::print("{}", number);` (needs pass:[C++23])                  
-| Initialization              | `DATA numbers / 10.0 20.0 /`                     | `numbers = {10.0, 20.0};`                            
+| Declaration/Construction 1D | `real, dimension(3) :: numbers` (at top)           | `multi::array<float, 1> numbers(3);` (at scope)
+| Initialization (3 elements) | `numbers = (/ 1.0, 2.0, 3.0 /)`                        | `multi::array<float, 1> numbers = { 1.0f, 2.0f, 3.0f };`
+| Element assignment (3rd)    | `numbers(3) = 99.0`                                | `numbers[2] = 99.0f;`
+| Element access (print 3rd)  | `print *, numbers(3)`                              | `std::cout << numbers[2] << '\n';`
+| Printing all elements       | `print *, numbers`                                 | `std::cout << numbers;` (needs `multi/io.hpp`) or  `std::print("{}", numbers);` (needs pass:[C++23])
+| Re-initialization           | `numbers = (/ 10.0, 20.0, 30.0 /)`                | `numbers = {10.0f, 20.0f, 30.0f};`
 |===
 
 In the more general case for the dimensionality, we have the following correspondence:
 
 |===
-|                              | FORTRAN                                          | C++ Multi
+|                              | Fortran                                            | C++ Multi
 
-| Construction 2D (3 by 3)     | `real*8 :: A2D(3,3)` (at top)                    | `multi::array<double, 2> A2D({3, 3});` (at scope)
-| Construction 2D (2 by 2)     | `real*8 :: B2D(2,2)` (at top)                    | `multi::array<double, 2> B2D({2, 2});` (at scope)
-| Construction 1D (3 elements) | `real*8 :: v1D(3)`   (at top)                    | `multi::array<double, 1> v1D(+{3}+);` (at scope)
-| Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                              | `v1( _ ) = A2D( _ , 0 );`
-| Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                              | `v1( _ ) = A2D( 0 , _ );`
-| Assign upper part of A2D     | `B2D(:,:) = A2D(1:2,1:2)`                        | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`
+| Construction 2D (3 by 3)     | `real(kind=8) :: A2D(3,3)` (at top)               | `multi::array<double, 2> A2D({3, 3});` (at scope)
+| Construction 2D (2 by 2)     | `real(kind=8) :: B2D(2,2)` (at top)               | `multi::array<double, 2> B2D({2, 2});` (at scope)
+| Construction 1D (3 elements) | `real(kind=8) :: v1D(3)` (at top)                 | `multi::array<double, 1> v1D(3);` (at scope)
+| Assign the 1st column of A2D | `v1D(:) = A2D(:,1)`                               | `v1D( _ ) = A2D( _ , 0 );`
+| Assign the 1st row of A2D    | `v1D(:) = A2D(1,:)`                               | `v1D( _ ) = A2D( 0 , _ );`
+| Assign upper part of A2D     | `B2D = A2D(1:2,1:2)`                              | `B2D( _ , _ ) = A2D({0, 2}, {0, 2});`
+| Allocatable  declaration     | `real(kind=8), allocatable :: a(:,:)` | `multi::array<double, 2> a;`
+| Allocation                   | `allocate(a(10,5))` | `a.reextent({10, 5})` or `a = multi::array<double, 2>({10, 5})`
+| Deallocation                 | `deallocate(a)`     | `a.clear()` or `a = {}`
 |===
 
 Note that these correspondences are notationally logical;
@@ -109,7 +112,7 @@ Complete range interval (single `:` notation) is replaced by `multi::_`, (or by 
 These rules extend to higher dimensionality.
 
 Multi provides algebraic operators that are expanded elementwise,
-For example, a FORTRAN statement like `C = A + B` or `C = C + A` is translated as this:
+For example, a Fortran statement like `C = A + B` or `C = C + A` is translated as this:
 
 [source,cpp]
 ----
@@ -142,7 +145,7 @@ or
 std::ranges::transform(A.elements(), B.elements(), A.elements().begin(), std::plus<>{});  // alternative using C++20 ranges
 ----
 
-A FORTRAN statement like `C = 2.0*C` is rewritten as
+A Fortran statement like `C = 2.0*C` is rewritten as
 
 [source,cpp]
 ----

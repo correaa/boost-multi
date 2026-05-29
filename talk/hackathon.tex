@@ -1,7 +1,7 @@
 \documentclass[t,aspectratio=169,handout]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
-\usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings}
+\usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings,mindmap}
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
 \usepackage{listings}
@@ -76,7 +76,15 @@
 \author{Alfredo A. Correa}
 \date{\today}
 
-\includeonlyframes{title,toc,intro1,intro2,motivation1,motivation2,history1,history2,uses1,uses2,uses3,demo,conclusion}
+\includeonlyframes{%
+  title,toc,intro1,intro2,%
+  motivation1,motivation2,%
+  history1,history2,%
+  uses1,uses2,%
+  inq0,inq1,inq2,inq3,inq4,inq5,inq6,%
+  adaptors,%
+  uses3,%
+  demo,conclusion}
 
 \begin{document}
 
