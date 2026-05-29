@@ -84,7 +84,7 @@
 	\end{quote}
 \end{frame}
 
-\begin{frame}[label=motivation]{Why Multidimensional Arrays?}
+\begin{frame}[label=motivation1]{Why Multidimensional Arrays?}
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \textbf{Scientific computing is array computing}
@@ -1459,6 +1459,10 @@ with a different layout. The FFT routine sees a plain 2D array.}
 \tiny\texttt{src/operations/transform.hpp:206}
 \end{frame}
 
+    needs:
+    needs:
+
+
 \begin{frame}[fragile,label=inq5,shrink]{FFTW / cuFFT via a Unified Multi Adaptor}
 \begin{lstlisting}
 // operations/transform.hpp:23-25, 68-104
@@ -1486,6 +1490,34 @@ fft::dft_backward({true, false, false, false}, tmp, array_rs);
 \tiny\texttt{src/operations/transform.hpp:68}
 \end{frame}
 
+\begin{frame}[label=blasops]{Multi BLAS Adaptor: Operation Summary (selected examples)}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lll@{}}
+\hline
+\textbf{Operation} & \textbf{Out-parameter form} & \textbf{Functional form} \\
+\hline
+\multicolumn{3}{l}{\textit{Level 1 --- scalars from vectors}} \\[2pt]
+\texttt{nrm2} $\|x\|_2$  & \texttt{blas::nrm2(x, r)}        & \texttt{double r = blas::nrm2(x)} \\
+\texttt{asum} $\|x\|_1$  & \texttt{blas::asum(x, r)}        & \texttt{double r = blas::asum(x)} \\
+\texttt{dot}  $x \cdot y$ & \texttt{blas::dot(x, y, r)}     & \texttt{double r = blas::dot(x, y)} \\[4pt]
+\multicolumn{3}{l}{\textit{Level 1 --- vector updates}} \\[2pt]
+\texttt{axpy} $y \mathrel{+}= \alpha x$ & \texttt{blas::axpy(a, x, y)}    & \texttt{y += blas::axpy(a, x)} \\[4pt]
+\multicolumn{3}{l}{\textit{Level 2 --- matrix-vector}} \\[2pt]
+\texttt{gemv} $y = \alpha Ax + \beta y$          & \texttt{blas::gemv(a, A, x, b, y)} & \texttt{y = blas::gemv(a, A, x)} \\[4pt]
+\multicolumn{3}{l}{\textit{Level 3 --- matrix-matrix}} \\[2pt]
+\texttt{gemm} $C = \alpha AB$          & \texttt{blas::gemm(a, A, B, b, C)} & \texttt{C = blas::gemm(a, A, B)} \\
+\texttt{herk} $C = \alpha A A^\dagger$ & \texttt{blas::herk(fill, a, A, b, C)} & \texttt{C = blas::herk(a, A)} \\
+\hline
+\end{tabular}
+
+\medskip
+{\footnotesize\textbf{View manipulators} (usable as arguments above):
+\texttt{blas::H(A)} — conjugate-transpose \quad
+\texttt{blas::T(A)} — transpose \quad
+\texttt{blas::C(x)} — conjugate}
+\end{frame}
+
 \begin{frame}[fragile,label=inq6,shrink]{BLAS / cuBLAS via the Multi BLAS Adaptor}
 \begin{lstlisting}
 // operations/overlap.hpp:33-45
@@ -1501,7 +1533,7 @@ olap.block() = blas::gemm(basis.volume_element(),
                            phi2_matrix);
 
 // parallel case: compute locally, then MPI-reduce by block
-auto array = +blas::gemm(basis.volume_element(),
+auto arr = +blas::gemm(basis.volume_element(),
                           blas::H(phi1_matrix),
                           phi2_matrix);
 \end{lstlisting}
@@ -1523,6 +1555,7 @@ auto array = +blas::gemm(basis.volume_element(),
     concept color = red!30,
     every node/.style = {concept},
     grow cyclic,
+    clockwise from = 90,
     level 1/.append style = {
         level distance = 4.5cm,
         sibling angle = 120
@@ -1532,17 +1565,21 @@ auto array = +blas::gemm(basis.volume_element(),
         sibling angle = 45}
 ]
 \node {\textsc{Multi}}
-    child {node [concept color = blue!30] {First idea}
-        child {node {Fact 1}}
-        child {node {Fact 2}}
+    child [concept color = blue!30] {node {Index access}
+        child [grow=135] {node {Traditional loops}}
+        child [grow=45]  {node {gpu::run}}
     }
-    child [concept color = green!30] {node {Second idea}
-        child {node {Sub-idea}}
+    child [concept color = green!30] {node {Iterators}
+        child [grow=375] {node {Standard Template Library}}
+        child [grow=330] {node {CUDA Thrust}}
+        child [grow=285] {node {Boost}}
     }
-    child {node [concept color = magenta!30] {Third idea}
-            child [concept color = magenta!50!black] {node {Note 1}}
-            child [concept color = magenta!60!black] {node {Note 2}}
-            child [concept color = magenta!70!black] {node {Note 3}}
+    child [concept color = magenta!30] {node {Raw access (adaptors)}
+            child [grow=300, concept color = magenta!50!black] {node {BLAS/Lapack}}
+            child [grow=255, concept color = magenta!60!black] {node {FFTW}}
+            child [grow=210, concept color = magenta!70!black] {node {cuBLAS}}
+            child [grow=165, concept color = magenta!70!black] {node {cuFFT}}
+            child [grow=120, concept color = magenta!70!black] {node {MPI}}
     };
 \end{tikzpicture}
 \end{frame}
