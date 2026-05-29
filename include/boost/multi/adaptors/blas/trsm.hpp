@@ -116,13 +116,13 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 }
 
 template<class A2D, class B2D>
-auto trsm(blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
+auto trsm(blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
 	if constexpr(! is_conjugated<A2D>{}) {return trsm(default_context_of(           a.base() ), a_side, a_fill, a_diag, alpha, a, std::forward<B2D>(b));}
 	else                                 {return trsm(default_context_of(underlying(a.base())), a_side, a_fill, a_diag, alpha, a, std::forward<B2D>(b));}
 }
 
 template<class Context, class A2D, class B2D>
-auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
+auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D::element alpha, A2D const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b))) {
 	return trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::non_unit, alpha, a, std::forward<B2D>(b)); }
 
@@ -142,7 +142,7 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 #endif
 
 template<class A2D, class B2D>
-auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
+auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element alpha, A2D const& a, B2D&& b) -> decltype(auto) {  // NOLINT(readability-identifier-length) BLAS naming
 	if constexpr(! is_conjugated<A2D>{}) {return trsm(blas::default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 	else                                 {return trsm(blas::default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 }
@@ -160,7 +160,7 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 #endif
 
 template<class UTArr, class B2D>
-auto trsm(blas::side a_side, typename UTArr::underlying_type::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
+auto trsm(blas::side a_side, typename UTArr::underlying_type::element alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(trsm(a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b))) {
 	return trsm(a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b)); }
 

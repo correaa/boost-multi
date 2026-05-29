@@ -43,7 +43,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2[1][1] == 88 );
 
 		A2[1][1] = 77;
-		BOOST_TEST( A2[1][1] == 77 );
+		BOOST_TEST( A2[1][1] == 77 );  // cppcheck-suppress knownConditionTrueFalse;
 	}
 
 	/* subarray_assignment */
@@ -207,7 +207,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( R2D.addressof()== A2D.addressof() );
 
 		R2D[0][0] = 77;
-		BOOST_TEST( R2D[0][0] == 77 );
+		BOOST_TEST( R2D[0][0] == 77 );  // cppcheck-suppress knownConditionTrueFalse;
 	}
 
 	{  // https://godbolt.org/z/a5dr7YvMz
