@@ -8,6 +8,14 @@
 
 // #include "boost/multi/detail/what.hpp"
 
+#if !(defined(__CUDA__) || defined(__NVCC__) || defined(__CUDACC__) ||     \
+	defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || \
+	defined(__HIPCC__))
+#ifndef THRUST_DEVICE_SYSTEM
+#define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CPP
+#endif
+#endif
+
 #if defined(__CUDA__) || defined(__NVCC__) || defined(__CUDACC__) ||     \
 	defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || \
 	defined(__HIPCC__) || (defined(__has_include) && __has_include(<thrust/version.h>)) || defined(BOOST_MULTI_HAS_THRUST)
