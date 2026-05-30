@@ -100,14 +100,14 @@ Deallocation               & \lstinline|deallocate(A)|            & \lstinline|A
 \hline
 Uninitialized (3$\times$3) & \lstinline|A = np.empty((3,3))|          & \lstinline|multi::array<double,2> A({3,3});| \\
 Zero-filled (3$\times$3)   & \lstinline|A = np.zeros((3,3))|          & \lstinline|multi::array<double,2> A({3,3}, 0.0);| \\
-Element access             & \lstinline|A[i,j]|                       & \lstinline|A[i][j]| or \lstinline|A(i,j)| \\
+Element access             & \lstinline|A[i,j]|                       & \lstinline|A[i][j]| or \lstinline|A(i,j)| (or in C++23 \lstinline|A(i,j)|) \\
 First row                  & \lstinline|A[0]| or \lstinline|A[0,:]|   & \lstinline|A[0]| \\
 First column               & \lstinline|A[:,0]|                       & \lstinline|A(_,0)| \\
 Subblock                   & \lstinline|A[0:2, 0:2]|                  & \lstinline|A({0,2},{0,2})| \\
 Strided slice              & \lstinline|A[::2, :]|                    & \lstinline|A.strided(2)| \\
 Shape / extent             & \lstinline|A.shape|                      & \lstinline|A.extensions()| \\
-View (zero-copy)           & \lstinline|B = A[0:2]| (view)            & \lstinline|auto&& B = A({0,2});| (subarray) \\
-Copy                       & \lstinline|B = A[0:2].copy()|            & \lstinline|multi::array<double,2> B = A({0,2});| or \lstinline|auto B =+ A({0, 2});| \\
+View (zero-copy)           & \lstinline|B = A[0:2]| (view)            & \lstinline|auto&& B =  A({0,2});| (subarray) \\
+Copy                       & \lstinline|B = A[0:2].copy()|            & \lstinline|auto   B =+ A({0,2});| \\
 GPU array                  & \lstinline|cupy.array(...)|              & \lstinline|multi::thrust::array<double,2>| (type alias) \\
 \hline
 \end{tabular}
