@@ -97,8 +97,8 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,11>:-Waddress-of-packed-member>
 	-Wno-aggregate-return # (disallow return classes or structs, seems a C-compatibility warning)
 	-Waggressive-loop-optimizations
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wanalyzer-out-of-bounds>
-	-Waligned-new=all # (gcc 12, not in 11)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wanalyzer-out-of-bounds>
+	-Waligned-new=all
 	# -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 	-Walloc-zero
 	-Walloca  # -Walloca-larger-than=<number>
@@ -155,7 +155,7 @@ else()
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,8>:-Wextra-semi>
 	-Wfloat-conversion -Wfloat-equal
 	-Wformat=2
-	-Wformat-contains-nul # (gcc 12, not in 11)
+	-Wformat-contains-nul
 	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wformat-diag>
 	-Wformat-extra-args -Wformat-nonliteral
 	-Wformat-overflow=1
@@ -222,9 +222,9 @@ else()
 	#-Wredundant-move # (gcc 11, not in gcc 8)
 	# -Wredundant-tags # (gcc 11, not in gcc 9)
 	-Wregister
-	-Wreorder # (gcc 12, not in 11)
+	-Wreorder
 	-Wreturn-local-addr -Wreturn-type
-	-Wrestrict -Wreorder
+	-Wrestrict
 	-Wscalar-storage-order -Wsequence-point
 	-Wshadow -Wshadow-compatible-local -Wshadow-local -Wshadow=compatible-local -Wshadow=local
 	-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value -Wshift-overflow  #=1 -Wshift-overflow=<0,2>
@@ -252,11 +252,11 @@ else()
 	# -Wsuggest-attribute=malloc # (gcc 8, not in 7)
 	-Wsuggest-attribute=noreturn # -Wsuggest-attribute=pure # (false positive in gcc 8.5.0 RedHat)
 	-Wsuggest-final-methods -Wsuggest-final-types
-	-Wsuggest-override # (gcc 12, not in gcc 11)
+	-Wsuggest-override
 	-Wswitch -Wswitch-bool
 	-Wno-switch-default
 	-Wswitch-enum
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wswitch-outside-range>  # (gcc 11, not in gcc 9)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10>:-Wswitch-outside-range>
 	-Wswitch-unreachable
 	-Wsync-nand -Wsynth
 	-Wno-system-headers  # (expects system headers to be warning-compliant which they are not)
