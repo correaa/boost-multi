@@ -209,7 +209,7 @@ class gemm_iterator {
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = std::nullptr_t;
-	using reference = gemm_reference<decltype((*std::declval<ItB>()).extents())>;
+	using reference = gemm_reference<decltype(std::declval<typename std::iterator_traits<ItB>::reference>().extents())>;
 	using iterator_category = std::random_access_iterator_tag;
 
 	auto operator+=(difference_type n) -> gemm_iterator& { a_it_ += n; return *this; }

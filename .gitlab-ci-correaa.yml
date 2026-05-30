@@ -615,6 +615,7 @@ vs2022-shell cuda:
       - develop
   variables:
     CMAKE_GENERATOR: ""   # override for windows
+  cache: []
   before_script: []  # override for windows
   script:
     - whoami
