@@ -199,9 +199,9 @@ g++-9-bullseye:
     - non-shared
     - docker
   allow_failure: false
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   script:
     - arch
     - apt-get install --no-install-recommends --assume-yes ca-certificates cmake ninja-build g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
@@ -209,27 +209,6 @@ g++-9-bullseye:
     - g++ --version
     - g++-9 --version
     - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build build/ || cmake --build build/ --parallel 1 --verbose
-    - cmake --build build/ --target test
-  needs: ["g++"]
-
-g++-10-bullseye:
-  stage: build
-  image: debian:bullseye
-  tags:
-    - non-shared
-    - docker
-  allow_failure: false
-  # only:
-  #   refs:
-  #     - develop
-  script:
-    - arch
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake ninja-build g++ g++-10 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    - cmake --version
-    - g++ --version
-    - g++-10 --version
-    - CXX=g++-10 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
     - cmake --build build/ || cmake --build build/ --parallel 1 --verbose
     - cmake --build build/ --target test
   needs: ["g++"]
