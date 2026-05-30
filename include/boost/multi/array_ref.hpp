@@ -1542,8 +1542,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto blocked(index first, index last) const& { return sliced(first, last).reindexed(first).as_const(); }
 	constexpr auto blocked(index first, index last) & { return sliced(first, last).reindexed(first).as_const(); }
 
+ private:
 	using iextension = typename const_subarray::index_extension;
 
+ public:
 	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }
 	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
@@ -3719,11 +3721,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-	using element_type = typename array_ref::element;
-	template<class U = element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// using element_type = typename array_ref::element;
+	template<class U = typename array_ref::element, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator std::span<U const>() const { return std::span<U const>(this->data_elements(), this->size()); }
 
-	template<class U = element_type, std::enable_if_t<std::is_convertible_v<typename array_ref::element_ptr, U*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class U = typename array_ref::element, std::enable_if_t<std::is_convertible_v<typename array_ref::element_ptr, U*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator std::span<U>() { return std::span<U>(this->data_elements(), this->size()); }
 #endif
 
