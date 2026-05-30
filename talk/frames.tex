@@ -69,6 +69,57 @@
 	(Sean Parent, 2018, \emph{`Greatest Common Measure'}, \href{https://youtu.be/FtZEU9zv9eM}{\texttt{youtu.be/FtZEU9zv9eM}})}
 \end{frame}
 
+\begin{frame}[label=fortran-comparison,fragile]{2D arrays: Fortran 90 vs \textsc{Multi}}
+\small
+\begin{tabular}{@{}lll@{}}
+\hline
+\textbf{Operation}         & \textbf{Fortran 90}                  & \textbf{C++ Multi} \\
+\hline
+Declaration (3$\times$3)   & \lstinline|real(8) :: A(3,3)|        & \lstinline|multi::array<double,2> A({3,3});| \\
+Allocatable                & \lstinline|real(8), allocatable :: A(:,:)| & \lstinline|multi::array<double,2> A;| \\
+Allocation                 & \lstinline|allocate(A(10,5))|        & \lstinline|A.reextent({10,5});| \\
+Element access             & \lstinline|A(i,j)|                   & \lstinline|A[i][j]| or \lstinline|A(i,j)| (zero-index)\\
+First row                  & \lstinline|A(1,:)|                   & \lstinline|A[0]| or \lstinline|A(0,_)| \\
+First column               & \lstinline|A(:,1)|                   & \lstinline|A(_,0)| \\
+Subblock                   & \lstinline|A(1:2, 1:2)|              & \lstinline|A({0,2},{0,2})| \\
+Deallocation               & \lstinline|deallocate(A)|            & \lstinline|A.clear()| \\
+\hline
+\end{tabular}
+
+\vspace{0.5em}
+\begin{alertblock}{Key differences}
+  Fortran indices start at \textbf{1}, Multi at \textbf{0}; ranges \lstinline|1:2| are closed, \lstinline|{0,2}| is half-open.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[label=numpy-comparison,fragile]{2D arrays: NumPy (Python) vs \textsc{Multi} (C++)}
+\small
+\begin{tabular}{@{}lll@{}}
+\hline
+\textbf{Operation}         & \textbf{NumPy}                           & \textbf{C++ Multi} \\
+\hline
+Uninitialized (3$\times$3) & \lstinline|A = np.empty((3,3))|          & \lstinline|multi::array<double,2> A({3,3});| \\
+Zero-filled (3$\times$3)   & \lstinline|A = np.zeros((3,3))|          & \lstinline|multi::array<double,2> A({3,3}, 0.0);| \\
+Element access             & \lstinline|A[i,j]|                       & \lstinline|A[i][j]| or \lstinline|A(i,j)| \\
+First row                  & \lstinline|A[0]| or \lstinline|A[0,:]|   & \lstinline|A[0]| \\
+First column               & \lstinline|A[:,0]|                       & \lstinline|A(_,0)| \\
+Subblock                   & \lstinline|A[0:2, 0:2]|                  & \lstinline|A({0,2},{0,2})| \\
+Strided slice              & \lstinline|A[::2, :]|                    & \lstinline|A.strided(2)| \\
+Shape / extent             & \lstinline|A.shape|                      & \lstinline|A.extensions()| \\
+View (zero-copy)           & \lstinline|B = A[0:2]| (view)            & \lstinline|auto&& B = A({0,2});| (subarray) \\
+Copy                       & \lstinline|B = A[0:2].copy()|            & \lstinline|multi::array<double,2> B = A({0,2});| or \lstinline|auto B =+ A({0, 2});| \\
+GPU array                  & \lstinline|cupy.array(...)|              & \lstinline|multi::thrust::array<double,2>| (type alias) \\
+\hline
+\end{tabular}
+
+\vspace{0.4em}
+\begin{alertblock}{Key differences}
+  NumPy slices use \textbf{closed-open} \lstinline|[0:2]| ranges --- same as Multi \lstinline|{0,2}|.
+  Multi subarrays are \textbf{always views}; a copy requires an explicit owning construction.
+  Multi's type encodes rank and element type at compile time $\Rightarrow$ zero overhead, GPU portability.
+\end{alertblock}
+\end{frame}
+
 \begin{frame}[label=history3]{We need philosophy (mathematics) to program, especially libraries}
 	\begin{quote}
 		What kind of programs are not mathematical? Programs that are insecure, programs that
@@ -1458,9 +1509,6 @@ with a different layout. The FFT routine sees a plain 2D array.}
 \vspace{0.3em}
 \tiny\texttt{src/operations/transform.hpp:206}
 \end{frame}
-
-    needs:
-    needs:
 
 
 \begin{frame}[fragile,label=inq5,shrink]{FFTW / cuFFT via a Unified Multi Adaptor}
