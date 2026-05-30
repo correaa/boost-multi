@@ -1078,7 +1078,7 @@ Structural operations compose (still) without allocating: \lstinline|transposed|
 
 \section{Algorithms \& Performance}
 
-\begin{frame}{Algorithms (raw loops)}
+\begin{frame}[label=alg0]{Algorithms (raw loops)}
 Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
 
 \begin{center}
@@ -1087,23 +1087,36 @@ Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a c
 
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (raw loops)}
+\begin{frame}[fragile,label=alg1]{Algorithms (raw loops)}
   Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
-  \begin{lstlisting}
-for(auto&& plane : A                  )
-                  {
-    for(auto&& row : plane) {
-      for(auto&& elem : row) {
-        elem = op(elem);
-      }
-    }
 
-}
-  \end{lstlisting}
+\begin{columns}[t]
+\begin{column}{0.48\textwidth}
+\textit{Index-based (coordinate access)}
+\begin{lstlisting}
+auto [is, js, ks] = A.extents();
+for(auto i : is)
+  for(auto j : js)
+    for(auto k : ks)
+      A[i][j][k] = op(A[i][j][k]);
+\end{lstlisting}
+\end{column}
+\begin{column}{0.48\textwidth}
+\textit{Range-for (element access)}
+\begin{lstlisting}
+
+for(auto&& plane : A)
+  for(auto&& row : plane)
+    for(auto&& elem : row)
+      elem = op(elem);
+\end{lstlisting}
+\end{column}
+\end{columns}
+
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (algorithm seasoning)}
+\begin{frame}[fragile,label=alg2]{Algorithms (algorithm seasoning)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(     A.begin(), A.end(),
@@ -1119,7 +1132,7 @@ std::for_each(     A.begin(), A.end(),
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (algorithm parallelization)}
+\begin{frame}[fragile,label=alg3]{Algorithms (algorithm parallelization)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(std::execution::par, A.begin(), A.end(),
@@ -1135,7 +1148,7 @@ std::for_each(std::execution::par, A.begin(), A.end(),
   timing: \textbf{1.4 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (attempt to parallelize in the GPU)}
+\begin{frame}[fragile,label=alg4]{Algorithms (attempt to parallelize in the GPU)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
@@ -1153,7 +1166,7 @@ thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
   But even if it did compile... \includegraphics[width=0.12\textwidth]{led-cube.png}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (optimized)}
+\begin{frame}[fragile,label=alg5]{Algorithms (optimized)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 thrust::for_each(thrust::cuda::par, A.elements().begin(), A.elements().end(), [] __device__(auto& e) {
@@ -1163,7 +1176,7 @@ thrust::for_each(thrust::cuda::par, A.elements().begin(), A.elements().end(), []
   timing: \textbf{0.3 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Algorithms (optimized)}
+\begin{frame}[fragile,label=alg6]{Algorithms (optimized)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(std::execution::par, A.elements().begin(), A.elements().end(), [] (auto& e) {
@@ -1173,7 +1186,7 @@ std::for_each(std::execution::par, A.elements().begin(), A.elements().end(), [] 
   timing: \textbf{0.7 msec}
 \end{frame}
 
-\begin{frame}[fragile]{Summary}
+\begin{frame}[fragile,label=alg-summary]{Summary}
 
 \begin{table}
 \begin{tabular}{lcc}
@@ -1236,6 +1249,50 @@ std::transform(
 Note: \lstinline|A.extents().elements().size() == A.elements().size()|
 \end{overprint}
 
+\end{frame}
+
+\begin{frame}[fragile,label=gpurun1]{\texttt{gpu::run} Triple Loop: Potential on a 3D Grid}
+%// hamiltonian/self_consistency.hpp:208
+\begin{lstlisting}
+// Add uniform electric field contribution to the scalar potential:
+//   V(r) += -E . r   (over all real-space grid points)
+auto efield = pert_.uniform_electric_field(time);
+gpu::run(vscalar.basis().local_sizes()[2],   // iz: slowest index
+         vscalar.basis().local_sizes()[1],   // iy
+         vscalar.basis().local_sizes()[0],   // ix: fastest index
+    [point_op = vscalar.basis().point_op(),
+     efield,
+     _vscalar = vscalar.cubic().begin()]
+    GPU_LAMBDA (auto iz, auto iy, auto ix) {
+        auto rr = point_op.rvector_cartesian(ix, iy, iz);
+        _vscalar[ix][iy][iz] += -dot(efield, rr);
+    });
+\end{lstlisting}
+\begin{itemize}
+  \item Dimensions are passed outermost-first; indices arrive innermost-first
+  \item On GPU: each thread handles one $(i_x, i_y, i_z)$ triplet
+  \item On CPU: equivalent to three nested \texttt{for} loops
+  \item \texttt{vscalar.cubic()} returns a 3D \texttt{gpu::array} view ---
+        indexing is \texttt{[ix][iy][iz]} as expected
+\end{itemize}
+\tiny\texttt{src/hamiltonian/self\_consistency.hpp:208}
+\end{frame}
+
+\begin{frame}[fragile,label=gpurun2]{\texttt{gpu::run} Reduction: Occupation-Weighted Energy Sum}
+\begin{lstlisting}
+// Mixed loop + reduction: loop over states, reduce over basis points
+auto lred = gpu::run(nstates, gpu::reduce(nbasis), 0.0,
+    GPU_LAMBDA (auto ist, auto ip) -> double {
+        return /* contribution from state ist, point ip */;
+    });
+\end{lstlisting}
+\begin{itemize}
+  \item \texttt{gpu::reduce(N)} marks a dimension for summation
+  \item The lambda must return the \textbf{per-element contribution}
+  \item Loop and reduce dimensions can be mixed freely
+\end{itemize}
+\tiny\texttt{src/hamiltonian/energy.hpp:45} \quad
+\texttt{external\_libs/gpurun/include/gpu/reduce.hpp:65}
 \end{frame}
 
 \begin{frame}{Recipe to `port' your array code}
@@ -1405,7 +1462,7 @@ custom \lstinline{copy_n} calls actual GEMM operation
 \begin{frame}[label=uses2]{Abinitio C++ Codes INQ (DFT/TDDFT) \& QMCPACK (QMC/AFQMC)}
 	\centering
 	\includegraphics[width=0.75\columnwidth]{git_screenshots}
-	\begin{alertblock}{Fact of life}
+	\begin{alertblock}{Observation}
 		C++ has become the \emph{de facto} standard for HPC. We better create a good ecosystem.
 	\end{alertblock}
 \end{frame}
@@ -1460,7 +1517,7 @@ interaction_energy(geo.size(), cell, charges,
                    geo.positions(), atomic_pot.range_separation(),
                    energy, forces);
 \end{lstlisting}
-\textit{multi arrays are generic: \texttt{vector3<double>} is a valid element type,
+\textit{Multi arrays are generic: \texttt{vector3<double>} is a valid element type,
 giving a 1D array of 3-vectors representing per-atom forces.}
 
 \vspace{0.3em}
