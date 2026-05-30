@@ -3540,17 +3540,17 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	friend constexpr auto operator<=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(self, other) || self == other; }
 	friend constexpr auto operator>=(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(other, self) || self == other; }  // NOLINT(readability-suspicious-call-argument)
 
-	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extents(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(void(std::declval<Range const&>().extents()), std::declval<Range const&>().elements())>
 	friend constexpr auto operator==(const_subarray const& self, Range const& other) -> bool {
 		return self.extents() == other.extents() && self.elements() == other.elements();
 	}
 
-	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extents(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(void(std::declval<Range const&>().extents()), std::declval<Range const&>().elements())>
 	friend constexpr auto operator==(Range const& other, const_subarray const& self) -> bool {
 		return self.extents() == other.extents() && self.elements() == other.elements();
 	}
 
-	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(std::declval<Range const&>().extents(), std::declval<Range const&>().elements())>
+	template<class Range, typename = std::enable_if_t<!detail::is_const_subarray_v<Range>>, typename = decltype(void(std::declval<Range const&>().extents()), std::declval<Range const&>().elements())>
 	friend constexpr auto operator!=(const_subarray const& self, Range const& other) -> bool {
 		return self.extents() != other.extents() || self.elements() != other.elements();
 	}
