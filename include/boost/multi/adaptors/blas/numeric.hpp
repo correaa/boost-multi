@@ -211,11 +211,11 @@ class involuter {
 
 	// auto operator==(involuter const& other) const -> bool { return it_ == other.it_; }
 	// auto operator!=(involuter const& other) const -> bool { return it_ != other.it_; }
-	friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
-	friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
+	BOOST_MULTI_HD friend auto operator==(involuter const& slf, involuter const& thr) { return slf.it_ == thr.it_; }
+	BOOST_MULTI_HD friend auto operator!=(involuter const& slf, involuter const& thr) { return slf.it_ != thr.it_; }
 
-	friend auto operator==(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ == nil; }
-	friend auto operator!=(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ != nil; }
+	BOOST_MULTI_HD friend auto operator==(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ == nil; }
+	BOOST_MULTI_HD friend auto operator!=(involuter const& slf, std::nullptr_t const& nil) { return slf.it_ != nil; }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
