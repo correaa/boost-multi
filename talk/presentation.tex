@@ -78,8 +78,11 @@
 
 %\lstMakeShortInline[backgroundcolor=\color{codebackground}]|
 
+\makeatletter
+\newcommand{\insertframelabel}{\@ifundefined{beamer@againname}{}{\beamer@againname}}
+\makeatother
 \setbeamertemplate{footline}{%
-  \hfill\tiny\csname beamer@framecurrentlabel\endcsname\hspace{1em}\vspace{1em}
+  \hfill\tiny\ttfamily\insertframelabel\hspace{1em}\vspace{1em}%
 }
 
 \title{Generic Programming for Multidimensional Arrays}
@@ -1498,7 +1501,7 @@ A = + blas::gemm(1.0, A, B);  // operator+ to break aliasing
 custom \lstinline|copy_n| calls actual GEMM operation
 \end{frame}
 
-\begin{frame}{Real world uses}
+\begin{frame}[label=uses1]{Real world uses}
   \begin{itemize}
     \item INQ: engine for electronic structure calculations and dynamics, LLNL
     \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab

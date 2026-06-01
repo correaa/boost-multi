@@ -1,3 +1,110 @@
+%% ---- standalone bootstrap -------------------------------------------------
+%% When this file is compiled on its own, beamer is not yet loaded, so we set
+%% up a full document here.  When it is \input{} by a parent (hackathon.tex,
+%% presentation.tex) beamer is already loaded and this whole block is skipped.
+\makeatletter
+\@ifclassloaded{beamer}{}{\gdef\framesStandalone{}}
+\makeatother
+\ifdefined\framesStandalone
+  \documentclass[t,aspectratio=169,handout]{beamer}
+  \usetheme{Madrid}  % or another theme
+  \usepackage{tikz}
+  \usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings,mindmap}
+  \pgfdeclarelayer{background}
+  \pgfsetlayers{background,main}
+  \usepackage{listings}
+  \usepackage{xcolor}
+  \usepackage[T1]{fontenc}
+  \usepackage[scale=0.85]{FiraMono}
+  \usepackage{ulem}
+  \usepackage{svg}
+  \svgsetup{inkscapeversion=1.4, inkscape=newer, inkscapelatex=false}
+  \transduration{0}
+  \usepackage{emoji}
+  \usepackage{multimedia}
+  \usepackage{eso-pic}
+
+  %\beamertemplatenavigationsymbolsempty
+
+  % define some styles
+  \tikzset{
+     paper/.style={draw=black!10, blur shadow,
+                   lower left=white, upper left=black!5, upper right=white, lower right=white},
+     irregular border/.style={decoration={random steps, segment length=3mm, amplitude=1mm},
+             decorate,
+       },
+     ragged border/.style={ decoration={random steps, segment length=7mm, amplitude=2mm},
+             decorate,
+     }
+  }
+
+  % Macro to draw the shape behind the text, when it fits completely in the page
+  \def\tornpaper#1{
+  \tikz{
+    \node[inner sep=0em] (A) {#1};  % Draw the text of the node
+    \begin{pgfonlayer}{background}  % Draw the shape behind
+    \fill[paper] % recursively decorate the bottom border
+          decorate[irregular border]{decorate{decorate{decorate{decorate[ragged border]{
+          ($(A.south east) - (0, random*5mm)$) -- ($(A.south west) - (0, random*5mm)$)
+          }}}}}
+          -- (A.north west) -- (A.north east) -- cycle;
+    \end{pgfonlayer}}
+  }
+
+  \definecolor{kwblue}{RGB}{0,102,204}      % Keywords: blue
+  \definecolor{varblack}{RGB}{32,32,32}     % Variables: near-black
+  \definecolor{symbolGray}{RGB}{100,100,100} % Operators/symbols: dark gray
+  \definecolor{bracketGray}{RGB}{80,80,80}   % Brackets/delimiters
+  \definecolor{typepur}{RGB}{153,0,153}     % Types: purple
+  \definecolor{funcgreen}{RGB}{0,100,0}     % Function names: dark green
+  \definecolor{codebackground}{RGB}{245,245,245} % Light gray background
+
+  \lstset{
+    language=C++,
+    basicstyle=\ttfamily\small\color{varblack},
+    escapeinside={<@}{@>},
+    keywordstyle=\color{varblack}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{red},
+    keywordstyle=[2]\color{kwblue}\bfseries,
+    morekeywords=[2]{array,array_ref,restriction,dynamic_array,subarray,const_subarray,inplace_array,subarray_ptr,extensions_t,layout_t,device_array,universal_array},
+    morekeywords=[3]{multi},
+    keywordstyle=[3]\color{kwblue},
+    backgroundcolor=\color{codebackground},
+    breaklines=true,
+    showstringspaces=false,
+    columns=fixed,
+    literate={->}{{$\rightarrow$}}2
+  }
+
+  \title{Material for \textsc{Multi} library}
+  \author{Alfredo A. Correa}
+  \date{\today}
+
+  % Show each frame's [label=...] floating in the top-right corner.
+  % Defined only in the standalone bootstrap, so labels appear in frames.pdf
+  % but never in a parent build (hackathon.tex) that \input{}s this file.
+  % Drawn on the shipout foreground (eso-pic): on top of content, zero layout
+  % impact -- so it neither hides behind the title bar nor shifts the body.
+  \makeatletter
+  \newcommand{\insertframelabel}{\@ifundefined{beamer@againname}{}{\beamer@againname}}
+  \makeatother
+  \AddToShipoutPictureFG{%
+    \AtPageUpperLeft{%
+      \put(\LenToUnit{\paperwidth-2mm},\LenToUnit{-2mm}){%
+        \makebox[0pt][r]{\raisebox{-\height}{%
+          \tikz\node[inner sep=3pt, font=\small\ttfamily\bfseries,
+                     text=red!80!black, fill=yellow!30, rounded corners=2pt]
+                {\insertframelabel};}%
+        }%
+      }%
+    }%
+  }
+
+  \begin{document}
+\fi
+%% ---- end standalone bootstrap ---------------------------------------------
+
 {
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[plain]
@@ -44,7 +151,7 @@
   \item ...until I found Stepanov's works, understood the STL, all clicked... start of a journey
 \end{itemize}
 \begin{alertblock}{}
-    Can generic programming compete with array languages? (Fortran, APL, Matlab, Numpy)
+    Can generic programming compete with array languages? (Fortran, APL, Matlab, NumPy)
 \end{alertblock}
 
 \begin{itemize}
@@ -100,7 +207,7 @@ Deallocation               & \lstinline|deallocate(A)|            & \lstinline|A
 \hline
 Uninitialized (3$\times$3) & \lstinline|A = np.empty((3,3))|          & \lstinline|multi::array<double,2> A({3,3});| \\
 Zero-filled (3$\times$3)   & \lstinline|A = np.zeros((3,3))|          & \lstinline|multi::array<double,2> A({3,3}, 0.0);| \\
-Element access             & \lstinline|A[i,j]|                       & \lstinline|A[i][j]| or \lstinline|A(i,j)| (or in C++23 \lstinline|A(i,j)|) \\
+Element access             & \lstinline|A[i,j]|                       & \lstinline|A[i][j]| or \lstinline|A(i,j)| (or in C++23 \lstinline|A[i,j]|) \\
 First row                  & \lstinline|A[0]| or \lstinline|A[0,:]|   & \lstinline|A[0]| \\
 First column               & \lstinline|A[:,0]|                       & \lstinline|A(_,0)| \\
 Subblock                   & \lstinline|A[0:2, 0:2]|                  & \lstinline|A({0,2},{0,2})| \\
@@ -115,7 +222,7 @@ GPU array                  & \lstinline|cupy.array(...)|              & \lstinli
 \vspace{0.4em}
 \begin{alertblock}{Key differences}
   NumPy slices use \textbf{closed-open} \lstinline|[0:2]| ranges --- same as Multi \lstinline|{0,2}|.
-  Multi subarrays are \textbf{always views}; a copy requires an explicit owning construction.
+  Multi subarrays are \textbf{always views}; a copy requires an explicit syntax.
   Multi's type encodes rank and element type at compile time $\Rightarrow$ zero overhead, GPU portability.
 \end{alertblock}
 \end{frame}
@@ -273,7 +380,7 @@ Pros:
 \begin{itemize}
   \item Maintains symmetry as much as possible between dimensions
   \item Memory of arrays and subarrays is compact, regular, and often contiguous
-  \item Compatible with legacy libraries, FFTW, BLAS, LAPACK, CUFFT, CUBLAS, MPI
+  \item Compatible with legacy libraries, FFTW, BLAS, LAPACK, cuFFT, cuBLAS, MPI
 \end{itemize}
 Cons:
 \begin{itemize}
@@ -499,7 +606,31 @@ Why proposed to Boost?
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Construction and basic usage}
+\begin{frame}[label=uses1]{Real world uses}
+  \begin{itemize}
+    \item INQ: engine for electronic structure calculations and dynamics, LLNL
+    \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
+    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
+    \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=uses2]{Abinitio C++ Codes INQ (DFT/TDDFT) \& QMCPACK (QMC/AFQMC)}
+	\centering
+	\includegraphics[width=0.75\columnwidth]{git_screenshots}
+	\begin{alertblock}{Observation}
+		C++ has become the \emph{de facto} standard for HPC. We better create a good ecosystem.
+	\end{alertblock}
+\end{frame}
+
+\begin{frame}[label=inq1]{INQ, electronic structure code for HPC systems}
+	\centering
+	\includesvg{dependencies}
+
+  Individual components can be shared and reused by other projects
+\end{frame}
+
+\begin{frame}[fragile,label=basic1]{Construction and basic usage}
 \begin{lstlisting}
 #include <boost/multi/array.hpp>
 namespace multi = boost::multi;
@@ -520,18 +651,18 @@ A[1][2] = 5;  // intermediate object?
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}[fragile]{Proxy subarray-reference}
+\begin{frame}[fragile,label=basic2]{Proxy subarray-reference}
 \begin{center}
 \includesvg[scale=0.7]{strided_row_small}
 \end{center}
 \begin{lstlisting}
 multi::array<int, 2> A({4, 6});
-
-auto row_it = A.begin() + 1;
-??? row = A[1];  // same as A(1, _) or *row_it
-// auto                       row = ...  // misleading, valid but not recommended
-// multi::subarray<double, 1> row = ...  // too verbose
-// multi::array<double, 1>    row = ...  // makes a copy
+??? row = A[1];  // same as A(1, _) or *(A.begin() + 1)
+// choose one:
+auto                       row = ...  // misleading, valid but not recommended
+multi::subarray<double, 1> row = ...  // too verbose, but correct
+multi::array<double, 1>    row = ...  // correct, but makes a copy
+auto&&                     row = ...  // self-documenting
 \end{lstlisting}
 
 \begin{alertblock}{The problem with \texttt{auto}: ``Implicit Evaluation of `auto' Variables.''}
@@ -541,7 +672,7 @@ P0672R0 (2017) by Jo\"el Falcou, Herb Sutter et al.
 
 \end{frame}
 
-\begin{frame}[fragile]{My recommendation (unenforceable, opt-in)}
+\begin{frame}[fragile,label=basic3]{My recommendation (unenforceable, opt-in)}
 \begin{itemize}
   \item Use the provided `auto-plus' operator
   \item Rely on lifetime extensions \emoji{hot-pepper} to document naming of reference-subarrays
@@ -567,7 +698,7 @@ auto g(multi::subarray<int, 2> arr) { ... }
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}{Fundamental access/layout operations}
+\begin{frame}[fragile,label=basic4]{Fundamental access/layout operations}
 Indexing
 \begin{itemize}
 \item Index\\
@@ -589,7 +720,7 @@ Fundamental
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Derived and positional indexing}
+\begin{frame}[fragile,label=basic5]{Derived and positional indexing}
 \begin{itemize}
   \item Indexing (with parentheses)
     \lstinline|A(i) -> A[i]|
@@ -600,9 +731,9 @@ Fundamental
   \item Row\\
     \lstinline|A(i, _) -> A[i](_) -> A[i]| \\
   \item Column\\
-    \lstinline|A(_, i) -> A.rotated()[i].unrotated()| \\
+    \lstinline|A(_, i) -> A.rotated()[i]| \\
   \item Partial column\\
-    \lstinline|A({first, last}, i) -> A.rotated()[i].unrotated()({first, last})| \\
+    \lstinline|A({first, last}, i) -> A.rotated()[i]({first, last})| \\
 \end{itemize}
 
 \begin{block}{Too many temporaries objects?}
@@ -846,7 +977,7 @@ xia >> B;
 \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Allocator support (The allocator controls where memory lives)}
+\begin{frame}[fragile,label=allocator1]{Allocator support (The allocator controls where memory lives)}
 
 \lstinline|multi::array<T, D, Allocator>| --- the allocator controls where memory lives:
 
@@ -870,7 +1001,7 @@ Special purpose:
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Allocator $\Rightarrow$ pointer type $\Rightarrow$ memory location}
+\begin{frame}[fragile,label=allocator2]{Allocator $\Rightarrow$ pointer type $\Rightarrow$ memory location}
 
 \lstinline|std::allocator_traits<A>::pointer| is not always \lstinline|T*|:
 
@@ -890,7 +1021,7 @@ Special purpose:
 
 \medskip
 
-\begin{alertblock}{From WHERE to HOW}
+\begin{alertblock}[label=allocator3]{From WHERE to HOW}
 The library propagates the pointer type throughout subarrays, iterators,
 and references; all carry the allocator's pointer.
 There is compile-time information on HOW to run.
@@ -900,7 +1031,7 @@ Both the library and the user can exploit this information.
 
 \end{frame}
 
-\begin{frame}[t,fragile]{Algorithm Dispatching inside the library}
+\begin{frame}[t,fragile,label=allocator4]{Algorithm Dispatching inside the library}
 \begin{columns}[T]
 \begin{column}{0.4\textwidth}
 \begin{lstlisting}
@@ -955,6 +1086,75 @@ inline constexpr adl_copy_n_t adl_copy_n;
   \item Extensible (intrusive): add members: add a \lstinline|copy_n| member function
 \end{itemize}
 
+\end{frame}
+
+\begin{frame}[fragile,label=inq2]{\texttt{gpu::array}: Portable CPU/GPU Arrays via a Type Alias}
+\begin{lstlisting}
+// external_libs/gpurun/include/gpu/array.hpp:112
+namespace gpu {
+template<class type, size_t dim,
+#ifdef ENABLE_GPU
+    class allocator = caching_allocator<type>  // unified GPU memory
+#else
+    class allocator = std::allocator<type>     // ordinary CPU heap
+#endif
+>
+using array = boost::multi::array<type, dim, allocator>; }
+\end{lstlisting}
+\vspace{0.5em}
+\begin{itemize}
+  \item \texttt{gpu::array<T,N>} \textbf{is} a \texttt{boost::multi::array<T,N,Alloc>}
+  \item The allocator switches at compile time: GPU builds use
+        \texttt{thrust::universal\_allocator} (visible to both CPU and GPU);
+        CPU builds use \texttt{std::allocator}
+  \item All multi indexing, slicing, and algorithm support is inherited unchanged
+  \item No code change needed between CPU and GPU paths
+\end{itemize}
+
+\vspace{0.3em}
+\tiny\texttt{external\_libs/gpurun/include/gpu/array.hpp:119}
+\end{frame}
+
+\begin{frame}[fragile,label=inq3]{Custom-Typed 1D Arrays for Atomic Properties}
+\begin{lstlisting}
+// Arrays of physical quantities -- element type can be anything
+multi::array<vector3<double>, 1> forces(geo.size());
+multi::array<double, 1>         charges(geo.size());
+
+for(int ii = 0; ii < geo.size(); ii++)
+    charges[ii] = atomic_pot
+        .pseudo_for_element(geo.species(ii))
+        .valence_charge();
+
+interaction_energy(geo.size(), cell, charges,
+                   geo.positions(), atomic_pot.range_separation(),
+                   energy, forces);
+\end{lstlisting}
+\textit{Multi arrays are generic: \texttt{vector3<double>} is a valid element type,
+giving a 1D array of 3-vectors representing per-atom forces.}
+
+\vspace{0.3em}
+\tiny\texttt{src/ionic/interaction.hpp:317}
+\end{frame}
+
+\begin{frame}[fragile,label=inq4]{Dynamic Resizing: k-points $\times$ Eigenstates}
+\begin{lstlisting}
+gpu::array<double, 2> eigenvalues_;
+gpu::array<double, 2> occupations_;
+...
+// 2D arrays sized at runtime from MPI-distributed k-point data
+eigenvalues_.reextent({n_kpin, max_local_spinor_set_size_});
+occupations_.reextent({n_kpin, max_local_spinor_set_size_});
+\end{lstlisting}
+\vspace{0.5em}
+\begin{itemize}
+  \item \texttt{reextent} resizes without invalidating the element type
+  \item Dimensions come from the MPI partition of k-points and states
+  \item The same syntax works for CPU and GPU arrays (\texttt{gpu::array})
+\end{itemize}
+
+\vspace{0.3em}
+\tiny\texttt{src/systems/electrons.hpp:188}
 \end{frame}
 
 \section{Lazy Arrays \& Restrictions}
@@ -1023,9 +1223,7 @@ B.extent|\uline{s}|().elements().begin() -- ... -- .end()
     \end{itemize}
 \end{frame}
 
-
 \begin{frame}[fragile]{Restriction (mathematics)}{from Wikipedia}
-
 \begin{quote}
   [...] In mathematics, the restriction of a function \(f\)
   is a new function, denoted \(f |_A\) or \(f \upharpoonright A\),
@@ -1087,7 +1285,7 @@ Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a c
 
 \end{frame}
 
-\begin{frame}[fragile,label=alg1]{Algorithms (raw loops)}
+\begin{frame}[fragile,label=algo1]{Algorithms (raw loops)}
   Take a 64x64x64 array ($\sim 250$k elements) \lstinline|A|, apply a compute-bound op.
 
 \begin{columns}[t]
@@ -1116,7 +1314,7 @@ for(auto&& plane : A)
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile,label=alg2]{Algorithms (algorithm seasoning)}
+\begin{frame}[fragile,label=algo2]{Algorithms (algorithm seasoning)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(     A.begin(), A.end(),
@@ -1132,7 +1330,7 @@ std::for_each(     A.begin(), A.end(),
   timing: \textbf{2.6 msec}
 \end{frame}
 
-\begin{frame}[fragile,label=alg3]{Algorithms (algorithm parallelization)}
+\begin{frame}[fragile,label=algo3]{Algorithms (algorithm parallelization)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(std::execution::par, A.begin(), A.end(),
@@ -1148,7 +1346,7 @@ std::for_each(std::execution::par, A.begin(), A.end(),
   timing: \textbf{1.4 msec}
 \end{frame}
 
-\begin{frame}[fragile,label=alg4]{Algorithms (attempt to parallelize in the GPU)}
+\begin{frame}[fragile,label=algo4]{Algorithms (attempt to parallelize in the GPU)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
@@ -1166,7 +1364,7 @@ thrust::for_each(thrust::cuda::par, A.begin(), A.end(),
   But even if it did compile... \includegraphics[width=0.12\textwidth]{led-cube.png}
 \end{frame}
 
-\begin{frame}[fragile,label=alg5]{Algorithms (optimized)}
+\begin{frame}[fragile,label=algo5]{Algorithms (optimized)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 thrust::for_each(thrust::cuda::par, A.elements().begin(), A.elements().end(), [] __device__(auto& e) {
@@ -1176,7 +1374,7 @@ thrust::for_each(thrust::cuda::par, A.elements().begin(), A.elements().end(), []
   timing: \textbf{0.3 msec}
 \end{frame}
 
-\begin{frame}[fragile,label=alg6]{Algorithms (optimized)}
+\begin{frame}[fragile,label=algo6]{Algorithms (optimized)}
   Take a 64x64x64 array (\(\sim 250\mathrm{k}\) elements) \lstinline|A|, apply a compute-bound op.
   \begin{lstlisting}
 std::for_each(std::execution::par, A.elements().begin(), A.elements().end(), [] (auto& e) {
@@ -1186,7 +1384,7 @@ std::for_each(std::execution::par, A.elements().begin(), A.elements().end(), [] 
   timing: \textbf{0.7 msec}
 \end{frame}
 
-\begin{frame}[fragile,label=alg-summary]{Summary}
+\begin{frame}[fragile,label=algo7]{Summary of Algorithm optimization}
 
 \begin{table}
 \begin{tabular}{lcc}
@@ -1213,7 +1411,7 @@ std::for\_each (flat elements)                  & 3.0 & 0.9x \\
 
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}[fragile,label=algo8]
 \frametitle{...but I need my 3D structure}
 
 Task: assign values based on the 3D indices
@@ -1251,48 +1449,34 @@ Note: \lstinline|A.extents().elements().size() == A.elements().size()|
 
 \end{frame}
 
-\begin{frame}[fragile,label=gpurun1]{\texttt{gpu::run} Triple Loop: Potential on a 3D Grid}
-%// hamiltonian/self_consistency.hpp:208
-\begin{lstlisting}
-// Add uniform electric field contribution to the scalar potential:
-//   V(r) += -E . r   (over all real-space grid points)
-auto efield = pert_.uniform_electric_field(time);
-gpu::run(vscalar.basis().local_sizes()[2],   // iz: slowest index
-         vscalar.basis().local_sizes()[1],   // iy
-         vscalar.basis().local_sizes()[0],   // ix: fastest index
-    [point_op = vscalar.basis().point_op(),
-     efield,
-     _vscalar = vscalar.cubic().begin()]
-    GPU_LAMBDA (auto iz, auto iy, auto ix) {
-        auto rr = point_op.rvector_cartesian(ix, iy, iz);
-        _vscalar[ix][iy][iz] += -dot(efield, rr);
-    });
-\end{lstlisting}
-\begin{itemize}
-  \item Dimensions are passed outermost-first; indices arrive innermost-first
-  \item On GPU: each thread handles one $(i_x, i_y, i_z)$ triplet
-  \item On CPU: equivalent to three nested \texttt{for} loops
-  \item \texttt{vscalar.cubic()} returns a 3D \texttt{gpu::array} view ---
-        indexing is \texttt{[ix][iy][iz]} as expected
-\end{itemize}
-\tiny\texttt{src/hamiltonian/self\_consistency.hpp:208}
-\end{frame}
+\begin{frame}[fragile,label=gpurun1]{\texttt{gpu::run} --- portable loops \& reductions}
 
-\begin{frame}[fragile,label=gpurun2]{\texttt{gpu::run} Reduction: Occupation-Weighted Energy Sum}
-\begin{lstlisting}
-// Mixed loop + reduction: loop over states, reduce over basis points
-auto lred = gpu::run(nstates, gpu::reduce(nbasis), 0.0,
-    GPU_LAMBDA (auto ist, auto ip) -> double {
-        return /* contribution from state ist, point ip */;
-    });
-\end{lstlisting}
-\begin{itemize}
-  \item \texttt{gpu::reduce(N)} marks a dimension for summation
-  \item The lambda must return the \textbf{per-element contribution}
-  \item Loop and reduce dimensions can be mixed freely
-\end{itemize}
-\tiny\texttt{src/hamiltonian/energy.hpp:45} \quad
-\texttt{external\_libs/gpurun/include/gpu/reduce.hpp:65}
+  Write the body \alert{once} as a lambda over indices; the same source
+  compiles to a \textbf{CUDA/HIP kernel} (GPU) or a \textbf{\texttt{for} loop}
+  (CPU), chosen by \texttt{ENABLE\_GPU}. \texttt{gpu::run} handles the launch
+  config, bounds, and sync. \texttt{GPU\_LAMBDA} $=$ \texttt{\_\_device\_\_}
+  on GPU, nothing on CPU; capture iterators by value.
+
+  \begin{lstlisting}
+// loop:   v[i] = i           (1D; also 2D/3D/4D overloads)
+gpu::run(n, m, [v=begin(v)] GPU_LAMBDA (auto i, auto j){ v[i][j] = i + j; });
+
+// scalar reduction:   sum_i a[i]
+double s = gpu::run(gpu::reduce(n), 0.0,
+                    [a=begin(a)] GPU_LAMBDA (auto i){ return a[i]; });
+
+// vector reduction:   r[i] = sum_j m[i][j]
+auto r = gpu::run(n, gpu::reduce(m), 0.0,
+                  [M=begin(M)] GPU_LAMBDA (auto i, auto j){ return M[i][j]; });
+  \end{lstlisting}
+  \footnotesize
+  \begin{itemize}
+    \item \textbf{Loops:} \texttt{run(sizes..., kernel)} --- 1 to 4 index dimensions.
+    \item \textbf{Reduce:} tag a dimension \texttt{gpu::reduce(\,)} to sum over it
+          (GPU: \texttt{thrust} / shared-memory tree; CPU: nested loops).
+    \item Free leading dimension $\Rightarrow$ vector result \texttt{gpu::array<T,1>};
+          all reduced $\Rightarrow$ scalar.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Recipe to `port' your array code}
@@ -1390,7 +1574,7 @@ reduce_by_row(
 
 \section{Adaptors \& Ecosystem}
 
-\begin{frame}{Adaptors}
+\begin{frame}[label=adaptors1]{Adaptors}
 
 Boost.Multi ships optional adaptors that integrate arrays with external libraries:
 
@@ -1415,7 +1599,7 @@ Boost.Multi ships optional adaptors that integrate arrays with external librarie
 
 \end{frame}
 
-\begin{frame}[fragile]{Philosophy behind adaptors (BLAS/CUDA BLAS example)}
+\begin{frame}[fragile,label=adaptors2]{Philosophy behind adaptors (BLAS/CUDA BLAS example)}
 
 \begin{itemize}
   \item When possible, the same code should work for different backends
@@ -1439,8 +1623,8 @@ multi::array<double, 2, thrust::device_allocator<int>>
 \end{column}
 \end{columns}
 \begin{lstlisting}
-C = blas::gemm(1.0, A, B);  % C = 1.0*A*B, shouldn't allocate
-A = + blas::gemm(1.0, A, B);  % operator+ to break aliasing
+C = blas::gemm(1.0, A, B);  // C = 1.0*A*B, shouldn't allocate
+A = + blas::gemm(1.0, A, B);  // operator+ to break aliasing
 \end{lstlisting}
 \begin{center}
 \includegraphics[scale=0.7]{dispatching_blas}
@@ -1450,101 +1634,7 @@ A = + blas::gemm(1.0, A, B);  % operator+ to break aliasing
 custom \lstinline{copy_n} calls actual GEMM operation
 \end{frame}
 
-\begin{frame}[label=uses1]{Real world uses}
-  \begin{itemize}
-    \item INQ: engine for electronic structure calculations and dynamics, LLNL
-    \item QMCPACK: Quantum Monte Carlo (QMC) simulation code, Oak Ridge Natl Lab
-    \item CoQuí: Correlated Quantum Systems (post-DFT: GW, RPA, THC-AFQMC) Flatiron Institute, NY
-    \item Dalotia: data loader library for tensors in AI, RIKEN (RCCS), Japan
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[label=uses2]{Abinitio C++ Codes INQ (DFT/TDDFT) \& QMCPACK (QMC/AFQMC)}
-	\centering
-	\includegraphics[width=0.75\columnwidth]{git_screenshots}
-	\begin{alertblock}{Observation}
-		C++ has become the \emph{de facto} standard for HPC. We better create a good ecosystem.
-	\end{alertblock}
-\end{frame}
-
-\begin{frame}[label=inq0]{INQ, electronic structure code for HPC systems}
-	\centering
-	\includesvg{dependencies}
-
-  Individual components can be shared and reused by other projects
-\end{frame}
-
-
-\begin{frame}[fragile,label=inq1]{\texttt{gpu::array}: Portable CPU/GPU Arrays via a Type Alias}
-\begin{lstlisting}
-// external_libs/gpurun/include/gpu/array.hpp:112
-
-template<class type, size_t dim,
-#ifdef ENABLE_GPU
-    class allocator = caching_allocator<type>  // unified GPU memory
-#else
-    class allocator = std::allocator<type>     // ordinary CPU heap
-#endif
->
-using array = boost::multi::array<type, dim, allocator>;
-\end{lstlisting}
-\vspace{0.5em}
-\begin{itemize}
-  \item \texttt{gpu::array<T,N>} \textbf{is} a \texttt{boost::multi::array<T,N,Alloc>}
-  \item The allocator switches at compile time: GPU builds use
-        \texttt{thrust::universal\_allocator} (visible to both CPU and GPU);
-        CPU builds use \texttt{std::allocator}
-  \item All multi indexing, slicing, and algorithm support is inherited unchanged
-  \item No code change needed between CPU and GPU paths
-\end{itemize}
-
-\vspace{0.3em}
-\tiny\texttt{external\_libs/gpurun/include/gpu/array.hpp:119}
-\end{frame}
-
-\begin{frame}[fragile,label=inq2]{Custom-Typed 1D Arrays for Atomic Properties}
-\begin{lstlisting}
-// Arrays of physical quantities -- element type can be anything
-multi::array<vector3<double>, 1> forces(geo.size());
-multi::array<double, 1>         charges(geo.size());
-
-for(int ii = 0; ii < geo.size(); ii++)
-    charges[ii] = atomic_pot
-        .pseudo_for_element(geo.species(ii))
-        .valence_charge();
-
-interaction_energy(geo.size(), cell, charges,
-                   geo.positions(), atomic_pot.range_separation(),
-                   energy, forces);
-\end{lstlisting}
-\textit{Multi arrays are generic: \texttt{vector3<double>} is a valid element type,
-giving a 1D array of 3-vectors representing per-atom forces.}
-
-\vspace{0.3em}
-\tiny\texttt{src/ionic/interaction.hpp:317}
-\end{frame}
-
-\begin{frame}[fragile,label=inq3]{Dynamic Resizing: k-points $\times$ Eigenstates}
-\begin{lstlisting}
-gpu::array<double, 2> eigenvalues_;
-gpu::array<double, 2> occupations_;
-...
-// 2D arrays sized at runtime from MPI-distributed k-point data
-eigenvalues_.reextent({n_kpin, max_local_spinor_set_size_});
-occupations_.reextent({n_kpin, max_local_spinor_set_size_});
-\end{lstlisting}
-\vspace{0.5em}
-\begin{itemize}
-  \item \texttt{reextent} resizes without invalidating the element type
-  \item Dimensions come from the MPI partition of k-points and states
-  \item The same syntax works for CPU and GPU arrays (\texttt{gpu::array})
-\end{itemize}
-
-\vspace{0.3em}
-\tiny\texttt{src/systems/electrons.hpp:188}
-\end{frame}
-
-\begin{frame}[fragile,label=inq4]{4D Fields: Reinterpretation and Axis Rotation}
+\begin{frame}[fragile,label=inq5]{4D Fields: Reinterpretation and Axis Rotation}
 \begin{lstlisting}[language=C++]
 // phi is a 4D array: [ix][iy][iz][istate]
 // vector field stores complex3 elements; cast to scalar complex
@@ -1568,7 +1658,7 @@ with a different layout. The FFT routine sees a plain 2D array.}
 \end{frame}
 
 
-\begin{frame}[fragile,label=inq5,shrink]{FFTW / cuFFT via a Unified Multi Adaptor}
+\begin{frame}[fragile,label=inq6,shrink]{FFTW / cuFFT via a Unified Multi Adaptor}
 \begin{lstlisting}
 // operations/transform.hpp:23-25, 68-104
 
@@ -1680,7 +1770,7 @@ auto arr = +blas::gemm(basis.volume_element(),
         child [grow=285] {node {Boost}}
     }
     child [concept color = magenta!30] {node {Raw access (adaptors)}
-            child [grow=300, concept color = magenta!50!black] {node {BLAS/Lapack}}
+            child [grow=300, concept color = magenta!50!black] {node {BLAS/LAPACK}}
             child [grow=255, concept color = magenta!60!black] {node {FFTW}}
             child [grow=210, concept color = magenta!70!black] {node {cuBLAS}}
             child [grow=165, concept color = magenta!70!black] {node {cuFFT}}
@@ -1721,3 +1811,8 @@ auto arr = +blas::gemm(basis.volume_element(),
 \end{center}
 
 \end{frame}
+
+%% ---- standalone bootstrap: close the document opened at the top ------------
+\ifdefined\framesStandalone
+  \end{document}
+\fi

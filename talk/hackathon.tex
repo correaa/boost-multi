@@ -1,4 +1,7 @@
-\documentclass[t,aspectratio=169,handout]{beamer}
+\documentclass[t,aspectratio=169,%
+presentation
+%handout
+]{beamer}
 \usetheme{Madrid}  % or another theme
 \usepackage{tikz}
 \usetikzlibrary{shadows,shadows.blur,decorations.pathmorphing,decorations.pathreplacing,shadings,mindmap}
@@ -10,13 +13,36 @@
 \usepackage[scale=0.85]{FiraMono}
 \usepackage{ulem}
 \usepackage{svg}
-\svgsetup{inkscapeversion=1.4}
+\svgsetup{inkscapeversion=1.4, inkscape=newer, inkscapelatex=false}
 \transduration{0}
 \usepackage{emoji}
 \usepackage{multimedia}
+\usepackage{eso-pic}
 %\setemojifont{NotoColorEmoji}[Extension=.ttf, Path=/usr/share/fonts/truetype/noto/]
 
 \beamertemplatenavigationsymbolsempty
+
+% Show each frame's [label=...] floating in the top-right corner, but ONLY in
+% handout mode (\documentclass[...,handout]{beamer}). Drawn on the shipout
+% foreground (eso-pic): on top of content so the title bar can't hide it, and
+% with zero layout impact so it never shifts the slide body. Re-evaluated per
+% page, so it tracks the current frame label.  Vanishes in presentation mode.
+\makeatletter
+\newcommand{\insertframelabel}{\@ifundefined{beamer@againname}{}{\beamer@againname}}
+\makeatother
+\mode<handout>{%
+\AddToShipoutPictureFG{%
+  \AtPageUpperLeft{%
+    \put(\LenToUnit{\paperwidth-2mm},\LenToUnit{-2mm}){%
+      \makebox[0pt][r]{\raisebox{-\height}{%
+        \tikz\node[inner sep=3pt, font=\small\ttfamily\bfseries,
+                   text=red!80!black, fill=yellow!30, rounded corners=2pt]
+              {\insertframelabel};}%
+      }%
+    }%
+  }%
+}%
+}
 
 % define some styles
 \tikzset{
@@ -75,15 +101,21 @@
 \title{Practical introduction to the \textsc{Multi} library}
 \author{Alfredo A. Correa}
 \date{\today}
-
+ 
 \includeonlyframes{%
   title,toc,intro1,intro2,%
+  strided1,strided2,strided3,strided4,%
+  boost1,%
   motivation1,motivation2,%
   history1,history2,fortran-comparison,numpy-comparison,%
   uses1,uses2,%
-  alg0,alg1,alg4,alg5,alg6,alg-summary,gpurun1,gpurun2,%
-  inq0,inq1,inq2,inq3,inq4,inq5,blasops,inq6,%
-  adaptors,%
+  inq0,%
+  allocator4,%
+  basic1,basic2,basic4,basic5,%
+  algo1,algo2,algo3,algo4,algo5,algo6,algo7,algo8,%
+  gpurun1,gpurun2,%
+  inq1,inq2,inq3,inq4,inq5,inq6,blasops,%
+  adaptors,adaptors1,adaptors2,%
   uses3,%
   demo,conclusion}
 
