@@ -21,38 +21,43 @@ struct divide_by {
 };
 }
 
-template<class ExecutionPolicy, class T, class S>
-auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
-	assert(M.extension() == sums.extension());
+template<class ExecutionPolicy, class T, class SIt>
+auto reduce_by_index(ExecutionPolicy&& ep, T const& M, SIt sums_first) 
+-> std::enable_if_t<
+	std::is_base_of_v<std::input_iterator_tag, typename std::iterator_traits<SIt>::iterator_category>,
+	SIt
+> {
+	auto const row_index = [] __host__ __device__ (typename T::index i, typename T::index j) -> typename T::index { return i; } ^ M.extents();
 
+	// // row-index keys via a named functor (an extended __host__ __device__ lambda here
+	// // trips nvcc's closure-placeholder substitution inside a function template)
 	// auto const row_ids_begin =
 	//     ::thrust::make_transform_iterator(
 	// 		::thrust::make_counting_iterator(std::ptrdiff_t{0}),
-	// 		detail::divide_by<decltype(M.elements().size())>{M.elements().size()/M.size()}
-	//     )
-	// ;
-	// auto const row_ids_end = row_ids_begin + M.elements().size();
-
-	auto row_index = [] __host__ __device__ (int i, int j) {return i;} ^ M.extents();
-
-	auto const row_ids_begin = row_index.elements().begin();
-	auto const row_ids_end   = row_index.elements().end();
-
-	// auto const row_ids_begin =
-	//     ::thrust::make_transform_iterator(
-	// 		M.extensions().elements().begin(),
-	//         [] __host__ __device__ (typename T::indices_type e) -> std::ptrdiff_t { using std::get; return get<0>(e); }
+	// 		detail::divide_by<decltype(M.num_elements())>{M.num_elements()/M.size()}
 	//     )
 	// ;
 	// auto const row_ids_end = row_ids_begin + M.num_elements();
 
-	::thrust::reduce_by_key(
+	auto const row_ids_begin = row_index.elements().begin();
+	auto const row_ids_end   = row_index.elements().end();
+
+	return ::thrust::reduce_by_key(
         std::forward<ExecutionPolicy>(ep),
 		row_ids_begin, row_ids_end,
 		M.elements().begin(),
 		::thrust::make_discard_iterator(),
-		sums.begin()
-	);
+		sums_first
+	).second;
+}
+
+template<class ExecutionPolicy, class T, class S>
+auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums)
+-> std::enable_if_t<sizeof(std::declval<S&&>().extension()) != 0, S&&> {
+	assert(M.extension() == sums.extension());
+
+	auto sums_end = reduce_by_index(std::forward<ExecutionPolicy>(ep), M, sums.begin());
+	assert(sums_end == sums.end());
 
 	return std::forward<S>(sums);
 }
