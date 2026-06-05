@@ -361,11 +361,19 @@ struct                                                                          
 		class Range, class = std::enable_if_t<!std::is_base_of_v<dynamic_array, std::decay_t<Range>>>,  // NOLINT(modernize-type-traits) bug in clang-tidy 19.1
 		class = decltype(std::declval<Range const&>().begin()),
 		class = decltype(std::declval<Range const&>().end()),
-		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<!detail::is_subarray<Range const&>::value>,  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
+		class = std::enable_if_t<(D == 1) || !std::is_convertible_v<decltype(*std::declval<Range const&>().begin()), T>>
+#if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)
+		// for D==2 a genuine std::ranges range is owned by the constrained ranges-ctor above; step aside to avoid ambiguity
+		// (input_range<Range> keeps the whole condition Range-dependent, so this is a soft SFINAE exclusion, not a hard error)
+		,
+		class = std::enable_if_t<!(D == 2 && std::ranges::input_range<Range>)>  // NOLINT(modernize-use-constraints) for C++20
+#endif
 		>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use assignment for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	/*explicit*/ dynamic_array(Range const& rng)        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax  // NOSONAR
-	: dynamic_array(std::begin(rng), std::end(rng)) {}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
+	/*explicit*/ dynamic_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax  // NOSONAR
+	: dynamic_array(std::begin(rng), std::end(rng)) {
+	}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
