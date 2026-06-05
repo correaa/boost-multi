@@ -127,7 +127,8 @@ auto main() -> int {
 			thrust::make_zip_iterator(A.end(), B.end()),
 			C.begin(),
 			[] __device__(auto const& ab) {
-				return static_cast<int>(thrust::get<0>(ab)) + static_cast<int>(thrust::get<1>(ab));
+				using std::get;
+				return static_cast<int>(get<0>(ab)) + static_cast<int>(get<1>(ab));
 			}
 		);
 
