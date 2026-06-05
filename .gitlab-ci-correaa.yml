@@ -1296,7 +1296,7 @@ inq:
     - cd inq
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - cmake --build. --parallel 4 || cmake --build . --parallel 1 --verbose
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
