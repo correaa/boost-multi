@@ -155,7 +155,8 @@ auto main() -> int {
 				thrust::make_zip_iterator(A.end(), B.end()),
 				C.begin(),
 				[] __device__(auto const& ab) {
-					return thrust::get<0>(ab) + thrust::get<1>(ab);
+					using std::get;
+					return get<0>(ab) + get<1>(ab);
 				}
 			);
 
