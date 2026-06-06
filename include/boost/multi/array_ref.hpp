@@ -3786,7 +3786,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
-	explicit array_ref(std::initializer_list<TT> il_1d)
+	explicit array_ref(std::initializer_list<TT> il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) delete r-value version
 	: array_ref(
 		  (il_1d.size() == 0) ? nullptr
 						   : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
