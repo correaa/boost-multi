@@ -331,10 +331,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using std::apply;
 			if constexpr(DD != 1) {
 				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
-					apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_) 
+					apply([n] (auto... idxs) {return detail::mk_tuple(idxs..., n);}, bef_)
 				);
 			} else {
-				return apply([n] (auto... es) {return detail::mk_tuple(es..., n);}, bef_); 
+				return apply([n] (auto... idxs) {return detail::mk_tuple(idxs..., n);}, bef_);
 			}
 		}
 	};
@@ -358,11 +358,11 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 		using reference = value_type;
 		using iterator_category = std::random_access_iterator_tag;
 
-		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
-		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
+		constexpr auto operator+=(difference_type n) -> iterator& { idx_ += n; return *this; }
+		constexpr auto operator-=(difference_type n) -> iterator& { idx_ -= n; return *this; }
 
-		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
-		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+		constexpr auto operator+(difference_type n) const { return iterator{idx_ + n, rest_}; }
+		constexpr auto operator-(difference_type n) const { return iterator{idx_ - n, rest_}; }
 
 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { assert( self.rest_ == other.rest_ ); return self.idx_ - other.idx_; }
 
@@ -423,7 +423,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	class elements_t {
 		extensions_t xs_;
-		explicit constexpr elements_t(extensions_t const& xs) : xs_{xs} {}
+		explicit constexpr elements_t(extensions_t const& exts) : xs_{exts} {}
 
 		friend struct extensions_t;
 
@@ -463,9 +463,9 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				CUT cu_;
 
 			 public:
-				constexpr explicit mk_tup(CUT cu) : cu_{cu} {}
+				constexpr explicit mk_tup(CUT current) : cu_{current} {}
 				template<class... Ts>
-				constexpr auto operator()(Ts... es) const { return detail::mk_tuple(cu_, es...); }
+				constexpr auto operator()(Ts... idxs) const { return detail::mk_tuple(cu_, idxs...); }
 			};
 
 			BOOST_MULTI_HD constexpr auto operator*() const {
@@ -550,7 +550,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				return *this;
 			}
 
-			BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const { return *((*this) + dd); }
+			BOOST_MULTI_HD constexpr auto operator[](difference_type n) const { return *((*this) + n); }
 
 			friend BOOST_MULTI_HD constexpr auto operator==(iterator const& self, iterator const& other) { return (self.curr_ == other.curr_) && (self.rest_it_ == other.rest_it_); }
 			friend BOOST_MULTI_HD constexpr auto operator!=(iterator const& self, iterator const& other) { return (self.curr_ != other.curr_) || (self.rest_it_ != other.rest_it_); }
@@ -587,7 +587,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto elements() const { return elements_t{*this}; }
 
 	template<class Func>
-	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... xs){ return fun(detail::mk_tuple(xs...)); } ^(*this); }
+	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... idxs){ return fun(detail::mk_tuple(idxs...)); } ^(*this); }
 
 	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0

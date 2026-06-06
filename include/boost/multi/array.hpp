@@ -106,9 +106,9 @@ struct array_allocator {
 #endif
 	}
 
-	template<class EP, typename It, typename Size>
-	auto uninitialized_copy_n(EP&& ep, It first, Size count, pointer_ d_first) {
-		return adl_uninitialized_copy_n(std::forward<EP>(ep), first, count, d_first);
+	template<class ExecutionPolicy, typename It, typename Size>
+	auto uninitialized_copy_n(ExecutionPolicy&& policy, It first, Size count, pointer_ d_first) {
+		return adl_uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, count, d_first);
 	}
 
 	template<typename It, typename Size>
@@ -185,8 +185,8 @@ struct                                                                          
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
 
-	template<class EP, typename It> auto uninitialized_copy_elements(EP&& ep, It first) {
-		return array_alloc::uninitialized_copy_n(std::forward<EP>(ep), first, this->num_elements(), this->data_elements());
+	template<class ExecutionPolicy, typename It> auto uninitialized_copy_elements(ExecutionPolicy&& policy, It first) {
+		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
 	}
 
 	constexpr void destroy() {
@@ -865,11 +865,11 @@ struct                                                                          
 	template<class Ptr, std::enable_if_t<std::is_pointer_v<Ptr>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 #ifndef _BOOST_MULTI_SUPPRESS_GNU_MALLOC
 #ifndef _MSC_VER
-	[[gnu::malloc]]
+	[[gnu::malloc]] [[gnu::noinline]]
 #endif
 #endif
-	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr {
-		return std::move(me);
+	BOOST_MULTI_HD static auto mallocate_me_(Ptr ptr) -> Ptr {
+		return std::move(ptr);
 	}
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
@@ -881,7 +881,7 @@ struct                                                                          
 #pragma diag_pop
 #endif
 	template<class Ptr, std::enable_if_t<!std::is_pointer_v<Ptr>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD static auto mallocate_me_(Ptr me) -> Ptr { return std::move(me); }
+	BOOST_MULTI_HD static auto mallocate_me_(Ptr ptr) -> Ptr { return std::move(ptr); }
 
  public:
 	// BOOST_MULTI_HD constexpr auto splitted() & -> decltype(auto) { return ref_::splitted(); }
@@ -891,32 +891,32 @@ struct                                                                          
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 	BOOST_MULTI_HD constexpr auto splitted() && {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
 			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
 		);
 	}
 
 	BOOST_MULTI_HD constexpr auto splitted() & {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr1 = this->base_;                  // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
 			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
 		);
 	}
 
@@ -928,25 +928,25 @@ struct                                                                          
 	[[gnu::always_inline]]
 #endif
 	BOOST_MULTI_HD constexpr auto fancy_splitted() && {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr1 = mallocate_me_(this->base_);                  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
 #ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
 #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
-			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
-			std::less_equal<>{}(p2 + l2.nelems(), p1)
+			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
+			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
 		)]];
 #endif
 #endif
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
 			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
 		);
 	}
 
@@ -1808,9 +1808,9 @@ struct array : unique_array<T, D, Alloc> {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 
-		auto const is = intersection(this->extents(), extensions);
+		auto const intersect = intersection(this->extents(), extensions);
 
-		tmp.apply(is) = this->apply(is);  // TODO(correaa) : use (and implement) `.move();`
+		tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?
 
 		this->destroy();
 		this->deallocate();
@@ -1838,11 +1838,11 @@ struct array : unique_array<T, D, Alloc> {
 			exs
 		);
 		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), elem);
-		auto const is = intersection(this->extents(), exs);
-		tmp.apply(is) = this->apply(is);
+		auto const intersect = intersection(this->extents(), exs);
+		tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) use moved_elements?
 		this->destroy();
 		this->deallocate();
-		this->base_            = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
+		this->base_            = tmp.base();
 		this->layout_mutable() = tmp.layout();
 
 		return *this;

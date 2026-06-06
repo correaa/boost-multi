@@ -932,13 +932,13 @@ struct elements_iterator_t
 	// }
 
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
-		apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
+		apply([&exts = this->xs_](auto&... idxs) { return exts.next_canonical(idxs...); }, ns_);
 		// std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator--() -> elements_iterator_t& {
-		std::apply([&xs = this->xs_](auto&... idxs) { return xs.prev_canonical(idxs...); }, ns_);
+		std::apply([&exts = this->xs_](auto&... idxs) { return exts.prev_canonical(idxs...); }, ns_);
 		--n_;
 		return *this;
 	}
@@ -949,6 +949,7 @@ struct elements_iterator_t
 		++(*this);
 		return ret;
 	}
+
 	template<class = void>  // TODO(correaa) lazy instantion to workaround MSVC linking limitations iterator copy for restrictions
 	BOOST_MULTI_HD constexpr auto operator--(int) -> elements_iterator_t {
 		elements_iterator_t ret{*this};
@@ -957,8 +958,8 @@ struct elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
-		auto const nn = apply(xs_, ns_);
-		ns_           = xs_.from_linear(nn + n);
+		auto const linear_n = apply(xs_, ns_);
+		ns_           = xs_.from_linear(linear_n + n);
 		n_ += n;
 		return *this;
 	}
@@ -1002,8 +1003,8 @@ struct elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
-		auto const nn = apply(xs_, ns_);
-		return base_[apply(l_, xs_.from_linear(nn + n))];
+		auto const linear_n = apply(xs_, ns_);
+		return base_[apply(l_, xs_.from_linear(linear_n + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -1297,26 +1298,26 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<TT> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
-	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<il_<TT>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
-	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<il_<il_<TT>>> const& il) : const_subarray(multi::layout(il), multi::base(il)) {}
+	explicit const_subarray(il_<TT> const& il_1d) : const_subarray(multi::layout(il_1d), multi::base(il_1d)) {}
+	// template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	// explicit const_subarray(il_<il_<TT>> const& il_2d) : const_subarray(multi::layout(il_2d), multi::base(il_2d)) {}
+	// template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	// explicit const_subarray(il_<il_<il_<TT>>> const& il_3d) : const_subarray(multi::layout(il_3d), multi::base(il_3d)) {}
 	// NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
 
 #if defined(__cpp_deleted_function) && (__cpp_deleted_function >= 202403L) && (__cplusplus > 202302L)
-#define BM_DELETE(ReasoN) delete (ReasoN)
+#define BOOST_MULTI_DELETE(ReasoN) delete (ReasoN)
 #else
-#define BM_DELETE(ReasoN) delete
+#define BOOST_MULTI_DELETE(ReasoN) delete
 #endif
 
 	// NOLINTBEGIN(google-explicit-constructor,modernize-use-constraints)
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<TT>&& il) = BM_DELETE("temporary init-list dangles");
+	explicit const_subarray(il_<TT>&& /*il_1d*/) = BOOST_MULTI_DELETE("temporary init-list dangles");
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<il_<TT>>&& il) = BM_DELETE("temporary init-list dangles");
+	explicit const_subarray(il_<il_<TT>>&& /*il_2d*/) = BOOST_MULTI_DELETE("temporary init-list dangles");
 	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
-	explicit const_subarray(il_<il_<il_<TT>>>&& il) = BM_DELETE("temporary init-list dangles");
+	explicit const_subarray(il_<il_<il_<TT>>>&& /*il_3d*/) = BOOST_MULTI_DELETE("temporary init-list dangles");
 	// NOLINTEND(google-explicit-constructor,modernize-use-constraints)
 
 #undef BM_DELETE
@@ -1595,12 +1596,12 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto strided(difference_type by) const& { return strided_aux_(by).as_const(); }
+	constexpr auto strided(difference_type step) const& { return strided_aux_(step).as_const(); }
 
 	constexpr auto sliced(
-		typename types::index first, typename types::index last, typename types::index stride_
+		typename types::index first, typename types::index last, typename types::index step
 	) const& -> const_subarray {
-		return sliced(first, last).strided(stride_);
+		return sliced(first, last).strided(step);
 	}
 
 	using index_range = typename const_subarray::index_range;
@@ -1733,11 +1734,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	// clang-format on
 
 	template<template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
-	constexpr auto to(As&&... as) const& {
+	constexpr auto to(As&&... args) const& {
 		using inner_value_type = typename const_subarray::value_type::value_type;
 		using container_type   = Container<ContainerSub<inner_value_type>>;
 
-		return container_type(this->begin(), this->end(), std::forward<As>(as)...);
+		return container_type(this->begin(), this->end(), std::forward<As>(args)...);
 	}
 
  private:
@@ -3398,12 +3399,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 #endif
  private:
 	BOOST_MULTI_HD constexpr auto splitted_aux_() const {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, ((this->layout().nelems() / this->layout().stride()) + 1) / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, ((this->layout().nelems() / this->layout().stride()) + 1) / 2 * this->layout().stride());
 		return  // std::array<subarray<T, 1, element_ptr>, 2>
 			std::pair<subarray<T, 1, element_ptr>, subarray<T, 1, element_ptr>>(
-				subarray<T, 1, element_ptr>(l1, types::base_),
-				subarray<T, 1, element_ptr>(l2, types::base_ + l1.nelems())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				subarray<T, 1, element_ptr>(lyt1, types::base_),
+				subarray<T, 1, element_ptr>(lyt2, types::base_ + lyt1.nelems())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			);
 	}
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -3612,15 +3613,15 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-		auto&& r1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-		auto*  p1 = &r1;
+		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
+		auto*  ptr1 = &ref1;
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
-		P2 p2 = reinterpret_cast<P2&>(p1);  // NOSONAR
+		P2 ptr2 = reinterpret_cast<P2&>(ptr1);  // NOSONAR
 #else
-		auto p2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
+		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
-		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), p2);
+		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), ptr2);
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
@@ -3738,8 +3739,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr /*mplct*/ array_ref(array_ref<T, D, OtherPtr>&& other)         // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor,bugprone-use-after-move,hicpp-invalid-access-moved)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
-	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& xs) noexcept  // TODO(correa) eliminate this ctor
-	: subarray_base(typename subarray_base::layout_type(xs), dat) {}
+	constexpr array_ref(ElementPtr dat, ::boost::multi::extensions_t<D> const& exts) noexcept  // TODO(correa) eliminate this ctor
+	: subarray_base(typename subarray_base::layout_type(exts), dat) {}
 
 	explicit constexpr array_ref(::boost::multi::extensions_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::layout_type(exts), dat} {}
@@ -3785,12 +3786,17 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
-	array_ref(std::initializer_list<TT> il)
+	explicit array_ref(std::initializer_list<TT> il_1d)
 	: array_ref(
-		  (il.size() == 0) ? nullptr
-						   : il.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
-		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}
+		  (il_1d.size() == 0) ? nullptr
+						   : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
+		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
+
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	// cppcheck-suppress noExplicitConstructor
+	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
 
 	using subarray_base::operator=;
 
