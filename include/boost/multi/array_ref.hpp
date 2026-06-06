@@ -2545,10 +2545,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 		BOOST_MULTI_ASSERT(sizeof(T) == sizeof(T2) * static_cast<std::size_t>(count));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 
-		layout_t<D + 1> const l1{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count};
-		auto const            l2 = l1.rotate();
+		layout_t<D + 1> const lyt1{this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count};
+		auto const            lyt2 = lyt1.rotate();
 		return subarray<T2, D + 1, P2>(
-			l2,
+			lyt2,
 			reinterpret_pointer_cast_<P2>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		);
 	}
@@ -2977,10 +2977,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
-	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this constructs a reference to the init list
+	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this constructs a reference to the init list
 	: array_types<T, 1, ElementPtr, Layout>(
-		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il))})),
-		  std::data(il)
+		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il_1d))})),
+		  std::data(il_1d)
 	  ) {
 	}
 

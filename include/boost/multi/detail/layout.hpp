@@ -594,7 +594,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
-		return this->apply([](auto const&... xs) { return multi::detail::mk_tuple(xs.size()...); });
+		return this->apply([](auto const&... exts) { return multi::detail::mk_tuple(exts.size()...); });
 	}
 
 	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const {
@@ -1112,8 +1112,8 @@ constexpr auto get(::boost::multi::extensions_t<D>&& tp)  // NOLINT(cert-dcl58-c
 
 template<typename Fn, boost::multi::dimensionality_type D>
 constexpr auto
-apply(Fn&& fn, boost::multi::extensions_t<D> const& xs) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
-	return xs.apply(std::forward<Fn>(fn));
+apply(Fn&& fn, boost::multi::extensions_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
+	return exts.apply(std::forward<Fn>(fn));
 }
 
 }  // end namespace std
@@ -1200,8 +1200,8 @@ class contiguous_layout {
 	}
 
  public:
-	constexpr explicit contiguous_layout(multi::extensions_t<1> xs)
-	: nelems_{get_<0>(xs).size()} {}
+	constexpr explicit contiguous_layout(multi::extensions_t<1> exts)
+	: nelems_{get_<0>(exts).size()} {}
 
 	BOOST_MULTI_HD constexpr contiguous_layout(
 		sub_type /*sub*/,
@@ -2041,8 +2041,8 @@ struct convertible_tuple : Tuple {
  public:
 	using array_type = std::array<std::ptrdiff_t, std::tuple_size_v<Tuple>>;
 	auto to_array() const noexcept {
-		return std::apply([](auto... es) noexcept {
-			return std::array<std::common_type_t<decltype(es)...>, sizeof...(es)>{{static_cast<multi::ssize_t>(es)...}};
+		return std::apply([](auto... elems) noexcept {
+			return std::array<std::common_type_t<decltype(elems)...>, sizeof...(elems)>{{static_cast<multi::ssize_t>(elems)...}};
 		},
 						  static_cast<Tuple const&>(*this));
 	}
