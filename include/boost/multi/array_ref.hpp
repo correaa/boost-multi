@@ -1276,18 +1276,17 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
 
  private:
+	using index_gen [[deprecated("here to fulfill MultiArray concept")]]    = char*;
+	using extent_gen [[deprecated("here to fulfill MultiArray concept")]]   = void;
+	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
+
+// private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 
-// public:
-	using index_gen [[deprecated("here to fulfill MultiArray concept")]]    = char*;
-	using extent_gen [[deprecated("here to fulfill MultiArray concept")]]   = void;
-	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
-
- private:
 	constexpr auto elements_aux_() const { return elements_range(this->base_, this->layout()); }
 
 	template<class TT> using il_ = std::initializer_list<TT>;
