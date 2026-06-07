@@ -807,7 +807,7 @@ constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il
 	if(il.size() == 0) {
 		return multi::extensions_t<2>{0, 0};
 	}
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
 	// for(std::size_t i = 1; i != il.size(); ++i) {
 	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
 	// }
@@ -820,7 +820,7 @@ constexpr auto extents(std::initializer_list<std::initializer_list<std::initiali
 		return multi::extensions_t<3>{0, 0, 0};
 	}
 
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) { return size0 == el.size(); }));
+	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
 	// for(std::size_t i = 1; i != il.size(); ++i) {
 	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
 	// }

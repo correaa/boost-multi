@@ -302,11 +302,11 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	try {
 		//  return std::for_each_n(first, count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });
 		//  workadoung for gcc 8.3.1 in Lass
-		std::for_each(first, first + count, [&](T& elem) { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		std::for_each(first, first + count, [&](T& elem) -> void { alloc_traits::construct(alloc, std::addressof(elem)); ++current; });  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return first + count;                                   // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	} catch(...) {
 		// LCOV_EXCL_START  // TODO(correaa) add test
-		std::for_each(first, current, [&](T& elem) { alloc_traits::destroy(alloc, std::addressof(elem)); });
+		std::for_each(first, current, [&](T& elem) -> void { alloc_traits::destroy(alloc, std::addressof(elem)); });
 		throw;
 		// LCOV_EXCL_STOP
 	}
@@ -495,13 +495,13 @@ constexpr
 	ForwardIt current  = d_first;
 	using alloc_traits = std::allocator_traits<Alloc>;
 	try {
-		std::for_each(first, last, [&](auto const& elem) {  // TODO(correaa) replace by adl_for_each
+		std::for_each(first, last, [&](auto const& elem) -> void {  // TODO(correaa) replace by adl_for_each
 			alloc_traits::construct(alloc, std::addressof(*current), elem);
 			++current;
 		});
 		return current;
 	} catch(...) {
-		std::for_each(d_first, current, [&](auto const& elem) {
+		std::for_each(d_first, current, [&](auto const& elem) -> void {
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(elem));
 		});
 		throw;

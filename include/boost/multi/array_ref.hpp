@@ -932,13 +932,13 @@ struct elements_iterator_t
 	// }
 
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
-		apply([&exts = this->xs_](auto&... idxs) { return exts.next_canonical(idxs...); }, ns_);
+		apply([&exts = this->xs_](auto&... idxs) -> auto { return exts.next_canonical(idxs...); }, ns_);
 		// std::apply([&xs = this->xs_](auto&... idxs) { return xs.next_canonical(idxs...); }, ns_);
 		++n_;
 		return *this;
 	}
 	BOOST_MULTI_HD constexpr auto operator--() -> elements_iterator_t& {
-		std::apply([&exts = this->xs_](auto&... idxs) { return exts.prev_canonical(idxs...); }, ns_);
+		std::apply([&exts = this->xs_](auto&... idxs) -> auto { return exts.prev_canonical(idxs...); }, ns_);
 		--n_;
 		return *this;
 	}
@@ -2051,7 +2051,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		// if(version == 0) {
 		//  std::for_each(this->begin(), this->end(), [&](reference&& item) {arxiv & AT    ::make_nvp("item", std::move(item));});
 		// } else {
-		std::for_each(this->elements().begin(), this->elements().end(), [&](element const& elem) { arxiv& AT ::make_nvp("elem", elem); });
+		std::for_each(this->elements().begin(), this->elements().end(), [&](element const& elem) -> void { arxiv& AT ::make_nvp("elem", elem); });
 		// }
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
@@ -3038,7 +3038,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 		std::for_each(
 			intersection(types::extension(), extension(other)).begin(),
 			intersection(types::extension(), extension(other)).end(),
-			[&](auto const idx) { operator[](idx) = std::forward<A>(other)[idx]; }
+			[&](auto const idx) -> void { operator[](idx) = std::forward<A>(other)[idx]; }
 		);
 	}
 
@@ -3146,11 +3146,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extents();  // mull-ignore: cxx_init_const
-		return [self = std::move(*this)](auto /*idx*/, auto... rest) { return detail::invoke_square(self, rest...); } ^ /*(*/ n * exts /*)*/;
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n * exts /*)*/;
 	}
 
 	constexpr auto repeated(size_type n) const& {
-		return [this](auto /*idx*/, auto... rest) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n * this->extents() /*)*/;
+		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n * this->extents() /*)*/;
 	}
 
 	template<template<class...> class Container = std::vector, class... As>
@@ -3647,7 +3647,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](reference& item) { arxiv& AT ::make_nvp("item", item); });
+		std::for_each(this->begin(), this->end(), [&](reference& item) -> void { arxiv& AT ::make_nvp("item", item); });
 		//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv & cereal::make_nvp("item", item);});
 		//  std::for_each(this->begin(), this->end(), [&](auto&&     item) {arxiv &                          item ;});
 	}

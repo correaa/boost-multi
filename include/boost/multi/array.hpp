@@ -460,7 +460,7 @@ struct                                                                          
 	// to make cling cppyy overload resolution easier
 	template<class = void>  // gives low priority
 	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
-	: dynamic_array(std::apply([](auto... sizes) { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
+	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
