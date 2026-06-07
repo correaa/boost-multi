@@ -1282,7 +1282,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 
- public:
+// public:
 	using index_gen [[deprecated("here to fulfill MultiArray concept")]]    = char*;
 	using extent_gen [[deprecated("here to fulfill MultiArray concept")]]   = void;
 	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
