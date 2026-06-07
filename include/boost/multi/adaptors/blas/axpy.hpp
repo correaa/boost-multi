@@ -171,7 +171,7 @@ template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_
 
 template<class X,
 	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
-auto operator*(typename X::element_type a, X const& x) {return scaled{a, x};}  // NOLINT(readability-identifier-length) conventional BLAS naming
+auto operator*(typename X::element a, X const& x) { return scaled{a, x}; }  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {  // NOLINT(readability-identifier-length) conventional name in BLAS
 	auto X = x.decay();  // NOLINT(readability-identifier-length) conventional name in BLAS
