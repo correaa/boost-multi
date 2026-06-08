@@ -1016,13 +1016,13 @@ template<> struct extensions_t<1> : tuple<multi::index_extension> {
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto get() const -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
+	constexpr auto get() const -> std::tuple_element_t<Index, base_> {  // by value, to match the other extensions_t<D> specializations (structured bindings)
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
 
-	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>      // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(extensions_t const& self) -> decltype(auto) {  // -> typename std::tuple_element<Index, base_>::type {
+	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>                       // NOLINT(modernize-use-constraints) TODO(correaa)
+	friend constexpr auto get(extensions_t const& self) -> std::tuple_element_t<Index, base_> {  // by value, to match the other extensions_t<D> specializations (structured bindings)
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
