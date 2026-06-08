@@ -1337,7 +1337,7 @@ inq-debug:
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["g++"]
 
-inq cuda:
+inq cuda 70:
   allow_failure: false
   stage: test
   image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -1362,6 +1362,43 @@ inq cuda:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="70"  # =75  # =80
+    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
+    - apt-get -qq --no-install-recommends -y install python3-numpy
+    - cmake --install .
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - export OMPI_MCA_rmaps_base_oversubscribe=1
+    # - ctest -j 4 --output-on-failure --timeout 2400
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 2400
+  timeout: 2 hours 30 minutes
+  needs: ["inq", "cuda"]
+
+inq cuda 75:
+  allow_failure: false
+  stage: test
+  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - arch75
+  # before_script:
+  #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+  script:
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+    - nvidia-smi
+    # - export CUDA_VISIBLE_DEVICES=0,1
+    - __nvcc_device_query
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  # --branch fix-mutation-in-projectors-lambda
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
+    - cd inq
+    - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="75"  # =75  # =80
     - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
