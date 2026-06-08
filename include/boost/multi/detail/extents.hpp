@@ -59,14 +59,14 @@ namespace boost::multi {
 
 namespace stdx {
 template<class Tuple> auto tail(Tuple const& tup) noexcept {
-	return std::apply([](auto const& /*head*/, auto const&... rest) noexcept { return std::make_tuple(rest...); }, tup);
+	return std::apply([](auto const& /*head*/, auto const&... rest) noexcept -> auto { return std::make_tuple(rest...); }, tup);
 }
 template<class Tuple> auto head(Tuple const& tup) noexcept {
 	return std::apply([](auto const& head, auto const&... /*rest*/) noexcept { return head; }, tup);
 }
 
 template<class T, class Tuple> auto append_front(T const& value, Tuple const& tup) noexcept {
-	return std::apply([&](auto const&... rest) noexcept { return std::make_tuple(value, rest...); }, tup);
+	return std::apply([&](auto const&... rest) noexcept -> auto { return std::make_tuple(value, rest...); }, tup);
 }
 
 template<class Tuple> struct tuple_tail;
@@ -202,7 +202,7 @@ class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(corre
 	constexpr auto begin() const noexcept {
 		return iterator{
 			stdx::head(static_cast<std::tuple<Ext, Exts...> const&>(*this)).begin(),
-			std::apply([](auto... xs) noexcept { return extents_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
+			std::apply([](auto... xs) noexcept -> auto { return extents_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
 		};
 	}
 
