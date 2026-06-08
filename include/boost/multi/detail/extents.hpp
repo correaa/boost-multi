@@ -62,7 +62,7 @@ template<class Tuple> auto tail(Tuple const& tup) noexcept {
 	return std::apply([](auto const& /*head*/, auto const&... rest) noexcept -> auto { return std::make_tuple(rest...); }, tup);
 }
 template<class Tuple> auto head(Tuple const& tup) noexcept {
-	return std::apply([](auto const& head, auto const&... /*rest*/) noexcept { return head; }, tup);
+	return std::apply([](auto const& head, auto const&... /*rest*/) noexcept -> decltype(auto) { return head; }, tup);
 }
 
 template<class T, class Tuple> auto append_front(T const& value, Tuple const& tup) noexcept {

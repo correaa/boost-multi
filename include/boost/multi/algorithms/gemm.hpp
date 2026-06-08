@@ -25,7 +25,7 @@ inline auto naive_gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, 
 
 	std::transform(std::execution::par,  // intel (and others?) cannot simd this level
 		begin(A), end(A), begin(C), begin(C),
-		[&](auto const& arowi, auto&& crowi) {
+		[&](auto const& arowi, auto&& crowi) -> decltype(auto) {
 			std::transform(std::execution::unseq,
 				begin(crowi), end(crowi), begin(~B), begin(crowi),
 				[&](auto&& c, auto const& brow) -> auto {
@@ -33,7 +33,7 @@ inline auto naive_gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, 
 					return sum2(alpha*std::transform_reduce(std::execution::unseq, begin(arowi), end(arowi), begin(brow), decltype(+c){0.}, sum2, prod2), beta*std::forward<decltype(c)>(c));
 				}
 		);
-		return std::move(crowi);  // NOLINT(bugprone-move-forwarding-reference)
+		return std::forward<decltype(crowi)>(crowi);  // NOLINT(bugprone-move-forwarding-reference)
 	});
 	return std::forward<MatrixC>(C);
 }
@@ -69,9 +69,9 @@ auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& 
 				+~std::inner_product(
 					AblocksT.begin(), AblocksT.end(), Bblocks.begin(),
 					std::move(Cblock),
-					[&](auto&& ret, auto const& prod) { return prod(std::forward<decltype(ret)>(ret)); },
+					[&](auto&& ret, auto const& prod) -> decltype(auto) { return prod(std::forward<decltype(ret)>(ret)); },
 					[&](auto const& AblockT, auto const& Bblock) -> auto {
-						return [&, AbR = +~AblockT, BbTR = +~Bblock](auto&& into) {return detail::naive_gemm(alpha, AbR, ~BbTR, 1., std::forward<decltype(into)>(into), sum2, prod2);};
+						return [&, AbR = +~AblockT, BbTR = +~Bblock](auto&& into) -> decltype(auto) {return detail::naive_gemm(alpha, AbR, ~BbTR, 1., std::forward<decltype(into)>(into), sum2, prod2);};
 					}
 				)
 			;
