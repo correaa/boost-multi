@@ -28,7 +28,7 @@ inline auto naive_gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, 
 		[&](auto const& arowi, auto&& crowi) {
 			std::transform(std::execution::unseq,
 				begin(crowi), end(crowi), begin(~B), begin(crowi),
-				[&](auto&& c, auto const& brow) {
+				[&](auto&& c, auto const& brow) -> auto {
 					// cppcheck-suppress cppcheckError  .. internal cppcheck error
 					return sum2(alpha*std::transform_reduce(std::execution::unseq, begin(arowi), end(arowi), begin(brow), decltype(+c){0.}, sum2, prod2), beta*std::forward<decltype(c)>(c));
 				}
@@ -61,16 +61,16 @@ auto gemm(Talpha const& alpha, MatrixA const& A, MatrixB const& B, Tbeta const& 
 		auto const& BfatcolsT = (~B).chunked(N);
 		auto const& AblocksT = (~Afatrow).chunked(N);
 		auto&& CblocksT = (~Cfatrow).chunked(N);
-		std::transform(std::execution::par, BfatcolsT.begin(), BfatcolsT.end(), CblocksT.begin(), CblocksT.begin(), [&](auto const& BfatcolT, auto&& CblockTR) {
+		std::transform(std::execution::par, BfatcolsT.begin(), BfatcolsT.end(), CblocksT.begin(), CblocksT.begin(), [&](auto const& BfatcolT, auto&& CblockTR) -> auto {
 			auto const& Bblocks = (~BfatcolT).chunked(N);
 			auto Cblock = +~CblockTR;
-			std::transform(std::execution::unseq, begin(Cblock.elements()), end(Cblock.elements()), begin(Cblock.elements()), [&](auto&& c) { return beta*std::forward<decltype(c)>(c); });
+			std::transform(std::execution::unseq, begin(Cblock.elements()), end(Cblock.elements()), begin(Cblock.elements()), [&](auto&& c) -> auto { return beta*std::forward<decltype(c)>(c); });
 			return
 				+~std::inner_product(
 					AblocksT.begin(), AblocksT.end(), Bblocks.begin(),
 					std::move(Cblock),
 					[&](auto&& ret, auto const& prod) { return prod(std::forward<decltype(ret)>(ret)); },
-					[&](auto const& AblockT, auto const& Bblock) {
+					[&](auto const& AblockT, auto const& Bblock) -> auto {
 						return [&, AbR = +~AblockT, BbTR = +~Bblock](auto&& into) {return detail::naive_gemm(alpha, AbR, ~BbTR, 1., std::forward<decltype(into)>(into), sum2, prod2);};
 					}
 				)

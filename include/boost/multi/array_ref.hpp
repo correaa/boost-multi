@@ -1326,12 +1326,12 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	auto to_mdspan_aux_() const {
 		using std::apply;
 		auto shape = apply(
-			[](auto... sizes) { return std::dextents<std::size_t, D>{static_cast<std::size_t>(sizes)...}; },
+			[](auto... sizes) -> auto { return std::dextents<std::size_t, D>{static_cast<std::size_t>(sizes)...}; },
 			this->sizes()
 		);
 
 		auto strides = apply(
-			[](auto... strds) { return std::array<std::size_t, D>{static_cast<std::size_t>(strds)...}; },
+			[](auto... strds) -> auto { return std::array<std::size_t, D>{static_cast<std::size_t>(strds)...}; },
 			this->strides()
 		);
 
@@ -2577,7 +2577,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		// if(version == 0) {
 		//  std::for_each(this->begin(), this->end(), [&](typename subarray::reference item) {arxiv & AT    ::make_nvp("item", item);});
 		// } else {
-		std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) { arxiv& AT ::make_nvp("elem", elem); });
+		std::for_each(this->elements().begin(), this->elements().end(), [&](typename subarray::element& elem) -> void { arxiv& AT ::make_nvp("elem", elem); });
 		//}
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
@@ -3279,12 +3279,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 	auto to_mdspan_aux_() const {
 		using std::apply;
 		auto shape = apply(
-			[](auto... sizes) { return std::dextents<std::size_t, 1>{static_cast<std::size_t>(sizes)...}; },
+			[](auto... sizes) -> auto { return std::dextents<std::size_t, 1>{static_cast<std::size_t>(sizes)...}; },
 			this->sizes()
 		);
 
 		auto strides = apply(
-			[](auto... strds) { return std::array<std::size_t, 1>{static_cast<std::size_t>(strds)...}; },
+			[](auto... strds) -> auto { return std::array<std::size_t, 1>{static_cast<std::size_t>(strds)...}; },
 			this->strides()
 		);
 

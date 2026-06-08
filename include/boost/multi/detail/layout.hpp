@@ -1556,7 +1556,7 @@ struct layout_t
 	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
-	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
@@ -1721,7 +1721,7 @@ struct layout_t
 	}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14
 	   //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride(dimensionality_type dim) const {
-		return std::apply([](auto... strides) { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
+		return std::apply([](auto... strides) -> auto { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
 	}
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}

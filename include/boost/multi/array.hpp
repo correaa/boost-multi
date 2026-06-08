@@ -1552,7 +1552,7 @@ struct array : unique_array<T, D, Alloc> {
 	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
 	: unique_(
 		  (values.size() == 0) ? array<T, D>()()
-							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
+							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept -> auto { return static_cast<T>(elem); })
 	  ) {}
 
 #ifdef __circle_build__
