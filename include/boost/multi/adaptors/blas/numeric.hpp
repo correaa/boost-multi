@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define BOOST_MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
-#include <boost/multi/array_ref.hpp>
+#include "boost/multi/array.hpp"  // for array
 
 #include "boost/multi/adaptors/blas/complex_traits.hpp"
 #include "boost/multi/adaptors/blas/numeric/is_complex.hpp"
