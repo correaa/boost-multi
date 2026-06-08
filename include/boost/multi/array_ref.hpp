@@ -958,7 +958,7 @@ struct elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
-		auto const linear_n = apply(xs_, ns_);
+		auto linear_n = apply(xs_, ns_);
 		ns_           = xs_.from_linear(linear_n + n);
 		n_ += n;
 		return *this;
@@ -1281,7 +1281,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using extent_gen [[deprecated("here to fulfill MultiArray concept")]]   = void;
 	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
 
-// private:
+	// private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
@@ -2975,7 +2975,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>   // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>      // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this constructs a reference to the init list
 	: array_types<T, 1, ElementPtr, Layout>(
 		  layout_type(multi::extensions_t<1>({0, static_cast<size_type>(std::size(il_1d))})),
@@ -3146,11 +3146,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extents();  // mull-ignore: cxx_init_const
-		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n * exts /*)*/;
+
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n* exts /*)*/;
 	}
 
 	constexpr auto repeated(size_type n) const& {
-		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n * this->extents() /*)*/;
+		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n* this->extents() /*)*/;
 	}
 
 	template<template<class...> class Container = std::vector, class... As>
@@ -3788,11 +3789,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	explicit array_ref(std::initializer_list<TT> il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) delete r-value version
 	: array_ref(
 		  (il_1d.size() == 0) ? nullptr
-						   : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
+							  : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
 		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
 
-		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
