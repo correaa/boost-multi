@@ -46,7 +46,7 @@ BOOST_MULTI_HD constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readabil
 }
 
 template<class R, class V = typename R::value_type>
-BOOST_MULTI_HD constexpr auto sumR1(R const& rng, V zero = {}) noexcept {  // NOLINT(fuchsia-default-arguments-declarations)
+BOOST_MULTI_HD constexpr auto sumR1(R const& rng, V zero = {}) noexcept {
 	printf("S");
 	return std::accumulate(rng.begin(), rng.end(), zero);
 };

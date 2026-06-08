@@ -22,7 +22,7 @@ namespace boost::multi::detail {
 template<class Self> 
 class equality_comparable {
 	using self_type = Self;
-	friend bool operator!=(self_type const& self, self_type const& other) {
+	friend auto operator!=(self_type const& self, self_type const& other) -> bool {
 		return !(self == other);
 	}
 

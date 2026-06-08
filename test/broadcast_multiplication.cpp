@@ -13,7 +13,7 @@
 
 namespace multi = boost::multi;
 
-int main() {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	multi::array<int, 1> arr(13);
 	std::iota(arr.begin(), arr.end(), 0);
 

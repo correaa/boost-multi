@@ -23,8 +23,8 @@ auto scal_n(typename It::element a, It first, Size count) {  // NOLINT(readabili
 
 template<class Scalar, class It1D>
 auto scal(Scalar const& a, It1D first, It1D last)  // NOLINT(readability-identifier-length) conventional BLAS naming
-->decltype(blas::scal_n(a, first, last - first)) {  // NOLINT(fuchsia-default-arguments-calls) allow a possible double -> complex conversion (with default 0 imag part)
-	return blas::scal_n(a, first, last - first); }  // NOLINT(fuchsia-default-arguments-calls) same
+->decltype(blas::scal_n(a, first, last - first)) {  // allow a possible double -> complex conversion (with default 0 imag part)
+	return blas::scal_n(a, first, last - first); }  // same
 
 template<class Scalar, class X1D>  // don't do this: ", typename Elem = typename X1D::element_type>"
 auto scal(Scalar const& a, X1D&& x)  // NOLINT(readability-identifier-length) conventional BLAS naming

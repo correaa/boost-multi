@@ -401,7 +401,7 @@ using const_subarray_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
 
 namespace detail {
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst = false>
-struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
+struct subarray_ptr  // : to allow mixin CRTP
 : boost::multi::iterator_facade<
 	  subarray_ptr<T, D, ElementPtr, Layout, IsConst>, void, std::random_access_iterator_tag,
 	  subarray<T, D, ElementPtr, Layout> const&, typename Layout::difference_type> {
@@ -577,7 +577,7 @@ struct subarray_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CR
 
 namespace detail {
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride, class SubLayout>
-struct array_iterator  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) for facades
+struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
@@ -1859,7 +1859,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		std::enable_if_t<!has_extents<std::decay_t<Range>>::value, int> = 0,
 		//  std::enable_if_t<not multi::is_implicitly_convertible_v<subarray, Range>, int> =0,
 		class                                                           = decltype(Range(std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()))>
-	constexpr explicit operator Range() const { return Range(begin(), end()); }  // NOLINT(fuchsia-default-arguments-calls) for example std::vector(it, ti, alloc = {})
+	constexpr explicit operator Range() const { return Range(begin(), end()); }  // for example std::vector(it, ti, alloc = {})
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
@@ -2603,7 +2603,7 @@ template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr> {};
 #endif
 
 template<class Element, typename Ptr, bool IsConst, bool IsMove, typename Stride>
-struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(fuchsia-multiple-inheritance,cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
+struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) stride_ is not initialized in some constructors
 : boost::multi::iterator_facade<
 	  array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>,
 	  Element, std::random_access_iterator_tag,
@@ -2969,7 +2969,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 /// ... a specialization for one dimension
 template<typename T, typename ElementPtr, class Layout>
-class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) to define operators via CRTP
+class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inheritance) to define operators via CRTP
 : public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
 , public array_types<T, 1, ElementPtr, Layout> {
  public:
@@ -3479,7 +3479,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inher
 		class                                                                   = decltype(Range{std::declval<typename const_subarray::const_iterator>(), std::declval<typename const_subarray::const_iterator>()})>
 	constexpr explicit operator Range() const {
 		// vvv Range{...} needed by Windows GCC?
-		return Range{begin(), end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+		return Range{begin(), end()};  // e.g. std::vector(it, it, alloc = {})
 	}
 
  private:

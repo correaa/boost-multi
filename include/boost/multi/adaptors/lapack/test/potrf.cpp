@@ -65,7 +65,7 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 
 template<class M>
 auto print(M const& arr, char const* msg) -> decltype(auto) {
-	return print(arr, std::string{msg});  // NOLINT(fuchsia-default-arguments-calls)
+	return print(arr, std::string{msg});
 }
 
 template<class M>
@@ -192,8 +192,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
-		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
+		print(A_gold, "A gold");
+		print(C, "recover");
 
 		for(auto i = 0; i != 4; ++i) {
 			// only compare upper part of the reference array (the other half is garbage)
@@ -234,8 +234,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
-		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
+		print(A_gold, "A gold");
+		print(C, "recover");
 
 		using std::get;
 
@@ -277,8 +277,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const C = +blas::herk(1.0, blas::H(AA));  // +blas::gemm(1.0, blas::H(AA), AA);  // NOLINT(readability-identifier-length) conventional lapack name
 
-		print(A_gold, "A gold");  // NOLINT(fuchsia-default-arguments-calls)
-		print(C, "recover");      // NOLINT(fuchsia-default-arguments-calls)
+		print(A_gold, "A gold");
+		print(C, "recover");
 
 		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 

@@ -53,7 +53,7 @@ auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typen
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 
-	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));  // NOLINT(fuchsia-default-arguments-calls)
+	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));
 
 	return std::forward<W>(w);
 }
@@ -107,8 +107,8 @@ class gemv_iterator {
 
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
-		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
-		else                                        {blas::gemv_n(first.ctxt_, static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}  // NOLINT(fuchsia-default-arguments-calls)
+		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}
+		else                                        {blas::gemv_n(first.ctxt_, static_cast<value_type>(first.alpha_), first.m_it_, count, first.v_first_, Scalar{0.0}, result);}
 		return result + count;
 	}
 
@@ -128,7 +128,7 @@ class gemv_iterator {
 
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt)
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
-	auto operator*() const { return value_type{0.0}; }  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
+	auto operator*() const { return value_type{0.0}; }  // could be std::complex
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>

@@ -245,7 +245,7 @@ struct dereferenceable {
 #endif
 
 template<class Self, typename Difference, typename Reference>
-struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
+struct random_accessable
 : affine_with_unit<Self, Difference>
 , dereferenceable<Self, Reference> {
  protected:

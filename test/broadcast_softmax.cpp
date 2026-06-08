@@ -138,7 +138,7 @@ struct iden_t {
 
 constexpr iden_t iden;
 
-int main() {
+auto main() -> int {
 	auto const lazy_matrix =
 		(iden ^ multi::extensions_t(6))
 			.partitioned(2);
@@ -166,5 +166,5 @@ int main() {
 	return boost::report_errors();
 }
 #else
-int main() { return boost::report_errors(); }
+auto main() -> int { return boost::report_errors(); }
 #endif

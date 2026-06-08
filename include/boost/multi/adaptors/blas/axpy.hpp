@@ -83,7 +83,7 @@ class axpy_iterator {
 
 	template<class It1DOut>
 	friend auto copy_n(axpy_iterator first, difference_type count, It1DOut result) {
-		blas::axpy_n(first.ctxt_, first.alpha_, first.x_begin_, count, result);  // NOLINT(fuchsia-default-arguments-calls)
+		blas::axpy_n(first.ctxt_, first.alpha_, first.x_begin_, count, result);
 		return result + count;
 	}
 	template<class It1DOut>
@@ -121,13 +121,13 @@ class axpy_range {
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {
 		assert(other.size() == self.count_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-		blas::axpy_n(self.ctxt_, +static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());  // NOLINT(fuchsia-default-arguments-calls)
+		blas::axpy_n(self.ctxt_, +static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
 	template<class Other>
 	friend auto operator-=(Other&& other, axpy_range const& self) -> Other&& {
 		assert(other.size() == self.count_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-		blas::axpy_n(self.ctxt_, -static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());  // NOLINT(fuchsia-default-arguments-calls)
+		blas::axpy_n(self.ctxt_, -static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
 	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -166,8 +166,8 @@ template<class T> struct algebraic_traits {static auto one() { return T{1.0}; }}
 
 template<class T> struct algebraic_traits<std::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
 
-template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
-template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) BOOST_MULTI_DECLRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 template<class X,
 	std::enable_if_t<X::dimensionality == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20

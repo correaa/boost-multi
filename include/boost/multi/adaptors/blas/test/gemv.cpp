@@ -357,14 +357,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( v2.size() == 3 );
 
-		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});  // NOLINT(fuchsia-default-arguments-calls)
+		multi::array<std::complex<float>, 1> res({1}, std::complex<float>{});
 		BOOST_TEST( res.size() == 1 );
 
 		blas::gemv(1.F, v1, v2, 0.F, res);
 
 		BOOST_TEST( std::abs(res[0] - (v1[0][0]*v2[0] + v1[0][1]*v2[1] + v1[0][2]*v2[2])) < 1e-8F );
 
-		std::complex<float> res_dot;  // NOLINT(fuchsia-default-arguments-calls)
+		std::complex<float> res_dot;
 
 		blas::dot(v1[0], v2, res_dot);
 
