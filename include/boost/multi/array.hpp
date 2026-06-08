@@ -460,7 +460,7 @@ struct                                                                          
 	// to make cling cppyy overload resolution easier
 	template<class = void>  // gives low priority
 	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
-	: dynamic_array(std::apply([](auto... sizes) { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
+	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
@@ -1552,7 +1552,7 @@ struct array : unique_array<T, D, Alloc> {
 	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
 	: unique_(
 		  (values.size() == 0) ? array<T, D>()()
-							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept { return static_cast<T>(elem); })
+							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept -> auto { return static_cast<T>(elem); })
 	  ) {}
 
 #ifdef __circle_build__

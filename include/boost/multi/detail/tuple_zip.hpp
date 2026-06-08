@@ -114,7 +114,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) -> auto {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 

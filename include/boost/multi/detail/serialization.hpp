@@ -97,7 +97,7 @@ struct archive_traits<
 		void serialize(Archive& arxiv, unsigned int const /*version*/) {
 			std::for_each(  // std::for_each_n is absent in GCC 7
 				p_, std::next(p_, c_),
-				[&arxiv](auto& item) { arxiv& make_nvp("item", item); }
+				[&arxiv](auto& item) -> void { arxiv& make_nvp("item", item); }
 			);
 			// for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			//  auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

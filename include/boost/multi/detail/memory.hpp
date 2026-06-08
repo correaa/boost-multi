@@ -30,7 +30,7 @@ void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value && ForwardIt::rank_v == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
-	std::for_each(first, last, [&](auto& elem) {alloc.destroy(addressof(elem));});
+	std::for_each(first, last, [&](auto& elem) -> void {alloc.destroy(addressof(elem));});
 	// for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 

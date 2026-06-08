@@ -331,10 +331,10 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			using std::apply;
 			if constexpr(DD != 1) {
 				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
-					apply([n] (auto... idxs) {return detail::mk_tuple(idxs..., n);}, bef_)
+					apply([n] (auto... idxs) -> auto {return detail::mk_tuple(idxs..., n);}, bef_)
 				);
 			} else {
-				return apply([n] (auto... idxs) {return detail::mk_tuple(idxs..., n);}, bef_);
+				return apply([n] (auto... idxs) -> auto {return detail::mk_tuple(idxs..., n);}, bef_);
 			}
 		}
 	};
@@ -587,23 +587,23 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 	constexpr auto elements() const { return elements_t{*this}; }
 
 	template<class Func>
-	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... idxs){ return fun(detail::mk_tuple(idxs...)); } ^(*this); }
+	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... idxs) -> decltype(auto) { return fun(detail::mk_tuple(idxs...)); } ^(*this); }
 
 	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
 	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
-		return this->apply([](auto const&... exts) { return multi::detail::mk_tuple(exts.size()...); });
+		return this->apply([](auto const&... exts) -> auto { return multi::detail::mk_tuple(exts.size()...); });
 	}
 
 	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const {
 		using std::apply;
-		return apply([](auto... sizes) { return extensions_t(sizes...); }, sizes());
+		return apply([](auto... sizes) -> auto { return extensions_t(sizes...); }, sizes());
 	}
 	BOOST_MULTI_HD constexpr auto extents() const {
 		using std::apply;
-		return apply([](auto... sizes) { return extensions_t(sizes...); }, sizes());
+		return apply([](auto... sizes) -> auto { return extensions_t(sizes...); }, sizes());
 	}
 
 	using sizes_type = boost::multi::detail::tuple_prepend_t<ssize_t, typename extensions_t<D - 1>::sizes_type>;
@@ -1549,14 +1549,14 @@ struct layout_t
 
  public:
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
-	: sub_{apply_        ([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
+	: sub_{apply_        ([](auto const&... subexts) -> auto { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
 	// : sub_{/*std::*/apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
 	, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
 	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
 	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
-	: sub_{std::apply([](auto const&... subexts) { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extensions_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
@@ -1717,11 +1717,11 @@ struct layout_t
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
 	extension(dimensionality_type dim) const {
-		return std::apply([](auto... extensions) { return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...}; }, extensions().base()).at(static_cast<std::size_t>(dim));
+		return std::apply([](auto... extensions) -> auto { return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...}; }, extensions().base()).at(static_cast<std::size_t>(dim));
 	}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14
 	   //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride(dimensionality_type dim) const {
-		return std::apply([](auto... strides) { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
+		return std::apply([](auto... strides) -> auto { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
 	}
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
@@ -2041,7 +2041,7 @@ struct convertible_tuple : Tuple {
  public:
 	using array_type = std::array<std::ptrdiff_t, std::tuple_size_v<Tuple>>;
 	auto to_array() const noexcept {
-		return std::apply([](auto... elems) noexcept {
+		return std::apply([](auto... elems) noexcept -> auto {
 			return std::array<std::common_type_t<decltype(elems)...>, sizeof...(elems)>{{static_cast<multi::ssize_t>(elems)...}};
 		},
 						  static_cast<Tuple const&>(*this));
