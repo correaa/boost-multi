@@ -16,17 +16,12 @@
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
+#include <functional>  // for std::plus  // IWYU pragma: keep
+#include <iostream>    // for std::cout  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
-#include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <limits>      // for std::numeric_limits  // IWYU pragma: keep
 #include <ranges>      // IWYU pragma: keep
-#include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
-
-// #define FMT_HEADER_ONLY
-// #define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
-// #include <fmt/ranges.h>
-// #include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
+#include <tuple>       // for std::get  // IWYU pragma: keep
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
