@@ -25,10 +25,10 @@ auto nrm2_n(Context&& ctxt, XIt x_first, Size count, RPtr rp) {
 
 template<class It, typename Size, class A0D>
 auto nrm2_n(It const& x, Size n, A0D res)  // NOLINT(readability-identifier-length) conventional BLAS naming
-//->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {  // NOLINT(fuchsia-default-arguments-calls)
+//->decltype(blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res)) {
 {
 	// static_assert(!std::is_same_v<decltype(n), int>);
-	return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }  // NOLINT(fuchsia-default-arguments-calls)
+	return blas::default_context_of(x.base())->nrm2(n, x.base(), x.stride(), res), std::next(res); }
 
 template<class Context, class X1D, class R,
 	std::enable_if_t<! multi::has_base<std::decay_t<R>>::value, int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -91,7 +91,7 @@ struct nrm2_ref : private Ptr {
 
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type  //NOSONAR
 
-	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls) complex
+	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // complex
 	operator decay_type()       const { return decay(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) //NOSONAR to allow terse syntax
 // #if ! defined(__CUDACC__) || ! defined(__INTEL_COMPILER)
 //  friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}

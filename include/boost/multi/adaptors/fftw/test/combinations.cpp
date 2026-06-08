@@ -75,7 +75,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			return ret;
 		}();
 
-		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		std::vector<std::array<bool, 4>> const which_cases = {
 			{{false,  true,  true,  true}},
 			{{false,  true,  true, false}},
@@ -165,7 +164,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax)
 	{
-		// NOLINTNEXTLINE(fuchsia-default-arguments-calls) use of std::vector
+		// use of std::vector
 		// std::vector<std::array<bool, 4>> const which_cases = {
 		// 	{{false,  true,  true,  true}},
 		// 	{{false,  true,  true, false}},

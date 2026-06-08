@@ -27,7 +27,7 @@ class ncnm {  // NOLINT(misc-use-internal-linkage)
 	auto operator=(ncnm const&) = delete;
 	auto operator=(ncnm&&)      = delete;
 
-	int val() const { return val_; }
+	auto val() const -> int { return val_; }
 
 	~ncnm() = default;
 };

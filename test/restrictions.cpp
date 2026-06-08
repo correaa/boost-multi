@@ -92,7 +92,7 @@ struct re {
 	// friend void restrict(re const&) {}
 };
 
-int main() {
+auto main() -> int {
 	re R;
 	R.restrict();
 	// restrict(re);

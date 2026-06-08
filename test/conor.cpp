@@ -75,7 +75,7 @@ auto softmax(auto&& matrix) noexcept {
 
 namespace multi = boost::multi;
 
-int main() {
+auto main() -> int {
 	auto const matrix =
 		([](auto ii) noexcept { return static_cast<float>(ii); } ^
 		 multi::extensions_t(6))

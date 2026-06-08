@@ -274,7 +274,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A1[0] == A1[1] );
 	}
 	{
-		// NOLINTBEGIN(fuchsia-default-arguments-calls)
 		multi::array<std::vector<int>, 3> A1 = {
 			{{std::vector<int>(1, 0), std::vector<int>(2, 0)},
 			 {std::vector<int>(3, 0), std::vector<int>(4, 0)}},
@@ -287,7 +286,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A1[1][0][0] == std::vector<int>(1, 0) );
 		// BOOST_TEST( A1[0][0][0].empty() );  // TODO(correaa) make moved elements work
-		// NOLINTEND(fuchsia-default-arguments-calls)
 	}
 	#endif
 	return boost::report_errors();

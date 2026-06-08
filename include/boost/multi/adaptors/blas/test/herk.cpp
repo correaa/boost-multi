@@ -26,7 +26,7 @@
 namespace multi = boost::multi;
 
 // namespace {
-// // NOLINTNEXTLINE(fuchsia-default-arguments-declarations,fuchsia-default-arguments-calls)
+//
 // template<class M> auto print(M const& mat, std::string const& msg = "") -> decltype(auto) {
 // 	using multi::size;
 // 	using std::cout;

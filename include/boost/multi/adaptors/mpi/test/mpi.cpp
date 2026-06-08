@@ -34,13 +34,13 @@ void test_single_number(MPI_Comm comm) {
 		BOOST_TEST(number == -1);
 	}
 	{
-		std::vector<int> vv(3, 99);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<int> vv(3, 99);
 		if(world_rank == 0) {
 			vv = {1, 2, 3};
 			MPI_Send(vv.data(), static_cast<int>(vv.size()), MPI_INT, 1, 0, comm);
 		} else if(world_rank == 1) {
 			MPI_Recv(vv.data(), static_cast<int>(vv.size()), MPI_INT, 0, 0, comm, MPI_STATUS_IGNORE);
-			BOOST_TEST( vv == std::vector<int>({1, 2, 3}) );  // NOLINT(fuchsia-default-arguments-calls)
+			BOOST_TEST( vv == std::vector<int>({1, 2, 3}) );
 		}
 	}
 }

@@ -130,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			using blas::filling;
 
-			syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 			BOOST_TEST( real(c[2][1]) ==   19.0 );
 			BOOST_TEST( real(c[1][2]) == 9999.0 );
@@ -152,7 +152,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			namespace blas = multi::blas;
 
-			syrk(blas::filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(blas::filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 
 			BOOST_TEST( std::abs( real(c[2][1]) - - 3.0 ) < 1e-10 );
 			BOOST_TEST( std::abs( imag(c[2][1]) - -34.0 ) < 1e-10 );
@@ -162,7 +162,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			namespace blas = multi::blas;
 
-			syrk(blas::filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(blas::filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 
 			BOOST_TEST( c[1][0] == complex(18.0, -21.0) );
 			BOOST_TEST( c[0][1] == 9999.0 );
@@ -172,7 +172,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			namespace blas = multi::blas;
 
-			syrk(blas::filling::upper, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(blas::filling::upper, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 
 			BOOST_TEST( c[0][1] == complex(18.0, -21.0) );
 			BOOST_TEST( c[1][0] == 9999.0 );
@@ -195,31 +195,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			using multi::blas::filling;
 
-			syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(filling::lower, 1.0, a, 0.0, c);  // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 
 			BOOST_TEST( c[1][0] == complex(18.0, -21.0) );
 			BOOST_TEST( c[0][1] == 9999.0 );
 		}
 		{
-			multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)  // NOLINT(fuchsia-default-arguments-calls)
+			multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)
 
 			namespace blas = multi::blas;
 
 			using blas::filling;
 
-			syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(filling::lower, 1.0, blas::T(a), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
 
 			BOOST_TEST( c[2][1] == complex(-3.0, -34.0) );
 			BOOST_TEST( c[1][2] == 9999.0 );
 		}
 		{
-			multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)  // NOLINT(fuchsia-default-arguments-calls)
+			multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length)
 
 			namespace blas = multi::blas;
 
 			using blas::filling;
 
-			syrk(filling::lower, 1.0, a.rotated(), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular  // NOLINT(fuchsia-default-arguments-calls)
+			syrk(filling::lower, 1.0, a.rotated(), 0.0, c);  // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
 
 			BOOST_TEST( c[2][1] == complex(-3.0, -34.0) );
 			BOOST_TEST( c[1][2] == 9999.0 );

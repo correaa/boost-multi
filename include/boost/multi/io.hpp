@@ -41,7 +41,6 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 		os << '\n';
 	}
 	for(auto idx : arr.extension()) {  // NOLINT(altera-unroll-loops) TODO(correaa) use an algorithm
-		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
 		multi::detail::print(os, arr[idx], open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		if(idx != arr.extension().back()) {
 			os << sep[0];

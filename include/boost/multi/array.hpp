@@ -129,7 +129,7 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct                                                                          // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : used for composition
+struct                                                                          // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -404,7 +404,7 @@ struct                                                                          
 	}
 
 	template<class Element>
-	// NOLINTNEXTLINE(fuchsia-default-arguments-declarations) for classic sfinae, needed by MSVC?
+	// for classic sfinae, needed by MSVC?
 	explicit dynamic_array(Element const& elem, allocator_type const& alloc, std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element> && (D == 0), int> /*dummy*/ = 0)  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
 	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}                                                                                                                  // NOLINT(readability-redundant-typename) for C++23
 
@@ -580,7 +580,7 @@ struct                                                                          
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...>&&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...>&& other)                                                                                                                    // NOLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...>&& other)
 	: array_alloc{}, ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extents()} {
 		assert(this->stride() != 0);
 		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
@@ -596,7 +596,7 @@ struct                                                                          
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(array_ref<TT, D, Args...> const& other)                                                                                                                    // NOLINT(fuchsia-default-arguments-declarations)
+	explicit dynamic_array(array_ref<TT, D, Args...> const& other)
 	: array_alloc{},
 	  ref_(
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
@@ -1007,7 +1007,7 @@ using static_array [[deprecated("static_array has been renamed to dynamics_array
 /// @tparam T Element type
 /// @tparam Alloc Allocator type
 template<typename T, class Alloc>
-struct dynamic_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance,misc-multiple-inheritance) : design
+struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 : protected detail::array_allocator<Alloc>
 , public array_ref<T, 0, typename multi::allocator_traits<typename detail::array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename dynamic_array::element>, "allocator value type must match array value type");
@@ -1532,7 +1532,7 @@ struct array : unique_array<T, D, Alloc> {
 		class = decltype(Range{std::declval<typename array::const_iterator>(), std::declval<typename array::const_iterator>()})>
 	constexpr explicit operator Range() const {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		// vvv Range{...} needed by Windows GCC?
-		return Range{this->begin(), this->end()};  // NOLINT(fuchsia-default-arguments-calls) e.g. std::vector(it, it, alloc = {})
+		return Range{this->begin(), this->end()};  // e.g. std::vector(it, it, alloc = {})
 	}
 
 	// TODO(correaa) move this to dynamic_array

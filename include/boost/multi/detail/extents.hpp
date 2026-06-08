@@ -144,11 +144,13 @@ class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(corre
 			++idx_;
 			return *this;
 		}
+
 		constexpr auto operator--() -> iterator& {
 			--idx_;
 			return *this;
 		}
-		bool operator==(iterator const& other) const {
+
+		auto operator==(iterator const& other) const -> bool {
 			assert( rest_ == other.rest_ );
 			return idx_ == other.idx_;
 		}

@@ -14,7 +14,7 @@
 
 namespace multi = boost::multi;
 
-int main() {
+auto main() -> int {
 	auto const A = multi::array<int, 2>{
 		{0, 1, 2},
 		{3, 4, 5}

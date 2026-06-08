@@ -19,7 +19,7 @@ namespace multi = boost::multi;
 template<class T, multi::dimensionality_type D>
 using thrust_array = multi::array<T, D, thrust::device_allocator<T>>;
 
-int main() {
+auto main() -> int {
 	//	using Alloc = thrust::device_allocator<double>;
 	using Alloc = std::allocator<double>;
 	{

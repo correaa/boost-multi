@@ -147,12 +147,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			real(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))
 			)
 			< 1.0e-10
-			// NOLINT(fuchsia-default-arguments-calls)
 		);
 		BOOST_TEST(
 			std::abs(
 			imag(res)-
-			imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))  // NOLINT(fuchsia-default-arguments-calls)
+			imag(std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{}, hermitian_product))
 			) < 1.0e-10
 		);
 	}
@@ -182,7 +181,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::abs(
 			real(res) -
 			real(std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+				begin(x), end(x), begin(y), complex{}, std::plus<>{},
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); }
 			))
 		)< 1.0e-10F
@@ -191,7 +190,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::abs(
 			imag(res)-
 			imag(
-				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+				std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},
 				[](auto alpha, auto omega) { return alpha * std::conj(omega); })
 			)
 		) < 1.0e-10F
@@ -209,7 +208,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{-999.0, 666.0};
 		blas::dot(blas::C(x), y, res);
 		BOOST_TEST(
-			res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+			res == std::inner_product(begin(x), end(x), begin(y), complex{}, std::plus<>{},
 				[](auto alpha, auto omega) { return conj(alpha) * omega;}
 			)
 		);
@@ -229,7 +228,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(
 			res == std::inner_product(
-				begin(x), end(x), begin(y), complex{}, std::plus<>{},  // NOLINT(fuchsia-default-arguments-calls)
+				begin(x), end(x), begin(y), complex{}, std::plus<>{},
 				[](auto const& alpha, auto const& omega) {
 					return conj(alpha) * omega;
 				}
