@@ -573,7 +573,7 @@ auto dft(std::array<bool, +D> which, In const& in, Out&& out, sign dir)
 	return plan{which, in.base(), in.layout(), out.base(), out.layout(), dir}.execute(in.base(), out.base()), std::forward<Out>(out);
 }
 
-template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank::value,
+template<typename In, multi::dimensionality_type D = std::decay_t<In>::dimensionality,
 	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In&&>().base()), typename std::decay_t<In>::element>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto dft(std::array<bool, +D> which, In&& in, sign dir)
 	-> decltype(dft(which, in, in, dir), std::forward<In>(in)) {

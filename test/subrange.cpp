@@ -22,25 +22,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 		{
-			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank::value == 4);
-			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank::value == 3);
-			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank::value == 3);
-			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank::value == 3);
-			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank::value == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::dimensionality == 4);
+			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::dimensionality == 3);
 
-			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank::value == 2);
-			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank::value == 2);
-			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank::value == 2);
+			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::dimensionality == 2);
+			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::dimensionality == 2);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::dimensionality == 2);
 
-			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::rank_v == 4);
-			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::rank_v == 3);
-			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::rank_v == 3);
-			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::rank_v == 3);
-			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::rank_v == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, {0, 40}))::dimensionality == 4);
+			static_assert(decltype(arr(5, {0, 20}, {0, 30}, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, 10, {0, 30}, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, {0, 40}))::dimensionality == 3);
+			static_assert(decltype(arr({0, 10}, {0, 20}, {0, 30}, 20))::dimensionality == 3);
 
-			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::rank_v == 2);
-			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::rank_v == 2);
-			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::rank_v == 2);
+			static_assert(decltype(arr(5, 6, {0, 30}, {0, 40}))::dimensionality == 2);
+			static_assert(decltype(arr({0, 10}, 6, 15, {0, 40}))::dimensionality == 2);
+			static_assert(decltype(arr({0, 10}, {0, 20}, 15, 20))::dimensionality == 2);
 		}
 		{
 			auto&& all = arr({0, 10}, {0, 20}, {0, 30}, {0, 40});

@@ -42,7 +42,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<0>( A2D().sizes() ) == 10 );
 		BOOST_TEST( get<1>( A2D().sizes() ) == 10 );
 
-		static_assert(multi::array_ref<complex, 2>::rank::value == 2);
+		static_assert(multi::array_ref<complex, 2>::dimensionality == 2);
 
 		BOOST_TEST( &A2D[3][4] == &B2D[3][4] );
 

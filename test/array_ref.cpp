@@ -780,12 +780,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( cref.num_elements() == 24 && cref[2][1][1] == "C1b" );
 
 		auto const& A2 = cref.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-		BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && A2.num_elements() == 6 );
+		BOOST_TEST( std::decay_t<decltype(A2)>::dimensionality == 2 && A2.num_elements() == 6 );
+		// BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && A2.num_elements() == 6 );
 
 		BOOST_TEST( get<0>(sizes(A2)) == 3 && get<1>(sizes(A2)) == 2 );
 
 		auto const& A3 = cref({0, 3}, 1, {0, 2});
-		BOOST_TEST( multi::rank<std::decay_t<decltype(A3)>>{} == 2 && A3.num_elements() == 6 );
+		BOOST_TEST( std::decay_t<decltype(A3)>::dimensionality == 2 && A3.num_elements() == 6 );
 
 		BOOST_TEST( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 		BOOST_TEST( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );

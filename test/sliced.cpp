@@ -26,9 +26,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 4> arr({10, 20, 30, 40}, 99);
 		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
-		static_assert(decltype(arr.sliced(0, 5))::rank::value == 4);
-		static_assert(decltype(arr.sliced(0, 5))::rank{} == 4);
-		static_assert(decltype(arr.sliced(0, 5))::rank_v == 4);
+		static_assert(decltype(arr.sliced(0, 5))::dimensionality == 4);
 
 		BOOST_TEST(  arr.sliced( 0, 5)[1][2][3][4] ==  arr[1][2][3][4] );
 		BOOST_TEST( &arr.sliced( 0, 5)[1][2][3][4] == &arr[1][2][3][4] );
