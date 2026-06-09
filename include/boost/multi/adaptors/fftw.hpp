@@ -432,7 +432,7 @@ class plan {
 		return plan(which, in_base, in_layout, out_base, out_layout, fftw::forward);
 	}
 	template<class InPtr, class In, class OutPtr, class Out>
-	static auto backward(std::array<bool, In::rank_v> which, InPtr in_base, In in_layout, OutPtr out_base, Out out_layout) {
+	static auto backward(std::array<bool, In::dimensionality> which, InPtr in_base, In in_layout, OutPtr out_base, Out out_layout) {
 		return plan(which, in_base, in_layout, out_base, out_layout, fftw::backward);
 	}
 
@@ -504,7 +504,7 @@ class io_zip_iterator {
 	std::shared_ptr<plan> planP_;
 
  public:
-	io_zip_iterator(std::array<bool, InIt::reference::rank_v> which, InIt in, OutIt out, sign ss)
+	io_zip_iterator(std::array<bool, InIt::reference::dimensionality> which, InIt in, OutIt out, sign ss)
 	: in_{in}, out_{out}, 
 	planP_{std::make_shared<plan>(
 		which,

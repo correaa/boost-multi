@@ -109,8 +109,8 @@ class plan {
 	using allocator_type = Alloc;
 
 	template<
-		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
-		class = std::enable_if_t<D == std::decay_t<OLayout>::rank::value>>
+		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::dimensionality,
+		class = std::enable_if_t<D == std::decay_t<OLayout>::dimensionality>>
 	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out) : plan(which, in, out, allocator_type{}) {}
 
 	plan()            = delete;
@@ -131,8 +131,8 @@ class plan {
 	auto operator=(plan&&)      = delete;
 
 	template<
-		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::rank::value,
-		class = std::enable_if_t<D == std::decay_t<OLayout>::rank::value>>
+		class ILayout, class OLayout, dimensionality_type D = std::decay_t<ILayout>::dimensionality,
+		class = std::enable_if_t<D == std::decay_t<OLayout>::dimensionality>>
 	plan(std::array<bool, +D> which, ILayout const& in, OLayout const& out, allocator_type const& alloc) : alloc_{alloc} {
 		// used_ = false;
 		assert(in.sizes() == out.sizes());
