@@ -423,7 +423,7 @@ class cached_plan {
 
 	~cached_plan() = default;
 
-	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::ssize_t> in, boost::multi::layout_t<D, boost::multi::ssize_t> out, Alloc const& alloc = {}) {
+	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::ssize_t> in, boost::multi::layout_t<D, boost::multi::ssize_t> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
 		thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>;
 		it_                                                                                                                         = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
 		if(it_ == LEAKY_cache.end()) {
@@ -446,7 +446,7 @@ class cached_plan {
 // 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out);
 // }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value>  // , std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
+template<typename In, class Out, dimensionality_type D = In::dimensionality>  // , std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 	-> decltype(cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, in.layout(), out.layout() /*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
 	if constexpr(D == 4) {
@@ -466,18 +466,13 @@ auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
 	return cufft::cached_plan<D /*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, in.layout(), out.layout() /*, i.get_allocator()*/}.execute(in.base(), out.base(), sgn), std::forward<Out>(out);
 }
 
-template<typename In, class Out, dimensionality_type D = In::rank::value>  //, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::dimensionality>  //, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
 auto dft_forward(std::array<bool, +D> which, In const& in, Out&& out) -> Out&& {
 	//->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), cufft::forward), std::forward<Out>(out);
 }
 
-// template<typename In, class Out, dimensionality_type D = In::rank::value, class = typename In::allocator_type, std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0>
-// auto dft_forward(std::array<bool, +D> which, In const& i, Out&& o) -> Out&& {
-// //->decltype(cufft::plan<D, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char> >{which, i.layout(), o.layout(), i.get_allocator()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o)) {
-//  return cufft::cached_plan<D/*, typename std::allocator_traits<typename In::allocator_type>::rebind_alloc<char>*/>{which, i.layout(), o.layout()/*, i.get_allocator()*/}.execute(i.base(), o.base(), cufft::forward), std::forward<Out>(o); }
-
-template<typename In, class Out, dimensionality_type D = In::rank::value>  //, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
+template<typename In, class Out, dimensionality_type D = In::dimensionality>  //, std::enable_if_t<not multi::has_get_allocator<In>::value, int> =0>
 auto dft_backward(std::array<bool, +D> which, In const& in, Out&& out) -> Out&& {
 	//->decltype(cufft::plan<D>{which, i.layout(), o.layout()}.execute(i.base(), o.base(), cufft::backward), std::forward<Out>(o)) {
 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), cufft::backward), std::forward<Out>(out);
@@ -513,7 +508,7 @@ template<typename In, std::size_t D = In::dimensionality>
 BOOST_MULTI_NODISCARD("when passing a const argument")
 auto dft(std::array<bool, D> which, In const& in, int sign) -> std::decay_t<decltype(dft(which, in, typename In::decay_type(extents(in), get_allocator(in)), sign))> { return dft(which, in, typename In::decay_type(extents(in), get_allocator(in)), sign); }
 
-template<typename In, std::size_t D = In::dimensionality>
+template<typename In, std::size_t D = In::dimensionality>  // TODO(correaa) check that the type of In a decay_type (otherwise there is no ::dimensionality)
 auto dft(std::array<bool, D> which, In&& in, int sign)
 	-> decltype(dft(which, in, in, sign), std::forward<In>(in)) {
 	return dft(which, in, in, sign), std::forward<In>(in);
