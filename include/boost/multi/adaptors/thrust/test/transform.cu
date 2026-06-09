@@ -104,8 +104,9 @@ auto main() -> int {
 			thrust::make_zip_iterator(A.begin(), B.begin()),
 			thrust::make_zip_iterator(A.end(), B.end()),
 			C.begin(),
-			[] __device__(auto const& ab) { auto [a, b] = ab;
-				return static_cast<int>(a) + static_cast<int>(b);
+			[] __device__(auto const& ab) {
+				using std::get;  // can't use structured bindings with thrust::tuple
+				return static_cast<int>(get<0>(ab)) + static_cast<int>(get<1>(ab));
 			}
 		);
 
@@ -131,8 +132,9 @@ auto main() -> int {
 				thrust::make_zip_iterator(A.begin(), B.begin()),
 				thrust::make_zip_iterator(A.end(), B.end()),
 				C.begin(),
-				[] __device__(auto const& ab) { auto [a, b] = ab;
-					return a + b;
+				[] __device__(auto const& ab) {
+					using std::get;  // can't use structured bindings with thrust::tuple
+					return get<0>(ab) + get<1>(ab);
 				}
 			);
 
