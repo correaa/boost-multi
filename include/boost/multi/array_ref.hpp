@@ -208,7 +208,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_type = Layout;
 
-	using rank = typename layout_type::rank;
+	// using rank = typename layout_type::rank;
 
 	using layout_type::rank_v;
 
@@ -224,7 +224,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::index;
 	using typename layout_type::index_extension;
-	using typename layout_type::index_range;
+	// using typename layout_type::index_range;
 
 	using typename layout_type::strides_type;
 
@@ -456,7 +456,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<typename reference::rank{} - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<reference::dimensionality - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
 
 	template<bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor ; see below
@@ -1222,7 +1222,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
-	using ref_ = const_subarray;
+	// using ref_ = const_subarray;
 
 	using array_types<T, D, ElementPtr, Layout>::rank_v;
 
@@ -1233,8 +1233,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using layout_type = Layout;
 
-	using indices_type = typename extensions_t<D>::indices_type;
+	/// A tuple type to hold all the indices necessary to get to the element of the array
+	// using indices_type = typename extensions_t<D>::indices_type;
 
+	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
 	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
@@ -1603,7 +1605,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return sliced(first, last).strided(step);
 	}
 
-	using index_range = typename const_subarray::index_range;
+	// using index_range = typename const_subarray::index_range;
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }
 
@@ -1975,9 +1977,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return this->member_cast<T2, P2, Element, PM>(member);
 	}
 
+ private:
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
+ public:
 	template<
 		class T2 = std::remove_const_t<T>,
 		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
@@ -2149,8 +2153,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr /*mplct*/ subarray(Other&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor,cppcoreguidelines-missing-std-forward) : to reproduce the implicitness of the argument
 	: subarray(other.layout(), other.base()) {}
 
+ private:
 	using ptr = void;  // detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
+ public:
 	// clang-format off
 	#ifdef __clang__
 	#pragma clang diagnostic push

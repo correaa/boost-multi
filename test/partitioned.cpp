@@ -345,8 +345,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& A3_ref = A2.partitioned(2);
 
-		static_assert(std::decay_t<decltype(A3_ref)>::rank{} == decltype(A2)::rank{} + 1);
-		static_assert(std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1);
+		static_assert(std::decay_t<decltype(A3_ref)>::dimensionality == decltype(A2)::dimensionality + 1);
 
 		BOOST_TEST( A3_ref.num_elements() == A2.num_elements() );
 		BOOST_TEST( size(A3_ref) == 2 );
@@ -386,9 +385,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( size(A2.partitioned(3)) == 3 );
 
-		static_assert(decltype(A2.partitioned(3))::rank{} == 3);
-		static_assert(decltype(A2.partitioned(3))::rank::value == 3);
-		static_assert(decltype(A2.partitioned(3))::rank_v == 3);
+		static_assert(decltype(A2.partitioned(3))::dimensionality == 3);
+		// static_assert(decltype(A2.partitioned(3))::rank{} == 3);
+		// static_assert(decltype(A2.partitioned(3))::rank::value == 3);
+		// static_assert(decltype(A2.partitioned(3))::rank_v == 3);
 
 		BOOST_TEST(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
 
@@ -398,9 +398,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( size(A2.partitioned(1)) == 1 );
 
-		static_assert(decltype(A2.partitioned(1))::rank{} == 3);
-		static_assert(decltype(A2.partitioned(1))::rank::value == 3);
-		static_assert(decltype(A2.partitioned(1))::rank_v == 3);
+		static_assert(decltype(A2.partitioned(1))::dimensionality == 3);
+		// static_assert(decltype(A2.partitioned(1))::rank{} == 3);
+		// static_assert(decltype(A2.partitioned(1))::rank::value == 3);
+		// static_assert(decltype(A2.partitioned(1))::rank_v == 3);
 
 		BOOST_TEST( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 	}
@@ -424,9 +425,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& arrRPU = arr.rotated().sliced(2, 8).partitioned(3).unrotated();
 
-		static_assert(decltype(+arrRPU)::rank::value == 3);
-		static_assert(decltype(+arrRPU)::rank{} == 3);
-		static_assert(decltype(+arrRPU)::rank_v == 3);
+		static_assert(decltype(+arrRPU)::dimensionality == 3);
 
 		BOOST_TEST( get<0>(arrRPU.sizes()) == 7 );
 		BOOST_TEST( get<1>(arrRPU.sizes()) == 3 );
