@@ -95,28 +95,6 @@ auto main() -> int {
 		BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
 	}
 #endif
-	// {
-	// 	multi::thrust::universal_array<double, 2> vel({5, 5});
-
-	// 	auto const* olap_base = thrust::raw_pointer_cast(olap.base());
-	// 	auto const  inner     = olap.size(2);
-
-	// 	thrust::transform(
-	// 		thrust::cuda::par,
-	// 		thrust::make_counting_iterator(0),
-	// 		thrust::make_counting_iterator(static_cast<int>(vel.num_elements())),
-	// 		vel.elements().begin(),
-	// 		[olap_base, inner] __device__ (int mm) {
-	// 			double result = 0.0;
-	// 			for(auto kk = 0; kk < inner; ++kk) {
-	// 				result += norm(olap_base[mm * inner + kk]);
-	// 			}
-	// 			return result;
-	// 		}
-	// 	);
-
-	// 	BOOST_TEST( std::abs(vel[2][3] - vel_gold[2][3]) < 1e-12  );
-	// }
 	{
 		multi::thrust::device_array<int, 1> A({100}, 3);
 		multi::thrust::device_array<int, 1> B({100}, 2);
@@ -126,9 +104,8 @@ auto main() -> int {
 			thrust::make_zip_iterator(A.begin(), B.begin()),
 			thrust::make_zip_iterator(A.end(), B.end()),
 			C.begin(),
-			[] __device__(auto const& ab) {
-				using std::get;
-				return static_cast<int>(get<0>(ab)) + static_cast<int>(get<1>(ab));
+			[] __device__(auto const& ab) { auto [a, b] = ab;
+				return static_cast<int>(a) + static_cast<int>(b);
 			}
 		);
 
@@ -154,9 +131,8 @@ auto main() -> int {
 				thrust::make_zip_iterator(A.begin(), B.begin()),
 				thrust::make_zip_iterator(A.end(), B.end()),
 				C.begin(),
-				[] __device__(auto const& ab) {
-					using std::get;
-					return get<0>(ab) + get<1>(ab);
+				[] __device__(auto const& ab) { auto [a, b] = ab;
+					return a + b;
 				}
 			);
 
