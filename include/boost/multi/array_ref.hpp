@@ -224,7 +224,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::index;
 	using typename layout_type::index_extension;
-	using typename layout_type::index_range;
+	// using typename layout_type::index_range;
 
 	using typename layout_type::strides_type;
 
@@ -1603,7 +1603,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return sliced(first, last).strided(step);
 	}
 
-	using index_range = typename const_subarray::index_range;
+	// using index_range = typename const_subarray::index_range;
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }
 
