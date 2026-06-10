@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -9,19 +9,20 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
+#include <functional>  // IWYU pragma: keep
+#include <iostream>    // IWYU pragma: keep
+#include <limits>      // IWYU pragma: keep
+
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 
 #include <boost/multi/array.hpp>
 
-#include <algorithm>   // IWYU pragma: keep  // for std::equal
-#include <cmath>       // for std::abs
-#include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <functional>  // for std::plus  // IWYU pragma: keep
-#include <iostream>    // for std::cout  // IWYU pragma: keep
-#include <iterator>    // IWYU pragma: keep
-#include <limits>      // for std::numeric_limits  // IWYU pragma: keep
-#include <ranges>      // IWYU pragma: keep
-#include <tuple>       // for std::get  // IWYU pragma: keep
+#include <algorithm>  // IWYU pragma: keep  // for std::equal
+#include <cmath>      // for std::abs
+#include <concepts>   // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <iterator>   // IWYU pragma: keep
+#include <ranges>     // IWYU pragma: keep
+#include <tuple>      // for std::get  // IWYU pragma: keep
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;

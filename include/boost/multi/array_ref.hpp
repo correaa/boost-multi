@@ -2422,7 +2422,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  private:
 	using const_subarray<T, D, ElementPtr, Layout>::paren_aux_;
 
-	BOOST_MULTI_HD constexpr auto paren_aux_() & { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
+	BOOST_MULTI_HD constexpr auto paren_aux_() & { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }  // cppcheck-suppress duplInheritedMember;
 	BOOST_MULTI_HD constexpr auto paren_aux_() && { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx) & -> decltype(auto) { return operator[](idx); }
