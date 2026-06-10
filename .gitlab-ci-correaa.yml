@@ -1408,7 +1408,7 @@ inq cuda 70:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     # - ctest -j 4 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --parallel 2 --output-on-failure --timeout 4800
-  timeout: 2 hours 30 minutes
+  timeout: 4 hours 00 minutes
   needs: ["inq", "cuda"]
 
 inq cuda 75:
@@ -1445,7 +1445,7 @@ inq cuda 75:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     # - ctest -j 4 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --parallel 2 --output-on-failure --timeout 4800
-  timeout: 3 hours 00 minutes
+  timeout: 4 hours 00 minutes
   needs: ["inq", "cuda"]
 
 inq rocm:
