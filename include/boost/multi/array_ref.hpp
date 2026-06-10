@@ -1545,8 +1545,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) const& -> const_subarray { return sliced_aux_(first, last); }
 
  private:
-	constexpr auto blocked(index first, index last) const& { return sliced(first, last).reindexed(first).as_const(); }
-	constexpr auto blocked(index first, index last) & { return sliced(first, last).reindexed(first).as_const(); }
+	constexpr auto blocked(index first, index last) const& { return sliced(first, last).reindexed(first).as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or make private
+	constexpr auto blocked(index first, index last) & { return sliced(first, last).reindexed(first).as_const(); }       // NOLINT(readability-identifier-naming) TODO(correaa) remove or make private
 
 	using iextension = typename const_subarray::index_extension;
 
