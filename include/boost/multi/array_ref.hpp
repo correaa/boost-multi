@@ -1607,7 +1607,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	// using index_range = typename const_subarray::index_range;
 
-	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }
+	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
 	[[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {
@@ -2416,8 +2416,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::range;
-	BOOST_MULTI_HD constexpr auto range(index_range irng) && -> decltype(auto) { return std::move(*this).sliced(irng.front(), irng.front() + irng.size()); }
-	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }
+	BOOST_MULTI_HD constexpr auto range(index_range irng) && -> decltype(auto) { return std::move(*this).sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
+	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }                    // cppcheck-suppress duplInheritedMember;
 
  private:
 	using const_subarray<T, D, ElementPtr, Layout>::paren_aux_;
