@@ -386,6 +386,43 @@ clang++-19 mull-19:
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
 
+clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead of the cloudsmith apt repository
+  image: ubuntu:24.04
+  stage: build
+  tags:
+    - x86_64  # for mull
+    - large-memory-space
+    - non-shared
+  # only:
+  #   refs:
+  #     - develop
+  interruptible: true
+  allow_failure: true
+  script:
+    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates lsb-release software-properties-common cmake file make libboost-timer-dev libboost-serialization-dev > /dev/null
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 19
+    - apt-get -qq install --no-install-recommends -y --quiet clang-19 libclang-rt-19-dev libclang-cpp19
+    # download the precompiled mull package directly from the releases page (https://github.com/mull-project/mull/releases/tag/0.34.0)
+    - wget -O mull.deb https://github.com/mull-project/mull/releases/download/0.34.0/Mull-19-0.34.0-LLVM-19.1.1-ubuntu-amd64-24.04.deb
+    - dpkg --contents mull.deb  # show installed paths (binary and ir-frontend plugin) for verification
+    - dpkg -i mull.deb || apt-get -qq install --no-install-recommends -y --quiet -f  # install, resolving dependencies if dpkg leaves them unconfigured
+    - mkdir build && cd build
+    - clang++-19 --version
+    - which mull-runner-19
+    - ls -all `which mull-runner-19`
+    - file `which mull-runner-19`
+    - mull-runner-19 --version
+    - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest
+    - cd test
+    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+  needs: ["clang++", "g++"]
+
 clang++-16 c++20:
   stage: build
   image: ubuntu:24.04  # debian:latest
