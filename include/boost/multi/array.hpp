@@ -792,6 +792,7 @@ struct                                                                          
 	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array& self) { return self.data_elements(); }
 	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array&& self) { return std::move(self).data_elements(); }
 
+	/// Returns the base pointer of the array
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }
 
