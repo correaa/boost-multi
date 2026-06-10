@@ -104,8 +104,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( A2D[0][0] == 1 );
 
-		multi::const_subarray<int, 2> R2D(A2D.begin(), A2D.end());
-		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+		// multi::const_subarray<int, 2> R2D(A2D.begin(), A2D.end());
+		// BOOST_TEST( R2D.addressof()== A2D.addressof() );
+		// BOOST_TEST( &R2D == &A2D );  // TODO(correaa) enable comparison with pointer value (array*)
 	}
 
 	// equality 1D
@@ -204,7 +205,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( A2D[0][0] == 1 );
 
 		multi::subarray<int, 2> R2D(A2D.begin(), A2D.end());
-		BOOST_TEST( R2D.addressof()== A2D.addressof() );
+		// BOOST_TEST( R2D.addressof()== A2D.addressof() );
+		// BOOST_TEST( &R2D == &A2D );  // TODO(correaa) allow address comparison with value-pointer (array*)
 
 		R2D[0][0] = 77;
 		BOOST_TEST( R2D[0][0] == 77 );  // cppcheck-suppress knownConditionTrueFalse;

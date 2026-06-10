@@ -3809,18 +3809,18 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto addressof_aux_() const { return detail::array_ptr<T, D, ElementPtr>(this->base_, this->extents()); }
 
- public:
-	constexpr auto addressof() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }       // cppcheck-suppress duplInheritedMember;
-	constexpr auto addressof() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }        // cppcheck-suppress duplInheritedMember;
-	constexpr auto addressof() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() && -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }       // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() & -> detail::array_ptr<T, D, ElementPtr> { return addressof_aux_(); }        // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() const& -> detail::array_cptr<T, D, ElementPtr> { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 
+ public:
 	// operator& is not defined for r-values anyway
 	// NOLINTNEXTLINE(google-runtime-operator)
-	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  // NOLINT(runtime/operator)  //NOSONAR
+	constexpr auto operator&() && { return addressof_(); }  // cppcheck-suppress duplInheritedMember;  // NOLINT(runtime/operator)  //NOSONAR
 	// [[deprecated("controversial")]]
-	// constexpr auto operator&() & { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// constexpr auto operator&() & { return addressof_(); }  // NOLINT(runtime/operator) //NOSONAR
 	// // [[deprecated("controversial")]]
-	// constexpr auto operator&() const& { return addressof(); }  // NOLINT(runtime/operator) //NOSONAR
+	// constexpr auto operator&() const& { return addressof_(); }  // NOLINT(runtime/operator) //NOSONAR
 
  private:
 	template<class It> constexpr auto copy_elements_(It first) {
