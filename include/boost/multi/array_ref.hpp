@@ -971,22 +971,20 @@ struct elements_iterator_t
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const noexcept -> difference_type {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
 
-	// BOOST_MULTI_HD constexpr auto n() const { return n_; }
-
-	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const noexcept -> bool {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool { return ((*this) < other) || ((*this) == other); }
+	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const noexcept -> bool { return ((*this) < other) || ((*this) == other); }
 
-	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
-	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
+	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const noexcept -> bool { return other < (*this); }
+	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const noexcept -> bool { return !((*this) < other); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -1016,9 +1014,11 @@ struct elements_iterator_t
 		ret += n;
 		return ret;
 	}
+
 	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, elements_iterator_t const& self) -> elements_iterator_t {  // `n + it` form, required by std::random_access_iterator
 		return self + n;
 	}
+
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {
 		auto ret{*this};
 		ret -= n;
