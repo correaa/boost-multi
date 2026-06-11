@@ -35,10 +35,21 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 1> arr1({10}, 5);
 		multi::array<int, 1> arr2({10}, 6);
 
+		auto&& zp = std::views::zip(arr1(), arr2());
+
+		auto&& [e1, e2] = zp[3];
+
+		BOOST_TEST( e1 == 5 );
+		BOOST_TEST( e2 == 6 );
+	}
+	{
+		multi::array<int, 1> arr1({10}, 5);
+		multi::array<int, 1> arr2({10}, 6);
+
 		auto&& es1 = arr1.elements();
 		auto&& es2 = arr2.elements();
 
-		auto&& zp = std::views::zip(arr1, arr2);
+		auto&& zp = std::views::zip(es1, es2);
 
 		auto&& [e1, e2] = zp[3];
 
@@ -56,42 +67,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		BOOST_TEST( e1 == 5 );
 		BOOST_TEST( e2 == 6 );
 	}
-	{
-		multi::array<int, 1> arr1({10}, 5);
-		multi::array<int, 1> arr2({10}, 6);
-
-		auto&& zp = std::views::zip(arr1(), arr2());
-
-		auto&& [e1, e2] = zp[3];
-
-		BOOST_TEST( e1 == 5 );
-		BOOST_TEST( e2 == 6 );
-	}
-	{
-		multi::array<int, 1> arr1({10}, 5);
-		multi::array<int, 1> arr2({10}, 6);
-
-		auto es1 = arr1().elements();
-		auto es2 = arr2().elements();
-
-		auto&& zp = std::views::zip(es1, es2);
-
-		auto&& [e1, e2] = zp[3];
-
-		BOOST_TEST( e1 == 5 );
-		BOOST_TEST( e2 == 6 );
-	}
-	{
-		multi::array<int, 1> arr1({10}, 5);
-		multi::array<int, 1> arr2({10}, 6);
-
-		auto&& zp = std::views::zip(arr1().elements(), arr2().elements());
-
-		auto&& [e1, e2] = zp[3];
-
-		BOOST_TEST( e1 == 5 );
-		BOOST_TEST( e2 == 6 );
-	}
+	/////////////////////////////// 2D case
 	{
 		multi::array<int, 2> arr1({10, 10}, 5);
 		multi::array<int, 2> arr2({10, 10}, 6);
@@ -122,6 +98,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 2> arr2({10, 10}, 6);
 
 		auto&& zp = std::views::zip(arr1().elements(), arr2().elements());
+
+		auto&& [e1, e2] = zp[3];
+
+		BOOST_TEST( e1 == 5 );
+		BOOST_TEST( e2 == 6 );
+	}
+	{
+		multi::array<int, 2> arr1({10, 10}, 5);
+		multi::array<int, 2> arr2({10, 10}, 6);
+
+		auto&& zp = std::views::zip(arr1[1], arr2[2]);
 
 		auto&& [e1, e2] = zp[3];
 
