@@ -77,23 +77,21 @@ template<class T, class... Ts> struct tuple_tail<std::tuple<T, Ts...>> {
 template<class Tuple> using tuple_type_t = typename tuple_tail<Tuple>::type;
 }  // end namespace stdx
 
-// namespace detail {
-// template<typename... Ts>
-// struct TailTuple {};
-
-// template<typename Head, typename... Tail>
-// struct TailTuple<Head, Tail...> : TailTuple<Tail...> {
-//     using TailType = TailTuple<Tail...>;
-// };
-
-// // Base case for the empty pack
-// template<>
-// struct TailTuple<> {};
-
-// }  // end namespace detail
-
 template<class... Exts>
 class extents_t;
+
+template<>
+class extents_t<> : public std::tuple<> {  // base case: zero-dimensional extents
+ public:
+	static constexpr dimensionality_type dimensionality = 0;
+
+	extents_t() = default;
+
+	constexpr auto num_elements() const noexcept -> multi::ssize_t { return 1; }  // NOLINT(readability-convert-member-functions-to-static)
+
+	friend constexpr auto operator==(extents_t const& /*self*/, extents_t const& /*other*/) noexcept -> bool { return true; }
+	friend constexpr auto operator!=(extents_t const& /*self*/, extents_t const& /*other*/) noexcept -> bool { return false; }
+};
 
 template<class Ext, class... Exts>
 class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa) use libcuda++ in the future https://github.com/boostorg/math/blob/develop/include/boost/math/tools/cstdint.hpp
@@ -126,7 +124,16 @@ class extents_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(corre
 
 	auto size() const -> size_type { return extension().size(); }
 
-	using sub_type = extents_t<>;
+	auto num_elements() const { return size() * sub().num_elements(); }
+
+	using sub_type = extents_t<Exts...>;
+
+	constexpr auto sub() const -> sub_type {
+		return std::apply(
+			[](auto... xs) noexcept -> sub_type { return sub_type(xs...); },
+			stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this))
+		);
+	}
 
 	class iterator : public detail::forward_iterator_facade<iterator> {
 		friend class extents_t;

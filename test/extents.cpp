@@ -50,6 +50,21 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto x2d_it2 = x2d_it + 2;
 		auto x2d_it3 = x2d_it2 + 1;
 		BOOST_TEST( x2d_it3 == x2d.begin() + 3 );
+
+		auto const su = x2d.sub();
+		BOOST_TEST( su.size() == 3 );
+		using std::get;
+		BOOST_TEST( get<0>(su) == get<1>(x2d) );
+
+		BOOST_TEST( x2d.num_elements() == 12 );
+	}
+	{
+		multi::extents_t const x1d(5);
+
+		auto const su = x1d.sub();  // sub() of 1-D extents is zero-dimensional
+
+		BOOST_TEST( su.num_elements() == 1 );
+		BOOST_TEST( x1d.num_elements() == 5 );
 	}
 	{
 		multi::array<int, 3> const arr({2, 3, 5});
