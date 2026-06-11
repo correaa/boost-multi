@@ -1,4 +1,4 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -15,6 +15,7 @@
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
+#if THRUST_VERSION >= 101600
 	cudaStream_t stream;  // NOLINT(cppcoreguidelines-init-variables)
 	BOOST_TEST( cudaStreamCreate(&stream) == cudaSuccess );
 
@@ -36,6 +37,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	BOOST_TEST( host[1023][1023] == 42.0 );
 
 	BOOST_TEST( cudaStreamDestroy(stream) == cudaSuccess );
+#endif
 
 	return boost::report_errors();
 }
