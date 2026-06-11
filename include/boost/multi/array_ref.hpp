@@ -1104,7 +1104,7 @@ struct elements_range_t {
 	constexpr auto is_empty() const -> bool { return l_.is_empty(); }
 
 	elements_range_t(elements_range_t const&) = delete;
-	elements_range_t(elements_range_t&&)      = delete;
+	elements_range_t(elements_range_t&&)      = default;  // delete;
 
 	template<class Range> auto operator==(Range const& other) const -> bool {
 		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
