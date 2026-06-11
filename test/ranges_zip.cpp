@@ -29,7 +29,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
         auto [e1, e2] = zp[3];
 
         BOOST_TEST( e1 == 5 );
-        BOOST_TEST( e1 == 6 );
+        BOOST_TEST( e2 == 6 );
     }
     {
 		multi::array<int, 1> arr1({10}, 5);
@@ -43,7 +43,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
         auto [e1, e2] = zp[3];
 
         BOOST_TEST( e1 == 5 );
-        BOOST_TEST( e1 == 6 );
+        BOOST_TEST( e2 == 6 );
     }
     {
 		multi::array<int, 1> arr1({10}, 5);
@@ -54,7 +54,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
         auto [e1, e2] = zp[3];
 
         BOOST_TEST( e1 == 5 );
-        BOOST_TEST( e1 == 7 ); 
+        BOOST_TEST( e2 == 6 ); 
     }
 #endif
 
