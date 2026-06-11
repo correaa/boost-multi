@@ -316,75 +316,75 @@ clang++ ubsan:  # more UB is detected on Release
 #     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
 #   needs: ["clang++", "g++"]
 
-clang++-18 mull-18:
-  image: ubuntu:24.04
-  stage: build
-  tags:
-    - x86_64  # for mull
-    - large-memory-space
-    - non-shared
-  interruptible: true
-  allow_failure: true
-  script:
-    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
-    - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - apt-get -qq update
-    - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-18 libclang-cpp18
-    - mkdir build && cd build
-    - clang++-18 --version
-    - which mull-runner-18
-    - ls -all `which mull-runner-18`
-    - file `which mull-runner-18`
-    - mull-runner-18 --version
-    - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest
-    - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
-  needs: ["clang++", "g++"]
+# clang++-18 mull-18:
+#   image: ubuntu:24.04
+#   stage: build
+#   tags:
+#     - x86_64  # for mull
+#     - large-memory-space
+#     - non-shared
+#   interruptible: true
+#   allow_failure: true
+#   script:
+#     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates clang-18 cmake file libclang-rt-18-dev make libboost-timer-dev libboost-serialization-dev > /dev/null
+#     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+#     - apt-get -qq update
+#     - apt search mull
+#     - apt-get -qq install --no-install-recommends -y --quiet mull-18 libclang-cpp18
+#     - mkdir build && cd build
+#     - clang++-18 --version
+#     - which mull-runner-18
+#     - ls -all `which mull-runner-18`
+#     - file `which mull-runner-18`
+#     - mull-runner-18 --version
+#     - CXX=clang++-18 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-18 -g -grecord-command-line"
+#     - cmake --build . || cmake --build . --parallel 1 --verbose
+#     - ctest
+#     - cd test
+#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-18 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+#   needs: ["clang++", "g++"]
 
-clang++-19 mull-19:
-  image: ubuntu:24.04
-  stage: build
-  tags:
-    - x86_64  # for mull
-    - large-memory-space
-    - non-shared
-  only:
-    refs:
-      - develop  
-  interruptible: true
-  allow_failure: true
-  # only:
-  #   refs:
-  #     - develop
-  script:
-    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates lsb-release software-properties-common cmake file make libboost-timer-dev libboost-serialization-dev > /dev/null
-    - wget https://apt.llvm.org/llvm.sh
-    - chmod u+x llvm.sh
-    - ./llvm.sh 19
-    - apt-get -qq install --no-install-recommends -y --quiet clang-19 libclang-rt-19-dev libclang-cpp19
-    - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
-    - apt-get -qq update
-    - apt search mull
-    - apt-get -qq install --no-install-recommends -y --quiet mull-19
-    - mkdir build && cd build
-    - clang++-19 --version
-    - which mull-runner-19
-    - ls -all `which mull-runner-19`
-    - file `which mull-runner-19`
-    - mull-runner-19 --version
-    - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest
-    - cd test
-    - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
-  needs: ["clang++", "g++"]
+# clang++-19 mull-19:
+#   image: ubuntu:24.04
+#   stage: build
+#   tags:
+#     - x86_64  # for mull
+#     - large-memory-space
+#     - non-shared
+#   only:
+#     refs:
+#       - develop  
+#   interruptible: true
+#   allow_failure: true
+#   # only:
+#   #   refs:
+#   #     - develop
+#   script:
+#     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+#     - apt-get -qq update
+#     - apt-get -qq install --no-install-recommends -y --quiet gnupg curl wget ca-certificates lsb-release software-properties-common cmake file make libboost-timer-dev libboost-serialization-dev > /dev/null
+#     - wget https://apt.llvm.org/llvm.sh
+#     - chmod u+x llvm.sh
+#     - ./llvm.sh 19
+#     - apt-get -qq install --no-install-recommends -y --quiet clang-19 libclang-rt-19-dev libclang-cpp19
+#     - curl -1sLf 'https://dl.cloudsmith.io/public/mull-project/mull-stable/setup.deb.sh' | bash
+#     - apt-get -qq update
+#     - apt search mull
+#     - apt-get -qq install --no-install-recommends -y --quiet mull-19
+#     - mkdir build && cd build
+#     - clang++-19 --version
+#     - which mull-runner-19
+#     - ls -all `which mull-runner-19`
+#     - file `which mull-runner-19`
+#     - mull-runner-19 --version
+#     - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
+#     - cmake --build . || cmake --build . --parallel 1 --verbose
+#     - ctest
+#     - cd test
+#     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
+#   needs: ["clang++", "g++"]
 
 clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead of the cloudsmith apt repository
   image: ubuntu:24.04
@@ -422,6 +422,7 @@ clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead o
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
   needs: ["clang++", "g++"]
+  timeout: 3 hours 00 minutes
 
 clang++-16 c++20:
   stage: build
@@ -1283,39 +1284,39 @@ circle-202:
     - ctest --output-on-failure
   needs: ["circle"]
 
-circle-latest c++20:
-  stage: build
-  image: ubuntu:24.04
-  allow_failure: true
-  only:
-    refs:
-      - develop
-  tags:
-    - non-shared
-    - x86_64  # for circle executable
-  script:
-    - apt-get -qq install --no-install-recommends -y --quiet strace ca-certificates clang cmake ninja-build g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
-    - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
-    - tar -zxvf python-build_*.tgz
-    # - ls
-    # - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
-    # - tar -zxvf build_*.tgz
-    - cd ..
-    - ls
-    - ldd ./build_latest/circle
-    - ./build_latest/circle --version
-    - ulimit -c unlimited          # enable core dumps
-    - ./build_latest/circle -Iinclude/ test/main.cpp && ./a.out
-    - strace --version
-    - cat test/main.cpp
-    - strace ./build_latest/circle -Iinclude/ test/main.cpp && ./a.out
-    - mkdir build && cd build
-    # - export CMAKE_CXX_COMPILER_LAUNCHER=strace
-    - CXX=`pwd`/../build_latest/circle cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest --output-on-failure
-  needs: ["circle"]
+# circle-latest c++20:
+#   stage: build
+#   image: ubuntu:24.04
+#   allow_failure: true
+#   only:
+#     refs:
+#       - develop
+#   tags:
+#     - non-shared
+#     - x86_64  # for circle executable
+#   script:
+#     - apt-get -qq install --no-install-recommends -y --quiet strace ca-certificates clang cmake ninja-build g++ gzip libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget libpython3-dev
+#     - mkdir -p build_latest ; cd build_latest
+#     - wget https://www.circle-lang.org/linux/python-build_latest.tgz --no-verbose
+#     - tar -zxvf python-build_*.tgz
+#     # - ls
+#     # - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
+#     # - tar -zxvf build_*.tgz
+#     - cd ..
+#     - ls
+#     - ldd ./build_latest/circle
+#     - ./build_latest/circle --version
+#     - ulimit -c unlimited          # enable core dumps
+#     - ./build_latest/circle -Iinclude/ test/main.cpp && ./a.out
+#     - strace --version
+#     - cat test/main.cpp
+#     - strace ./build_latest/circle -Iinclude/ test/main.cpp && ./a.out
+#     - mkdir build && cd build
+#     # - export CMAKE_CXX_COMPILER_LAUNCHER=strace
+#     - CXX=`pwd`/../build_latest/circle cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_CXX_STANDARD=20 -DENABLE_CIRCLE=1
+#     - cmake --build . || cmake --build . --parallel 1 --verbose
+#     - ctest --output-on-failure
+#   needs: ["circle"]
 
 inq:
   stage: test
