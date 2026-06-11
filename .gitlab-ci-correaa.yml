@@ -397,7 +397,7 @@ clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead o
   #   refs:
   #     - develop
   interruptible: true
-  allow_failure: true
+  allow_failure: false
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq update
