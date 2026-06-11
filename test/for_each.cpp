@@ -20,7 +20,7 @@
 #include <string>     // for char_traits, operator<<
 
 #if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-#include <ranges>
+#include <ranges>  // IWYU pragma: keep
 #endif
 
 namespace multi = boost::multi;
@@ -167,7 +167,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 2> arr2({5, 7}, 6);
 
 		std::ranges::for_each(
-			std::views::zip(arr1.elements(), arr2.elements()),
+			std::views::zip(arr1().elements(), arr2().elements()),
 			[](auto&& pair) { using std::get; thrust::swap(get<0>(pair), get<1>(pair)); }
 		);
 
