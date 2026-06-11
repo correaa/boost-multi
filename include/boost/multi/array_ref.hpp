@@ -1095,7 +1095,7 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) && -> reference { return at_aux_(n); }
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) & -> reference { return at_aux_(n); }
 
-	constexpr auto size() const -> size_type { return l_.num_elements(); }
+	constexpr auto size() const noexcept -> size_type { return l_.num_elements(); }
 
 	using extension_type = multi::extension_t<index>;
 
@@ -3721,7 +3721,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref() = delete;  // because reference cannot be unbound
 
 	// [[deprecated("references are not copyable, use auto&&")]]
-	array_ref(array_ref const&) = delete;  // don't try to use `auto` for references, use `auto&&` or explicit value type
+	array_ref(array_ref const&) = delete;   // don't try to use `auto` for references, use `auto&&` or explicit value type
 	array_ref(array_ref&&)      = default;  // movable (shallow handle move) so a temporary models std::ranges::view, e.g. for std::views::zip; copy stays deleted, so `auto x = ref;` is still an error
 
 	array_ref(iterator, iterator) = delete;
