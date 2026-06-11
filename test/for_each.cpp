@@ -19,6 +19,10 @@
 #include <iostream>   // for basic_ostream, operator<<
 #include <string>     // for char_traits, operator<<
 
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#include <ranges>
+#endif
+
 namespace multi = boost::multi;
 
 namespace {
@@ -136,6 +140,41 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST( std::abs(cpu[1][2][3] - 6.0) < 1e-10 );
 		}
 	}
+	{
+		multi::array<int, 2> arr({5, 7}, 5);
+		std::for_each(arr.elements().begin(), arr.elements().end(), [](auto& element) { ++element; });
+
+		BOOST_TEST( arr[3][2]== 6 );
+	}
+#if defined(__cpp_lib_ranges_zip) and (__cpp_lib_ranges_zip >= 202110L)
+	{
+		multi::array<int, 2> arr1({5, 7}, 5);
+		multi::array<int, 2> arr2({5, 7}, 6);
+
+		auto e1 = arr1.elements();  // bind to lvalues: zip needs viewable_range; array_ref temporaries are not views
+		auto e2 = arr2.elements();
+
+		std::ranges::for_each(
+			std::views::zip(e1, e2),
+			[](auto&& pair) { using std::get; thrust::swap(get<0>(pair), get<1>(pair)); }
+		);
+
+		BOOST_TEST( arr1[3][2]== 6 );
+		BOOST_TEST( arr2[3][2]== 5 );
+	}
+	{
+		multi::array<int, 2> arr1({5, 7}, 5);
+		multi::array<int, 2> arr2({5, 7}, 6);
+
+		std::ranges::for_each(
+			std::views::zip(arr1.elements(), arr2.elements()),
+			[](auto&& pair) { using std::get; thrust::swap(get<0>(pair), get<1>(pair)); }
+		);
+
+		BOOST_TEST( arr1[3][2]== 6 );
+		BOOST_TEST( arr2[3][2]== 5 );
+	}
+#endif
 
 	return boost::report_errors();
 }

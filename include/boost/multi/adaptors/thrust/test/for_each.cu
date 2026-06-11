@@ -15,7 +15,8 @@
 #include <numeric>
 #endif
 #endif
-// #include <boost/timer/timer.hpp>
+
+#include <ranges>
 
 #include <chrono>
 
@@ -127,6 +128,50 @@ auto main()
 			});
 		}
 	}
+	{
+		multi::array<int, 2> arr({5, 7}, 5);
+		thrust::for_each(arr.elements().begin(), arr.elements().end(), 
+			[](auto& element) { ++element; }
+		);
+
+		BOOST_TEST( arr[3][2]== 6 );
+	}
+	{
+		multi::array<int, 2> arr({5, 7}, 5);
+		thrust::for_each(arr.elements().begin(), arr.elements().end(), 
+			[](auto& element) { ++element; }
+		);
+
+		BOOST_TEST( arr[3][2]== 6 );
+	}
+	{
+		multi::array<int, 2> arr1({5, 7}, 5);
+		multi::array<int, 2> arr2({5, 7}, 6);
+
+		thrust::for_each(
+			thrust::make_zip_iterator(arr1.elements().begin(), arr2.elements().begin()),
+			thrust::make_zip_iterator(arr1.elements().end(),  arr2.elements().end()),
+			[](auto&& pair) { using std::get; thrust::swap(get<0>(pair), get<1>(pair)); }
+		);
+
+		BOOST_TEST( arr1[3][2]== 6 );
+		BOOST_TEST( arr2[3][2]== 5 );
+	}
+#if defined(__cpp_lib_ranges_zip) and (__cpp_lib_ranges_zip >= 202110L)
+	{
+		multi::array<int, 2> arr1({5, 7}, 5);
+		multi::array<int, 2> arr2({5, 7}, 6);
+
+		std::ranges::for_each(
+			std::views::zip(arr1.elements(), arr2.elements()).begin(),
+			std::views::zip(arr1.elements(),  arr2.elements()).end(),
+			[](auto&& pair) { using std::get; thrust::swap(get<0>(pair), get<1>(pair)); }
+		);
+
+		BOOST_TEST( arr1[3][2]== 6 );
+		BOOST_TEST( arr2[3][2]== 5 );
+	}
+#endif
 
 	return boost::report_errors();
 }
