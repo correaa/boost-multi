@@ -3719,7 +3719,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	// [[deprecated("references are not copyable, use auto&&")]]
 	array_ref(array_ref const&) = delete;  // don't try to use `auto` for references, use `auto&&` or explicit value type
-	array_ref(array_ref&&)      = delete;
+	array_ref(array_ref&&)      = default;  // movable (shallow handle move) so a temporary models std::ranges::view, e.g. for std::views::zip; copy stays deleted, so `auto x = ref;` is still an error
 
 	array_ref(iterator, iterator) = delete;
 
@@ -4319,6 +4319,10 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+
+
+template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
