@@ -1016,6 +1016,9 @@ struct elements_iterator_t
 		ret += n;
 		return ret;
 	}
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, elements_iterator_t const& self) -> elements_iterator_t {  // `n + it` form, required by std::random_access_iterator
+		return self + n;
+	}
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {
 		auto ret{*this};
 		ret -= n;
