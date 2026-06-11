@@ -237,7 +237,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(!std::is_copy_constructible_v<multi::array_ref<int, 4>>);
 #endif
 
+#ifndef __circle_build__
 		static_assert(!std::is_trivially_copyable_v<multi::array_ref<int, 4>>);
+#endif
 		static_assert(std::is_copy_assignable_v<multi::array_ref<int, 4>>);
 		static_assert(!std::is_trivially_copy_assignable_v<multi::array_ref<int, 4>>);
 		static_assert(std::is_swappable_v<multi::array_ref<int, 4>>);

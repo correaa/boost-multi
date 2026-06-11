@@ -531,6 +531,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 			BOOST_MULTI_HD constexpr auto operator+(difference_type n) const {
 				return iterator{*this} += n;
 			}
+			friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, iterator const& self) -> iterator { return self + n; }  // `n + it` form, required by std::random_access_iterator
 
 			BOOST_MULTI_HD constexpr auto operator++() -> auto& {
 				++rest_it_;
@@ -540,6 +541,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				}
 				return *this;
 			}
+			BOOST_MULTI_HD constexpr auto operator++(int) -> iterator { iterator ret{*this}; ++(*this); return ret; }  // NOLINT(cert-dcl21-cpp) required by std::weakly_incrementable
 
 			BOOST_MULTI_HD constexpr auto operator--() -> auto& {
 				if( rest_it_ == rest_begin_ ) {
@@ -549,6 +551,7 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 				--rest_it_;
 				return *this;
 			}
+			BOOST_MULTI_HD constexpr auto operator--(int) -> iterator { iterator ret{*this}; --(*this); return ret; }  // NOLINT(cert-dcl21-cpp)
 
 			BOOST_MULTI_HD constexpr auto operator[](difference_type n) const { return *((*this) + n); }
 
@@ -557,6 +560,8 @@ struct extensions_t : boost::multi::detail::tuple_prepend_t<index_extension, typ
 
 			friend BOOST_MULTI_HD constexpr auto operator< (iterator const& self, iterator const& other) { return (self.curr_ <  other.curr_) || ((self.curr_ == other.curr_) && (self.rest_it_ < other.rest_it_)); }
 			friend BOOST_MULTI_HD constexpr auto operator<=(iterator const& self, iterator const& other) { return (self < other) || (self == other); }
+			friend BOOST_MULTI_HD constexpr auto operator> (iterator const& self, iterator const& other) { return  other <  self; }  // for std::totally_ordered
+			friend BOOST_MULTI_HD constexpr auto operator>=(iterator const& self, iterator const& other) { return !(self  <  other); }
 		};
 
 		constexpr auto begin() const {
