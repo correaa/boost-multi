@@ -1104,7 +1104,7 @@ struct elements_range_t {
 	constexpr auto is_empty() const -> bool { return l_.is_empty(); }
 
 	elements_range_t(elements_range_t const&) = delete;
-	elements_range_t(elements_range_t&&)      = delete;
+	elements_range_t(elements_range_t&&)      = default;
 
 	template<class Range> auto operator==(Range const& other) const -> bool {
 		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
@@ -4320,9 +4320,11 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
-
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+
+template<typename Ptr, class... Rest>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
