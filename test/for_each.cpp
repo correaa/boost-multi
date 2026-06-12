@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11)
 #include <cmath>
 
 #if defined(TBB_FOUND) && !defined(__NVCC__)
