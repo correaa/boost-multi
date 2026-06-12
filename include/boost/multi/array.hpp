@@ -860,7 +860,7 @@ struct                                                                          
  private:
 #ifdef __NVCOMPILER
 #pragma diag_push
-#pragma diag_suppress malloc_returns_non_pointer
+#pragma diag_suppress malloc_returns_non_pointer  // not recognized in nvc++ 22
 #endif
 #ifdef __clang__
 #pragma clang diagnostic push
