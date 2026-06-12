@@ -18,7 +18,7 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>    // for std::for_each
-#include <functional>   // for std::ref
+// #include <functional>   // for std::ref
 #include <iterator>     // for std::next
 #include <type_traits>  // for std::false_type, std::true_type
 #include <utility>      // IWYU pragma: keep
