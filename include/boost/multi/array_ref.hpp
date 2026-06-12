@@ -971,22 +971,20 @@ struct elements_iterator_t
 		return *this;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	BOOST_MULTI_HD constexpr auto operator-(elements_iterator_t const& other) const noexcept -> difference_type {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ - other.n_;
 	}
 
-	// BOOST_MULTI_HD constexpr auto n() const { return n_; }
-
-	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const -> bool {
+	BOOST_MULTI_HD constexpr auto operator<(elements_iterator_t const& other) const noexcept -> bool {
 		BOOST_MULTI_ASSERT(base_ == other.base_ && l_ == other.l_);
 		return n_ < other.n_;
 	}
 
-	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const -> bool { return ((*this) < other) || ((*this) == other); }
+	BOOST_MULTI_HD constexpr auto operator<=(elements_iterator_t const& other) const noexcept -> bool { return ((*this) < other) || ((*this) == other); }
 
-	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const -> bool { return other < (*this); }
-	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const -> bool { return !((*this) < other); }
+	BOOST_MULTI_HD constexpr auto operator>(elements_iterator_t const& other) const noexcept -> bool { return other < (*this); }
+	BOOST_MULTI_HD constexpr auto operator>=(elements_iterator_t const& other) const noexcept -> bool { return !((*this) < other); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
@@ -1016,6 +1014,11 @@ struct elements_iterator_t
 		ret += n;
 		return ret;
 	}
+
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, elements_iterator_t const& self) -> elements_iterator_t {  // `n + it` form, required by std::random_access_iterator
+		return self + n;
+	}
+
 	BOOST_MULTI_HD constexpr auto operator-(difference_type n) const -> elements_iterator_t {
 		auto ret{*this};
 		ret -= n;
@@ -1092,7 +1095,7 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) && -> reference { return at_aux_(n); }
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) & -> reference { return at_aux_(n); }
 
-	constexpr auto size() const -> size_type { return l_.num_elements(); }
+	constexpr auto size() const noexcept -> size_type { return l_.num_elements(); }
 
 	using extension_type = multi::extension_t<index>;
 
@@ -1104,7 +1107,7 @@ struct elements_range_t {
 	constexpr auto is_empty() const -> bool { return l_.is_empty(); }
 
 	elements_range_t(elements_range_t const&) = delete;
-	elements_range_t(elements_range_t&&)      = delete;
+	elements_range_t(elements_range_t&&)      = default;
 
 	template<class Range> auto operator==(Range const& other) const -> bool {
 		return size() == other.size() && adl_equal(other.begin(), other.end(), begin());
@@ -3718,8 +3721,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref() = delete;  // because reference cannot be unbound
 
 	// [[deprecated("references are not copyable, use auto&&")]]
-	array_ref(array_ref const&) = delete;  // don't try to use `auto` for references, use `auto&&` or explicit value type
-	array_ref(array_ref&&)      = delete;
+	array_ref(array_ref const&) = delete;   // don't try to use `auto` for references, use `auto&&` or explicit value type
+	array_ref(array_ref&&)      = default;  // movable (shallow handle move) so a temporary models std::ranges::view, e.g. for std::views::zip; copy stays deleted, so `auto x = ref;` is still an error
 
 	array_ref(iterator, iterator) = delete;
 
@@ -4319,6 +4322,12 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+
+template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+
+template<typename Ptr, class... Rest>
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
