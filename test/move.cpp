@@ -166,10 +166,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	move_element_1d_total_array();
 
 	{
-		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr(multi::extents_t<1>{10});
 		arr[1] = std::make_unique<int>(42);
 
-		multi::array<std::unique_ptr<int>, 1> arr2(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr2(multi::extents_t<1>{10});
 		std::move(arr.begin(), arr.end(), arr2.begin());  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( !arr[1] );
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr(multi::extents_t<1>{10});
 		arr[1] = std::make_unique<int>(42);
 
 		multi::array<std::unique_ptr<int>, 1> arr2 = std::move(arr);
@@ -187,10 +187,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( *arr2[1] == 42 );
 	}
 	{
-		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr(multi::extents_t<1>{10});
 		arr[1] = std::make_unique<int>(42);
 
-		multi::array<std::unique_ptr<int>, 1> arr2;  // (multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr2;  // (multi::extents_t<1>{10});
 		arr2 = std::move(arr);
 		BOOST_TEST(  arr.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 		BOOST_TEST(  arr2[1] );
@@ -200,10 +200,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(move_unique_ptr_1D)
 	{
 		// {
-		//  multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
+		//  multi::array<std::unique_ptr<int>, 1> arr(multi::extents_t<1>{10});
 		//  arr[1] = std::make_unique<int>(42);
 
-		//  multi::array<std::unique_ptr<int>, 1> arr2(multi::extensions_t<1>{10});
+		//  multi::array<std::unique_ptr<int>, 1> arr2(multi::extents_t<1>{10});
 		//  //  arr2() = arr();  // fails to compile, elements are not copy assignable
 		//  arr2() = arr().element_moved();
 		//  BOOST_TEST( !arr[1] );
@@ -218,8 +218,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({3, 5}, 990);
 		multi::array<int, 2> arr2({7, 11}, 880);
 #else
-		multi::array<int, 2> arr(multi::extensions_t<2>{3, 5}, 990);
-		multi::array<int, 2> arr2(multi::extensions_t<2>{7, 11}, 880);
+		multi::array<int, 2> arr(multi::extents_t<2>{3, 5}, 990);
+		multi::array<int, 2> arr2(multi::extents_t<2>{7, 11}, 880);
 #endif
 
 		swap(arr, arr2);
@@ -235,8 +235,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({3, 5}, 990);
 		multi::array<int, 2> arr2({7, 11}, 880);
 #else
-		multi::array<int, 2> arr(multi::extensions_t<2>{3, 5}, 990);
-		multi::array<int, 2> arr2(multi::extensions_t<2>{7, 11}, 880);
+		multi::array<int, 2> arr(multi::extents_t<2>{3, 5}, 990);
+		multi::array<int, 2> arr2(multi::extents_t<2>{7, 11}, 880);
 #endif
 
 		using std::swap;

@@ -99,7 +99,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<T, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemv_n(1.0, a.begin(), a.size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3 ) < 0.0001);
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
@@ -107,7 +107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1>       y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 2> const aT{~a};
 			blas::gemv_n(1.0, (~aT).begin(), (~aT).size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3 ) < 0.0001);
@@ -117,17 +117,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			auto               mv = blas::gemv(1.0, a, x);
 			copy_n(mv.begin(), mv.size(), y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001);
 
-			multi::array<T, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
+			multi::array<T, 1> w2(multi::extents_t<1>{multi::iextension{size(a)}});
 			MV(a, x, w2);
 			BOOST_TEST( std::abs(w2[0] - y[0]) < 0.00001);
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			y = blas::gemv(1.0, a, x);
 			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
 			y += blas::gemv(1.0, a, x);
 			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
 		}
@@ -158,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		multi::array<T, 1> const x = {1.1F, 2.1F, 3.1F, 4.1F};  // NOLINT(readability-identifier-length) BLAS naming
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemv_n(1.0, a.begin(), a.size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3F ) < 0.0001F );
 			if(!std::is_same_v<T, float>) {  // workaround Apple Accelerate BLAS bug in dot
@@ -166,7 +166,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			multi::array<T, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1>       y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			multi::array<T, 2> const aT{~a};
 			blas::gemv_n(1.0, (~aT).begin(), (~aT).size(), x.begin(), 0.0, y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3F ) < 0.0001F );
@@ -176,17 +176,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			auto               mv = blas::gemv(1.0, a, x);
 			copy_n(mv.begin(), mv.size(), y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3F) < 0.00001F);
 
-			multi::array<T, 1> w2(multi::extensions_t<1>{multi::iextension{size(a)}});
+			multi::array<T, 1> w2(multi::extents_t<1>{multi::iextension{size(a)}});
 			MV(a, x, w2);
 			BOOST_TEST( std::abs(w2[0] - y[0]) < 0.0001F );
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
 			y = blas::gemv(1.0, a, x);
 			BOOST_TEST( std::abs(y[1] - 91.3F) < 0.00001F );
 		}
@@ -195,7 +195,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs(y[1] - 91.3F) < 0.00001F);
 		}
 		{
-			multi::array<T, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
 			y += blas::gemv(1.F, a, x);
 			BOOST_TEST( std::abs(y[1] - 91.3F) < 0.00001F );
 		}
@@ -482,36 +482,36 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		blas::context ctxt;
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			blas::gemv_n(&ctxt, 1.0, begin(a), size(a), begin(x), 0.0, begin(y));
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.0001);
 			BOOST_TEST( std::abs( y[2] - +blas::dot(a[2], x)) < 0.0001);
 		}
 		{
-			multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1>       y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			multi::array<double, 2> const aT{~a};
 			blas::gemv_n(&ctxt, 1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001);
 			BOOST_TEST( std::abs( y[2] - +blas::dot(a[2], x)) < 0.00001);
 		}
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			auto&&                  mv = blas::gemv(&ctxt, 1.0, a, x);
 			copy_n(mv.begin(), mv.size(), y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y = blas::gemv(&ctxt, 1.0, a, x);
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y = blas::gemv(1.0, a, x);
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y() = blas::gemv(1.0, a, x);
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
@@ -520,7 +520,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}
 		{
-			multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.0);  // NOLINT(readability-identifier-length) conventional name in BLAS
+			multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{size(a)}}, 0.0);  // NOLINT(readability-identifier-length) conventional name in BLAS
 			y += blas::gemv(&ctxt, 1.0, a, x);
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001 );
 		}

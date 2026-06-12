@@ -61,7 +61,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace multi = boost::multi;
 
-		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<multi::index, 1> d1D(multi::extents_t<1>{multi::iextension{10}});
 		static_assert(std::is_same_v<std::iterator_traits<decltype(begin(d1D))>::value_type, multi::index>);
 
 		using std::copy;
@@ -91,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace multi = boost::multi;
 
-		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<multi::index, 1> d1D(multi::extents_t<1>{multi::iextension{10}});
 		BOOST_TEST( size(d1D) == 10 );
 
 		d1D.assign(begin(extension(d1D)), end(extension(d1D)));
@@ -104,7 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace multi = boost::multi;
 
-		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<multi::index, 1> d1D(multi::extents_t<1>{multi::iextension{10}});
 		d1D.assign(extension(d1D));
 		BOOST_TEST( d1D[0] == 0 );
 		BOOST_TEST( d1D[1] == 1 );

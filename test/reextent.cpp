@@ -250,11 +250,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_reextent_1d)
 	{
-		multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 40);
+		multi::array<int, 1> arr(multi::extents_t<1>{multi::iextension{10}}, 40);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[9] == 40 );
 
-		arr.reextent(multi::extensions_t<1>{multi::iextension{20}});
+		arr.reextent(multi::extents_t<1>{multi::iextension{20}});
 		BOOST_TEST( size(arr) == 20 );
 		BOOST_TEST( arr[9] == 40 );
 		// BOOST_TEST( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
@@ -284,11 +284,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization)
 	{
-		multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 40);
+		multi::array<int, 1> arr(multi::extents_t<1>{multi::iextension{10}}, 40);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[9] == 40 );
 
-		arr.reextent(multi::extensions_t<1>{multi::iextension{20}}, 80);
+		arr.reextent(multi::extents_t<1>{multi::iextension{20}}, 80);
 		BOOST_TEST( size(arr) == 20 );
 		BOOST_TEST( arr[9] == 40 );
 		BOOST_TEST( arr[19] == 80 );

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
+#include <boost/multi/array.hpp>  // for range, layout_t, get, extents_t
 
 #include <boost/core/lightweight_test.hpp>
 

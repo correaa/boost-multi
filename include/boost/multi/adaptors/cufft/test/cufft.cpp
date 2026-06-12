@@ -621,7 +621,7 @@ auto main() -> int try {
 
 // BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 
-//  auto x = multi::extensions_t<3>{300, 300, 300};
+//  auto x = multi::extents_t<3>{300, 300, 300};
 //  {
 //      auto const in_cpu = multi::array<complex, 3>(x, 10.0);
 //      BOOST_ASSERT( in_cpu.num_elements()*sizeof(complex) < 2e9 );

@@ -74,7 +74,7 @@ namespace multi = boost::multi;
 auto main() -> int {
 	auto const matrix =
 		([](auto ii) noexcept { return static_cast<float>(ii); } ^
-		 multi::extensions_t(6))
+		 multi::extents_t(6))
 			.partitioned(2);
 
 	printR2("matrix", matrix);

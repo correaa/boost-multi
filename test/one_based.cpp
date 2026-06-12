@@ -38,7 +38,7 @@ auto main() -> int {
 		//  BOOST_TEST( extension(Af).start() == 1 );
 		//  BOOST_TEST( extension(Af).finish() == 11 );
 
-		//  auto Af1 = multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 0.).reindex(1);
+		//  auto Af1 = multi::array<double, 1>(multi::extents_t<1>{multi::iextension{10}}, 0.).reindex(1);
 
 		//  BOOST_TEST( size(Af1) == 10 );
 		//  BOOST_TEST( Af1[10] == 0. );

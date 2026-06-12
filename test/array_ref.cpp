@@ -1070,7 +1070,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::dynamic_array<int, 1> marr(
 				// #ifdef _MSC_VER  // problems with MSVC 14.3 c++17
-				multi::extensions_t<1>
+				multi::extents_t<1>
 				// #endif
 				{10},
 				99

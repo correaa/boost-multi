@@ -59,7 +59,7 @@ auto main() -> int {
 
 	static_assert( std::is_same_v<multi::array<double, 2, thrust::device_allocator<double> >, multi::thrust::device_array<double, 2>> );
 
-	multi::thrust::device_array<double, 2> darr = [](multi::index i, multi::index j) __device__ { return i + j; } ^ multi::extensions_t<2>(10, 10);
+	multi::thrust::device_array<double, 2> darr = [](multi::index i, multi::index j) __device__ { return i + j; } ^ multi::extents_t<2>(10, 10);
 dssas
 
 #if 0

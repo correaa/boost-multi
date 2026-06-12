@@ -24,9 +24,9 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 #ifdef __NVCC__
 	auto fun = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); };
-	auto rst = fun ^ multi::extensions_t(5, 5);
+	auto rst = fun ^ multi::extents_t(5, 5);
 #else
-	auto rst = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); } ^ multi::extensions_t(5, 5);
+	auto rst = [](auto ii, auto jj) noexcept { return static_cast<int>((10 * ii) + jj); } ^ multi::extents_t(5, 5);
 #endif
 	multi::array<int, 2> const AA = rst;
 

@@ -80,7 +80,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( result - values.begin() == 4 );
 
 		{
-			auto const lazy1D = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extensions_t(6);
+			auto const lazy1D = [](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extents_t(6);
 			auto const sum    = std::ranges::fold_left(lazy1D, float{}, std::plus<>{});
 			BOOST_TEST( std::abs(sum - (0.0F + 1.0F + 2.0F + 3.0F + 4.0F + 5.0F)) < 1e-12F );
 		}

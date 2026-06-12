@@ -55,7 +55,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> Host = {1.0, 2.0, 3.0};
 		BOOST_TEST( Host.size() == 3 );
 		{
-			multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ(multi::extensions_t<1>{3});
+			multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ(multi::extents_t<1>{3});
 			Univ[0] = 3.0;
 			Univ[1] = 2.0;
 			Univ[2] = 1.0;
@@ -70,7 +70,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				2.0,
 				1.0,
 			};
-			multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ{multi::extensions_t<1>{3}};
+			multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ{multi::extents_t<1>{3}};
 			Univ = tmp;
 
 			Host() = Univ();

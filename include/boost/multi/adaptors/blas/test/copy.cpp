@@ -84,7 +84,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{4.0, 5.0, 6.0},
 			{7.0, 8.0, 9.0},
 		};
-		multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{3}});  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 1> y(multi::extents_t<1>{multi::iextension{3}});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::copy(arr.rotated()[0], y);
 		BOOST_TEST( y == arr.rotated()[0] );
 	}

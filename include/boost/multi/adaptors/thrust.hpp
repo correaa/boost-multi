@@ -245,10 +245,10 @@ auto device_function(F&& other) {
 
 template<dimensionality_type D, class Proj>
 class device_restriction_iterator {
-	typename extensions_t<D>::iterator it_;
+	typename extents_t<D>::iterator it_;
 	Proj                               proj_;
 
-	device_restriction_iterator(typename extensions_t<D>::iterator it, Proj proj) : it_{it}, proj_{proj} {}
+	device_restriction_iterator(typename extents_t<D>::iterator it, Proj proj) : it_{it}, proj_{proj} {}
 
 	template<dimensionality_type, class>
 	friend class device_restriction;
@@ -278,11 +278,11 @@ class device_restriction_iterator {
 
 	using difference_type = std::ptrdiff_t;
 	using value_type      = int;
-	//	std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>
+	//	std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>
 
 	using pointer = void;
 
-	using reference = int;  // std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+	using reference = int;  // std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -341,7 +341,7 @@ class device_restriction_iterator {
 		// if constexpr(D != 1) {
 		// 	using std::get;
 		// 	// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-		// 	return device_restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+		// 	return device_restriction<D - 1, bind_front_t<Proj>>(extents_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
 		// } else {
 		using std::get;
 		return proj_(get<0>(*it_));
@@ -352,11 +352,11 @@ class device_restriction_iterator {
 
 template<dimensionality_type D, class Proj>
 class device_restriction {  //: restriction<D, Proj, int> {
-	multi::extensions_t<D> exts_;
+	multi::extents_t<D> exts_;
 	Proj                   proj_;
 
  public:
-	device_restriction(multi::extensions_t<D> exts, Proj proj) : exts_{exts}, proj_{proj} {}
+	device_restriction(multi::extents_t<D> exts, Proj proj) : exts_{exts}, proj_{proj} {}
 	using iterator = device_restriction_iterator<D, Proj>;
 
 	auto begin() const -> iterator {
@@ -369,16 +369,16 @@ class device_restriction {  //: restriction<D, Proj, int> {
 
 #ifdef __cpp_deduction_guides
 template<dimensionality_type D, typename Fun>
-device_restriction(multi::extensions_t<D>, Fun) -> device_restriction<D, Fun>;
+device_restriction(multi::extents_t<D>, Fun) -> device_restriction<D, Fun>;
 
-template<typename Fun> device_restriction(extensions_t<0>, Fun) -> device_restriction<0, Fun>;
-template<typename Fun> device_restriction(extensions_t<1>, Fun) -> device_restriction<1, Fun>;
-template<typename Fun> device_restriction(extensions_t<2>, Fun) -> device_restriction<2, Fun>;
-template<typename Fun> device_restriction(extensions_t<3>, Fun) -> device_restriction<3, Fun>;
+template<typename Fun> device_restriction(extents_t<0>, Fun) -> device_restriction<0, Fun>;
+template<typename Fun> device_restriction(extents_t<1>, Fun) -> device_restriction<1, Fun>;
+template<typename Fun> device_restriction(extents_t<2>, Fun) -> device_restriction<2, Fun>;
+template<typename Fun> device_restriction(extents_t<3>, Fun) -> device_restriction<3, Fun>;
 #endif
 
 template<dimensionality_type D, typename F>
-auto device_restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
+auto device_restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' reserved
 	return device_restriction<D, F>(ext, std::forward<F>(fun));
 }
 

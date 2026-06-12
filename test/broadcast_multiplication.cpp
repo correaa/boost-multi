@@ -23,7 +23,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// this method uses a restriction directly
 	auto const& M1 = multi::restricted(
 		[&arr, &brr](auto ii, auto jj) { return arr[ii] * brr[jj]; },
-		multi::extensions_t<2>(arr.extent(), brr.extent())
+		multi::extents_t<2>(arr.extent(), brr.extent())
 	);
 
 	BOOST_TEST( M1[5][7] == 5*7 );

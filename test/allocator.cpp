@@ -79,10 +79,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<multi::array<int, 2>> va;
 
-		va.emplace_back(multi::extensions_t<2>{3, 3}, 3);
-		va.emplace_back(multi::extensions_t<2>{2, 2}, 2);
-		va.emplace_back(multi::extensions_t<2>{1, 1}, 1);
-		va.emplace_back(multi::extensions_t<2>{0, 0}, 0);
+		va.emplace_back(multi::extents_t<2>{3, 3}, 3);
+		va.emplace_back(multi::extents_t<2>{2, 2}, 2);
+		va.emplace_back(multi::extents_t<2>{1, 1}, 1);
+		va.emplace_back(multi::extents_t<2>{0, 0}, 0);
 	}
 
 	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_manual_emplaceback)
@@ -204,7 +204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
 	// BOOST_AUTO_TEST_CASE(array1d_of_arrays2d)
 	{
-		multi::array<multi::array<std::string, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{10}), multi::array<std::string, 2>{});
+		multi::array<multi::array<std::string, 2>, 1> arr(multi::extents_t<1>(multi::iextension{10}), multi::array<std::string, 2>{});
 		BOOST_TEST( size(arr) == 10 );
 
 		std::transform(
@@ -305,8 +305,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::pmr::array<char, 2> Aarr({2, 2}, 'a', &pool);
 		multi::pmr::array<char, 2> Barr({3, 2}, 'b', &pool);
 #else
-		multi::pmr::array<char, 2> Aarr(multi::extensions_t<2>{2, 2}, 'a', &pool);
-		multi::pmr::array<char, 2> Barr(multi::extensions_t<2>{3, 2}, 'b', &pool);
+		multi::pmr::array<char, 2> Aarr(multi::extents_t<2>{2, 2}, 'a', &pool);
+		multi::pmr::array<char, 2> Barr(multi::extents_t<2>{3, 2}, 'b', &pool);
 #endif
 
 #ifdef __GLIBCXX__

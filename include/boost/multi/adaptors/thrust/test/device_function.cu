@@ -58,12 +58,12 @@ int main() {
 		);
 	}
 
-	// auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), [a = 5] __device__(int x) { return x * x + a; });
-	// auto c2 = multi::thrust::device_restriction(multi::extensions_t<1>(N), multi::thrust::device_function<int>([a = 5] __device__(int x) { return x * x + a; }));
+	// auto c2 = multi::thrust::device_restriction(multi::extents_t<1>(N), [a = 5] __device__(int x) { return x * x + a; });
+	// auto c2 = multi::thrust::device_restriction(multi::extents_t<1>(N), multi::thrust::device_function<int>([a = 5] __device__(int x) { return x * x + a; }));
 
 	// [[maybe_unused]] auto fff = [a = 5] __host__(int x) { return x * x + a; };
 	// auto c2
-	//     = multi::thrust::device_restriction(multi::extensions_t<1>(N),
+	//     = multi::thrust::device_restriction(multi::extents_t<1>(N),
 	//         multi::thrust::device_function<
 	//             decltype((fff)(multi::index{}))
 	//         >([a = 5] __device__(int x) { return x * x + a; })
@@ -72,7 +72,7 @@ int main() {
 	// [[maybe_unused]] auto fff = [a = 5] __host__(int x) { return x * x + a; };
 	// using result_type = decltype((fff)(multi::index{}));
 	// auto c2
-	//     = multi::thrust::device_restriction(multi::extensions_t<1>(N),
+	//     = multi::thrust::device_restriction(multi::extents_t<1>(N),
 	//         multi::thrust::device_function<
 	//             result_type
 	//         >([a = 5] __device__(int x) { return x * x + a; })
@@ -80,7 +80,7 @@ int main() {
 
 	// auto c2
 	//     = multi::thrust::device_restriction(
-	//         multi::extensions_t<1>(N),
+	//         multi::extents_t<1>(N),
 	//         [=]() {
 	//             [[maybe_unused]] auto fff = [a = 5] __host__(int x) { return x * x + a; };
 	//             using result_type = decltype((fff)(multi::index{}));
@@ -90,7 +90,7 @@ int main() {
 
 	// auto c2
 	// = multi::thrust::device_restriction(
-	//         multi::extensions_t<1>(N),
+	//         multi::extents_t<1>(N),
 	//         [a = 5]() {
 	//             // [[maybe_unused]] auto fff = [=] __host__(int x) { return x * x + a; };
 	//             // using result_type = typename multi::thrust::result_helper<decltype(fff)>::type;
@@ -110,14 +110,14 @@ int main() {
 // 	 (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ <= 5))
 
 // 	auto c2 = multi::thrust::device_restriction(
-// 		multi::extensions_t<1>(N),
+// 		multi::extents_t<1>(N),
 // 		BOOST_MULTI_DEVICE_LAMBDA_LEGACY(BOOST_MULTI_CAPTURE(a = 5, b = 0), (auto x) { int c = a, d = b; return  x * x + c + d; })
 // 	);
 
 // #else
 
 // 	auto c2 = multi::thrust::device_restriction(
-// 		multi::extensions_t<1>(N),
+// 		multi::extents_t<1>(N),
 // 		[ a = 5, b = 0 ] BOOST_MULTI_DEVICE_LAMBDA((auto x) { int c = a, d = b; return  x * x + c + d; })
 // 	);
 

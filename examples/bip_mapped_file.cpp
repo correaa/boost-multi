@@ -54,9 +54,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			mremove(file);
 			manager m{bip::create_only, file.c_str(), 1 << 25};  // objects with same name produce boost::interprocess_exception::library_error
-			auto&&  arr1d = *m.construct<marray<int, 1>>("arr1d")(multi::extensions_t{10}, 99, get_allocator(m));
-			auto&&  arr2d = *m.construct<marray<double, 2>>("arr2d")(multi::extensions_t{10, 10}, 0.0, get_allocator(m));
-			auto&&  arr3d = *m.construct<marray<unsigned, 3>>("arr3d")(multi::extensions_t{10, 10, 10}, 0u, get_allocator(m));
+			auto&&  arr1d = *m.construct<marray<int, 1>>("arr1d")(multi::extents_t{10}, 99, get_allocator(m));
+			auto&&  arr2d = *m.construct<marray<double, 2>>("arr2d")(multi::extents_t{10, 10}, 0.0, get_allocator(m));
+			auto&&  arr3d = *m.construct<marray<unsigned, 3>>("arr3d")(multi::extents_t{10, 10, 10}, 0u, get_allocator(m));
 
 			arr1d[3]    = 33;
 			arr2d[4][5] = 45.001;
@@ -114,7 +114,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			bipc_matrix v(s.get_segment_manager());
 
-			v.emplace_back(multi::extensions_t<1>(3), 99.);
+			v.emplace_back(multi::extents_t<1>(3), 99.);
 			std::iota(v[0].begin(), v[0].end(), 42);
 
 			assert(v[0][1] == 43);

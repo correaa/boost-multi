@@ -92,13 +92,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		using std::get;
 		auto is = get<0>(arr.extents());
 
-		multi::array<int, 1> const brr(multi::extensions_t<1>{is});
+		multi::array<int, 1> const brr(multi::extents_t<1>{is});
 	}
 	{
 		multi::array<int, 1> const arr({5});
 		auto [is] = arr.extents();
 
-		multi::array<int, 1> const brr(multi::extensions_t<1>{is});
+		multi::array<int, 1> const brr(multi::extents_t<1>{is});
 
 		BOOST_TEST( arr.extents() == brr.extents() );
 	}
@@ -113,7 +113,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( is.size() == 2 );
 		BOOST_TEST( js.size() == 3 );
 
-		multi::array<int, 2> const brr(multi::extensions_t<2>{js, is});
+		multi::array<int, 2> const brr(multi::extents_t<2>{js, is});
 
 		BOOST_TEST( brr.size() == 3 );
 
@@ -131,7 +131,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( is.size() == 2 );
 		BOOST_TEST( js.size() == 3 );
 
-		multi::array<int, 2> const brr(multi::extensions_t<2>{js, is});  // braced `{js, is}` would read as iota-rows (extension_t -> array<int,1>); use extensions_t<2> for extents
+		multi::array<int, 2> const brr(multi::extents_t<2>{js, is});  // braced `{js, is}` would read as iota-rows (extension_t -> array<int,1>); use extents_t<2> for extents
 
 		BOOST_TEST( brr.size() == 3 );
 
@@ -141,7 +141,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 3> const arr({2, 3, 5});
 		auto [is, js, ks] = arr.extents();
-		multi::array<int, 3> const brr(multi::extensions_t<3>{ks, js, is});
+		multi::array<int, 3> const brr(multi::extents_t<3>{ks, js, is});
 
 		BOOST_TEST( brr.extents() == arr.rotated().transposed().extents() );
 	}

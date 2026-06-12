@@ -82,7 +82,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			double y;
 			double z;
 		};
-		multi::array<vec3, 1> arr(multi::extensions_t<1>{multi::iextension{100}});
+		multi::array<vec3, 1> arr(multi::extents_t<1>{multi::iextension{100}});
 		arr[8] = {1.0, 2.0, 3.0};  // NOLINT(modernize-use-designated-initializers) for C++20
 		BOOST_TEST( std::abs( arr[8].y - 2.0 ) < 1E-6 );
 
@@ -189,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension)
 	{
 		using complex = std::complex<double>;
-		multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1.0, 2.0});
+		multi::array<complex, 1> arr(multi::extents_t<1>{multi::iextension{100}}, complex{1.0, 2.0});
 		BOOST_TEST(  size(arr) == 100 );
 
 		{
@@ -247,7 +247,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 		{
-			multi::array<vector3, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+			multi::array<vector3, 1> arr(multi::extents_t<1>{multi::iextension{10}});
 			BOOST_TEST( &arr.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(arr[2]) );
 		}
 		{
@@ -290,7 +290,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
 
 		{
-			multi::array<std::complex<double>, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+			multi::array<std::complex<double>, 1> arr(multi::extents_t<1>{multi::iextension{10}});
 			std::iota(begin(arr), end(arr), 1.0);
 			BOOST_TEST( std::abs( real(arr[8]) - 9.0 ) < 1E-6);
 			auto&& arr2  = arr.reinterpret_array_cast<complex_dummy<double>>();
@@ -318,7 +318,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
 		}
 		{
-			multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+			multi::array<complex, 1> arr(multi::extents_t<1>{multi::iextension{10}});
 
 			auto&& arr2 = arr.reinterpret_array_cast<double>(2);
 

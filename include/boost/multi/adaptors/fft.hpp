@@ -4,7 +4,7 @@
 #define BOOST_MULTI_ADAPTORS_FFT_HPP
 
 #include "boost/multi/adaptors/fftw.hpp"
-#include "boost/multi/array.hpp"  // for extensions_t, get, array
+#include "boost/multi/array.hpp"  // for extents_t, get, array
 
 #if defined(__CUDA__) || defined(__NVCC__)
 #include "boost/multi/adaptors/cufft.hpp"
@@ -119,10 +119,10 @@ class dft_range {
 		// auto operator*() const -> reference;
 
 		class fake_array {
-			multi::extensions_t<dimensionality - 1> extensions_;
+			multi::extents_t<dimensionality - 1> extensions_;
 
 			public:
-			explicit fake_array(multi::extensions_t<dimensionality - 1> ext) : extensions_{ext} {}
+			explicit fake_array(multi::extents_t<dimensionality - 1> ext) : extensions_{ext} {}
 			auto extensions() const { return extensions_; }
 			auto extents() const { return extensions_; }
 

@@ -25,14 +25,14 @@ constexpr auto make_ref(int* ptr) {
 }
 
 template<class T, class Allocator>
-auto eye(multi::extensions_t<2> exts, Allocator const& alloc) {
+auto eye(multi::extents_t<2> exts, Allocator const& alloc) {
 	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
 	std::fill(ret.diagonal().begin(), ret.diagonal().end(), T{1});
 	return ret;
 }
 
 template<class T>
-auto eye(multi::extensions_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
+auto eye(multi::extents_t<2> exts) { return eye<T>(exts, std::allocator<T>{}); }
 
 }  // end unnamed namespace
 
@@ -97,7 +97,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( vec[1] == 1L );
 		}
 		// {
-		// 	multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
+		// 	multi::array<multi::size_t, 1> vec(multi::extents_t<1>{multi::iextension{10}});
 
 		// 	auto const ext = extension(vec);
 
@@ -108,7 +108,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
 	{
-		auto const ext5 = multi::extensions_t<5>{2, 14, 14, 7, 2};
+		auto const ext5 = multi::extents_t<5>{2, 14, 14, 7, 2};
 
 		[[maybe_unused]] auto const ext52 = ext5;
 
@@ -202,7 +202,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(assigment_temporary)
 	{
-		multi::array<int, 2> Id = eye<int>(multi::extensions_t<2>({3, 3}));
+		multi::array<int, 2> Id = eye<int>(multi::extents_t<2>({3, 3}));
 		BOOST_TEST( Id == eye<double>({3, 3}) );
 		BOOST_TEST( Id[1][1] == 1 );
 		BOOST_TEST( Id[1][0] == 0 );

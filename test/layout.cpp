@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/multi/array.hpp>  // for range, layout_t, get, extensions_t
+#include <boost/multi/array.hpp>  // for range, layout_t, get, extents_t
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -25,7 +25,7 @@
 namespace multi = boost::multi;
 
 namespace {
-auto second_finish(multi::extensions_t<3> exts) {
+auto second_finish(multi::extents_t<3> exts) {
 	using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 	return get<1>(exts).last();
 }
@@ -34,17 +34,17 @@ auto second_finish(multi::extensions_t<3> exts) {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(extensions_3D)
 	{
-		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
-		BOOST_TEST( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
+		BOOST_TEST( 20 == second_finish( multi::extents_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
+		BOOST_TEST( 20 == second_finish( multi::extents_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
 		BOOST_TEST( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
 
-		multi::extensions_t<3> const exts({0, 10}, {0, 20}, {0, 30});
+		multi::extents_t<3> const exts({0, 10}, {0, 20}, {0, 30});
 		BOOST_TEST( 20 == second_finish(exts) );
 	}
 
 	// BOOST_AUTO_TEST_CASE(extensions_to_linear)
 	{
-		multi::extensions_t<3> exts{4, 5, 3};
+		multi::extents_t<3> exts{4, 5, 3};
 		BOOST_TEST( exts.to_linear(0, 0, 0) ==  0 );
 		BOOST_TEST( exts.to_linear(0, 0, 1) ==  1 );
 		BOOST_TEST( exts.to_linear(0, 0, 2) ==  2 );
@@ -221,7 +221,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 3> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<3>
+			multi::extents_t<3>
 #endif
 			{40, 50, 80}
 		);
@@ -256,7 +256,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 3> const arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<3>
+			multi::extents_t<3>
 #endif
 			{10, 20, 30}
 		);
@@ -276,69 +276,69 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(layout_tuple_2d)
 	{
-		multi::extensions_t<2> const x1({51, 52});
-		multi::extensions_t<2> const x2({multi::iextension(0, 51), multi::iextension(0, 52)});
+		multi::extents_t<2> const x1({51, 52});
+		multi::extents_t<2> const x2({multi::iextension(0, 51), multi::iextension(0, 52)});
 
 		BOOST_TEST( x1 == x2 );
 
-		multi::extensions_t<2> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}));
+		multi::extents_t<2> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}));
 		BOOST_TEST( x1 == x3 );
 
-		multi::extensions_t<2> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52});
+		multi::extents_t<2> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52});
 		BOOST_TEST( x1 == x4 );
 
-		multi::extensions_t<2> const x5 = std::tuple{
+		multi::extents_t<2> const x5 = std::tuple{
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 		};
 		BOOST_TEST( x1 == x5 );
 
-		multi::extensions_t<2> const x6 = std::tuple{51, 52};
+		multi::extents_t<2> const x6 = std::tuple{51, 52};
 		BOOST_TEST( x1 == x6 );
 
-		multi::extensions_t<2> const x7{51, 52};
+		multi::extents_t<2> const x7{51, 52};
 		BOOST_TEST( x1 == x7 );
 
-		multi::extensions_t<2> const x8 = {51, 52};
+		multi::extents_t<2> const x8 = {51, 52};
 		BOOST_TEST( x1 == x8 );
 
-		auto const x9 = multi::extensions_t<2>{51, 52};
+		auto const x9 = multi::extents_t<2>{51, 52};
 		BOOST_TEST( x1 == x9 );
 
-		// multi::extensions_t x10{51, 52, 53};  // TODO(correaa) should it work?
+		// multi::extents_t x10{51, 52, 53};  // TODO(correaa) should it work?
 		// BOOST_TEST( x1 == x10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_tuple_3d)
 	{
-		multi::extensions_t<3> const x1({51, 52, 53});
-		multi::extensions_t<3> const x2({
+		multi::extents_t<3> const x1({51, 52, 53});
+		multi::extents_t<3> const x2({
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53},
 		});
 		BOOST_TEST( x1 == x2 );
 
-		multi::extensions_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
+		multi::extents_t<3> const x3(std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53}));
 		BOOST_TEST( x1 == x3 );
 
-		multi::extensions_t<3> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53});
+		multi::extents_t<3> const x4 = std::make_tuple(multi::iextension{0, 51}, multi::iextension{0, 52}, multi::iextension{0, 53});
 		BOOST_TEST( x1 == x4 );
 
-		multi::extensions_t<3> const x5 = std::tuple{
+		multi::extents_t<3> const x5 = std::tuple{
 			multi::iextension{0, 51},
 			multi::iextension{0, 52},
 			multi::iextension{0, 53},
 		};
 		BOOST_TEST( x1 == x5 );
 
-		multi::extensions_t<3> const x6 = std::tuple{51, 52, 53};
+		multi::extents_t<3> const x6 = std::tuple{51, 52, 53};
 		BOOST_TEST( x1 == x6 );
 
-		multi::extensions_t<3> const x7{51, 52, 53};
+		multi::extents_t<3> const x7{51, 52, 53};
 		BOOST_TEST( x1 == x7 );
 
-		// multi::extensions_t x8{51, 52, 53};  // TODO(correaa) should it work?
+		// multi::extents_t x8{51, 52, 53};  // TODO(correaa) should it work?
 		// BOOST_TEST( x1 == x8 );
 	}
 
@@ -346,7 +346,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 3> arr(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-			multi::extensions_t<3>
+			multi::extents_t<3>
 #endif
 			{51, 52, 53}
 		);
@@ -391,7 +391,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// 	{
 	// 		multi::array<double, 2> arr(
 	// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-	// 			multi::extensions_t<2>
+	// 			multi::extents_t<2>
 	// #endif
 	// 			{50, 50}
 	// 		);
@@ -802,7 +802,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( size(lyt) == 0 );
 	//  }
 	//  {
-	//      multi::layout_t<2> lyt(multi::extensions_t<2>({
+	//      multi::layout_t<2> lyt(multi::extents_t<2>({
 	//          {0, 10},
 	//          {0, 20},
 	//      }));
@@ -873,7 +873,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	//  BOOST_TEST( std::get<0>(lyt.extensions()) == lyt.extension() );
 
-	//  boost::multi::extensions_t<2> const exts2;
+	//  boost::multi::extents_t<2> const exts2;
 
 	//  using boost::multi::detail::get;
 	//  using std::get;
@@ -931,7 +931,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( extension(lyt).last() == 18 );
 	//  }
 	//  {
-	//      multi::layout_t<2> const lyt(multi::extensions_t<2>({
+	//      multi::layout_t<2> const lyt(multi::extents_t<2>({
 	//          {0, 10},
 	//          {0, 20},
 	//      }));
@@ -947,7 +947,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//  //  BOOST_TEST( extension(lyt).last() == 10 );
 	//  // }
 	//  {
-	//      multi::layout_t<2> const lyt(multi::extensions_t<2>({
+	//      multi::layout_t<2> const lyt(multi::extents_t<2>({
 	//          { 0, 10},
 	//          {11, 31},
 	//      }));
@@ -956,7 +956,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( offset(lyt) == 0 );
 	//  }
 	//  {  // this is ambiguous in nvcc
-	//      multi::layout_t<2> const lyt(multi::extensions_t<2>({
+	//      multi::layout_t<2> const lyt(multi::extents_t<2>({
 	//          { 0, 10},
 	//          {11, 31},
 	//      }));
@@ -965,7 +965,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( offset(lyt) == 0 );
 	//  }
 	//  {
-	//      multi::layout_t<2> const lyt(multi::extensions_t<2>({
+	//      multi::layout_t<2> const lyt(multi::extents_t<2>({
 	//          {8, 18},
 	//          {0, 20},
 	//      }));
@@ -973,7 +973,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//      BOOST_TEST( stride(lyt) == 20 );
 	//  }
 	//  // {
-	//  //  multi::layout_t<3> const lyt(multi::extensions_t<3>({
+	//  //  multi::layout_t<3> const lyt(multi::extents_t<3>({
 	//  //      { 0,  3},
 	//  //      { 0,  5},
 	//  //      {10, 17},
@@ -1008,7 +1008,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_1d) {
-	//  multi::extensions_t<1> const exts{11};
+	//  multi::extents_t<1> const exts{11};
 
 	//  auto ijk = exts.from_linear(9);
 
@@ -1025,7 +1025,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_structured_binding) {
-	//  multi::extensions_t<2> const exts{3, 5};
+	//  multi::extents_t<2> const exts{3, 5};
 	//  auto [eye, jay] = exts.from_linear(7);
 
 	//  BOOST_TEST_REQUIRE( eye == 1 );
@@ -1034,7 +1034,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {
-	//  multi::extensions_t<2> const exts{3, 5};
+	//  multi::extents_t<2> const exts{3, 5};
 	//  auto                         eye = std::get<0>(exts.from_linear(7));
 	//  auto                         jay = std::get<1>(exts.from_linear(7));
 	//  BOOST_TEST_REQUIRE( eye == 1 );
@@ -1042,7 +1042,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get_using) {
-	//  multi::extensions_t<2> const exts{3, 5};
+	//  multi::extents_t<2> const exts{3, 5};
 	//  using std::get;
 	//  auto       fl  = exts.from_linear(7L);
 	//  auto const eye = get<0>(fl);
@@ -1052,7 +1052,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_get_using) {
-	//  multi::extensions_t<2> const exts{3, 5};
+	//  multi::extents_t<2> const exts{3, 5};
 
 	//  using multi::detail::get;
 
@@ -1063,7 +1063,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_2d) {
-	//  multi::extensions_t<2> const exts{3, 5};
+	//  multi::extents_t<2> const exts{3, 5};
 
 	//  auto ij = exts.from_linear(7);
 
@@ -1077,7 +1077,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_std_get) {
-	//  multi::extensions_t<3> const exts{11, 13, 17};
+	//  multi::extents_t<3> const exts{11, 13, 17};
 
 	//  BOOST_TEST_REQUIRE( std::get<0>(exts.from_linear( 0)) ==  0 );
 	//  BOOST_TEST_REQUIRE( std::get<1>(exts.from_linear( 0)) ==  0 );
@@ -1107,7 +1107,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_std_get_using) {
-	//  multi::extensions_t<3> const exts{11, 13, 17};
+	//  multi::extents_t<3> const exts{11, 13, 17};
 
 	//  using std::get;
 
@@ -1141,7 +1141,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_struct_bind) {
-	//  multi::extensions_t<3> const exts{11, 13, 17};
+	//  multi::extents_t<3> const exts{11, 13, 17};
 
 	//  using std::get;
 	//  {
@@ -1181,7 +1181,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(extensions_from_linear_3d) {
-	//  multi::extensions_t<3> const exts{11, 13, 17};
+	//  multi::extents_t<3> const exts{11, 13, 17};
 
 	//  auto ijk = exts.from_linear(19);
 
@@ -1213,12 +1213,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(extensionS_1D_iteration) {
 	//  {
-	//      multi::extensions_t<1> const exts(10);
+	//      multi::extents_t<1> const exts(10);
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	//  }
 	//  {
-	//      multi::extensions_t<1> const exts(multi::iextension{0, 10});
+	//      multi::extents_t<1> const exts(multi::iextension{0, 10});
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	//  }
@@ -1226,19 +1226,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(extensionS_2D_iteration) {
 	//  {
-	//      multi::extensions_t<2> exts({3, 5});
+	//      multi::extents_t<2> exts({3, 5});
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	//  }
 	//  {
-	//      multi::extensions_t<2> exts({multi::iextension{0, 3}, multi::iextension{0, 5}});
+	//      multi::extents_t<2> exts({multi::iextension{0, 3}, multi::iextension{0, 5}});
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 	//      BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	//  }
 	// }
 
 	// BOOST_AUTO_TEST_CASE(layout_1D_iteration) {
-	//  multi::layout_t<1> const lyt{multi::extensions_t<1>(10)};
+	//  multi::layout_t<1> const lyt{multi::extents_t<1>(10)};
 	//  BOOST_TEST( lyt[0] == 0 );
 	//  BOOST_TEST( lyt[1] == 1 );
 	//  BOOST_TEST( lyt[2] == 2 );
@@ -1248,7 +1248,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// }
 
 	// BOOST_AUTO_TEST_CASE(layout_2D_iteration) {
-	//  multi::layout_t<2> const lyt{multi::extensions_t<2>({5, 3})};
+	//  multi::layout_t<2> const lyt{multi::extents_t<2>({5, 3})};
 	//  BOOST_TEST( lyt[0][0] == 0 );
 	//  BOOST_TEST( lyt[0][1] == 1 );
 	//  BOOST_TEST( lyt[0][2] == 2 );
@@ -1270,7 +1270,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrp2.size() == 2 );
 	}
 	{
-		multi::layout_t<2> const lyt(multi::extensions_t<2>{
+		multi::layout_t<2> const lyt(multi::extents_t<2>{
 			{3,  9},
 			{0, 15}
 		});

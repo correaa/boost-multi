@@ -22,7 +22,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			std::vector<int> v1 = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
 
-			multi::array_ref<int, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
+			multi::array_ref<int, 1> m1(v1.data(), multi::extents_t<1>{multi::iextension{3}});
 			BOOST_TEST( size(m1) == 3 );
 			BOOST_TEST( &m1[1] == &v1[1] );
 			BOOST_TEST( m1.num_elements() == 3 );
@@ -78,7 +78,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( dd == doub );
 
-			auto const ap1 = &multi::array_ref<int, 1>(multi::extensions_t<1>({0, 1}), &doub);
+			auto const ap1 = &multi::array_ref<int, 1>(multi::extents_t<1>({0, 1}), &doub);
 			BOOST_TEST( (*ap1).base() == &doub );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime] ;
 			BOOST_TEST( ap1->base() == &doub );
 		}
