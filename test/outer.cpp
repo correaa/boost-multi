@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/extents.hpp>
+#include <boost/multi/detail/outer.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
@@ -17,15 +17,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr1d(3);
 
-		auto const x1d = multi::extents_t(arr1d.extension());
+		auto const x1d = multi::outer_t(arr1d.extension());
 
 		BOOST_TEST( x1d.size() == 3 );
 
-		auto const y1d = multi::extents_t(3);
+		auto const y1d = multi::outer_t(3);
 		BOOST_TEST( y1d.size() == 3 );
 	}
 	{
-		multi::extents_t const x2d(4, 3);
+		multi::outer_t const x2d(4, 3);
 		BOOST_TEST( x2d.size() == 4 );
 		auto [x0, x1] = x2d;
 
@@ -50,6 +50,32 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto x2d_it2 = x2d_it + 2;
 		auto x2d_it3 = x2d_it2 + 1;
 		BOOST_TEST( x2d_it3 == x2d.begin() + 3 );
+	}
+	{
+		// outer_t behaves like a (lazy) array of coordinate tuples
+		multi::outer_t const x2d(2, 3);  // 2 x 3 structured cartesian product
+
+		BOOST_TEST( x2d.num_elements() == 6 );
+
+		auto const els = x2d.elements();  // lazy random-access range of (i, j) tuples
+		BOOST_TEST( els.size() == 6 );
+
+		using std::get;
+		// row-major order: (0,0)(0,1)(0,2)(1,0)(1,1)(1,2)
+		BOOST_TEST(( els[0] == std::make_tuple(0, 0) ));
+		BOOST_TEST(( els[1] == std::make_tuple(0, 1) ));
+		BOOST_TEST(( els[3] == std::make_tuple(1, 0) ));
+		BOOST_TEST(( els[5] == std::make_tuple(1, 2) ));
+
+		// random-access iteration
+		auto it = els.begin();
+		BOOST_TEST(( *it == std::make_tuple(0, 0) ));
+		BOOST_TEST(( it[4] == std::make_tuple(1, 1) ));
+		BOOST_TEST( els.end() - els.begin() == 6 );
+		BOOST_TEST(( *(els.begin() + 5) == std::make_tuple(1, 2) ));
+
+		// sizes() reports per-dimension lengths
+		BOOST_TEST(( x2d.sizes() == std::make_tuple(2, 3) ));
 	}
 	{
 		multi::array<int, 3> const arr({2, 3, 5});

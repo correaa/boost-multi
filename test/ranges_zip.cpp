@@ -83,6 +83,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 2> arr1({10, 10}, 5);
 		multi::array<int, 2> arr2({10, 10}, 6);
 
+		auto&& arr1ro0 = arr1[0];
+		BOOST_TEST( arr1ro0[0] == 5 );
+
 		auto&& es1 = arr1().elements();
 		auto&& es2 = arr2().elements();
 
