@@ -93,8 +93,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		auto&& [e1, e2] = zp[3];
 
-		BOOST_TEST( e1 == 5 );
-		BOOST_TEST( e2 == 6 );
+		e1 = 55;
+		e2 = 66;
+
+		BOOST_TEST( e1 == 55 );
+		BOOST_TEST( e2 == 66 );
 	}
 	{
 		multi::array<int, 2> arr1({10, 10}, 5);

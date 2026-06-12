@@ -17,15 +17,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr1d(3);
 
-		auto const x1d = multi::outer_t(arr1d.extension());
+		auto const x1d = multi::detail::outer_t(arr1d.extension());
 
 		BOOST_TEST( x1d.size() == 3 );
 
-		auto const y1d = multi::outer_t(3);
+		auto const y1d = multi::detail::outer_t(3);
 		BOOST_TEST( y1d.size() == 3 );
 	}
 	{
-		multi::outer_t const x2d(4, 3);
+		multi::detail::outer_t const x2d(4, 3);
 		BOOST_TEST( x2d.size() == 4 );
 		auto [x0, x1] = x2d;
 
@@ -53,7 +53,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		// outer_t behaves like a (lazy) array of coordinate tuples
-		multi::outer_t const x2d(2, 3);  // 2 x 3 structured cartesian product
+		multi::detail::outer_t const x2d(2, 3);  // 2 x 3 structured cartesian product
 
 		BOOST_TEST( x2d.num_elements() == 6 );
 
@@ -73,6 +73,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST(( it[4] == std::make_tuple(1, 1) ));
 		BOOST_TEST( els.end() - els.begin() == 6 );
 		BOOST_TEST(( *(els.begin() + 5) == std::make_tuple(1, 2) ));
+
+		// operator-(iterator, iterator): distance between two interior positions (probes outer.hpp:151)
+		// both operands have nonzero index, so `-`->`+` and operand-swap mutations are caught
+		BOOST_TEST( (els.begin() + 5) - (els.begin() + 2) ==  3 );
+		BOOST_TEST( (els.begin() + 2) - (els.begin() + 5) == -3 );
 
 		// sizes() reports per-dimension lengths
 		BOOST_TEST(( x2d.sizes() == std::make_tuple(2, 3) ));

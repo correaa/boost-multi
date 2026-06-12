@@ -77,6 +77,8 @@ template<class T, class... Ts> struct tuple_tail<std::tuple<T, Ts...>> {
 template<class Tuple> using tuple_type_t = typename tuple_tail<Tuple>::type;
 }  // end namespace stdx
 
+namespace detail {
+
 template<class... Exts>
 class outer_t;
 
@@ -314,15 +316,17 @@ class outer_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 
 template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extension_t(std::declval<Exts>()))...>;
 
+}  // end namespace detail
+
 }  // end namespace boost::multi
 
 template<class... Exts>
-struct std::tuple_size<::boost::multi::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
 template<std::size_t I, class... Exts>
-struct std::tuple_element<I, ::boost::multi::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+struct std::tuple_element<I, ::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
 };
 
