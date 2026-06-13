@@ -1637,10 +1637,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	auto flattened() const {
-		auto new_layout = this->layout().flatten(this->base_);
-		return multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
-	}
+	auto flattened() const& { return flattened_aux_().as_const(); }
+	// 	auto new_layout = this->layout().flatten(this->base_);
+	// 	return multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
+	// }
 
 	constexpr auto broadcasted() const& {
 		// TODO(correaa) introduce a broadcasted_layout?
@@ -2187,9 +2187,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
 	using const_subarray<T, D, ElementPtr, Layout>::elements;
-
 	constexpr auto                         elements() & { return this->elements_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_NO_DANGLING constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	using const_subarray<T, D, ElementPtr, Layout>::flattened;
+	constexpr auto flattened() & { return this->flattened_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto flattened() && { return this->flattened_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2639,6 +2642,13 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 		typename std::pointer_traits<Ptr>::template rebind<Element const>,
 		Ptr>;
 
+	auto segment() {
+		return subarray<Element, 1, Ptr>(
+			layout_t<1>(layout_t<0>(extents_t<0>{}), stride().stride2(), 0, stride().nelems2()),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
+			this->stride().segment_base(this->base())
+		);
+	}
+
  private:
 	using reference_aux = std::conditional_t<
 		IsConst,
@@ -2916,6 +2926,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	auto           diagonal() const     = delete;
 	constexpr auto sliced() const&      = delete;
 	constexpr auto partitioned() const& = delete;
+	constexpr auto flattened() const    = delete;
 
 	constexpr auto strided(difference_type) const& = delete;
 
@@ -3125,6 +3136,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
 
 	auto diagonal() const = delete;
+
+	//  private:
+	// 	void flattened_aux_() const = delete;
+
+	//  public:
+	auto flattened() const& = delete;  // { return flattened_aux_().as_const(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }

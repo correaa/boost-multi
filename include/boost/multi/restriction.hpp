@@ -229,7 +229,7 @@ class restriction_iterator {
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
 	typename extents_t<D>::elements_t::iterator it_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
  public:
 	restriction_elements_iterator() = default;
@@ -280,7 +280,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
 	typename extents_t<D>::elements_t elems_;
-	Proj                                 proj_;
+	Proj                              proj_;
 
 	// friend class restriction;
 
@@ -298,7 +298,7 @@ class restriction_elements_t {
 
 	class iterator : ra_iterable<iterator> {
 		typename extents_t<D>::elements_t::iterator it_;
-		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
+		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
 	 public:
 		iterator() = default;
@@ -356,7 +356,7 @@ class restriction_elements_t {
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
 	extents_t<D> xs_;
-	Proj            proj_;
+	Proj         proj_;
 
 	using system = typename multi::detail::function_system<std::decay_t<Proj>>::type;
 
@@ -562,7 +562,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		using function_ptr = std::decay_t<decltype(&std::declval<Proj const&>())>;
 
 		typename extents_t<D>::iterator it_;
-		function_ptr                       Pproj_;
+		function_ptr                    Pproj_;
 		// Proj const* Pproj_;
 
 		iterator(typename extents_t<D>::iterator it, function_ptr Pproj) : it_{it}, Pproj_{Pproj} {}

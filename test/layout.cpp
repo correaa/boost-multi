@@ -24,6 +24,14 @@
 
 namespace multi = boost::multi;
 
+// all layout types must stay trivial (trivially copyable + trivial default ctor) so default
+// construction is free and the types remain cheap/memcpy-able/device-friendly.
+static_assert(std::is_trivial_v<multi::layout_t<0>>);
+static_assert(std::is_trivial_v<multi::layout_t<1>>);
+static_assert(std::is_trivial_v<multi::layout_t<2>>);
+static_assert(std::is_trivial_v<multi::layout_t<3>>);
+static_assert(std::is_trivial_v<multi::layout_t<4>>);
+
 namespace {
 auto second_finish(multi::extents_t<3> exts) {
 	using std::get;  // workaround: function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]

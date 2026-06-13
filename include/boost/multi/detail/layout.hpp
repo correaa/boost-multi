@@ -1280,9 +1280,9 @@ class contiguous_layout {
 template<typename Stride1, typename Stride2, typename Size1, typename Pointer = void*>
 class bistride {
 	using stride1_type = Stride1;
-	using size1_type = Size1;
+	using size1_type   = Size1;
 	using stride2_type = Stride2;
-	using offset_type     = std::ptrdiff_t;
+	using offset_type  = std::ptrdiff_t;
 
 	stride1_type stride1_;
 	stride2_type stride2_;
@@ -1291,6 +1291,12 @@ class bistride {
 	std::ptrdiff_t n_;
 
 	public:
+
+	auto stride1() const { return stride1_; }
+	auto stride2() const { return stride2_; }
+
+	auto nelems2() const { return nelems2_; }
+
 	using category = std::random_access_iterator_tag;
 
 	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, multi::ssize_t size, Pointer ptr)  // NOLINT(bugprone-easily-swappable-parameters)
