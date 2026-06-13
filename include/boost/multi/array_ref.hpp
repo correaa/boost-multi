@@ -2649,6 +2649,12 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 		);
 	}
 
+	auto local() {
+		return array_iterator<Element, 1, Ptr, IsConst, IsMove, typename Stride::stride2_type>(
+			this->base(), layout_t<0>(extents_t<0>{}), stride().stride2()
+		);
+	}
+
  private:
 	using reference_aux = std::conditional_t<
 		IsConst,
@@ -2725,8 +2731,6 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 	}
 
 	constexpr auto operator->() const { return static_cast<pointer>(ptr_); }
-
-	// constexpr auto segment() const {}
 
 	using element_ptr = Ptr;
 

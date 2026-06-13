@@ -68,13 +68,21 @@ auto main() -> int {
 
 	BOOST_TEST( arr2[0] == arr2.flattened().begin().segment() );
 
-	// BOOST_TEST( arr2.flattened().begin().segment() == arr2[0] );
+	BOOST_TEST( (arr2.flattened().begin() + 0).segment() == arr2[0] );
+	BOOST_TEST( (arr2.flattened().begin() + 1).segment() == arr2[0] );
+	BOOST_TEST( (arr2.flattened().begin() + 2).segment() == arr2[0] );
 
-	// BOOST_TEST( arr2.flattened().begin().segment() == arr2[0] );
+	BOOST_TEST( (arr2.flattened().begin() + 3).segment() == arr2[1] );
+	BOOST_TEST( (arr2.flattened().begin() + 4).segment() == arr2[1] );
+	BOOST_TEST( (arr2.flattened().begin() + 5).segment() == arr2[1] );
 
-	// multi::detail::what(arr2(), arr2().flattened());
+	BOOST_TEST( (arr2.flattened().begin() + 0).local() == arr2[0].begin() );
+	BOOST_TEST( (arr2.flattened().begin() + 1).local() == arr2[0].begin() + 1 );
+	BOOST_TEST( (arr2.flattened().begin() + 2).local() == arr2[0].begin() + 2 );
 
-	// fill_segmented(arr2().flattened().begin(), arr2().flattened().end(), 3);
+	BOOST_TEST( (arr2.flattened().begin() + 3).local() == arr2[1].begin() );
+	BOOST_TEST( (arr2.flattened().begin() + 4).local() == arr2[1].begin() + 1 );
+	BOOST_TEST( (arr2.flattened().begin() + 5).local() == arr2[1].begin() + 2 );
 
 	return boost::report_errors();
 }

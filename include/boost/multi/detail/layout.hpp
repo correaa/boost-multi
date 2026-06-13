@@ -1279,19 +1279,20 @@ class contiguous_layout {
 
 template<typename Stride1, typename Stride2, typename Size1, typename Pointer = void*>
 class bistride {
+ public:
 	using stride1_type = Stride1;
 	using size1_type   = Size1;
 	using stride2_type = Stride2;
 	using offset_type  = std::ptrdiff_t;
 
+ private:
 	stride1_type stride1_;
 	stride2_type stride2_;
 	multi::ssize_t nelems2_;
 	Pointer ptr_;
 	std::ptrdiff_t n_;
 
-	public:
-
+ public:
 	auto stride1() const { return stride1_; }
 	auto stride2() const { return stride2_; }
 
