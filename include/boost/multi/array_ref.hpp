@@ -52,7 +52,7 @@ inline constexpr bool force_element_trivial_default_construction = force_element
 /// types as trivially constructible/destructible.
 #ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
 template<class T>
-inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivial_v<T>;
+inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;  // std::is_trivial_v deprecated in C++26
 
 template<class T>
 inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
