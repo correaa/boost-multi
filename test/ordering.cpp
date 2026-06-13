@@ -7,16 +7,19 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <algorithm>   // for sort
 #include <functional>  // for greater
 #include <iterator>    // for next
 
-#if defined(__has_include) && !defined(__NVCC__) && !defined(__NVCOMPILER)
-#if __has_include(<execution>)
-#include <execution>  // for std::execution::seq  // IWYU pragma: keep
-#endif
-#endif
-
 namespace multi = boost::multi;
+
+namespace {
+// a minimal user-defined "execution policy" with an ADL-findable sort, used to exercise
+// the policy overload and its ADL dispatch portably (no <execution>/TBB, nvcc/nvhpc-safe).
+struct seq_policy {};
+template<class It, class Compare>
+void sort(seq_policy /*policy*/, It first, It last, Compare comp) { std::sort(first, last, comp); }
+}  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// basic ascending order into a caller-provided output buffer
@@ -114,19 +117,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[buf[2]] == 6 );
 	}
 
-#ifdef __cpp_lib_execution
-	// execution-policy overload (also exercises disambiguation from the policy-free overloads)
+	// policy overload + ADL sort dispatch (also exercises disambiguation from the policy-free overloads)
 	{
 		multi::array<int, 1> const arr = {3, 1, 2, 5, 4};
 
 		multi::array<multi::index, 1> order(arr.extents());
-		multi::ordering(std::execution::seq, arr, order.begin());
+		multi::ordering(seq_policy{}, arr, order.begin());
 
 		for(multi::index k = 0; k + 1 != order.size(); ++k) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 			BOOST_TEST( arr[order[k]] <= arr[order[k + 1]] );
 		}
 	}
-#endif
 
 	return boost::report_errors();
 }
