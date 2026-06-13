@@ -83,6 +83,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 2> arr1({10, 10}, 5);
 		multi::array<int, 2> arr2({10, 10}, 6);
 
+		auto&& arr1ro0 = arr1[0];
+		BOOST_TEST( arr1ro0[0] == 5 );
+
 		auto&& es1 = arr1().elements();
 		auto&& es2 = arr2().elements();
 
@@ -90,8 +93,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		auto&& [e1, e2] = zp[3];
 
-		BOOST_TEST( e1 == 5 );
-		BOOST_TEST( e2 == 6 );
+		e1 = 55;
+		e2 = 66;
+
+		BOOST_TEST( e1 == 55 );
+		BOOST_TEST( e2 == 66 );
 	}
 	{
 		multi::array<int, 2> arr1({10, 10}, 5);

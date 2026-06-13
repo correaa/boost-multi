@@ -111,6 +111,12 @@ template<> inline constexpr bool force_element_trivial_destruction<std::complex<
 #define BOOST_MULTI_HD
 #endif
 
+#if defined(__has_cpp_attribute) && __has_cpp_attribute(gnu::no_dangling)
+#define BOOST_MULTI_NO_DANGLING [[gnu::no_dangling]]
+#else
+#define BOOST_MULTI_NO_DANGLING
+#endif
+
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #define BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH() \
 	_Pragma("clang diagnostic push")                   \
@@ -2181,8 +2187,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
 	using const_subarray<T, D, ElementPtr, Layout>::elements;
-	constexpr auto elements() & { return this->elements_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	constexpr auto                         elements() & { return this->elements_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_NO_DANGLING constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
@@ -4336,5 +4343,6 @@ template<typename Ptr, class... Rest>
 #endif
 
 #undef BOOST_MULTI_HD
+#undef BOOST_MULTI_NO_DANGLING
 
 #endif  // BOOST_MULTI_ARRAY_REF_HPP
