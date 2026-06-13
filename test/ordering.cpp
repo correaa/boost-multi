@@ -9,6 +9,7 @@
 
 #include <array>       // for array
 #include <functional>  // for greater
+#include <iterator>    // for next
 
 namespace multi = boost::multi;
 
@@ -101,7 +102,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::array<multi::index, 3> buf{};
 
-		BOOST_TEST( multi::ordering(arr, buf.data()) == buf.end() );
+		// compare raw pointers on both sides: MSVC's std::array::end() is a wrapped iterator, not a pointer
+		BOOST_TEST( multi::ordering(arr, buf.data()) == std::next(buf.data(), 3) );
 
 		BOOST_TEST( arr[buf[0]] == 4 );
 		BOOST_TEST( arr[buf[1]] == 5 );
