@@ -14,7 +14,6 @@
 
 #include <algorithm>   // for std::sort, std::copy
 #include <functional>  // for std::less
-#include <utility>     // for std::forward
 
 namespace boost::multi {
 
@@ -40,19 +39,13 @@ auto ordering(Array1D const& arr, RandomAccessIt first) -> RandomAccessIt {
 	return ordering(arr, first, std::less<>{});
 }
 
-// Applies an ordering (or any index permutation) `order` to `src`, gathering the result
-// into the caller-provided `dst`: `dst[k] = src[order[k]]`.  No internal allocation.
-// `order` is a random-access iterator over indices (at least `dst.size()` of them).
-// Works for N-dimensional `src`: `src[order[k]]` is a whole slice and the assignment
-// copies it element-wise into the corresponding slice of `dst`.  `src` is not modified.
-template<class Array, class OrderIt, class DestArray>
-auto apply_ordering(Array const& src, OrderIt order, DestArray&& dst) -> DestArray&& {
-	for(auto&& dst_elem : dst) {  // NOLINT(altera-unroll-loops)
-		dst_elem = src[*order];
-		++order;
-	}
-	return std::forward<DestArray>(dst);
-}
+// To *apply* the resulting `order` (or any index permutation) there is no need for a
+// dedicated algorithm here:
+//   - out of place (gather):  dst[k] = src[order[k]], i.e.
+//       std::transform(order.begin(), order.end(), dst.begin(), [&src](auto idx) { return src[idx]; });
+//     (or, lazily, a view:  order | std::views::transform([&src](auto idx) { return src[idx]; }))
+//   - in place:  boost::algorithm::apply_permutation(src.begin(), src.end(), order.begin(), order.end());
+// Both work for N-dimensional `src`, where `src[idx]` is a whole slice.
 
 }  // end namespace boost::multi
 

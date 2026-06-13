@@ -108,48 +108,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[buf[2]] == 6 );
 	}
 
-	// apply_ordering: gather a 1D array into a caller-provided destination (sorted copy)
-	{
-		multi::array<int, 1> const arr = {3, 1, 2};
-
-		multi::array<multi::index, 1> order(arr.extents());
-		multi::ordering(arr, order.begin());
-
-		multi::array<int, 1> sorted(arr.extents());
-		multi::apply_ordering(arr, order.begin(), sorted);
-
-		BOOST_TEST( sorted[0] == 1 );
-		BOOST_TEST( sorted[1] == 2 );
-		BOOST_TEST( sorted[2] == 3 );
-
-		// source untouched
-		BOOST_TEST( arr[0] == 3 );
-		BOOST_TEST( arr[1] == 1 );
-		BOOST_TEST( arr[2] == 2 );
-	}
-
-	// apply_ordering: reorder the ROWS of a 2D array by an order computed from a separate key
-	{
-		multi::array<int, 2> const mat = {
-			{3, 30},
-			{1, 10},
-			{2, 20},
-		};
-		multi::array<int, 1> const key = {3, 1, 2};
-
-		multi::array<multi::index, 1> order(key.extents());
-		multi::ordering(key, order.begin());
-
-		multi::array<int, 2> out(mat.extents());
-		multi::apply_ordering(mat, order.begin(), out);
-
-		BOOST_TEST( out[0][0] == 1 );
-		BOOST_TEST( out[0][1] == 10 );
-		BOOST_TEST( out[1][0] == 2 );
-		BOOST_TEST( out[1][1] == 20 );
-		BOOST_TEST( out[2][0] == 3 );
-		BOOST_TEST( out[2][1] == 30 );
-	}
-
 	return boost::report_errors();
 }
