@@ -7,18 +7,17 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <array>       // for array
 #include <functional>  // for greater
 #include <iterator>    // for next
 
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// basic ascending order into a caller-provided std::array
+	// basic ascending order into a caller-provided output buffer
 	{
 		multi::array<int, 1> const arr = {3, 1, 2};
 
-		std::array<multi::index, 3> order{};
+		multi::array<multi::index, 1> order(arr.extents());
 
 		BOOST_TEST( multi::ordering(arr, order.begin()) == order.end() );
 
@@ -41,7 +40,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> const arr = {3, 1, 2};
 
-		std::array<multi::index, 3> order{};
+		multi::array<multi::index, 1> order(arr.extents());
 
 		multi::ordering(arr, order.begin(), std::greater<>{});
 
@@ -54,7 +53,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> const arr = {1, 2, 3, 4};
 
-		std::array<multi::index, 4> order{};
+		multi::array<multi::index, 1> order(arr.extents());
 
 		multi::ordering(arr, order.begin());
 
@@ -64,7 +63,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( order[3] == 3 );
 	}
 
-	// output into a caller-provided multi::array, floating-point elements
+	// floating-point elements; verify the order yields a sorted sequence
 	{
 		multi::array<double, 1> const arr = {2.5, -1.0, 0.0, 9.9, 3.3};
 
@@ -90,20 +89,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		multi::index sum = 0;
-		for(auto idx : order) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+		for(auto idx : order) {  // NOLINT(altera-unroll-loops)
 			sum += idx;
 		}
 		BOOST_TEST( sum == (0 + 1 + 2 + 3 + 4) );  // it is a permutation of {0..4}
 	}
 
-	// caller-provided raw pointer (via std::array::data) as output
+	// caller-provided raw pointer (the most general output) via data_elements()
 	{
 		multi::array<int, 1> const arr = {5, 4, 6};
 
-		std::array<multi::index, 3> buf{};
+		multi::array<multi::index, 1> buf(arr.extents());
 
-		// compare raw pointers on both sides: MSVC's std::array::end() is a wrapped iterator, not a pointer
-		BOOST_TEST( multi::ordering(arr, buf.data()) == std::next(buf.data(), 3) );
+		BOOST_TEST( multi::ordering(arr, buf.data_elements()) == std::next(buf.data_elements(), 3) );
 
 		BOOST_TEST( arr[buf[0]] == 4 );
 		BOOST_TEST( arr[buf[1]] == 5 );
