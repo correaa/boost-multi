@@ -18,7 +18,7 @@ int main() {
     multi::array<std::complex<double>, 2> a = [](auto x, auto y) {
         auto z = std::complex<double>(x/120.0, y/100.0);
         return z*z;
-    } ^ multi::extensions_t<2>({height, width});
+    } ^ multi::extents_t<2>({height, width});
 
     // auto [min_it, max_it] = std::minmax_element(a.elements().begin(), a.elements().end());
 

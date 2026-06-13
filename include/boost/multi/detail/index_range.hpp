@@ -343,7 +343,7 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	BOOST_MULTI_HD constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
 	: range<IndexType, IndexTypeLast>{first, last} {}
 
-//	BOOST_MULTI_HD constexpr extension_t(extension_t::size_type size) : extensions_t(IndexType{}, IndexType{} + size) {}
+//	BOOST_MULTI_HD constexpr extension_t(extension_t::size_type size) : extents_t(IndexType{}, IndexType{} + size) {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax

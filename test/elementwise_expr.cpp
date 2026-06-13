@@ -61,7 +61,7 @@ auto main() -> int {
 
 	// 		auto const matrix =
 	// 			([](auto ii) noexcept { return static_cast<float>(ii); } ^
-	// 			 multi::extensions_t(6))
+	// 			 multi::extents_t(6))
 	// 				.partitioned(2);
 
 	// 		constexpr auto maxR1 = []<class R, class V = std::ranges::range_value_t<R>>(R const& row, V low = std::numeric_limits<V>::lowest()) {

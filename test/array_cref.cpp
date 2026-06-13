@@ -31,7 +31,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<complex>       vec(100, 0.0);  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		std::vector<complex> const cvec(100);      // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 
-		multi::array_ref<complex, 2>           A2D(vec.data(), multi::extensions_t<2>{10, 10});
+		multi::array_ref<complex, 2>           A2D(vec.data(), multi::extents_t<2>{10, 10});
 		multi::array_ref<complex, 2, complex*> B2D(vec.data(), {10, 10});
 
 		using std::get;

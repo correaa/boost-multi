@@ -99,7 +99,7 @@ auto main() -> int {
 
 	// test repeat
 	{
-		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
+		auto iota = [](multi::index i) { return i; } ^ multi::extents_t<1>(5);
 
 		BOOST_TEST( iota.size() == 5 );
 		BOOST_TEST( iota[0] == 0 );
@@ -125,7 +125,7 @@ auto main() -> int {
 
 	// subtract max
 	{
-		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(6);
+		auto iota = [](multi::index i) { return i; } ^ multi::extents_t<1>(6);
 		auto mat  = iota.partitioned(2);
 
 		BOOST_TEST( mat.size() == 2 );
@@ -183,12 +183,12 @@ auto main() -> int {
 		BOOST_TEST( std::abs((~(x / ((~x) | sumR1)))[1][1] - 0.244728) < 1e-3 );
 	}
 	{
-		auto lazy_one = [](multi::index) { return 1; } ^ multi::extensions_t<1>{10};
+		auto lazy_one = [](multi::index) { return 1; } ^ multi::extents_t<1>{10};
 
 		BOOST_TEST( lazy_one[3] == 1 );
 		BOOST_TEST( decltype(lazy_one)::dimensionality == 1 );
 
-		auto lazy_0D = []() { return 1; } ^ multi::extensions_t<0>{};
+		auto lazy_0D = []() { return 1; } ^ multi::extents_t<0>{};
 
 		BOOST_TEST( lazy_0D[] == 1 );
 		BOOST_TEST( decltype(lazy_0D)::dimensionality == 0 );
@@ -198,14 +198,14 @@ auto main() -> int {
 		BOOST_TEST( rep.size() == 5 );
 	}
 	{
-		multi::extensions_t<1> xs(5);
+		multi::extents_t<1> xs(5);
 		BOOST_TEST( xs.size() == 5 );
 
 		auto curxs = xs.home();
 		BOOST_TEST( curxs[2] == xs[2] );
 	}
 	{
-		multi::extensions_t<2> xs(3, 5);
+		multi::extents_t<2> xs(3, 5);
 		BOOST_TEST( xs.size() == 3 );
 
 		auto curxs = xs.home();
@@ -213,7 +213,7 @@ auto main() -> int {
 		BOOST_TEST( curxs[1][1] == xs[1][1] );
 	}
 	{
-		multi::extensions_t<3> xs(3, 5, 7);
+		multi::extents_t<3> xs(3, 5, 7);
 		BOOST_TEST( xs.size() == 3 );
 
 		auto curxs = xs.home();
@@ -221,14 +221,14 @@ auto main() -> int {
 		BOOST_TEST( curxs[1][1][1] == xs[1][1][1] );
 	}
 	{
-		auto v1D = [](auto ii) { return (ii * ii); } ^ multi::extensions_t<1>(3);
+		auto v1D = [](auto ii) { return (ii * ii); } ^ multi::extents_t<1>(3);
 		BOOST_TEST( v1D[2] == (2*2) );
 
 		auto cur = v1D.home();
 		BOOST_TEST( cur[2] == v1D[2] );
 	}
 	{
-		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extents_t<2>(3, 5);
 		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
 
 		auto cur = v2D.home();
@@ -241,7 +241,7 @@ auto main() -> int {
 	{
 		std::initializer_list<int> il = {1, 2, 3};
 
-		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::ssize_t>(il.size()));
+		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extents_t<1>(static_cast<multi::ssize_t>(il.size()));
 		BOOST_TEST( il_res[1] == 2 );
 	}
 	{
@@ -250,12 +250,12 @@ auto main() -> int {
 			{4, 5, 6}
 		};
 		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extents(il);
-		// multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+		// multi::extents_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
 
 		BOOST_TEST( il_res[1][1] == 5 );
 	}
 	{
-		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extents_t<2>(3, 5);
 
 		auto it = v2D.begin();
 		it++;
@@ -282,7 +282,7 @@ auto main() -> int {
 		static_assert(std::is_default_constructible_v<decltype(v2D.elements())::iterator>);
 	}
 	{
-		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(5, 7);
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extents_t<2>(5, 7);
 		BOOST_TEST( (v2D.begin() + 3) - v2D.begin() == 3 );
 		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
 	}
@@ -293,12 +293,12 @@ auto main() -> int {
 		multi::iextension n(96);
 
 		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
-			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n}
+			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>{m, h, k, n}
 		);
 	}
 	{
 		multi::array<double, 3> arr;
-		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extensions_t<3>(2, 3, 4);
+		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extents_t<3>(2, 3, 4);
 	}
 
 	return boost::report_errors();

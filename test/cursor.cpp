@@ -31,7 +31,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 2>::cursor>);
 
 		// {
-		//  multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
+		//  multi::array<double, 1> arr(multi::extents_t<1>{multi::iextension{100}}, 99.0);
 		//  BOOST_TEST( arr.size() == 100 );
 		//  BOOST_TEST( arr.begin() < arr.end() );
 		//  BOOST_TEST( arr.end() - arr.begin() == arr.size() );
@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  BOOST_TEST( cbarr2 == cbarr );
 		// }
 		// {
-		//  multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
+		//  multi::array<double, 1> arr(multi::extents_t<1>{multi::iextension{100}}, 99.0);
 		//  BOOST_TEST( arr.size() == 100 );
 		//  BOOST_TEST( arr.begin() < arr.end() );
 
@@ -62,7 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  // BOOST_TEST( arr2 == cbb );  // TODO(correaa) problem in C++20
 		// }
 		// {
-		//  multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
+		//  multi::array<double, 1> arr(multi::extents_t<1>{multi::iextension{100}}, 99.0);
 		//  BOOST_TEST( arr.size() == 100 );
 		//  BOOST_TEST( arr.begin() < arr.end() );
 

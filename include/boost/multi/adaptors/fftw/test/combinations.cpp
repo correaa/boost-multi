@@ -44,7 +44,7 @@ class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963
 template<class T, multi::dimensionality_type D> using marray = multi::array<T, D>;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	constexpr auto exts = multi::extensions_t<4>({6, 12, 24, 12});
+	constexpr auto exts = multi::extents_t<4>({6, 12, 24, 12});
 
 	multi::fftw::environment const env;
 
@@ -52,19 +52,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using complex = std::complex<double>;
 		{
-			multi::dynamic_array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+			multi::dynamic_array<std::complex<double>, 4> ret(multi::extents_t<4>({6, 12, 24, 12}));
 			ret[1][2][3][4] = std::complex<double>{1.0, 2.0};
 			BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 		}
 		{
-			multi::array<std::complex<double>, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+			multi::array<std::complex<double>, 4> ret(multi::extents_t<4>({6, 12, 24, 12}));
 			ret[1][2][3][4] = std::complex<double>{1.0, 2.0};
 			BOOST_TEST(( ret[1][2][3][4] == std::complex<double>{1.0, 2.0} ));
 		}
 
 		auto const in = [&] {
 			// marray<complex, 4> ret(exts);
-			multi::array<complex, 4> ret(multi::extensions_t<4>({6, 12, 24, 12}));
+			multi::array<complex, 4> ret(multi::extents_t<4>({6, 12, 24, 12}));
 			std::generate(
 				ret.elements().begin(), ret.elements().end(),
 				[eng        = std::default_random_engine{std::random_device{}()},

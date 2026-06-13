@@ -57,7 +57,7 @@ namespace elementwise {
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
 constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
-	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extensions_t<1>({arr.extension()});
+	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extents_t<1>({arr.extension()});
 }
 
 template<class F, class... A> struct apply_bind_t;
@@ -109,9 +109,9 @@ class identity_bind {
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-		return map(std::forward<F>(fun), identity_bind<A>{std::forward<A>(alpha)} ^ multi::extensions_t<0>{}, std::forward<B>(omega));
+		return map(std::forward<F>(fun), identity_bind<A>{std::forward<A>(alpha)} ^ multi::extents_t<0>{}, std::forward<B>(omega));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return map(std::forward<F>(fun), std::forward<A>(alpha), identity_bind<B>{std::forward<B>(omega)} ^ multi::extensions_t<0>{});
+		return map(std::forward<F>(fun), std::forward<A>(alpha), identity_bind<B>{std::forward<B>(omega)} ^ multi::extents_t<0>{});
 	} else {
 		using std::get;
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
@@ -197,7 +197,7 @@ struct default_zero_f {
 
 template<class T, class ZF>
 constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
-	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extensions_t<2>({size, size}));
+	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extents_t<2>({size, size}));
 }
 
 template<class T, class ZF = default_zero_f<T>>
@@ -222,12 +222,12 @@ constexpr auto zeros(Array&& arr) {
 }
 
 template<typename Element, dimensionality_type D>
-constexpr auto zeros(multi::extensions_t<D> const& exts) {
-	return zeros<Element, multi::extensions_t<D> const&>(exts);
+constexpr auto zeros(multi::extents_t<D> const& exts) {
+	return zeros<Element, multi::extents_t<D> const&>(exts);
 }
 
 template<dimensionality_type D>
-constexpr auto zeros(multi::extensions_t<D> const& exts) {
+constexpr auto zeros(multi::extents_t<D> const& exts) {
 	return zeros<int, D>(exts);
 }
 

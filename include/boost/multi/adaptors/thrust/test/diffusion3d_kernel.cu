@@ -159,7 +159,7 @@ auto main() -> int {
     {
         namespace multi = boost::multi;
         multi::thrust::device_array<float, 3> f_d({nx, ny, nz});
-        // f_d.elements() = [] __host__ __device__ (multi::thrust::device_array<float, 3>::index i) { return i; } ^ multi::extensions_t<1>(f_d.num_elements());
+        // f_d.elements() = [] __host__ __device__ (multi::thrust::device_array<float, 3>::index i) { return i; } ^ multi::extents_t<1>(f_d.num_elements());
     }
     return 0;
 }

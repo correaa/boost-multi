@@ -153,7 +153,7 @@ auto run(multi::ssize_t sizex, reduce const& redy, kernel_type kernel) /*-> gpu:
 	reduce_kernel_vr<<<dg, db, shared_mem_size>>>(sizex, sizey, kernel, begin(result));
 	// check_error(last_error());
 
-	boost::multi::extensions_t<2> xs = {sizex, sizey};
+	boost::multi::extents_t<2> xs = {sizex, sizey};
 	assert( xs.size() == sizex );
 
 	// thrust::transform_reduce(
@@ -234,7 +234,7 @@ auto main() -> int {
 		multi::thrust::device_array<double, 1> sums(nx);
 		multi::thrust::reduce_by_index(
 			[] __host__ __device__(multi::index ix, multi::index iy) -> double { return double(ix) * double(iy); }
-			^ multi::extensions_t<2>(nx, ny),
+			^ multi::extents_t<2>(nx, ny),
 			sums
 		);
 	}

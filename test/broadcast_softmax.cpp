@@ -99,16 +99,16 @@ auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
 	using multi::elementwise::exp;
 	using multi::elementwise::operator/;
 
-	auto ret = [mat = FWD(mat)](multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
+	auto ret = [mat = FWD(mat)](multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extents_t<1>{2};
 
-	// auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extensions_t<1>{2};
+	// auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extents_t<1>{2};
 
 	return
 		[ret = std::move(ret)](auto irow) {
 			auto reti = ret[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
-		multi::extensions_t<1>{2};
+		multi::extents_t<1>{2};
 }
 
 auto softmax(auto&& matrix) noexcept {
@@ -140,7 +140,7 @@ constexpr iden_t iden;
 
 auto main() -> int {
 	auto const lazy_matrix =
-		(iden ^ multi::extensions_t(6))
+		(iden ^ multi::extents_t(6))
 			.partitioned(2);
 
 	printR2("lazy matrix", lazy_matrix);

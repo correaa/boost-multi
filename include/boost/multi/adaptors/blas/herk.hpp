@@ -90,8 +90,8 @@ class herk_range {
 	auto end() const { return iterator{this, a_rows_}; }
 
 	auto                         size() const { return a_rows_; }
-	auto                         extensions() const { return multi::extensions_t<2>{a_rows_, a_rows_}; }
-	[[nodiscard]] constexpr auto extents() const { return multi::extensions_t<2>{a_rows_, a_rows_}; }
+	auto                         extensions() const { return multi::extents_t<2>{a_rows_, a_rows_}; }
+	[[nodiscard]] constexpr auto extents() const { return multi::extents_t<2>{a_rows_, a_rows_}; }
 };
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20

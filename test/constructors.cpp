@@ -28,18 +28,18 @@ struct multiplies_bind1st {  // NOLINT(misc-use-internal-linkage)
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_construct_1d)
 	{
-		multi::dynamic_array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 10);
+		multi::dynamic_array<int, 1> arr(multi::extents_t<1>{multi::iextension{10}}, 10);
 		//  multi::dynamic_array<int, 1> arr(multi::array<int, 1>::extensions_type{10}, 10);
 		BOOST_TEST( size(arr) == 10 );
 		BOOST_TEST( arr[1] == 10 );
 	}
 	{
-		multi::array<int, 2> const arr2(multi::extensions_t<2>{3, 4});
+		multi::array<int, 2> const arr2(multi::extents_t<2>{3, 4});
 		BOOST_TEST( arr2.size() == 3 );
 	}
 	// TODO(correaa) should this work
 	// {
-	// 	multi::array<int, 2> arr2{multi::extensions_t<2>{3, 4}};
+	// 	multi::array<int, 2> arr2{multi::extents_t<2>{3, 4}};
 	// 	BOOST_TEST( arr2.size() == 3 );
 	// 	BOOST_TEST( (~arr2).size() == 4 );
 	// }
@@ -62,22 +62,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_constructors_1d)
 	{
 		{
-			multi::array<double, 1> const arr(multi::extensions_t<1>{multi::iextension{10}});
+			multi::array<double, 1> const arr(multi::extents_t<1>{multi::iextension{10}});
 			BOOST_TEST( size(arr) == 10 );
 		}
 		{
-			multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, int{});
+			multi::array<int, 1> arr(multi::extents_t<1>{multi::iextension{10}}, int{});
 			BOOST_TEST( size(arr) == 10 );
 			BOOST_TEST( arr[5] == int{} );
 		}
 		{
-			multi::array<int, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, int{});
+			multi::array<int, 1> arr(multi::extents_t<1>{multi::iextension{10}}, int{});
 			BOOST_TEST( size(arr) == 10 );
 			BOOST_TEST( arr[5] == int{} );
 		}
 #if defined(__cpp_deduction_guides) && !defined(__NVCC__)
 		{
-			multi::array arr(multi::extensions_t<1>({0, 10}), int{});
+			multi::array arr(multi::extents_t<1>({0, 10}), int{});
 			BOOST_TEST( size(arr) == 10 );
 			BOOST_TEST( arr[5] == int{} );
 		}
@@ -248,9 +248,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arri1d A9 = {3, 11};     BOOST_TEST((A9 == arri1d{3, 11}      && A9.size() == 2));  // good, no warning
 #endif
 
-		arri1d B1(multi::extensions_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
+		arri1d B1(multi::extents_t<1>(3), 11); BOOST_TEST((B1.size() == 3));  // good, no warning
 #ifndef __circle_build__  // deduced types not allowed in function parameters
-		arri1d B2(multi::extensions_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
+		arri1d B2(multi::extents_t(3), 11);    BOOST_TEST((B1.size() == 3));  // good, no warning
 #endif
 #ifndef CPPCHECK
 		// multi::array const C4({3}, 11);  BOOST_TEST((C4 == arri1d{11, 11, 11} && C4.size() == 3));  // good, no warning

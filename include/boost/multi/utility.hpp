@@ -528,7 +528,7 @@ auto extension(Container const& cont)                                           
 template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extension<Container>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto extents(Container const& cont) {
 	if constexpr(Rank == 0) {
-		return multi::extensions_t<0>{};
+		return multi::extents_t<0>{};
 	} else {
 		using std::size;
 		return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extents<Rank - 1>(cont.front());
@@ -567,7 +567,7 @@ t<decltype(array.extents())> {
 
 template<class BoostMultiArray, std::size_t... I>
 constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
-	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(
+	return boost::multi::extents_t<BoostMultiArray::dimensionality>(
 		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	);
 }
@@ -575,10 +575,10 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 template<class Element, class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 [[nodiscard]] auto extents_of(T const& array) {
 	if constexpr(std::is_convertible_v<T const&, Element>) {
-		return boost::multi::extensions_t<0>{};
+		return boost::multi::extents_t<0>{};
 	}
 	if constexpr(std::is_convertible_v<typename T::reference, Element>) {
-		return boost::multi::extensions_t<1>{array.extents()};
+		return boost::multi::extents_t<1>{array.extents()};
 	}
 }
 
@@ -611,7 +611,7 @@ struct extensions_aux {
 };
 
 template<> struct extensions_aux<0> {
-	template<class T> static auto call(T const& /*unused*/) { return multi::extensions_t<0>{}; }  // std::make_tuple();}
+	template<class T> static auto call(T const& /*unused*/) { return multi::extents_t<0>{}; }  // std::make_tuple();}
 };
 
 template<dimensionality_type D, class T, std::enable_if_t<has_extension<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -710,12 +710,12 @@ constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boo
 
 // template<class T, std::size_t N>
 // constexpr auto extents(std::array<T, N> const& /*arr*/) {
-// 	return multi::extensions_t<1>{multi::index_extension(0, N)};
+// 	return multi::extents_t<1>{multi::index_extension(0, N)};
 // }
 
 template<class T, std::size_t N>
 [[nodiscard]] constexpr auto extents(std::array<T, N> const& /*arr*/) {
-	return multi::extensions_t<1>{multi::index_extension(0, N)};
+	return multi::extents_t<1>{multi::index_extension(0, N)};
 }
 
 template<class T, std::size_t N, std::size_t M>
@@ -799,25 +799,25 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 
 template<class T>
 constexpr auto extents(std::initializer_list<T> const& il) {
-	return multi::extensions_t<1>{static_cast<multi::ssize_t>(il.size())};
+	return multi::extents_t<1>{static_cast<multi::ssize_t>(il.size())};
 }
 
 template<class T>
 constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il) {
 	if(il.size() == 0) {
-		return multi::extensions_t<2>{0, 0};
+		return multi::extents_t<2>{0, 0};
 	}
 	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
 	// for(std::size_t i = 1; i != il.size(); ++i) {
 	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
 	// }
-	return multi::extensions_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
+	return multi::extents_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
 }
 
 template<class T>
 constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
 	if(il.size() == 0) {
-		return multi::extensions_t<3>{0, 0, 0};
+		return multi::extents_t<3>{0, 0, 0};
 	}
 
 	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
@@ -826,11 +826,11 @@ constexpr auto extents(std::initializer_list<std::initializer_list<std::initiali
 	// }
 
 	// if(il.begin()->size() == 0) {
-	// 	return multi::extensions_t<3>{il.size(), 0, 0};
+	// 	return multi::extents_t<3>{il.size(), 0, 0};
 	// }
 
 	return static_cast<multi::ssize_t>(il.size()) * extents(*il.begin());
-	// return multi::extensions_t<3>{
+	// return multi::extents_t<3>{
 	// 	static_cast<multi::size_t>(il.size()),
 	// 	static_cast<multi::size_t>(il.begin()->size()),
 	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
@@ -840,7 +840,7 @@ constexpr auto extents(std::initializer_list<std::initializer_list<std::initiali
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& il) {
 	return multi::layout_t<1>{
-		multi::layout_t<0>(multi::extensions_t<0>{}),
+		multi::layout_t<0>(multi::extents_t<0>{}),
 		1,
 		0,
 		static_cast<multi::ssize_t>(il.size())
@@ -878,7 +878,7 @@ constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il)
 template<class T>
 constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
 	if(il.size() == 0) {
-		return multi::layout_t<3>(multi::extensions_t<3>{});
+		return multi::layout_t<3>(multi::extents_t<3>{});
 	}
 	return multi::layout_t<3>{
 		layout(*il.begin()),

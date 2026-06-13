@@ -86,9 +86,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*it) == 36 );
 	}
 	{
-		auto x1d = multi::extensions_t<1>(3);
+		auto x1d = multi::extents_t<1>(3);
 
-		BOOST_TEST( multi::extensions_t<1>(3) == multi::extensions_t(3) );
+		BOOST_TEST( multi::extents_t<1>(3) == multi::extents_t(3) );
 
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
@@ -120,7 +120,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
-		auto x1d = multi::extensions_t<1>(3);
+		auto x1d = multi::extents_t<1>(3);
 
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
@@ -139,9 +139,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().end() - x1d.elements().begin() == 3 );
 	}
 	{
-		multi::extensions_t<2> const x2d({4, 3});
+		multi::extents_t<2> const x2d({4, 3});
 
-		BOOST_TEST( multi::extensions_t<2>(4, 3) == multi::extensions_t(4, 3) );
+		BOOST_TEST( multi::extents_t<2>(4, 3) == multi::extents_t(4, 3) );
 
 		auto ll = [](auto xx, auto yy) {
 			return xx + yy;
@@ -277,7 +277,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it ==  x2d.elements().begin() );
 	}
 	{
-		multi::extensions_t<2> const x2d({4, 3});
+		multi::extents_t<2> const x2d({4, 3});
 
 		// auto it2d = x2d.begin();
 
@@ -335,7 +335,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xns2d_a == xn2 );
 		BOOST_TEST( xns2d_b == xn2 );
 
-		multi::extensions_t<2> const met2{xns2d};
+		multi::extents_t<2> const met2{xns2d};
 
 		multi::layout_t<2> const lyt(met2);
 		multi::layout_t<2> const lyt_2(xns2d);
@@ -345,9 +345,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// multi::array<int, 1> const arr2({xn2});
 	}
 	{
-		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
+		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4);
 
-		// boost::multi::restriction<2, decltype(ll)> x2df(multi::extensions_t<2>(3, 4), ll);
+		// boost::multi::restriction<2, decltype(ll)> x2df(multi::extents_t<2>(3, 4), ll);
 		BOOST_TEST( x2df.elements()[0] == 0 );
 		BOOST_TEST( x2df.elements()[1] == 1 );
 		BOOST_TEST( x2df.elements()[2] == 2 );
@@ -357,43 +357,43 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( x2df[2][1] == 2 + 1 );
 
-		multi::array<multi::index, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4);
+		multi::array<multi::index, 2> const arr2df = [](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4);
 
 		BOOST_TEST( arr2df(2, 1) == 2 + 1 );
 		BOOST_TEST( arr2df[2][1] == 2 + 1 );
 
 		BOOST_TEST(std::equal(
 			arr2df.elements().begin(), arr2df.elements().end(),
-			([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4)).elements().begin()
+			([](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4)).elements().begin()
 		));
 
 		BOOST_TEST(std::equal(
 			arr2df.elements().begin(), arr2df.elements().end(),
-			(multi::extensions_t<2>(3, 4)->*[](auto x, auto y) { return x + y; }).elements().begin()
+			(multi::extents_t<2>(3, 4)->*[](auto x, auto y) { return x + y; }).elements().begin()
 		));
 
 		BOOST_TEST(   arr2df.elements().begin() != arr2df.elements().end()  );
 		BOOST_TEST( !(arr2df.elements().begin() == arr2df.elements().end()) );
 
-		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t<2>(3, 4))[2][1] );
+		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4))[2][1] );
 
-		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extensions_t(3, 4))[2][1] );
+		BOOST_TEST( arr2df[2][1] == ([](auto x, auto y) { return x + y; } ^ multi::extents_t(3, 4))[2][1] );
 		BOOST_TEST(
 			arr2df[2][1]
-			== multi::extensions_t<2>(3, 4).element_transformed( [](auto const& idxs) { using std::get; return get<0>(idxs) + get<1>(idxs); })[2][1]
+			== multi::extents_t<2>(3, 4).element_transformed( [](auto const& idxs) { using std::get; return get<0>(idxs) + get<1>(idxs); })[2][1]
 		);
 		BOOST_TEST(
 			arr2df[2][1]
-			== multi::extensions_t<2>(3, 4).element_transformed( [](auto idxs) {auto [xx, yy] = idxs; return xx + yy; })[2][1]
+			== multi::extents_t<2>(3, 4).element_transformed( [](auto idxs) {auto [xx, yy] = idxs; return xx + yy; })[2][1]
 		);
 	}
 	{
-		multi::extensions_t<3> const xs{3, 4, 5};
+		multi::extents_t<3> const xs{3, 4, 5};
 
-		BOOST_TEST(( multi::extensions_t<3>{3, 4, 5} == multi::extensions_t(3, 4, 5) ));
+		BOOST_TEST(( multi::extents_t<3>{3, 4, 5} == multi::extents_t(3, 4, 5) ));
 
-		BOOST_TEST( xs.sub() == multi::extensions_t<2>(4, 5) );
-		static_assert(std::is_same_v<decltype(xs[1][1][1]), multi::extensions_t<3>::element>);
+		BOOST_TEST( xs.sub() == multi::extents_t<2>(4, 5) );
+		static_assert(std::is_same_v<decltype(xs[1][1][1]), multi::extents_t<3>::element>);
 	}
 	{
 		multi::array<int, 2> const arr({3, 4});
@@ -455,7 +455,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto xs1D = multi::extensions_t(10);
+		auto xs1D = multi::extents_t(10);
 		BOOST_TEST( xs1D.size() == 10 );
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
@@ -469,9 +469,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 #ifdef __NVCC__  // nvcc gets confused with inline lambdas
 		auto fun = [](auto ii) noexcept { return ii * ii; };
-		auto v1D = fun ^ multi::extensions_t(10);
+		auto v1D = fun ^ multi::extents_t(10);
 #else
-		auto v1D = [](auto ii) noexcept { return ii * ii; } ^ multi::extensions_t(10);
+		auto v1D = [](auto ii) noexcept { return ii * ii; } ^ multi::extents_t(10);
 #endif
 
 		BOOST_TEST( v1D.size() == 10 );
@@ -481,8 +481,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v1D.elements()[4] == v1D[4] );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::iterator>);
-		static_assert(std::random_access_iterator<multi::extensions_t<1>::iterator>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>::iterator>);
+		static_assert(std::random_access_iterator<multi::extents_t<1>::iterator>);
 		static_assert(std::ranges::random_access_range<decltype(xs1D)>);
 
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
@@ -513,7 +513,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto xs2D = multi::extensions_t<2>(5, 7);
+		auto xs2D = multi::extents_t<2>(5, 7);
 		BOOST_TEST( xs2D.size() == 5 );
 
 		using std::get;
@@ -530,36 +530,36 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto it = xs2D.begin();
 		// multi::detail::what(*it);
 
-		auto xs3D = multi::extensions_t<3>(5, 7, 21);
+		auto xs3D = multi::extents_t<3>(5, 7, 21);
 		BOOST_TEST( xs3D.size() == 5 );
 		// multi::detail::what(*xs3D.begin());
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
-		using xs2D_iterator = multi::extensions_t<2>::iterator;
+		using xs2D_iterator = multi::extents_t<2>::iterator;
 
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<0>>);
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<0>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<2>>);
 
 		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<multi::index, multi::index>>);
 
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>::base_>);
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<1>>);
-		static_assert(std::is_trivially_default_constructible_v<multi::extensions_t<2>::iterator>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>::base_>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<2>::iterator>);
 
 		static_assert(std::is_constructible_v<xs2D_iterator>);
 		static_assert(std::constructible_from<xs2D_iterator, xs2D_iterator>);
-		static_assert(std::default_initializable<multi::extensions_t<2>::iterator>);
-		static_assert(std::semiregular<multi::extensions_t<2>::iterator>);
-		static_assert(std::regular<multi::extensions_t<2>::iterator>);
-		static_assert(std::incrementable<multi::extensions_t<2>::iterator>);
+		static_assert(std::default_initializable<multi::extents_t<2>::iterator>);
+		static_assert(std::semiregular<multi::extents_t<2>::iterator>);
+		static_assert(std::regular<multi::extents_t<2>::iterator>);
+		static_assert(std::incrementable<multi::extents_t<2>::iterator>);
 
-		static_assert(std::weakly_incrementable<multi::extensions_t<2>::iterator>);
-		static_assert(std::input_iterator<multi::extensions_t<2>::iterator>);
-		static_assert(std::forward_iterator<multi::extensions_t<2>::iterator>);
-		static_assert(std::bidirectional_iterator<multi::extensions_t<2>::iterator>);
-		static_assert(std::random_access_iterator<multi::extensions_t<2>::iterator>);
-		static_assert(std::ranges::random_access_range<multi::extensions_t<2>>);
+		static_assert(std::weakly_incrementable<multi::extents_t<2>::iterator>);
+		static_assert(std::input_iterator<multi::extents_t<2>::iterator>);
+		static_assert(std::forward_iterator<multi::extents_t<2>::iterator>);
+		static_assert(std::bidirectional_iterator<multi::extents_t<2>::iterator>);
+		static_assert(std::random_access_iterator<multi::extents_t<2>::iterator>);
+		static_assert(std::ranges::random_access_range<multi::extents_t<2>>);
 
 		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
 		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
@@ -574,7 +574,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extents_t<2>(3, 5);
 		BOOST_TEST( v2D[2][3] == (2*2) + (3*3) );
 		// auto front = *v2D.begin();
 
@@ -595,7 +595,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		{
 			auto matrix =
 				([](auto ii) noexcept { return static_cast<float>(ii); } ^
-				 multi::extensions_t(6))
+				 multi::extents_t(6))
 					.partitioned(2);
 
 			auto [matrix_is, matrix_js] = matrix.extents();
@@ -611,8 +611,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		multi::extensions_t<2> const x2D(6, 5);
-		multi::extensions_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extents();
+		multi::extents_t<2> const x2D(6, 5);
+		multi::extents_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extents();
 
 		using std::get;
 		BOOST_TEST( get<0>(p3D).size() == 2 );
@@ -620,7 +620,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
 	{
-		auto exts = multi::extensions_t<2>(3, 4);
+		auto exts = multi::extents_t<2>(3, 4);
 
 		// auto something = exts[-1];
 		// (void)something;
@@ -636,7 +636,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == exts.elements().begin() + 2 );
 	}
 	{
-		auto exts = multi::extensions_t<1>(10);
+		auto exts = multi::extents_t<1>(10);
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 
@@ -660,7 +660,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( *it5 == 2 );
 	}
 	{
-		auto exts = multi::extensions_t<1>(10);
+		auto exts = multi::extents_t<1>(10);
 
 		// BOOST_TEST( exts[-1] != decltype(exts[-1]){} );  gives an out-of-bounds assert
 

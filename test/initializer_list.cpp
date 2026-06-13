@@ -521,7 +521,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		multi::layout_t<2> const lyt(multi::extensions_t<2>(3, 2));
+		multi::layout_t<2> const lyt(multi::extents_t<2>(3, 2));
 		BOOST_TEST( lyt.num_elements() == 6 );
 	}
 	// {

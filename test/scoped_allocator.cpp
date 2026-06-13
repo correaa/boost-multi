@@ -151,7 +151,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			OuterCont cont(
 #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-				multi::extensions_t<2>
+				multi::extents_t<2>
 #endif
 				{3, 4},
 				{&heap1, allocator2<int>{&heap2}}  // without allocator2<>{...} gives ambiguous construction in libc++

@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(extensions_serialization) {
 	//  xoa<<                                                 x ;
 	}
 	{
-		multi::extensions_t<2> y;
+		multi::extents_t<2> y;
 		{
 			XIArchive xia{ss};
 			xia>>                                   make_nvp("x", y);

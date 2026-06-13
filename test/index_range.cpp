@@ -126,12 +126,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// test prev canonical 2D
 	{
-		multi::extensions_t<2> const  ies({
+		multi::extents_t<2> const  ies({
             {0, 3},
             {0, 4}
         });
-		multi::extensions_t<2>::index i = 1;
-		multi::extensions_t<2>::index j = 0;
+		multi::extents_t<2>::index i = 1;
+		multi::extents_t<2>::index j = 0;
 
 		ies.prev_canonical(i, j);
 		BOOST_TEST( i == 0 );
@@ -152,14 +152,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// test prev canonical 2D
 	{
-		multi::extensions_t<3> const  ies({
+		multi::extents_t<3> const  ies({
             {0, 3},
             {0, 4},
             {0, 5}
         });
-		multi::extensions_t<3>::index i = 1;
-		multi::extensions_t<3>::index j = 1;
-		multi::extensions_t<3>::index k = 1;
+		multi::extents_t<3>::index i = 1;
+		multi::extents_t<3>::index j = 1;
+		multi::extents_t<3>::index k = 1;
 
 		ies.prev_canonical(i, j, k);
 		BOOST_TEST( i == 1 );

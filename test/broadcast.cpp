@@ -74,7 +74,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		BOOST_TEST( std::abs(c[2] - std::exp(3.0)) < 1e-4 );
 	}
 	{
-		auto r = [](auto i) constexpr { return static_cast<double>(i + 1); } ^ multi::extensions_t<1>{3};
+		auto r = [](auto i) constexpr { return static_cast<double>(i + 1); } ^ multi::extents_t<1>{3};
 		using multi::elementwise::exp;
 		auto c = exp(r);
 
@@ -253,7 +253,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		auto f1d = [](auto) { return 1; } ^ multi::extensions_t<1>{3};
+		auto f1d = [](auto) { return 1; } ^ multi::extents_t<1>{3};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
@@ -265,7 +265,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		auto f = []() { return 1; } ^ multi::extensions_t<0>{};
+		auto f = []() { return 1; } ^ multi::extents_t<0>{};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
@@ -279,7 +279,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
-		auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+		auto const& c = a + ([]() { return 1; } ^ multi::extents_t<0>{});
 
 		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
 		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
@@ -395,7 +395,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 	// 	using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
-	// 	auto const& c = a + ([]() { return 1; } ^ multi::extensions_t<0>{});
+	// 	auto const& c = a + ([]() { return 1; } ^ multi::extents_t<0>{});
 
 	// 	BOOST_TEST(( multi::array{2, 3, 4} == c ));
 	// 	BOOST_TEST(( c == multi::array{2, 3, 4} ));

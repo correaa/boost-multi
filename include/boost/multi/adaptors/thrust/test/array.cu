@@ -286,11 +286,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_trivially_copy_constructible_v<T>);
 		static_assert(std::is_trivially_assignable_v<T&, T>);
 
-		multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{n * n});
-		multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{n * n});
-		multi::array<T, 1>                    Host(multi::extensions_t<1>{n * n});
+		multi::array<T, 1, test_allocator<T>> Devc(multi::extents_t<1>{n * n});
+		multi::array<T, 1, test_allocator<T>> Dev2(multi::extents_t<1>{n * n});
+		multi::array<T, 1>                    Host(multi::extents_t<1>{n * n});
 		std::iota(Host.elements().begin(), Host.elements().end(), 12.0);
-		multi::array<T, 1> Hos2(multi::extensions_t<1>{n * n});
+		multi::array<T, 1> Hos2(multi::extents_t<1>{n * n});
 
 		std::cout << "| 1D `" << typeid(T).name() << "` total data size: " << Host.num_elements() * sizeof(T) / 1073741824. << " GB | speed |\n|---|---|" << std::endl;
 		{
@@ -415,11 +415,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// static_assert(std::is_trivially_copy_constructible_v<T>);
 		// static_assert(std::is_trivially_assignable_v<T&, T>);
 
-		multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{n * n});
-		multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{n * n});
-		multi::array<T, 1>                    Host(multi::extensions_t<1>{n * n});
+		multi::array<T, 1, test_allocator<T>> Devc(multi::extents_t<1>{n * n});
+		multi::array<T, 1, test_allocator<T>> Dev2(multi::extents_t<1>{n * n});
+		multi::array<T, 1>                    Host(multi::extents_t<1>{n * n});
 		std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-		multi::array<T, 1> Hos2(multi::extensions_t<1>{n * n});
+		multi::array<T, 1> Hos2(multi::extents_t<1>{n * n});
 
 		std::cout << "| 1D `" << typeid(T).name() << "` total data size: " << Host.num_elements() * sizeof(T) / 1073741824.0 << " GB | speed |\n|---|---|" << std::endl;
 		{
@@ -545,7 +545,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using T = double;
 
-		auto const exts = multi::extensions_t<2>({n, n});
+		auto const exts = multi::extents_t<2>({n, n});
 
 		std::cout << "| 2D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824.0 << " GB | speed |\n|---|---|" << std::endl;
 
@@ -679,7 +679,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using T = thrust::complex<double>;
 
-		auto const exts = multi::extensions_t<2>({n, n});
+		auto const exts = multi::extents_t<2>({n, n});
 
 		std::cout << "| 2D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824.0 << " GB | speed |\n|---|---|" << std::endl;
 
@@ -810,7 +810,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_double)
 	{
 		using T         = double;
-		auto const exts = multi::extensions_t<3>({1024, 1024, 100});
+		auto const exts = multi::extents_t<3>({1024, 1024, 100});
 
 		std::cout << "| 3D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824. << " GB | speed |\n|---|---|" << std::endl;
 
@@ -934,7 +934,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_complex)
 	{
 		using T         = thrust::complex<double>;
-		auto const exts = multi::extensions_t<3>({1024, 1024, 100});
+		auto const exts = multi::extents_t<3>({1024, 1024, 100});
 
 		std::cout << "| 3D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824. << " GB | speed |\n|---|---|" << std::endl;
 
@@ -1057,15 +1057,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 
 	{
-		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [] __host__ __device__(multi::index i, multi::index j) { return i + j; } ^ multi::extensions_t(10, 10);
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [] __host__ __device__(multi::index i, multi::index j) { return i + j; } ^ multi::extents_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
 	}
 	{
-		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) constexpr { return i + j; } ^ multi::extensions_t(10, 10);
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) constexpr { return i + j; } ^ multi::extents_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
 	}
 	{
-		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) { return i + j; } ^ multi::extensions_t(10, 10);
+		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) { return i + j; } ^ multi::extents_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
 	}
 

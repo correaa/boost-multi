@@ -131,10 +131,10 @@ BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(rea
 
 template<dimensionality_type D, class Proj>
 class restriction_iterator {
-	typename extensions_t<D>::iterator it_;
-	Proj const*                        Pproj_;
+	typename extents_t<D>::iterator it_;
+	Proj const*                     Pproj_;
 
-	restriction_iterator(typename extensions_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
+	restriction_iterator(typename extents_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
 
 	template<dimensionality_type, class>
 	friend class restriction;
@@ -154,11 +154,11 @@ class restriction_iterator {
 	using system = typename multi::detail::function_system<Proj>::type;
 
 	using difference_type = std::ptrdiff_t;
-	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extensions_t<D>::element>()))>;
+	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
 
 	using pointer = void;
 
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extensions_t<D>::element>()))>;
+	using reference = std::conditional_t<(D != 1), restriction<D - 1, bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
 
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -215,8 +215,8 @@ class restriction_iterator {
 		if constexpr(D != 1) {
 			using std::get;
 			// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-			// return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
-			return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>(it_->tail()), bind_front_t<Proj>(get<0>(*it_), *Pproj_));
+			// return restriction<D - 1, bind_front_t<Proj>>(extents_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});
+			return restriction<D - 1, bind_front_t<Proj>>(extents_t<D - 1>(it_->tail()), bind_front_t<Proj>(get<0>(*it_), *Pproj_));
 		} else {
 			using std::get;
 			return (*Pproj_)(get<0>(*it_));
@@ -228,12 +228,12 @@ class restriction_iterator {
 
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
-	typename extensions_t<D>::elements_t::iterator it_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
+	typename extents_t<D>::elements_t::iterator it_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
  public:
 	restriction_elements_iterator() = default;
-	restriction_elements_iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 	auto operator++() -> auto& {
 		++this->it_;
@@ -279,13 +279,13 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
-	typename extensions_t<D>::elements_t elems_;
-	Proj                                 proj_;
+	typename extents_t<D>::elements_t elems_;
+	Proj                              proj_;
 
 	// friend class restriction;
 
  public:
-	restriction_elements_t(typename extensions_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
+	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) {
 		using std::apply;
@@ -297,13 +297,13 @@ class restriction_elements_t {
 	// using iterator = restriction_elements_iterator<D, Proj>;
 
 	class iterator : ra_iterable<iterator> {
-		typename extensions_t<D>::elements_t::iterator it_;
-		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj             proj_;
+		typename extents_t<D>::elements_t::iterator it_;
+		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
 	 public:
 		iterator() = default;
 
-		iterator(typename extensions_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+		iterator(typename extents_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
 
 		auto operator++() -> auto& {
 			++this->it_;
@@ -355,8 +355,8 @@ class restriction_elements_t {
 
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
-	extensions_t<D> xs_;
-	Proj            proj_;
+	extents_t<D> xs_;
+	Proj         proj_;
 
 	using system = typename multi::detail::function_system<std::decay_t<Proj>>::type;
 
@@ -370,18 +370,18 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v         = D;
 
-	using difference_type = typename extensions_t<D>::difference_type;
-	using index           = typename extensions_t<D>::index;
-	using size_type       = typename extensions_t<D>::size_type;
+	using difference_type = typename extents_t<D>::difference_type;
+	using index           = typename extents_t<D>::index;
+	using size_type       = typename extents_t<D>::size_type;
 
-	using indices_type = typename extensions_t<D>::indices_type;
+	using indices_type = typename extents_t<D>::indices_type;
 
-	using indices = typename extensions_t<D>::element;
+	using indices = typename extents_t<D>::element;
 
-	BOOST_MULTI_HD constexpr restriction(extensions_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+	BOOST_MULTI_HD constexpr restriction(extents_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
 
  private:
-	using element_ref_  = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+	using element_ref_  = typename invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
 	using element_type_ = std::decay_t<element_ref_>;
 
  public:
@@ -411,9 +411,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
-			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
-			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
-			return bind_front_t<Proj>{idx, std::move(proj_)} ^ extensions_t<D - 1>(xs_.base().tail());
+			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extents_t<D - 1>(xs_.base().tail());
+			return bind_front_t<Proj>{idx, std::move(proj_)} ^ extents_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
@@ -423,9 +423,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		// assert( extension().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
-			// return restriction<D - 1, decltype(ll)>(extensions_t<D - 1>(xs_.base().tail()), ll);
-			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extensions_t<D - 1>(xs_.base().tail());
-			return bind_front_t<Proj const&>{idx, proj_} ^ extensions_t<D - 1>(xs_.base().tail());
+			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extents_t<D - 1>(xs_.base().tail());
+			return bind_front_t<Proj const&>{idx, proj_} ^ extents_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
@@ -530,7 +530,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
-		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extensions_t<One>({extension()});
+		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extension()});
 	}
 
 	template<class Cursor, dimensionality_type DD = D>
@@ -561,11 +561,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	class iterator {
 		using function_ptr = std::decay_t<decltype(&std::declval<Proj const&>())>;
 
-		typename extensions_t<D>::iterator it_;
-		function_ptr                       Pproj_;
+		typename extents_t<D>::iterator it_;
+		function_ptr                    Pproj_;
 		// Proj const* Pproj_;
 
-		iterator(typename extensions_t<D>::iterator it, function_ptr Pproj) : it_{it}, Pproj_{Pproj} {}
+		iterator(typename extents_t<D>::iterator it, function_ptr Pproj) : it_{it}, Pproj_{Pproj} {}
 
 		friend restriction;
 
@@ -582,7 +582,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		~iterator() = default;
 
 	 private:
-		using element_ref_  = typename invoke_result_from_tuple<Proj, typename extensions_t<D>::element>::type;
+		using element_ref_  = typename invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
 		using element_type_ = std::decay_t<element_ref_>;
 
 	 public:
@@ -651,7 +651,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			if constexpr(D != 1) {
 				using std::get;
 				// auto ll = [idx = get<0>(*it_), proj = proj_](auto... rest) { return proj(idx, rest...); };
-				return restriction<D - 1, bind_front_t<Proj>>(extensions_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk (May 2026)
+				return restriction<D - 1, bind_front_t<Proj>>(extents_t<D - 1>((*it_).tail()), bind_front_t<Proj>{get<0>(*it_), *Pproj_});  // NOLINT(readability-redundant-parentheses) bug in clang-tidy trunk (May 2026)
 			} else {
 				using std::get;
 #ifdef __CUDA_ARCH__
@@ -689,29 +689,29 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 #ifdef __cpp_deduction_guides
 template<dimensionality_type D, typename Fun>
-restriction(multi::extensions_t<D>, Fun) -> restriction<D, Fun>;
+restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
-template<typename Fun> restriction(extensions_t<0>, Fun) -> restriction<0, Fun>;
-template<typename Fun> restriction(extensions_t<1>, Fun) -> restriction<1, Fun>;
-template<typename Fun> restriction(extensions_t<2>, Fun) -> restriction<2, Fun>;
-template<typename Fun> restriction(extensions_t<3>, Fun) -> restriction<3, Fun>;
-template<typename Fun> restriction(extensions_t<4>, Fun) -> restriction<4, Fun>;
-template<typename Fun> restriction(extensions_t<5>, Fun) -> restriction<5, Fun>;
-template<typename Fun> restriction(extensions_t<6>, Fun) -> restriction<6, Fun>;
+template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
+template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
+template<typename Fun> restriction(extents_t<2>, Fun) -> restriction<2, Fun>;
+template<typename Fun> restriction(extents_t<3>, Fun) -> restriction<3, Fun>;
+template<typename Fun> restriction(extents_t<4>, Fun) -> restriction<4, Fun>;
+template<typename Fun> restriction(extents_t<5>, Fun) -> restriction<5, Fun>;
+template<typename Fun> restriction(extents_t<6>, Fun) -> restriction<6, Fun>;
 #endif
 
 template<dimensionality_type D, typename F>
-auto restricted(F&& fun, extensions_t<D> const& ext) {  // nvc++ has 'restrict' reserved
+auto restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' reserved
 	return restriction<D, std::decay_t<F>>(ext, std::forward<F>(fun));
 }
 
 template<class F, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator^(F fun, extensions_t<D> const& xs) {
+BOOST_MULTI_HD constexpr auto operator^(F fun, extents_t<D> const& xs) {
 	return restriction<D, F>(xs, std::move(fun));
 }
 
 template<class F, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator->*(extensions_t<D> const& xs, F fun) {
+BOOST_MULTI_HD constexpr auto operator->*(extents_t<D> const& xs, F fun) {
 	return restriction<D, F>(xs, std::move(fun));
 }
 

@@ -346,8 +346,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(inq_case)
 	{
-		multi::array<double, 1> const x(multi::extensions_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
-		multi::array<double, 1> const y(multi::extensions_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 1> const x(multi::extents_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<double, 1> const y(multi::extents_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		using blas::conj;
 		using blas::dot;
