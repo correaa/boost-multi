@@ -131,7 +131,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( is.size() == 2 );
 		BOOST_TEST( js.size() == 3 );
 
-		multi::array<int, 2> const brr(multi::extents_t<2>{js, is});  // braced `{js, is}` would read as iota-rows (extension_t -> array<int,1>); use extents_t<2> for extents
+		// braced `{js, is}` would read as iota-rows (extension_t -> array<int,1>); use extents_t<2> for extents
+		multi::array<int, 2> const brr(multi::extents_t<2>{js, is});
 
 		BOOST_TEST( brr.size() == 3 );
 

@@ -46,10 +46,13 @@ namespace boost::multi {
 // accesses `begin(segment(last))` and `local(last)` below are valid (the usual segmented-range
 // invariant; e.g. an end position sits at `local == begin` of its segment, making the trailing
 // partial segment empty).
+
+namespace {
 template<class Iterator>
 struct segmented_iterator_traits {
 	using is_segmented_iterator = std::false_type;
 };
+}  // namespace
 
 namespace detail {
 namespace {

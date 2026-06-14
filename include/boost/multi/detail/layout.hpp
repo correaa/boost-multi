@@ -1296,7 +1296,7 @@ class bistride {
 	auto stride1() const { return stride1_; }
 	auto stride2() const { return stride2_; }
 
-	auto nelems2() const { return nelems2_; }
+	auto nelems2() const { return nelems2_; }  // cppcheck-suppress functionStatic;  // bug in cppcheck 2,.20
 
 	using category = std::random_access_iterator_tag;
 

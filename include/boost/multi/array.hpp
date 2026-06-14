@@ -861,7 +861,7 @@ struct                                                                          
  private:
 #ifdef __NVCOMPILER
 #pragma diag_push
-#pragma diag_suppress invalid_error_tag  // older nvc++ (e.g. 22) doesn't know the 'malloc_returns_non_pointer' tag below and would otherwise error on it
+#pragma diag_suppress invalid_error_tag           // older nvc++ (e.g. 22) doesn't know the 'malloc_returns_non_pointer' tag below and would otherwise error on it
 #pragma diag_suppress malloc_returns_non_pointer  // not recognized in nvc++ 22
 #endif
 #ifdef __clang__
