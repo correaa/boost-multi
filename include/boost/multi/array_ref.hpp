@@ -2644,15 +2644,19 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 		Ptr>;
 
 	auto segment() {
-		return subarray<Element, 1, Ptr>(
+		// a `subarray` carries constness in its element-pointer type (it has no IsConst flag), so for a
+		// const iterator the segment must use the const-rebound `pointer` (pointer_traits-based, fancy-safe)
+		return subarray<Element, 1, pointer>(
 			layout_t<1>(layout_t<0>(extents_t<0>{}), stride().stride2(), 0, stride().nelems2()),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
 			this->stride().segment_base(this->base())
 		);
 	}
 
 	auto local() {
+		// an `array_iterator` carries constness in its IsConst flag, not its pointer type, so keep `Ptr` and
+		// feed the stored `ptr_` (NOT base(), which const-rebinds the pointer and would not match the Ptr-typed ctor)
 		return array_iterator<Element, 1, Ptr, IsConst, IsMove, typename Stride::stride2_type>(
-			this->base(), layout_t<0>(extents_t<0>{}), stride().stride2()
+			this->ptr_, layout_t<0>(extents_t<0>{}), stride().stride2()
 		);
 	}
 

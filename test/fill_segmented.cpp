@@ -42,7 +42,7 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 
 namespace multi = boost::multi;
 
-auto main() -> int {
+auto main() -> int {  // NOLINT(readability-function-cognitive-complexity)
 	multi::array<int, 2> arr1({3, 5});
 	std::fill(arr1().flatted().begin(), arr1().flatted().end(), 7);
 
@@ -83,6 +83,25 @@ auto main() -> int {
 	BOOST_TEST( (arr2.flattened().begin() + 3).local() == arr2[1].begin() );
 	BOOST_TEST( (arr2.flattened().begin() + 4).local() == arr2[1].begin() + 1 );
 	BOOST_TEST( (arr2.flattened().begin() + 5).local() == arr2[1].begin() + 2 );
+
+	// segment()/local() must be const-correct on a const array (regression for the bug
+	// where they hardcoded the non-const pointer type and failed to compile)
+	{
+		multi::array<int, 2> const carr = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		BOOST_TEST( carr.flattened().begin().segment().size() == 3 );
+		BOOST_TEST( carr.flattened().begin().segment().num_elements() == 3 );
+		BOOST_TEST( carr.flattened().begin().segment()[0] == 1 );
+
+		BOOST_TEST( carr.flattened().begin().segment() == carr[0] );
+		BOOST_TEST( (carr.flattened().begin() + 4).segment() == carr[1] );
+
+		BOOST_TEST( (carr.flattened().begin() + 0).local() == carr[0].begin() );
+		BOOST_TEST( (carr.flattened().begin() + 4).local() == carr[1].begin() + 1 );
+	}
 
 	return boost::report_errors();
 }
