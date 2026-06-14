@@ -927,15 +927,6 @@ struct elements_iterator_t
 	elements_iterator_t(elements_iterator_t const&) = default;
 
 	auto operator=(elements_iterator_t const&) -> elements_iterator_t& = default;
-	// BOOST_MULTI_HD constexpr auto operator=(elements_iterator_t const& other) -> elements_iterator_t& {  // fixes (?) warning: definition of implicit copy assignment operator for 'elements_iterator_t<boost::multi::array<double, 3> *, boost::multi::layout_t<1>>' is deprecated because it has a user-declared copy constructor [-Wdeprecated-copy]
-	// 	if(&other == this) {
-	// 		return *this;
-	// 	}  // for cert-oop54-cpp
-	// 	base_ = other.base_;
-	// 	xs_   = other.xs_;
-	// 	n_    = other.n_;
-	// 	return *this;
-	// }
 
 	BOOST_MULTI_HD constexpr auto operator++() -> elements_iterator_t& {
 		apply([&exts = this->xs_](auto&... idxs) -> auto { return exts.next_canonical(idxs...); }, ns_);
@@ -2585,7 +2576,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		);
 	}
 
+ private:
 	using element_move_ptr = multi::move_ptr<typename subarray::element, typename subarray::element_ptr>;
+
+ public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto element_moved() & { return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_}); }
 	constexpr auto element_moved() && { return element_moved(); }
@@ -3943,10 +3937,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto celements() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }
 
-	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extents(), typename array_ref::element_move_ptr{this->base_}); }
-	constexpr auto element_moved() && { return element_moved(); }
-	// cppcheck-suppress-end duplInheritedMember ; to overwrite
+	// // cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	// constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extents(), typename array_ref::element_move_ptr{this->base_}); }
+	// constexpr auto element_moved() && { return element_moved(); }
+	// // cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
