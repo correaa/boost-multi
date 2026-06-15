@@ -1042,6 +1042,9 @@ cuda-13.3.0:
   stage: build
   allow_failure: false
   image: nvcr.io/nvidia/cuda:13.3.0-devel-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - nvidia-gpu
@@ -1639,6 +1642,9 @@ pages:
 
 conan:
   stage: build
+  only:
+    refs:
+      - develop
   script:
     - apt-get -qq install --no-install-recommends -y python3 python3-pip cmake ninja-build gcc g++ make
     - pip3 install conan --break-system-packages
