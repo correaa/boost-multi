@@ -860,9 +860,9 @@ nvhpc-25.7:  # highest nvhpc that is not 26.3 (26.3 has a compiler bug), tested 
   script:
     - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - ls -all /opt/nvidia/hpc_sdk/Linux_x86_64/
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ --version
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/25.7/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2025/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/25.7/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
