@@ -7,7 +7,7 @@
 In this example, we initialize a 2-dimensional array of numbers, and then we inspect the properties of this array, copy the array, and manipulate the element values.
 The example can be followed link:https://godbolt.org/z/b8ao5Wz1T[online on Compiler Explorer].
 
-For the impatient you can jump directly to the documentation of the main type of this library, `multi::array` in the ref:reference:index.adoc[API reference section] to see all the operations available at once.
+For the impatient you can jump directly to the documentation of the main type of this library, `multi::array` in the xref:reference:index.adoc[API reference section] to see all the operations available at once.
 
 The individual elements are initialized from a nested rectangular list.
 
