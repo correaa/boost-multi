@@ -2639,8 +2639,26 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 
 	auto segment() {
 		return subarray<Element, 1, Ptr>(
-			layout_t<1>(layout_t<0>(extents_t<0>{}), stride().stride2(), 0, stride().nelems2()),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
+			layout_t<1>(
+				layout_t<0>(extents_t<0>{}),
+				stride().stride2(),
+				0,
+				stride().nelems2()
+			),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
 			this->stride().segment_base(this->base())
+		);
+	}
+
+	auto global() {
+		return array_iterator<Element, 2, Ptr, IsConst, IsMove, typename Stride::stride2_type>(
+			this->stride().segment_base(this->base()),
+			layout_t<1>(
+				layout_t<0>(extents_t<0>{}),
+				stride().stride2(),
+				0,
+				stride().nelems2()
+			),
+			stride().stride1()
 		);
 	}
 

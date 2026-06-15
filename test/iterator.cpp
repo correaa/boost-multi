@@ -362,6 +362,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][0] == 5 );
 		BOOST_TEST( *(arr.begin()->begin()) == 5 );
 
+		auto it = arr.begin();
+		static_assert(std::is_same_v<decltype(it->begin()), decltype((*it).begin())>);
+
+		BOOST_TEST( it != arr.end() );
+
 		// arr[0][0] = 6;  // ok, doesn't compile, it is read-only
 		// *(arr.begin()->begin()) = 6;  // ok, doesn't work, it is read-only
 		// BOOST_TEST( arr[0][0] == 6 );
