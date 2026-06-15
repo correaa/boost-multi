@@ -15,7 +15,7 @@
 namespace ion {
 template<class T>
 struct segmented_iterator_traits;
-}
+}  // end namespace ion
 
 // based on https://boostedcpp.net/2026/05/18/neoclassical-c-segmented-iterators-revisited-1/
 namespace ion {
