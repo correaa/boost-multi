@@ -12,6 +12,50 @@
 #include <algorithm>
 #include <iostream>
 
+namespace ion {
+template<class T>
+struct segmented_iterator_traits;
+}
+
+// based on https://boostedcpp.net/2026/05/18/neoclassical-c-segmented-iterators-revisited-1/
+namespace ion {
+template<typename E, ::boost::multi::dimensionality_type D, typename EP, bool IsConst, bool IsMove, typename Stride>
+struct segmented_iterator_traits<::boost::multi::detail::array_iterator<E, D, EP, IsConst, IsMove, Stride>> {
+	using segment_iterator = ::boost::multi::detail::array_iterator<E, 2, EP, IsConst, IsMove, typename Stride::stride2_type>;
+	using segmented_iterator_type = ::boost::multi::detail::array_iterator<E, D, EP, IsConst, IsMove, Stride>;
+	static auto segment(segmented_iterator_type self) { return self.outer(); }
+	static auto local(segmented_iterator_type self) { return self.local(); }
+};
+
+template<class SegIt, class T>
+void fill_segmented(SegIt first, SegIt last, T x) {
+	typedef ion::segmented_iterator_traits<SegIt> traits;
+	typename traits::segment_iterator sf = traits::segment(first);
+	typename traits::segment_iterator sl = traits::segment(last);
+	// typename traits::local_iterator   lf = traits::local(first);
+
+	// auto sf = first.outer();
+	// auto sl = last.outer();
+
+	auto lf = first.local();
+
+	while(true) {  // NOLINT(altera-unroll-loops)
+		// typename traits::local_iterator le =
+		//     (sf == sl) ? traits::local(last) : traits::end(sf);
+
+		auto le = (sf == sl) ? last.local() : (*sf).end();
+
+		std::fill(lf, le, x);
+		if(sf == sl) {
+			break;
+		}
+		// lf = traits::begin(++sf);
+		lf = (*(++sf)).begin();
+	}
+}
+
+}
+
 namespace {
 
 template<class SegIt, class T>
@@ -21,8 +65,8 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 	// typename traits::segment_iterator sl = traits::segment(last);
 	// typename traits::local_iterator   lf = traits::local(first);
 
-	auto sf = first.global();
-	auto sl = last.global();
+	auto sf = first.outer();
+	auto sl = last.outer();
 
 	auto lf = first.local();
 
@@ -63,6 +107,16 @@ auto main() -> int {
 
 	BOOST_TEST( arr2.flattened().begin().segment().num_elements() == 3 );
 
+	// span to one-past-end of the flattened (segmented) layout: (nsegs-1) outer strides + last segment
+	BOOST_TEST( arr2.flattened().layout().nelems() == 6 );  // contiguous 2x3: 6 - 3 + 3, NOT 6 + 3 + 3
+
+	{
+		multi::array<int, 2> big({2, 5}, 0);
+		auto                 strided = big({0, 2}, {0, 3});  // 2x3 view with outer stride 5 (gap between rows)
+		// must skip the inter-row gap past the last element: 5 (one outer stride) + 3 (last segment) == 8, NOT 5 + 5 + 3
+		BOOST_TEST( strided.flattened().layout().nelems() == 8 );
+	}
+
 	BOOST_TEST( arr2[0].size() == 3 );
 
 	BOOST_TEST( arr2[0][0] == 1 );
@@ -90,8 +144,10 @@ auto main() -> int {
 	std::cout << "arr2 = " << arr2 << '\n';
 	std::cout << "arr2.flattened().begin().segment() = " << arr2.flattened().begin().segment() << '\n';
 	std::cout << "arr2.flattened().(begin() + 3).segment() = " << (arr2.flattened().begin() + 3).segment() << '\n';
-	std::cout << "*(arr2.flattened().begin().global()) = " << *(arr2.flattened().begin().global()) << '\n';
-	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << *((arr2.flattened().begin() + 3).global()) << '\n';
+	std::cout << "*(arr2.flattened().begin().global()) = " << *(arr2.flattened().begin().outer()) << '\n';
+	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << *((arr2.flattened().begin() + 3).outer()) << '\n';
+
+	ion::fill_segmented(arr2.flattened().begin(), arr2.flattened().end(), 7);
 
 	fill_segmented(arr2.flattened().begin(), arr2.flattened().end(), 7);
 
