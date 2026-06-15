@@ -28,9 +28,10 @@ struct segmented_iterator_traits<::boost::multi::detail::array_iterator<E, D, EP
 	static auto local(segmented_iterator_type self) { return self.local(); }
 };
 
+namespace {
 template<class SegIt, class T>
 void fill_segmented(SegIt first, SegIt last, T x) {
-	typedef ion::segmented_iterator_traits<SegIt> traits;
+	using traits = ion::segmented_iterator_traits<SegIt>;
 
 	typename traits::segment_iterator sf = traits::segment(first);
 	typename traits::segment_iterator sl = traits::segment(last);
@@ -55,8 +56,9 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 		lf = (*(++sf)).begin();
 	}
 }
+}  // end namespace
 
-}  // namespace ion
+}  // end namespace ion
 
 namespace {
 
