@@ -21,8 +21,9 @@ struct segmented_iterator_traits;
 namespace ion {
 template<typename E, ::boost::multi::dimensionality_type D, typename EP, bool IsConst, bool IsMove, typename Stride>
 struct segmented_iterator_traits<::boost::multi::detail::array_iterator<E, D, EP, IsConst, IsMove, Stride>> {
-	using segment_iterator = ::boost::multi::detail::array_iterator<E, 2, EP, IsConst, IsMove, typename Stride::stride2_type>;
+	using segment_iterator        = ::boost::multi::detail::array_iterator<E, 2, EP, IsConst, IsMove, typename Stride::stride2_type>;
 	using segmented_iterator_type = ::boost::multi::detail::array_iterator<E, D, EP, IsConst, IsMove, Stride>;
+
 	static auto segment(segmented_iterator_type self) { return self.outer(); }
 	static auto local(segmented_iterator_type self) { return self.local(); }
 };
@@ -30,6 +31,7 @@ struct segmented_iterator_traits<::boost::multi::detail::array_iterator<E, D, EP
 template<class SegIt, class T>
 void fill_segmented(SegIt first, SegIt last, T x) {
 	typedef ion::segmented_iterator_traits<SegIt> traits;
+
 	typename traits::segment_iterator sf = traits::segment(first);
 	typename traits::segment_iterator sl = traits::segment(last);
 	// typename traits::local_iterator   lf = traits::local(first);
@@ -54,7 +56,7 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 	}
 }
 
-}
+}  // namespace ion
 
 namespace {
 
