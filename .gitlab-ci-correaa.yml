@@ -861,6 +861,7 @@ nvhpc-25.7:  # highest nvhpc that is not 26.3 (26.3 has a compiler bug), tested 
     - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libfftw3-dev pkg-config
     - ls -all /opt/nvidia/hpc_sdk/Linux_x86_64/
     - ls -all /opt/nvidia/hpc_sdk/Linux_x86_64/25.7
+    - ls -all /opt/nvidia/hpc_sdk/Linux_x86_64/25.7/compilers
     - /opt/nvidia/hpc_sdk/Linux_x86_64/25.7/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/25.7/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"
