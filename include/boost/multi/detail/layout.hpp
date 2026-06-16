@@ -166,7 +166,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extents_t<D - 1>::element>;
 
-	extents_t() = default;
+	extents_t() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) intentionally trivial; default-init by design
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -210,11 +210,11 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	template<
 		class... Exts,
-		std::enable_if_t<
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
 			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
 			&& (std::is_convertible_v<Exts, index_extension> && ...),
 			int> = 0
-	>  // NOLINT(modernize-use-constraints) TODO(correaa)
+	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
 	: base_{index_extension(exts)...} {}
 
