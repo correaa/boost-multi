@@ -2647,10 +2647,32 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 		typename std::pointer_traits<Ptr>::template rebind<Element const>,
 		Ptr>;
 
-	auto segment() {
+	auto segment() const {
 		return subarray<Element, 1, Ptr>(
-			layout_t<1>(layout_t<0>(extents_t<0>{}), stride().stride2(), 0, stride().nelems2()),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
-			this->stride().segment_base(this->base())
+			layout_t<1>(
+				layout_t<0>(extents_t<0>{}),
+				stride().stride2(),
+				0,
+				stride().nelems2()
+			),  // scalar sub-layout (num_elements()==1); a default `{}` would have num_elements()==0 and break `elements()`/`operator==`
+			this->stride().segment_base(this->ptr_)
+		);
+	}
+
+	// using segment_iterator = ::boost::multi::detail::array_iterator<Element, 2, Ptr, IsConst, IsMove, typename Stride::stride2_type>;
+
+	// using segment_iterator = array_iterator<Element, 2, Ptr, IsConst, IsMove, typename Stride::stride2_type>;
+
+	auto outer() const {
+		return array_iterator<Element, 2, Ptr, IsConst, IsMove, typename Stride::stride2_type>(
+			this->stride().segment_base(this->ptr_),
+			layout_t<1>(
+				layout_t<0>(extents_t<0>{}),
+				stride().stride2(),
+				0,
+				stride().nelems2()
+			),
+			stride().stride1()
 		);
 	}
 
