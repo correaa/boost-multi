@@ -348,13 +348,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 1> const Aarr(10);
 
-		multi::array<multi::array<double, 2>::index, 1> const Barr(Aarr.extension().begin(), Aarr.extension().end());
+		multi::array<multi::array<double, 2>::index, 1> const Barr(Aarr.extent().begin(), Aarr.extent().end());
 
 		BOOST_TEST( Barr[0] == 0 );
 		BOOST_TEST( Barr[1] == 1 );
 		BOOST_TEST( Barr[9] == 9 );
 
-		multi::array<multi::array<double, 1>::index, 1> const Carr(Aarr.extension());
+		multi::array<multi::array<double, 1>::index, 1> const Carr(Aarr.extent());
 		BOOST_TEST( Carr[0] == 0 );
 		BOOST_TEST( Carr[1] == 1 );
 		BOOST_TEST( Carr[9] == 9 );

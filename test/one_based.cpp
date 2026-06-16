@@ -63,8 +63,8 @@ auto main() -> int {
         },
 								0);
 
-		BOOST_TEST( A1.extension().front() ==  1);
-		BOOST_TEST( A1.extension().back()  == 10);
+		BOOST_TEST( A1.extent().front() ==  1);
+		BOOST_TEST( A1.extent().back()  == 10);
 
 		A1[1][1]   = 10;
 		A1[2][2]   = 20;
@@ -73,8 +73,8 @@ auto main() -> int {
 
 		auto const&& A0 = A1.reindexed(0, 0);
 
-		BOOST_TEST( A0.extension().front() == 0);
-		BOOST_TEST( A0.extension().back()  == 9);
+		BOOST_TEST( A0.extent().front() == 0);
+		BOOST_TEST( A0.extent().back()  == 9);
 
 		BOOST_TEST( A0[0][0]   == 10 );
 		BOOST_TEST( A0[1][1]   == 20 );
@@ -108,8 +108,8 @@ auto main() -> int {
 		BOOST_TEST( Af.elements()[Af.num_elements()-1] == 990 );
 		BOOST_TEST( size(Af) == 10 );
 
-		BOOST_TEST( extension(Af).first()  ==  1 );
-		BOOST_TEST( extension(Af).last() == 11 );
+		BOOST_TEST( Af.extent().first()  ==  1 );
+		BOOST_TEST( Af.extent().last() == 11 );
 
 		multi::array<int, 2> BB({
 									{0, 10},

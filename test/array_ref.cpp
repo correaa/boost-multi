@@ -279,16 +279,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( diff == 0 );
 
 		BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-		for(auto idx : extension(mar.stenciled({2, 4}))) {  // NOLINT(altera-unroll-loops)
+		for(auto idx : mar.stenciled({2, 4}).extent()) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 		}
 
 		// clang-format off
-	multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});  // NOLINT(fuchsia-default-arguments-calls) std::string
+		multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});  // NOLINT(fuchsia-default-arguments-calls) std::string
 		// clang-format on
 
-		BOOST_TEST( size(arr) == 5 );
-		BOOST_TEST( extension(arr) == multi::iextension(2, 7) );
+		BOOST_TEST( arr.size() == 5 );
+		BOOST_TEST( arr.extent() == multi::iextension(2, 7) );
 		arr[2] = "a";
 		arr[3] = "b";
 		arr[4] = "c";
@@ -346,8 +346,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
 		BOOST_TEST( mar[0].reindexed(1).sizes() == mar[0].sizes() );
-		BOOST_TEST( mar[0].reindexed(1).extension().first() == mar[0].extension().first () + 1 );
-		BOOST_TEST( mar[0].reindexed(1).extension().last() == mar[0].extension().last() + 1 );
+		BOOST_TEST( mar[0].reindexed(1).extent().first() == mar[0].extent().first () + 1 );
+		BOOST_TEST( mar[0].reindexed(1).extent().last() == mar[0].extent().last() + 1 );
 
 		auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
 		BOOST_TEST( diff == 0 );
@@ -444,7 +444,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// clang-format off
 	multi::array_ref<double, 1> aref({{1, 3}}, vec.data());
 		// clang-format on
-		BOOST_TEST( aref.extension() == multi::iextension(1, 3) );
+		BOOST_TEST( aref.extent() == multi::iextension(1, 3) );
 		BOOST_TEST( &aref[1] == vec.data() );
 	}
 
@@ -613,35 +613,35 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> const arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
 
-		BOOST_TEST( arr.extension().first()  == 1 );
-		BOOST_TEST( arr.extension().last () == 3 );
+		BOOST_TEST( arr.extent().first()  == 1 );
+		BOOST_TEST( arr.extent().last () == 3 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_1D)
 	{
 		// clang-format off
-	// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-	std::array<std::string, 5> arr = {{"a", "b", "c", "d", "e"}};
+		// NOLINTNEXTLINE(fuchsia-default-arguments-calls)
+		std::array<std::string, 5> arr = {{"a", "b", "c", "d", "e"}};
 		// clang-format on
 		multi::array_ref<std::string, 1>&& mar = *&multi::array_ref<std::string, 1>{arr};
 		// multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
 
-		BOOST_TEST(  extension(mar).first() == 0 );
-		BOOST_TEST(  extension(mar).last()  == 5 );
+		BOOST_TEST(  mar.extent().first() == 0 );
+		BOOST_TEST(  mar.extent().last()  == 5 );
 
 		auto&& mar1 = mar.reindexed(1);
 
-		BOOST_TEST( extension(mar1).size() == extension(mar).size() );
+		BOOST_TEST( mar1.extent().size() == mar.extent().size() );
 
-		BOOST_TEST( mar1.extension() == extension(mar1) );
-		BOOST_TEST(  extension(mar1).first() == 1 );
-		BOOST_TEST(  mar1.extension().first() == 1 );
-		BOOST_TEST(  mar1.extension().last()  == 6 );
-		BOOST_TEST( *extension(mar1).begin() == 1 );
+		BOOST_TEST( mar1.extent() == extent(mar1) );
+		BOOST_TEST(  extent(mar1).first() == 1 );
+		BOOST_TEST(  mar1.extent().first() == 1 );
+		BOOST_TEST(  mar1.extent().last()  == 6 );
+		BOOST_TEST( *extent(mar1).begin() == 1 );
 
-		BOOST_TEST( size(mar1) == size(mar) );
-		BOOST_TEST( mar1.layout().extension().first() == 1 );
-		BOOST_TEST( extension(mar1).first() == 1 );
+		BOOST_TEST( mar1.size() == mar.size() );
+		BOOST_TEST( mar1.layout().extent().first() == 1 );
+		BOOST_TEST( extent(mar1).first() == 1 );
 		BOOST_TEST( &mar1[1]     == &arr[0] );     // NOLINT(readability-container-data-pointer) test access
 		BOOST_TEST(  mar1.base() == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
 		BOOST_TEST(  mar1.base() ==  arr.data() );

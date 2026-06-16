@@ -91,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[&, unnamed = watch{}] {
 			auto const repeat = 40;
 			std::for_each(
-				multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(),  // cppcheck-suppress mismatchingContainerExpression ;
+				multi::extent_t{0, repeat}.begin(), multi::extent_t{0, repeat}.end(),  // cppcheck-suppress mismatchingContainerExpression ;
 				[&fdft, &arr, &res](auto /*idx*/) {
 					fdft.execute(arr.base(), res.base());
 					std::rotate(res.begin(), res.begin() + res.size() / 2, res.end());  // NOLINT(modernize-use-ranges) for C++20

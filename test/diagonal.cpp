@@ -17,8 +17,8 @@ namespace {
 template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element sum{0};
-	for(auto i : arr.extension()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += arr[i][i];            // cppcheck-suppress useStlAlgorithm ;
+	for(auto i : arr.extent()) {  // NOLINT(altera-unroll-loops) testing loops
+		sum += arr[i][i];         // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }

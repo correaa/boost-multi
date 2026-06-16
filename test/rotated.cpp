@@ -343,8 +343,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const [X_copy, Y_copy] = meshgrid_copy(x, y);
 
-		for(auto i : x.extension()) {
-			for(auto j : y.extension()) {
+		for(auto i : x.extent()) {
+			for(auto j : y.extent()) {
 				BOOST_TEST( X[i][j] == X_copy[i][j] );
 				BOOST_TEST( Y[i][j] == Y_copy[i][j] );
 			}

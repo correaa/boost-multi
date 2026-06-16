@@ -597,7 +597,7 @@ auto transposed(Arr2D&& arr)
 // }
 
 template<class T, std::enable_if_t<!has_extents<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extensions_type { return {}; }
+constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extents_type { return {}; }
 
 template<class T, std::size_t N>
 constexpr auto extents(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility

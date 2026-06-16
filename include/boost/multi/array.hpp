@@ -242,12 +242,12 @@ struct                                                                          
 
 	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
+		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 	explicit constexpr dynamic_array(decay_type&& other) noexcept
 	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});  // = {};  careful! this is the place where layout can become invalid
+		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
@@ -299,7 +299,7 @@ struct                                                                          
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L)  //  && !defined(_MSC_VER)
  private:
-	void extent_(typename dynamic_array::extensions_type const& extensions) {  // NOLINT(readability-redundant-typename) needed for C++17
+	void extent_(typename dynamic_array::extents_type const& extensions) {  // NOLINT(readability-redundant-typename) needed for C++17
 		auto new_layout = typename dynamic_array::layout_type{extensions};
 		if(new_layout.num_elements() == 0) {
 			return;
@@ -397,7 +397,7 @@ struct                                                                          
 #endif
 	}
 
-	explicit dynamic_array(typename dynamic_array::extensions_type extensions, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
+	explicit dynamic_array(typename dynamic_array::extents_type extensions, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                             // NOLINT(readability-redundant-typename)
@@ -413,7 +413,7 @@ struct                                                                          
 		std::enable_if_t<std::is_convertible_v<typename std::iterator_traits<It>::value_type, T>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// NOLINT(readability-redundant-typename)
 	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-		typename dynamic_array::extensions_type exts, It elements_first
+		typename dynamic_array::extents_type exts, It elements_first
 	)
 	: array_alloc{},
 	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename) for C++23
@@ -426,7 +426,7 @@ struct                                                                          
 
 	// NOLINT(readability-redundant-typename)
 	explicit constexpr dynamic_array(  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-		typename dynamic_array::extensions_type exts, typename dynamic_array::element const& elem
+		typename dynamic_array::extents_type exts, typename dynamic_array::element const& elem
 	)
 	: array_alloc{},
 	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
@@ -468,7 +468,7 @@ struct                                                                          
 	// to make cling cppyy overload resolution easier
 	template<class = void>  // gives low priority
 	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
-	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extensions_type{sizes...}; }, exts)) {}
+	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extents_type{sizes...}; }, exts)) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
@@ -621,7 +621,7 @@ struct                                                                          
 		uninitialized_copy_elements(other.data_elements());
 	}
 
-	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extensions_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
+	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extents_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
 	explicit dynamic_array(ExecutionPolicy&& policy, dynamic_array const& other)
 	: array_alloc{multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())}, ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), other.data_elements()), extents(other)} {
 		assert(this->stride() != 0);
@@ -720,13 +720,13 @@ struct                                                                          
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
-		this->layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extensions_type{});
+		this->layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});
 		assert(this->stride() != 0);
 	}
 
  public:
 	constexpr dynamic_array() noexcept
-	: array_alloc{}, ref_(nullptr, typename dynamic_array::extensions_type{}) {
+	: array_alloc{}, ref_(nullptr, typename dynamic_array::extents_type{}) {
 		assert(this->stride() != 0);
 		assert(this->size() == 0);
 	}
@@ -1097,7 +1097,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	using ref_::operator!=;
 
 	explicit dynamic_array(
-		typename dynamic_array::extensions_type const& extensions,
+		typename dynamic_array::extents_type const& extensions,
 		typename dynamic_array::element const& elem, allocator_type const& alloc
 	)
 	: array_alloc{alloc},
@@ -1106,7 +1106,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	}
 
 	explicit dynamic_array(typename dynamic_array::element const& elem, allocator_type const& alloc)
-	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}
+	: dynamic_array(typename dynamic_array::extents_type{}, elem, alloc) {}
 
 	template<typename OtherT, typename OtherEPtr, class OtherLayout>
 	explicit dynamic_array(multi::const_subarray<OtherT, 0, OtherEPtr, OtherLayout> const& other, allocator_type const& alloc)
@@ -1156,10 +1156,10 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	}
 
 	explicit dynamic_array(
-		typename dynamic_array::extensions_type const& extensions,
-		typename dynamic_array::element const&         elem
-	)  // 2
-	: array_alloc{}, ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements()), nullptr), extensions) {
+		typename dynamic_array::extents_type const& exts,
+		typename dynamic_array::element const&      elem
+	)
+	: array_alloc{}, ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{exts}.num_elements()), nullptr), exts) {
 		uninitialized_fill(elem);
 	}
 
@@ -1196,13 +1196,13 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)  // 3
 	: dynamic_array(extension, value, allocator_type{}) {}
 
-	explicit dynamic_array(typename dynamic_array::extensions_type const& extensions, allocator_type const& alloc)  // 3
+	explicit dynamic_array(typename dynamic_array::extents_type const& extensions, allocator_type const& alloc)  // 3
 	: array_alloc{alloc}, ref_(dynamic_array::allocate(typename dynamic_array::layout_t{extensions}.num_elements()), extensions) {
 		// assert(this->stride() != 0);
 		uninitialized_value_construct();
 	}
 
-	explicit dynamic_array(typename dynamic_array::extensions_type const& extensions)  // 3
+	explicit dynamic_array(typename dynamic_array::extents_type const& extensions)  // 3
 	: dynamic_array(extensions, allocator_type{}) {}
 
 	dynamic_array(dynamic_array const& other, allocator_type const& alloc)  // 5b
@@ -1457,7 +1457,7 @@ struct
 	}
 #endif
 
-	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array& {  // NOLINT(readability-redundant-typename)
+	auto reextent(typename array::extents_type const& /*empty_extensions*/) -> array& {  // NOLINT(readability-redundant-typename)
 		return *this;
 	}
 
@@ -1634,7 +1634,7 @@ struct array : unique_array<T, D, Alloc> {
 		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
 			this->alloc() = std::move(other.alloc());
 		}
-		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extensions_type{}));
+		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
 		return *this;
 	}
 
@@ -1727,7 +1727,7 @@ struct array : unique_array<T, D, Alloc> {
 
 	friend void swap(array& self, array& other) noexcept(true /*noexcept(self.swap(other))*/) { self.swap(other); }
 
-	void assign(typename array::extensions_type extensions, typename array::element const& elem) {
+	void assign(typename array::extents_type extensions, typename array::element const& elem) {
 		if(array::extents() == extensions) {
 			adl_fill_n(this->base_, this->num_elements(), elem);
 		} else {
@@ -1771,7 +1771,7 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
-	auto reextent(typename array::extensions_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
+	auto reextent(typename array::extents_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
 		if(exts == this->extents()) {
 			return std::move(*this);
 		}
@@ -1801,7 +1801,7 @@ struct array : unique_array<T, D, Alloc> {
 		return std::move(*this);
 	}
 
-	auto reextent(typename array::extensions_type const& extensions) & -> array& {  // NOLINT(readability-redundant-typename)
+	auto reextent(typename array::extents_type const& extensions) & -> array& {  // NOLINT(readability-redundant-typename)
 		if(extensions == this->extents()) {
 			return *this;
 		}
@@ -1834,7 +1834,7 @@ struct array : unique_array<T, D, Alloc> {
 	[[nodiscard]] constexpr auto operator+() const& { return array{*this}; }         // cppcheck-suppress duplInheritedMember ; to overwrite
 	[[nodiscard]] constexpr auto operator+() && { return array{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to overwrite  //-V::659 move version
 
-	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {  // NOLINT(readability-redundant-typename)
+	auto reextent(typename array::extents_type const& exs, typename array::element const& elem) & -> array& {  // NOLINT(readability-redundant-typename)
 		if(exs == this->extents()) {
 			return *this;
 		}

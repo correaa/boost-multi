@@ -74,8 +74,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::array<complex, 2> out = in;
 				{
 					watch const unnamed{"transposition with loop   %ws wall, CPU (%p%)\n"s};
-					std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
-						auto ext = multi::extension_t(0L, idx);
+					std::for_each(out.extent().begin(), out.extent().end(), [&out](auto idx) {
+						auto ext = multi::extent_t(0L, idx);
 						std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
 							std::swap(out[idx][jdx], out[jdx][idx]);
 						});
@@ -88,8 +88,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::array<complex, 2> out = in;
 				{
 					watch const unnamed{"transposition with loop 2 %ws wall, CPU (%p%)\n"s};
-					std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
-						auto ext = multi::extension_t(idx + 1, out.size());
+					std::for_each(out.extent().begin(), out.extent().end(), [&out](auto idx) {
+						auto ext = multi::extent_t(idx + 1, out.size());
 						std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
 							std::swap(out[idx][jdx], out[jdx][idx]);
 						});

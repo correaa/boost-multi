@@ -34,7 +34,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> arr({10});
 		multi::array<double, 1> arr2;
 
-		auto const is = intersection(arr.extension(), arr2.extension());
+		auto const is = intersection(arr.extent(), arr2.extent());
 		BOOST_TEST( arr(is).is_empty() );
 		arr2(is) = arr(is);
 
@@ -62,7 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple)
 	{
 		{
-			multi::array<double, 2>::extensions_type const ext = {3, 4};
+			multi::array<double, 2>::extents_type const ext = {3, 4};
 
 			multi::array<double, 2> const arr(ext, 44.0);
 
@@ -128,7 +128,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(           arr[1][2] == "h"                                     );
 
 		BOOST_TEST(      size(arr          ({1, 3}, {2, 5})) == 2                  );
-		BOOST_TEST( extension(arr          ({1, 3}, {2, 5})).first() == 0          );
+		BOOST_TEST(    extent(arr          ({1, 3}, {2, 5})).first() == 0          );
 		BOOST_TEST(           arr          ({1, 3}, {2, 5}).num_elements() == 2*3L );
 		BOOST_TEST(           arr          ({1, 3}, {2, 5}).num_elements() == 2*3L );
 		BOOST_TEST(           arr          ({1, 3}, {2, 5})[0][0] == "h"           );

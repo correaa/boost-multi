@@ -181,7 +181,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::corigin;
 		using multi::dimensionality;
-		using multi::extension;
+		using multi::extent;
 		using multi::extents;
 		using multi::num_elements;
 		using multi::size;
@@ -189,8 +189,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			int arr[4] = {10, 20, 30, 40};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 			BOOST_TEST( dimensionality(arr) == 1 );
-			BOOST_TEST( extension(arr).first() == 0 );
-			BOOST_TEST( extension(arr).last() == 4 );
+			BOOST_TEST( extent(arr).first() == 0 );
+			BOOST_TEST( extent(arr).last() == 4 );
 
 			BOOST_TEST( size(arr) == 4 );
 
@@ -213,9 +213,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{10, 20, 30},
 				{40, 50, 60},
 			};
+
+			using multi::dimensionality;
 			BOOST_TEST( dimensionality(arr) == 2 );
-			BOOST_TEST( extension(arr).first() == 0 );
-			BOOST_TEST( extension(arr).last() == 2 );
+
+			using multi::extent;
+			BOOST_TEST( extent(arr).first() == 0 );
+			BOOST_TEST( extent(arr).last() == 2 );
 
 			arr[0][0] = 990;
 

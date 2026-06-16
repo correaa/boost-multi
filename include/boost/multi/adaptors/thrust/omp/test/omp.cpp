@@ -65,19 +65,19 @@ auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
 #if !defined(__NVCOMPILER) && !defined(_MSC_VER)
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto const i : arr.extension()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(auto const i : arr.extent()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// cppcheck-suppress useStlAlgorithm ;  // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #elif defined(_MSC_VER)
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto i = arr.extension().front(); i < arr.extension().back() + 1; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(auto i = arr.extent().front(); i < arr.extent().back() + 1; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 #else
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto it = arr.extension().begin(); it < arr.extension().end(); ++it) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(auto it = arr.extent().begin(); it < arr.extent().end(); ++it) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[*it];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}

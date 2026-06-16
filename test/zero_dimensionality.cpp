@@ -40,23 +40,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			// vvv--- TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
-			multi::dynamic_array<double, 0> a0 = multi::dynamic_array<double, 0>{45.0};
+			multi::dynamic_array<int, 0> a0 = multi::dynamic_array<int, 0>{45};
 			BOOST_TEST( a0.num_elements() == 1 );
-			BOOST_TEST( a0 == 45.0 );
+			BOOST_TEST( a0 == 45 );
 
-			a0 = multi::dynamic_array<double, 0>{60.0};
-			BOOST_TEST( a0 == 60.0 );
+			a0 = multi::dynamic_array<int, 0>{60};
+			BOOST_TEST( a0 == 60 );
 		}
 		{
-			std::allocator<double> const alloc;
+			std::allocator<int> const alloc;
 
-			multi::dynamic_array<double, 0> a0(45.0, alloc);
+			multi::dynamic_array<int, 0> a0(45, alloc);
 
 			BOOST_TEST( a0.num_elements() == 1 );
-			BOOST_TEST( a0 == 45.0 );
+			BOOST_TEST( a0 == 45 );
 
-			a0 = multi::dynamic_array<double, 0>{60.0};
-			BOOST_TEST( a0 == 60.0 );
+			a0 = multi::dynamic_array<int, 0>{60};
+			BOOST_TEST( a0 == 60 );
 		}
 	}
 

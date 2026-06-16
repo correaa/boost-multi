@@ -39,7 +39,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( get<1>(A2Dxs[1][2]) == 2 );
 
 	BOOST_TEST( get<0>(A2Dxs) == A2Dx );
-	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extension() );
+	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extent() );
 
 	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extents()), get<1>(A2D.extents())) );
 	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );
@@ -317,10 +317,10 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr(10);
 
-		auto xn = decltype(arr.extension())(10);
+		auto xn = decltype(arr.extent())(10);
 		BOOST_TEST( xn. size() == 10 );
 
-		multi::extension_t const xn2(10);
+		multi::extent_t const xn2(10);
 		BOOST_TEST( xn2.size() == 10 );
 
 		xn = xn2;
@@ -541,7 +541,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<2>>);
 
 		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
-		static_assert(std::is_trivially_default_constructible_v<multi::extension_t<multi::index, multi::index>>);
+		static_assert(std::is_trivially_default_constructible_v<multi::extent_t<multi::index, multi::index>>);
 
 		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>::base_>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>>);

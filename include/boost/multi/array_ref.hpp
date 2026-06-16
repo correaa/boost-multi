@@ -255,15 +255,16 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::extents;
 
 	using typename layout_type::extensions_type;
+	using typename layout_type::extents_type;
 
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`
 	/// (`extents_t<D>`), a tuple of `D` `index_extension` values each encoding `[first, last)`.
 	/// The result can be passed directly to array constructors or compared for shape equality.
 	/// Prefer this over the deprecated `extensions()`.
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extents_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	/// Deprecated, prefer `extents()`.
-	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
+	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extents_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	using layout_type::empty;
 	using layout_type::is_empty;
@@ -3824,7 +3825,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: array_ref(
 		  (il_1d.size() == 0) ? nullptr
 							  : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
-		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il_1d.size())}
+		  typename array_ref::extents_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
@@ -3921,7 +3922,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto elements_aux_() const {
 		return elements_type(
 			this->base_,
-			static_cast<typename elements_type::extensions_type>(multi::iextension(this->num_elements()))
+			static_cast<typename elements_type::extents_type>(multi::iextension(this->num_elements()))
 		);
 	}
 

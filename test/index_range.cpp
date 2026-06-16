@@ -19,7 +19,7 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_range_in_constexpr)
 	{
-		BOOST_TEST(( multi::extension_t<int>{5, 12}.contains(10) ));
+		BOOST_TEST(( multi::extent_t<int>{5, 12}.contains(10) ));
 
 		multi::range<int> const irng{5, 12};
 

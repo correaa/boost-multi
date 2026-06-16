@@ -256,13 +256,13 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	template<class OtherExtensions,
 		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
-		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extensions_type>(OtherExtensions{}.sub()) )* = nullptr
+		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extents_type>(OtherExtensions{}.sub()) )* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: extents_t(other.extension(), other.sub()) {}
 
-	BOOST_MULTI_HD constexpr extents_t(index_extension const& extension, typename layout_t<D - 1>::extensions_type const& other)
+	BOOST_MULTI_HD constexpr extents_t(index_extension const& extension, typename layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(extension, other.base())) {}
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
@@ -1179,14 +1179,14 @@ class contiguous_layout {
 
 	using index           = size_type;
 	using index_range     = multi::range<index>;
-	using index_extension = multi::extension_t<index>;
+	using index_extension = multi::extent_t<index>;
 
 	using indexes = tuple<index>;
 
-	using extent_type [[deprecated("use extent_type")] = multi::extent_t<index>;
-	using extension_type = multi::extension_t<index>;
+	using extent_type = multi::extent_t<index>;
+	using extension_type [[deprecated]] = multi::extent_t<index>;
 	using extents_type = multi::extents_t<1>;
-	using extensions_type [[deprecated("use extent_type")]]= multi::extents_t<1>;
+	using extensions_type [[deprecated("use extent_type")]] = multi::extents_t<1>;
 
 	using stride_type  = std::integral_constant<int, 1>;
 	using strides_type = boost::multi::detail::tuple<stride_type>;
@@ -1238,7 +1238,6 @@ class contiguous_layout {
 
 	BOOST_MULTI_HD constexpr auto extent() const { return extent_type{0, nelems_}; }
 	[[deprecated]] BOOST_MULTI_HD constexpr auto extension() const { return extent_type{0, nelems_}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return extension_type{0, nelems_}; }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 
@@ -1247,8 +1246,8 @@ class contiguous_layout {
 
 	BOOST_MULTI_HD constexpr auto nelems() const noexcept { return nelems_; }
 
-	/*[[deprecated]]*/ BOOST_MULTI_HD constexpr auto extensions() const { return multi::extents_t<1>{extension()}; }
-	BOOST_MULTI_HD constexpr auto extents() const { return multi::extents_t<1>{extension()}; }
+	[[deprecated]] BOOST_MULTI_HD constexpr auto extensions() const { return multi::extents_t<1>{extent()}; }
+	BOOST_MULTI_HD constexpr auto extents() const { return multi::extents_t<1>{extent()}; }
 
 	BOOST_MULTI_HD constexpr auto is_empty() const -> bool { return nelems_ == 0; }
 
@@ -1517,9 +1516,9 @@ struct layout_t
 	using nelemss_type = typename boost::multi::detail::tuple_prepend<nelems_type, typename sub_type::nelemss_type>::type;
 
 	using extent_type = index_extension;  // not index_range!
-	using extension_type [[deprecated]]= index_extension;  // not index_range!
+	using extension_type [[deprecated]] = index_extension;  // not index_range!
 
-	using extensions_type [[deprecated]]= extents_t<rank::value>;
+	using extensions_type [[deprecated]] = extents_t<rank::value>;
 	using extents_type = extents_t<rank::value>;
 
 	using sizes_type      = typename boost::multi::detail::tuple_prepend<size_type, typename sub_type::sizes_type>::type;
@@ -1571,14 +1570,14 @@ struct layout_t
 	static BOOST_MULTI_HD constexpr auto std_apply_(Args&&... args) ->decltype(auto) { using std::apply; return apply(std::forward<Args>(args)...); }
 
  public:
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions)
+	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& extensions)
 	: sub_{apply_        ([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
 	// : sub_{/*std::*/apply([](auto const&... subexts) { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
 	, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
 	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
 	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& extensions, strides_type const& strides)
+	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& extensions, strides_type const& strides)
 	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
@@ -1704,7 +1703,7 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const -> extension_type {
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const -> extent_type {
 		if(nelems_ == 0) {
 			return index_extension{};
 		}
@@ -1713,7 +1712,7 @@ struct layout_t
 		assert(nelems_ % stride_ == 0);
 		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
 	}
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extension_type {
+	[[deprecated]] [[nodiscard]] BOOST_MULTI_HD constexpr auto extension() const -> extent_type {
 		return extent();
 	}
 
@@ -1723,7 +1722,7 @@ struct layout_t
 		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
 		// auto ret = extensions_type{ht_tuple};
 		// return ret;
-		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
+		return extents_type{multi::detail::ht_tuple(extent(), sub_.extents().base())};
 	}
 
 	[[deprecated]] BOOST_MULTI_HD constexpr auto        extensions() const {
@@ -1732,19 +1731,8 @@ struct layout_t
 		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
 		// auto ret = extensions_type{ht_tuple};
 		// return ret;
-		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
+		return extents_type{multi::detail::ht_tuple(extent(), sub_.extents().base())};
 	}
-
-	BOOST_MULTI_HD constexpr auto        extents() const {
-		// auto fa = extension();
-		// auto sa = sub_.extensions().base();
-		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
-		// auto ret = extensions_type{ht_tuple};
-		// return ret;
-		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
-	}
-
-	// friend BOOST_MULTI_HD constexpr auto extensions(layout_t const& self) -> extensions_type { return self.extensions(); }
 
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
@@ -1923,9 +1911,11 @@ struct layout_t<0, SSize>
 	using offsets_type = tuple<>;
 	using nelemss_type = tuple<>;
 
-	using extension_type = void;
+	using extent_type = void;
+	using extension_type [[deprecated]] = void;
 
-	using extensions_type = extents_t<rank::value>;
+	using extents_type    = extents_t<rank::value>;
+	using extensions_type [[deprecated]] = extents_t<rank::value>;
 	using sizes_type      = tuple<>;
 	using indexes         = tuple<>;
 
@@ -1962,7 +1952,7 @@ struct layout_t<0, SSize>
  public:
 	layout_t() = default;
 
-	BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/)
+	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& /*nil*/)
 	: offset_{0}, nelems_{1} {}
 
 	// BOOST_MULTI_HD constexpr explicit layout_t(extensions_type const& /*nil*/, strides_type const& /*nil*/) {}
@@ -1970,9 +1960,9 @@ struct layout_t<0, SSize>
 	BOOST_MULTI_HD constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extensions_type{}; }  // cppcheck-suppress functionStatic
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extensions() const { return extents_type{}; }  // cppcheck-suppress functionStatic
 	// friend BOOST_MULTI_HD constexpr auto        extensions(layout_t const& self) { return self.extensions(); }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const { return extensions_type{}; }  // cppcheck-suppress functionStatic
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const { return extents_type{}; }  // cppcheck-suppress functionStatic
 
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
 	// friend BOOST_MULTI_HD constexpr auto        num_elements(layout_t const& self) { return self.num_elements(); }
@@ -1994,8 +1984,8 @@ struct layout_t<0, SSize>
 
 	constexpr auto size() const -> size_type           = delete;
 
-	constexpr auto extension() const -> extension_type = delete;
-	constexpr auto extent() const -> extension_type = delete;
+	[[deprecated]] constexpr auto extension() const -> extent_type = delete;
+	constexpr auto extent() const -> extent_type = delete;
 
 	BOOST_MULTI_HD constexpr auto is_empty() const noexcept { return nelems_ == 0; }
 
@@ -2050,9 +2040,9 @@ struct layout_t<0, SSize>
 };
 
 BOOST_MULTI_HD constexpr auto
-operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extensions_type const& /*zero*/)
-	-> layout_t<1>::extensions_type {
-	return layout_t<1>::extensions_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
+operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extents_type const& /*zero*/)
+	-> layout_t<1>::extents_type {
+	return layout_t<1>::extents_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
 }
 
 BOOST_MULTI_HD constexpr auto operator*(extents_t<1> const& extensions_1d, extents_t<1> const& self) {
