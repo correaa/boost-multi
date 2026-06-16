@@ -92,7 +92,7 @@ auto energy_reduce_in_loop(Array1D const& positions, Array2D const& neighbors) {
 template<class Array1D, class Array2D>
 auto energy_nested_reduce(Array1D const& positions, Array2D const& neighbors) {
 	return std::transform_reduce(
-		positions.extension().begin(), positions.extension().end(),
+		positions.extent().begin(), positions.extent().end(),
 		0.0, std::plus<>{},
 		[&positions, &neighbors](auto i) {
 			return std::transform_reduce(

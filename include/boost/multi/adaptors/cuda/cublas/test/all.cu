@@ -1246,7 +1246,7 @@ int main() {
 				for(auto i : is) {
 					for(auto j : js) {
 						C[i][j] *= 0.0;
-						for(auto k : B.extension()) {
+						for(auto k : B.extent()) {
 							C[i][j] += A[i][k] * conj(B[k][j]);
 						}
 					}
@@ -1256,9 +1256,9 @@ int main() {
 // unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
 #if 0
 		{
-			std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+			std::transform(A.begin(), A.end(), CC.begin(), CC.begin(), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
 				return std::transform(
-					begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& Bc, auto&& Ce) {
+					BT.begin(), BT.end(), Cr.begin(), Cr.begin(), [&Ar](auto const& Bc, auto&& Ce) {
 						return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;
 					}
 				), std::move(Cr);
@@ -1273,59 +1273,6 @@ int main() {
 		BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
 		BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 #endif
-		}
-	}
-
-	// BOOST_AUTO_TEST_CASE(cublas_one_gemm_complex_conj_first)
-	{
-		namespace blas = multi::blas;
-		using T        = complex;
-		using Alloc    = std::allocator<complex>;  // thrust::cuda::allocator<complex>;
-		complex const I{0.0, 1.0};
-
-		// NOLINT(readability-identifier-length) BLAS naming
-		multi::array<complex, 2, Alloc> const A = {
-			{1.0 - 2.0 * I, 9.0 - 1.0 * I},
-			{2.0 + 3.0 * I, 1.0 - 2.0 * I},
-		};
-		multi::array<complex, 2, Alloc> const B = {
-			{3.0 - 4.0 * I, 19.0 - 1.0 * I},
-			{1.0 + 5.0 * I,  8.0 - 8.0 * I},
-		};
-		{
-			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            CC     = C;
-			auto                            C_copy = CC;
-			// blas::gemm({1.0, 0.0}, blas::J(A), B, {0.0, 0.0}, C);
-			// blas::gemm({1.0, 0.0}, blas::T(B), blas::H(A), {0.0, 0.0}, C_copy);
-			// {
-			//  auto const [is, js] = C.extensions();
-			//  for(auto i : is) {
-			//      for(auto j : js) {
-			//          C[i][j] *= 0.0;
-			//          for(auto k : B.extension()) {
-			//              C[i][j] += A[i][k]*conj(B[k][j]);
-			//          }
-			//      }
-			//  }
-			// }
-			// {
-			//  std::transform(begin(A), end(A), begin(CC), begin(CC), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
-			//      return std::transform(
-			//          begin(BT), end(BT), begin(Cr), begin(Cr), [&Ar](auto const& BCr, auto&& Ce) {
-			//              return 1.0*blas::dot(Ar, blas::C(BCr)) + 0.0*Ce;
-			//          }
-			//      ), std::move(Cr);
-			//  });
-			// }
-			// BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-			// BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
-
-			// BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-			// BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
-
-			// BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
-			// BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 		}
 	}
 
