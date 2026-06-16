@@ -514,16 +514,19 @@ constexpr auto corigin(T const& value) { return &value; }
 template<class T, std::size_t N>
 constexpr auto corigin(T const (&array)[N]) noexcept { return corigin(array[0]); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
-template<class T, typename = decltype(std::declval<T>().extension())>
+template<class T, typename = decltype(std::declval<T>().extent())>
 auto        has_extension_aux(T const&) -> std::true_type;
 inline auto has_extension_aux(...) -> std::false_type;
 template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-auto extension(Container const& cont)                                                  // TODO(correaa) consider "extent"
-	-> decltype(multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
-	return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)));
+auto extent(Container const& cont)
+	-> decltype(multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
+	return multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)));
 }
+
+template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints)
+[[deprecated("use extent")]] auto extension(Container const& cont) -> decltype(extent(cont)) { return extent(cont); }
 
 template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extension<Container>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto extents(Container const& cont) {
@@ -531,7 +534,7 @@ auto extents(Container const& cont) {
 		return multi::extents_t<0>{};
 	} else {
 		using std::size;
-		return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extents<Rank - 1>(cont.front());
+		return multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extents<Rank - 1>(cont.front());
 	}
 }
 
@@ -605,8 +608,8 @@ template<dimensionality_type D>
 struct extensions_aux {
 	template<class T>
 	static auto call(T const& array) {
-		return array.extension() * extents<D - 1>(array);
-		// return tuple_cat(std::make_tuple(array.extension()), extensions<D-1>(array));
+		return array.extent() * extents<D - 1>(array);
+		// return tuple_cat(std::make_tuple(array.extent()), extensions<D-1>(array));
 	}
 };
 
@@ -628,7 +631,7 @@ template<class T1, class T2> auto extensions_me(T2 const& array) {
 template<class T1> struct extension_t_aux {
 	static auto call(T1 const& /*unused*/) { return std::make_tuple(); }
 	template<class T2>
-	static auto call(T2 const& array) { return tuple_cat(std::make_tuple(array.extension()), extensions_me<T1>(*begin(array))); }
+	static auto call(T2 const& array) { return tuple_cat(std::make_tuple(array.extent()), extensions_me<T1>(*begin(array))); }
 };
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>

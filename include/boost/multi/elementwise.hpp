@@ -57,7 +57,7 @@ namespace elementwise {
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
 constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
-	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extents_t<1>({arr.extension()});
+	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extents_t<1>({arr.extent()});
 }
 
 template<class F, class... A> struct apply_bind_t;

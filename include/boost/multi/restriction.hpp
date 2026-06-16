@@ -408,7 +408,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 #endif
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
-		// assert( extension().contains(idx) );
+		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
@@ -420,7 +420,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	}
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> decltype(auto) {
-		// assert( extension().contains(idx) );
+		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
 			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
 			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
@@ -530,7 +530,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
-		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extension()});
+		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
 	}
 
 	template<class Cursor, dimensionality_type DD = D>
@@ -672,8 +672,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	constexpr auto sizes() const { return xs_.sizes(); }
 
-	constexpr auto               extension() const { return xs_.extension(); }
-	[[nodiscard]] constexpr auto extent() const { return xs_.extension(); }
+	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
+	[[nodiscard]] constexpr auto                extent() const { return xs_.extent(); }
 
 	constexpr auto               extensions() const { return xs_; }
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
