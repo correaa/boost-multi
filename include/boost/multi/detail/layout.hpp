@@ -1183,8 +1183,10 @@ class contiguous_layout {
 
 	using indexes = tuple<index>;
 
-	using extension_type  = multi::extension_t<index>;
-	using extensions_type = multi::extents_t<1>;
+	using extent_type [[deprecated("use extent_type")] = multi::extent_t<index>;
+	using extension_type = multi::extension_t<index>;
+	using extents_type = multi::extents_t<1>;
+	using extensions_type [[deprecated("use extent_type")]]= multi::extents_t<1>;
 
 	using stride_type  = std::integral_constant<int, 1>;
 	using strides_type = boost::multi::detail::tuple<stride_type>;
@@ -1234,7 +1236,8 @@ class contiguous_layout {
 	static BOOST_MULTI_HD constexpr auto stride() { return std::integral_constant<int, 1>{}; }
 	static BOOST_MULTI_HD constexpr auto offset() { return std::integral_constant<int, 0>{}; }
 
-	BOOST_MULTI_HD constexpr auto extension() const { return extension_type{0, nelems_}; }
+	BOOST_MULTI_HD constexpr auto extent() const { return extent_type{0, nelems_}; }
+	[[deprecated]] BOOST_MULTI_HD constexpr auto extension() const { return extent_type{0, nelems_}; }
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return extension_type{0, nelems_}; }
 
 	BOOST_MULTI_HD constexpr auto num_elements() const { return nelems_; }
@@ -1411,8 +1414,11 @@ struct bilayout {
 	using stride_type = bistride<stride1_type, stride2_type, size_type>;
 
 	using index_range     = multi::range<index>;
-	using extension_type  = void;
-	using extensions_type = void;
+	using extent_type  = void;
+	using extension_type [[deprecated]] = void;
+
+	using extents_type  = void;
+	using extensions_type [[deprecated]] = void;
 	using sizes_type      = void;
 	using indexes         = void;
 
@@ -1431,7 +1437,7 @@ struct bilayout {
 	void extension() const  = delete;
 	void extent() const     = delete;
 
-	auto extensions() const = delete;
+	[[deprecated]] auto extensions() const = delete;
 	auto extents() const = delete;
 
 	auto is_empty() const   = delete;
@@ -1510,9 +1516,12 @@ struct layout_t
 	using offsets_type = typename boost::multi::detail::tuple_prepend<offset_type, typename sub_type::offsets_type>::type;
 	using nelemss_type = typename boost::multi::detail::tuple_prepend<nelems_type, typename sub_type::nelemss_type>::type;
 
-	using extension_type = index_extension;  // not index_range!
+	using extent_type = index_extension;  // not index_range!
+	using extension_type [[deprecated]]= index_extension;  // not index_range!
 
-	using extensions_type = extents_t<rank::value>;
+	using extensions_type [[deprecated]]= extents_t<rank::value>;
+	using extents_type = extents_t<rank::value>;
+
 	using sizes_type      = typename boost::multi::detail::tuple_prepend<size_type, typename sub_type::sizes_type>::type;
 
 	using indexes = typename boost::multi::detail::tuple_prepend<index, typename sub_type::indexes>::type;
@@ -1708,7 +1717,16 @@ struct layout_t
 		return extent();
 	}
 
-	BOOST_MULTI_HD constexpr auto        extensions() const {
+	BOOST_MULTI_HD constexpr auto        extents() const {
+		// auto fa = extension();
+		// auto sa = sub_.extensions().base();
+		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
+		// auto ret = extensions_type{ht_tuple};
+		// return ret;
+		return extensions_type{multi::detail::ht_tuple(extension(), sub_.extensions().base())};
+	}
+
+	[[deprecated]] BOOST_MULTI_HD constexpr auto        extensions() const {
 		// auto fa = extension();
 		// auto sa = sub_.extensions().base();
 		// auto ht_tuple = multi::detail::ht_tuple(fa, sa);
