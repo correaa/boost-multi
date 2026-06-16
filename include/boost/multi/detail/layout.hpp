@@ -212,7 +212,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		class... Exts,
 		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
 			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
-			&& (std::is_convertible_v<Exts, index_extension> && ...),
+			&& (std::is_convertible<Exts, index_extension>::value && ...),
 			int> = 0
 	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
