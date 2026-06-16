@@ -26,11 +26,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 10> const arr(multi::extents_t<10>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 1024 );
 	}
-#ifdef __clang__
 	{
 		multi::array<int, 12> const arr(multi::extents_t<12>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 4096 );
 	}
+#ifdef __clang__
 	{
 		multi::array<int, 14> const arr(multi::extents_t<14>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 16384 );

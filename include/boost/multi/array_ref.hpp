@@ -256,7 +256,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4996)
+#pragma warning(disable : 4996)
 #endif
 	using typename layout_type::extensions_type;  // TODO(correaa) remove
 #ifdef _MSC_VER
