@@ -33,7 +33,7 @@ template<class SegIt, class T>
 void fill_segmented(SegIt first, SegIt last, T x) {
 	using traits = ion::segmented_iterator_traits<SegIt>;
 
-	typename traits::segment_iterator sf = traits::segment(first);
+	typename traits::segment_iterator       sf = traits::segment(first);
 	typename traits::segment_iterator const sl = traits::segment(last);
 	// typename traits::local_iterator   lf = traits::local(first);
 

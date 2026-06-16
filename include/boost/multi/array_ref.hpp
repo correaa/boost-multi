@@ -210,7 +210,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 
 	/// Pointer-like type that produces an moved element (r-value)
-	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+	using element_move_ptr = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
