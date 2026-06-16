@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -219,7 +219,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& arrc2 = arr();
 
-		BOOST_TEST( arrc.addressof() == arrc2.addressof() );  // BOOST_TEST( &arrc == &arrc2 );
+		// BOOST_TEST( arrc.addressof() == arrc2.addressof() );  // BOOST_TEST( &arrc == &arrc2 );
+		BOOST_TEST( &arrc == &arrc2 );  // BOOST_TEST( &arrc == &arrc2 );
 
 		multi::array<double, 3>::iterator const it2 = begin(arr);
 		BOOST_TEST(it == it2);
@@ -231,15 +232,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3>::iterator const it3{it};
 		BOOST_TEST( it3 == it );
 
-		static_assert(std::is_same<multi::array<double, 3>::iterator::element_ptr, double*>{});
-
-		// cit = it3;
-		// BOOST_REQUIRE( cit == it3 );  // TODO(correaa)
-		// BOOST_REQUIRE( it3 == cit );  // TODO(correaa)
-
-		// cit = it3;
-		// BOOST_TEST( cit == it3 );  // TODO(correaa)
-		// BOOST_TEST( it3 == cit );  // TODO(correaa)
+		static_assert(std::is_same_v<multi::array<double, 3>::iterator::element_ptr, double*>);
 
 		BOOST_TEST( &arr[0][1][1] == &begin(arr)[0][1][1] );
 
@@ -247,21 +240,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static_assert(decltype(begin(arr))::rank_v == 3, "!");
 		static_assert(decltype(begin(arr))::rank{} == 3, "!");
-
-		// auto&& ref = multi::ref(begin(arr), end(arr));
-
-		// BOOST_TEST( arr.base() == ref.base() );
-		// BOOST_TEST(  arr[0][2][1] ==  ref[0][2][1] );
-		// BOOST_TEST( &arr[0][2][1] == &ref[0][2][1] );
-		// BOOST_TEST( arr.layout().stride() == ref.layout().stride());
-		// BOOST_TEST( arr.layout().offset() == ref.layout().offset());
-		// BOOST_TEST( arr.layout().nelems() == ref.layout().nelems());
-
-		// BOOST_TEST( arr.num_elements() == ref.num_elements() );
-		// BOOST_TEST( arr.stride() == ref.stride() );
-		// BOOST_TEST( arr.layout() == ref.layout() );
-
-		// BOOST_TEST( &multi::ref(begin(arr), end(arr)) == &arr );
 	}
 
 	// iterator_arrow_operator
@@ -347,10 +325,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr[0] == "hello" );
 		BOOST_TEST( *(arr.begin()->begin()) == 'h' );
-
-		// arr[0][0] = 'H';
-		// *(arr.begin()->begin()) = "H";  // can't assign to const value
-		// BOOST_TEST( arr[0] == "Hello" );
 	}
 
 	// simple example arrow operator 2D
@@ -361,10 +335,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr[0][0] == 5 );
 		BOOST_TEST( *(arr.begin()->begin()) == 5 );
-
-		// arr[0][0] = 6;  // ok, doesn't compile, it is read-only
-		// *(arr.begin()->begin()) = 6;  // ok, doesn't work, it is read-only
-		// BOOST_TEST( arr[0][0] == 6 );
 	}
 
 	return boost::report_errors();

@@ -208,13 +208,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using element_ptr       = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
+	/// Pointer-like type that produces an moved element (r-value)
 	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
 	using layout_type = Layout;
-
-	// using rank = typename layout_type::rank;
 
 	using layout_type::rank_v;
 
@@ -1823,13 +1823,12 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
- public:
 	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 
+ public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
-
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
