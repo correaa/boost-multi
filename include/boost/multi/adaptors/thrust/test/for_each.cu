@@ -111,7 +111,7 @@ auto main()
 		}
 		{
 			auto_timer t{"iterator thrust::for_each(thrust::cuda::par)"};
-			thrust::for_each(thrust::cuda::par, gpu_par.extension().begin(), gpu_par.extension().end(), [gpu_par = gpu_par.begin()] __device__ (auto iplane) {
+			thrust::for_each(thrust::cuda::par, gpu_par.extent().begin(), gpu_par.extent().end(), [gpu_par = gpu_par.begin()] __device__ (auto iplane) {
 				auto&& plane = gpu_par[iplane]; 
 				for(auto&& row : plane) {     // NOLINT(altera-unroll-loops)
 					for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)

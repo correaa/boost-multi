@@ -58,7 +58,7 @@ auto energy_raw_loops(Array1D const& positions, Array2D const& neighbors) {
 template<class Array1D, class Array2D>
 auto energy_range_loops(Array1D const& positions, Array2D const& neighbors) {
 	double ret = 0;
-	for(auto const i : positions.extension()) {
+	for(auto const i : positions.extent()) {
 		auto const positions_i = positions[i];
 		for(auto const& nbidx : neighbors[i]) {
 			if(nbidx == -1) {
@@ -76,7 +76,7 @@ auto energy_range_loops(Array1D const& positions, Array2D const& neighbors) {
 template<class Array1D, class Array2D>
 auto energy_reduce_in_loop(Array1D const& positions, Array2D const& neighbors) {
 	double ret = 0.0;
-	for(auto const i : positions.extension()) {
+	for(auto const i : positions.extent()) {
 		ret += std::transform_reduce(
 			neighbors[i].begin(), neighbors[i].end(), 0.0, std::plus<>{},
 			[positions_i = positions[i], &positions](auto nbidx) {
@@ -215,7 +215,7 @@ template<class Arr1D, class Arr2D>
 auto energy_gpu_nested_reduce(Arr1D const& positions, Arr2D const& neighbors) -> double {
 	return thrust::transform_reduce(
 		thrust::cuda::par,
-		positions.extension().begin(), positions.extension().end(),
+		positions.extent().begin(), positions.extent().end(),
 	#if !defined(_MSC_VER)
 		[positions = positions.begin(), neighbors = neighbors.begin()] __device__(typename Arr1D::index i) -> double {
 			return thrust::transform_reduce(
