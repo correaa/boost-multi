@@ -254,7 +254,15 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::extensions;
 	using layout_type::extents;
 
-	using typename layout_type::extensions_type;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#endif
+	using typename layout_type::extensions_type;  // TODO(correaa) remove
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 	using typename layout_type::extents_type;
 
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`

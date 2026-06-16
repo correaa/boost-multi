@@ -30,15 +30,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #ifdef __clang__
 	{
-		multi::array<int, 12> arr( multi::extents_t<12>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
+		multi::array<int, 12> arr(multi::extents_t<12>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 256*2*2*2*2 );
 	}
 	{
-		multi::array<int, 14> arr( multi::extents_t<14>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
+		multi::array<int, 14> arr(multi::extents_t<14>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 256*2*2*2*2*2*2 );
 	}
 	{
-		multi::array<int, 16> arr( multi::extents_t<16>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
+		multi::array<int, 16> arr(multi::extents_t<16>{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, 0);
 		BOOST_TEST( arr.num_elements() == 65536 );
 	}
 #endif
