@@ -1823,9 +1823,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
+	// NOLINTBEGIN(readability-identifier-naming)  // TODO(correaa) rename as private or remove
 	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	// NOLINTEND(readability-identifier-naming)
 
  public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
@@ -1835,7 +1837,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-
 	// NOLINTEND(google-runtime-operator)
 
  private:
