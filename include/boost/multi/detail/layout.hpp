@@ -1427,7 +1427,7 @@ struct bilayout {
 	BOOST_MULTI_HD static constexpr auto offset() { return offset_type{}; }
 	BOOST_MULTI_HD constexpr auto size() const { return (nelems2_ / stride2_) * (nelems1_ / stride1_); }
 
-	auto nelems() const     = delete;
+	constexpr auto nelems() const { return nelems1_ - stride1_ + nelems2_; }  // span to one-past-end: (nsegs-1) outer strides + the last segment (NOT just nelems2_, which is one segment short)
 	void extension() const  = delete;
 	void extent() const     = delete;
 
