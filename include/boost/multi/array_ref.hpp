@@ -208,13 +208,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using element_ptr       = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
-	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+
+	/// Pointer-like type that produces an moved element (r-value)
+	using element_move_ptr = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
 	using layout_type = Layout;
-
-	// using rank = typename layout_type::rank;
 
 	using layout_type::rank_v;
 
@@ -248,21 +248,31 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::extension;
 	using layout_type::extent;
 
-	using typename layout_type::extension_type;
+	using typename layout_type::extent_type;
+	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT  ; old spelling kept for compatibility
 
 	using layout_type::extensions;
 	using layout_type::extents;
 
-	using typename layout_type::extensions_type;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+	using typename layout_type::extensions_type;  // TODO(correaa) remove
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+	using typename layout_type::extents_type;
 
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`
 	/// (`extents_t<D>`), a tuple of `D` `index_extension` values each encoding `[first, last)`.
 	/// The result can be passed directly to array constructors or compared for shape equality.
 	/// Prefer this over the deprecated `extensions()`.
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto extents() const -> extents_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	/// Deprecated, prefer `extents()`.
-	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extensions_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
+	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extents_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
 	using layout_type::empty;
 	using layout_type::is_empty;
@@ -1097,10 +1107,11 @@ struct elements_range_t {
 
 	constexpr auto size() const noexcept -> size_type { return l_.num_elements(); }
 
-	using extension_type = multi::extension_t<index>;
+	using extent_type                                      = multi::extent_t<index>;
+	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT
 
-	BOOST_MULTI_HD constexpr auto               extension() const { return extension_type{0, size()}; }
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return extension_type{0, size()}; }
+	[[deprecated("use extent")]] BOOST_MULTI_HD constexpr auto extension() const { return extent_type{0, size()}; }
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto                extent() const { return extent_type{0, size()}; }
 
 	[[nodiscard]]
 	constexpr auto empty() const -> bool { return l_.empty(); }
@@ -1409,7 +1420,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
 
 		// clang-format off
 	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -1435,7 +1446,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	// clang-format on
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -1523,8 +1534,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(first)) && ("sliced first out of bounds"));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		BOOST_MULTI_ASSERT(((first == last) || this->extension().contains(last - 1)) && ("sliced last  out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(((first == last) || this->extent().contains(first)) && ("sliced first out of bounds"));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(((first == last) || this->extent().contains(last - 1)) && ("sliced last  out of bounds"));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_type new_layout = this->layout();
 		new_layout.nelems()                    = this->stride() * (last - first);                               // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
@@ -1747,11 +1758,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  private:
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
-	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
 	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
-	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
  public:
@@ -1815,20 +1826,20 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  private:
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
- public:
+	// NOLINTBEGIN(readability-identifier-naming)  // TODO(correaa) rename as private or remove
 	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	// NOLINTEND(readability-identifier-naming)
 
+ public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
-
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-
 	// NOLINTEND(google-runtime-operator)
 
  private:
@@ -1872,25 +1883,25 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	template<class TT, class... As>
 	friend constexpr auto operator==(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
-		return (self.extension() == other.extension()) && (self.elements() == other.elements());
+		return (self.extent() == other.extent()) && (self.elements() == other.elements());
 	}
 	template<class TT, class... As>
 	friend constexpr auto operator!=(const_subarray const& self, const_subarray<TT, D, As...> const& other) -> bool {
-		return (self.extension() != other.extension()) || (self.elements() != other.elements());
+		return (self.extent() != other.extent()) || (self.elements() != other.elements());
 	}
 
 	constexpr auto operator==(const_subarray const& other) const -> bool {
-		return (this->extension() == other.extension()) && (this->elements() == other.elements());
+		return (this->extent() == other.extent()) && (this->elements() == other.elements());
 	}
 	constexpr auto operator!=(const_subarray const& other) const -> bool {
-		return (this->extension() != other.extension()) || (this->elements() != other.elements());
+		return (this->extent() != other.extent()) || (this->elements() != other.elements());
 	}
 
 	friend constexpr auto lexicographical_compare(const_subarray const& self, const_subarray const& other) -> bool {
-		if(self.extension().first() > other.extension().first()) {
+		if(self.extent().first() > other.extent().first()) {
 			return true;
 		}
-		if(self.extension().first() < other.extension().first()) {
+		if(self.extent().first() < other.extent().first()) {
 			return false;
 		}
 		return adl_lexicographical_compare(
@@ -2290,17 +2301,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		if(this == std::addressof(other)) {
 			return *this;
 		}
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		this->elements() = other.elements();
 		return *this;
 	}
 
 	constexpr void swap(subarray& other) & noexcept {
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
 	}
 	constexpr void swap(subarray&& other) & noexcept {
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
 	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
@@ -2364,14 +2375,14 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	template<class TT, class... As>
 	constexpr auto operator=(const_subarray<TT, D, As...> const& other) && -> subarray& {
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		this->elements() = other.elements();
 		return *this;
 	}
 
 	template<class TT, class... As>
 	constexpr auto operator=(subarray<TT, D, As...>&& other) & -> subarray& {
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		this->elements() = std::move(other).elements();
 		return *this;
 	}
@@ -2383,13 +2394,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		if(this == std::addressof(other)) {
 			return *this;
 		}
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		this->elements() = other.elements();
 		return *this;
 	}
 	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // NOLINT(bugprone-unsafe-to-allow-exceptions) TODO(correaa) make conditionally noexcept
 		// if(this == std::addressof(other)) { return *this; }
-		BOOST_MULTI_ASSERT(this->extension() == other.extension());
+		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		this->elements() = std::move(other).elements();
 		return *this;
 	}
@@ -2452,8 +2463,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return std::move(*this).range(irng).rotated().paren_aux_(args...).unrotated();
 	}
 
-	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) & -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
-	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) && -> decltype(auto) { return paren_aux_(intersection(this->extension(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) & -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) && -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::operator();
@@ -3091,8 +3102,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class A> constexpr void intersection_assign(A&& other) && { intersection_assign(std::forward<A>(other)); }
 	template<class A> constexpr void intersection_assign(A&& other) & {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-missing-std-forward) false positive clang-tidy 17
 		std::for_each(
-			intersection(types::extension(), extension(other)).begin(),
-			intersection(types::extension(), extension(other)).end(),
+			intersection(types::extent(), extent(other)).begin(),
+			intersection(types::extent(), extent(other)).end(),
 			[&](auto const idx) -> void { operator[](idx) = std::forward<A>(other)[idx]; }
 		);
 	}
@@ -3183,7 +3194,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 		// NOLINTNEXTLINE(readability-static-accessed-through-instance) can be static
 		if constexpr(std::is_integral_v<decltype(this->stride())>) {
-			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extension().contains(idx))) && ("out of bounds"));
+			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
 		}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -3423,7 +3434,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto operator()(index_range const& rng) const& { return range(rng); }
 
  private:
-	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) { return paren_aux_(intersection(this->extension(), rng)); }
+	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), rng)); }
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) { return paren_aux_(isrange); }
@@ -3581,21 +3592,21 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
 	friend constexpr auto operator==(const_subarray const& self, const_subarray const& other) -> bool {
-		return self.extension() == other.extension() && self.elements() == other.elements();
+		return self.extent() == other.extent() && self.elements() == other.elements();
 	}
 
 	friend constexpr auto operator!=(const_subarray const& self, const_subarray const& other) -> bool {
-		return self.extension() != other.extension() || self.elements() != other.elements();
+		return self.extent() != other.extent() || self.elements() != other.elements();
 	}
 
 	template<class OtherT, typename OtherEP, class OtherLayout>
 	friend constexpr auto operator==(const_subarray const& self, const_subarray<OtherT, 1, OtherEP, OtherLayout> const& other) -> bool {
-		return self.extension() == other.extension() && self.elements() == other.elements();
+		return self.extent() == other.extent() && self.elements() == other.elements();
 	}
 
 	template<class TT, typename EEPP, class LL>
 	friend constexpr auto operator!=(const_subarray const& self, const_subarray<TT, 1, EEPP, LL> const& other) -> bool {
-		return self.extension() != other.extension() || self.elements() != other.elements();
+		return self.extent() != other.extent() || self.elements() != other.elements();
 	}
 
 	friend constexpr auto operator<(const_subarray const& self, const_subarray const& other) -> bool { return lexicographical_compare_(self, other); }
@@ -3622,10 +3633,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  private:
 	template<class A1, class A2>
 	static constexpr auto lexicographical_compare_(A1 const& self, A2 const& other) -> bool {  // NOLINT(readability-suspicious-call-argument)
-		if(self.extension().first() > other.extension().first()) {
+		if(self.extent().first() > other.extent().first()) {
 			return true;
 		}
-		if(self.extension().first() < other.extension().first()) {
+		if(self.extent().first() < other.extent().first()) {
 			return false;
 		}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
@@ -3851,7 +3862,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: array_ref(
 		  (il_1d.size() == 0) ? nullptr
 							  : il_1d.begin(),  // TODO(correaa) simplify conditional by still using a il pointer in empty case?
-		  typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il_1d.size())}
+		  typename array_ref::extents_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
@@ -3948,7 +3959,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto elements_aux_() const {
 		return elements_type(
 			this->base_,
-			static_cast<typename elements_type::extensions_type>(multi::iextension(this->num_elements()))
+			static_cast<typename elements_type::extents_type>(multi::iextension(this->num_elements()))
 		);
 	}
 
@@ -4341,7 +4352,8 @@ template<class T> constexpr auto end(T&& rng) -> decltype(std::forward<T>(rng).e
 template<class T> constexpr auto cbegin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (for constant access, generic free function, usually return .begin())
 template<class T> constexpr auto cend(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (for constant access, generic free function, usually return .begin())
 
-template<class T> /*[[deprecated("use extent")]]*/ auto extension(T const& rng) -> decltype(rng.extension()) { return rng.extension(); }
+template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
+template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 
 template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 

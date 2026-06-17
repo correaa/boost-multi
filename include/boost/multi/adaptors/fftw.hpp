@@ -273,7 +273,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bit
 
 template<class InPtr, class In, class OutPtr, class Out, dimensionality_type D = In::dimensionality>
 auto fftw_plan_dft(std::array<bool, +D> which, InPtr in_base, In const& in_layout, OutPtr out_base, Out const& out_layout, int sign, fftw::flags /*flags*/) -> fftw_plan {
-	assert(in_layout.extensions() == out_layout.extensions());
+	assert(in_layout.extents() == out_layout.extents());
 
 	auto const sizes_tuple = in_layout.sizes();
 

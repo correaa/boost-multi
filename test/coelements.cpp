@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{3, 4, 5}
 	};
 
-	BOOST_TEST( arr.extension()[1] == 1 );
+	BOOST_TEST( arr.extent()[1] == 1 );
 	{
 		auto const [i, j] = arr.extents()[1][2];
 		BOOST_TEST( i == 1 );

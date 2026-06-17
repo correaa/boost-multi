@@ -508,7 +508,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::for_each(is.begin(), is.end(), [&, Js = js](auto ii) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 			std::for_each(Js.begin(), Js.end(), [&](auto jj) {  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 				C[ii][jj] *= 0.0;
-				std::for_each(B.extension().begin(), B.extension().end(), [&](auto kk) {
+				std::for_each(B.extent().begin(), B.extent().end(), [&](auto kk) {
 					C[ii][jj] += A[ii][kk] * conj(B[kk][jj]);
 				});
 			});

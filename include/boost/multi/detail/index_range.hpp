@@ -337,16 +337,16 @@ class intersecting_range {
 #endif
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + IndexType{1})>
-struct extension_t : public range<IndexType, IndexTypeLast> {
+struct extent_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 
-	BOOST_MULTI_HD constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
+	BOOST_MULTI_HD constexpr extent_t(IndexType first, IndexTypeLast last) noexcept
 	: range<IndexType, IndexTypeLast>{first, last} {}
 
-//	BOOST_MULTI_HD constexpr extension_t(extension_t::size_type size) : extents_t(IndexType{}, IndexType{} + size) {}
+//	BOOST_MULTI_HD constexpr extent_t(extent_t::size_type size) : extents_t(IndexType{}, IndexType{} + size) {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extension_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax
+	BOOST_MULTI_HD constexpr extent_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax
 	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
 
 	template<
@@ -357,21 +357,21 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extension_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: extension_t{other.first(), other.last()} {}
+	BOOST_MULTI_HD constexpr extent_t(OtherExtension const& other) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	: extent_t{other.first(), other.last()} {}
 
 	using index = IndexTypeLast;
 
 	template<class OtherExtension>
-	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extension_t& {
-		(*this) = extension_t{other};
+	BOOST_MULTI_HD constexpr auto operator=(OtherExtension const& other) -> extent_t& {
+		(*this) = extent_t{other};
 		return *this;
 	}
 
-	// BOOST_MULTI_HD constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
-	constexpr extension_t() = default;
+	// BOOST_MULTI_HD constexpr extent_t() noexcept : range<IndexType, IndexTypeLast>() {}
+	constexpr extent_t() = default;
 
-	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
+	friend constexpr auto intersection(extent_t const& ex1, extent_t const& ex2) -> extent_t {
 		using std::max;
 		using std::min;
 
@@ -380,28 +380,32 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 
 		first = min(first, last);
 
-		return extension_t{first, last};
+		return extent_t{first, last};
 	}
 };
 
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703)
 template<class IndexType, class IndexTypeLast>
-extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
+extent_t(IndexType, IndexTypeLast) -> extent_t<IndexType, IndexTypeLast>;
 
 template<class IndexType = multi::index>
-extension_t(IndexType) -> extension_t<std::integral_constant<IndexType, 0>, IndexType>;
+extent_t(IndexType) -> extent_t<std::integral_constant<IndexType, 0>, IndexType>;
 #endif
+
+// deprecated spelling kept so old code keeps compiling; use extent_t
+template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + IndexType{1})>
+using extension_t [[deprecated("use extent_t")]] = extent_t<IndexType, IndexTypeLast>;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 constexpr auto make_extension_t(IndexType first, IndexTypeLast last) {
-	return extension_t<IndexType, IndexTypeLast>{first, last};
+	return extent_t<IndexType, IndexTypeLast>{first, last};
 }
 
 template<class IndexType = multi::index>
 constexpr auto make_extension_t(IndexType last) { return make_extension_t(std::integral_constant<IndexType, 0>{}, last); }
 
 using index_range     = range<index>;
-using index_extension = extension_t<index>;
+using index_extension = extent_t<index>;
 using iextension      = index_extension;
 using irange          = index_range;
 

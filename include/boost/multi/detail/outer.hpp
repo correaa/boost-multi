@@ -314,7 +314,7 @@ class outer_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 	}
 };
 
-template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extension_t(std::declval<Exts>()))...>;
+template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extent_t(std::declval<Exts>()))...>;
 
 }  // end namespace detail
 

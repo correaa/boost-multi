@@ -70,9 +70,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{300, 310, 320},
 		};
 
-		BOOST_TEST( size( arr(arr.extension(), 2) ) == size(arr) );
+		BOOST_TEST( size( arr(arr.extent(), 2) ) == size(arr) );
 
-		auto&& col2(arr(arr.extension(), 2));  // select column #2
+		auto&& col2(arr(arr.extent(), 2));  // select column #2
 		// same as arr(extesion(arr), 2)
 		// same as arr(arr.extension(0), 2);
 		// same as rotated(arr)[2];
@@ -92,7 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(( col2 == multi::array<double, 1>{20, 120, 220, 320} ));
 		BOOST_TEST(( col2 == multi::array<double, 1>(arr.rotated()[2]) ));
 		BOOST_TEST(( col2 == arr.rotated()[2] ));
-		BOOST_TEST(( col2 == arr(arr.extension(), 2) ));
+		BOOST_TEST(( col2 == arr(arr.extent(), 2) ));
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_array_range_section_syntax)

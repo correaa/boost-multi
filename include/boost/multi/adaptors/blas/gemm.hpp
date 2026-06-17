@@ -293,8 +293,8 @@ class gemm_range {
 
 	auto size() const -> size_type {return a_end_ - a_begin_;}
 
-	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extents();}
-	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extents();}
+	auto extensions() const -> typename decay_type::extents_type {return size()*(*b_begin_).extents();}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extents_type {return size()*(*b_begin_).extents();}
 
 	// friend auto extensions(gemm_range const& self) {return self.extensions();}
 

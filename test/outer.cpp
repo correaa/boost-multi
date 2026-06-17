@@ -17,7 +17,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr1d(3);
 
-		auto const x1d = multi::detail::outer_t(arr1d.extension());
+		auto const x1d = multi::detail::outer_t(arr1d.extent());
 
 		BOOST_TEST( x1d.size() == 3 );
 

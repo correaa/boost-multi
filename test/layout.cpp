@@ -379,100 +379,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::size;
 		BOOST_TEST( size(arr) == 25 );
 
-		using multi::extension;
+		using multi::extent;
 
-		BOOST_TEST(( extension(arr) == multi::index_extension{0, 25} ));
-		BOOST_TEST(( extension(arr) == multi::iextension     {0, 25} ));
+		BOOST_TEST(( extent(arr) == multi::index_extension{0, 25} ));
+		BOOST_TEST(( extent(arr) == multi::iextension     {0, 25} ));
 		// BOOST_TEST(( extension(arr) == multi::irange{0, 25} ));
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_2)
 	{
 		std::array<std::array<std::array<double, 25>, 25>, 25> const arr{};
-		using multi::size;
-		BOOST_TEST( size(arr) == 25 );
+		BOOST_TEST( arr.size() == 25 );
 
-		using multi::extension;
-		BOOST_TEST(( extension(arr) == multi::index_extension{0, 25} ));
-		BOOST_TEST(( extension(arr) == multi::iextension     {0, 25} ));
+		using multi::extent;
+		BOOST_TEST(( extent(arr) == multi::index_extension{0, 25} ));
+		BOOST_TEST(( extent(arr) == multi::iextension     {0, 25} ));
 	}
-
-	// BOOST_AUTO_TEST_CASE(layout_3)
-	// 	{
-	// 		multi::array<double, 2> arr(
-	// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-	// 			multi::extents_t<2>
-	// #endif
-	// 			{50, 50}
-	// 		);
-	// 		BOOST_TEST( size(arr)  == 50 );
-	// 		BOOST_TEST( arr.size() == 50 );
-
-	// 		BOOST_TEST( arr[0].sliced(10, 20).size() == 10 );
-	// 		BOOST_TEST( size(arr[0].sliced(10, 20))  == 10 );
-
-	// 		static_assert(decltype(arr(0, {10, 20}))::rank_v == 1);
-
-	// 		BOOST_TEST( size(arr(0, {10, 20})) == 10 );
-
-	// 		BOOST_TEST(      arr.layout() == arr.layout()  );
-	// 		BOOST_TEST( !(arr.layout() <  arr.layout()) );
-
-	// 		// auto bl = arr.layout().flatten();
-	// 		auto const& barr = arr.flattened();
-	// 		BOOST_TEST( &barr[10] == &arr[0][10] );
-	// 	}
-	// {
-	// 	multi::array<double, 2> arr({6, 10});
-
-	// 	auto const& barr = arr.strided(2).flattened();
-
-	// 	BOOST_TEST( &barr [0] == &arr[0][0] );
-	// 	BOOST_TEST( &barr [1] == &arr[0][1] );
-	// 	// ...
-	// 	BOOST_TEST( &barr [9] == &arr[0][9] );
-
-	// 	BOOST_TEST( &barr[10] == &arr[2][0] );
-	// 	BOOST_TEST( &barr[11] == &arr[2][1] );
-	// 	BOOST_TEST( &barr[12] == &arr[2][2] );
-	// 	// ...
-	// 	BOOST_TEST( &barr[19] == &arr[2][9] );
-
-	// 	BOOST_TEST( &barr[20] == &arr[4][0] );
-	// 	BOOST_TEST( &barr[21] == &arr[4][1] );
-	// 	BOOST_TEST( &barr[22] == &arr[4][2] );
-	// 	// ...
-	// 	BOOST_TEST( &barr[29] == &arr[4][9] );
-
-	// 	BOOST_TEST( arr.num_elements() == 60 );
-	// 	BOOST_TEST( barr.size() == 30 );
-	// }
-	// {
-	// 	multi::array<double, 2> arr({6, 10});
-
-	// 	auto const& barr = arr.strided(2).transposed().strided(2).transposed().flattened();
-
-	// 	BOOST_TEST( &barr [0] == &arr[0][0] );
-	// 	BOOST_TEST( &barr [1] == &arr[0][2] );
-	// 	BOOST_TEST( &barr [2] == &arr[0][4] );
-	// 	BOOST_TEST( &barr [3] == &arr[0][6] );
-	// 	BOOST_TEST( &barr [4] == &arr[0][8] );
-
-	// 	BOOST_TEST( &barr [5] == &arr[2][0] );
-	// 	BOOST_TEST( &barr [6] == &arr[2][2] );
-	// 	BOOST_TEST( &barr [7] == &arr[2][4] );
-	// 	BOOST_TEST( &barr [8] == &arr[2][6] );
-	// 	BOOST_TEST( &barr [9] == &arr[2][8] );
-
-	// 	BOOST_TEST( &barr [10] == &arr[4][0] );
-	// 	BOOST_TEST( &barr [11] == &arr[4][2] );
-	// 	BOOST_TEST( &barr [12] == &arr[4][4] );
-	// 	BOOST_TEST( &barr [13] == &arr[4][6] );
-	// 	BOOST_TEST( &barr [14] == &arr[4][8] );
-
-	// 	BOOST_TEST( arr.num_elements() == 60 );
-	// 	BOOST_TEST( barr.size() == 15 );
-	// }
 
 	// BOOST_AUTO_TEST_CASE(layout_AA)
 	{
@@ -486,7 +408,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if !defined(__clang_major__) || ((__clang_major__ < 14) && (__clang_major__ != 10))
 #if !defined(__NVCC__)
 #if !defined(_MSC_VER)
-		static_assert(std::ranges::random_access_range<decltype(A2.extension())>);
+		static_assert(std::ranges::random_access_range<decltype(A2.extent())>);
 
 		auto tiA2 = std::views::transform(
 			// A2.extension(),
@@ -1284,12 +1206,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{3,  9},
 			{0, 15}
 		});
+
 		BOOST_TEST( lyt.size() == 6 );
-		BOOST_TEST( lyt.extension().front() == 3 );
-		BOOST_TEST( lyt.extension().back() == 8 );
+
+		BOOST_TEST( lyt.extent().front() == 3 );
+		BOOST_TEST( lyt.extent().back() == 8 );
 	}
 	{
-		multi::extension_t<int> const ext(5);
+		multi::extent_t<int> const ext(5);
 
 		BOOST_TEST( *ext.begin() == 0 );
 		BOOST_TEST( *(ext.end() - 1) == 4 );
@@ -1303,8 +1227,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ext[1] == 1 );
 		BOOST_TEST( ext[4] == 4 );
 
-		static_assert(std::ranges::range<boost::multi::extension_t<int, int>>);
-		static_assert(std::ranges::range<boost::multi::extension_t<int, int> const>);
+		static_assert(std::ranges::range<boost::multi::extent_t<int, int>>);
+		static_assert(std::ranges::range<boost::multi::extent_t<int, int> const>);
 
 		// std::ranges::ref_view<const boost::multi::extension_t<int, int>>
 		auto rext = ext | std::ranges::views::reverse;

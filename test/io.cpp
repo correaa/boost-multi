@@ -62,7 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		std::ostringstream oss;
-		oss << multi::array<int, 3>({3, 4, 5}, int{}).extension();
+		oss << multi::array<int, 3>({3, 4, 5}, int{}).extent();
 		BOOST_TEST( oss.str() == "[0, 3)" );
 	}
 	// fortran 2d
@@ -168,10 +168,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
              },
 			 }
 		};
-
-		std::cout << "A4D = " << arr << "; no more, no less " << '\n';
-
-		std::cout << "A4D.extesion() = " << arr.extension() << '\n';
 	}
 	{
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)

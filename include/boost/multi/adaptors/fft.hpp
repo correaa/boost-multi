@@ -123,11 +123,11 @@ class dft_range {
 
 			public:
 			explicit fake_array(multi::extents_t<dimensionality - 1> ext) : extensions_{ext} {}
-			auto extensions() const { return extensions_; }
+			[[deprecated]] auto extensions() const { return extensions_; }
 			auto extents() const { return extensions_; }
 
 			//  multi::size_t size_;
-			auto extension() const {
+			[[deprecated]] auto extension() const {
 				using std::get;
 				return get<0>(extents());
 			}
@@ -136,7 +136,7 @@ class dft_range {
 				return get<0>(extents());
 			}
 
-			auto size() const { return extension().size(); }
+			auto size() const { return extent().size(); }
 		};
 
 		auto operator*() const -> fake_array {
