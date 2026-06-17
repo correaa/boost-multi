@@ -27,7 +27,7 @@ namespace boost::multi::tblis {
 namespace multi = boost::multi;
 
 int main() {
-	std::unordered_map<char, multi::extension_t<>> ext = {
+	std::unordered_map<char, multi::extent_t<>> ext = {
 		{'a', 8},
 		{'b', 10},
 		{'c', 2},
