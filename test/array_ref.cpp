@@ -640,7 +640,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(  mar1.extent().first() == 1 );
 		BOOST_TEST(  mar1.extent().last()  == 6 );
-		BOOST_TEST( *extent(mar1).begin() == 1 );
+		// BOOST_TEST( *extent(mar1).begin() == 1 );
+		BOOST_TEST( *mar1.extent().begin() == 1 );
 
 		BOOST_TEST( mar1.size() == mar.size() );
 		BOOST_TEST( mar1.layout().extent().first() == 1 );
