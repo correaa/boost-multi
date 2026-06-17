@@ -687,7 +687,10 @@ struct                                                                          
 		assert(this->stride() != 0);
 	}
 
+	/// returns an iterator to the beginning 
 	constexpr auto begin() const& noexcept -> typename dynamic_array::const_iterator { return ref_::begin(); }
+
+	/// returns an iterator to the end 
 	constexpr auto end() const& noexcept -> typename dynamic_array::const_iterator { return ref_::end(); }
 
 	constexpr auto begin() && noexcept -> typename dynamic_array::move_iterator { return ref_::begin(); }

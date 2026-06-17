@@ -317,7 +317,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
 
+	/// Returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
+
+	/// Returns the base move-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr& { return base_; }
 
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
@@ -520,7 +523,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }  // cppcheck-suppress returnByReference;
 
-	friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
+	// friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
@@ -1845,7 +1848,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the beginning
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }      // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the end
 
+	/// returns an const-iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }  ///< returns an (explicitly const-)iterator to the beginning
+
+	/// returns an const-iterator to the end
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }      ///< returns an (explicitly const-)iterator to the end
 
  private:
@@ -1983,6 +1989,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
  public:
+	/// creates a view of the array with element references with const-removed
 	template<
 		class T2 = std::remove_const_t<T>,
 		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
