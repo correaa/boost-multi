@@ -115,7 +115,7 @@ if(NOT ENABLE_CIRCLE)
         /EHsc /permissive-
       >
       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
-        -Xcompiler=/EHsc -Xcompiler=/permissive-
+        -Xcompiler=/EHsc -Xcompiler=/permissive- -Xcompiler=/Zc:preprocessor
       >
     >
   )
