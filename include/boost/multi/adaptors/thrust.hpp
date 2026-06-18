@@ -471,20 +471,20 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 THRUST_NAMESPACE_BEGIN
 namespace detail {
 
-template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
-struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
-	using type = std::conditional_t<D == 1,
-		std::conditional_t<IsConst,
-			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
-			typename thrust::detail::pointer_element<ElementPtr>::type
-		>,
-		std::conditional_t<IsConst,
-			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
-			::boost::multi::subarray<T, D, ElementPtr, Layout>
-		>
-		// void
-	>;
-};
+// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+// struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+// 	using type = std::conditional_t<D == 1,
+// 		std::conditional_t<IsConst,
+// 			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
+// 			typename thrust::detail::pointer_element<ElementPtr>::type
+// 		>,
+// 		std::conditional_t<IsConst,
+// 			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
+// 			::boost::multi::subarray<T, D, ElementPtr, Layout>
+// 		>
+// 		// void
+// 	>;
+// };
 
 }  // namespace detail
 THRUST_NAMESPACE_END
