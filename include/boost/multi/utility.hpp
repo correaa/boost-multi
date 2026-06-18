@@ -515,20 +515,20 @@ template<class T, std::size_t N>
 constexpr auto corigin(T const (&array)[N]) noexcept { return corigin(array[0]); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for backwards compatibility
 
 template<class T, typename = decltype(std::declval<T>().extent())>
-auto        has_extension_aux(T const&) -> std::true_type;
-inline auto has_extension_aux(...) -> std::false_type;
-template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+auto        has_extent_aux(T const&) -> std::true_type;
+inline auto has_extent_aux(...) -> std::false_type;
+template<class T> struct has_extent : decltype(has_extent_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
-template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
+template<class Container, class = std::enable_if_t<!has_extent<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto extent(Container const& cont)
 	-> decltype(multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
 	return multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)));
 }
 
-template<class Container, class = std::enable_if_t<!has_extension<Container>::value>>  // NOLINT(modernize-use-constraints)
+template<class Container, class = std::enable_if_t<!has_extent<Container>::value>>  // NOLINT(modernize-use-constraints)
 [[deprecated("use extent")]] auto extension(Container const& cont) -> decltype(extent(cont)) { return extent(cont); }
 
-template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extension<Container>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+template<dimensionality_type Rank, class Container, std::enable_if_t<!has_extent<Container>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto extents(Container const& cont) {
 	if constexpr(Rank == 0) {
 		return multi::extents_t<0>{};
@@ -537,10 +537,6 @@ auto extents(Container const& cont) {
 		return multi::extent_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))) * extents<Rank - 1>(cont.front());
 	}
 }
-
-// template<class T, typename = decltype(std::declval<T>().shape())>
-//        auto has_shape_aux(T const&) -> std::true_type;
-// inline auto has_shape_aux(...     ) -> std::false_type;
 
 template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
@@ -591,11 +587,6 @@ auto transposed(Arr2D&& arr)
 	return std::forward<Arr2D>(arr).transposed();
 }
 
-// template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>::value && !has_extensions<BoostMultiArray>::value, int> =0>
-// constexpr auto extents(BoostMultiArray const& array) {
-//  return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
-// }
-
 template<class T, std::enable_if_t<!has_extents<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
 constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extents_type { return {}; }
 
@@ -617,7 +608,7 @@ template<> struct extensions_aux<0> {
 	template<class T> static auto call(T const& /*unused*/) { return multi::extents_t<0>{}; }  // std::make_tuple();}
 };
 
-template<dimensionality_type D, class T, std::enable_if_t<has_extension<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+template<dimensionality_type D, class T, std::enable_if_t<has_extent<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto extents(T const& array) {
 	return extensions_aux<D>::call(array);
 }
