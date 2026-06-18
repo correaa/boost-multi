@@ -1347,7 +1347,7 @@ inq cuda 70:
     # - export CUDA_VISIBLE_DEVICES=0,1
     - __nvcc_device_query
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git  --branch update-multi-extents-rename
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
