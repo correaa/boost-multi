@@ -86,13 +86,13 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 
 	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
-	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(me.self() < other.self()) && !(other.self() < me.self()); }
 	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
-	friend BOOST_MULTI_HD constexpr auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(other.self() < self.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator<=(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(other.self() < me.self()); }
 
-	friend BOOST_MULTI_HD constexpr auto operator>(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(self.self() == other.self()); }
-	friend BOOST_MULTI_HD constexpr auto operator>=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(me.self() < other.self()) && !(me.self() == other.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator>=(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(me.self() < other.self()); }
 };
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
@@ -178,14 +178,14 @@ struct steppable : totally_ordered<Self> {
 	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	BOOST_MULTI_HD constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
-	friend BOOST_MULTI_HD constexpr auto operator++(steppable& self, int) -> Self {
-		Self tmp{self.self()};
-		++self.self();
+	friend BOOST_MULTI_HD constexpr auto operator++(steppable& me, int) -> Self {
+		Self tmp{me.self()};
+		++me.self();
 		return tmp;
 	}
-	friend BOOST_MULTI_HD constexpr auto operator--(steppable& self, int) -> Self {
-		Self tmp{self.self()};
-		--self.self();
+	friend BOOST_MULTI_HD constexpr auto operator--(steppable& me, int) -> Self {
+		Self tmp{me.self()};
+		--me.self();
 		return tmp;
 	}
 };
@@ -205,21 +205,21 @@ struct affine_with_unit : steppable<Self> {
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using difference_type = Difference;
-	friend BOOST_MULTI_HD constexpr auto operator++(affine_with_unit& self) -> Self& { return self.self() += difference_type{1}; }
-	friend BOOST_MULTI_HD constexpr auto operator--(affine_with_unit& self) -> Self& { return self.self() -= difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator++(affine_with_unit& me) -> Self& { return me.self() += difference_type{1}; }
+	friend BOOST_MULTI_HD constexpr auto operator--(affine_with_unit& me) -> Self& { return me.self() -= difference_type{1}; }
 
 	BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff) const -> Self {
 		auto ret{cself()};
 		ret += diff;
 		return ret;
 	}
-	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, affine_with_unit const& self) -> Self {
-		auto ret{self.self()};
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, affine_with_unit const& me) -> Self {
+		auto ret{me.self()};
 		ret += diff;
 		return ret;
 	}
-	friend constexpr auto operator<(affine_with_unit const& self, affine_with_unit const& other) -> bool {
-		return difference_type{0} < other.self() - self.self();
+	friend constexpr auto operator<(affine_with_unit const& me, affine_with_unit const& other) -> bool {
+		return difference_type{0} < other.self() - me.self();
 	}
 };
 
@@ -323,8 +323,8 @@ class random_iterable {
  public:
 	constexpr auto        cfront() const& -> decltype(auto) { return static_cast<T const&>(*this).front(); }
 	constexpr auto        cback() const& -> decltype(auto) { return static_cast<T const&>(*this).back(); }
-	friend constexpr auto cfront(T const& self) -> decltype(auto) { return self.cfront(); }
-	friend constexpr auto cback(T const& self) -> decltype(auto) { return self.cback(); }
+	friend constexpr auto cfront(T const& me) -> decltype(auto) { return me.cfront(); }
+	friend constexpr auto cback(T const& me) -> decltype(auto) { return me.cback(); }
 };
 #ifdef _MSC_VER
 #pragma warning( pop )

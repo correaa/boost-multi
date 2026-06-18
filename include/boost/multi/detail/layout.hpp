@@ -170,8 +170,8 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(multi::ssize_t size)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : allow terse syntax
-	: extents_t{index_extension{size}} {}
+	BOOST_MULTI_HD constexpr extents_t(multi::ssize_t sz)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : allow terse syntax
+	: extents_t{index_extension{sz}} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -200,13 +200,13 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	template<class... Ts, std::enable_if_t<sizeof...(Ts) == static_cast<std::size_t>(D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; allow terse syntax // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(detail::tuple<Ts...> const& extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: extents_t(extensions, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
+	BOOST_MULTI_HD constexpr extents_t(detail::tuple<Ts...> const& exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	: extents_t(exts, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
 	template<class... Ts, std::enable_if_t<sizeof...(Ts) == static_cast<std::size_t>(D), int> = 0, class = decltype(base_{std::declval<::std::tuple<Ts...> >()})>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; allow terse syntax // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(::std::tuple<Ts...> extensions)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: base_{std::move(extensions)} {}
+	BOOST_MULTI_HD constexpr extents_t(::std::tuple<Ts...> exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	: base_{std::move(exts)} {}
 
 	template<
 		class... Exts,
@@ -226,15 +226,15 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: extents_t(other.extension(), other.sub()) {}
 
-	BOOST_MULTI_HD constexpr extents_t(index_extension const& extension, typename layout_t<D - 1>::extents_type const& other)
-	: extents_t(multi::detail::ht_tuple(extension, other.base())) {}
+	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
+	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return *this; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return *this; }
 
-	friend constexpr auto operator*(index_extension const& extension, extents_t const& self) -> extents_t<D + 1> {
+	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
 		// return extents_t<D + 1>(tuple(extension, self.base()));
-		return extents_t<D + 1>(extension, self);
+		return extents_t<D + 1>(ext, self);
 	}
 
 	friend BOOST_MULTI_HD auto operator==(extents_t const& self, extents_t const& other) { return self.base() == other.base(); }
@@ -265,7 +265,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		return multi::detail::ht_tuple(n / sub_num_elements, sub().from_linear(n % sub_num_elements));
 	}
 
-	friend constexpr auto operator%(nelems_type idx, extents_t const& extensions) { return extensions.from_linear(idx); }
+	friend constexpr auto operator%(nelems_type idx, extents_t const& exts) { return exts.from_linear(idx); }
 
 	constexpr explicit operator bool() const { return !layout_t<D>{*this}.empty(); }
 
@@ -1529,24 +1529,24 @@ struct layout_t
 	static BOOST_MULTI_HD constexpr auto std_apply_(Args&&... args) ->decltype(auto) { using std::apply; return apply(std::forward<Args>(args)...); }
 
  public:
-	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& extensions)
-	: sub_{apply_        ([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
-	// : sub_{/*std::*/apply([](auto const&... subexts) { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base()))}
+	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& exts)
+	: sub_{apply_        ([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base()))}
+	// : sub_{/*std::*/apply([](auto const&... subexts) { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base()))}
 	, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
-	, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}
-	, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	, offset_{boost::multi::detail::get<0>(exts.base()).first() * stride_}
+	, nelems_{boost::multi::detail::get<0>(exts.base()).size() * sub().num_elements()} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& extensions, strides_type const& strides)
-	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(extensions.base())), detail::tail(strides)}, stride_{boost::multi::detail::get<0>(strides)}, offset_{boost::multi::detail::get<0>(extensions.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(extensions.base()).size() * sub().num_elements()} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& exts, strides_type const& strds)
+	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base())), detail::tail(strds)}, stride_{boost::multi::detail::get<0>(strds)}, offset_{boost::multi::detail::get<0>(exts.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(exts.base()).size() * sub().num_elements()} {}
 	#ifdef __NVCC__
 	#pragma nv_diagnostic pop
 	#endif
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type std, offset_type off, nelems_type nlms)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{std}, offset_{off}, nelems_{nlms} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type stride, offset_type offset /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{stride}, offset_{offset} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sb, stride_type sd, offset_type off /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sb}, stride_{sd}, offset_{off} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
 
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 

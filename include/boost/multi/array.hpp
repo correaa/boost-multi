@@ -406,7 +406,7 @@ struct                                                                          
 	template<class Element>
 	// for classic sfinae, needed by MSVC?
 	explicit dynamic_array(Element const& elem, allocator_type const& alloc, std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element> && (D == 0), int> /*dummy*/ = 0)  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-	: dynamic_array(typename dynamic_array::extensions_type{}, elem, alloc) {}                                                                                                                  // NOLINT(readability-redundant-typename) for C++23
+	: dynamic_array(typename dynamic_array::extents_type{}, elem, alloc) {}                                                                                                                  // NOLINT(readability-redundant-typename) for C++23
 
 	template<
 		class It,
@@ -1176,7 +1176,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		class = decltype(adl_copy_n(&std::declval<Singleton>(), 1, typename dynamic_array::element_ptr{}))>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax  // NOLINTNEXTLINE(runtime/explicit)
 	/*implict*/ dynamic_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this is used by the
-	: ref_(dynamic_array::allocate(1), typename dynamic_array::extensions_type{}) {
+	: ref_(dynamic_array::allocate(1), typename dynamic_array::extents_type{}) {
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
