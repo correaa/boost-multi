@@ -14,7 +14,7 @@
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for iterator_traits
 #include <memory>       // for pointer_traits
-#include <string>       // for to_string  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <string>       // IWYU pragma: keep  // for to_string
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for move, declval
 
@@ -27,7 +27,7 @@
 
 namespace test {
 
-struct neg_t {
+struct neg_t {  // NOLINT(misc-use-internal-linkage)
 	template<class T>
 	constexpr auto operator()(T const& value) const -> decltype(-value) { return -value; }
 };
@@ -38,8 +38,9 @@ constexpr inline neg_t neg;
 namespace test {
 
 template<class Involution, class Ref>
-class involuted {
-	Ref         r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+class involuted {  // NOLINT(misc-use-internal-linkage)
+	Ref r_;        // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+
 	friend auto underlying(involuted& self) -> decltype(auto) { return self.r_; }
 	friend auto underlying(involuted&& self) -> decltype(auto) { return std::move(self).r_; }
 	friend auto underlying(involuted const& self) -> decltype(auto) { return self.r_; }
@@ -87,7 +88,7 @@ class involuted {
 };
 
 template<class Involution, class It>
-class involuter {
+class involuter {  // NOLINT(misc-use-internal-linkage)
 	It it_;
 	template<class, class> friend class involuter;
 
@@ -104,7 +105,7 @@ class involuter {
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
-	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
+	constexpr explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
 	constexpr auto operator*() const { return reference{Involution{}, *it_}; }
 	// cppcheck-suppress redundantPointerOp ; lib idiom
@@ -139,8 +140,8 @@ class involuter {
 template<class Ref> using negated = involuted<std::negate<>, Ref>;
 template<class It> using negater  = involuter<std::negate<>, It>;
 
-class basic_conjugate_t {
-	// clang-format off
+// clang-format off
+class basic_conjugate_t {  // NOLINT(misc-use-internal-linkage)
 	template<int N> struct prio : std::conditional_t<N != 0, prio<N - 1>, std::true_type> {};
 
 	template<class T> static auto _(prio<0> /**/, T const& value) BOOST_MULTI_DECLRETURN( std::conj(value))
@@ -151,11 +152,11 @@ class basic_conjugate_t {
  public:
 	template<class T>
 	static auto _(T const& value) BOOST_MULTI_DECLRETURN(_(prio<3>{}, value))
-	// clang-format on
 };
+// clang-format on
 
 template<class T = void>
-struct conjugate : private basic_conjugate_t {
+struct conjugate : private basic_conjugate_t {  // NOLINT(misc-use-internal-linkage)
 	constexpr auto operator()(T const& arg) const BOOST_MULTI_DECLRETURN(_(arg))
 };
 
@@ -170,7 +171,7 @@ struct conjugate<> : private basic_conjugate_t {
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
 
-template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {
+template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {  // NOLINT(misc-use-internal-linkage)
 	explicit conjd(ComplexRef ref) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, ref) {}
 	auto real() const { return underlying(*this).real(); }
 	auto imag() const {
@@ -197,7 +198,7 @@ template<class T> conjd(T&&) -> conjd<T>;  // NOLINT(misc-use-internal-linkage) 
 template<class Complex> using conjr = test::involuter<conjugate<>, Complex>;
 
 template<class P = std::complex<double>*>
-class indirect_real {
+class indirect_real {  // NOLINT(misc-use-internal-linkage)
 	P impl_;
 
  public:

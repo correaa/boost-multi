@@ -1,4 +1,4 @@
-// Copyright 2022-2025 Alfredo A. Correa
+// Copyright 2022-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -18,14 +18,14 @@
 #include <utility>   // IWYU pragma: keep  // for declval, forward
 #include <vector>    // IWYU pragma: keep  // for vector
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<concepts>)
 #include <concepts>  // IWYU pragma: keep
 #include <ranges>    // IWYU pragma: keep
 #endif
 
 template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
-struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
+struct Conj_t {  // NOLINT(readability-identifier-naming,misc-use-internal-linkage) for testing
 	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const noexcept { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
 	template<class T> constexpr auto          operator()(Conjd<T> const&) const = delete;
 	template<class T> constexpr auto          operator()(Conjd<T>&&) const      = delete;
@@ -80,7 +80,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 		BOOST_TEST( conjd_arr[0] == 1.0 - 2.0*I );
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<concepts>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<concepts>)
 		auto conjd_arr_beg = conjd_arr.begin();
 		conjd_arr_beg      = conjd_arr.end();
 
@@ -299,7 +299,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
 		// cppcheck-suppress CastAddressToIntegerAtReturn ;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> int(&)[3] { return carr[idx]; });
+		auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> int (&)[3] { return carr[idx]; });
 		// ^^^  TODO(correaa) investigate, portability: Returning an address value in a function with integer return type is not portable.
 
 		BOOST_TEST( &indirect_v[1][2] ==  &carr[3][2] );
@@ -317,6 +317,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+	}
+
+	{
+		multi::array<int, 1> const arr = {4, 3, 2, 1, 0};
+
+		auto const& arr_plus_1 = arr.element_transformed([](auto val) noexcept { return val + 1; });
+
+		multi::array<int, 1> const arr2 = arr_plus_1;
+
+		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
+	}
+	{
+		multi::array<int, 1> const arr = {4, 3, 2, 1, 0};
+
+		auto const& arr_plus_1 = arr.element_transformed(multi::val([](auto val) noexcept { return val + 1; }));
+
+		multi::array<int, 1> const arr2 = arr_plus_1;
+
+		BOOST_TEST(( arr2 == multi::array<int, 1>{5, 4, 3, 2, 1} ));
 	}
 
 	return boost::report_errors();

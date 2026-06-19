@@ -1,6 +1,6 @@
 site:
   title: Boost.Multi
-  start_page: multi::index.adoc
+  start_page: ROOT::intro.adoc
 content:
   sources:
     - url: ..
@@ -10,9 +10,9 @@ output:
   dir: html
 ui:
   bundle:
-    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    url: https://github.com/boostorg/website-v2-docs/releases/download/ui-develop/ui-bundle.zip
   output_dir: multi/_
-  supplemental_files: ./supplemental-ui
 antora:
   extensions:
-    - '@antora/lunr-extension'
+    - require: '@cppalliance/antora-downloads-extension'
+    - require: '@antora/lunr-extension'

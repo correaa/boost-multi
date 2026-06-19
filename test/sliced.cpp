@@ -106,9 +106,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<int> VV = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-		multi::array_ref<int, 1, int*, multi::contiguous_layout<>> const AA({static_cast<multi::size_t>(VV.size())}, VV.data());
+		multi::array_ref<int, 1, int*, multi::contiguous_layout<>> const AA({static_cast<multi::ssize_t>(VV.size())}, VV.data());
 
-		BOOST_TEST( AA.nelems() == static_cast<multi::size_t>(VV.size()) );
+		BOOST_TEST( AA.nelems() == static_cast<multi::ssize_t>(VV.size()) );
 		BOOST_TEST( !AA.is_empty() );
 
 		BOOST_TEST( AA.sliced(2, 9).size() == 7 );

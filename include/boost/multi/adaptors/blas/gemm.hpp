@@ -180,8 +180,10 @@ class gemm_reference {  // TODO(correaa) implement this in terms of gemv_range?
 
  public:
 	explicit gemm_reference(Ext exts) : exts_{std::move(exts)} {}
-	auto extensions() const {return exts_;}
-	friend auto extensions(gemm_reference const& self) {return self.extensions();}
+	auto extensions() const { return exts_; }
+	[[nodiscard]] constexpr auto extents() const { return exts_; }
+
+	// friend auto extensions(gemm_reference const& self) {return self.extensions();}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB>
@@ -230,7 +232,7 @@ class gemm_iterator {
 
 	template<class ItOut>
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
-	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls)
+	->decltype(blas::gemm_n(std::declval<ContextPtr>(), std::declval<typename ItA::element>()       , std::declval<ItA>(), count, std::declval<ItB>(), 0.0, d_first)) try {  // std::complex NOLINT(fuchsia-default-arguments-calls,readability-redundant-typename) for C++20
 		return blas::gemm_n(first.ctxtp_              , static_cast<typename ItA::element>(first.s_), first.a_it_        , count, first.b_begin_     , 0.0, d_first);  // NOLINT(fuchsia-default-arguments-calls)
 	} catch(std::exception const& e) {
 		throw std::logic_error(
@@ -282,7 +284,7 @@ class gemm_range {
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;
-	using size_type = typename decay_type::size_type;
+	using size_type = typename std::iterator_traits<ItA>::difference_type;  // typename decay_type::size_type;
 
 	       auto begin()          const& -> iterator {return {ctxtp_, s_, a_begin_, b_begin_};}
 	       auto end()            const& -> iterator {return {ctxtp_, s_, a_end_  , b_begin_};}
@@ -292,7 +294,9 @@ class gemm_range {
 	auto size() const -> size_type {return a_end_ - a_begin_;}
 
 	auto extensions() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
-	friend auto extensions(gemm_range const& self) {return self.extensions();}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return size()*(*b_begin_).extensions();}
+
+	// friend auto extensions(gemm_range const& self) {return self.extensions();}
 
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>
@@ -357,7 +361,7 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 
 namespace operators {
 	template<class A2D, class B2D,
-		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
 	->decltype(blas::gemm(1.0, A, B)) {
 		return blas::gemm(1.0, A, B); }

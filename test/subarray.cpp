@@ -147,7 +147,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
+#if __cplusplus >= 202002L
+		BOOST_TEST( std::cmp_not_equal(AA[0], BB[0]) );
+#else
 		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );
+#endif
 
 		auto const to_int = [](auto elem) noexcept {
 			return static_cast<int>(elem);
@@ -234,8 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(!std::is_trivially_copyable_v<multi::array_ref<int, 4>>);
 		static_assert(std::is_copy_assignable_v<multi::array_ref<int, 4>>);
 		static_assert(!std::is_trivially_copy_assignable_v<multi::array_ref<int, 4>>);
-		static_assert(!std::is_swappable_v<multi::array_ref<int, 4>>);  // TODO(correaa) fix? swap can be called on it, and it is O(N)
-		// static_assert(    std::is_nothrow_swappable_v      <multi::array_ref<int, 4>>);
+		static_assert(std::is_swappable_v<multi::array_ref<int, 4>>);
 		// static_assert( std::is_trivially_relocatable_v     <multi::array_ref<int, 4>>);  // <==========
 
 		static_assert(std::is_move_constructible_v<multi::subarray<int, 4>>);          // mmm, something strange here

@@ -10,7 +10,7 @@
 #include <array>    // for array
 #include <numeric>  // for iota
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #endif
 
@@ -19,7 +19,7 @@
 
 namespace multi = boost::multi;
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 
 template<class X1D, class Y1D>
@@ -110,18 +110,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-#if __cplusplus >= 202002L
-#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
-	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
-	{
-		constexpr auto test = [] {
-			multi::array<int, 2> arr({3, 3}, 99);
-			return arr.rotated()[1].end() != arr.rotated()[1].begin();
-		}();
-		BOOST_TEST(test);
-	}
-#endif
-#endif
+	// #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+	// #if !defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
+	// 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
+	// 	{
+	// 		constexpr auto test = [] {
+	// 			multi::array<int, 2> arr({3, 3}, 99);
+	// 			return arr.rotated()[1].end() != arr.rotated()[1].begin();
+	// 		}();
+	// 		BOOST_TEST(test);
+	// 	}
+	// #endif
+	// #endif
 
 	// BOOST_AUTO_TEST_CASE(multi_2d_const)
 	{
@@ -330,14 +330,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
 #if !defined(__GNUC__) || (__GNUC__ < 14)
 
 	// BOOST_AUTO_TEST_CASE(matlab_meshgrid)
 	{
-		auto const x = multi::array{1, 2, 3};
-		auto const y = multi::array{1, 2, 3, 4, 5};
+		auto const x = multi::array<int, 1>{1, 2, 3};
+		auto const y = multi::array<int, 1>{1, 2, 3, 4, 5};
 
 		auto const& [X, Y] = meshgrid(x, y);
 

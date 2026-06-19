@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
 #endif
@@ -15,10 +15,12 @@
 #if defined(__cpp_lib_ranges) && !defined(_MSC_VER) && !defined(__circle_build__)
 
 #include <boost/multi/array.hpp>  // from https://github.com/correaa/boost-multi
-#include <boost/multi/broadcast.hpp>
+#include <boost/multi/elementwise.hpp>
+#include <boost/multi/restriction.hpp>  // for operator^, restriction
 
-#include <algorithm>  // for max
-#include <cmath>      // for exp, __cpp_lib_ranges
+#include <algorithm>   // for max
+#include <cmath>       // for exp, __cpp_lib_ranges
+#include <functional>  // IWYU pragma: keep  // for plus
 #include <iostream>
 #include <limits>
 #include <numeric>
@@ -52,7 +54,7 @@ template<class R, class V = stdr::range_value_t<R>>
 constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-naming,misc-use-internal-linkage)
 	// fmt::print("M");
 	std::cout << 'M';
-#if defined(__cpp_lib_ranges_fold)
+#ifdef __cpp_lib_ranges_fold
 	return stdr::fold_left(rng, std::numeric_limits<V>::lowest(), stdr::max);
 #else
 	return std::accumulate(rng.begin(), rng.end(), std::numeric_limits<V>::lowest(), stdr::max);
@@ -62,7 +64,7 @@ constexpr auto maxR1(R const& rng) noexcept {  // NOLINT(readability-identifier-
 constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) noexcept {  // NOLINT(fuchsia-default-arguments-declarations)
 	// fmt::print("S");
 	std::cout << 'S';
-#if defined(__cpp_lib_ranges_fold)
+#ifdef __cpp_lib_ranges_fold
 	return stdr::fold_left(rng, zero, std::plus<>{});
 #else
 	return std::accumulate(rng.begin(), rng.end(), zero);
@@ -84,8 +86,8 @@ class ret_t {
 	BOOST_MULTI_HD constexpr explicit ret_t(MM&& mat) : mat_{std::forward<MM>(mat)} {}  // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()(multi::index irow) const {
-		using multi::broadcast::operator-;
-		using multi::broadcast::exp;
+		using multi::elementwise::operator-;
+		using multi::elementwise::exp;
 
 		auto mati = mat_[irow];
 		return exp(std::move(mati) - maxR1(mati));
@@ -93,9 +95,9 @@ class ret_t {
 };
 
 auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
-	using multi::broadcast::operator-;
-	using multi::broadcast::exp;
-	using multi::broadcast::operator/;
+	using multi::elementwise::operator-;
+	using multi::elementwise::exp;
+	using multi::elementwise::operator/;
 
 	auto ret = [mat = FWD(mat)](multi::index irow) { auto mati = mat[irow]; return exp(std::move(mati) - maxR1(mati)); } ^ multi::extensions_t<1>{2};
 

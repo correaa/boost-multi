@@ -33,7 +33,7 @@ auto power(M const& array) {
 
 }  // end anonymous namespace
 
-template<class T> class randomizer {
+template<class T> class randomizer {  // NOLINT(misc-use-internal-linkage)
 	std::mt19937_64 gen_;  // NOSONAR rng good enough for the test
 
  public:
@@ -136,7 +136,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 						  in, out);
 
 		multi::array<complex, 2> out2({3, 10});
-		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(llvm-use-ranges,modernize-use-ranges) for C++20
+		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
 			fftw::dft_forward({{true}}, in_elem, out2_elem);
 			return std::forward<decltype(out2_elem)>(out2_elem);
 		});
@@ -160,7 +161,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 						  in, out);
 
 		multi::array<complex, 3> out2({3, 5, 6});
-		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {  // NOLINT(modernize-use-ranges) for C++20
+		// NOLINTNEXTLINE(llvm-use-ranges,modernize-use-ranges) for C++20
+		std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
 			fftw::dft_forward({true, true}, in_elem, out2_elem);
 			return std::forward<decltype(out2_elem)>(out2_elem);
 		});
@@ -184,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 													in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
 
-		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-7 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(out.num_elements())) < 1e-7 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern)
@@ -201,7 +203,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
         },
 																  in.base(), in.layout(), out.base(), out.layout());
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(out.num_elements())) < 1e-8 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure)
@@ -213,12 +215,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> in({16, 16});
 		std::iota(in.elements().begin(), in.elements().end(), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		multi::array<complex, 2> out(extensions(in));
-		auto const               pln = multi::fftw::plan::forward({
-                                                        {true, true}
+
+		auto const pln = multi::fftw::plan::forward(
+			{
+				{true, true}
         },
-																  in.base(), in.layout(), out.base(), out.layout());
+			in.base(), in.layout(), out.base(), out.layout()
+		);
 		pln.execute(in.base(), out.base());
-		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(out.num_elements())) < 1e-8 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_2D_power_dft)
@@ -233,7 +238,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 									 {true, true}
         },
 								 in, out);
-		BOOST_TEST( power(in) - (power(out)/static_cast<double>(num_elements(out))) < 1e-8 );
+		BOOST_TEST( power(in) - (power(out)/static_cast<double>(out.num_elements())) < 1e-8 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace)
@@ -255,7 +260,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io)),
 			multi::array_ref<complex, 3>(data_elements(io), extensions(io))
 		);
-		BOOST_TEST( powerin - (power(io)/static_cast<double>(num_elements(io))) < 1e-10 );
+		BOOST_TEST( powerin - (power(io)/static_cast<double>(io.num_elements())) < 1e-10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref)

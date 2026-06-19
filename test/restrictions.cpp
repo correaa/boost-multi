@@ -2,34 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// vvv this has no effect, needs to be passed directly from compilation line "-Wno-psabi"
-// #ifdef __GNUC__
-// #pragma GCC diagnostic ignored "-Wpsabi"  // for ranges backwards compatibility message
-// #endif
-
-#if defined(__GNUC__) && (__GNUC__ == 15)
-// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L
+#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#include <boost/multi/array.hpp>
+#include <boost/multi/elementwise.hpp>
 
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
+#include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+#include <ranges>      // IWYU pragma: keep
 #include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
-
-#if defined(__cplusplus) && (__cplusplus >= 202002L)
-#include <concepts>  // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
-#include <ranges>    // IWYU pragma: keep
-#endif
-
-#include <boost/multi/array.hpp>
-#include <boost/multi/broadcast.hpp>
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -100,7 +87,16 @@ auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensio
 }  // namespace elementwise
 }  // namespace lazy
 
+struct re {
+	void restrict() const {}
+	// friend void restrict(re const&) {}
+};
+
 int main() {
+	re R;
+	R.restrict();
+	// restrict(re);
+
 	// test repeat
 	{
 		auto iota = [](multi::index i) { return i; } ^ multi::extensions_t<1>(5);
@@ -153,8 +149,10 @@ int main() {
 
 		BOOST_TEST( max_per_row_repeat_T.size() == 2 );
 
-		using multi::broadcast::operator-;
+		using multi::elementwise::operator-;
+
 		auto subtract = mat - max_per_row_repeat_T;
+
 		BOOST_TEST( subtract[0][0] == -2 );
 		BOOST_TEST( subtract[0][1] == -1 );
 		BOOST_TEST( subtract[0][2] ==  0 );
@@ -163,7 +161,7 @@ int main() {
 		BOOST_TEST( subtract[1][1] == -1 );
 		BOOST_TEST( subtract[1][2] ==  0 );
 
-		using multi::broadcast::exp;
+		using multi::elementwise::exp;
 		auto subtract_exp = exp(subtract);
 
 		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
@@ -175,9 +173,11 @@ int main() {
 
 		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
 		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
-		using multi::broadcast::operator/;
-		using multi::broadcast::operator|;
+		using multi::elementwise::operator/;
+		using multi::elementwise::operator|;
+
 		auto x = exp(~mat - (mat | maxR1));
+
 		printR2("final", ~(x / ((~x) | sumR1)));
 
 		BOOST_TEST( std::abs((~(x / ((~x) | sumR1)))[1][1] - 0.244728) < 1e-3 );
@@ -241,7 +241,7 @@ int main() {
 	{
 		std::initializer_list<int> il = {1, 2, 3};
 
-		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::size_t>(il.size()));
+		auto il_res = [il](auto ii) { return il.begin()[ii]; } ^ multi::extensions_t<1>(static_cast<multi::ssize_t>(il.size()));
 		BOOST_TEST( il_res[1] == 2 );
 	}
 	{
@@ -249,11 +249,17 @@ int main() {
 			{1, 2, 3},
 			{4, 5, 6}
 		};
-		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+		auto il_res = [il](auto ii, auto jj) { return il.begin()[ii].begin()[jj]; } ^ multi::extensions(il);
+		// multi::extensions_t<2>(static_cast<multi::size_t>(il.size()), static_cast<multi::size_t>(il.begin()->size()));
+
 		BOOST_TEST( il_res[1][1] == 5 );
 	}
 	{
 		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(3, 5);
+
+		auto it = v2D.begin();
+		it++;
+		BOOST_TEST( it == v2D.begin() + 1 );
 
 		multi::array<multi::index, 2> v2D_copy = v2D;
 
@@ -271,6 +277,28 @@ int main() {
 
 		// v2D_copy4() = v2D;  // this fails with an assert because sizes do not match
 		// BOOST_TEST( v2D_copy4 == v2D_copy );
+
+		static_assert(std::is_default_constructible_v<decltype(v2D)::iterator>);
+		static_assert(std::is_default_constructible_v<decltype(v2D.elements())::iterator>);
+	}
+	{
+		auto v2D = [](auto ii, auto jj) { return (ii * ii) + (jj * jj); } ^ multi::extensions_t<2>(5, 7);
+		BOOST_TEST( (v2D.begin() + 3) - v2D.begin() == 3 );
+		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
+	}
+	{
+		multi::iextension m(96);
+		multi::iextension h(64);
+		multi::iextension k(64);
+		multi::iextension n(96);
+
+		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
+			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extensions_t<4>{m, h, k, n}
+		);
+	}
+	{
+		multi::array<double, 3> arr;
+		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extensions_t<3>(2, 3, 4);
 	}
 
 	return boost::report_errors();

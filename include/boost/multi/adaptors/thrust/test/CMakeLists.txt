@@ -9,6 +9,10 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 	set(CMAKE_CUDA_ARCHITECTURES native)
 endif()
 
+if(MSVC)
+	set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
+endif()
+
 # set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -32,7 +36,9 @@ set(TEST_SRCS
 	array.cu
 	broadcast_softmax.cu
 	by_key.cu
+	device_function.cu
 	diffusion3d_kernel.cu
+	for_each.cu
 	memory_resource.cu
 	neighbor_list.cu
 	restriction.cu
@@ -40,6 +46,7 @@ set(TEST_SRCS
 	set_identity_kernel.cu
 	speed.cu
 	speed_algo.cu
+	transform.cu
 	universal.cu
 	vector.cu
 )

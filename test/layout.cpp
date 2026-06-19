@@ -11,7 +11,7 @@
 #include <cstddef>    // for ptrdiff_t, size_t  // IWYU pragma: keep
 #include <iterator>   // for size
 
-#if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #if !defined(__clang_major__) || (__clang_major__ != 16)
 #include <ranges>  // IWYU pragma: keep
 #endif
@@ -72,7 +72,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::vector<int> vec(10, 99);  // NOLINT(fuchsia-default-arguments-calls)
 		using ArrayRef = multi::array_ref<int, 1, int*, multi::contiguous_layout<>>;
-		auto arr       = ArrayRef({static_cast<multi::size_t>(vec.size())}, vec.data());
+		auto arr       = ArrayRef({static_cast<multi::ssize_t>(vec.size())}, vec.data());
 
 		BOOST_TEST( &arr[1] == &vec[1] );
 

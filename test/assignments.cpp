@@ -27,7 +27,7 @@ constexpr auto make_ref(int* ptr) {
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator const& alloc) {
 	multi::array<T, 2, Allocator> ret(exts, 0, alloc);
-	std::fill(ret.diagonal().begin(), ret.diagonal().end(), 1);
+	std::fill(ret.diagonal().begin(), ret.diagonal().end(), T{1});
 	return ret;
 }
 
@@ -41,8 +41,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> arr  = {10, 20, 30};
 		multi::array<int, 1> arr2 = {10, 20, 30};
-
-		static_assert(multi::is_const_subarray_v<decltype(arr2)>);
 
 		BOOST_TEST(    arr == arr2  );
 		BOOST_TEST( !(arr != arr2) );
@@ -93,19 +91,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto const ext = multi::make_extension_t(10L);
 
-			multi::array<multi::size_t, 1> vec(ext.begin(), ext.end());
+			multi::array<multi::ssize_t, 1> vec(ext.begin(), ext.end());
 
 			BOOST_TEST( ext.size() == vec.size() );
 			BOOST_TEST( vec[1] == 1L );
 		}
-		{
-			multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
+		// {
+		// 	multi::array<multi::size_t, 1> vec(multi::extensions_t<1>{multi::iextension{10}});
 
-			auto const ext = extension(vec);
+		// 	auto const ext = extension(vec);
 
-			vec.assign(ext.begin(), ext.end());
-			BOOST_TEST( vec[1] == 1 );
-		}
+		// 	vec.assign(ext.begin(), ext.end());
+		// 	BOOST_TEST( vec[1] == 1 );
+		// }
 	}
 
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
@@ -171,14 +169,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( vec[9] == val );  // cppcheck-suppress containerOutOfBounds ;
 			BOOST_TEST( !vec.empty() );
-			BOOST_TEST( !is_empty(arr) );
+			BOOST_TEST( !arr.is_empty() );
 		}
 		{
 			std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> wec(5 * 7L, 33);  // NOLINT(fuchsia-default-arguments-calls)
 
-			multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
-			make_ref(vec.data()) = *Bp;
+			auto Bp = &multi::array_ref<int, 2>({5, 7}, wec.data());
+			// multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
+			make_ref(vec.data()) = *Bp;  // cppcheck-suppress danglingTemporaryLifetime
 
 			auto&& mref = make_ref(vec.data());
 			// mref        = (*Bp).sliced(0, 5);

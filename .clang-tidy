@@ -9,7 +9,7 @@ CheckOptions:
   - { key: readability-identifier-naming.FunctionCase                      , value: lower_case }
   - { key: readability-identifier-naming.GlobalConstantCase                , value: aNy_CasE   }
   - { key: readability-identifier-length.IgnoredLoopCounterNames           , value: "^[ijk_]$" }
-  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[xyzabcdnml]$" }
+  - { key: readability-identifier-length.IgnoredParameterNames             , value: "^[abcdemnprstuvwxyz_]$" }
   - { key: readability-identifier-length.IgnoredVariableNames              , value: "^[ijk_]$" }
   - { key: readability-identifier-length.MethodCase                        , value: lower_case }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength      , value: 2          }
@@ -31,6 +31,7 @@ Checks: '*,
   -cert-dcl21-cpp,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
   -fuchsia-default-arguments-calls,
   -fuchsia-statically-constructed-objects,
   -fuchsia-overloaded-operator,
@@ -49,6 +50,7 @@ Checks: '*,
 #  -cert-dcl21-cpp                                        // this asks postfix operator++ to return a const value
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // BLAS adaptors uses a lot of macros
+#  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access  // tests use magic numbers
 #  -fuchsia-statically-constructed-objects,               // used for traits, is_const_subarray
 #  -fuchsia-default-arguments-calls,                      // this library uses STL functions, which use default arguments
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)

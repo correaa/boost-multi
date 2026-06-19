@@ -20,7 +20,7 @@
 namespace multi = boost::multi;
 
 template<class T = void>
-class allocator1 {
+class allocator1 {  // NOLINT(misc-use-internal-linkage)
 	int* heap_ = nullptr;
 
 	template<class> friend class allocator1;
@@ -61,7 +61,7 @@ class allocator1 {
 };
 
 template<class T = void>
-class allocator2 {
+class allocator2 {  // NOLINT(misc-use-internal-linkage)
 	std::int64_t* heap_ = nullptr;
 
 	template<class> friend class allocator2;

@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,18 +10,21 @@
 
 #include <algorithm>  // for transform, is_sorted
 #include <array>      // for array, operator==
-#include <complex>    // for complex
-#include <cstddef>    // for __GLIBCXX__, size_t
-#include <iterator>   // for size, back_insert...
-#include <memory>     // for make_unique, uniq...
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<compare>)
+#include <compare>  // IWYU pragma: keep
+#endif
+#include <complex>   // for complex
+#include <cstddef>   // for __GLIBCXX__, size_t
+#include <iterator>  // for size, back_insert...
+#include <memory>    // for make_unique, uniq...
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
 #include <memory_resource>  // for monotonic_buffer_...
 #endif
-#include <new>      // for operator new  // NOLINT(misc-include-cleaner)
+#include <new>      // IWYU pragma: keep  // for operator new
 #include <string>   // for basic_string, string
 #include <utility>  // for move, forward
 #include <vector>   // for vector, allocator
-// IWYU pragma: no_include <version>  // for __GLIBCXX__  // NOLINT(misc-include-cleaner)
+// IWYU pragma: no_include <version>  // for __GLIBCXX__
 
 namespace multi = boost::multi;
 
@@ -128,21 +131,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<int, 2>({1, 1}, 1),
 			multi::array<int, 2>({2, 2}, 2),
 		};
-		// #else
-		//      // NOLINTNEXTLINE(fuchsia-default-arguments-calls)
-		//      std::vector<multi::array<int, 2>> const wa = {
-		//          multi::array<int, 2>(multi::extensions_t<2>(0, 0), 0),
-		//          multi::array<int, 2>(multi::extensions_t<2>(1, 1), 1),
-		//          multi::array<int, 2>(multi::extensions_t<2>(2, 2), 2),
-		//      };
-		// #endif
 
 		BOOST_TEST( va.size() == wa.size() );
 		BOOST_TEST( va == wa );
+		BOOST_TEST( !(va != wa) );
+
+		BOOST_TEST( va >= wa );
+#if !defined(__NVCC__)  // bug in gcc 13.3 and nvcc 12.0: no match for ‘operator!’ (operand type is ‘std::vector<boost::multi::array<int, 2> >’)
+		BOOST_TEST( !(va < wa) );
+#endif
+		BOOST_TEST( va <= wa );
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -185,7 +187,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
+		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -412,7 +414,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	  |                                ^
 2 errors generated.
 */
-#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ != 20)
+#if defined(__cpp_constexpr) && (__cpp_constexpr > 202306L) && (!defined(__clang__) || __clang_major__ < 20)
 	auto f = []() {
 		std::vector<int> v = {1, 2, 3};
 		return v.size();
@@ -571,11 +573,11 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 			BOOST_TEST( VV[1] == vv );
 
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 
 			VV.resize(10, xx);
 			std::sort(VV.begin(), VV.end());                  // NOLINT(modernize-use-ranges) for C++20
-			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges) for C++20
+			BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 		}
 	}
 #endif

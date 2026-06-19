@@ -1,4 +1,4 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,7 +8,8 @@
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
-#include <boost/multi/broadcast.hpp>           // for operations
+#include <boost/multi/elementwise.hpp>         // for operations
+#include <boost/multi/restriction.hpp>         // for restriction
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -453,7 +454,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		auto const B = [](auto array) {
-			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp) test purposes
+			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp,bugprone-random-generator-seed) test purposes
 			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
 				return complex{gauss(gen), gauss(gen)};
 			};
@@ -532,7 +533,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	gemv_broadcast();
 
-	#ifndef __NVCC__
+#ifndef __NVCC__
 	{
 		multi::array<double, 2> const arr = {
 			{1.0, 2.0},
@@ -546,16 +547,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( vec2[1] - 55.0 < 1e-7 );
 
-		using multi::broadcast::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement; bug in v2.19.0
 		using multi::blas::gemv;
-		using multi::broadcast::exp;
-		using multi::broadcast::log;
+		using multi::elementwise::exp;
+		using multi::elementwise::log;
 
 		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
 
 		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
 	}
-	#endif
+#endif
 
 	return boost::report_errors();
 }

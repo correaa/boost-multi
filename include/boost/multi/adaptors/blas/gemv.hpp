@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -7,6 +7,7 @@
 
 #include "boost/multi/adaptors/blas/core.hpp"
 #include "boost/multi/adaptors/blas/dot.hpp"
+#include "boost/multi/adaptors/blas/numeric.hpp"
 
 #include "boost/multi/utility.hpp"
 
@@ -142,6 +143,8 @@ class gemv_range {
 	Scalar alpha_{1.0};
 
  public:
+	using size_type = typename It1D::difference_type;
+
 	gemv_range(gemv_range&&) noexcept = default;
 	gemv_range(gemv_range const&) = delete;
 	~gemv_range() = default;
@@ -166,8 +169,10 @@ class gemv_range {
 	auto begin() const -> iterator{return {alpha_, m_begin_, v_first_, ctxt_};}
 	auto end()   const -> iterator{return {alpha_, m_end_  , v_first_, ctxt_};}
 
-	auto size() const -> size_type{return end() - begin();}
+	auto size() const -> size_type { return end() - begin(); }
 	auto extensions() const -> typename decay_type::extensions_type{return typename decay_type::extensions_type{{0, size()}};}
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extensions_type {return typename decay_type::extensions_type{{0, size()}};}
+
 	auto decay() const{return decay_type{*this};}
 
 	friend auto operator+(gemv_range const& self) {return self.decay();}

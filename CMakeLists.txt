@@ -15,7 +15,7 @@ if (DEFINED BOOST_SUPERPROJECT_VERSION AND NOT DEFINED BOOST_MULTI_STANDALONE)
 
   target_include_directories(boost_multi INTERFACE include)
 
-  target_compile_features(boost_multi INTERFACE cxx_std_14)
+  target_compile_features(boost_multi INTERFACE cxx_std_17)
 
   message(STATUS "Boost.Multi: standalone mode OFF")
 
@@ -49,6 +49,8 @@ project(
   VERSION 0.88.0
   LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 message(STATUS "Boost.Multi: standalone mode ON")
 
 add_library(multi INTERFACE)
@@ -73,6 +75,16 @@ set_target_properties(
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
+# Documentation driver for MrDocs — configured but not built by default.
+# Produces a compile_commands.json entry for the public headers when
+# cmake is invoked with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON.
+add_library(mrdocs_driver OBJECT ${PROJECT_SOURCE_DIR}/doc/mrdocs_driver.cpp)
+target_include_directories(mrdocs_driver PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+target_compile_features(mrdocs_driver PRIVATE cxx_std_17)
+set_target_properties(mrdocs_driver PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
 #if(NOT ENABLE_CUDA)
 #target_compile_options(multi INTERFACE
 #  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr --extended-lambda>
@@ -94,6 +106,7 @@ if(NOT ENABLE_CIRCLE)
       -Wno-c++17-extensions
       -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
       -Wno-padded
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-nrvo>
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
     >
     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
@@ -170,9 +183,11 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" "${PR
 install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
-  find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+#  find_package(Boost QUIET COMPONENTS headers)
+# find_package(Boost COMPONENTS NO_MODULE)  # you can use your own Boost and use `cmake -DBOOST_ROOT=$HOME/local`
+  find_package(Boost CONFIG QUIET)  # you can use your own Boost with `cmake -DBoost_ROOT=$HOME/local`
   if(NOT Boost_FOUND)
-    message(WARNING "Cannot find Boost, Multi library will not be fully tested.")
+    message(WARNING "Cannot find Boost, Multi library will not be fully tested.\n  Install with: sudo apt install --no-install-recommends libboost-dev")
   else()
     enable_testing()
 

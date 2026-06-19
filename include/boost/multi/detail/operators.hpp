@@ -57,8 +57,8 @@ class ra_iterable : selfable<Self> {
 	friend BOOST_MULTI_HD constexpr auto operator+(Self2 self, difference_type_t<Self2> const& n) { return self += n; }
 	// template<class Self2 = Self>
 	// friend auto operator+(difference_type<Self2> const& n, Self2 const& self) { return self + n; }
-	BOOST_MULTI_HD constexpr auto operator++(int) { Self tmp{*this}; ++(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
-	BOOST_MULTI_HD constexpr auto operator--(int) { Self tmp{*this}; --(this->self()); return tmp; }  // NOLINT(cert-dcl21-cpp)
+	BOOST_MULTI_HD constexpr auto operator++(int) { Self tmp{*this}; ++this->self(); return tmp; }
+	BOOST_MULTI_HD constexpr auto operator--(int) { Self tmp{*this}; --this->self(); return tmp; }  // NOLINT(cert-dcl21-cpp)
 
 	template<class Self2 = Self, std::enable_if_t<std::is_same_v<Self2, Self>, int> =0>  // NOLINT(modernize-use-constraints) for C++20
 	BOOST_MULTI_HD constexpr auto friend operator!=(Self2 const& self, Self2 const& other) { return !(self == other); }
@@ -124,7 +124,7 @@ struct weakly_incrementable : selfable<T> {
 
  public:
 	constexpr auto operator++(int) -> T {
-		auto ret{this->self()}; ++(this->self()); return ret;
+		auto ret{this->self()}; ++ this->self(); return ret;
 	}
 };
 
@@ -236,7 +236,7 @@ struct dereferenceable {
 
 	using reference = Reference;
 
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *(self().operator->()); }
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return * self().operator->(); }
 };
 
 #ifdef _MSC_VER
