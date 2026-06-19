@@ -687,7 +687,11 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 		// BOOST_MULTI_ASSERT( this->stride_ == other.stride_ );
 		// BOOST_MULTI_ASSERT( this->ptr_->layout() == other.ptr_->layout() );
 		// return (this->ptr_ == other.ptr_) && (this->stride_ == other.stride_) && (*(this->ptr_)).layout() == (*(other.ptr_)).layout();
-		return this->ptr_ == other.ptr_ && this->stride_ == other.stride_ && this->ptr_->layout() == other.ptr_->layout();
+		// compare the raw element pointers (`base()`) rather than the whole `subarray_ptr`s: comparing
+		// `subarray_ptr == subarray_ptr` forms an overload set that, via ADL on the Thrust element pointer,
+		// pulls in Thrust's `is_pointer_convertible_v`-constrained `operator==` and hard-errors evaluating
+		// `thrust::detail::pointer_element<subarray_ptr>` (incomplete) under CCCL 3 (CUDA 13+).
+		return this->base() == other.base() && this->stride_ == other.stride_ && this->ptr_->layout() == other.ptr_->layout();
 	}
 
 	template<bool OtherIsConst, std::enable_if_t<(IsConst != OtherIsConst), int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
@@ -698,7 +702,9 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 	BOOST_MULTI_HD constexpr auto operator==(array_iterator const& other) const -> bool {
 		BOOST_MULTI_ASSERT(this->stride_ == other.stride_);
 		BOOST_MULTI_ASSERT(this->ptr_->layout() == other.ptr_->layout());
-		return this->ptr_ == other.ptr_;
+		// compare raw element pointers (`base()`), not the whole `subarray_ptr`s, to avoid pulling in
+		// Thrust's `pointer_element<subarray_ptr>` (incomplete) under CCCL 3 — see operator== above.
+		return this->base() == other.base() && this->ptr_->layout() == other.ptr_->layout();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator!=(array_iterator const& other) const -> bool {
