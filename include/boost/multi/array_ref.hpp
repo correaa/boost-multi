@@ -2248,8 +2248,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto strided(difference_type by) && { return this->strided_aux_(by); }
-	constexpr auto strided(difference_type by) & { return this->strided_aux_(by); }
+	constexpr auto strided(difference_type step) && { return this->strided_aux_(step); }
+	constexpr auto strided(difference_type step) & { return this->strided_aux_(step); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;
