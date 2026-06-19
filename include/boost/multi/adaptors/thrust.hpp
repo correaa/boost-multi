@@ -462,25 +462,32 @@ struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Pr
 
 }  // end namespace thrust
 
-#if THRUST_VERSION >= 300200  // this is needed by CCCL 2
-namespace thrust::detail {
+#if THRUST_VERSION >= 300200  // CCCL 3 (CUDA 13+)
+// Use THRUST_NAMESPACE_BEGIN/END instead of a literal `namespace thrust::detail` so this partial
+// specialization lands in the inline *versioned* namespace where the primary template lives. In
+// CCCL 3 that inline namespace also encodes the target SM arch, so a literal `thrust::detail` is a
+// different namespace and the specialization fails to find its primary template (MSVC/nvcc:
+// "a template argument list is not allowed in a declaration of a primary template").
+THRUST_NAMESPACE_BEGIN
+namespace detail {
 
-template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
-struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
-	using type = std::conditional_t<D == 1,
-		std::conditional_t<IsConst,
-			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
-			typename thrust::detail::pointer_element<ElementPtr>::type
-		>,
-		std::conditional_t<IsConst,
-			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
-			::boost::multi::subarray<T, D, ElementPtr, Layout>
-		>
-		// void
-	>;
-};
+// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout, bool IsConst>
+// struct pointer_element<::boost::multi::detail::subarray_ptr<T, D, ElementPtr, Layout, IsConst>> {
+// 	using type = std::conditional_t<D == 1,
+// 		std::conditional_t<IsConst,
+// 			std::add_const_t<typename thrust::detail::pointer_element<ElementPtr>::type>,
+// 			typename thrust::detail::pointer_element<ElementPtr>::type
+// 		>,
+// 		std::conditional_t<IsConst,
+// 			::boost::multi::const_subarray<T, D, ElementPtr, Layout>,
+// 			::boost::multi::subarray<T, D, ElementPtr, Layout>
+// 		>
+// 		// void
+// 	>;
+// };
 
-}  // end namespace thrust::detail
+}  // namespace detail
+THRUST_NAMESPACE_END
 #endif
 
 namespace boost::multi::thrust {
