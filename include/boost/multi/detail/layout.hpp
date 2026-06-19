@@ -901,11 +901,11 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	: base_{tup} {}
 
 	template<class OtherExtensions,
-		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extension()) )* = nullptr
+		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extent()) )* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: base_{other.extension()} {}
+	: base_{other.extent()} {}
 
 	extents_t() = default;
 
@@ -1392,10 +1392,10 @@ struct bilayout {
 	BOOST_MULTI_HD constexpr auto size() const { return (nelems2_ / stride2_) * (nelems1_ / stride1_); }
 
 	constexpr auto nelems() const { return nelems1_ - stride1_ + nelems2_; }  // span to one-past-end: (nsegs-1) outer strides + the last segment (NOT just nelems2_, which is one segment short)
-	void extension() const  = delete;
+	[[deprecated("use extent")]] void extension() const  = delete;
 	void extent() const     = delete;
 
-	[[deprecated]] auto extensions() const = delete;
+	[[deprecated("use extents")]] auto extensions() const = delete;
 	auto extents() const = delete;
 
 	auto is_empty() const   = delete;
