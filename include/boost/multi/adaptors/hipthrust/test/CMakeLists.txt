@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(boost-multi-adaptor-thrust-hip LANGUAGES CXX HIP)
 
-find_package(Boost     REQUIRED COMPONENTS timer unit_test_framework)
+find_package(Boost     REQUIRED COMPONENTS headers)  # timer)  # unit_test_framework)
 find_package(rocthrust REQUIRED)
 
 include(CMakePrintHelpers)
