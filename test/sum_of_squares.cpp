@@ -20,14 +20,16 @@
 //   __is_vectorization_preferred<_ExecutionPolicy, _It>(__exec)
 // with EXPLICIT template args, turning `_ExecutionPolicy&&` from a forwarding
 // reference into a fixed rvalue-ref, so the lvalue `__exec` no longer binds. GCC
-// always tolerates it; clang rejected it until clang 17 (fixed there). Intel's icpx
-// is clang-based (__INTEL_LLVM_COMPILER) and still hits it (oneAPI 2023.0 confirmed),
-// and its reported __clang_major__ isn't reliable for gating, so exclude it outright.
-// nvcc is excluded too (cudafe++ mis-deduces the same helpers).
+// tolerates it only from gcc 14 on (gcc < 14 rejects it); clang rejected it until
+// clang 17 (fixed there). Intel's icpx is clang-based (__INTEL_LLVM_COMPILER) and
+// still hits it (oneAPI 2023.0 confirmed), and its reported __clang_major__ isn't
+// reliable for gating, so exclude it outright. nvcc is excluded too (cudafe++
+// mis-deduces the same helpers).
 #if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && \
 	!(defined(__GLIBCXX__) && ( \
 		defined(__INTEL_LLVM_COMPILER) /* icpx: clang-based, broken (no reliable version gate) */ \
 		|| (defined(__clang__) && (__clang_major__ < 17)) /* plain clang: fixed in 17 */ \
+		|| (!defined(__clang__) && !defined(__INTEL_LLVM_COMPILER) && (__GNUC__ < 14)) /* real gcc: fixed in 14 */ \
 	))
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
