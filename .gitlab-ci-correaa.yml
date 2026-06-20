@@ -658,7 +658,7 @@ vs2022-shell cudatk:
   needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
 
-vs2022-shell cuda:
+vs2022-shell cuda run:  # nvcc 13+ does not compiler for arch 61 (XPS card)
   stage: build
   allow_failure: false
   only:
@@ -953,9 +953,9 @@ culang++-16 cuda-11.4.3:
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-16 -DCMAKE_CXX_COMPILER=clang++-16
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
-  needs: ["culang++-20 cuda-12.6.3 tidy"]
+  needs: ["culang++"]
 
-culang++-20 cuda-12.6.3 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
+culang++:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
   allow_failure: false
@@ -1007,7 +1007,7 @@ culang++-21 cuda-12.8.2 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-Wno-unknown-cuda-version" -DCMAKE_CXX_CLANG_TIDY=clang-tidy-21 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=clang++-21 -DCMAKE_CXX_COMPILER=clang++-21 -DCMAKE_CUDA_ARCHITECTURES=native  # =75  # =80
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
-  needs: ["culang++-20 cuda-12.6.3 tidy"]
+  needs: ["culang++"]
 
 cuda-12.6.3:
   stage: build
