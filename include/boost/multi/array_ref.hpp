@@ -252,7 +252,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using extent_type = typename layout_type::extent_type;
 	// using typename layout_type::extent_type;
 
-	/// (deprecated) use `extent_type` 
+	/// (deprecated) use `extent_type`
 	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT  ; old spelling kept for compatibility
 
 	using layout_type::extensions;
