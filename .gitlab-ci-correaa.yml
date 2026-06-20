@@ -1330,7 +1330,7 @@ inq-debug:
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["g++"]
 
-inq cuda 70:
+inq cuda:
   allow_failure: false
   stage: test
   image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -1362,10 +1362,9 @@ inq cuda 70:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    # - ctest -j 4 --output-on-failure --timeout 2400
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 2" ctest --parallel 2 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
-#  needs: ["inq", "cuda"]
+  needs: ["inq", "cuda"]
 
 inq rocm:
   stage: test
