@@ -16,7 +16,19 @@
 #include <ranges>     // for std::views::transform
 #endif
 
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && !(defined(__clang__) && (__clang_major__ < 17) && defined(__GLIBCXX__))
+// libstdc++'s Parallel STL (<execution>) calls
+//   __is_vectorization_preferred<_ExecutionPolicy, _It>(__exec)
+// with EXPLICIT template args, turning `_ExecutionPolicy&&` from a forwarding
+// reference into a fixed rvalue-ref, so the lvalue `__exec` no longer binds. GCC
+// always tolerates it; clang rejected it until clang 17 (fixed there). Intel's icpx
+// is clang-based (__INTEL_LLVM_COMPILER) and still hits it (oneAPI 2023.0 confirmed),
+// and its reported __clang_major__ isn't reliable for gating, so exclude it outright.
+// nvcc is excluded too (cudafe++ mis-deduces the same helpers).
+#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && \
+	!(defined(__GLIBCXX__) && ( \
+		defined(__INTEL_LLVM_COMPILER) /* icpx: clang-based, broken (no reliable version gate) */ \
+		|| (defined(__clang__) && (__clang_major__ < 17)) /* plain clang: fixed in 17 */ \
+	))
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
 #endif
