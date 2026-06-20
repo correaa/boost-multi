@@ -3023,11 +3023,13 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		);
 	}
 
+ private:
 	constexpr auto broadcasted() const& {
 		multi::layout_t<1> const new_layout(this->layout(), 0, 0);  // , (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return subarray<T, 1, typename const_subarray::element_const_ptr>(new_layout, types::base_);
 	}
 
+ public:
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const /*version*/) const {
 		using AT        = multi::archive_traits<Archive>;
@@ -3218,7 +3220,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #endif
 	}
 
- public:
 	constexpr auto broadcasted() const& {
 		// multi::layout_t<1> const self_layout{this->layout()};
 		// TODO(correaa) introduce a broadcasted_layout?
@@ -3226,6 +3227,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		return const_subarray<T, 2, ElementPtr, multi::layout_t<2>>(new_layout, types::base_);
 	}
 
+ public:
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extents();  // mull-ignore: cxx_init_const
 
