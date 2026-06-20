@@ -6,10 +6,11 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <functional>  // IWYU pragma: keep   // for std::plus
-#include <numeric>     // for std::transform_reduce
-#include <utility>     // for std::forward
-#include <version>     // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
+#include <functional>   // IWYU pragma: keep   // for std::plus
+#include <numeric>      // for std::transform_reduce
+#include <type_traits>  // for std::is_same_v, std::decay_t
+#include <utility>      // for std::forward
+#include <version>      // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
 
 #ifdef __cpp_lib_ranges_fold
 #include <algorithm>  // for std::ranges::fold_left  (C++23)
@@ -53,20 +54,33 @@ auto sos(int N) {  // NOLINT(readability-identifier-length)  // N is the number 
 #endif
 }
 
+struct no_policy_t {};  // placeholder for "no execution policy": a real (object) type, so `no_policy_t&&` is well-formed and `{}` constructs it (`void` would make the parameter `void&&`, ill-formed)
+
 template<class ExecutionPolicy
 #ifdef MULTI_HAS_PARALLEL_EXECUTION  // execution policies + (policy, ...) overloads
 		 = std::execution::parallel_policy
+#else
+		 = no_policy_t
 #endif
 		 >
 auto sos(ExecutionPolicy&& ep, int N) {  // NOLINT(readability-identifier-length)  // N is the number of integers to sum
 	using multi::range;
 
-	return std::transform_reduce(
-		std::forward<ExecutionPolicy>(ep),
-		range(0, N).begin(), range(0, N).end(), 0,
-		std::plus<>{},
-		[](auto const& e) { return e * e; }
-	);
+	if constexpr(std::is_same_v<std::decay_t<ExecutionPolicy>, no_policy_t>) {  // no <execution>: drop the policy, there is no (policy, ...) overload
+		(void)ep;
+		return std::transform_reduce(
+			range(0, N).begin(), range(0, N).end(), 0,
+			std::plus<>{},
+			[](auto const& e) { return e * e; }
+		);
+	} else {
+		return std::transform_reduce(
+			std::forward<ExecutionPolicy>(ep),
+			range(0, N).begin(), range(0, N).end(), 0,
+			std::plus<>{},
+			[](auto const& e) { return e * e; }
+		);
+	}
 }
 
 }  // namespace
@@ -75,8 +89,8 @@ auto main() -> int {
 	BOOST_TEST( sos(4) == 0 + 1 + 4 + 9 );
 #ifdef MULTI_HAS_PARALLEL_EXECUTION
 	BOOST_TEST( sos(std::execution::par, 4) == sos(4) );
-	BOOST_TEST( sos({}, 4) == sos(4) );  // default policy via default template argument
 #endif
+	BOOST_TEST( sos({}, 4) == sos(4) );  // default policy via default template argument
 
 	return boost::report_errors();
 }
