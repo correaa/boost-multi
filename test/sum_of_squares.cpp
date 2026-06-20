@@ -16,7 +16,8 @@
 #include <ranges>     // for std::views::transform
 #endif
 
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__)
+#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && !(defined(__clang__) && (__clang_major__ < 17) && defined(__GLIBCXX__))
+#define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
 #endif
 
@@ -44,7 +45,7 @@ auto sos(int N) {  // NOLINT(readability-identifier-length)  // N is the number 
 }
 
 template<class ExecutionPolicy
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__)  // execution policies + (policy, ...) overloads
+#ifdef MULTI_HAS_PARALLEL_EXECUTION  // execution policies + (policy, ...) overloads
 		 = std::execution::parallel_policy
 #endif
 		 >
@@ -63,7 +64,7 @@ auto sos(ExecutionPolicy&& ep, int N) {  // NOLINT(readability-identifier-length
 
 auto main() -> int {
 	BOOST_TEST( sos(4) == 0 + 1 + 4 + 9 );
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__)
+#ifdef MULTI_HAS_PARALLEL_EXECUTION
 	BOOST_TEST( sos(std::execution::par, 4) == sos(4) );
 	BOOST_TEST( sos({}, 4) == sos(4) );  // default policy via default template argument
 #endif
