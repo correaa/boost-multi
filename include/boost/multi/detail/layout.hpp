@@ -219,12 +219,12 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	: base_{index_extension(exts)...} {}
 
 	template<class OtherExtensions,
-		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extension()) )* = nullptr,
+		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extent()) )* = nullptr,
 		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extents_type>(OtherExtensions{}.sub()) )* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: extents_t(other.extension(), other.sub()) {}
+	: extents_t(other.extent(), other.sub()) {}
 
 	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
@@ -722,7 +722,7 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	using index = multi::index;
 	using sizes_type = tuple<size_type>;
 
-	constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+	[[deprecated(”use .extent()”]] constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 	[[nodiscard]] constexpr auto extent() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
