@@ -56,17 +56,13 @@ auto sos(int N) {  // NOLINT(readability-identifier-length)  // N is the number 
 
 struct no_policy_t {};  // placeholder for "no execution policy": an empty aggregate, so `no_policy_t&&` is well-formed and `{}` copy-list-initializes it on every compiler (`void` would make the parameter `void&&`, ill-formed; `std::execution::parallel_policy` can't be copy-list-initialized from `{}` on MSVC)
 
-template<class ExecutionPolicy = no_policy_t const&>  // default policy is "none" -> the sequential branch below; explicit `sos(std::execution::par, N)` still deduces parallel_policy
-auto sos(ExecutionPolicy&& ep, int N) {  // NOLINT(readability-identifier-length)  // N is the number of integers to sum
+template<class ExecutionPolicy = no_policy_t>  // default policy is "none" -> the sequential branch below; explicit `sos(std::execution::par, N)` still deduces parallel_policy
+auto sos(ExecutionPolicy&& ep, int N) {        // NOLINT(readability-identifier-length)  // N is the number of integers to sum
 	using multi::range;
 
-	if constexpr(std::is_same_v<std::decay_t<ExecutionPolicy>, no_policy_t>) {  // no <execution>: drop the policy, there is no (policy, ...) overload
-		(void)ep;
-		return std::transform_reduce(
-			range(0, N).begin(), range(0, N).end(), 0,
-			std::plus<>{},
-			[](auto const& e) { return e * e; }
-		);
+	if constexpr(std::is_same_v<ExecutionPolicy, no_policy_t>) {  // no <execution>: drop the policy, there is no (policy, ...) overload
+		(void)std::forward<ExecutionPolicy>(ep);
+		return sos(N);
 	} else {
 		return std::transform_reduce(
 			std::forward<ExecutionPolicy>(ep),
