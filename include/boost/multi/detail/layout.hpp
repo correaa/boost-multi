@@ -722,7 +722,7 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	using index = multi::index;
 	using sizes_type = tuple<size_type>;
 
-	[[deprecated(”use .extent()”)]] constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
+	[[deprecated("use .extent()")]] constexpr auto extension() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 	[[nodiscard]] constexpr auto extent() const { using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
