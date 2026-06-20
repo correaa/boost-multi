@@ -3,34 +3,29 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <functional>  // for std::plus
+#include <functional>  // IWYU pragma: keep   // for std::plus
 #include <numeric>     // for std::transform_reduce
-// #include <version>     // for the feature-test macros used to guard the paths below
+#include <utility>     // for std::forward
+#include <version>     // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
 
 #ifdef __cpp_lib_ranges_fold
 #include <algorithm>  // for std::ranges::fold_left  (C++23)
 #include <ranges>     // for std::views::transform
 #endif
 
-// libstdc++'s Parallel STL (<execution>) calls
+// libstdc++'s Parallel STL (<execution>, in pstl/glue_numeric_impl.h) calls
 //   __is_vectorization_preferred<_ExecutionPolicy, _It>(__exec)
 // with EXPLICIT template args, turning `_ExecutionPolicy&&` from a forwarding
-// reference into a fixed rvalue-ref, so the lvalue `__exec` no longer binds. GCC
-// tolerates it only from gcc 14 on (gcc < 14 rejects it); clang rejected it until
-// clang 17 (fixed there). Intel's icpx is clang-based (__INTEL_LLVM_COMPILER) and
-// still hits it (oneAPI 2023.0 confirmed), and its reported __clang_major__ isn't
-// reliable for gating, so exclude it outright. nvcc is excluded too (cudafe++
-// mis-deduces the same helpers).
+// reference into a fixed rvalue-ref, so the lvalue `__exec` no longer binds. This
+// is a bug in the *library* headers, fixed in libstdc++ 14, so the discriminator is
+// the libstdc++ version (_GLIBCXX_RELEASE), not the compiler: libstdc++ <= 13 breaks
+// for every front end (gcc 13, clang 16..20, icpx, clang-cuda; confirmed in CI).
+// nvcc is excluded too (cudafe++ mis-deduces the same helpers).
 #if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && \
-	!(defined(__GLIBCXX__) && ( \
-		defined(__INTEL_LLVM_COMPILER) /* icpx: clang-based, broken (no reliable version gate) */ \
-		|| (defined(__clang__) && (__clang_major__ < 17)) /* plain clang: fixed in 17 */ \
-		|| (!defined(__clang__) && !defined(__INTEL_LLVM_COMPILER) && (__GNUC__ < 14)) /* real gcc: fixed in 14 */ \
-	))
+	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14)) /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
 #endif
