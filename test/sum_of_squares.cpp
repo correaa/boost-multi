@@ -25,7 +25,7 @@
 // for every front end (gcc 13, clang 16..20, icpx, clang-cuda; confirmed in CI).
 // nvcc is excluded too (cudafe++ mis-deduces the same helpers).
 #if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && \
-	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14)) /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */
+	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14)) /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */  // NOLINT(misc-include-cleaner) _GLIBCXX_RELEASE comes from <version>, already included
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
 #endif
