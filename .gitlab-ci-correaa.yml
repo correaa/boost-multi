@@ -1363,7 +1363,7 @@ inq cuda 70:
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     # - ctest -j 4 --output-on-failure --timeout 2400
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --parallel 2 --output-on-failure --timeout 4800
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 2" ctest --parallel 2 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
 #  needs: ["inq", "cuda"]
 
