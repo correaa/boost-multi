@@ -63,7 +63,8 @@ auto dot(Context ctxt, X1D const& x, Y1D const& y, R&& res) -> R&& {            
 
 template<class X1D, class Y1D, class R>
 auto dot(X1D const& x, Y1D const& y, R&& res) -> R&& {  // NOLINT(readability-identifier-length) res = \sum_i x_i y_i
-	assert(size(x) == size(y));                         // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	using std::size;
+	assert(size(x) == size(y));
 	if constexpr(is_conjugated<X1D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(x.base()));
 		return blas::dot(ctxtp, x, y, std::forward<R>(res));
@@ -89,7 +90,7 @@ class dot_ptr {
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, Size2 count, ItOut d_first)
 		-> decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}, std::declval<ItY>(), d_first), d_first + count) {  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		assert(count == 1);                                                                                                                 // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		assert(count == 1);
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
@@ -112,7 +113,7 @@ template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typ
 struct dot_ref : private Ptr {
 	using decay_type = decltype(std::declval<typename X::value_type>() * std::declval<typename Y::value_type>());
 	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)} {  // NOLINT(readability-identifier-length) BLAS naming
-		assert((size(x) == size(y)));                                                            // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		assert((size(x) == size(y)));
 	}
 
 	constexpr auto operator&() const& -> Ptr const& { return *this; }  // NOLINT(google-runtime-operator) reference type  // NOSONAR
