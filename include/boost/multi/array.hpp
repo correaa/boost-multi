@@ -1889,21 +1889,38 @@ struct array : unique_array<T, D, Alloc> {
 template<class T> array(T[]) -> array<T, static_cast<dimensionality_type>(1U)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
+/// Deduction guide: builds a 0-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, static_cast<dimensionality_type>(0U)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
+/// Deduction guide: builds a 1-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, static_cast<dimensionality_type>(1U)>;
+/// Deduction guide: builds a 2-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, static_cast<dimensionality_type>(2U)>;
+/// Deduction guide: builds a 3-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, static_cast<dimensionality_type>(3U)>;
+/// Deduction guide: builds a 4-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, static_cast<dimensionality_type>(4U)>;
+/// Deduction guide: builds a 5-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3, n4}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, static_cast<dimensionality_type>(5U)>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
-template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>>>
-array(iextensions<D>, T) -> array<T, D>;
+// template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>>>
+// array(iextensions<D>, T) -> array<T, D>;
 
-template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
+/// Deduction guide: builds an owning `array` from a reference/view `MatrixRef`, deducing element type, dimensionality and allocator from its `decay_type`, so the source's allocator type is preserved.
+/// @tparam MatrixRef The source reference/view type (provides a `decay_type`)
+/// @tparam DT The decayed (owning) type, `MatrixRef::decay_type`
+/// @tparam T Deduced element type (`DT::element`)
+/// @tparam D Deduced dimensionality (`DT::rank_v`)
+/// @tparam Alloc Deduced allocator type (`DT::allocator_type`)
+// this is important for the Multi's adaptors
+template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::dimensionality, class Alloc = typename DT::allocator_type>
 array(MatrixRef) -> array<T, D, Alloc>;
 
-template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v>
+/// Deduction guide: builds an owning `array` from a value-providing type `MatValues` that exposes `element` and `rank_v` (e.g. a nested `initializer_list` structure), using the default allocator.
+/// @tparam MatValues The source values type (provides `element` and `rank_v`)
+/// @tparam T Deduced element type (`MatValues::element`)
+/// @tparam D Deduced dimensionality (`MatValues::rank_v`)
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::dimensionality>
 array(MatValues) -> array<T, D>;
 
 /// Deduction guide: builds an owning `array` by decaying a read-only `const_subarray` view, keeping its element type `T` and dimensionality `D`.
