@@ -1906,25 +1906,28 @@ array(MatrixRef) -> array<T, D, Alloc>;
 template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v>
 array(MatValues) -> array<T, D>;
 
+/// Deduction guide: builds an owning `array` by decaying a read-only `const_subarray` view, keeping its element type `T` and dimensionality `D`.
+/// @tparam T Element type of the source view
+/// @tparam D Number of dimensions
 template<class T, dimensionality_type D>
 array(const_subarray<T, D>) -> array<T, D>;
 
 template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>  /// , class Alloc = typename DT::allocator_type>
 array(MatValues, Alloc) -> array<T, D, Alloc>;
 
-template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
+// template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
 
-template<
-	class Range, std::enable_if_t<!has_extents<Range>::value, int> = 0,
-	typename V = decltype(*::std::begin(std::declval<Range const&>()))
-	// typename V = typename std::iterator_traits<decltype(::std::begin(std::declval<Range const&>()))>::value_type
-	>
-array(Range) -> array<V, 1>;
+// template<
+// 	class Range, std::enable_if_t<!has_extents<Range>::value, int> = 0,
+// 	typename V = decltype(*::std::begin(std::declval<Range const&>()))
+// 	// typename V = typename std::iterator_traits<decltype(::std::begin(std::declval<Range const&>()))>::value_type
+// 	>
+// array(Range) -> array<V, 1>;
 
-template<class Reference>
-auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(ref)) {
-	return array<typename Reference::element, Reference::dimensionality>(ref);
-}
+// template<class Reference>
+// auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(ref)) {
+// 	return array<typename Reference::element, Reference::dimensionality>(ref);
+// }
 
 #endif  // ends defined(__cpp_deduction_guides)
 
@@ -1948,7 +1951,13 @@ struct detail::array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avo
 namespace boost::multi::pmr {
 
 #ifdef BOOST_MULTI_HAS_MEMORY_RESOURCE
+/// Alias for `multi::array` using `std::pmr::polymorphic_allocator`, so storage comes from a `std::pmr::memory_resource`.
+/// @tparam T Element type
+/// @tparam D Number of dimensions
 template<class T, boost::multi::dimensionality_type D> using array         = ::boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+/// Alias for `multi::dynamic_array` using `std::pmr::polymorphic_allocator`, so storage comes from a `std::pmr::memory_resource`.
+/// @tparam T Element type
+/// @tparam D Number of dimensions
 template<class T, boost::multi::dimensionality_type D> using dynamic_array = ::boost::multi::dynamic_array<T, D, std::pmr::polymorphic_allocator<T>>;
 #else
 template<class T, boost::multi::dimensionality_type D> struct [[deprecated("no PMR allocator")]] array;          // your version of C++ doesn't provide polymorphic_allocators
