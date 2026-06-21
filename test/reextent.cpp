@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <initializer_list>  // for initializer_list
-#include <iterator>          // for size
+// #include <iterator>          // for size
 #include <tuple>             // IWYU pragma: keep  // for get
 #include <type_traits>       // for make_unsigned_t
 #include <utility>           // for move

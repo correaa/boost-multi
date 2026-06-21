@@ -9,9 +9,9 @@
 
 #include <algorithm>  // for fill
 // #include <complex>    // for complex
-#include <cstddef>   // for size_t
+#include <cstddef>  // for size_t
 // #include <iterator>  // for size
-#include <memory>    // for std::allocator  // IWYU pragma: keep
+#include <memory>  // for std::allocator  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
