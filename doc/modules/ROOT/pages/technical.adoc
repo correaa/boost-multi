@@ -49,7 +49,7 @@ Since C++23 (when the `__cpp_multidimensional_subscript` is available), element 
 In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
 [#technical_thread_safety]
-== Thread safety
+== Thread safety guarantees
 
 The library provides the same data-race guarantees as the C++ standard library containers, no more and no less.
 It holds no hidden shared state: there is no copy-on-write, no reference counting, no atomics, and no mutable global or static data, so the thread-safety of a program depends only on which objects and elements its threads actually touch.
