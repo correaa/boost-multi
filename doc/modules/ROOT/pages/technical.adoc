@@ -48,6 +48,27 @@ std::apply(A, p) = 234;  // same as assignment A(2, 3, 4) = 234; and same as A[2
 Since C++23 (when the `__cpp_multidimensional_subscript` is available), element access supports multidimensional subscript notation.
 In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
+[#technical_thread_safety]
+== Thread safety
+
+The library provides the same data-race guarantees as the C++ standard library containers, no more and no less.
+It holds no hidden shared state: there is no copy-on-write, no reference counting, no atomics, and no mutable global or static data, so the thread-safety of a program depends only on which objects and elements its threads actually touch.
+Concretely, without any external synchronization it is safe for multiple threads to:
+
+* access _distinct_ array objects concurrently;
+* perform only read-only (`const`) operations on the _same_ object concurrently, including reading distinct elements, iterating, and querying the shape (`size()`, `extensions()`, `strides()`, etc.); and
+* write to _distinct, non-overlapping_ elements of the same array.
+
+Conversely, if any thread modifies an array (assignment, reallocation, or writing an element) while another thread accesses the same array or the same element, the behavior is a data race, and the user must provide external synchronization.
+
+Two subtleties follow from the library's value/view design.
+First, owning arrays (`multi::array`) and non-owning views (`array_ref`, `subarray`, `const_subarray`, iterators, and the references they yield) that refer to the same underlying memory alias each other for the purposes of these rules.
+In the spirit of C++, a `const` _view_ does not make the referenced elements immutable, so concurrent writes through one view and reads through another are still races; the way to obtain a genuinely immutable array is to declare an owning `multi::array const` (and avoid `const_cast` downstream).
+Second, operations that reallocate or change the shape of an owning array (e.g. copy/move assignment or `reextent`) invalidate existing views and iterators into it, and must therefore be treated as mutating, exclusive operations.
+(A `multi::dynamic_array` is not subject to invalidation during its lifetime, but it is not resizable either.)
+
+In one sentence, the functionality of the library is thread-compatible (and not thread-hostile) and thread-safety must be ensured by the user through the logic of the access patterns.
+
 [#technical_iteration]
 == Out-of-bounds pointer formation in the abstract machine
 
