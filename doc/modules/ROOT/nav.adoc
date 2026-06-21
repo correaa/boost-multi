@@ -32,6 +32,7 @@
 ** xref:interop.adoc#interop_c[Legacy C libs]
 * xref:technical.adoc[]
 ** xref:technical.adoc#technical_indexing[Indexing]
+** xref:technical.adoc#technical_thread_safety[Thread safety]
 ** xref:technical.adoc#technical_iteration[Iteration]
 ** xref:technical.adoc#technical_cpp17_minimum[Minimum C++ version]
 ** xref:reference.adoc#ref_reqs[Type Requirements]
