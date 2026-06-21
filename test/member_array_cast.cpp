@@ -116,7 +116,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		AoS[1][1] = particle{99, v3d{{1.0, 2.0}}};  // NOLINT(modernize-use-designated-initializers) for C++20
 
 		auto&& masses = AoS.member_cast<int>(&particle::mass);
-		BOOST_TEST(size(masses) == 2);
+
+		BOOST_TEST(masses.size() == 2);
 		BOOST_TEST(masses[1][1] == 99 );
 
 		multi::array<int, 2> masses_copy{masses};

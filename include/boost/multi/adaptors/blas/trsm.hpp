@@ -80,6 +80,8 @@ using core::trsm;
 template<class Context, class A2D, class B2D>
 auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element alpha, A2D const& a, B2D&& b) // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) cognitive load 115, BLAS naming
 -> B2D&& {
+	using std::size;
+
 	if(a_side == blas::side::left ) {assert(size(~a) >= size( b));}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(a_side == blas::side::right) {assert(size( a) >= size(~b));}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 

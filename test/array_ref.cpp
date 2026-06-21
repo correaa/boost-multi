@@ -338,6 +338,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 
+		using std::size;
+
 		BOOST_TEST( size(mar   .reindexed(1)) == size(mar) );
 		BOOST_TEST( size(mar[0].reindexed(1)) == size(mar[0]) );
 

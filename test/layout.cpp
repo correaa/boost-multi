@@ -361,6 +361,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{51, 52, 53}
 		);
 
+		using std::size;
+
 		BOOST_TEST( size(arr)  == 51       );
 		BOOST_TEST( arr.size() == 51       );
 

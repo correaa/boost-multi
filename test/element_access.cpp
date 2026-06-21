@@ -88,6 +88,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<char, 2> const carr({10, 10}, '9');
 
+		using std::size;
+
 		BOOST_TEST( size( carr(1, {0, 3}) ) == 3 );
 
 		BOOST_TEST( carr(1, {0, 3})[1] == '9' );
