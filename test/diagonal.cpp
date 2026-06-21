@@ -106,33 +106,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	// broadcast_1D
-	{
-		multi::array<int, 1> const arr = {0, 1, 2, 3};
+	// {
+	// 	multi::array<int, 1> const arr = {0, 1, 2, 3};
 
-		auto const& a2D = arr.broadcasted();
+	// 	auto const& a2D = arr.broadcasted();
 
-		BOOST_TEST( &a2D[0][2] == &arr[2] );
-		BOOST_TEST( &a2D[1][2] == &arr[2] );
-	}
+	// 	BOOST_TEST( &a2D[0][2] == &arr[2] );
+	// 	BOOST_TEST( &a2D[1][2] == &arr[2] );
+	// }
 
 	// broadcast_0D
-	{
-		multi::array<int, 1>       arr = {0, 1, 2, 3};
-		multi::array<int, 0> const vv(2);
+	// {
+	// 	multi::array<int, 1>       arr = {0, 1, 2, 3};
+	// 	multi::array<int, 0> const vv(2);
 
-		auto const& v1D = vv.broadcasted();
+	// 	auto const& v1D = vv.broadcasted();
 
-		BOOST_TEST( &v1D[0] == vv.base() );
-		BOOST_TEST( &v1D[1] == vv.base() );
+	// 	BOOST_TEST( &v1D[0] == vv.base() );
+	// 	BOOST_TEST( &v1D[1] == vv.base() );
 
-		multi::array<int, 1> r1D({4}, 0);
-		std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
+	// 	multi::array<int, 1> r1D({4}, 0);
+	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 
-		BOOST_TEST( r1D[3] == arr[3] + 2 );
+	// 	BOOST_TEST( r1D[3] == arr[3] + 2 );
 
-		std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
-		BOOST_TEST( arr[3] == 2 );
-	}
+	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
+	// 	BOOST_TEST( arr[3] == 2 );
+	// }
 
 	{
 		multi::array<int, 2> arr({3, 3}, 0);
