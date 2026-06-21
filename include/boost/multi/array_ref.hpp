@@ -3219,7 +3219,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #endif
 	}
 
-	constexpr auto broadcasted() const& {
+	constexpr auto broadcasted() const& {  // NOLINT(readability-identifier-naming) TODO(correaa) remove?
 		// multi::layout_t<1> const self_layout{this->layout()};
 		// TODO(correaa) introduce a broadcasted_layout?
 		multi::layout_t<2> const new_layout(this->layout(), 0, 0, 1);  // , (std::numeric_limits<size_type>::max)()};
