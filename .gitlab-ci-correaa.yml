@@ -393,9 +393,9 @@ clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead o
     - x86_64  # for mull
     - large-memory-space
     - non-shared
-  # only:
-  #   refs:
-  #     - develop
+  only:
+    refs:
+      - develop
   interruptible: true
   allow_failure: false
   script:
