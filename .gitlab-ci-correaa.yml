@@ -1345,13 +1345,13 @@ inq cuda:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - nvidia-smi
     - __nvcc_device_query
-    - export GPUBIND=`pwd`/scripts/gpubind
-    - echo $GPUBIND
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
+    - export GPUBIND=`pwd`/scripts/gpubind
+    - echo $GPUBIND
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
