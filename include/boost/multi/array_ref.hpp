@@ -1699,6 +1699,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
+	/// produces a subarray of higher dimension by chunking in the leading dimension (if `count` doesn't divide `size`, so elements are are left out at the end)
 	BOOST_MULTI_HD constexpr auto chunked(size_type count) const& -> const_subarray<T, D + 1, element_ptr> { return chunked_aux_(count); }
 
 	constexpr auto tiled(size_type count) const& {
