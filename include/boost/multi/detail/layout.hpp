@@ -170,8 +170,8 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(multi::ssize_t sz)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : allow terse syntax
-	: extents_t{index_extension{sz}} {}
+	BOOST_MULTI_HD constexpr extents_t(multi::ssize_t size1)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : allow terse syntax
+	: extents_t{index_extension{size1}} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) && D == 1, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
@@ -212,7 +212,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		class... Exts,
 		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
 			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
-			&& (std::is_convertible<Exts, index_extension>{} && ...),
+			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
 			int> = 0
 	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
