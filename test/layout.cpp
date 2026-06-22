@@ -363,10 +363,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using std::size;
 
-		BOOST_TEST( size(arr)  == 51       );
+		BOOST_TEST( arr.size()  == 51       );
 		BOOST_TEST( arr.size() == 51       );
 
-		BOOST_TEST( size(arr[0])  == 52    );
+		BOOST_TEST( arr[0].size()  == 52    );
 		BOOST_TEST( arr[0].size() == 52    );
 
 		BOOST_TEST( size(arr[0][0])  == 53 );

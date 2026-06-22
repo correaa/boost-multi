@@ -383,7 +383,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<0>(A2.sizes()) == 6 );
 		BOOST_TEST( get<1>(A2.sizes()) == 2 );
 
-		BOOST_TEST( size(A2.partitioned(3)) == 3 );
+		BOOST_TEST( A2.partitioned(3).size() == 3 );
 
 		static_assert(decltype(A2.partitioned(3))::dimensionality == 3);
 		// static_assert(decltype(A2.partitioned(3))::rank{} == 3);
@@ -396,12 +396,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<1>(sizes(A2.partitioned(3))) == 2 );
 		BOOST_TEST( get<2>(sizes(A2.partitioned(3))) == 2 );
 
-		BOOST_TEST( size(A2.partitioned(1)) == 1 );
+		BOOST_TEST( A2.partitioned(1).size() == 1 );
 
 		static_assert(decltype(A2.partitioned(1))::dimensionality == 3);
-		// static_assert(decltype(A2.partitioned(1))::rank{} == 3);
-		// static_assert(decltype(A2.partitioned(1))::rank::value == 3);
-		// static_assert(decltype(A2.partitioned(1))::rank_v == 3);
 
 		BOOST_TEST( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 	}
