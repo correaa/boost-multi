@@ -1375,8 +1375,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 #endif
 
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto const_elements() const -> const_elements_range { return elements_aux_(); }
 
+ private:
+	constexpr auto const_elements_() const -> const_elements_range { return elements_aux_(); }
+
+ public:
 	constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
 		return {this->base(), std::abs(this->hull_size())};
 	}
@@ -3984,9 +3987,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
 	friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
 
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto celements() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }
+ private:
+	constexpr auto celements_() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+ public:
 	// // cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	// constexpr auto element_moved() & { return array_ref<T, D, typename array_ref::element_move_ptr, Layout>(this->extents(), typename array_ref::element_move_ptr{this->base_}); }
 	// constexpr auto element_moved() && { return element_moved(); }
