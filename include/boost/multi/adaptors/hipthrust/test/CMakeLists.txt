@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.24)
 project(boost-multi-adaptor-thrust-hip LANGUAGES CXX HIP)
 
 find_package(Boost     REQUIRED COMPONENTS headers)  # timer)  # unit_test_framework)
-find_package(rocthrust REQUIRED)
+find_package(rocthrust)
+if(NOT rocthrust_FOUND)
+	message(FATAL_ERROR "Could not find rocThrust. On Ubuntu/Debian with the ROCm apt repo configured, install the development package with:\n  sudo apt-get install rocthrust-dev\nor point CMake at an existing install via -Drocthrust_DIR=<prefix>/lib/cmake/rocthrust .")
+endif()
 
 include(CMakePrintHelpers)
 
