@@ -1341,8 +1341,6 @@ inq cuda:
     - non-shared
     - nvidia-gpu
     - arch75
-  # before_script:
-  #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
@@ -1367,11 +1365,10 @@ inq cuda:
     - export OMPI_MCA_rmaps_base_oversubscribe=1
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 2" ctest --parallel 2 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
-  needs: ["inq", "cuda"]
+  needs: ["inq"]  # , "cuda"]
 
 inq rocm:
   stage: test
-  # image: rocm/dev-ubuntu-22.04
   image: rocm/dev-ubuntu-24.04
   allow_failure: false
   tags:
