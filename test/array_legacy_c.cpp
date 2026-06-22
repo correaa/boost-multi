@@ -50,7 +50,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<std::complex<double>, 2> out(in.extents());
 
-		static_assert( decltype(out)::dimensionality == decltype(in)::dimensionality );  // NOLINT(misc-redundant-expression)
+		static_assert(decltype(out)::dimensionality == decltype(in)::dimensionality);  // NOLINT(misc-redundant-expression)
 		BOOST_TEST( out.sizes() == in.sizes() );
 
 		static_assert(sizeof(complex) == sizeof(fake::fftw_complex), "!");
