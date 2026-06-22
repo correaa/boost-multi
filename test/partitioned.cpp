@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -10,7 +10,7 @@
 #include <algorithm>    // for is_sorted
 #include <array>        // for array
 #include <cstddef>      // for ptrdiff_t
-#include <iterator>     // for size
+// #include <iterator>     // for size
 #include <string>       // for operator""s, string, string_lite...
 #include <tuple>        // for apply  // IWYU pragma: keep
 #include <type_traits>  // for declval, decay_t, decay, decay<>...

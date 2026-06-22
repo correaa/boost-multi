@@ -709,7 +709,10 @@ clang++-m32:
 
 clang++-latest tidy iwyu everything:
   stage: build
-  image: debian:latest  # clang 18 as of Apr 2024
+  image: debian:latest
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker

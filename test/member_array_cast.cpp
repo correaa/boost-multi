@@ -1,4 +1,4 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -12,10 +12,10 @@
 #include <array>       // for array, operator==
 #include <cstddef>     // for offsetof, size_t
 #include <functional>  // for mem_fn  // IWYU pragma: keep
-#include <iterator>    // for size
-#include <memory>      // for addressof  // IWYU pragma: keep
-#include <string>      // for operator""s, allocator, char_traits
-#include <tuple>       // for tie, operator==, tuple
+// #include <iterator>    // for size
+#include <memory>  // for addressof  // IWYU pragma: keep
+#include <string>  // for operator""s, allocator, char_traits
+#include <tuple>   // for tie, operator==, tuple
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4371)
