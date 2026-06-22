@@ -1,4 +1,4 @@
-// Copyright 2023-2024 Alfredo A. Correa
+// Copyright 2023-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>   // for transform
-#include <functional>  // for plus  // IWYU pragma: keep
+// #include <functional>  // IWYU pragma: keep  // for plus
 #include <numeric>     // for accumulate
 
 namespace multi = boost::multi;
