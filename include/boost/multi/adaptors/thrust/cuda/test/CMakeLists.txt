@@ -6,7 +6,10 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 	find_package(CUDAToolkit REQUIRED COMPONENTS Thrust)  # requires cmake 3.17
+	# find_package(Thrust CONFIG)
+	thrust_create_target(MyThrust)
 endif()
+
 
 find_package(Boost CONFIG REQUIRED)  # tests require Boost.Core LightweightTest
 
@@ -29,7 +32,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_include_directories(${TEST_EXE}        PRIVATE ${CUDA_INCLUDE_DIRS})
 	
 		#target_compile_options(${TEST_EXE} PRIVATE --expt-relaxed-constexpr)
-	
+
+		target_include_directories(${TEST_EXE} SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
+		target_link_libraries(${TEST_EXE} PRIVATE MyThrust)
+
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE multi)
 
