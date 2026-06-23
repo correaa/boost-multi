@@ -111,7 +111,6 @@ arm64:
     refs:
       - develop
   tags:
-    - non-shared
     - arm  # for image
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake ninja-build make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
