@@ -115,7 +115,7 @@ auto main() -> int {
 	auto const n = 8000;
 
 	multi::array<T, 2, thrust::hip::allocator<T>> src({n, n}, T{12});
-	multi::array<T, 2, thrust::hip::allocator<T>> dst(extensions(src), T{33});
+	multi::array<T, 2, thrust::hip::allocator<T>> dst(src.extents(), T{33});
 
 	auto const size = src.num_elements() * sizeof(T) / 1e9;
 
@@ -124,7 +124,7 @@ auto main() -> int {
 		DoNotOptimize(dst);
 	});
 
-	BOOST_REQUIRE( dst == src );
+	BOOST_TEST( dst == src );
 
 	DoNotOptimize(src);
 	DoNotOptimize(dst);
@@ -134,7 +134,7 @@ auto main() -> int {
 		DoNotOptimize(dst);
 	});
 
-	BOOST_REQUIRE( dst == src );
+	BOOST_TEST( dst == src );
 
 	DoNotOptimize(src);
 	DoNotOptimize(dst);

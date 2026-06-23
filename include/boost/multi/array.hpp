@@ -832,8 +832,8 @@ struct                                                                          
 
 	// Element-move (deep move) assignment, moves each element from the @p other array. Source and destination extents should match
 	// @note Linear complexity in the number of elements (cheaper than copy assignment if elements are effectively movable)
-	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {                               // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		assert(other.extents() == dynamic_array::extents());                                                   // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {  // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		assert(other.extents() == dynamic_array::extents());
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
@@ -1330,7 +1330,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	friend constexpr auto unrotated(dynamic_array const& self) -> decltype(auto) { return self.unrotated(); }
 
 	constexpr auto operator=(dynamic_array const& other) -> dynamic_array& {
-		assert(extents(other) == dynamic_array::extents());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert(extents(other) == dynamic_array::extents());
 		if(this == &other) {
 			return *this;
 		}  // lints (cert-oop54-cpp) : handle self-assignment properly
@@ -1350,7 +1350,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 #endif
 
 	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {
-		assert(equal_extensions_if_(std::integral_constant<bool, (dynamic_array::rank_v != 0)>{}, other));     // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert(equal_extensions_if_(std::integral_constant<bool, (dynamic_array::rank_v != 0)>{}, other));
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return *this;
 	}
