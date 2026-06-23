@@ -6,8 +6,18 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 	find_package(CUDAToolkit REQUIRED)  # requires cmake 3.17
-	find_package(Thrust CONFIG REQUIRED)  # defines thrust_create_target()
-	thrust_create_target(MyThrust)
+	# Thrust ships with the CUDA toolkit, but its CMake config lands in different places: apt puts it in
+	# CMake's default search path (/usr/share/cmake/thrust), while NVIDIA toolkits/containers put it under
+	# the toolkit (/usr/local/cuda/lib64/cmake/thrust) which is NOT searched by default. Hint at the toolkit,
+	# and fall back to the (header-only) toolkit headers when no Thrust CMake package is installed at all.
+	find_package(Thrust CONFIG QUIET HINTS "${CUDAToolkit_LIBRARY_DIR}/cmake")
+	if(Thrust_FOUND)
+		thrust_create_target(MyThrust)
+	else()
+		add_library(MyThrust INTERFACE)
+		target_link_libraries(MyThrust INTERFACE CUDA::cudart)
+		target_include_directories(MyThrust SYSTEM INTERFACE ${CUDAToolkit_INCLUDE_DIRS})
+	endif()
 endif()
 
 
