@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #include <boost/test/unit_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 
 #include <boost/multi/array.hpp>
 
@@ -14,7 +14,8 @@
 
 #include <thrust/complex.h>
 
-#include <boost/mpl/list.hpp>
+#include <chrono>
+#include <complex>
 
 namespace multi = boost::multi;
 
@@ -24,12 +25,10 @@ namespace multi = boost::multi;
 // template<> inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
 // template<> inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float >> = true;
 
-using test_types = boost::mpl::list<
-	double, ::thrust::complex<double>, std::complex<double>,
-	float , ::thrust::complex<float> , std::complex<float >,
-	// char,
-	unsigned, int
->;
+// Element types the speed tests are run over (driven explicitly from main() below):
+//   double, thrust::complex<double>, std::complex<double>,
+//   float,  thrust::complex<float>,  std::complex<float>,
+//   unsigned, int
 
 template <class Tp>
 inline void DoNotOptimize(Tp&& value) noexcept {
@@ -45,7 +44,7 @@ constexpr auto measure = [](auto&& F) {
 	return time.count();
 };
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types) {
+template<class T> void allocation_speed() {
 	std::cout << typeid(T).name() << " ******************************************\n";
 
 	auto const n = 8000L;
@@ -105,13 +104,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types) {
 	BOOST_TEST( (hipmultiuniversalarray / hipmallocfree) > 0.80 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_speed, T, test_types) {
+template<class T> void thrust_speed() {
 	std::cout << typeid(T).name() << " ******************************************\n";
 
 	auto const n = 8000;
 
 	multi::array<T, 2, thrust::hip::allocator<T>> src({n, n}, T{12});
-	multi::array<T, 2, thrust::hip::allocator<T>> dst(extensions(src), T{33});
+	multi::array<T, 2, thrust::hip::allocator<T>> dst(src.extents(), T{33});
 
 	auto const size = src.num_elements() * sizeof(T) / 1e9;
 
@@ -120,7 +119,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_speed, T, test_types) {
 		DoNotOptimize(dst);
 	});
 
-	BOOST_REQUIRE( dst == src );
+	BOOST_TEST( dst == src );
 
 	DoNotOptimize(src);
 	DoNotOptimize(dst);
@@ -130,7 +129,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_speed, T, test_types) {
 		DoNotOptimize(dst);
 	});
 
-	BOOST_REQUIRE( dst == src );
+	BOOST_TEST( dst == src );
 
 	DoNotOptimize(src);
 	DoNotOptimize(dst);
@@ -265,3 +264,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 	}
 }
 #endif
+
+auto main() -> int {
+	// BOOST_AUTO_TEST_CASE_TEMPLATE(allocation_speed, T, test_types)
+	allocation_speed<double>();
+	allocation_speed<thrust::complex<double>>();
+	allocation_speed<std::complex<double>>();
+	allocation_speed<float>();
+	allocation_speed<thrust::complex<float>>();
+	allocation_speed<std::complex<float>>();
+	allocation_speed<unsigned>();
+	allocation_speed<int>();
+
+	// BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_speed, T, test_types)
+	thrust_speed<double>();
+	thrust_speed<thrust::complex<double>>();
+	thrust_speed<std::complex<double>>();
+	thrust_speed<float>();
+	thrust_speed<thrust::complex<float>>();
+	thrust_speed<std::complex<float>>();
+	thrust_speed<unsigned>();
+	thrust_speed<int>();
+
+	return boost::report_errors();
+}

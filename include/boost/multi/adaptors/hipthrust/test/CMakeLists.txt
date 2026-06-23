@@ -34,8 +34,7 @@ include(CTest)
 
 add_executable(vector.hip.amd.x vector.hip)
 set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
-target_link_libraries(vector.hip.amd.x PRIVATE roc::rocthrust)
-target_compile_definitions(vector.hip.amd.x PRIVATE BOOST_TEST_DYN_LINK=1)
+target_link_libraries(vector.hip.amd.x PRIVATE multi roc::rocthrust)
 
 add_test(NAME vector.hip.amd.x COMMAND $<TARGET_FILE:vector.hip.amd.x>)
 

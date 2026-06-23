@@ -1,10 +1,7 @@
-// Copyright 2021-2024 Alfredo A. Correa
+// Copyright 2021-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi hip thrust"
-// #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/timer/timer.hpp>
 
 #include <boost/multi/array.hpp>
@@ -20,6 +17,8 @@
 
 #include <boost/multi/adaptors/thrust/fix_pointer_traits.hpp>
 #include <boost/multi/adaptors/thrust.hpp>
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <numeric>
 
@@ -53,19 +52,9 @@ template<class T> using test_allocator =
 
 }
 
-using types_list = boost::mpl::list<
-	// char,
-	double,
-	// std::complex<double>,
-	thrust::complex<double>
->;
-
-BOOST_AUTO_TEST_CASE(dummy_test) {}
-
-BOOST_AUTO_TEST_CASE(test_univ_alloc) {
-	multi::array<double, 2, thrust::universal_allocator<double> > Dev({128, 128});
-	*raw_pointer_cast(Dev.base()) = 99.0;
-}
+// Test cases are driven explicitly from main() below (Boost.LightweightTest).
+// The templated cases below are run over this list of element types:
+//   double, thrust::complex<double>
 
 // BOOST_AUTO_TEST_CASE(mtc_universal_array) {
 //  multi::thrust::hip::universal_array<double, 2> Dev({128, 128});
@@ -83,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_univ_alloc) {
 // }
 
 #if defined(NDEBUG)
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+template<class T> void thrust_copy_1D_issue123() {
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
 	static_assert( std::is_trivially_assignable<T&, T>{}         , "!");
@@ -200,8 +189,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOS
 	std::cout<<"   "<<std::endl;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_2D_issue123, T, types_list) {
-// BOOST_AUTO_TEST_CASE(thrust_cpugpu_2D_issue123) { using T = double;
+template<class T> void thrust_cpugpu_2D_issue123() {
 
 	auto const exts = multi::extensions_t<2>({10240, 10240});
 
@@ -316,8 +304,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_2D_issue123, T, types_list) {
 	std::cout<<"  "<<std::endl;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
-// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D) { using T = double;
+template<class T> void thrust_cpugpu_issue123_3D() {
 	auto const exts = multi::extensions_t<3>({1024, 1024, 100});
 
 	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< exts.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|"<<std::endl;
@@ -744,3 +731,24 @@ BOOST_AUTO_TEST_CASE(array) {
 
 }
 #endif
+
+auto main() -> int {
+	// BOOST_AUTO_TEST_CASE(test_univ_alloc)
+	{
+		multi::array<double, 2, thrust::universal_allocator<double>> Dev({128, 128});
+		*raw_pointer_cast(Dev.base()) = 99.0;
+	}
+
+#if defined(NDEBUG)  // these issue123 benchmarks rely on assert() being compiled out (NDEBUG)
+	thrust_copy_1D_issue123<double>();
+	thrust_copy_1D_issue123<thrust::complex<double>>();
+
+	thrust_cpugpu_2D_issue123<double>();
+	thrust_cpugpu_2D_issue123<thrust::complex<double>>();
+
+	thrust_cpugpu_issue123_3D<double>();
+	thrust_cpugpu_issue123_3D<thrust::complex<double>>();
+#endif
+
+	return boost::report_errors();
+}
