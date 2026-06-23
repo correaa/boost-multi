@@ -29,11 +29,6 @@ enable_testing()
 # find_program(MEMORYCHECK_COMMAND valgrind)
 # set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
 
-find_package(Boost COMPONENTS timer)
-if(NOT Boost_FOUND)
-  message(ERROR "  Cannot find Boost.Timer. Try\n    sudo apt install libboost-timer-dev  # in Debian/Ubuntu")
-endif()
-
 set(TEST_SRCS
 	array.cu
 	broadcast_softmax.cu
