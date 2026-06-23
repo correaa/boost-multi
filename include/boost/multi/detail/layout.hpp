@@ -900,11 +900,11 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	BOOST_MULTI_HD constexpr explicit extents_t(base_ tup)
 	: base_{tup} {}
 
-	template<class OtherExtensions,
-		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtensions{}.extent()) )* = nullptr
+	template<class OtherExtents,
+		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtents{}.extent()) )* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	BOOST_MULTI_HD constexpr extents_t(OtherExtents const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: base_{other.extent()} {}
 
 	extents_t() = default;
