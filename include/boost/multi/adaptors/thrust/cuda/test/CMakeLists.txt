@@ -5,8 +5,8 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
-	find_package(CUDAToolkit REQUIRED COMPONENTS Thrust)  # requires cmake 3.17
-	# find_package(Thrust CONFIG)
+	find_package(CUDAToolkit REQUIRED)  # requires cmake 3.17
+	find_package(Thrust CONFIG REQUIRED)  # defines thrust_create_target()
 	thrust_create_target(MyThrust)
 endif()
 
