@@ -964,28 +964,28 @@ struct                                                                          
 	}
 
 	BOOST_MULTI_HD constexpr auto fancy_splitted() & {
-		multi::layout_t<1> const l1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const l2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
 		// auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 		// auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		auto p1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto p2 = mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr1 = mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
 #ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
 #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
-			std::less_equal<>{}(p1 + l1.nelems(), p2) ||
-			std::less_equal<>{}(p2 + l2.nelems(), p1)
+			std::less_equal<>{}(p1 + lyt1.nelems(), ptr2) ||
+			std::less_equal<>{}(p2 + lyt2.nelems(), ptr1)
 		)]];
 #endif
 #endif
 		return std::pair<
 			subarray<T, 1, typename dynamic_array::element_ptr>,
 			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(l1, p1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(l2, p2)
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
 		);
 	}
 
