@@ -1661,7 +1661,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return const_subarray<T, D + 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
- constexpr auto diagonal_aux_() const {
+	constexpr auto diagonal_aux_() const {
 		using boost::multi::detail::get;
 		auto                   square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 		multi::layout_t<D - 1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
