@@ -429,7 +429,9 @@ namespace xtd {
 
 template<class T, class InputIt, class Size, class ForwardIt>
 constexpr auto alloc_uninitialized_copy_n(std::allocator<T>& /*alloc*/, InputIt first, Size count, ForwardIt d_first) {
-	return adl_uninitialized_copy_n(first, count, d_first);
+	// a std::allocator unambiguously denotes host memory, so never route through thrust's
+	// __host__ __device__ path (which fails to compile for host-only types like std::string)
+	return std::uninitialized_copy_n(first, count, d_first);
 }
 
 // template<class T, class InputIt, class Size, class ForwardIt>
