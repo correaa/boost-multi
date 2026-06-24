@@ -469,7 +469,7 @@ int main() {
 ----
 link:https://godbolt.org/z/oeTss3s35[(live)]
 
-(See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
+(See also, examples of interactions with the CUDA link:https://nvidia.github.io/cccl/unstable/thrust/index.html[Thrust] library to see more uses of special pointer types to handle special memory.)
 
 [#ref_transformed_views]
 === Transformed views
