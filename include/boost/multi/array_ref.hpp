@@ -1653,17 +1653,14 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  public:
 	auto flattened() const& { return flattened_aux_().as_const(); }
-	// 	auto new_layout = this->layout().flatten(this->base_);
-	// 	return multi::const_subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
-	// }
 
-	constexpr auto broadcasted() const& {
+ private:
+	constexpr auto broadcasted() const& {  // NOLINT(readability-identifier-naming)  TODO(correaa) remove?
 		// TODO(correaa) introduce a broadcasted_layout?
 		multi::layout_t<D + 1> const new_layout(layout(), 0, 0);  //, (std::numeric_limits<size_type>::max)());  // paren for MSVC macros
 		return const_subarray<T, D + 1, typename const_subarray::element_const_ptr>{new_layout, types::base_};
 	}
 
- private:
 	constexpr auto diagonal_aux_() const {
 		using boost::multi::detail::get;
 		auto                   square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
