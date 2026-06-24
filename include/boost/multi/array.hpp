@@ -976,8 +976,8 @@ struct                                                                          
 #ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
 #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
 		[[assume(
-			std::less_equal<>{}(p1 + lyt1.nelems(), ptr2) ||
-			std::less_equal<>{}(p2 + lyt2.nelems(), ptr1)
+			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
+			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
 		)]];
 #endif
 #endif
