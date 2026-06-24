@@ -13,7 +13,7 @@ link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/g
 
 _Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
-NOTE: This library is proposed for inclusion in Boost and is currently under Boost review, under the name *Boost.Multi*. It is already usable as a standalone, header-only library.
+NOTE: This library is proposed for inclusion in Boost and is currently under Boost review, under the name *Boost.Multi*. It is already usable as a standalone, header-only library (see below for requirements)
 
 Multidimensional array data structures are essential in various fields of computing, including data analysis, image processing, and scientific simulations. When combined with GPUs, they also play a significant role in Artificial Intelligence and Machine Learning.
 
@@ -100,6 +100,23 @@ It doesn't make specific algebraic or geometric assumptions about the arrays and
 
 The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
 Indexing errors and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
+
+== More use cases
+
+:idprefix: usecases_
+
+Multidimensional arrays appear everywhere in practice.
+A digital photograph is a two-dimensional grid of pixels, or three-dimensional once color channels are included (height × width × channel), and a video adds a further time axis.
+Spreadsheets and database extracts are two-dimensional tables of rows and columns, while machine-learning workloads continuously move large tensors (of shape batch × channel × height × width) between CPU and GPU.
+Audio spectrograms, medical CT and MRI scans that sample a volume, and climate models spanning latitude, longitude, altitude, and time are all naturally expressed as arrays of three or more dimensions.
+In each case the data is logically a single object addressed by several coordinates, which is precisely what a multidimensional array represents.
+
+In the author's own field of condensed matter physics and chemistry, the quantum states of individual electrons are discretized on a regular 3-dimensional grid of complex numbers.
+Many quantities of interest are obtained by summing functions evaluated over these elements.
+Gradients are computed with stencils or via fast Fourier transforms.
+These 3-dimensional objects can themselves be regarded as vectors in a linear space, and the operators acting on that space are in turn matrices with a 2-dimensional array representation.
+
+Typically, at the lowest level, data is processed in bulk by specially tuned numerical CPU or GPU libraries that expect data in the layouts supported by this library.
 
 == Next steps
 
