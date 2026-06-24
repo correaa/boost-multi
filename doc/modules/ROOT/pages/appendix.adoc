@@ -108,7 +108,7 @@ internal representation (memory ordering) can still be different, affecting oper
 
 Range notation such as `1:2` is replaced by `{0, 2}`, which considers both the difference in the start index and the half-open interval notation in the C++ conventions.
 Stride notation such as `1:10:2` (i.e., from first to tenth included, every two elements) is replaced by `{0, 10, 2}`.
-Complete range interval (single `:` notation) is replaced by `multi::_`, (or by just `_` after the declaration `using multi::_;`).
+Complete range interval (single `:` notation) is replaced by `multi::_`, (or by `_` after the declaration `using multi::_;`).
 These rules extend to higher dimensionality.
 
 Multi provides algebraic operators that are expanded elementwise.

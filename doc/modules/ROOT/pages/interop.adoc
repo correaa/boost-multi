@@ -8,7 +8,7 @@
 == Standard Library (STL algorithms)
 
 The fundamental goal of the library is that the arrays and iterators can be used out-of-the-box with C\++ Standard Library, in particular the Standard Template Library (STL) and the algorithms it provides.
-The most dramatic example of this is that `std::sort` works with array as it is shown in a previous section.
+The clearest example of this is that `std::sort` works with array as it is shown in a previous section.
 
 Along with STL itself, the library tries to interact with other existing quality C\++ libraries listed below.
 
@@ -271,7 +271,7 @@ The generic protocol is such that variables are (de)serialized using the (`>>`)`
 Serialization can be binary (efficient) or text-based (human-readable).
 
 Here, it is a small implementation of save and load functions for an array to JSON format with the Cereal library.
-The example can be easily adapted to other formats or libraries.
+The example can be adapted to other formats or libraries.
 (An alternative for XML with Boost.Serialization is commented on the right.)
 
 [source,cpp]
@@ -449,7 +449,7 @@ In the same way, to *ensure* HIP backends please replace the `cuda` namespace by
 `<thrust/system/hip/memory.h>` is provided by rocThrust in the ROCm distribution (in `/opt/rocm/include/thrust/system/hip/`, and not by the NVIDIA distribution.)
 
 Multi doesn't have a dependency on Thrust (or vice versa);
-they just work well together, both in terms of semantics and efficiency.
+they work well together, both in terms of semantics and efficiency.
 Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
 Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
@@ -733,7 +733,7 @@ These are few examples, using reduction and for-each in 1D and 2D.
 ----
 link:https://godbolt.org/z/Ps7bqc7vc[(open with Compiler Explorer)]
 
-Just as with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundamental for multidimensional arrays.
+As with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundamental for multidimensional arrays.
 
 [#interop_fmt]
 == Formatting (pass:[{fmt}] pretty printing)
@@ -954,24 +954,24 @@ For these reasons, the library is accompanied by a series of adaptor libraries t
 - link:https://gitlab.com/correaa/boost-multi/-/blob/develop/include/boost/multi/adaptors/blas/README.md[BLAS/cuBLAS Adaptor 🔗]
 
 Interface for BLAS-like linear algebra libraries, such as openblas, Apple's Accelerate, MKL and hipBLAS/cuBLAS (GPUs).
-Simply `#include "multi/adaptors/blas.hpp"` (and link your program with `-lblas` for example).
+`#include "multi/adaptors/blas.hpp"` (and link your program with `-lblas` for example).
 
 - Lapack
 
 Interface for Lapack linear solver libraries.
-Simply `#include "multi/adaptors/lapack.hpp"` (and link your program with `-llapack` for example).
+`#include "multi/adaptors/lapack.hpp"` (and link your program with `-llapack` for example).
 
 - FFTW/cuFFT
 
 Interface for FFTW libraries, including FFTW 3, MKL, cuFFT/hipFFT (for GPU).
-Simply `#include "multi/adaptors/fftw.hpp"` (and link your program with `-lfftw3` for example).
+`#include "multi/adaptors/fftw.hpp"` (and link your program with `-lfftw3` for example).
 
 - link:https://gitlab.com/correaa/boost-multi/-/blob/master/include/boost/multi/adaptors/mpi/README.md[MPI Adaptor 🔗]
 
 Use arrays (and subarrays) as messages for distributed interprocess communication (GPU and CPU) that can be passed to MPI functions through datatypes.
-Simply `#include "multi/adaptors/mpi.hpp"`.
+`#include "multi/adaptors/mpi.hpp"`.
 
 - TotalView: visual debugger (commercial)
 
 Popular in HPC environments, can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
-Simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
+`#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.

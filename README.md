@@ -96,7 +96,7 @@ A CMake build system is provided to compile and run basic tests.
 ctest -C ./build
 ```
 
-Once installed, other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
+Once installed, other CMake projects (targets) can depend on Multi by adding `add_subdirectory(my_multi_path)` or by `find_package`:
 ```cmake
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi
 ```

@@ -52,7 +52,7 @@ In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivale
 == Thread safety guarantees
 
 The library provides the same data-race guarantees as the C++ standard library containers, no more and no less.
-It holds no hidden shared state: there is no copy-on-write, no reference counting, no atomics, and no mutable global or static data, so the thread-safety of a program depends only on which objects and elements its threads actually touch.
+It holds no hidden shared state: there is no copy-on-write, no reference counting, no atomics, and no mutable global or static data, so the thread-safety of a program depends only on which objects and elements its threads touch.
 Concretely, without any external synchronization it is safe for multiple threads to:
 
 * access _distinct_ array objects concurrently;
@@ -119,7 +119,7 @@ These mitigations are not implemented, but the library is prepared to adopt them
 === Unaffected: functional (lazy) views
 
 `multi::restriction` objects are not affected by this problem because they do not manipulate pointers.
-Operations like `.transposed()`, `.strided()`, and `.reversed()` on a restriction simply rebind the index mapping; no pointer arithmetic is involved.
+Operations like `.transposed()`, `.strided()`, and `.reversed()` on a restriction rebind the index mapping; no pointer arithmetic is involved.
 
 [#technical_change_dimensionality]
 == Can I change the dimensionality of an array dynamically?

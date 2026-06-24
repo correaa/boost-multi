@@ -89,7 +89,7 @@ The type `P` must be pointer-like.
 |===
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
-(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (just like language pointers);
+(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (like language pointers);
 these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
 
 ==== `multi::subarray<T, D, P = T*>` relational functions
