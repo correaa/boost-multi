@@ -81,7 +81,7 @@ Like in Fortran, arrays are not initialized automatically for simple types (e.g.
 
 | Declaration/Construction 1D | `real, dimension(3) :: numbers` (at top)           | `multi::array<float, 1> numbers(3);` (at scope)
 | Initialization (3 elements) | `numbers = (/ 1.0, 2.0, 3.0 /)`                        | `numbers = { 1.0F, 2.0F, 3.0F };`
-| Element assignment (3rd)    | `numbers(3) = 99.0F`                                | `numbers[2] = 99.0F;`
+| Element assignment (3rd)    | `numbers(3) = 99.0`                                | `numbers[2] = 99.0F;`
 | Element access (print 3rd)  | `print *, numbers(3)`                              | `std::cout << numbers[2] << '\n';`
 | Printing all elements       | `print *, numbers`                                 | `std::cout << numbers;` (needs `multi/io.hpp`) or  `std::print("{}", numbers);` (needs pass:[C++23])
 | Re-initialization           | `numbers = (/ 10.0, 20.0, 30.0 /)`                | `numbers = {10.0F, 20.0F, 30.0F};`
@@ -111,7 +111,7 @@ Stride notation such as `1:10:2` (i.e., from first to tenth included, every two 
 Complete range interval (single `:` notation) is replaced by `multi::_`, (or by just `_` after the declaration `using multi::_;`).
 These rules extend to higher dimensionality.
 
-Multi provides algebraic operators that are expanded elementwise,
+Multi provides algebraic operators that are expanded elementwise.
 For example, a Fortran statement like `C = A + B` or `C = C + A` is translated as this:
 
 [source,cpp]
@@ -151,7 +151,7 @@ A Fortran statement like `C = 2.0*C` is rewritten as
 ----
 using multi::elementwise::operator*;
 
-C = 2.0*C;  // self-assignment is ok because this an elementwise operation
+C = 2.0*C;  // self-assignment is ok because this is an elementwise operation
 ----
 (equivalent to `std::ranges::transform(C.elements(), C.elements().begin(), [](auto const& e) { return 2.0*e; });`.)
 
@@ -280,7 +280,7 @@ If you don't have access to the ranges library (C++20) or if you want to control
 -----
 link:https://godbolt.org/z/sn8MqPEP5[(open with Compiler Explorer)]
 
-If the data is in the GPU, you can use Thrust algorithms (which detects the memory space automatically, and it is parallel by default)
+If the data is in the GPU, you can use Thrust algorithms (which detect the memory space automatically, and are parallel by default):
 
 [source,cpp]
 -----
@@ -301,12 +301,12 @@ or more explicitly as,
 -----
 link:https://godbolt.org/z/55vd7v8xf[(open with Compiler Explorer)]
 
-To create new array with a constant value, it is easier to directly construct it:
+To create a new array with a constant value, it is easier to directly construct it:
 
 [source,cpp]
 -----
   multi::array<double, 2> arr({4, 4}, 1);  // generate a 4x4 array; all its elements equal to 1
 -----
 
-> **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help to integrate the Boost infrastructure to the unit tests, and for the formatting of the documentation.
+> **Thanks** to Joaquín López Muñoz and Andrzej Krzemienski for the critical reading of the documentation, to Sean Parent for inspiring ideas, and especially to Matt Borland for his help integrating the Boost infrastructure into the unit tests, and for the formatting of the documentation.
 

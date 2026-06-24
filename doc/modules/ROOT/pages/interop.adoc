@@ -134,13 +134,13 @@ Finally, an array `A1D` can be copied by `std::vector<T> v(A1D.begin(), A1D.end(
 Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
 (See examples link:https://godbolt.org/z/n4TY998o4[here].)
 
-The `std::span` (C\++20) has not a well defined reference- or pointer-semantics; it doesn't respect `const` correctness in generic code.
+The `std::span` (C\++20) does not have a well-defined reference- or pointer-semantics; it doesn't respect `const` correctness in generic code.
 This behavior is contrary to the goals of this library;
 and for this reason, there is no single substitute for `std::span` for all cases.
 Depending on how it is used, either `multi::array_ref<T, 1> [const& | &&]` or `multi::array_ptr<T [const], 1>` may replace the features of `std::span`.
 The former typically works when using it as function argument.
 
-Multi-dimensinal arrays can interoperate with C\++23's non-owning link:https://en.cppreference.com/w/cpp/container/mdspan.html[`mdspan`].
+Multidimensional arrays can interoperate with C\++23's non-owning link:https://en.cppreference.com/w/cpp/container/mdspan.html[`mdspan`].
 link:https://godbolt.org/z/aocn73bzf[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan` automatically (replicating the behavior of `std::vector`).
 
 === Execution policies (parallel algorithms)
@@ -154,7 +154,7 @@ The execution policy (`par`) selected is passed as the first argument.
     multi::array<double, 2> const A = ...;
     multi::array<double, 1> v(size(A));
 
-    std::transform(std::execution::par, arr.begin(), arr.end(), vec.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
+    std::transform(std::execution::par, A.begin(), A.end(), v.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
 ----
 link:https://godbolt.org/z/63jEdY7zP[((open with Compiler Explorer))]
 
@@ -357,7 +357,7 @@ The output JSON file created by Cereal in the previous example looks like this.
 The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output are different but they would have a similar structure.
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
-Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array of with random `double` elements.
+Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array with random `double` elements.
 
 |===
 | Archive format (Library)     | file size     | speed (read - write)           | time (read - write)
@@ -365,7 +365,7 @@ Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-
 | JSON (Cereal)                | 684 MB        |    3.9 MB/sec  -   8.4 MB/sec  |  32.1 sec - 15.1  sec
 | XML (Cereal)                 | 612 MB        |    2.0  MB/sec -   4.0 MB/sec  |  56.0 sec - 28.0  sec
 | XML (Boost)                  | 662 MB        |   11.0  MB/sec -  13.0 MB/sec  |  11.0 sec -  9.0  sec
-| YAML (link:https://gitlab.com/correaa/boost-archive-yml[custom archive)]) | 702 MB        |   10.0  MB/sec -    4.4 MB/sec  |  12.0   sec  - 28.0   sec
+| YAML (link:https://gitlab.com/correaa/boost-archive-yml[custom archive]) | 702 MB        |   10.0  MB/sec -    4.4 MB/sec  |  12.0   sec  - 28.0   sec
 | Portable Binary (Cereal)     | 134 MB        |  130  MB/sec -  121  MB/sec  |  9.7  sec  - 10.6 sec
 | Text (Boost)                 | 411 MB        |   15.0  MB/sec -   16.0  MB/sec  |  8.2  sec  - 7.6  sec
 | Binary (Cereal)              | 134 MB        |  134.4 MB/sec -  126.  MB/sec  |  0.9  sec  -  0.9 sec
@@ -436,7 +436,7 @@ link:https://godbolt.org/z/oM4YbPYz8[((open with Compiler Explorer))]
 This example uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
 
-More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
+More specific allocators can be used to ensure CUDA backends, for example CUDA managed memory:
 
 [source,cpp]
 ----
@@ -494,7 +494,7 @@ This algorithm can be applied to a 2D array, using a second 1D array to store th
 ----
 multi::array<double, 2, thrust::device_allocator<double>> A_in = ...;
 
-multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A.size()});
+multi::array<double, 1, thrust::device_allocator<double>> sums_out(multi::extensions_t<1>{A_in.size()});
 
 reduce_by_row(A_in, sums_out.begin());
 ----
@@ -566,11 +566,11 @@ link:https://godbolt.org/z/KW19zMYnE[((open with Compiler Explorer))]
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
-Without Thrust, OpenMP pragmas would also work with this library, however OpenMP memory allocation, would need to be manually managed.
+Without Thrust, OpenMP pragmas would also work with this library, however OpenMP memory allocation would need to be manually managed.
 
 === Thrust memory resources
 
-GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
+GPU memory is relatively expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
 This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
 
 Thrust implements both polymorphic and non-polymorphic memory resources via `thrust::mr::allocator<T, MemoryResource>`;
@@ -674,12 +674,12 @@ int main() {
 ----
 link:https://godbolt.org/z/eKbeosrWa[((open with Compiler Explorer))]
 
-Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarely occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
+Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarily occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
 
 [#interop_sycl]
 == SYCL
 
-The SYCL library promises the unify CPU, GPU and FPGA code.
+The SYCL library promises to unify CPU, GPU and FPGA code.
 At the moment, the array containers can use the Unified Shared Memory (USM) allocator, but no other tests have been investigated.
 
 [source,cpp]
@@ -783,13 +783,13 @@ In a similar way, the size of the array can be printed by passing the sizes outp
 
 When saving arrays to files, please consider using serialization (see section) instead of formatting facilities.
 
-The headed `multi/io.hpp` can be used to output arrays and subarrays, but it is mainly for debugging purposed and there is no control of the output format.
+The header `multi/io.hpp` can be used to output arrays and subarrays, but it is mainly for debugging purposes and there is no control of the output format.
 
 [#interop_python]
 == Python (cppyy)
 
-The library works out-of-the-box via de automatic `cppyy` bindings, providing a syntax similar to that of C\++.
-Additionally, the memory layouts are compatible with Numpy which makes possible to interoperate C\++ and python code without memory copies.
+The library works out-of-the-box via the automatic `cppyy` bindings, providing a syntax similar to that of C\++.
+Additionally, the memory layouts are compatible with Numpy which makes it possible to interoperate C\++ and python code without memory copies.
 
 Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
 
@@ -851,7 +851,7 @@ print(a2d[0])
 [source,python]
 ----
 arow_copy = + a2d[0]
-arow_copy = 11111.1
+arow_copy[0] = 11111.1
 print(a2d[0])
 ----
 > ```
@@ -879,7 +879,7 @@ print(type(a2d))
 > <class 'list'>
 > ```
 
-The last line reassign the variable into a Python list, changing its type.
+The last line reassigns the variable into a Python list, changing its type.
 To reassign the elements without changing the type, use `.assign` instead:
 
 [source,python]
@@ -914,7 +914,7 @@ print(a2d_ref)
 > }
 > ```
 
-Note that the elements fpr these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory; so modifying one, also nodifies the rest.
+Note that the elements for these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory; so modifying one also modifies the rest.
 Special care must be taken if the original element is resized, or assigned to a different Python object, in which case the memory will not be valid.
 For this reason alone, it would be an error to name the last variable as the original (`a2d`) instead of the new name (`a2d_ref`).
 
@@ -934,7 +934,7 @@ such a function can be called from C\++ on Multi array (`arr`), by extracting th
 
 [source,cpp]
 ----
-fun(arr.base(), std::get<0>(arr.sizes()), std::get<1>(arr.sizes()), std::get<0>(arr.strides()), std::get<1>(arr.strides());
+fun(arr.base(), std::get<0>(arr.sizes()), std::get<1>(arr.sizes()), std::get<0>(arr.strides()), std::get<1>(arr.strides()));
 ----
 or
 
@@ -951,7 +951,7 @@ Furthermore, some arguments may need to be permuted if the function expects arra
 
 For these reasons, the library is accompanied by a series of adaptor libraries to popular C-based libraries, which can be found in the `include/multi/adaptors/` subdirectory:
 
-- link:https://gitlab.com/correaa/boost-multi/-/blob/master/include/boost/multi/adaptors/blas/README.md[BLAS/cuBLAS Adator 🔗]
+- link:https://gitlab.com/correaa/boost-multi/-/blob/develop/include/boost/multi/adaptors/blas/README.md[BLAS/cuBLAS Adaptor 🔗]
 
 Interface for BLAS-like linear algebra libraries, such as openblas, Apple's Accelerate, MKL and hipBLAS/cuBLAS (GPUs).
 Simply `#include "multi/adaptors/blas.hpp"` (and link your program with `-lblas` for example).
