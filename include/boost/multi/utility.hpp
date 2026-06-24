@@ -841,6 +841,9 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 	};
 }
 
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il2d) = delete;
+
 // template<class T>
 // constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il2d) {
 // 	if(il2d.size() == 0) {
@@ -868,6 +871,9 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 // 		static_cast<multi::ssize_t>(il2d.size()) * strd
 // 	);
 // }
+
+template<class T>
+constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il3d) = delete;
 
 // template<class T>
 // constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il3d) {
