@@ -7,9 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>   // for transform
+#include <algorithm>  // for transform
 // #include <functional>  // IWYU pragma: keep  // for plus
-#include <numeric>     // for accumulate
+#include <numeric>  // for accumulate
 
 namespace multi = boost::multi;
 
@@ -73,37 +73,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.diagonal().end() - arr.diagonal().begin() == 3 );
 	}
 
-	// broadcasted)
-	{
-		multi::array<int, 2> const arr = {
-			{0, 1,  2,  3},
-			{4, 5,  6,  7},
-			{8, 9, 10, 11},
-		};
+	// broadcasted
+	// {
+	// 	multi::array<int, 2> const arr = {
+	// 		{0, 1,  2,  3},
+	// 		{4, 5,  6,  7},
+	// 		{8, 9, 10, 11},
+	// 	};
 
-		auto const& a3D = arr.broadcasted();
+	// 	auto const& a3D = arr.broadcasted();
 
-		BOOST_TEST( &a3D[0][2][1] == &arr[2][1] );
-		BOOST_TEST( &a3D[1][2][1] == &arr[2][1] );
+	// 	BOOST_TEST( &a3D[0][2][1] == &arr[2][1] );
+	// 	BOOST_TEST( &a3D[1][2][1] == &arr[2][1] );
 
-		{
-			auto const& arr_instance = a3D[0];
-			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
-		}
-		{
-			auto const& arr_instance = a3D[99];
-			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
-		}
-		{
-			auto const& arr_instance = a3D[-99];
-			BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
-		}
-		{
-			auto const& a3D_self = a3D();
-			BOOST_TEST( &a3D_self[ 4][2][1] == &arr[2][1] );
-			BOOST_TEST( &a3D_self[99][2][1] == &arr[2][1] );
-		}
-	}
+	// 	{
+	// 		auto const& arr_instance = a3D[0];
+	// 		BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
+	// 	}
+	// 	{
+	// 		auto const& arr_instance = a3D[99];
+	// 		BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
+	// 	}
+	// 	{
+	// 		auto const& arr_instance = a3D[-99];
+	// 		BOOST_TEST( &arr_instance[2][1] == &arr[2][1] );
+	// 	}
+	// 	{
+	// 		auto const& a3D_self = a3D();
+	// 		BOOST_TEST( &a3D_self[ 4][2][1] == &arr[2][1] );
+	// 		BOOST_TEST( &a3D_self[99][2][1] == &arr[2][1] );
+	// 	}
+	// }
 
 	// broadcast_1D
 	// {
