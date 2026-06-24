@@ -868,6 +868,25 @@ nvhpc-26.1:  # highest nvhpc that is not 26.3 (26.3 has a compiler bug), tested 
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
 
+nvhpc-26.3 cuda-13.1:  # CUDA device compilation through nvhpc (nvhpc's nvcc driver + nvc++ as host/CXX), like the new pre-push CUDA 13 line. g++ as host fails because CUDA 13.1's crt/math_functions.h declares rsqrt/rsqrtf without noexcept while glibc 2.41+ declares them noexcept(true); only nvc++'s front-end tolerates it. Compile-only: the nvidia-gpu runner is Pascal sm_61 which CUDA 13 dropped, so device binaries can't be executed here.
+  stage: build
+  image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  tags:
+    - non-shared
+    - large-disk-space
+    - x86_64
+  only:
+    refs:
+      - develop
+  script:
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc --version
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CUDA_FLAGS="--extended-lambda --threads 2" -DCMAKE_CUDA_ARCHITECTURES=75
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+  needs: ["cuda-13.3.0", "nvhpc-26.1"]
+
 # nvhpc-26.3:
 #   stage: build
 #   image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
