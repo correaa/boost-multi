@@ -636,9 +636,9 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		return get<Index>(this->base());
 	}
 
-	template<class Fn>
-	constexpr auto apply(Fn&& fn) const -> decltype(auto) {
-		return std::apply(std::forward<Fn>(fn), this->base());
+	template<class F>
+	constexpr auto apply(F&& fun) const -> decltype(auto) {
+		return std::apply(std::forward<F>(fun), this->base());
 	}
 };
 
@@ -764,14 +764,14 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 		using reference = value_type;
 		using iterator_category = std::random_access_iterator_tag;
 
-		constexpr auto operator+(difference_type d) const { return iterator{idx_ + d, rest_}; }
-		constexpr auto operator-(difference_type d) const { return iterator{idx_ - d, rest_}; }
+		constexpr auto operator+(difference_type n) const { return iterator{idx_ + n, rest_}; }
+		constexpr auto operator-(difference_type n) const { return iterator{idx_ - n, rest_}; }
 
 		friend BOOST_MULTI_HD constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { return self.idx_ - other.idx_; }
 		friend BOOST_MULTI_HD constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
-		constexpr auto operator+=(difference_type d) -> iterator& { idx_ += d; return *this; }
-		constexpr auto operator-=(difference_type d) -> iterator& { idx_ -= d; return *this; }
+		constexpr auto operator+=(difference_type n) -> iterator& { idx_ += n; return *this; }
+		constexpr auto operator-=(difference_type n) -> iterator& { idx_ -= n; return *this; }
 
 		constexpr auto operator++() -> iterator& { ++idx_; return *this; }
 		constexpr auto operator--() -> iterator& { --idx_; return *this; }
@@ -805,8 +805,8 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	 public:
 		class iterator : multi::index_range::iterator {
 			friend class elements_t;  // enclosing class is friend automatically?
-			BOOST_MULTI_HD constexpr explicit iterator(multi::index_range::iterator it)
-			: multi::index_range::iterator{it} {}
+			BOOST_MULTI_HD constexpr explicit iterator(multi::index_range::iterator other)
+			: multi::index_range::iterator{other} {}
 
 			BOOST_MULTI_HD constexpr auto base_() const -> multi::index_range::iterator const& { return *this; }
 			BOOST_MULTI_HD constexpr auto base_() -> multi::index_range::iterator& { return *this; }
@@ -1267,9 +1267,9 @@ class bistride {
 	BOOST_MULTI_HD constexpr explicit bistride(stride1_type stride1, stride2_type stride2, multi::ssize_t size, Pointer ptr, std::ptrdiff_t n)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride1_{stride1}, stride2_{stride2}, nelems2_{size}, ptr_{ptr}, n_{n} {}
 
-	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t nn) const {
+	BOOST_MULTI_HD constexpr auto operator*(std::ptrdiff_t n) const {
 		assert(n_ == 1);  // TODO(correaa) test n_ != 1
-		return bistride{stride1_, stride2_, nelems2_, ptr_, nn /**n_*/};
+		return bistride{stride1_, stride2_, nelems2_, ptr_, n /**n_*/};
 	}
 
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
@@ -1298,23 +1298,23 @@ class bistride {
 	}
 
 	BOOST_MULTI_HD constexpr auto operator-(offset_type /*unused*/) const { return *this; }
+
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
 		auto base = static_cast<Ptr>(self.ptr_);
 		auto dist = ptr - base;
-		auto i = dist / self.stride1_;
+		auto outer = dist / self.stride1_;
 
 		// vvv TODO(correaa) Survived: Replaced / with *
-		auto j = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul
+		auto inner = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul
 
-		auto shift = j + self.n_;
+		auto shift = inner + self.n_;
 		auto size2 = self.nelems2_ / self.stride2_;
 
-		auto j0 = shift % size2;
-		auto i0 = (shift / size2) + i;
+		auto new_outer = (shift / size2) + outer;
+		auto new_inner = shift % size2;
 
-		auto ret = base + (i0 * self.stride1_) + (j0 * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		return ret;
+		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
 	#pragma clang diagnostic pop
