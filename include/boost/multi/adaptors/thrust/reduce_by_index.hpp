@@ -33,7 +33,7 @@ auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
 	// ;
 	// auto const row_ids_end = row_ids_begin + M.elements().size();
 
-	auto row_index = [] __host__ __device__ (M::index i, M::index /*j*/) { return i; } ^ M.extents();
+	auto row_index = [] __host__ __device__ (T::index i, T::index /*j*/) { return i; } ^ M.extents();
 
 	auto const row_ids_begin = row_index.elements().begin();
 	auto const row_ids_end   = row_index.elements().end();
