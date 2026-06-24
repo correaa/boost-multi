@@ -28,7 +28,7 @@ Instead, the Multi library is dimension-generic and doesn't make any algebraic a
 Other frameworks include the OpenCV (Open Computing Vision) framework, which is too specialized to make a comparison here.
 
 Here is a table comparing with `mdspan`, R. Garcia's link:https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html[Boost.MultiArray] and Eigen.
-link:https://godbolt.org/z/555893MqW[((open with Compiler Explorer))].
+link:https://godbolt.org/z/555893MqW[(open with Compiler Explorer)].
 
 |===
 |                                      | Multi                                                                      | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen
@@ -166,7 +166,7 @@ do i = 1, 5         ! for(int i = 0; i != 5; ++i) {
 end do              ! }
 -----
 
-link:https://godbolt.org/z/77onne46W[((open with Compiler Explorer))]
+link:https://godbolt.org/z/77onne46W[(open with Compiler Explorer)]
 
 However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each` offer a higher degree of control over operations, including memory allocations if needed, and even enable parallelization, providing a higher level of flexibility.
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.

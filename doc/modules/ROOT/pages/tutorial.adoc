@@ -575,7 +575,7 @@ for(auto [i, j] : out.extents().elements()) {  // go through all the indices of 
 	out[i][j] = sum;
 }
 ----
-link:https://godbolt.org/z/MojPrb5eP[(open on Compiler Explorer)]
+link:https://godbolt.org/z/MojPrb5eP[(open with Compiler Explorer)]
 
 // == "Pointer" to subarray
 

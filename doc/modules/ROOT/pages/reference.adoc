@@ -467,7 +467,7 @@ int main() {
 }
 }
 ----
-link:https://godbolt.org/z/oeTss3s35[(live)]
+link:https://godbolt.org/z/oeTss3s35[(open with Compiler Explorer)]
 
 (See also, examples of interactions with the CUDA link:https://nvidia.github.io/cccl/unstable/thrust/index.html[Thrust] library to see more uses of special pointer types to handle special memory.)
 
@@ -526,7 +526,7 @@ In this example, the original array is transformed into a transposed array with 
 	assert( B[1][0] == A[0][1] * 2 );
 ----
 
-link:https://godbolt.org/z/TYavYEG1T[(live)]
+link:https://godbolt.org/z/TYavYEG1T[(open with Compiler Explorer)]
 
 Since `element_transformed` is a reference-like object (transformed view) to the original data, it is important to understand the semantics of evaluation and possible allocations incurred.
 As mentioned in other sections using `auto` and/or `+` appropriately can lead to simple and efficient expressions.

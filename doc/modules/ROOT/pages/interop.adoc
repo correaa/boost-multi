@@ -49,7 +49,7 @@ this allows us to work with immutable variables in many cases.
 	// multi::array<double, 1> R(V.size());  // R is created here...
 	// for(auto i : R.extension()) {R[i] = A[0][i] + V[i];}  // ...and then mutated here
 ----
-link:https://godbolt.org/z/M84arKMnT[((open with Compiler Explorer))]
+link:https://godbolt.org/z/M84arKMnT[(open with Compiler Explorer)]
 
 
 The "pipe" (`|`) notation of standard ranges allows one-line expressions.
@@ -108,7 +108,7 @@ int main() {
 ----
 
 `multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.
-In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[((open with Compiler Explorer))]
+In this particular example, the technique can be used to avoid dynamic memory allocations of small local arrays. link:https://godbolt.org/z/fP9P5Ksvb[(open with Compiler Explorer)]
 
 The library also supports memory resources from other libraries, including those returning special pointer types (see the "CUDA Thrust" section and the "Boost.Interprocess" section).
 
@@ -156,7 +156,7 @@ The execution policy (`par`) selected is passed as the first argument.
 
     std::transform(std::execution::par, A.begin(), A.end(), v.begin(), [](auto const& row) {return std::reduce(row.begin(), row.end());} );
 ----
-link:https://godbolt.org/z/63jEdY7zP[((open with Compiler Explorer))]
+link:https://godbolt.org/z/63jEdY7zP[(open with Compiler Explorer)]
 
 For an array of 10000x10000 elements, the execution time decreases to 0.0288 sec, compared to 0.0526 sec for the non-parallel version (i.e. without the `par` argument).
 
@@ -197,7 +197,7 @@ auto dot_product(X1D const& x, Y1D const& y) {
 	return std::reduce(std::execution::par_unseq, z.begin(), z.end());
 }
 ----
-link:https://godbolt.org/z/cMq87xPvb[((open with Compiler Explorer))]
+link:https://godbolt.org/z/cMq87xPvb[(open with Compiler Explorer)]
 
 [#interop_range_v3]
 == Range-v3
@@ -312,7 +312,7 @@ int main() {
 	assert(A == B);
 }
 ----
-link:https://godbolt.org/z/Grr7Mqef5[((open with Compiler Explorer))]
+link:https://godbolt.org/z/Grr7Mqef5[(open with Compiler Explorer)]
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However, note that the user must ensure that data is serialized and deserialized into the same type;
@@ -431,7 +431,7 @@ int main() {
 	assert( B[5][0] == 50.0 );
 }
 ----
-link:https://godbolt.org/z/oM4YbPYz8[((open with Compiler Explorer))]
+link:https://godbolt.org/z/oM4YbPYz8[(open with Compiler Explorer)]
 
 This example uses the default Thrust device backend (i.e. CUDA when compiling with `nvcc`, HIP/ROCm when compiling with a HIP/ROCm compiler, or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` (from `<thrust/universal_allocator.h>`) instead.
@@ -514,7 +514,7 @@ auto const& hankel =  // a restriction object
 
 reduce_by_row(hankel, sums_out.begin());
 ----
-link:https://godbolt.org/z/v86bxKnK8[((open with Compiler Explorer))]
+link:https://godbolt.org/z/v86bxKnK8[(open with Compiler Explorer)]
 
 Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
 Take into account that lambdas executed in the device cannot take captures by reference.
@@ -562,7 +562,7 @@ int main() {
 	auto C = B;  // uses omp automatically for copying behind the scenes
 }
 ----
-link:https://godbolt.org/z/KW19zMYnE[((open with Compiler Explorer))]
+link:https://godbolt.org/z/KW19zMYnE[(open with Compiler Explorer)]
 
 Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
@@ -612,7 +612,7 @@ int main() {
 	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); /*... use A ...*/ }
 }
 ----
-link:https://godbolt.org/z/rKG8PhsEh[((open with Compiler Explorer))]
+link:https://godbolt.org/z/rKG8PhsEh[(open with Compiler Explorer)]
 
 In the example, most of the frequent memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
@@ -672,7 +672,7 @@ int main() {
     // now C = A x B
 }
 ----
-link:https://godbolt.org/z/eKbeosrWa[((open with Compiler Explorer))]
+link:https://godbolt.org/z/eKbeosrWa[(open with Compiler Explorer)]
 
 Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarily occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
 
@@ -694,7 +694,7 @@ At the moment, the array containers can use the Unified Shared Memory (USM) allo
         ptr[i] *= 2;
     }).wait();
 ----
-link:https://godbolt.org/z/8WG8qaf4s[((open with Compiler Explorer))]
+link:https://godbolt.org/z/8WG8qaf4s[(open with Compiler Explorer)]
 
 Algorithms are expected to work with oneAPI execution policies as well (not tested)
 
@@ -731,7 +731,7 @@ These are few examples, using reduction and for-each in 1D and 2D.
 	auto const total = hpx::reduce(hpx::execution::par, arr.elements().begin(), arr.elements().end(), 0);
 	assert(total == 4 * 5);
 ----
-link:https://godbolt.org/z/Ps7bqc7vc[((open with Compiler Explorer))]
+link:https://godbolt.org/z/Ps7bqc7vc[(open with Compiler Explorer)]
 
 Just as with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundamental for multidimensional arrays.
 
