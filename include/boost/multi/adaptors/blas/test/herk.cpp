@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -18,7 +18,7 @@
 // IWYU pragma: no_include <cstdlib>
 #include <complex>      // for operator*, opera...
 // #include <iostream>     // for operator<<, basi...
-#include <iterator>     // for size
+// #include <iterator>     // for size
 #include <limits>       // for numeric_limits
 #include <type_traits>  // for is_same
 // IWYU pragma: no_include <utility>                                   // for forward

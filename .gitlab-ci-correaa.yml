@@ -111,7 +111,6 @@ arm64:
     refs:
       - develop
   tags:
-    - non-shared
     - arm  # for image
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates g++ git cmake ninja-build make libblas-dev liblapack-dev libboost-timer-dev libboost-serialization-dev libopenmpi-dev pkg-config libfftw3-dev tar wget
@@ -709,7 +708,10 @@ clang++-m32:
 
 clang++-latest tidy iwyu everything:
   stage: build
-  image: debian:latest  # clang 18 as of Apr 2024
+  image: debian:latest
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker
@@ -865,6 +867,25 @@ nvhpc-26.1:  # highest nvhpc that is not 26.3 (26.3 has a compiler bug), tested 
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
+
+nvhpc-26.3 cuda-13.1:  # CUDA device compilation through nvhpc (nvhpc's nvcc driver + nvc++ as host/CXX), like the new pre-push CUDA 13 line. g++ as host fails because CUDA 13.1's crt/math_functions.h declares rsqrt/rsqrtf without noexcept while glibc 2.41+ declares them noexcept(true); only nvc++'s front-end tolerates it. Compile-only: the nvidia-gpu runner is Pascal sm_61 which CUDA 13 dropped, so device binaries can't be executed here.
+  stage: build
+  image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  tags:
+    - non-shared
+    - large-disk-space
+    - x86_64
+  only:
+    refs:
+      - develop
+  script:
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc --version
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CUDA_FLAGS="--extended-lambda --threads 2" -DCMAKE_CUDA_ARCHITECTURES=75
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+  needs: ["cuda-13.3.0", "nvhpc-26.1"]
 
 # nvhpc-26.3:
 #   stage: build
@@ -1338,8 +1359,6 @@ inq cuda:
     - non-shared
     - nvidia-gpu
     - arch75
-  # before_script:
-  #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
@@ -1366,11 +1385,10 @@ inq cuda:
     - export CUDA_VISIBLE_DEVICES=0,1
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 2 $GPUBIND" ctest --parallel 2 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
-  needs: ["inq", "cuda"]
+  needs: ["inq"]  # , "cuda"]
 
 inq rocm:
   stage: test
-  # image: rocm/dev-ubuntu-22.04
   image: rocm/dev-ubuntu-24.04
   allow_failure: false
   tags:
@@ -1413,9 +1431,6 @@ qmcpack:
   tags:
     - non-shared
     - docker
-  # before_script:
-  #   - apt-get -qq update
-  #   - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
@@ -1441,8 +1456,6 @@ qmcpack cuda:
     - nvidia-gpu
     - high-bandwidth
   allow_failure: false
-  # before_script:
-  #   - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev

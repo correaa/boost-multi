@@ -5,20 +5,21 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
-	find_package(CUDAToolkit REQUIRED COMPONENTS Thrust)  # requires cmake 3.17
-
-	# Carry Thrust's usage requirements on a target, so anything that includes Thrust inherits them.
-	# /wd4668: Thrust/CUB headers reference undefined macros (e.g. __NV_NO_HOST_COMPILER_CHECK),
-	# which trips MSVC's C4668; suppress it for the nvcc host compiler.
-	if(NOT TARGET MyThrust)
+	find_package(CUDAToolkit REQUIRED)  # requires cmake 3.17
+	# Thrust ships with the CUDA toolkit, but its CMake config lands in different places: apt puts it in
+	# CMake's default search path (/usr/share/cmake/thrust), while NVIDIA toolkits/containers put it under
+	# the toolkit (/usr/local/cuda/lib64/cmake/thrust) which is NOT searched by default. Hint at the toolkit,
+	# and fall back to the (header-only) toolkit headers when no Thrust CMake package is installed at all.
+	find_package(Thrust CONFIG QUIET HINTS "${CUDAToolkit_LIBRARY_DIR}/cmake")
+	if(Thrust_FOUND)
+		thrust_create_target(MyThrust)
+	else()
 		add_library(MyThrust INTERFACE)
-		target_include_directories(MyThrust SYSTEM INTERFACE ${CUDAToolkit_INCLUDE_DIRS})
 		target_link_libraries(MyThrust INTERFACE CUDA::cudart)
-		target_compile_options(MyThrust INTERFACE
-			$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:-Xcompiler=/wd4668>
-		)
+		target_include_directories(MyThrust SYSTEM INTERFACE ${CUDAToolkit_INCLUDE_DIRS})
 	endif()
 endif()
+
 
 find_package(Boost CONFIG REQUIRED)  # tests require Boost.Core LightweightTest
 
@@ -41,7 +42,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_include_directories(${TEST_EXE}        PRIVATE ${CUDA_INCLUDE_DIRS})
 	
 		#target_compile_options(${TEST_EXE} PRIVATE --expt-relaxed-constexpr)
-	
+
+		target_include_directories(${TEST_EXE} SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})
+		target_link_libraries(${TEST_EXE} PRIVATE MyThrust)
+
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE multi)
 		target_link_libraries(${TEST_EXE} PRIVATE MyThrust)  # inherits Thrust usage requirements, incl. -Xcompiler=/wd4668 on MSVC+nvcc

@@ -1632,7 +1632,7 @@ struct layout_t
 		if(nelems_ == 0) {
 			return 0;
 		}
-		// BOOST_MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// BOOST_MULTI_ACCESS_ASSERT(stride_);
 		// if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
 		// return nelems_ == 0?0:nelems_/stride_;
 		// assert(stride_ != 0);
@@ -1666,7 +1666,7 @@ struct layout_t
 		if(nelems_ == 0) {
 			return index_extension{};
 		}
-		// assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// assert(stride_ != 0);
 		assert(offset_ % stride_ == 0);
 		assert(nelems_ % stride_ == 0);
 		return index_extension{offset_ / stride_, (offset_ + nelems_) / stride_};
@@ -1726,9 +1726,8 @@ struct layout_t
 	}
 
 	constexpr auto partition(size_type n) const {
-		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(n != 0);
 		// vvv TODO(correaa) should be size() here?
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
 		assert((this->nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		return multi::layout_t<D + 1>{
 			multi::layout_t<D>{

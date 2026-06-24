@@ -23,7 +23,7 @@ struct divide_by {
 
 template<class ExecutionPolicy, class T, class S>
 auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
-	assert(M.extension() == sums.extension());
+	assert(M.extent() == sums.extent());
 
 	// auto const row_ids_begin =
 	//     ::thrust::make_transform_iterator(
@@ -59,7 +59,7 @@ auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums) -> S&& {
 
 template<class ExecutionPolicy, class T, class S, class BinaryOp>
 auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums, BinaryOp&& op) -> S&& {
-	assert(M.extension() == sums.extension());
+	assert(M.extent() == sums.extent());
 
 	auto const row_ids_begin =
 	    ::thrust::make_transform_iterator(

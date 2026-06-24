@@ -7,9 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for transform
+#include <algorithm>   // for transform
 // #include <functional>  // IWYU pragma: keep  // for plus
-#include <numeric>  // for accumulate
+#include <numeric>     // for accumulate
 
 namespace multi = boost::multi;
 

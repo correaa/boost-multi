@@ -772,6 +772,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( (multi::initializer_array<int, 1>{1, 2, 3})[1] == 2 );
 	}
 #endif
+	{
+		multi::array<int, 1> numbers(3);
+		numbers = {1, 2, 3};
+	}
 
 	return boost::report_errors();
 }

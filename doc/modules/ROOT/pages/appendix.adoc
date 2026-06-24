@@ -80,11 +80,11 @@ Like in Fortran, arrays are not initialized automatically for simple types (e.g.
 |                             | Fortran 90                                           | C++ Multi
 
 | Declaration/Construction 1D | `real, dimension(3) :: numbers` (at top)           | `multi::array<float, 1> numbers(3);` (at scope)
-| Initialization (3 elements) | `numbers = (/ 1.0, 2.0, 3.0 /)`                        | `multi::array<float, 1> numbers = { 1.0f, 2.0f, 3.0f };`
-| Element assignment (3rd)    | `numbers(3) = 99.0`                                | `numbers[2] = 99.0f;`
+| Initialization (3 elements) | `numbers = (/ 1.0, 2.0, 3.0 /)`                        | `numbers = { 1.0F, 2.0F, 3.0F };`
+| Element assignment (3rd)    | `numbers(3) = 99.0F`                                | `numbers[2] = 99.0F;`
 | Element access (print 3rd)  | `print *, numbers(3)`                              | `std::cout << numbers[2] << '\n';`
 | Printing all elements       | `print *, numbers`                                 | `std::cout << numbers;` (needs `multi/io.hpp`) or  `std::print("{}", numbers);` (needs pass:[C++23])
-| Re-initialization           | `numbers = (/ 10.0, 20.0, 30.0 /)`                | `numbers = {10.0f, 20.0f, 30.0f};`
+| Re-initialization           | `numbers = (/ 10.0, 20.0, 30.0 /)`                | `numbers = {10.0F, 20.0F, 30.0F};`
 |===
 
 In the more general case for the dimensionality, we have the following correspondence:
@@ -175,8 +175,10 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 == Multi for APL programmers
 
 |===
-|                             | APL                       | C++ Multi                                            
+|                             | APL                       | C++ Multi
 
+| Construction 1D (3 elems)   | `V ← 1 2 3`               | `+multi::array<int, 1> V = {1, 2, 3};+`
+| Construction 2D (2 by 3)    | `A ← 2 3 ⍴ 1 2 3 4 5 6`   | `+multi::array<int, 2> A = {{1, 2, 3}, {4, 5, 6}};+`
 | Indexing                    | `A[i;j]`                 | `+A[i][j]+` or `+A(i, j)+` (or `+A[i, j]+` in C++23)
 | row `i`                     | `A[i;]`                   | `+A(i, _)+` or `A[i]` or `A[i, _]` (C++23)
 | column `j`                  | `A[;j]`                   | `+A(_, j)+` (or `+A[_, j]+` in C++23)
@@ -198,6 +200,47 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 |===
 
 inspired on: https://dl.acm.org/doi/epdf/10.1145/390015.808410
+
+[#appendix_numpy]
+== Multi for NumPy programmers
+
+NumPy and Multi share the conventions that matter most for translation: 0-based indexing, half-open ranges (`[first, last)`), and row-major (C-order) storage by default, so most indexing and slicing maps almost directly.
+
+There are two important differences to keep in mind.
+First, *assignment semantics*: in NumPy, `B = A` makes `B` another name for the same array (and a slice `A[i:j]` is a view), so an independent array requires an explicit `A.copy()`; in Multi, `auto B = A;` is a deep copy (value semantics), while a reference into existing data is requested explicitly with `auto&& B = A(...);`.
+Second, *scope*: unlike NumPy, Multi is not a numerical library, so element-wise arithmetic, broadcasting, reshaping, and concatenation are not first-class operations -- they are expressed with standard algorithms over `.elements()`, or are limited.
+
+|===
+|                              | NumPy                              | C++ Multi
+
+| Import / include             | `+import numpy as np+`             | `+#include <boost/multi/array.hpp>+`
+| Construction 1D              | `+A = np.array([1, 2, 3])+`        | `+multi::array<int, 1> A = {1, 2, 3};+`
+| Construction 2D              | `+A = np.array([[1, 2], [3, 4]])+` | `+multi::array<int, 2> A = {{1, 2}, {3, 4}};+`
+| Zeros (given shape)          | `+np.zeros((3, 4))+`               | `+multi::array<double, 2>({3, 4}, 0.0)+`
+| Uninitialized (given shape)  | `+np.empty((3, 4))+`               | `+multi::array<double, 2>({3, 4})+`
+| Shape                        | `+A.shape+`                        | `+A.sizes()+`
+| Number of dimensions         | `+A.ndim+`                         | `+A.num_dimensions()+` (or `+decltype(A)::rank{}+`)
+| Total number of elements     | `+A.size+`                         | `+A.num_elements()+`
+| Length of first axis         | `+len(A)+`                         | `+A.size()+`
+| Element access               | `+A[i, j]+`                        | `+A[i][j]+` or `+A(i, j)+` (or `+A[i, j]+` in C++23)
+| Row `+i+`                    | `+A[i]+` or `+A[i, :]+`            | `+A[i]+` or `+A(i, _)+`
+| Column `+j+`                 | `+A[:, j]+`                        | `+A(_, j)+`
+| Slice of rows                | `+A[i0:i1]+`                       | `+A({i0, i1})+` or `+A.sliced(i0, i1)+`
+| 2D block                     | `+A[i0:i1, j0:j1]+`                | `+A({i0, i1}, {j0, j1})+`
+| Strided slice (step 2)       | `+A[::2]+`                         | `+A.strided(2)+`
+| Transpose                    | `+A.T+` or `+np.transpose(A)+`     | `+~A+` or `+A.transposed()+`
+| Main diagonal                | `+np.diag(A)+` or `+A.diagonal()+` | `+A.diagonal()+`
+| Flatten (view)               | `+A.ravel()+`                      | `+A.elements()+`
+| Reshape                      | `+A.reshape(3, 4)+`                | limited (approx: `+multi::array_ref<int, 2>(A.data_elements(), {3, 4})+`)
+| Iterate over rows            | `+for row in A[1]:+`               | `+for(auto&& row : A[1])+`
+| Deep copy                    | `+B = A.copy()+`                   | `+auto B = A;+` (use `+auto&& B = A+` or `+= A()+` for a shallow reference)
+| View / reference             | `+B = A[i0:i1]+`                   | `+auto&& B = A({i0, i1});+`
+| Fill with a constant         | `+A[:] = 7+` (or `+A.fill(7)+`)    | `+std::fill(A.elements().begin(), A.elements().end(), 7)+` or equivalent
+| Sum of all elements          | `+A.sum()+`                        | `+std::reduce(A.elements().begin(), A.elements().end())+` or equivalent
+| Element-wise `+A + B+`       | `+A + B+`                          | no (use `+multi::elementwise+` operations)
+| Broadcasting                 | `+A + b+`                          | no (use `+multi::elementwise+` operations)
+| Concatenation                | `+np.concatenate([A, B])+`         | no (approx: use `+std::ranges::concat+`)
+|===
 
 [#appendix_howtos]
 == How-Tos
