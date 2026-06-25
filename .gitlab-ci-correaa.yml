@@ -774,7 +774,7 @@ oneapi:
   only:
     refs:
       - develop
-  before_script: []
+  # before_script: []
   script:
     - apt-get update
     - apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
@@ -885,7 +885,7 @@ nvhpc-26.3 cuda-13.1:  # CUDA device compilation through nvhpc (nvhpc's nvcc dri
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CUDA_FLAGS="--extended-lambda --threads 2" -DCMAKE_CUDA_ARCHITECTURES=75
     - cmake --build . || cmake --build . --parallel 1 --verbose
-  needs: ["cuda-13.3.0", "nvhpc-26.1"]
+  needs: ["cuda-13.3.0", "nvhpc-26.3"]
 
 # nvhpc-26.3:
 #   stage: build
