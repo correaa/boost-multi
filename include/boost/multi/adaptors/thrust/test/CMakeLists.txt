@@ -79,10 +79,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 		#	/GS      # Enables buffer security check (can help detect stack-based buffer overflows)
 			$<$<NOT:$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>>:
 				/W4    # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline
+				/we4244  # treat 'conversion, possible loss of data' (narrowing) as an error
 			>
 			$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 				--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
 				-Xcompiler=/W4
+				-Xcompiler=/we4244  # treat 'conversion, possible loss of data' (narrowing) as an error
 				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
 				-Xcompiler=/wd4324  # structure was padded due to alignment specifier
 				-Xcompiler=/wd4464
