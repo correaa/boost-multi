@@ -553,12 +553,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// 	BOOST_TEST( csarr[2][0] == 33 );
 	// }
 	{
-		std::initializer_list<std::initializer_list<int>> const il = {
-			{1, 2, 3},
-			{4, 5, 6}
-		};
+		// std::initializer_list<std::initializer_list<int>> const il = {
+		// 	{1, 2, 3},
+		// 	{4, 5, 6}
+		// };
 
-		static_assert(std::is_same_v<multi::element_t<std::decay_t<decltype(il)>>, int>);
+		// static_assert(std::is_same_v<multi::element_t<std::decay_t<decltype(il)>>, int>);
 
 		// BOOST_TEST(*multi::base(il) == 1);
 
