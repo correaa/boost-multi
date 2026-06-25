@@ -28,13 +28,13 @@ Here are 3 examples of arrays of different dimensionalities:
 
 [source,plaintext]
 ----
- 1D                       2D                     3D               plane 0      etc
-    ├─0───┼─1───┼─2───┼       ┼─0──┼─1──┼─2──┼       ┼─0──┼─1──┼─2──┤ plane 1
-    |  a  |  b  |  c  |       0  f |  g |  h |       0  m |  n |  o |2──┤
-    └─────┴─────┴─────┘       ┼────┼────┼────┤       ┼────┼────┼────┤ u |
-                              1  i |  j |  k |       1  p |  q |  r |───┤
-                              ┴────┴────┴────┘       ┴────┴────┴────┘ x |
-                                                         ┴────┴────┴────┘
+ 1D                       2D            3D           plane 0      etc
+    ├─0──┼─1──┼─2──┼    ┼─0─┼─1─┼─2─┼    ┼─0─┼─1─┼─2─┤ plane 1
+    | a  | b  | c  |    0 f | g | h |    0 m | n | o |2─┤
+    └────┴────┴────┘    ┼───┼───┼───┤    ┼───┼───┼───┤u |
+                        1 i | j | k |    1 p | q | r |──┤
+                        ┴───┴───┴───┘    ┴───┴───┴───┘x |
+                                          ┴────┴────┴───┘
 ----
 Note that the depicted 3D case has two "planes", the first index selects a plane (plane `0` or `1`).
 
@@ -55,7 +55,7 @@ assert( A2D[1][0] == 'i' );     // A2D[1, 0]     available since C++23
 assert( A3D[1][0][2] == 'u' );  // A3D[1, 0, 2]  available since C++23
 ----
 
-A subarray of a larger array (such as a row) is a _reference_ into the original data.
+A subarray of a larger array, such as a row, is a _reference_ into the original data.
 Arrays and subarrays are usable with standard algorithms, while whole-array assignment makes an independent _copy_ (value semantics):
 
 [source,cpp]
@@ -70,7 +70,7 @@ assert( A[1][2] == 12 );     // A is unaffected
 ----
 
 The library features logical access recursively across dimensions and to elements through indices and iterators.
-The internal data structure layout (when mapped to computer memory) is
+The internal data structure layout, when mapped to computer memory, is
 https://en.wikipedia.org/wiki/Stride_of_an_array[stride-based],
 which makes it compatible with low-level C libraries.
 
@@ -95,10 +95,10 @@ For example, `std::mdspan` is a non-owning view with no iterators and is not a r
 The Standard also provides no owning, allocator-aware container for special memory spaces (GPU, managed memory, fancy pointers) nor lazy array-expression evaluation; ownership is delegated to a future `std::mdarray` container adaptor (post C{plus}{plus}26), which adds value semantics.
 
 The library's primary concern is with the storage and logic structure of data.
-It doesn't make specific algebraic or geometric assumptions about the arrays and their elements
-(although they are still good building blocks for implementing mathematical and numerical algorithms on top of them, such as representing algebraic dense matrices in the 2D case, or tensors in the general case).
+It doesn't make specific algebraic or geometric assumptions about the arrays and their elements,
+although they are still good building blocks for implementing mathematical and numerical algorithms on top of them, such as representing algebraic dense matrices in the 2D case, or tensors in the general case.
 
-The library does not throw exceptions and provides basic exception guarantees (such as no memory leaks) in their presence (e.g., thrown from allocations).
+The library does not throw exceptions and provides basic exception guarantees, such as no memory leaks, in their presence (e.g., thrown from allocations).
 Indexing errors and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
 == More use cases
@@ -148,8 +148,8 @@ Edison Design's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
 and
 Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
 
-(_Multi_ code inside a CUDA kernel can be compiled with `nvcc` or with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
-Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).)
+_Multi_ code inside a CUDA kernel can be compiled with `nvcc` or with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
+Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).
 
 Optional _adaptor_ sublibraries (included in `multi/adaptors/`) have specific dependencies: link:https://www.fftw.org[fftw], link:https://www.netlib.org/blas/[blas]/link:https://www.netlib.org/lapack/[lapack], link:https://developer.nvidia.com/thrust[Thrust], or link:https://developer.nvidia.com/cuda/toolkit[CUDA]
 (all can be installed with

@@ -67,7 +67,7 @@ In the spirit of C++, a `const` _view_ does not make the referenced elements imm
 Second, operations that reallocate or change the shape of an owning array (e.g. copy/move assignment or `reextent`) invalidate existing views and iterators into it, and must therefore be treated as mutating, exclusive operations.
 (A `multi::dynamic_array` is not subject to invalidation during its lifetime, but it is not resizable either.)
 
-In one sentence, the functionality of the library is thread-compatible (and not thread-hostile) and thread-safety must be ensured by the user through the logic of the access patterns.
+In one sentence, the functionality of the library is thread-compatible and not thread-hostile, and thread-safety must be ensured by the user through the logic of the access patterns.
 
 [#technical_iteration]
 == Out-of-bounds pointer formation in the abstract machine

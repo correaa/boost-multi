@@ -206,7 +206,7 @@ The library works out of the box with Eric Niebler's link:https://ericniebler.gi
 The library helps to remove explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
 Every Multi array object can be regarded as range.
-Every subarray references (and array values) can be interpreted as range views.
+Subarray references and array values can be interpreted as range views.
 
 For example for a 2D array `d2D`, `d2D` itself is interpreted as a range of rows.
 Each row, in turn, is interpreted as a range of elements.
@@ -265,14 +265,14 @@ Unfortunately, the C\++ language does not provide facilities for serialization, 
 
 However, there are a few libraries that offer a certain common protocol for serialization,
 such as link:https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html[Boost.Serialization] and link:https://uscilab.github.io/cereal/[Cereal].
-The Multi library is compatible with both (and doesn't depend on any of them).
+The Multi library is compatible with both, and doesn't depend on any of them.
 The user can choose one or the other, or none, if serialization is not needed.
 The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have a single code for both.
 Serialization can be binary (efficient) or text-based (human-readable).
 
 Here, it is a small implementation of save and load functions for an array to JSON format with the Cereal library.
 The example can be adapted to other formats or libraries.
-(An alternative for XML with Boost.Serialization is commented on the right.)
+An alternative for XML with Boost.Serialization is commented on the right.
 
 [source,cpp]
 ----
@@ -448,11 +448,11 @@ More specific allocators can be used to ensure CUDA backends, for example CUDA m
 In the same way, to *ensure* HIP backends please replace the `cuda` namespace by the `hip` namespace, and in the directory name `<thrust/system/hip/memory.h>`.
 `<thrust/system/hip/memory.h>` is provided by rocThrust in the ROCm distribution (in `/opt/rocm/include/thrust/system/hip/`, and not by the NVIDIA distribution.)
 
-Multi doesn't have a dependency on Thrust (or vice versa);
+Multi doesn't have a dependency on Thrust, or vice versa;
 they work well together, both in terms of semantics and efficiency.
 Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
-Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
+Multi can be used on existing memory in a non-invasive way via non-owning reference arrays:
 
 [source,cpp]
 ----

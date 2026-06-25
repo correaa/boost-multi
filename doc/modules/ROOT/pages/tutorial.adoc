@@ -77,7 +77,7 @@ int main() {
 Because this array is not controlled by the library, this type of object is called an array-reference.
 
 Next, as an illustration, we print the elements in a way that corresponds to the logical arrangement.
-(Generic printing can be done in other ways described in the reference section.)
+Generic printing can be done in other ways described in the reference section.
 First, we extract the extensions (the 2-dimensional range of valid indexes) of the array,
 then we decompose it as the cartesian product of two 1-dimensional ranges of integer indices.
 
@@ -273,7 +273,7 @@ Otherwise, the behavior is undefined (in debug mode, the program will fail an as
 C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copied
 ----
 
-Using the same or overlapping arrays in the RHS and LHS of assignment produces undefined behavior in general (and the library doesn't check).
+Using the same or overlapping arrays in the RHS and LHS of assignment produces undefined behavior in general, and the library doesn't check.
 Notably, this attempt to transpose the array in-place fails and produces an undefined result instead:
 
 [source,cpp]
@@ -307,7 +307,7 @@ auto B2 = std::move(A2);  // A2 is empty after this
 ----
 
 Subarrays do not own the data; therefore they cannot directly take advantage of this feature.
-However, individual elements of a view can still be moved; this is particularly useful if the elements are expensive to copy (elements that are containers themselves for example).
+However, individual elements of a view can still be moved; this is particularly useful if the elements are expensive to copy, for example elements that are containers themselves.
 A "moved" subview is another kind of view of the elements:
 
 [source,cpp]
@@ -406,7 +406,7 @@ Using C++'s range-based for, the elements of the 2D array can be accessed direct
 ----
 
 However, in some cases it is better to use the iterator-based interface.
-The iterator-based interface is more convenient to express and interact with generic algorithms, which in turn can be parallelized and less prone to index errors (such as off-by-one, and out-of-range access.)
+The iterator-based interface is more convenient to express and interact with generic algorithms, which in turn can be parallelized and less prone to index errors, such as off-by-one and out-of-range access.
 
 Array (and subarray-references) provide members `.begin()` and `.end()` that produce iterators that access the multidimensional structure through the first dimension (leftmost index).
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-based algorithms (see the sort example above).
@@ -465,7 +465,7 @@ auto const& crow1 = std::as_const(A)[1];  // same as decltype(A)::const_referenc
 The resulting objects are of type `multi::subarray`, which is a type name that is rarely used explicitly in code, thanks to the use of `auto`.
 Because of their semantics they are called subarray-references and they are documented in Section <<reference_>>.
 
-If a new value (array-value) is desired, these (equivalent) options express the intention more explicitly:
+If a new value (array-value) is desired, these equivalent options express the intention more explicitly:
 
 [source,cpp]
 ----
@@ -831,7 +831,7 @@ auto A2 = multi::array<int, 2>({2, 3});  // A2 elements have unspecified value
 ----
 
 No behavior of the program should depend on these values.
-(Fortunately, address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".)
+Fortunately, address sanitizers and memory checkers can detect use of uninitialized values, for example Valgrind diagnoses "Uninitialized Memory Read".
 This design is a slight departure from the STL's design, which https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/[eagerly initializes elements in containers].
 
 If trivial construction is unavailable, the library uses the default initialization.
@@ -850,8 +850,7 @@ Initialization can be enforced by passing a single value argument after the exte
 auto A2 = multi::array<int, 2>({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ----
 
-This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values.
-(or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
+This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values, or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization.
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
 A workaround built-in in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:

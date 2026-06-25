@@ -89,14 +89,14 @@ The type `P` must be pointer-like.
 |===
 
 It is important to note that assignments in this library are always "deep," and reference-like types cannot be rebound after construction.
-(Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (like language pointers);
-these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.)
+Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (like language pointers);
+these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.
 
 ==== `multi::subarray<T, D, P = T*>` relational functions
 
 |===
 | `operator==`/`operator!=` | Tells if elements of two `subarray` s are equal and if extensions of the subarrays are the same
-| `operator<` / `pass:[operator<=]`  | Less-than/less-or-equal lexicographical comparison (requires elements to be comparable)
+| `operator<` / `operator<=`  | Less-than/less-or-equal lexicographical comparison (requires elements to be comparable)
 | `operator>`/`operator>=`  | Greater-than/greater-or-equal lexicographical comparison (requires elements to be comparable)
 |===
 
@@ -104,7 +104,7 @@ It is important to note that, in this library, comparisons are also always "deep
 Lexicographical order is defined recursively, starting from the first dimension index and from left to right.
 For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
 Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
-(See sort examples).
+See the sort examples.
 
 ==== `multi::subarray<T, D, P = T*>` shape access
 
@@ -246,7 +246,7 @@ An `array_ref` can be invalidated if the original buffer is deallocated.
 
 A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
 This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
-Memory is requested by an allocator of type Alloc (standard allocator by default).
+Memory is requested by an allocator of type Alloc, the standard allocator by default.
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::dynamic_array`.
 
 For most uses, a `multi::array` should be preferred instead.
@@ -410,7 +410,7 @@ An `iterator` that stems from `dynamic_array` becomes invalid only if the origin
 The library design tries to impose the minimum possible requirements over the types that parameterize the arrays.
 Array operations assume that the contained type (element type) is regular (i.e. different elements represent disjoint entities that behave like values).
 Pointer-like random access types can be used as substitutes of built-in pointers.
-(Therefore, pointers to special memory and fancy-pointers are supported.)
+Therefore, pointers to special memory and fancy-pointers are supported.
 
 [#ref_linear_seq]
 === Linear Sequences: Pointers
@@ -477,7 +477,7 @@ link:https://godbolt.org/z/oeTss3s35[(open with Compiler Explorer)]
 Another kind of use of the internal pointer-like type is to transform underlying values.
 These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
-In combination with a transposed view, it can create a hermitian (transposed-conjugate) view of the matrix (without copying elements).
+In combination with a transposed view, it can create a hermitian (transposed-conjugate) view of the matrix, without copying elements.
 We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
 The hermitized view is read-only, but with additional work, a read-write view can be created (see `multi::hermitized` in multi-adaptors).
 
