@@ -26,15 +26,17 @@ Arrays are amenable to efficient bulk processing, slicing, and reductions.
 
 Here are 3 examples of arrays of different dimensionalities:
 
-[source,plaintext]
+[source]
 ----
- 1D                       2D            3D           plane 0      etc
-    ├─0──┼─1──┼─2──┼    ┼─0─┼─1─┼─2─┼    ┼─0─┼─1─┼─2─┤ plane 1
-    | a  | b  | c  |    0 f | g | h |    0 m | n | o |2─┤
-    └────┴────┴────┘    ┼───┼───┼───┤    ┼───┼───┼───┤u |
-                        1 i | j | k |    1 p | q | r |──┤
-                        ┴───┴───┴───┘    ┴───┴───┴───┘x |
-                                          ┴────┴────┴───┘
+ 1D                    2D                  3D
+                                                  
+   0   1   2         0   1   2          0   1   2  plane 0
+ +---+---+---+     +---+---+---+      +---+---+---+   plane 1
+ | a | b | c |   0 | f | g | h |    0 | m | n | o |---+
+ +---+---+---+     +---+---+---+      +---+---+---+ u |
+                 1 | i | j | k |    1 | p | q | r |---+
+                   +---+---+---+      +---+---+---+ x |
+                                          +---+---+---+
 ----
 Note that the depicted 3D case has two "planes", the first index selects a plane (plane `0` or `1`).
 
