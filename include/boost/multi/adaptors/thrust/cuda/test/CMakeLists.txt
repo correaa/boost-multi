@@ -48,6 +48,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 		target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
 		target_link_libraries(${TEST_EXE} PRIVATE multi)
+		target_link_libraries(${TEST_EXE} PRIVATE MyThrust)  # inherits Thrust usage requirements, incl. -Xcompiler=/wd4668 on MSVC+nvcc
 
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 		
