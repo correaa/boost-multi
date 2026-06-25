@@ -223,6 +223,7 @@ struct                                                                          
 
 	using ref_::dropped;
 
+	/// Gives a subarray dropping the first `n` indices in the leading dimension
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref_::dropped(n).element_moved(); }
 
 	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor,bugprone-exception-escape)

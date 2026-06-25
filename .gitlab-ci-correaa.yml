@@ -849,7 +849,7 @@ nvhpc-22.7:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
   needs: ["nvhpc"]
 
-nvhpc-26.1:  # highest nvhpc that is not 26.3 (26.3 has a compiler bug), tested as a real gate
+nvhpc-26.3:
   stage: build
   image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
@@ -1310,7 +1310,7 @@ inq:
     - cd inq
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
-    - cmake --build. --parallel 4 || cmake --build . --parallel 1 --verbose
+    - cmake --build . --parallel 4 || cmake --build . --parallel 1 --verbose
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1

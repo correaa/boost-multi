@@ -1407,14 +1407,16 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// Associated type that this reference decays to (when true copies are needed)
 	using decay_type = array<std::decay_t<typename types::element>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
+	/// Materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};
 		return ret;
 	}
+
 	friend constexpr auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
 
+	/// Materializes an independent, owning `array` copy of this view with the associated array-value type
 	constexpr auto operator+() const -> decay_type { return decay(); }
-	// using typename types::const_reference;
 
 	using reference = typename std::conditional_t<
 		(D > 1),
@@ -4086,8 +4088,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
-	// cppcheck-suppress duplInheritedMember ; to override
-	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }
+	/// 
+	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	template<class TTN, std::size_t DD = 0>
@@ -4183,10 +4185,10 @@ using array_mref = array_ref<
 	std::move_iterator<Ptr>>;
 
 template<class TT, std::size_t N>
-constexpr auto ref(
-	TT (&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
-) {
-	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
+constexpr auto ref(TT (&arr)[N]) {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);
 }
 
 namespace detail {
