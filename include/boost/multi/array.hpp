@@ -455,7 +455,9 @@ struct                                                                          
 
 	explicit dynamic_array(::boost::multi::extents_t<D> const& extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements())), extensions) {
-		uninitialized_default_construct();
+		try {
+			uninitialized_default_construct();
+		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element constructor throws (elements already rolled back by uninitialized_*_n)
 	}
 
 	template<class... Args>
@@ -619,7 +621,13 @@ struct                                                                          
 		  other.extents()
 	  ) {
 		assert(this->stride() != 0);
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {  // try-in-constexpr is only legal since C++20; in C++17 a constexpr ctor cannot have a try-block
+			uninitialized_copy_elements(other.data_elements());
+		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element copy throws
+#else
 		uninitialized_copy_elements(other.data_elements());
+#endif
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extents_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
