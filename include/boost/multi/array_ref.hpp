@@ -230,7 +230,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::index;
 	using typename layout_type::index_extension;
-	// using typename layout_type::index_range;
+	using typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
 
 	using typename layout_type::strides_type;
 
