@@ -5,13 +5,13 @@
 :idprefix: reference_
 
 [#ref_types]
-== Fundamental types and concepts
+== Fundamental Types and Concepts
 
 The library interface presents several closely related types (C++ classes) representing arrays.
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `dynamic_array`).
 
-=== Summary (cheat sheet)
+=== Summary (Cheat Sheet)
 
 Here is a table to summarize the semantic properties of each class.
 The main array type to reach for is `multi::array`, the other types are for special uses.
@@ -52,7 +52,7 @@ The whole object can be invalidated if the original array is destroyed.
 
 All member functions are `constexpr` unless specified otherwise.
 
-==== `multi::subarray<T, D, P = T*>` member types
+==== `multi::subarray<T, D, P = T*>` Member Types
 
 A subarray-reference of type `T` and non-negative dimension `D` (`>= 0`).
 There are no special requirements over type `T`.
@@ -78,7 +78,7 @@ The type `P` must be pointer-like.
 |`const_iterator`  | describe a random-access iterator in the leading dimension to constant data
 |===
 
-==== `multi::subarray<T, D, P = T*>` special member functions
+==== `multi::subarray<T, D, P = T*>` Special Member Functions
 
 |===
 | `subarray::...`   |
@@ -92,7 +92,7 @@ It is important to note that assignments in this library are always "deep," and 
 Reference-like types have corresponding pointer-like types that provide an extra level of indirection and can be rebound (like language pointers);
 these types are `multi::array_ptr` and `multi::subarray_ptr` corresponding to `multi::array_ref` and `multi::subarray` respectively.
 
-==== `multi::subarray<T, D, P = T*>` relational functions
+==== `multi::subarray<T, D, P = T*>` Relational Functions
 
 |===
 | `operator==`/`operator!=` | Tells if elements of two `subarray` s are equal and if extensions of the subarrays are the same
@@ -106,7 +106,7 @@ For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or .
 Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
 See the sort examples.
 
-==== `multi::subarray<T, D, P = T*>` shape access
+==== `multi::subarray<T, D, P = T*>` Shape Access
 
 |===
 | `dimensionality`  | static constant member, dimensionality of array `D`
@@ -117,7 +117,7 @@ See the sort examples.
 | `num_elements`    | returns the total number of elements
 |===
 
-==== `multi::subarray<T, D, P = T*>` element access
+==== `multi::subarray<T, D, P = T*>` Element Access
 
 |===
 |`operator[]`       | access specified element by index (single argument), returns a `reference` member type (see above), for `D > 1` it can be used recursively
@@ -137,7 +137,7 @@ For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` give
 Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
 - `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
 
-==== `multi::subarray<T, D, P = T*>` structure access
+==== `multi::subarray<T, D, P = T*>` Structure Access
 
 These member functions are generally used for accessing details of the internal data structure (layout) interfacing with C-libraries.
 
@@ -150,7 +150,7 @@ These member functions are generally used for accessing details of the internal 
 | `strides`         | returns a tuple with the strides defining the internal layout
 |===
 
-==== `multi::subarray<T, D, P = T*>` iterators
+==== `multi::subarray<T, D, P = T*>` Iterators
 
 |===
 | `subarray::...`   |
@@ -159,7 +159,7 @@ These member functions are generally used for accessing details of the internal 
 | `end/cend`        | returns (const) iterator to the end
 |===
 
-==== `multi::subarray<T, D, P = T*>` subarray/array generators
+==== `multi::subarray<T, D, P = T*>` Subarray/Array Generators
 
 These operations generate different ways to view the elements of a subarray, but without copying elements or allocating.
 
@@ -193,7 +193,7 @@ A reference `subarray` can be invalidated when its origin array is invalidated o
 For example, if the `array` from which it originates is destroyed or resized.
 
 [#ref_array_ref]
-=== Array references
+=== Array References
 
 An array reference, or _D_-dimensional view of a contiguous pre-existing memory buffer, is represented by an object of type `multi::array_ref<T, D, P = T*>`.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
@@ -242,7 +242,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 An `array_ref` can be invalidated if the original buffer is deallocated.
 
 [#ref_dynamic_array]
-=== Dynamic arrays
+=== Dynamic Arrays
 
 A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
 This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
@@ -364,7 +364,7 @@ This includes the iteration and element-access interface, although pointer acces
 
 All member functions are `constexpr` unless specified otherwise.
 
-==== `multi::restriction<D, F>` member types
+==== `multi::restriction<D, F>` Member Types
 
 |===
 |`restriction::...`   | Description
@@ -472,7 +472,7 @@ link:https://godbolt.org/z/oeTss3s35[(open with Compiler Explorer)]
 (See also, examples of interactions with the CUDA link:https://nvidia.github.io/cccl/unstable/thrust/index.html[Thrust] library to see more uses of special pointer types to handle special memory.)
 
 [#ref_transformed_views]
-=== Transformed views
+=== Transformed Views
 
 Another kind of use of the internal pointer-like type is to transform underlying values.
 These are useful to create "projections" or "views" of data elements.

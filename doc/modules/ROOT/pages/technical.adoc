@@ -1,11 +1,11 @@
 [#technical]
 
-= Technical points (design rationale)
+= Technical Points (Design Rationale)
 
 :idprefix: technical_
 
 [#technical_indexing]
-== Indexing (square brackets vs. parenthesis?)
+== Indexing (Square Brackets vs. Parenthesis?)
 
 The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
 It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.
@@ -49,7 +49,7 @@ Since C++23 (feature `__cpp_multidimensional_subscript` is available), element a
 In this case, `A[i, j]` is equivalent to `A[i][j]`, and `A[i, j, k]` is equivalent to `A[i][j][k]`, etc., where `i` , `j`, `k`, ... are indices.
 
 [#technical_thread_safety]
-== Thread safety guarantees
+== Thread Safety Guarantees
 
 The library provides the same data-race guarantees as the C++ standard library containers, no more and no less.
 It holds no hidden shared state: there is no copy-on-write, no reference counting, no atomics, and no mutable global or static data, so the thread-safety of a program depends only on which objects and elements its threads touch.
@@ -70,13 +70,13 @@ Second, operations that reallocate or change the shape of an owning array (e.g. 
 In one sentence, the functionality of the library is thread-compatible and not thread-hostile, and thread-safety must be ensured by the user through the logic of the access patterns.
 
 [#technical_iteration]
-== Out-of-bounds pointer formation in the abstract machine
+== Out-of-Bounds Pointer Formation in the Abstract Machine
 
 The C++ abstract machine imposes strict rules on pointer arithmetic ([expr.add]): In particular, forming a pointer more than one position past the end of an allocation is undefined behavior -- even if the pointer is never dereferenced.
 
 Since this library's iteration is pointer-based (iterators are thin wrappers over pointers with stride information), these restrictions apply to its iterators as well.
 
-=== Affected cases
+=== Affected Cases
 
 There are three cases where an iterator's underlying pointer may overshoot the allocation boundary:
 
@@ -96,7 +96,7 @@ The `.end()` iterator may land past the allocation when the column count times t
 
 In all three cases, the undefined behavior occurs at the point of _forming_ the pointer value, not at the point of dereferencing it.
 
-=== Practical status
+=== Practical Status
 
 This issue is specific to libraries that expose pointer-based strided iterators compatible with the STL iteration model (`.begin()`, `.end()`, pointer arithmetic with stride).
 Boost.Multi is unusual in providing both: STL-compatible strided iterators (which are subject to this issue) and index-based access (which is not).
@@ -105,7 +105,7 @@ No tested compiler complains about the illegality of these transiently out-of-bo
 However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers.
 (`constexpr` contexts can also reject this situation.)
 
-=== Library-level mitigations
+=== Library-level Mitigations
 
 Possible mitigations at the library level include, at a cost:
 
@@ -116,13 +116,13 @@ Possible mitigations at the library level include, at a cost:
 
 These mitigations are not implemented, but the library is prepared to adopt them if necessary.
 
-=== Unaffected: functional (lazy) views
+=== Unaffected: Functional (Lazy) Views
 
 `multi::restriction` objects are not affected by this problem because they do not manipulate pointers.
 Operations like `.transposed()`, `.strided()`, and `.reversed()` on a restriction rebind the index mapping; no pointer arithmetic is involved.
 
 [#technical_change_dimensionality]
-== Can I change the dimensionality of an array dynamically?
+== Can I Change the Dimensionality of an Array Dynamically?
 
 No; dimensionality cannot be set or changed dynamically -- this is fundamental to this library.
 Dimensionality is part of the type of the array or subarray objects.
@@ -158,7 +158,7 @@ std::for_each(A2D.elements().begin(), A2D.elements().end(), [](auto&& elem) {ele
 ----
 
 [#technical_dimensionality_static]
-== Why is the array's dimensionality hardcoded, while the array's sizes can be defined at runtime?
+== Why Is the Array's Dimensionality Hardcoded, While the Array's Sizes Can Be Defined at Runtime?
 
 The main idea is that the extents (sizes) of an array usually need to be determined at runtime: in applications such as simulations, the sizes adapt to the problem at hand, or are set interactively, entered by the user, or read from a previous run.
 This is a useful property for medium to large arrays, so the library mainly provides arrays whose sizes are fixed at runtime.
@@ -207,6 +207,6 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 |===
 
 [#technical_cpp17_minimum]
-== Why is the C++17 standard chosen as the minimum?
+== Why Is the C++17 Standard Chosen as the Minimum?
 
 The implementation uses `if constexpr` intensively.

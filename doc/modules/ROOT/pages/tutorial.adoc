@@ -46,7 +46,7 @@ There are several libraries for multidimensional arrays in C++ (see the section 
 This library aims to be general in several aspects, dimensionality, memory control, access-by-index, subarray access, compatibility, iteration, algorithms, etc.
 
 [#tutorial_manip]
-== Manipulation of non-managed memory
+== Manipulation of Non-managed Memory
 
 Based on the motivation section, in this first example, we use memory that is not managed by the library and manipulate the stored elements.
 This is to show that the library can operate on raw memory that is available already through other libraries or through other parts of a code.

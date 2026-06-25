@@ -5,7 +5,7 @@
 :idprefix: appendix_
 
 [#appendix_comparison]
-== Comparison to other array libraries (mdspan, Boost.MultiArray, etc)
+== Comparison to Other Array Libraries (mdspan, Boost.MultiArray, etc)
 
 The C++23 standard provides `std::mdspan`, a non-owning _multidimensional_ array.
 So here is an appropriate point to compare the two libraries.
@@ -68,7 +68,7 @@ link:https://godbolt.org/z/555893MqW[(open with Compiler Explorer)].
 |===
 
 [#appendix_fortran]
-== Multi for Fortran programmers
+== Multi for Fortran Programmers
 
 This section summarizes simple cases translated from Fortran syntax to C++ using the library.
 The library strives to give a familiar feeling to those who use multidimensional arrays in Fortran.
@@ -172,7 +172,7 @@ However, algorithms like `transform`, `reduce`, `transform_reduce` and `for_each
 In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will also work.
 
 [#appendix_apl]
-== Multi for APL programmers
+== Multi for APL Programmers
 
 |===
 |                             | APL                       | C++ Multi
@@ -202,7 +202,7 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 inspired on: https://dl.acm.org/doi/epdf/10.1145/390015.808410
 
 [#appendix_numpy]
-== Multi for NumPy programmers
+== Multi for NumPy Programmers
 
 NumPy and Multi share the conventions that matter most for translation: 0-based indexing, half-open ranges (`[first, last)`), and row-major (C-order) storage by default, so most indexing and slicing maps almost directly.
 
@@ -246,7 +246,7 @@ Second, *scope*: unlike NumPy, Multi is not a numerical library, so element-wise
 == How-Tos
 
 [#appendix_howto_fill]
-=== How to fill elements of an array with a constant value?
+=== How to Fill Elements of an Array with a Constant Value?
 
 Use a standard fill algorithm, `std::ranges::fill` for example.
 If you have an array:

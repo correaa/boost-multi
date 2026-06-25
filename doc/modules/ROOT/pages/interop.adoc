@@ -5,7 +5,7 @@
 :idprefix: interop_
 
 [#interop_stl]
-== Standard Library (STL algorithms)
+== Standard Library (STL Algorithms)
 
 The fundamental goal of the library is that the arrays and iterators can be used out-of-the-box with C\++ Standard Library, in particular the Standard Template Library (STL) and the algorithms it provides.
 The clearest example of this is that `std::sort` works with array as it is shown in a previous section.
@@ -112,7 +112,7 @@ In this particular example, the technique can be used to avoid dynamic memory al
 
 The library also supports memory resources from other libraries, including those returning special pointer types (see the "CUDA Thrust" section and the "Boost.Interprocess" section).
 
-=== Substitutability with standard vector and span
+=== Substitutability with Standard Vector and Span
 
 The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
 Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
@@ -143,7 +143,7 @@ The former typically works when using it as function argument.
 Multidimensional arrays can interoperate with C\++23's non-owning link:https://en.cppreference.com/w/cpp/container/mdspan.html[`mdspan`].
 link:https://godbolt.org/z/aocn73bzf[Preliminarily], Multi's subarrays (arrays) can be converted (viewed as) `mdspan` automatically (replicating the behavior of `std::vector`).
 
-=== Execution policies (parallel algorithms)
+=== Execution Policies (Parallel Algorithms)
 
 Multi's iterators can exploit parallel algorithms by specifying execution policies.
 This code takes every row of a two-dimensional array and sums its elements, putting the results in a one-dimensional array of compatible size.
@@ -568,7 +568,7 @@ Compilation might need to link to an omp library, `-fopenmp -lgomp`.
 
 Without Thrust, OpenMP pragmas would also work with this library, however OpenMP memory allocation would need to be manually managed.
 
-=== Thrust memory resources
+=== Thrust Memory Resources
 
 GPU memory is relatively expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
 This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
@@ -736,7 +736,7 @@ link:https://godbolt.org/z/Ps7bqc7vc[(open with Compiler Explorer)]
 As with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundamental for multidimensional arrays.
 
 [#interop_fmt]
-== Formatting (pass:[{fmt}] pretty printing)
+== Formatting (pass:[{fmt}] Pretty Printing)
 
 The library doesn't have a "pretty" printing facility to display arrays.
 Although it is not ideal, arrays can be printed and formated by looping over elements and dimension, as shown in other examples (using standard streams).
@@ -791,7 +791,8 @@ The header `multi/io.hpp` can be used to output arrays and subarrays, but it is 
 The library works out-of-the-box via the automatic `cppyy` bindings, providing a syntax similar to that of C\++.
 Additionally, the memory layouts are compatible with Numpy which makes it possible to interoperate C\++ and python code without memory copies.
 
-Here it is a complete link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing[Python session]:
+Here it is a complete
+link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing#scrollTo=T80_fu0660xP[Python session]:
 
 [source,python]
 ----
@@ -919,7 +920,7 @@ Special care must be taken if the original element is resized, or assigned to a 
 For this reason alone, it would be an error to name the last variable as the original (`a2d`) instead of the new name (`a2d_ref`).
 
 [#interop_c]
-== Legacy libraries (C-APIs)
+== Legacy Libraries (C-APIs)
 
 Multidimensional array data structures exist in all languages, whether implicitly defined by its strides structure or explicitly at the language level.
 Functions written in C tend to receive arrays by pointer arguments (e.g., to the "first" element) and memory layout (sizes and strides).

@@ -103,7 +103,7 @@ although they are still good building blocks for implementing mathematical and n
 The library does not throw exceptions and provides basic exception guarantees, such as no memory leaks, in their presence (e.g., thrown from allocations).
 Indexing errors and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
-== More use cases
+== More About Use Cases
 
 :idprefix: usecases_
 
@@ -120,7 +120,7 @@ These 3-dimensional objects can themselves be regarded as vectors in a linear sp
 
 Typically, at the lowest level, data is processed in bulk by specially tuned numerical CPU or GPU libraries that expect data in the layouts supported by this library.
 
-== Next steps
+== Next Steps
 
 :idprefix: next_
 
