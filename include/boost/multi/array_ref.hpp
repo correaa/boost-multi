@@ -4078,10 +4078,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
-	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
+	/// Pointer to the first element for a contiguous array (1D only, for compatibility with `std::vector`) (deprecated, use .data_elements())
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return self.data_elements(); }
