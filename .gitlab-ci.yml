@@ -36,7 +36,7 @@ clang++:  # debian-stable -> clang 19.1.7 as of June 2026
         # pkg-config libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev
     - CXX=clang++ cmake . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG=1"
     - cmake --build build
-    - ctest --test-dir build --parallel 2--output-on-failure
+    - ctest --test-dir build --parallel 2 --output-on-failure
 
 clang++-latest libc++ format:  # debian-latest -> 19.1.7 as of June 2026
   stage: build
