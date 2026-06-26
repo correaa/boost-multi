@@ -10,7 +10,7 @@
 
 #include <algorithm>         // IWYU pragma: keep  // for copy
 #include <array>             // for array
-#include <cmath>             // for abs
+#include <cmath>             // IWYU pragma: keep  // for abs
 #include <complex>           // for operator*, operator+, complex
 #include <initializer_list>  // for initializer_list, begin, end
 #include <iterator>          // for size, begin, end
