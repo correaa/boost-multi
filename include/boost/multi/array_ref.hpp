@@ -1882,7 +1882,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }  ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
+	/// returns a cursor pointing to the top element of the array (the element corresponding to the smallest index)
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
 
 	template<
 		class Range,
