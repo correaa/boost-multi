@@ -637,7 +637,10 @@ struct                                                                          
 #if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
 		try {  // try-in-constexpr is only legal since C++20; in C++17 a constexpr ctor cannot have a try-block
 			uninitialized_copy_elements(other.data_elements());
-		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element copy throws
+		} catch(...) {
+			this->deallocate();
+			throw;
+		}  // basic guarantee: free the raw buffer if an element copy throws
 #else
 		uninitialized_copy_elements(other.data_elements());
 #endif
