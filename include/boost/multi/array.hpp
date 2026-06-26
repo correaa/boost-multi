@@ -1651,37 +1651,17 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
-	auto operator=(array&& other) noexcept -> array& {  // unconditionally noexcept by design: a throw in the element-wise fallback below is UB (terminates)
+	auto operator=(array&& other) noexcept -> array& {
+		static_assert(std::is_nothrow_move_assignable_v<typename array::allocator_type>,
+			"move-assignment adopts the source allocator and is noexcept; the allocator must be nothrow-move-assignable");
 		if(this == std::addressof(other)) {
 			return *this;
 		}
-		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
-			clear();                                   // free our storage with our (current) allocator
-			this->alloc() = std::move(other.alloc());  // take their allocator, then their buffer (now ours to free)
-			this->base_   = std::exchange(other.base_, nullptr);
-			this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
-		} else if constexpr(multi::allocator_traits<typename array::allocator_type>::is_always_equal::value) {
-			clear();  // allocators always compare equal -> stealing the buffer is safe
-			this->base_   = std::exchange(other.base_, nullptr);
-			this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
-		} else {
-			static_assert(
-				std::is_nothrow_move_constructible_v<typename array::element> && std::is_nothrow_move_assignable_v<typename array::element>,
-				"move-assignment is unconditionally noexcept; with a non-propagating, non-always-equal allocator it falls back to an element-wise move into the destination's own storage, so the element type must be nothrow-movable"
-			);
-			if(this->alloc() == other.alloc()) {
-				clear();  // equal allocators at runtime -> stealing is safe
-				this->base_   = std::exchange(other.base_, nullptr);
-				this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
-			} else if(array::extents() == other.extents()) {
-				adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) move into our existing storage
-			} else {
-				clear();
-				this->layout_mutable() = other.layout();
-				array::allocate();
-				adl_alloc_uninitialized_move_n(this->alloc(), other.data_elements(), this->num_elements(), this->data_elements());  // move-construct into our freshly allocated storage
-			}
-		}
+		clear();                                   // free our buffer with our current allocator
+		// TODO(correaa) the allocator is moved unconditionally (move always propagates it). This is consistent and keeps move-assignment allocation-free and noexcept. It can be extended later to honor propagate_on_container_move_assignment==false
+		this->alloc() = std::move(other.alloc());  // adopt their allocator and their buffer together, so the two always match (no wrong-allocator free) and we never allocate
+		this->base_   = std::exchange(other.base_, nullptr);
+		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
 		return *this;
 	}
 
