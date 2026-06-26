@@ -755,7 +755,7 @@ struct                                                                          
 
  private:
 	/// A pointer wrapper that moves on dereferences
-	using element_move_ptr = multi::move_ptr<typename dynamic_array::element_ptr>;
+	using element_move_ptr = multi::move_ptr<typename dynamic_array::element, typename dynamic_array::element_ptr>;  // move_ptr<element, element_ptr> (e.g. move_ptr<int, int*>), matching array_types/subarray; the previous move_ptr<element_ptr> was a move-pointer over pointers
 
  public:
 	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<pointer>::reference` (usually `T&`)
@@ -790,14 +790,12 @@ struct                                                                          
 	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }
 
 	// cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return std::make_move_iterator(this->base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // construct the library move-pointer (not a std::move_iterator) to match the declared return type
 
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array const& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array&& self) { return std::move(self).data_elements(); }
-
-	/// Returns the base pointer of the array
+	/// Returns the base const-pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
+
+	/// Returns the base pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }
 
 	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
