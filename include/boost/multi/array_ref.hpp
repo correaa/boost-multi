@@ -3826,6 +3826,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extents_t<D> const& exts) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::layout_type(exts), dat) {}
 
+	/// constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes).
 	explicit constexpr array_ref(::boost::multi::extents_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::layout_type(exts), dat} {}
 
