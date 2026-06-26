@@ -1,10 +1,10 @@
-[#faq]
+[#howto]
 
-= FAQ
+= How-To Guides
 
-:idprefix: faq_
+:idprefix: howto_
 
-[#faq_fill]
+[#howto_fill]
 == How to Fill Elements of an Array with a Constant Value?
 
 Use a standard fill algorithm, `std::ranges::fill` for example.

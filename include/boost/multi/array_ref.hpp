@@ -230,7 +230,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::index;
 	using typename layout_type::index_extension;
-	// using typename layout_type::index_range;
+	using typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
 
 	using typename layout_type::strides_type;
 
@@ -1387,7 +1387,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
-#if defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))
+#if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || \
+	(defined(__NVCOMPILER) /*&& (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11))*/)
 	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
 #endif
 
@@ -3825,6 +3826,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extents_t<D> const& exts) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::layout_type(exts), dat) {}
 
+	/// constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes).
 	explicit constexpr array_ref(::boost::multi::extents_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::layout_type(exts), dat} {}
 
@@ -4088,7 +4090,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
-	/// 
+	///
 	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:

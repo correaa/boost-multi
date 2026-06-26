@@ -377,7 +377,7 @@ Changing the size of arrays by `reextent`, `clear`, or assignment generally inva
 == Iteration
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
-For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extents()`, and in the 2D case, `.extents()` can be conveniently decomposed into two ranges, one for each dimension.
+For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extents()`, and in the 2D (or higher) case, `.extents()` can be conveniently decomposed into two (or more) ranges, one for each dimension.
 
 [source,cpp]
 ----
@@ -411,7 +411,7 @@ The iterator-based interface is more convenient to express and interact with gen
 Array (and subarray-references) provide members `.begin()` and `.end()` that produce iterators that access the multidimensional structure through the first dimension (leftmost index).
 Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator-based algorithms (see the sort example above).
 `begin(A)/end(A)` (or equivalently `A.begin()/A.end()`) gives iterators that are linear and random access in the leading dimension.
-Since these iterators are categorized as random-access, arithmetic can be performed on them, for example `it += n;` and `++it` will advance `it` by `n` positions or by one position respectively.
+Since these iterators are categorized as random-access, arithmetic can be performed on them, for example `+it += n;+` and `+++it+` will advance `it` by `n` positions or by one position respectively.
 
 As an alternative, the elements can be iterated in a flat manner, using the `.elements()` member.
 This "elements" range also provides the `begin` and `end` iterators (`.elements().begin()`) and indexing, in the canonical order of the original arrays (rightmost index changes fastest).
@@ -508,17 +508,17 @@ This also gives the idea that we can write many operations by using standard alg
 for example, `std::fill(A.elements().begin(), A.elements().end(), 5)`.
 
 There are other useful iterable random access sequences in the library.
-For example, the result of `A.extension()` is itself iterable and indexable, returning a sequence with valid indices for `A`.
+For example, the result of `A.extent()` is itself iterable and indexable, returning a sequence with valid indices for `A`.
 
 [source,cpp]
 ----
-	for(auto idx : A.extension()) {
+	for(auto idx : A.extent()) {
 		A[idx][0] = 5;
 	}
 ----
 
-`A.extension()` not only has a `.begin()` and `.end()`, but it also can be indexed, `A.extension()[1] == 1`.
-`A.extension()` is conceptually the sequence {0, 1}
+`A.extent()` not only has a `.begin()` and `.end()`, but it also can be indexed, `A.extent()[1] == 1`.
+`A.extent()` is conceptually the sequence {0, 1}
 
 `A.extents()` deserves special attention because manipulation of this object enables expressive constructs.
 As we described earlier, it can be regarded as a product type of one-dimensional extensions,
@@ -723,8 +723,8 @@ For example in a two-dimensional array one can take a subset of columns by defin
 auto&& subA = A.rotated().sliced(1, 3).strided(2).unrotated();
 ----
 
-Other notations are available, for example this is equivalent to `A(multi::_ , {1, 3, /*every*/2})` or `~(~A)({1, 3, 2})`.
-The `rotated/strided/sliced/rotated` and combinations of them provides the most control over the subview operations.
+Other notations are available, for example this is equivalent to `+A(multi::_ , {1, 3, /*every*/2})+` or `+~(~A)({1, 3, 2})+`.
+The `rotated/strided/sliced/unrotated` and combinations of them provides the most control over the subview operations.
 
 Blocks (slices) in multidimensions can be obtained by pure index notation using parentheses `()` (`.operator()`):
 

@@ -388,20 +388,30 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename)
 		  other.extents()
 	  ) {
+		try {
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
-			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
-		}
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
+				adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
+			}
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 #else
-		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 #endif
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
 	}
 
 	explicit dynamic_array(typename dynamic_array::extents_type extensions, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
-		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                             // NOLINT(readability-redundant-typename)
+		try {
+			array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename)
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element copy throws
+			throw;
+		}
 	}
 
 	template<class Element>
@@ -455,7 +465,12 @@ struct                                                                          
 
 	explicit dynamic_array(::boost::multi::extents_t<D> const& extensions, allocator_type const& alloc)
 	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements())), extensions) {
-		uninitialized_default_construct();
+		try {
+			uninitialized_default_construct();
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
 	}
 
 	template<class... Args>
@@ -619,7 +634,13 @@ struct                                                                          
 		  other.extents()
 	  ) {
 		assert(this->stride() != 0);
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {  // try-in-constexpr is only legal since C++20; in C++17 a constexpr ctor cannot have a try-block
+			uninitialized_copy_elements(other.data_elements());
+		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element copy throws
+#else
 		uninitialized_copy_elements(other.data_elements());
+#endif
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extents_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
@@ -755,7 +776,7 @@ struct                                                                          
 
  private:
 	/// A pointer wrapper that moves on dereferences
-	using element_move_ptr = multi::move_ptr<typename dynamic_array::element_ptr>;
+	using element_move_ptr = multi::move_ptr<typename dynamic_array::element, typename dynamic_array::element_ptr>;  // move_ptr<element, element_ptr> (e.g. move_ptr<int, int*>), matching array_types/subarray; the previous move_ptr<element_ptr> was a move-pointer over pointers
 
  public:
 	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<pointer>::reference` (usually `T&`)
@@ -790,14 +811,12 @@ struct                                                                          
 	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }
 
 	// cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return std::make_move_iterator(this->base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // construct the library move-pointer (not a std::move_iterator) to match the declared return type
 
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array const& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(dynamic_array&& self) { return std::move(self).data_elements(); }
-
-	/// Returns the base pointer of the array
+	/// Returns the base const-pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
+
+	/// Returns the base pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }
 
 	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }

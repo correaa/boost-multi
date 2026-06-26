@@ -842,46 +842,52 @@ constexpr auto layout(std::initializer_list<T> const& il) {
 }
 
 template<class T>
-constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il) {
-	if(il.size() == 0) {
-		return multi::layout_t<2>{};
-	}
-	if(il.size() == 1) {
-		return multi::layout_t<2>(
-			layout(*il.begin()),
-			static_cast<multi::ssize_t>(il.size()),
-			0,
-			static_cast<multi::ssize_t>(il.size())  // * il.begin()->size())
-		);
-	}
-	auto strd =
-		base(*(il.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		base(*(il.begin() + 0))    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		;
+constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il2d) = delete;
 
-	assert(base(*(il.end() - 1)) - base(*il.begin()) == static_cast<std::ptrdiff_t>(il.size() - 1) * strd);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// template<class T>
+// constexpr auto layout(std::initializer_list<std::initializer_list<T>> const& il2d) {
+// 	if(il2d.size() == 0) {
+// 		return multi::layout_t<2>{};
+// 	}
+// 	if(il2d.size() == 1) {
+// 		return multi::layout_t<2>(
+// 			layout(*il2d.begin()),
+// 			static_cast<multi::ssize_t>(il2d.size()),
+// 			0,
+// 			static_cast<multi::ssize_t>(il2d.size())  // * il.begin()->size())
+// 		);
+// 	}
+// 	auto strd =
+// 		base(*(il2d.begin() + 1)) -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// 		base(*(il2d.begin() + 0))    // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// 		;
 
-	return multi::layout_t<2>(
-		layout(*il.begin()),
-		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		0,
-		static_cast<multi::ssize_t>(il.size()) * strd
-	);
-}
+// 	assert(base(*(il2d.end() - 1)) - base(*il2d.begin()) == static_cast<std::ptrdiff_t>(il2d.size() - 1) * strd);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+// 	return multi::layout_t<2>(
+// 		layout(*il2d.begin()),
+// 		strd,  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// 		0,
+// 		static_cast<multi::ssize_t>(il2d.size()) * strd
+// 	);
+// }
 
 template<class T>
-constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	if(il.size() == 0) {
-		return multi::layout_t<3>(multi::extents_t<3>{});
-	}
-	return multi::layout_t<3>{
-		layout(*il.begin()),
-		base(il.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			base(il.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		0,
-		static_cast<multi::ssize_t>(il.size()),
-	};
-}
+constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il3d) = delete;
+
+// template<class T>
+// constexpr auto layout(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il3d) {
+// 	if(il3d.size() == 0) {
+// 		return multi::layout_t<3>(multi::extents_t<3>{});
+// 	}
+// 	return multi::layout_t<3>{
+// 		layout(*il3d.begin()),
+// 		base(il3d.begin() + 1) -     // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// 			base(il3d.begin() + 0),  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// 		0,
+// 		static_cast<multi::ssize_t>(il3d.size()),
+// 	};
+// }
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -898,18 +904,18 @@ inline auto valid_mull(int age) -> bool {
 namespace boost::multi::detail {
 
 template<class F>
-BOOST_MULTI_HD constexpr auto invoke_square(F&& fn) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
-	return std::forward<F>(fn);
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fun) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fun);
 }
 
 template<class F, class Arg>
-BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
-	return std::forward<F>(fn)[std::forward<Arg>(arg)];
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fun, Arg&& arg) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std::forward<F>(fun)[std::forward<Arg>(arg)];
 }
 
 template<class F, class Arg, class... Args>
-BOOST_MULTI_HD constexpr auto invoke_square(F&& fn, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
-	return invoke_square(std::forward<F>(fn)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
+BOOST_MULTI_HD constexpr auto invoke_square(F&& fun, Arg&& arg, Args&&... args) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return invoke_square(std::forward<F>(fun)[std::forward<Arg>(arg)], std::forward<Args>(args)...);
 	// return            std::forward<F>(fn)[std::forward<Arg>(arg),  std::forward<Arg>(args)...];  // will not work with iterators or cursors in the current state, it is also a C++23-only feature
 }
 
