@@ -1322,7 +1322,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
 	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
-	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(std::declval<il_<TT> const&>().begin()), ElementPtr>, int> = 0>
 	explicit const_subarray(il_<TT> const& il_1d) : const_subarray(multi::layout(il_1d), multi::base(il_1d)) {}
 	// template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	// explicit const_subarray(il_<il_<TT>> const& il_2d) : const_subarray(multi::layout(il_2d), multi::base(il_2d)) {}
