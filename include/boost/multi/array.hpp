@@ -388,20 +388,30 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename)
 		  other.extents()
 	  ) {
+		try {
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
-			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
-		}
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
+				adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
+			}
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 #else
-		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 #endif
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
 	}
 
 	explicit dynamic_array(typename dynamic_array::extents_type extensions, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
 	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
-		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                             // NOLINT(readability-redundant-typename)
+		try {
+			array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename)
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element copy throws
+			throw;
+		}
 	}
 
 	template<class Element>
@@ -457,7 +467,10 @@ struct                                                                          
 	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements())), extensions) {
 		try {
 			uninitialized_default_construct();
-		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element constructor throws (elements already rolled back by uninitialized_*_n)
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
 	}
 
 	template<class... Args>

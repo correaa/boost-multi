@@ -1387,7 +1387,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
-#if defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))
+#if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || \
+	(defined(__NVCOMPILER) && (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11)))
 	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
 #endif
 
@@ -3825,6 +3826,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr array_ref(ElementPtr dat, ::boost::multi::extents_t<D> const& exts) noexcept  // TODO(correa) eliminate this ctor
 	: subarray_base(typename subarray_base::layout_type(exts), dat) {}
 
+	/// constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes).
 	explicit constexpr array_ref(::boost::multi::extents_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::layout_type(exts), dat} {}
 
@@ -4076,10 +4078,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
-	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
+	/// Pointer to the first element for a contiguous array (1D only, for compatibility with `std::vector`) (deprecated, use .data_elements())
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return self.data_elements(); }
