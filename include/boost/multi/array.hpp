@@ -1652,15 +1652,14 @@ struct array : unique_array<T, D, Alloc> {
 
 #ifndef NOEXCEPT_ASSIGNMENT
 	auto operator=(array&& other) noexcept -> array& {
-		static_assert(std::is_nothrow_move_assignable_v<typename array::allocator_type>,
-			"move-assignment adopts the source allocator and is noexcept; the allocator must be nothrow-move-assignable");
+		static_assert(std::is_nothrow_move_assignable_v<typename array::allocator_type>, "move-assignment adopts the source allocator and is noexcept; the allocator must be nothrow-move-assignable");
 		if(this == std::addressof(other)) {
 			return *this;
 		}
-		clear();                                   // free our buffer with our current allocator
+		clear();
 		// TODO(correaa) the allocator is moved unconditionally (move always propagates it). This is consistent and keeps move-assignment allocation-free and noexcept. It can be extended later to honor propagate_on_container_move_assignment==false
-		this->alloc() = std::move(other.alloc());  // adopt their allocator and their buffer together, so the two always match (no wrong-allocator free) and we never allocate
-		this->base_   = std::exchange(other.base_, nullptr);
+		this->alloc()          = std::move(other.alloc());             // adopt their allocator and their buffer together, so the two always match (no wrong-allocator free) and we never allocate
+		this->base_            = std::exchange(other.base_, nullptr);  // in this design the moved-from allocator should be always be
 		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
 		return *this;
 	}
