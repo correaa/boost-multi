@@ -1322,7 +1322,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	const_subarray(const_subarray&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
 	// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-constraints,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) for C++20
-	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(std::declval<il_<TT> const&>().begin()), ElementPtr>, int> = 0>
+	template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	explicit const_subarray(il_<TT> const& il_1d) : const_subarray(multi::layout(il_1d), multi::base(il_1d)) {}
 	// template<class TT = T, std::enable_if_t<std::is_convertible_v<decltype(multi::base(std::declval<il_<TT> const&>())), ElementPtr>, int> = 0>
 	// explicit const_subarray(il_<il_<TT>> const& il_2d) : const_subarray(multi::layout(il_2d), multi::base(il_2d)) {}
@@ -1388,7 +1388,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
 #if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || \
-	(defined(__NVCOMPILER) && (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11)))
+	(defined(__NVCOMPILER) /*&& (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11))*/)
 	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
 #endif
 
@@ -1882,8 +1882,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
 
  public:
-	/// returns a cursor pointing to the top element of the array (the element corresponding to the smallest index)
-	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
+	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }  ///< Return a cursor pointing to the top corner element of the array, the cursor is indexed relative to this location
 
 	template<
 		class Range,
@@ -4079,10 +4078,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
-	/// Pointer to the first element for a contiguous array (1D only, for compatibility with `std::vector`) (deprecated, use .data_elements())
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
-	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> [[deprecated("for compatibility with std::vector, use .data_elements()")]] constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
+	// data() is here for compatibility with std::vector
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() const& { return data_elements(); }  // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) TODO(correaa)
+	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) TODO(correaa)
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return self.data_elements(); }
@@ -4091,7 +4090,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
-	///
+	/// 
 	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
