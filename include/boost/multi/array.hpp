@@ -1844,7 +1844,7 @@ struct array : unique_array<T, D, Alloc> {
 
 		try {
 			tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?
-		} catch(...) {  // basic guarantee: all of tmp's elements are constructed here, destroy them and release the buffer
+		} catch(...) {                                      // basic guarantee: all of tmp's elements are constructed here, destroy them and release the buffer
 			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 				adl_alloc_destroy_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 			}
