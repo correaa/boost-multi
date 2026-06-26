@@ -634,7 +634,13 @@ struct                                                                          
 		  other.extents()
 	  ) {
 		assert(this->stride() != 0);
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {  // try-in-constexpr is only legal since C++20; in C++17 a constexpr ctor cannot have a try-block
+			uninitialized_copy_elements(other.data_elements());
+		} catch(...) { this->deallocate(); throw; }  // basic guarantee: free the raw buffer if an element copy throws
+#else
 		uninitialized_copy_elements(other.data_elements());
+#endif
 	}
 
 	template<class ExecutionPolicy, std::enable_if_t<!std::is_convertible_v<ExecutionPolicy, typename dynamic_array::extents_type>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) TODO(correaa) for C++20
