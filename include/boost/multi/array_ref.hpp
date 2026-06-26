@@ -4090,7 +4090,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
-	/// 
+	///
 	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
