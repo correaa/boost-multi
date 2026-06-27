@@ -42,6 +42,9 @@ cache:
   key: apt-$CI_JOB_IMAGE
   paths:
     - .apt-cache/
+  when: always  # keep downloaded .debs even on failed/timed-out jobs (cached archives are valid regardless of build result)
+  fallback_keys:
+    - apt-$CI_JOB_IMAGE  # seed from a prior cache if the exact key is missing (e.g. cache-version bump)
 
 stages:
   - build
@@ -774,9 +777,8 @@ oneapi:
   only:
     refs:
       - develop
-  # before_script: []
+  # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
-    - apt-get update
     - apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
@@ -1110,9 +1112,8 @@ rocm:
     - docker
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
-  before_script: []
+  # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
@@ -1142,11 +1143,10 @@ rocm-release:
     - amdrocm
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
-  before_script: []
+  # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
-    - apt-get -qq update
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
     - /opt/rocm/bin/hipconfig --full
     - rocm-smi
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
@@ -1176,7 +1176,7 @@ rocm-latest:
     - x86_64  # for rocm image
   script:
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - /opt/rocm/llvm/bin/clang++ --version
@@ -1205,7 +1205,7 @@ rocm-6.4.4:
     - x86_64  # for rocm image
   script:
     - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - /opt/rocm/llvm/bin/clang++ --version
@@ -1397,7 +1397,7 @@ inq rocm:
     - x86_64  # for image
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev rocm-device-libs wget
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
@@ -1498,9 +1498,10 @@ qmcpack rocm:
     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_SHA
     - cd build
     - hipcc --version
-    - rocminfo
-    - OMPI_CC=amdclang OMPI_CXX=amdclang++ cmake .. -DCMAKE_C_COMPILER=mpicc     -DCMAKE_CXX_COMPILER=mpicxx     -DQMC_GPU="openmp;hip"     -DQMC_GPU_ARCHS=gfx90a     -DQMC_MIXED_PRECISION=ON     -DBUILD_AFQMC_HIP=ON     -DCMAKE_BUILD_TYPE=Release
-    # - OMPI_CC=amdclang OMPI_CXX=amdclang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC_HIP=ON -DQMC_CXX_STANDARD=17 -DQMC_GPU="openmp;hip" -DQMC_GPU_ARCHS=gfx90a -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations"
+    # - rocminfo
+    - export OMPI_CC=amdclang
+    - export OMPI_CXX=amdclang++
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=amdclang -DCMAKE_CXX_COMPILER=amdclang++ -DMPI_C_COMPILER=mpicc -DMPI_CXX_COMPILER=mpicxx -DBUILD_AFQMC_HIP=ON -DQMC_CXX_STANDARD=17 -DQMC_GPU="openmp;hip" -DQMC_GPU_ARCHS=gfx90a -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations"
     - VERBOSE=1 make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     # - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     # - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
