@@ -46,7 +46,7 @@ class auto_timer : std::chrono::high_resolution_clock {
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	using T = double;
 	{
-		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
+		auto cpu_own = multi::array<T, 3>({8, 16, 8}, 0);
 
 		auto&& cpu = cpu_own();
 		{

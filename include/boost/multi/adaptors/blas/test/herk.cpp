@@ -2,23 +2,23 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
 #include <boost/multi/adaptors/blas/filling.hpp>     // for filling
 #include <boost/multi/adaptors/blas/gemm.hpp>        // for gemm, gemm_range
 #include <boost/multi/adaptors/blas/herk.hpp>        // for herk
 #include <boost/multi/adaptors/blas/nrm2.hpp>        // for nrm2_ref, nrm2
 #include <boost/multi/adaptors/blas/numeric.hpp>     // for involuted, under...
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
+
+#include <boost/core/lightweight_test.hpp>
 // IWYU pragma: no_include "boost/multi/adaptors/blas/traits.hpp"      // for blas  // needed for iwyu-clang-macos
 
-#include <boost/multi/array.hpp>                     // for array, layout_t
+#include <boost/multi/array.hpp>  // for array, layout_t
 
 #include <cmath>  // for sqrt
 // IWYU pragma: no_include <cstdlib>
-#include <complex>      // for operator*, opera...
+#include <complex>  // for operator*, opera...
 // #include <iostream>     // for operator<<, basi...
-// #include <iterator>     // for size
+// IWYU pragma: no_include <iterator>     // for size
 #include <limits>       // for numeric_limits
 #include <type_traits>  // for is_same
 // IWYU pragma: no_include <utility>                                   // for forward
@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(inq_case)
 	{
-		namespace blas = multi::blas;
+		namespace blas                  = multi::blas;
 		// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 		multi::array<double, 2> const a = {
 			{0.0,  1.0,  2.0},
@@ -78,7 +78,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk_real)
 	{
-		namespace blas = multi::blas;
+		namespace blas                  = multi::blas;
 		// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 		multi::array<double, 2> const a = {
 			{1.0, 3.0, 4.0},
@@ -93,7 +93,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case)
 	{
-		namespace blas = multi::blas;
+		namespace blas                  = multi::blas;
 		// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 		multi::array<double, 2> const a = {
 			{1.0, 2.0, 3.0},
@@ -106,7 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale)
 	{
-		namespace blas = multi::blas;
+		namespace blas                  = multi::blas;
 		// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 		multi::array<double, 2> const a = {
 			{1.0, 2.0, 3.0},
@@ -122,7 +122,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace blas = multi::blas;
 
-		using complex = std::complex<double>;
+		using complex                    = std::complex<double>;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 2> const a = {
 			{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace blas = multi::blas;
 
-		using complex = std::complex<double>;
+		using complex                    = std::complex<double>;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<complex, 2> const a = {
 			{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}},
@@ -150,8 +150,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		namespace blas = multi::blas;
 
-		using complex = std::complex<double>;
-		auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+		using complex                    = std::complex<double>;
+		auto const I                     = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 		// NOLINTNEXTLINE(readability-identifier-length) conventional name in BLAS
 		multi::array<complex, 2> const a = {
 			{1.0 + 2.0 * I, 2.0 + 3.0 * I, 3.0 + 4.0 * I},
@@ -281,7 +281,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// }
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
-			blas::herk(1.0, arr, c);                             // c†=c=aa†=(aa†)†
+			blas::herk(1.0, arr, c);                            // c†=c=aa†=(aa†)†
 			BOOST_TEST(( c[0][1] == complex{50.0, +49.0} ));
 			BOOST_TEST(( c[1][0] == complex{50.0, -49.0} ));
 		}
