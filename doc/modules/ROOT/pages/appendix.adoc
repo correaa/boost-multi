@@ -31,7 +31,7 @@ Here is a table comparing with `mdspan`, R. Garcia's link:https://www.boost.org/
 link:https://godbolt.org/z/555893MqW[(open with Compiler Explorer)].
 
 |===
-|                                      | Multi                                                                      | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen
+|                                      | Multi (this library)                                                         | mdspan/mdarray                                                                  | Boost.MultiArray (R. Garcia)                                                   | Inria's Eigen
 
 | No external Deps                     | **yes** (only Standard Library C++17)                                      | **yes** (only Standard Library, pass:[C++17]/pass:[C++26])                      | **yes** (only Boost)                                                           | **yes**
 | Arbitrary number of dims             | **yes**, via positive dimension (compile-time) parameter `D`               | **yes**                                                                         | **yes**                                                                        | no  (only 1D and 2D)

@@ -99,7 +99,7 @@ but it is designed at a different level of generality and with other priorities 
 The code is entirely independent and has fundamental implementation and semantics differences.
 For example, `std::mdspan` is a non-owning view with no iterators and is not a range, so it does not work directly with STL algorithms or ranges; its assignment rebinds the view rather than copying elements, leaving deep assignment and `const`-propagation through subarrays unsolved.
 The Standard also provides no owning, allocator-aware container for special memory spaces (GPU, managed memory, fancy pointers) nor lazy array-expression evaluation; ownership is delegated to a future `std::mdarray` container adaptor (post C{plus}{plus}26), which adds value semantics.
-In summary, if you need owning arrays, clear value semantics and iterators or ranges compatibility and you only need strided array layouts, use this library instead of `std::mdspan`.
+In summary, if you need owning arrays, clear value semantics, and iterators or ranges compatibility, and you only need strided array layouts, use this library instead of `std::mdspan` or xref:appendix.adoc#appendix_comparison[other libraries].
 
 The library does not throw exceptions and provides basic exception guarantees, such as no memory leaks, in their presence.
 Exceptions are propagated transparantly from allocations or element construction.
