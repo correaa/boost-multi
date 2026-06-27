@@ -1476,7 +1476,7 @@ qmcpack cuda:
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
 
-qmcpack hip:
+qmcpack rocm:
   stage: test
   image:
     name: rocm/dev-ubuntu-24.04:6.4.1-complete
@@ -1488,7 +1488,7 @@ qmcpack hip:
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git openmpi-bin libopenmpi-dev g++ gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-openmpi-dev liblapack-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
-    - apt-get -qq install --no-install-recommends -y hipblas-dev rocsolver-dev
+    - apt-get -qq install --no-install-recommends -y hipblas-dev rocsolver-dev rocblas-dev
     - rocm-smi
     - rsync --version
     - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
@@ -1500,8 +1500,7 @@ qmcpack hip:
     - cd build
     - hipcc --version
     - rocminfo
-    - OMPI_CC=amdclang OMPI_CXX=amdclang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=ON
--DBUILD_AFQMC_HIP=ON -DQMC_CXX_STANDARD=17 -DQMC_GPU="openmp;hip" -DQMC_GPU_ARCHS=gfx90a -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations"
+    - OMPI_CC=amdclang OMPI_CXX=amdclang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=ON -DBUILD_AFQMC_HIP=ON -DQMC_CXX_STANDARD=17 -DQMC_GPU="openmp;hip" -DQMC_GPU_ARCHS=gfx90a -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations"
     - VERBOSE=1 make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians
 test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     # - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
