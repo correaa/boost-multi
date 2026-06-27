@@ -20,7 +20,7 @@
 #endif
 
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-#if !defined(__NVCC__)
+#if !defined(__NVCC__) && !defined(__CUDACC__) && !defined(__CUDA__) && !defined(__HIPCC__) && !defined(__HIP_PLATFORM_AMD__) && !defined(__HIP_PLATFORM_NVIDIA__)
 #if !defined(THRUST_DEVICE_SYSTEM)
 #define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CPP  // fallback for BOOST_MULTI_HAS_THRUST without explicit backend
 #endif
