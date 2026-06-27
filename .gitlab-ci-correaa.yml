@@ -1482,7 +1482,6 @@ qmcpack rocm:
     name: rocm/dev-ubuntu-24.04:6.4.1-complete
   tags:
     - non-shared
-    - amd-gpu
     - high-bandwidth
   allow_failure: true
   script:
