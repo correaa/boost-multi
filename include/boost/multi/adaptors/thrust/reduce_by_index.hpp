@@ -4,9 +4,11 @@
 
 #ifndef BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP
 #define BOOST_MULTI_ADAPTORS_THRUST_REDUCE_BY_INDEX_HPP
-#include <type_traits>
-#pragma once
+// #pragma once
 
+#include <type_traits>
+
+#include <thrust/execution_policy.h>
 #include <thrust/functional.h>
 #include <thrust/reduce.h>
 #include <thrust/iterator/discard_iterator.h>
@@ -92,12 +94,12 @@ auto reduce_by_index(ExecutionPolicy&& ep, T const& M, S&& sums, BinaryOp&& op) 
 
 template<class T, class S>
 auto reduce_by_index(T const& M, S&& sums) -> S&& {
-    return reduce_by_index(::thrust::cuda::par, M, std::forward<S>(sums));
+    return reduce_by_index(::thrust::device, M, std::forward<S>(sums));
 }
 
 template<class T, class S, class BinOp>
 auto reduce_by_index(T const& M, S&& sums, BinOp&& op) -> S&& {
-    return reduce_by_index(::thrust::cuda::par, M, std::forward<S>(sums), std::forward<BinOp>(op));
+    return reduce_by_index(::thrust::device, M, std::forward<S>(sums), std::forward<BinOp>(op));
 }
 
 template<class T>
