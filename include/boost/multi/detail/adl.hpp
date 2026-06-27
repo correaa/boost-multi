@@ -20,8 +20,10 @@
 #endif
 
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-#ifndef THRUST_DEVICE_SYSTEM
+#if !defined(__NVCC__)
+#if !defined(THRUST_DEVICE_SYSTEM)
 #define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CPP  // fallback for BOOST_MULTI_HAS_THRUST without explicit backend
+#endif
 #endif
 
 #ifdef __NVCC__
