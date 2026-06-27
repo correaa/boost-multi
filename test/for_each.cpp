@@ -44,9 +44,10 @@ class auto_timer : std::chrono::high_resolution_clock {
 }  // namespace
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape)
+#ifndef MULL  // mull instrumentation makes the 64^3 loops too slow for the baseline timeout
 	using T = double;
 	{
-		auto cpu_own = multi::array<T, 3>({8, 16, 8}, 0);
+		auto cpu_own = multi::array<T, 3>({64, 64, 64}, 0);
 
 		auto&& cpu = cpu_own();
 		{
@@ -136,6 +137,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST( std::abs(cpu[1][2][3] - 6.0) < 1e-10 );
 		}
 	}
+#endif
 
 	return boost::report_errors();
 }

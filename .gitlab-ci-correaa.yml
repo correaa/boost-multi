@@ -418,8 +418,8 @@ clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead o
     - ls -all `which mull-runner-19`
     - file `which mull-runner-19`
     - mull-runner-19 --version
-    - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
-    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -DMULL=1 -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
+    - cmake --build . --parallel 4
     - ctest
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 120000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --stop-on-failure) || exit 255)'
