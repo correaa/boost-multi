@@ -14,15 +14,18 @@
 	defined(__HIPCC__) ||               /* hipcc generic                                */                                      \
 	defined(__HIP__) ||                 /* clang --offload=hip                         */                                       \
 	defined(THRUST_DEVICE_SYSTEM) ||    /* explicitly configured by CMake (e.g. NVIDIA thrust_create_target propagates this) */ \
-	defined(BOOST_MULTI_HAS_THRUST)     /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */
-// TODO(correaa) perhaps add detection through __has_include
+	defined(BOOST_MULTI_HAS_THRUST) ||  /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */ \
+	(defined(__has_include) &&          /* __has_include-based auto-detection:                                              */ \
+	 __has_include(<thrust/version.h>))           /* backed by AMD ROCm                             */
 #define BOOST_MULTI_ADL_HAS_THRUST 1
 #endif
 
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-#if !defined(__NVCC__) && !defined(__CUDACC__) && !defined(__CUDA__) && !defined(__HIPCC__) && !defined(__HIP_PLATFORM_AMD__) && !defined(__HIP_PLATFORM_NVIDIA__)
+#if !defined(__NVCC__) && !defined(__CUDACC__) && !defined(__CUDA__) && \
+    !defined(__HIPCC__) && !defined(__HIP_PLATFORM_AMD__) && !defined(__HIP_PLATFORM_NVIDIA__) && \
+    !(defined(__has_include) && (__has_include(<cuda_runtime.h>) || __has_include(<hip/hip_runtime.h>)))
 #if !defined(THRUST_DEVICE_SYSTEM)
-#define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CPP  // fallback for BOOST_MULTI_HAS_THRUST without explicit backend
+#define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CPP  // fallback: Thrust present but no GPU runtime detected
 #endif
 #endif
 
