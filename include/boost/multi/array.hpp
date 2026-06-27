@@ -1841,12 +1841,25 @@ struct array : unique_array<T, D, Alloc> {
 			extensions
 		);
 		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
-			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
+			try {
+				adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
+			} catch(...) {  // basic guarantee: value_construct_n already rolled back its elements, release the raw buffer
+				multi::allocator_traits<typename array::allocator_type>::deallocate(this->alloc(), tmp.base(), static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()));
+				throw;
+			}
 		}
 
 		auto const intersect = intersection(this->extents(), extensions);
 
-		tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?
+		try {
+			tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?
+		} catch(...) {                                      // basic guarantee: all of tmp's elements are constructed here, destroy them and release the buffer
+			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
+				adl_alloc_destroy_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
+			}
+			multi::allocator_traits<typename array::allocator_type>::deallocate(this->alloc(), tmp.base(), static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()));
+			throw;
+		}
 
 		this->destroy();
 		this->deallocate();
