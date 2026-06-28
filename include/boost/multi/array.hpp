@@ -1651,18 +1651,32 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
+	// move-assignment is only enable if the source allocator is nothrow-move-assignable (otherwise it should fallback into a copy)
+	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && std::is_nothrow_move_assignable_v<typename array::allocator_type>, int> =0>
 	auto operator=(array&& other) noexcept -> array& {
 		if(this == std::addressof(other)) {
 			return *this;
 		}
 		clear();
-		this->base_ = other.base_;
-		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
-			this->alloc() = std::move(other.alloc());
-		}
+		// TODO(correaa) the allocator is moved unconditionally (move always propagates it). This is consistent and keeps move-assignment allocation-free and noexcept. It can be extended later to honor propagate_on_container_move_assignment==false
+		this->alloc()          = std::move(other.alloc());             // adopt their allocator and their buffer together, so the two always match (no wrong-allocator free) and we never allocate
+		this->base_            = std::exchange(other.base_, nullptr);  // in this design the moved-from allocator should be always be
 		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
 		return *this;
 	}
+
+	// auto operator=(array&& other) noexcept -> array& {
+	// 	if(this == std::addressof(other)) {
+	// 		return *this;
+	// 	}
+	// 	clear();
+	// 	this->base_ = other.base_;
+	// 	if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
+	// 		this->alloc() = std::move(other.alloc());
+	// 	}
+	// 	this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
+	// 	return *this;
+	// }
 
 	/// Copy assignment from @p other array (allocates unless extents are already equal)
 	auto operator=(array const& other) -> array& {
