@@ -154,7 +154,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( ua == va );
 	}
 
-	// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int)
+// BOOST_AUTO_TEST_CASE(std_vector_of_arrays_with_string_instead_of_int)
+#ifndef __CUDACC__
 	{
 		// NOLINTBEGIN(fuchsia-default-arguments-calls)  // string uses default parameter
 		std::vector<multi::array<std::string, 2>> va;
@@ -199,6 +200,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTEND(fuchsia-default-arguments-calls)  // string uses default parameter
 	}
+#endif  // __CUDACC__
 
 // TODO(correaa) make this code work with nvcc compiler (non device function called from device host through adl uninitialized_fill)
 #if !(defined(__NVCC__) || defined(__HIP_PLATFORM_NVIDIA__) || defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__))
@@ -448,7 +450,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	}
 #endif
 
-#if !defined(_MSC_VER)  // static allocator does not work with MSVC implementation pf vector
+#if !defined(_MSC_VER) && !defined(__CUDACC__)  // static allocator does not work with MSVC; std::string is host-only under NVCC
 	// BOOST_AUTO_TEST_CASE(static_allocator_on_vector_int)
 	{
 		std::vector<int, multi::detail::static_allocator<int, 32>> vv(10, 42);  // NOLINT(fuchsia-default-arguments-calls)

@@ -38,7 +38,7 @@ image::types_relations.svg[Type relations diagram,opts=inline]
 [#ref_subarray]
 === Subarrays
 
-A subarray-reference is part (or a whole) of another larger array, and they are represented by xref:reference:boost/multi/subarray.adoc[`multi::subarray<T, D, P = T*>`] in the library.
+A subarray-reference is part (or a whole) of another larger array, and they are represented by xref:reference:boost/multi/subarray.adoc[`multi::subarray`] in the library.
 It is important to understand that `subarray` s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
 An instance of this class represents a subarray with elements of type `T` and dimensionality `D`, stored in memory described by the pointer type `P`.
 (`T`, `D`, and `P` initials are used in this sense across the documentation.)

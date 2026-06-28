@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -106,6 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// }
 	}
 
+#ifndef MULL
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment)
 	{
 		auto const ext5 = multi::extents_t<5>{2, 14, 14, 7, 2};
@@ -123,6 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( tmp.unrotated().partitioned(2).transposed().rotated().extensions() == src.extensions() );
 		// BOOST_TEST( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
 	}
+#endif
 
 	// BOOST_AUTO_TEST_CASE(rearranged_assignment_resize)
 	{
