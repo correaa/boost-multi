@@ -810,7 +810,7 @@ struct                                                                          
 	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
-	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
+	/// gets a pointer to a contigous range of size `.num_elements()` containing the data of the array
 	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// gets a library move-pointer (that produce r-value on dereference) to a contigous range of size `.num_elements()` containing the data of the array
