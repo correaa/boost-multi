@@ -808,13 +808,13 @@ struct                                                                          
 	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
-	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }	// cppcheck-suppress duplInheritedMember ; to override
+	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
-	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }	// cppcheck-suppress duplInheritedMember ; to override
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// gets a library move-pointer (that produce r-value on dereference) to a contigous range of size `.num_elements()` containing the data of the array
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }	// cppcheck-suppress duplInheritedMember ; to override
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// Returns the base const-pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
