@@ -23,14 +23,14 @@ namespace {
 struct Element {
 	static std::size_t construct_count;
 	static std::size_t destruct_count;
-	int value;
+	int                value;
 
 	Element(int val = 0) noexcept : value(val) { ++construct_count; }
 	~Element() noexcept { ++destruct_count; }
-	Element(Element const& o) noexcept : value(o.value) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
-	Element(Element&& o) noexcept : value(o.value) { ++construct_count; }
-	Element& operator=(Element const& o) noexcept = default;
-	Element& operator=(Element&& o) noexcept = default;
+	Element(Element const& other) noexcept : value(other.value) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
+	Element(Element&& other) noexcept : value(other.value) { ++construct_count; }
+	Element& operator=(Element const& /*other*/) noexcept = default;
+	Element& operator=(Element&& /*other*/) noexcept      = default;
 };
 std::size_t Element::construct_count = 0;
 std::size_t Element::destruct_count  = 0;

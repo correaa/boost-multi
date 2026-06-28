@@ -1653,19 +1653,20 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 #ifndef NOEXCEPT_ASSIGNMENT
 	/// Move assignment operator (noexcept when allocator is always-equal or nothrow-move-assignable)
 	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && (  // NOLINT(modernize-use-constraints) for C++20
-		multi::allocator_traits<typename array::allocator_type>::is_always_equal::value ||
-		std::is_nothrow_move_assignable_v<typename array::allocator_type>
-		// POCMA=false with a stateful allocator is unsupported (would require element-wise moves into pre-existing storage, potentially allocating, potentially throwing)
-	), int> = 0>
+																		multi::allocator_traits<typename array::allocator_type>::is_always_equal::value || std::is_nothrow_move_assignable_v<typename array::allocator_type>
+																		// POCMA=false with a stateful allocator is unsupported (would require element-wise moves into pre-existing storage, potentially allocating, potentially throwing)
+																	),
+												  int> = 0>
 	auto operator=(array&& other) noexcept -> array& {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved) this IS the move assignemnt
 		if(this == std::addressof(other)) {
 			return *this;
 		}
 		clear();
 		if constexpr(!multi::allocator_traits<typename array::allocator_type>::is_always_equal::value) {
-			static_assert(sizeof(Dummy*) && multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value,
-				"stateful allocators with propagate_on_container_move_assignment=false are not supported: "
-				"buffer and allocator cannot be transferred together without reallocation");
+			static_assert(
+				sizeof(Dummy*) && multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value,
+				"stateful allocators with propagate_on_container_move_assignment=false are not supported: buffer and allocator cannot be transferred together without reallocation"
+			);
 			this->alloc() = std::move(other.alloc());  // propagate so allocator and buffer always match (no wrong-allocator free)
 		}
 		this->base_            = std::exchange(other.base_, nullptr);
