@@ -63,8 +63,8 @@ Arrays and subarrays are usable with standard algorithms, while whole-array assi
 [source,cpp]
 ----
 multi::array<int, 2> A({2, 3}, 0);        // 2×3 array, elements set to 0
-std::iota(A[1].begin(), A[1].end(), 10);  // fill row with index 1 via an STL algorithm: 10, 11, 12
-assert( A[1][2] == 12 );                  // the change is visible in A
+std::iota(A[1].begin(), A[1].end(), 10);  // fill row 1 via STL algorithm: 10, 11, 12
+assert( A[1][2] == 12 );                  // the change affects A
 
 multi::array<int, 2> B = A;  // deep copy (value semantics)
 B[1][2] = 99;                // mutates B only
