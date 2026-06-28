@@ -1651,9 +1651,9 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
-	// move-assignment is only enable if the source allocator is nothrow-move-assignable (otherwise it should fallback into a copy)
-	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && std::is_nothrow_move_assignable_v<typename array::allocator_type>, int> =0>
-	auto operator=(array&& other) noexcept -> array& {
+	/// Move assignment operator (unconditionally noexcept, but it requires the allocator to be propagated as nothrow move assignable)
+	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && std::is_nothrow_move_assignable_v<typename array::allocator_type>, int> = 0>
+	auto operator=(array&& other) noexcept -> array& {	// move-assignment is only enable if the source allocator is nothrow-move-assignable (otherwise it should fallback into a copy)
 		if(this == std::addressof(other)) {
 			return *this;
 		}
