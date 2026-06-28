@@ -20,6 +20,21 @@ namespace multi = boost::multi;
 
 namespace {
 
+struct Element {
+	static std::size_t construct_count;
+	static std::size_t destruct_count;
+	int value;
+
+	Element(int val = 0) noexcept : value(val) { ++construct_count; }
+	~Element() noexcept { ++destruct_count; }
+	Element(Element const& o) noexcept : value(o.value) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
+	Element(Element&& o) noexcept : value(o.value) { ++construct_count; }
+	Element& operator=(Element const& o) noexcept = default;
+	Element& operator=(Element&& o) noexcept = default;
+};
+std::size_t Element::construct_count = 0;
+std::size_t Element::destruct_count  = 0;
+
 constexpr auto make_ref(int* ptr) {
 	return multi::array_ref<int, 2>(ptr, {5, 7});
 }
@@ -248,6 +263,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( arr[1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+	}
+
+	// BOOST_AUTO_TEST_CASE(move_assignment_no_leak)
+	{
+		Element::construct_count = 0;
+		Element::destruct_count  = 0;
+		{
+			multi::array<Element, 2> arr1({3, 4}, Element(1));
+			multi::array<Element, 2> arr2({2, 2}, Element(2));
+
+			arr1 = std::move(arr2);  // move assignment: should destroy arr1's old buffer, steal arr2's
+		}
+
+		BOOST_TEST( Element::construct_count == Element::destruct_count );  // no leaks
+	}
+
+	// BOOST_AUTO_TEST_CASE(reextent_no_leak)
+	{
+		Element::construct_count = 0;
+		Element::destruct_count  = 0;
+		{
+			multi::array<Element, 2> arr({3, 4}, Element(1));
+			arr.reextent({5, 5});  // resize to larger dimensions: allocates new buffer, constructs new, copies intersection, destroys old
+		}
+
+		BOOST_TEST( Element::construct_count == Element::destruct_count );  // no leaks
 	}
 
 	return boost::report_errors();
