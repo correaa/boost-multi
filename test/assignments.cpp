@@ -10,8 +10,10 @@
 #include <algorithm>  // for fill
 // #include <complex>    // for complex
 #include <cstddef>  // for size_t
+// #include <limits>   // for std::numeric_limits
 // #include <iterator>  // for size
 #include <memory>  // for std::allocator  // IWYU pragma: keep
+// #include <stdexcept>  // for std::runtime_error
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
@@ -19,6 +21,24 @@
 namespace multi = boost::multi;
 
 namespace {
+
+struct element_test {
+	static std::size_t construct_count;
+	static std::size_t destruct_count;
+
+ private:
+	int value_;
+
+ public:
+	explicit element_test(int val = 0) noexcept : value_(val) { ++construct_count; }
+	~element_test() noexcept { ++destruct_count; }
+	element_test(element_test const& other) noexcept : value_(other.value_) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
+	element_test(element_test&& other) noexcept : value_(other.value_) { ++construct_count; }
+	auto operator=(element_test const& /*other*/) noexcept -> element_test& = default;
+	auto operator=(element_test&& /*other*/) noexcept -> element_test&      = default;
+};
+std::size_t element_test::construct_count = 0;
+std::size_t element_test::destruct_count  = 0;
 
 constexpr auto make_ref(int* ptr) {
 	return multi::array_ref<int, 2>(ptr, {5, 7});
@@ -248,6 +268,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[0][0].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( arr[1][1].empty() );  // NOLINT(clang-analyzer-cplusplus.Move,fuchsia-default-arguments-calls,bugprone-use-after-move,hicpp-invalid-access-moved)
+	}
+
+	// BOOST_AUTO_TEST_CASE(move_assignment_no_leak)
+	{
+		element_test::construct_count = 0;
+		element_test::destruct_count  = 0;
+		{
+			multi::array<element_test, 2> arr1({3, 4}, element_test(1));
+			multi::array<element_test, 2> arr2({2, 2}, element_test(2));
+
+			arr1 = std::move(arr2);  // move assignment: should destroy arr1's old buffer, steal arr2's
+		}
+
+		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks
+	}
+
+	// BOOST_AUTO_TEST_CASE(reextent_no_leak)
+	{
+		element_test::construct_count = 0;
+		element_test::destruct_count  = 0;
+		{
+			multi::array<element_test, 2> arr({3, 4}, element_test(1));
+			arr.reextent({5, 5});  // resize to larger dimensions: allocates new buffer, constructs new, copies intersection, destroys old
+		}
+
+		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks
 	}
 
 	return boost::report_errors();

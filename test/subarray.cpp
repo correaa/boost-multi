@@ -269,6 +269,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_swappable_v<multi::array<int, 4>::iterator>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
 	}
+	{
+		auto A = multi::array<int, 2>{
+			{1, 2, 3},
+			{4, 5, 6},
+		};
+
+		using std::apply;
+		BOOST_TEST( &apply(A, std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &apply(A, std::array<int, 2>{{1, 1}}) == &A[1][1] );
+
+		using indices_t = multi::array<int, 2>::indices_type;
+		BOOST_TEST( &apply(A, indices_t{1, 1}) == &A[1][1] );
+
+		BOOST_TEST( &A.apply(std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &A.apply(std::array<int, 2>{{1, 1}}) == &A[1][1] );
+
+		BOOST_TEST( &A.apply(indices_t{1, 1}) == &A[1][1] );
+
+		BOOST_TEST( &A.apply({1, 1}) == &A[1][1] );
+
+		BOOST_TEST( &A.apply(std::tuple{1})[1] == &A[1][1] );
+		BOOST_TEST( &A.apply(std::array<int, 1>{{1}})[1] == &A[1][1] );
+	}
 
 	return boost::report_errors();
 }

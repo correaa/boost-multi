@@ -672,7 +672,7 @@ template<> struct extents_t<0> : tuple<> {
 
 	static BOOST_MULTI_HD constexpr auto num_elements() /*const*/ -> multi::ssize_t { return 1; }
 
-	using indices_type = tuple<>;
+	using indices_type = tuple<>;  // TODO(correaa) or boost::multi::detail::tuple<>; ?
 
 	[[nodiscard]] static constexpr auto from_linear(nelems_type const& n) /*const*/ -> indices_type {
 		assert(n == 0);
@@ -1375,8 +1375,12 @@ struct bilayout {
 	using extent_type  = void;
 	using extension_type [[deprecated]] = void;
 
-	using extents_type  = void;
-	using extensions_type [[deprecated]] = void;
+	using extents_type = extents_t<D>;
+	using extensions_type [[deprecated("use extents_t")]] = extents_type;
+
+	// using extents_type  = void;
+	// using extensions_type [[deprecated]] = void;
+
 	using sizes_type      = void;
 	using indexes         = void;
 
