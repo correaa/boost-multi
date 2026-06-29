@@ -7,8 +7,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <array>        // for array
-#include <tuple>        // for tuple
+#include <array>        // for array, get
+#include <tuple>        // for tuple, apply
 #include <type_traits>  // for std::is_swappable_v
 #include <utility>      // for as_const
 
