@@ -276,18 +276,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		using std::apply;
-		assert( &apply(A, std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &apply(A, std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &apply(A, std::array<int, 2>{{1, 1}}) == &A[1][1] );
 
 		using indices_t = multi::array<int, 2>::indices_type;
-		assert( &apply(A, indices_t{1, 1}) == &A[1][1] );
+		BOOST_TEST( &apply(A, indices_t{1, 1}) == &A[1][1] );
 
-		assert( &A.apply(std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &A.apply(std::tuple{1, 1}) == &A[1][1] );
+		BOOST_TEST( &A.apply(std::array<int, 2>{{1, 1}}) == &A[1][1] );
 
-		assert( &A.apply(indices_t{1, 1}) == &A[1][1] );
+		BOOST_TEST( &A.apply(indices_t{1, 1}) == &A[1][1] );
 
-		assert( &A.apply({1, 1}) == &A[1][1] );
+		BOOST_TEST( &A.apply({1, 1}) == &A[1][1] );
 
-		assert( &A.apply(std::tuple{1})[1] == &A[1][1] );
+		BOOST_TEST( &A.apply(std::tuple{1})[1] == &A[1][1] );
+		BOOST_TEST( &A.apply(std::array<int, 1>{{1}})[1] == &A[1][1] );
 	}
 
 	return boost::report_errors();
