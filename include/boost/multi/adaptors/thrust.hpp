@@ -171,7 +171,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev))
 #else
 		cudaMemLocation loc{cudaMemLocationTypeDevice, dev};
-		switch(HICUP_(cudaMemPrefetchAsync(raw_pointer_cast(ptr), byte_count, loc, /*flags=*/0, /*stream=*/0)))
+		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, loc, /*flags=*/0, /*stream=*/0))
 #endif
 		{
 		case HICUP_(Success): break;
