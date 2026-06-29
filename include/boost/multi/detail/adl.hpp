@@ -104,7 +104,15 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 
 // clang-format off
 class adl_copy_n_t {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"  // false positive: GCC loses track of reallocation done by caller (array::operator=) before this copy
+#pragma GCC diagnostic ignored "-Warray-bounds"       // same false positive, different diagnostic name in some GCC versions
+#endif
 	template<class... As>          constexpr static auto _(priority<0>/**/,          As&&... args) BOOST_MULTI_DECLRET(std::                copy_n(                      std::forward<As>(args)...))
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
 	template<class In, class Size, class Out,
 		std::enable_if_t<
