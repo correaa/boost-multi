@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -7,6 +7,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <array>        // for array, get
+#include <tuple>        // for tuple, apply
 #include <type_traits>  // for std::is_swappable_v
 #include <utility>      // for as_const
 
