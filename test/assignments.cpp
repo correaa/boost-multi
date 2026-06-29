@@ -7,14 +7,13 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-
 #include <algorithm>  // for fill
 // #include <complex>    // for complex
 #include <cstddef>  // for size_t
-#include <limits>   // for std::numeric_limits
+// #include <limits>   // for std::numeric_limits
 // #include <iterator>  // for size
-#include <memory>     // for std::allocator  // IWYU pragma: keep
-#include <stdexcept>  // for std::runtime_error
+#include <memory>  // for std::allocator  // IWYU pragma: keep
+// #include <stdexcept>  // for std::runtime_error
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
@@ -295,32 +294,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks
-	}
-
-// obsolete: reextent&& now requires noexcept default construction (static_assert in array.hpp);
-// element types with throwing default constructors are not supported by design.
-	// BOOST_AUTO_TEST_CASE(reextent_rvalue_exception_no_leak)
-	{
-		struct element_throwing_default {
-			int value;
-			static auto construct_count() -> std::size_t& { static std::size_t cnt = 0; return cnt; }
-			static auto destruct_count()  -> std::size_t& { static std::size_t cnt = 0; return cnt; }
-			static auto throw_after()     -> int&         { static int lim = std::numeric_limits<int>::max(); return lim; }
-			static auto init_value() -> int {
-				if(static_cast<int>(construct_count()) >= throw_after()) { throw std::runtime_error("element_throwing_default"); }
-				return static_cast<int>(++construct_count());
-			}
-			element_throwing_default() : value(init_value()) {}  // non-noexcept: rejected by static_assert
-			~element_throwing_default() noexcept {
-				if(value > 0) { ++destruct_count(); } else { ++destruct_count(); }  // NOLINT(bugprone-branch-clone)
-			}
-			element_throwing_default(element_throwing_default const&) noexcept                    = default;
-			element_throwing_default(element_throwing_default&&) noexcept                         = default;
-			auto operator=(element_throwing_default const&) noexcept -> element_throwing_default& = default;
-			auto operator=(element_throwing_default&&) noexcept -> element_throwing_default&      = default;
-		};
-		// multi::array<element_throwing_default, 2> arr({2, 2});  // static_assert fires here
-		// std::move(arr).reextent({3, 3});
 	}
 
 	return boost::report_errors();
