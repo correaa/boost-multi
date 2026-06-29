@@ -106,7 +106,12 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 class adl_copy_n_t {
 	template<class... As>          constexpr static auto _(priority<0>/**/,          As&&... args) BOOST_MULTI_DECLRET(std::                copy_n(                      std::forward<As>(args)...))
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-	template<class... As>          constexpr static auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET(::thrust::           copy_n(                      std::forward<As>(args)...))
+	template<class In, class Size, class Out,
+		std::enable_if_t<
+			!std::is_same_v<typename thrust::iterator_system<std::decay_t<In >>::type, thrust::system::cpp::detail::tag> ||
+			!std::is_same_v<typename thrust::iterator_system<std::decay_t<Out>>::type, thrust::system::cpp::detail::tag>,
+		int> = 0>
+	constexpr static auto _(priority<1>/**/, In&& first, Size&& n, Out&& d_first) BOOST_MULTI_DECLRET(::thrust::copy_n(std::forward<In>(first), std::forward<Size>(n), std::forward<Out>(d_first)))
 #endif
 	template<class... As>          constexpr static auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     copy_n(                      std::forward<As>(args)...))
 	template<class T, class... As> constexpr static auto _(priority<3>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::decay_t<T>::    copy_n(std::forward<T>(arg), std::forward<As>(args)...))
