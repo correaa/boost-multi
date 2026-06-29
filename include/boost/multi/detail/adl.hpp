@@ -108,8 +108,8 @@ class adl_copy_n_t {
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
 	template<class In, class Size, class Out,
 		std::enable_if_t<
-			!std::is_same_v<typename thrust::iterator_system<std::decay_t<In >>::type, thrust::system::cpp::detail::tag> ||
-			!std::is_same_v<typename thrust::iterator_system<std::decay_t<Out>>::type, thrust::system::cpp::detail::tag>,
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<In >>::type, thrust::system::cpp::tag> ||
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<Out>>::type, thrust::system::cpp::tag>,
 		int> = 0>
 	constexpr static auto _(priority<1>/**/, In&& first, Size&& n, Out&& d_first) BOOST_MULTI_DECLRET(::thrust::copy_n(std::forward<In>(first), std::forward<Size>(n), std::forward<Out>(d_first)))
 #endif
