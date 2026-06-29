@@ -275,10 +275,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{4, 5, 6},
 		};
 
-		auto location = multi::array<int, 2>::extents_type::indices_type(2, 2);
-
 		using std::apply;
-		BOOST_TEST( &apply(A, location) == &A[1][1] );
+		assert( &apply(A, std::tuple{1, 1}) == &A[1][1] );
+
+		using indices_t = multi::array<int, 2>::indices_type;
+		assert( &apply(A, indices_t{1, 1}) == &A[1][1] );
+
+		assert( &A.apply(std::tuple{1, 1}) == &A[1][1] );
+
+		assert( &A.apply(indices_t{1, 1}) == &A[1][1] );
+
+		assert( &A.apply({1, 1}) == &A[1][1] );
+
+		assert( &A.apply(std::tuple{1})[1] == &A[1][1] );
 	}
 
 	return boost::report_errors();
