@@ -4,9 +4,10 @@
 
 Alfredo A. Correa (last modified: {localdatetime})
 
+ifndef::backend-pdf[]
 [.badges]
-link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost--multi-blue%3Flogo%3Dgithub?style=social&logo=github[GitHub,role=badge]]{nbsp}{nbsp}link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost--multi-blue%3Flogo%3Dgitlab?style=social&logo=gitlab[GitLab,role=badge]]
-
+link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost%2D%2Dmulti-blue?style=social&logo=github[GitHub,role=badge]]{nbsp}{nbsp}link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost%2D%2Dmulti-blue?style=social&logo=gitlab[GitLab,role=badge]]
+endif::[]
 == Introduction
 
 :idprefix: intro_
@@ -114,6 +115,8 @@ A digital photograph is a two-dimensional grid of pixels, or three-dimensional o
 Spreadsheets and database extracts are two-dimensional tables of rows and columns, while machine-learning workloads continuously move large tensors (of shape batch × channel × height × width) between CPU and GPU.
 Audio spectrograms, medical CT and MRI scans that sample a volume, and climate models spanning latitude, longitude, altitude, and time are all naturally expressed as arrays of three or more dimensions.
 In each case the data is logically a single object addressed by several coordinates, which is precisely what a multidimensional array represents.
+
+The common geometric interpretation is that multidimensional array, `F[i][j][k]` represents with a certain resolution a continuous function stem:[f(x, y, z)] with a certain resolution in a given domain.
 
 In the author's own field of condensed matter physics and chemistry, the quantum states of individual electrons are discretized on a regular 3-dimensional grid of complex numbers.
 Many quantities of interest are obtained by summing functions evaluated over these elements.
