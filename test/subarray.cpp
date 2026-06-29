@@ -277,23 +277,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{4, 5, 6},
 		};
 
-		using std::apply;
-		BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
-		BOOST_TEST( &apply(arr, std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		{
+			using std::apply;
+			BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &apply(arr, std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
+		{
+			BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &apply(arr, std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
+		{
+			using indices_t = multi::array<int, 2>::indices_type;
+			using std::apply;
+			BOOST_TEST( &apply(arr, indices_t{1, 1}) == &arr[1][1] );
 
-		using indices_t = multi::array<int, 2>::indices_type;
-		BOOST_TEST( &apply(arr, indices_t{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
 
-		BOOST_TEST( &arr.apply(std::tuple{1, 1}) == &arr[1][1] );
-		BOOST_TEST( &arr.apply(std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		{
+			BOOST_TEST( &arr.apply({1, 1}) == &arr[1][1] );
+			// BOOST_TEST( &A.apply({1}) == &A[1][1] );  // error, can't deduce type
 
-		BOOST_TEST( &arr.apply(indices_t{1, 1}) == &arr[1][1] );
-
-		BOOST_TEST( &arr.apply({1, 1}) == &arr[1][1] );
-		// BOOST_TEST( &A.apply({1}) == &A[1][1] );  // error, can't deduce type
-
-		BOOST_TEST( &arr.apply(std::tuple{1})[1] == &arr[1][1] );
-		BOOST_TEST( &arr.apply(std::array<int, 1>{{1}})[1] == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::tuple{1})[1] == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::array<int, 1>{{1}})[1] == &arr[1][1] );
+		}
 	}
 
 	return boost::report_errors();
