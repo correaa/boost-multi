@@ -876,14 +876,7 @@ struct                                                                          
 			return *this;
 		}  // cert-oop54-cpp
 		assert(other.extents() == this->extents());
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"  // false positive: GCC loses track of reallocation in array::operator= before this call
-#endif
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 		assert(this->stride() != 0);
 		return *this;
 	}

@@ -269,6 +269,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_swappable_v<multi::array<int, 4>::iterator>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
 	}
+	{
+		auto A = multi::array<int, 2>{
+			{1, 2, 3},
+			{4, 5, 6},
+		};
+
+		auto location = multi::array<int, 2>::extents_type::indices_type(2, 2);
+
+		using std::apply;
+		BOOST_TEST( &apply(A, location) == &A[1][1] );
+	}
 
 	return boost::report_errors();
 }
