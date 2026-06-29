@@ -7,11 +7,14 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+
 #include <algorithm>  // for fill
 // #include <complex>    // for complex
 #include <cstddef>  // for size_t
+#include <limits>   // for std::numeric_limits
 // #include <iterator>  // for size
-#include <memory>  // for std::allocator  // IWYU pragma: keep
+#include <memory>     // for std::allocator  // IWYU pragma: keep
+#include <stdexcept>  // for std::runtime_error
 // IWYU pragma: no_include <type_traits>  // for decay_t
 #include <utility>  // for move
 #include <vector>   // for vector, allocator
@@ -20,20 +23,23 @@ namespace multi = boost::multi;
 
 namespace {
 
-struct Element {
+struct element_test {
 	static std::size_t construct_count;
 	static std::size_t destruct_count;
-	int                value;
 
-	Element(int val = 0) noexcept : value(val) { ++construct_count; }
-	~Element() noexcept { ++destruct_count; }
-	Element(Element const& other) noexcept : value(other.value) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
-	Element(Element&& other) noexcept : value(other.value) { ++construct_count; }
-	Element& operator=(Element const& /*other*/) noexcept = default;
-	Element& operator=(Element&& /*other*/) noexcept      = default;
+ private:
+	int value_;
+
+ public:
+	explicit element_test(int val = 0) noexcept : value_(val) { ++construct_count; }
+	~element_test() noexcept { ++destruct_count; }
+	element_test(element_test const& other) noexcept : value_(other.value_) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
+	element_test(element_test&& other) noexcept : value_(other.value_) { ++construct_count; }
+	auto operator=(element_test const& /*other*/) noexcept -> element_test& = default;
+	auto operator=(element_test&& /*other*/) noexcept -> element_test&      = default;
 };
-std::size_t Element::construct_count = 0;
-std::size_t Element::destruct_count  = 0;
+std::size_t element_test::construct_count = 0;
+std::size_t element_test::destruct_count  = 0;
 
 constexpr auto make_ref(int* ptr) {
 	return multi::array_ref<int, 2>(ptr, {5, 7});
@@ -267,28 +273,54 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(move_assignment_no_leak)
 	{
-		Element::construct_count = 0;
-		Element::destruct_count  = 0;
+		element_test::construct_count = 0;
+		element_test::destruct_count  = 0;
 		{
-			multi::array<Element, 2> arr1({3, 4}, Element(1));
-			multi::array<Element, 2> arr2({2, 2}, Element(2));
+			multi::array<element_test, 2> arr1({3, 4}, element_test(1));
+			multi::array<element_test, 2> arr2({2, 2}, element_test(2));
 
 			arr1 = std::move(arr2);  // move assignment: should destroy arr1's old buffer, steal arr2's
 		}
 
-		BOOST_TEST( Element::construct_count == Element::destruct_count );  // no leaks
+		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks
 	}
 
 	// BOOST_AUTO_TEST_CASE(reextent_no_leak)
 	{
-		Element::construct_count = 0;
-		Element::destruct_count  = 0;
+		element_test::construct_count = 0;
+		element_test::destruct_count  = 0;
 		{
-			multi::array<Element, 2> arr({3, 4}, Element(1));
+			multi::array<element_test, 2> arr({3, 4}, element_test(1));
 			arr.reextent({5, 5});  // resize to larger dimensions: allocates new buffer, constructs new, copies intersection, destroys old
 		}
 
-		BOOST_TEST( Element::construct_count == Element::destruct_count );  // no leaks
+		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks
+	}
+
+// obsolete: reextent&& now requires noexcept default construction (static_assert in array.hpp);
+// element types with throwing default constructors are not supported by design.
+	// BOOST_AUTO_TEST_CASE(reextent_rvalue_exception_no_leak)
+	{
+		struct element_throwing_default {
+			int value;
+			static auto construct_count() -> std::size_t& { static std::size_t cnt = 0; return cnt; }
+			static auto destruct_count()  -> std::size_t& { static std::size_t cnt = 0; return cnt; }
+			static auto throw_after()     -> int&         { static int lim = std::numeric_limits<int>::max(); return lim; }
+			static auto init_value() -> int {
+				if(static_cast<int>(construct_count()) >= throw_after()) { throw std::runtime_error("element_throwing_default"); }
+				return static_cast<int>(++construct_count());
+			}
+			element_throwing_default() : value(init_value()) {}  // non-noexcept: rejected by static_assert
+			~element_throwing_default() noexcept {
+				if(value > 0) { ++destruct_count(); } else { ++destruct_count(); }  // NOLINT(bugprone-branch-clone)
+			}
+			element_throwing_default(element_throwing_default const&) noexcept                    = default;
+			element_throwing_default(element_throwing_default&&) noexcept                         = default;
+			auto operator=(element_throwing_default const&) noexcept -> element_throwing_default& = default;
+			auto operator=(element_throwing_default&&) noexcept -> element_throwing_default&      = default;
+		};
+		// multi::array<element_throwing_default, 2> arr({2, 2});  // static_assert fires here
+		// std::move(arr).reextent({3, 3});
 	}
 
 	return boost::report_errors();

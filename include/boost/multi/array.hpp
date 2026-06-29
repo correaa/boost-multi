@@ -1807,6 +1807,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	}
 
 	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
+	// at the moment requires nothrow default constructible
 	auto reextent(typename array::extents_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
 		if(exts == this->extents()) {
 			return std::move(*this);
@@ -1828,6 +1829,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 			);
 
 			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
+				static_assert(std::is_nothrow_default_constructible_v<typename array::element>, "element type's default constructor must be noexcept; use reextent(exts, value) to fill with a value instead");  // TODO(correaa) reconsider this (reextent cannot be no except anyway, but exceptions also have a cost)
 				adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 			}
 		} else {
