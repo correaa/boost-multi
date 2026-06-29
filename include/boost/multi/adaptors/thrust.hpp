@@ -168,13 +168,17 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	}
 	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
 #if(CUDART_VERSION < 13000)  // CudaMemPrefetchAsync changes its interface on version 13 TODO(correaa) update API call
-		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev)) {
+		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev))
+#else
+		cudaMemLocation loc{cudaMemLocationTypeDevice, dev};
+		switch(HICUP_(cudaMemPrefetchAsync(raw_pointer_cast(ptr), byte_count, loc, /*flags=*/0, /*stream=*/0)))
+#endif
+		{
 		case HICUP_(Success): break;
 		case HICUP_(ErrorInvalidValue): assert(0); break;   // NOLINT(bugprone-branch-clone)
 		case HICUP_(ErrorInvalidDevice): assert(0); break;  // NOLINT(bugprone-branch-clone)
 		default: assert(0);
 		}
-#endif
 	}
 
 	static auto get_device_(const_void_pointer ptr) -> device_index {
