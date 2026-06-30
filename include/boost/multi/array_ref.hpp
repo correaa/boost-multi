@@ -3986,8 +3986,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	/// returns a random-access range with all the elements of the array
-	constexpr auto elements() const& -> celements_type { return elements_aux_(); }  // cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	constexpr auto elements() const& -> celements_type { return elements_aux_(); }
 	constexpr auto elements() & -> elements_type { return elements_aux_(); }
 	constexpr auto elements() && -> elements_type { return elements_aux_(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
