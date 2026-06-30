@@ -8,6 +8,7 @@ ifndef::backend-pdf[]
 [.badges]
 link:https://github.com/correaa/boost-multi[image:https://img.shields.io/badge/github-correaa%2Fboost%2D%2Dmulti-blue?style=social&logo=github[GitHub,role=badge]]{nbsp}{nbsp}link:https://gitlab.com/correaa/boost-multi[image:https://img.shields.io/badge/gitlab-correaa%2Fboost%2D%2Dmulti-blue?style=social&logo=gitlab[GitLab,role=badge]]
 endif::[]
+
 == Introduction
 
 :idprefix: intro_
@@ -106,7 +107,7 @@ The library does not throw exceptions and provides basic exception guarantees, s
 Exceptions are propagated transparantly from allocations or element construction.
 Indexing, e.g. out-of-bounds errors, and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
-== More About Use Cases
+=== More About Use Cases
 
 :idprefix: usecases_
 
@@ -125,7 +126,7 @@ These 3-dimensional objects can themselves be regarded as vectors in a linear sp
 
 Typically, at the lowest level, data is processed in bulk by specially tuned numerical CPU or GPU libraries that expect data in the layouts supported by this library.
 
-== Next Steps
+=== Next Steps
 
 :idprefix: next_
 
@@ -135,7 +136,7 @@ Typically, at the lowest level, data is processed in bulk by specially tuned num
 * xref:interop.adoc[Interoperability] -- STL and ranges, Thrust/CUDA, serialization, Boost.Interprocess, pass:[{fmt}], ...
 * xref:appendix.adoc#appendix_comparison[Comparison to other array libraries and languages] -- how _Multi_ relates to Boost.MultiArray, `std::mdspan`, Eigen, Fortran, and NumPy/APL.
 
-== Requirements
+=== Requirements
 
 :idprefix: reqs_
 

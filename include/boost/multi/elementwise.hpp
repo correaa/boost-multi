@@ -19,6 +19,7 @@
 
 namespace boost::multi {
 
+// TODO(correaa) put this in ::elementwise
 template<class A> struct bind_category {
 	using type = A;
 };
@@ -53,6 +54,7 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 	using type = ::boost::multi::subarray<T, D, Ts...> const&;
 };
 
+/// Namespace for elementwise operators (+, -, *, and other convenience functions)
 namespace elementwise {
 
 template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
@@ -124,24 +126,6 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	}
 }
 
-// template<class A, class B>
-// class apply_plus_t {
-// 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-// 	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-
-//  public:
-// 	template<class AA, class BB>
-// 	apply_plus_t(AA&& a, BB&& b) : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}
-
-// 	template<class... Is>
-// 	constexpr auto operator()(Is... is) const {
-// 		return multi::detail::invoke_square(a_, is...)  // like a_[is...] in C++23
-// 			 +
-// 			   multi::detail::invoke_square(b_, is...)  // like b_[is...] in C++23
-// 			;
-// 	}
-// };
-
 namespace detail {
 struct plus {
 	template<class T1, class T2>
@@ -149,6 +133,7 @@ struct plus {
 };
 }  // end namespace detail
 
+/// creates a array with the `+` operation applied lazily elementwise to two arrays
 template<class A, class B>
 constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
@@ -178,12 +163,15 @@ constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
 	return std::forward<T1>(a) - std::forward<T2>(b);
 }
 
+/// creates a array with the `-` operation applied lazily elementwise to two arrays
 template<class A>
 constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
+/// creates a array with the `*` operation applied lazily elementwise to two arrays
 template<class A, class B>
 constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
+/// creates a array with the `/` operation applied lazily elementwise to two arrays
 template<class A, class B>
 constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
@@ -249,6 +237,7 @@ constexpr auto operator|(A&& a, F fun) {
 	return std::forward<A>(a).transformed(fun);
 }
 
+namespace detail {
 template<class A>
 class exp_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
@@ -265,14 +254,17 @@ class exp_bind_t {
 };
 
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
+}  // namespace detail
 
+/// creates a array with the function `exp` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	// shouldn't get to this point for scalars
 	auto xs = alpha.extents();  // mull-ignore: cxx_init_const
-	return exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+	return detail::exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
+namespace detail {
 template<class A>
 class log_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
@@ -289,13 +281,16 @@ class log_bind_t {
 };
 
 template<class A> log_bind_t(A) -> log_bind_t<A>;
+}  // namespace detail
 
+/// creates a array with the function `log` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto log(A&& alpha) {
 	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
-	return log_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+	return detail::log_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
+namespace detail {
 template<class A>
 struct abs_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
@@ -306,17 +301,17 @@ struct abs_bind_t {
 		return abs(multi::detail::invoke_square(a_, is...));  // a_[is...] in C++23
 	}
 };
+}  // namespace detail
 
+/// creates a array with the function `abs` applied lazily elementwise.
 template<class A>
-constexpr auto abs(A const& a) { return abs_bind_t<decltype(a.home())>{a.home()} ^ a.extents(); }
+constexpr auto abs(A const& a) { return detail::abs_bind_t<decltype(a.home())>{a.home()} ^ a.extents(); }
 
 template<class T> constexpr auto abs(std::initializer_list<T> il) { return abs(multi::array<T, 1>{il}); }
 template<class T> constexpr auto abs(std::initializer_list<std::initializer_list<T>> il) { return abs(multi::array<T, 2>{il}); }
 
 // #endif
 }  // end namespace elementwise
-
-// namespace broadcast = elementwise;
 
 }  // end namespace boost::multi
 

@@ -28,6 +28,7 @@ include-symbols:
   - "boost::multi"
 exclude-symbols:
   - "boost::multi::detail"
+  - "boost::multi::elementwise::detail"
 
 # sort-members-by: location
 # sort-namespace-members-by: location
