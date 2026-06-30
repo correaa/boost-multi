@@ -178,15 +178,15 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 		default: assert(0);
 		}
 #else
-		auto const prefetch_err = HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, cudaMemLocation{cudaMemLocationTypeDevice, dev}, /*flags=*/0, cudaStreamPerThread);
-		switch(prefetch_err) {
-		case HICUP_(Success): break;
-		case HICUP_(ErrorInvalidValue): assert(0); break;          // NOLINT(bugprone-branch-clone)
-		case HICUP_(ErrorInvalidDevice): /*common case?;*/ break;  // NOLINT(bugprone-branch-clone)
-		default:
-			std::fprintf(stderr, "prefetch_to_device_: cudaMemPrefetchAsync returned %d (%s)\n", static_cast<int>(prefetch_err), cudaGetErrorString(prefetch_err));
-			assert(0);
-		}
+		// auto const prefetch_err = HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, cudaMemLocation{cudaMemLocationTypeDevice, dev}, /*flags=*/0, cudaStreamPerThread);
+		// switch(prefetch_err) {
+		// case HICUP_(Success): break;
+		// case HICUP_(ErrorInvalidValue): assert(0); break;          // NOLINT(bugprone-branch-clone)
+		// case HICUP_(ErrorInvalidDevice): /*common case?;*/ break;  // NOLINT(bugprone-branch-clone)
+		// default:
+		// 	std::fprintf(stderr, "prefetch_to_device_: cudaMemPrefetchAsync returned %d (%s)\n", static_cast<int>(prefetch_err), cudaGetErrorString(prefetch_err));
+		// 	assert(0);
+		// }
 #endif
 	}
 
