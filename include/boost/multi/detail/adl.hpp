@@ -45,8 +45,6 @@
 #include <thrust/swap.h>
 #include <thrust/uninitialized_copy.h>
 
-#include <exception>  // for std::terminate, fixes a bug un Thrust 2
-
 namespace thrust {
 template<class... Ts> void thrust_involved(Ts const&... /*unused*/) {}
 }  // namespace thrust
