@@ -1378,6 +1378,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
 #endif
 
+	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
  private:
