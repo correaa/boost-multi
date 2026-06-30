@@ -169,7 +169,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 #endif
 		return device;
 	}
-	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
+	static void prefetch_to_device_([[maybe_unused]] const_void_pointer ptr, [[maybe_unused]] size_type byte_count, [[maybe_unused]] device_index dev) {
 #if (CUDART_VERSION < 13000)  // CudaMemPrefetchAsync changes its interface on version 13
 		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev)) {
 		case HICUP_(Success): break;
