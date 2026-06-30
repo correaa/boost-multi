@@ -269,6 +269,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::extents_type;
 
+	/// A tuple type that allows storing `D` indices to locate an element in the array
 	using indices_type = typename layout_type::extents_type::indices_type;
 
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`
