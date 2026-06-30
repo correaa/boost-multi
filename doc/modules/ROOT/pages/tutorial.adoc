@@ -321,12 +321,6 @@ B[1] = A[2].element_moved();
 Each of the 10 *elements* of the third row of `A` is moved into the second row of `B`.
 `A[2]` still contains 10 (moved-from) empty vectors.
 
-In summary, to make a copy (enforce value semantics), use prefix `operator+`, to enforce reference semantics (avoid copies) use `auto&&` declarations:
-
-* Always use `auto&& ref = x;` (or `auto const& cref = x;`) if you need the reference semantics (named reference), where `x` is a subarray expression.
-* Always use `auto val = + x;` (or `auto const val = + x;`) if you need value semantics, where `x` is subarray expression. (This is optimal even if `x` is a plain `multi::array`).
-* Avoid `auto y = x;`, although accepted by the language, it is not clear what category or lifetime `y` has.
-
 [#tutorial_change_size]
 == Change Sizes
 
@@ -576,6 +570,14 @@ for(auto [i, j] : out.extents().elements()) {  // go through all the indices of 
 }
 ----
 link:https://godbolt.org/z/MojPrb5eP[(open with Compiler Explorer)]
+
+In summary, to make a copy (enforce value semantics), use prefix `operator+`, to enforce reference semantics (avoid copies) use `auto&&` declarations:
+
+* Always use `auto&& ref = x;` (or `auto const& cref = x;`) if you need the reference semantics (named reference), where `x` is a subarray expression.
+* Always use `auto val = + x;` (or `auto const val = + x;`) if you need value semantics, where `x` is subarray expression. (This is optimal even if `x` is a plain `multi::array`).
+* Avoid `auto y = x;`, although accepted by the language and by the library it is not clear what category or lifetime `y` has.
+
+This is just a recommendation that the library cannot enforce, feel free to try alternative idioms.
 
 // == "Pointer" to subarray
 
