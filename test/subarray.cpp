@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -7,6 +7,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <array>        // for array, get
+#include <tuple>        // for tuple, apply
 #include <type_traits>  // for std::is_swappable_v
 #include <utility>      // for as_const
 
@@ -268,6 +270,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_trivially_copyable_v<multi::array<int, 4>::iterator>);
 		static_assert(std::is_swappable_v<multi::array<int, 4>::iterator>);
 		// static_assert( std::is_trivially_relocatable_v<multi::array<int, 4>::iterator>);  // <==========
+	}
+	{
+		auto arr = multi::array<int, 2>{
+			{1, 2, 3},
+			{4, 5, 6},
+		};
+
+		{
+			using std::apply;
+			BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &apply(arr, std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
+		{
+			BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &apply(arr, std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
+		{
+			using indices_t = multi::array<int, 2>::indices_type;
+			using std::apply;
+			BOOST_TEST( &apply(arr, indices_t{1, 1}) == &arr[1][1] );
+
+			BOOST_TEST( &arr.apply(std::tuple{1, 1}) == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::array<int, 2>{{1, 1}}) == &arr[1][1] );
+		}
+
+		{
+			BOOST_TEST( &arr.apply({1, 1}) == &arr[1][1] );
+			// BOOST_TEST( &A.apply({1}) == &A[1][1] );  // error, can't deduce type
+
+			BOOST_TEST( &arr.apply(std::tuple{1})[1] == &arr[1][1] );
+			BOOST_TEST( &arr.apply(std::array<int, 1>{{1}})[1] == &arr[1][1] );
+		}
 	}
 
 	return boost::report_errors();

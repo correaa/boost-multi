@@ -29,6 +29,8 @@
 #endif
 #endif
 
+#include <exception>  // for std::terminate, used but not included by Thrust's util.h (fails under libc++), seems to be a defect of Thrust 2.0
+
 #ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // deep inside Thrust: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("thrust::system::detail::generic::detail::uninitialized_copy_functor<    ::std::vector<double, ::std::allocator<double> > ,     ::std::vector<double, ::std::allocator<double> > > ::operator ()< ::thrust::detail::tuple_of_iterator_references<    ::std::vector<double, ::std::allocator<double> >  &,     ::std::vector<double, ::std::allocator<double> >  & > > ") is not allowed
@@ -104,9 +106,22 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 
 // clang-format off
 class adl_copy_n_t {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"  // false positive: GCC loses track of reallocation done by caller (array::operator=) before this copy
+#pragma GCC diagnostic ignored "-Warray-bounds"       // same false positive, different diagnostic name in some GCC versions
+#endif
 	template<class... As>          constexpr static auto _(priority<0>/**/,          As&&... args) BOOST_MULTI_DECLRET(std::                copy_n(                      std::forward<As>(args)...))
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-	template<class... As>          constexpr static auto _(priority<1>/**/,          As&&... args) BOOST_MULTI_DECLRET(::thrust::           copy_n(                      std::forward<As>(args)...))
+	template<class In, class Size, class Out,
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<In >>::type, thrust::system::cpp::tag> ||
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<Out>>::type, thrust::system::cpp::tag>,
+		int> = 0>
+	constexpr static auto _(priority<1>/**/, In&& first, Size&& n, Out&& d_first) BOOST_MULTI_DECLRET(::thrust::copy_n(std::forward<In>(first), std::forward<Size>(n), std::forward<Out>(d_first)))
 #endif
 	template<class... As>          constexpr static auto _(priority<2>/**/,          As&&... args) BOOST_MULTI_DECLRET(                     copy_n(                      std::forward<As>(args)...))
 	template<class T, class... As> constexpr static auto _(priority<3>/**/, T&& arg, As&&... args) BOOST_MULTI_DECLRET(std::decay_t<T>::    copy_n(std::forward<T>(arg), std::forward<As>(args)...))

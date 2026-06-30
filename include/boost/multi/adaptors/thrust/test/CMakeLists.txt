@@ -84,6 +84,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 				--diag-suppress=1394  # field of class type without a DLL interface used in a class with a DLL interface
 				-Xcompiler=/W4
+				-Xcompiler=/we4100  # treat 'unreferenced formal parameter' as an error
 				-Xcompiler=/we4244  # treat 'conversion, possible loss of data' (narrowing) as an error
 				-Xcompiler=/wd4061  # enumerator 'cudaErrorSystemNotReady' in switch of enum 'cudaError' is not explicitly handled by a case label
 				-Xcompiler=/wd4324  # structure was padded due to alignment specifier

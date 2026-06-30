@@ -269,6 +269,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::extents_type;
 
+	using indices_type = typename layout_type::extents_type::indices_type;
+
 	/// Returns the index extensions (structured cartesian product of half-open ranges) for all dimensions as an `extents_type`
 	/// (`extents_t<D>`), a tuple of `D` `index_extension` values each encoding `[first, last)`.
 	/// The result can be passed directly to array constructors or compared for shape equality.
@@ -1800,7 +1802,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  public:
 	/// When evaluated on a tuple object this is equivalent to `.operator()(get<0>(tup), get<1>(tup), ...)`. (The argument type typical has `tuple_size<Tuple> == D`)
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
+	template<typename Tuple = typename const_subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
 	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access iterator across the leading dimension (e.g. returned by `begin`/`end`)
 	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access const-iterator across the leading dimension
@@ -2519,8 +2521,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::apply;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
+	template<typename Tuple = typename subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
+	template<typename Tuple = typename subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;

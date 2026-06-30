@@ -232,6 +232,8 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
 		  other.extents()
 	  ) {
+		static_assert(std::is_nothrow_move_constructible_v<typename dynamic_array::element>,
+					  "element type's move constructor must be noexcept");  // TODO(correaa) reconsider this since this move constructor cannot be noexcept anyway (or sfinae this away)
 		adl_alloc_uninitialized_move_n(
 			this->alloc(),
 			other.data_elements(),
@@ -376,10 +378,10 @@ struct                                                                          
 	: dynamic_array(std::begin(rng), std::end(rng)) {
 	}  // Sonar: Prefer free functions over member functions when handling objects of generic type "Range".
 
-	template<class TT>
-	auto uninitialized_fill_elements(TT const& value) {
-		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
-	}
+	// template<class TT>
+	// auto uninitialized_fill_elements(TT const& value) {
+	// 	return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
+	// }
 
 	template<class TT, class... As>
 	dynamic_array(array_ref<TT, D, As...> const& other, allocator_type const& alloc)
@@ -512,7 +514,16 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{other.extents()}.num_elements())),
 		  other.extents()
 	  ) {
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+		} catch(...) {
+			this->deallocate();  // uninitialized_copy_n already destroyed the partially-constructed elements
+			throw;
+		}
+#else
 		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+#endif
 	}
 
 	template<class F>  // TODO(correaa) make more generic, e.g.: take ArrayWithElementsLike
@@ -537,7 +548,16 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{other.extents()}.num_elements())),
 		  other.extents()
 	  ) {
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), std::move(other).elements().begin(), this->num_elements(), this->data_elements());
+		} catch(...) {
+			this->deallocate();
+			throw;
+		}
+#else
 		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), std::move(other).elements().begin(), this->num_elements(), this->data_elements());
+#endif
 	}
 
 	template<
@@ -608,7 +628,16 @@ struct                                                                          
 	/*mplct*/ dynamic_array(array_ref<TT, D, Args...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
 	: array_alloc{}, ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extents()} {
 		assert(this->stride() != 0);
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+			dynamic_array::uninitialized_copy_elements(other.data_elements());
+		} catch(...) {
+			this->deallocate();
+			throw;
+		}
+#else
 		dynamic_array::uninitialized_copy_elements(other.data_elements());
+#endif
 	}
 
 	template<class TT, class... Args, std::enable_if_t<!multi::detail::is_implicitly_convertible_v<decltype(*std::declval<array_ref<TT, D, Args...> const&>().base()), T>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -619,7 +648,12 @@ struct                                                                          
 		  other.extents()
 	  ) {
 		assert(this->stride() != 0);
-		dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
+		try {
+			dynamic_array::uninitialized_copy_elements(std::move(other).data_elements());
+		} catch(...) {
+			this->deallocate();
+			throw;
+		}
 	}
 
 	/// Copy constructor. Allocates new storage and copies all elements from @p other.
@@ -807,14 +841,14 @@ struct                                                                          
 
 	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
-	// cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }
+	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
+	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
-	// cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }
+	/// gets a pointer to a contigous range of size `.num_elements()` containing the data of the array
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
 
-	// cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // construct the library move-pointer (not a std::move_iterator) to match the declared return type
+	/// gets a library move-pointer (that produce r-value on dereference) to a contigous range of size `.num_elements()` containing the data of the array
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// Returns the base const-pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
@@ -1210,13 +1244,13 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 #endif
 	}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>                                          // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // 3
-	: dynamic_array(extension * extents(value), alloc) {
-		assert(this->stride() != 0);
-		using std::fill;
-		fill(this->begin(), this->end(), value);
-	}
+	// template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)
+	// : dynamic_array(extension * extents(value), alloc) {
+	// 	assert(this->stride() != 0);
+	// 	using std::fill;
+	// 	fill(this->begin(), this->end(), value);
+	// }
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>             // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)  // 3
@@ -1224,7 +1258,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 
 	explicit dynamic_array(typename dynamic_array::extents_type const& extensions, allocator_type const& alloc)  // 3
 	: array_alloc{alloc}, ref_(dynamic_array::allocate(typename dynamic_array::layout_t{extensions}.num_elements()), extensions) {
-		// assert(this->stride() != 0);
+		static_assert(std::is_nothrow_default_constructible_v<typename dynamic_array::element>, "element type's default constructor must be noexcept");
 		uninitialized_value_construct();
 	}
 
@@ -1516,7 +1550,7 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 };
 
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
-struct array : unique_array<T, D, Alloc> {
+struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) array does defined a move constructor but it has requirements on the allocator
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 	using unique_  = unique_array<T, D, Alloc>;
@@ -1651,15 +1685,25 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
-	auto operator=(array&& other) noexcept -> array& {
-		static_assert(std::is_nothrow_move_assignable_v<typename array::allocator_type>, "move-assignment adopts the source allocator and is noexcept; the allocator must be nothrow-move-assignable");
+	/// Move assignment operator (noexcept when allocator is always-equal or nothrow-move-assignable)
+	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && (  // NOLINT(modernize-use-constraints) for C++20
+																		multi::allocator_traits<typename array::allocator_type>::is_always_equal::value || std::is_nothrow_move_assignable_v<typename array::allocator_type>
+																		// POCMA=false with a stateful allocator is unsupported (would require element-wise moves into pre-existing storage, potentially allocating, potentially throwing)
+																	),
+												  int> = 0>
+	auto operator=(array&& other) noexcept -> array& {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved) this IS the move assignemnt
 		if(this == std::addressof(other)) {
 			return *this;
 		}
 		clear();
-		// TODO(correaa) the allocator is moved unconditionally (move always propagates it). This is consistent and keeps move-assignment allocation-free and noexcept. It can be extended later to honor propagate_on_container_move_assignment==false
-		this->alloc()          = std::move(other.alloc());             // adopt their allocator and their buffer together, so the two always match (no wrong-allocator free) and we never allocate
-		this->base_            = std::exchange(other.base_, nullptr);  // in this design the moved-from allocator should be always be
+		if constexpr(!multi::allocator_traits<typename array::allocator_type>::is_always_equal::value) {
+			static_assert(
+				sizeof(Dummy*) && multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value,
+				"stateful allocators with propagate_on_container_move_assignment=false are not supported: buffer and allocator cannot be transferred together without reallocation"
+			);
+			this->alloc() = std::move(other.alloc());  // propagate so allocator and buffer always match (no wrong-allocator free)
+		}
+		this->base_            = std::exchange(other.base_, nullptr);
 		this->layout_mutable() = std::exchange(other.layout_mutable(), typename array::layout_type(typename array::extents_type{}));
 		return *this;
 	}
@@ -1797,6 +1841,7 @@ struct array : unique_array<T, D, Alloc> {
 	}
 
 	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
+	// at the moment requires nothrow default constructible
 	auto reextent(typename array::extents_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
 		if(exts == this->extents()) {
 			return std::move(*this);
@@ -1818,6 +1863,7 @@ struct array : unique_array<T, D, Alloc> {
 			);
 
 			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
+				static_assert(std::is_nothrow_default_constructible_v<typename array::element>, "element type's default constructor must be noexcept; use reextent(exts, value) to fill with a value instead");  // TODO(correaa) reconsider this (reextent cannot be no except anyway, but exceptions also have a cost)
 				adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 			}
 		} else {
