@@ -414,7 +414,11 @@ class adl_uninitialized_copy_n_t {
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
-		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >  // NOLINT(modernize-use-constraints) for C++20
+		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >,  // NOLINT(modernize-use-constraints) for C++20
+		class = std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<It   >>::type, thrust::system::cpp::tag> ||
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<ItFwd>>::type, thrust::system::cpp::tag>
+		>
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
