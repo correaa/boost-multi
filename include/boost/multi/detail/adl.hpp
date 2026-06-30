@@ -29,6 +29,8 @@
 #endif
 #endif
 
+#include <exception>  // for std::terminate, used but not included by Thrust's util.h (fails under libc++), seems to be a defect of Thrust 2.0
+
 #ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // deep inside Thrust: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("thrust::system::detail::generic::detail::uninitialized_copy_functor<    ::std::vector<double, ::std::allocator<double> > ,     ::std::vector<double, ::std::allocator<double> > > ::operator ()< ::thrust::detail::tuple_of_iterator_references<    ::std::vector<double, ::std::allocator<double> >  &,     ::std::vector<double, ::std::allocator<double> >  & > > ") is not allowed
