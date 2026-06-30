@@ -447,11 +447,20 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(exts).num_elements()),  // NOLINT(readability-redundant-typename)
 								nullptr)
 	  ) {
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element>) {
-			array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
-		} else {                                                                                                                                                    // this workaround allows constexpr arrays for simple types
-			adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename) for C++23
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+#endif
+			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element>) {
+				array_alloc::uninitialized_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename) for C++23
+			} else {                                                                                                                                                    // this workaround allows constexpr arrays for simple types
+				adl_fill_n(this->base(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);                         // NOLINT(readability-redundant-typename) for C++23
+			}
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		} catch(...) {
+			this->deallocate();
+			throw;
 		}
+#endif
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                            // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
