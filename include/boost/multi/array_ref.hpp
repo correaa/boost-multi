@@ -267,7 +267,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma warning(pop)
 #endif
 
-	using typename layout_type::extents_type;
+	// using typename layout_type::extents_type;
+	/// A type that stores the extents of the array or subarray (returned from `.extents()` and used for `array` constructors)
+	using extents_type = typename layout_type::extents_type;
 
 	/// A tuple type that allows storing `D` indices to locate an element in the array
 	using indices_type = typename layout_type::extents_type::indices_type;
