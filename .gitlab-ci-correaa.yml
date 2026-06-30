@@ -1477,7 +1477,7 @@ qmcpack cuda:
   needs: ["qmcpack","cuda"]
 
 qmcpack rocm:
-  stage: build  # test
+  stage: test
   image:
     name: rocm/dev-ubuntu-24.04:6.4.1-complete
   tags:
@@ -1490,15 +1490,13 @@ qmcpack rocm:
     - apt-get -qq install --no-install-recommends -y hipblas-dev rocsolver-dev rocblas-dev rocrand-dev hipsparse-dev
     - rocm-smi
     - rsync --version
-    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
-    # - git clone           https://github.com/correaa/qmcpack.git --branch complete-pointer-concept-for-shm_ptr
+    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git  # https://github.com/correaa/qmcpack.git  # --branch complete-pointer-concept-for-shm_ptr
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_SHA
     - cd build
     - hipcc --version
-    # - rocminfo
     - export OMPI_CC=amdclang
     - export OMPI_CXX=amdclang++
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=amdclang -DCMAKE_CXX_COMPILER=amdclang++ -DMPI_C_COMPILER=mpicc -DMPI_CXX_COMPILER=mpicxx -DBUILD_AFQMC_HIP=ON -DQMC_CXX_STANDARD=17 -DQMC_GPU="openmp;hip" -DQMC_GPU_ARCHS=gfx90a -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations"
@@ -1506,7 +1504,7 @@ qmcpack rocm:
     #   ppconvert test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     # - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     # - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
-#  needs: ["qmcpack","rocm"]
+  needs: ["qmcpack","rocm"]
 
 # sonar cloud
 # from instructions

@@ -117,7 +117,7 @@ class adl_copy_n_t {
 #endif
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
 	template<class In, class Size, class Out,
-		std::enable_if_t<
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<In >>::type, thrust::system::cpp::tag> ||
 			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<Out>>::type, thrust::system::cpp::tag>,
 		int> = 0>
