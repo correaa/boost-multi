@@ -1477,7 +1477,7 @@ qmcpack cuda:
   needs: ["qmcpack","cuda"]
 
 qmcpack rocm:
-  stage: build  # test
+  stage: test
   image:
     name: rocm/dev-ubuntu-24.04:6.4.1-complete
   tags:

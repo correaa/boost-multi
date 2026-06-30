@@ -6,39 +6,38 @@
 #define BOOST_MULTI_ADAPTORS_THRUST_HPP
 // #pragma once
 
-#include <thrust/detail/raw_reference_cast.h>
-
 #include "boost/multi/array.hpp"
+
+#include <thrust/detail/raw_reference_cast.h>
 
 namespace thrust {
 
 template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
 __host__ __device__
-boost::multi::subarray<T, D, ElementPtr, Layout> const&
-raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+	boost::multi::subarray<T, D, ElementPtr, Layout> const&
+	raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
 
 template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
 __host__ __device__
-boost::multi::subarray<T, D, ElementPtr, Layout>&
-raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>& ref) { return ref; }
+	boost::multi::subarray<T, D, ElementPtr, Layout>&
+	raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>& ref) { return ref; }
 
 template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
 __host__ __device__
-boost::multi::subarray<T, D, ElementPtr, Layout>&
-raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>&& ref) { return ref; }
+	boost::multi::subarray<T, D, ElementPtr, Layout>&
+	raw_reference_cast(boost::multi::subarray<T, D, ElementPtr, Layout>&& ref) { return ref; }
 
 template<class T, boost::multi::dimensionality_type D, class ElementPtr, class Layout>
 __host__ __device__
-boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
-raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
+	boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
+	raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const& ref) { return ref; }
 
 }  // namespace thrust
 
-
-#include <exception>
-
 #include <thrust/device_allocator.h>
 #include <thrust/universal_allocator.h>
+
+#include <exception>
 
 #if !defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::allocator
@@ -62,7 +61,7 @@ raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
 #include <thrust/system/cuda/memory_resource.h>          // for universal_memory_resource
 #include <thrust/system/cuda/pointer.h>                  // for universal_pointer
 
-#if THRUST_VERSION >= 300200  // CCCL 2
+#if THRUST_VERSION >= 300200                           // CCCL 2
 #include <thrust/detail/type_traits/pointer_traits.h>  // needed for specialization for Thrust 3 (CUDA 13.2)
 #endif
 
@@ -77,6 +76,7 @@ raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
 #include "boost/multi/adaptors/thrust/fix_pointer_traits.hpp"
 
 #include <cassert>
+#include <cstdio>    // for std::fprintf
 #include <iterator>  // for iterator_traits
 #include <memory>    // for allocator_traits, allocator, pointer_traits
 // #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
@@ -108,6 +108,8 @@ raw_reference_cast(boost::multi::const_subarray<T, D, ElementPtr, Layout> const&
 #define HICUP hip
 #define HICUP_(NAME) hip##NAME
 #endif
+
+#define HICUP_ASSERT(NAME) HICUP_(NAME) == HICUP_(Success) ?: assert(0);
 
 namespace boost::multi {
 template<class Alloc> struct allocator_traits;
@@ -157,7 +159,8 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 #endif
 		switch(HICUP_(GetDevice)(&device)) {
 		case HICUP_(Success): break;
-		case HICUP_(ErrorInvalidValue): assert(0);  // NOLINT(bugprone-branch-clone)
+		case HICUP_(ErrorInvalidValue):
+			assert(0);  // NOLINT(bugprone-branch-clone)
 		// ... 125 cases not handled
 		default: assert(0);
 		}
@@ -167,18 +170,24 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 		return device;
 	}
 	static void prefetch_to_device_(const_void_pointer ptr, size_type byte_count, device_index dev) {
-#if(CUDART_VERSION < 13000)  // CudaMemPrefetchAsync changes its interface on version 13 TODO(correaa) update API call
-		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev))
-#else
-		cudaMemLocation loc{cudaMemLocationTypeDevice, dev};
-		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, loc, /*flags=*/0, /*stream=*/0))
-#endif
-		{
+#if (CUDART_VERSION < 13000)  // CudaMemPrefetchAsync changes its interface on version 13
+		switch(HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, dev)) {
 		case HICUP_(Success): break;
 		case HICUP_(ErrorInvalidValue): assert(0); break;   // NOLINT(bugprone-branch-clone)
 		case HICUP_(ErrorInvalidDevice): assert(0); break;  // NOLINT(bugprone-branch-clone)
 		default: assert(0);
 		}
+#else
+		auto const prefetch_err = HICUP_(MemPrefetchAsync)(raw_pointer_cast(ptr), byte_count, cudaMemLocation{cudaMemLocationTypeDevice, dev}, /*flags=*/0, cudaStreamPerThread);
+		switch(prefetch_err) {
+		case HICUP_(Success): break;
+		case HICUP_(ErrorInvalidValue): assert(0); break;          // NOLINT(bugprone-branch-clone)
+		case HICUP_(ErrorInvalidDevice): /*common case?;*/ break;  // NOLINT(bugprone-branch-clone)
+		default:
+			std::fprintf(stderr, "prefetch_to_device_: cudaMemPrefetchAsync returned %d (%s)\n", static_cast<int>(prefetch_err), cudaGetErrorString(prefetch_err));
+			assert(0);
+		}
+#endif
 	}
 
 	static auto get_device_(const_void_pointer ptr) -> device_index {
@@ -205,18 +214,18 @@ namespace thrust {
 // 	return static_cast<T>(ref);
 // }
 
-template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
+template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
 
 template<class FF>
-class result_helper{
-	template<class F> static constexpr auto _(priority<0>/**/, F const& fun) -> void;
-	template<class F> static constexpr auto _(priority<1>/**/, F const& fun) -> decltype(fun());
-	template<class F> static constexpr auto _(priority<2>/**/, F const& fun) -> decltype(fun(multi::index{}));
-	template<class F> static constexpr auto _(priority<3>/**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}));
-	template<class F> static constexpr auto _(priority<4>/**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}, multi::index{}));
+class result_helper {
+	template<class F> static constexpr auto _(priority<0> /**/, F const& fun) -> void;
+	template<class F> static constexpr auto _(priority<1> /**/, F const& fun) -> decltype(fun());
+	template<class F> static constexpr auto _(priority<2> /**/, F const& fun) -> decltype(fun(multi::index{}));
+	template<class F> static constexpr auto _(priority<3> /**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}));
+	template<class F> static constexpr auto _(priority<4> /**/, F const& fun) -> decltype(fun(multi::index{}, multi::index{}, multi::index{}));
 
  public:
-	using type = decltype(_(priority<4>{}, std::declval<FF>()));
+	using type      = decltype(_(priority<4>{}, std::declval<FF>()));
 	result_helper() = default;
 	void dummy() const {}
 };
@@ -235,22 +244,24 @@ auto device_function(F&& other) {
 
 #define BOOST_MULTI_CAPTURE(...) [__VA_ARGS__]
 
-#define BOOST_MULTI_DEVICE_LAMBDA_LEGACY(Cap, ...) ([=] () { \
-			[[maybe_unused]] auto host_dummy = (Cap __host__ __VA_ARGS__); \
-			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
-			return multi::thrust::device_function<result_type>(Cap __device__ __VA_ARGS__ ); \
-		}()) \
+#define BOOST_MULTI_DEVICE_LAMBDA_LEGACY(Cap, ...) ([=]() {                                               \
+	[[maybe_unused]] auto host_dummy = (Cap __host__ __VA_ARGS__);                                        \
+	using result_type                = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
+	return multi::thrust::device_function<result_type>(Cap __device__ __VA_ARGS__);                       \
+}())
 
-#define BOOST_MULTI_DEVICE_LAMBDA(...) () { \
-			[[maybe_unused]] auto host_dummy = ([=] __host__ __VA_ARGS__); \
-			using result_type = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
-			return multi::thrust::device_function<result_type>([=] __device__ __VA_ARGS__ ); \
-		}() \
+#define BOOST_MULTI_DEVICE_LAMBDA(...)                                                                        \
+	() {                                                                                                      \
+		[[maybe_unused]] auto host_dummy = ([=] __host__ __VA_ARGS__);                                        \
+		using result_type                = typename multi::thrust::result_helper<decltype(host_dummy)>::type; \
+		return multi::thrust::device_function<result_type>([=] __device__ __VA_ARGS__);                       \
+	}                                                                                                         \
+	()
 
 template<dimensionality_type D, class Proj>
 class device_restriction_iterator {
 	typename extents_t<D>::iterator it_;
-	Proj                               proj_;
+	Proj                            proj_;
 
 	device_restriction_iterator(typename extents_t<D>::iterator it, Proj proj) : it_{it}, proj_{proj} {}
 
@@ -357,7 +368,7 @@ class device_restriction_iterator {
 template<dimensionality_type D, class Proj>
 class device_restriction {  //: restriction<D, Proj, int> {
 	multi::extents_t<D> exts_;
-	Proj                   proj_;
+	Proj                proj_;
 
  public:
 	device_restriction(multi::extents_t<D> exts, Proj proj) : exts_{exts}, proj_{proj} {}
@@ -385,7 +396,6 @@ template<dimensionality_type D, typename F>
 auto device_restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' reserved
 	return device_restriction<D, F>(ext, std::forward<F>(fun));
 }
-
 
 }  // namespace thrust
 
