@@ -250,7 +250,6 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	/// A type to store the extent of an array (the range of valid indices in the leading dimension)
 	using extent_type = typename layout_type::extent_type;
-	// using typename layout_type::extent_type;
 
 	/// (deprecated) use `extent_type`
 	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT  ; old spelling kept for compatibility
@@ -3123,8 +3122,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class A> constexpr void intersection_assign(A&& other) && { intersection_assign(std::forward<A>(other)); }
 	template<class A> constexpr void intersection_assign(A&& other) & {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-missing-std-forward) false positive clang-tidy 17
 		std::for_each(
-			intersection(types::extent(), extent(other)).begin(),
-			intersection(types::extent(), extent(other)).end(),
+			intersection(this->extent(), other.extent()).begin(),
+			intersection(this->extent(), other.extent()).end(),
 			[&](auto const idx) -> void { operator[](idx) = std::forward<A>(other)[idx]; }
 		);
 	}
@@ -3986,15 +3985,15 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto elements() const& -> celements_type { return elements_aux_(); }
+	/// returns a random-access range with all the elements of the array
+	constexpr auto elements() const& -> celements_type { return elements_aux_(); }	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto elements() & -> elements_type { return elements_aux_(); }
 	constexpr auto elements() && -> elements_type { return elements_aux_(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }
-	friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
-	friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
+	// friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }
+	// friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
+	// friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
 
  private:
 	constexpr auto celements_() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
