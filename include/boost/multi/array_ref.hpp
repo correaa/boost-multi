@@ -1877,11 +1877,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// returns an const-iterator to the end
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
 
-
 	/// Indexable cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home()`)
-	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;        ///< Cursor for access to the array, the cursor is indexable, and it has pointer semantics (returned by `home`)
+	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
+
 	/// Indexable const-cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home() const`)
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;  ///< Cursor for constant access to the array
+	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
