@@ -1878,7 +1878,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
 
 	/// Indexable cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home()`)
-	using cursor       = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
+	using cursor = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 
 	/// Indexable const-cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home() const`)
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
