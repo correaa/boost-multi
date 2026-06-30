@@ -101,18 +101,18 @@ In all three cases, the undefined behavior occurs at the point of _forming_ the 
 This issue is specific to libraries that expose pointer-based strided iterators compatible with the STL iteration model (`.begin()`, `.end()`, pointer arithmetic with stride).
 Boost.Multi is unusual in providing both: STL-compatible strided iterators (which are subject to this issue) and index-based access (which is not).
 
-No tested compiler complains about the illegality of these transiently out-of-bounds pointer values, and the affected code behaves correctly on all tested platforms.
-However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers.
+No tested compiler and system yet complains about the illegality of these transiently out-of-bounds pointer values, and the affected code behaves correctly on all tested platforms.
+However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers, but currently the don't.
 (`constexpr` contexts can also reject this situation.)
 
 === Library-level Mitigations
 
 Possible mitigations at the library level include, at a cost:
 
-- Over-allocating (padding the allocation so that strided `.end()` pointers remain in-bounds).
-- Using integer offset arithmetic internally and forming pointers only at the point of dereference.
-- Representing `.end()` as a sentinel or count rather than a pointer.
-- Clearly state (and debug-check) that strides that do not divide the size are undefined behavior.
+1. **Using integer offset arithmetic internally** and forming pointers only at the point of dereference (strategy used by `std::reverse_iterator`) (pros: elegant, cons: iterators become bigger, e.g. 64-bit bigger, might impact performance of iteration)
+2. **Over-allocating** (padding the allocation so that strided `.end()` pointers remain in-bounds). (pros: no changes need to the current implementation, cons: doesn't solve the problem for non-managed references, such as `multi::array_ref`)
+3. Representing `.end()` as a sentinel or count rather than a pointer (pros: elegant, cons: breaks compatibility with classic STL algorithms, inhomogenoeus pointer types but compatible with `std::ranges`).
+4. Clearly state (and debug-check) that strides that do not divide the size are undefined behavior and other conditions (pros: no code changes needed, cons: adds complicated preconditions).
 
 These mitigations are not implemented, but the library is prepared to adopt them if necessary.
 
