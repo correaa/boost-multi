@@ -8,6 +8,9 @@ compilation-database: build-mrdocs/compile_commands.json
 input:
   - include/boost/multi/array_ref.hpp
   - include/boost/multi/array.hpp
+  - include/boost/multi/restriction.hpp
+  - include/boost/multi/elementwise.hpp
+  - include/boost/multi/io.hpp
 
 output: doc/modules/reference/pages
 
