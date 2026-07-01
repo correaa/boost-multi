@@ -243,17 +243,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		multi::dynamic_array<int, 2> arr({4, 5}, 0);
-		std::iota(elements(arr).begin(), elements(arr).end(), 0);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0);
 
 		multi::array<int, 2> arr2({4, 5});
-		std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
+		std::transform(arr.elements().begin(), arr.elements().end(), arr2.elements().begin(), std::negate<>{});
 
 		auto&& neg_arr = arr.static_array_cast<int, negater<int*>>();
 
 		BOOST_TEST( neg_arr[1][1] == arr2[1][1] );
 		BOOST_TEST( arr2[1][1] == neg_arr[1][1] );
 
-		BOOST_TEST( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
+		BOOST_TEST( std::equal(arr2[1].begin(), arr2[1].end(), neg_arr[1].begin(), neg_arr[1].end()) );
 
 		BOOST_TEST( arr2[1] == neg_arr[1] );
 		BOOST_TEST( neg_arr[1] == arr2[1] );
