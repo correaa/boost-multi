@@ -137,7 +137,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( A2D_block == B2D_block );
 
-#if !defined(__clang__) && defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER)
+#if !defined(__clang__) && defined(NDEBUG) && !defined(RUNNING_ON_VALGRIND) && __has_include(<execution>) && !defined(__NVCC__) && !defined(__NVCOMPILER) && defined(MULTI_HAVE_TBB)  // libstdc++ std::execution::par needs TBB at link time; MULTI_HAVE_TBB is defined by CMake only when TBB is found
 #if !((defined(__clang__)) && defined(__CUDA__)) && (!defined(__INTEL_LLVM_COMPILER) || (__INTEL_LLVM_COMPILER > 20240000))
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if !defined(__apple_build_version__)
