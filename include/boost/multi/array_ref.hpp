@@ -228,7 +228,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::num_elements;
 	using layout_type::offset;
 
-    /// Type to store an index in the leading dimension
+	/// Type to store an index in the leading dimension
 	using index = typename layout_type::index;
 
 	using typename layout_type::index_extension;
@@ -1417,7 +1417,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// Associated type that this reference decays to (when true copies are needed)
 	using decay_type = array<std::decay_t<typename types::element>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
-	/// Materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
+	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		decay_type ret{*this};
 		return ret;
@@ -4104,9 +4104,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	using decay_type = typename array_ref::decay_type;
 
-	/// creates a concrete (allocated) array value
+	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
 	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
-	
 
  private:
 	template<class TTN, std::size_t DD = 0>
