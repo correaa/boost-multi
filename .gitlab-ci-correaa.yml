@@ -31,6 +31,7 @@ variables:
   NINJA_STATUS: "[%f/%t||%r] "
 
 before_script:
+  - echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/02-unsafe-io  # skip dpkg fsync(); safe in throwaway CI containers, speeds up apt-get install on I/O-bound runners
   - mkdir -p $APT_CACHE_DIR/partial
   - echo "Dir::Cache::Archives \"$APT_CACHE_DIR\";" > $APT_CONFIG
   - apt-get -qq update  # factored update; macOS and Windows jobs override with `before_script: []`
