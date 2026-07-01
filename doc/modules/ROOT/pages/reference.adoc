@@ -69,7 +69,7 @@ All relational operators `==`, `<`, etc. are provided.
 It is important to note that, in this library, comparisons are also always "deep".
 Lexicographical order is defined recursively, starting from the first dimension index and from left to right.
 For example, `A < B` if `A[0] < B[0]`, or `A[0] == B[0]` and `A[1] < B[1]`, or ..., etc.
-Lexicographical order applies naturally if the extensions of `A` and `B` are different; however, their dimensionalities must match.
+Lexicographical order applies naturally if the extents of `A` and `B` are different; however, their dimensionalities must match.
 See the sort examples.
 
 Regarding multidimensional indexing:
@@ -81,7 +81,7 @@ Each index argument lowers the rank by one.
 A special range is given by `multi::_`, which means "the whole range" (also spelled `multi::all`).
 For example, if `S` is a 3D of sizes 10-by-10-by-10, `S(3, {2, 8}, {3, 5})` gives a reference to a 2D array where the first index is fixed at 3, with sizes 6-by-2 referring the subblock in the second and third dimension.
 Note that `S(3, {2, 8}, {3, 5})` (6-by-2) is not equivalent to `S[3]({2, 8})({3, 5})` (2-by-10).
-- `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extension())` and, in turn to `S(multi::_)` or `S(multi::all)`.
+- `operator()()` (no arguments) gives the same array but always as a subarray type (for consistency), `S()` is equivalent to `S(S.extent())` and, in turn to `S(multi::_)` or `S(multi::all)`.
 
 Some member functions are generally used for accessing details of the internal data structure (layout) interfacing with C-libraries, `layout`, `base`, `stride`, and `strides`.
 
@@ -146,7 +146,7 @@ It supports stateful and polymorphic allocators, which is implied for the specia
 It inherits the behavior interface (including constructors) of `dynamic_array`, except that `array` has full-value semantics and can reallocate memory; therefore
 `operator=` assigns from an arbitrary array (or subarray-reference) `subarray`, or from another `array`. `array`s enjoy move semantics and `swap` is O(1).
 
-`reextent` changes the size of the array to new extensions, `reextent({e1, e2, ...})`, while elements are preserved when possible.
+`reextent` changes the size of the array to new extents, `reextent({e1, e2, ...})`, while elements are preserved when possible.
 New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`.
 The first argument is of `extents_type`, and the second is optional for element types with a default constructor. 
 
@@ -154,7 +154,7 @@ The first argument is of `extents_type`, and the second is optional for element 
 === Restrictions
 
 A restriction is an array that generates its elements lazily on the fly.
-It is defined by combining a D-dimensional function with a D-dimensional extensions object.
+It is defined by combining a D-dimensional function with a D-dimensional extents object.
 The function is therefore restricted to this Cartesian grid.
 The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
 This includes the iteration and element-access interface, although pointer access and layout access are not, since there is no actual memory as its elements are not stored.
@@ -190,7 +190,7 @@ Both concrete arrays (and subarrays) and restrictions have iterators (`.begin()`
 === Cursors
 
 A cursor is a pointer-like type that supports direct multidimensional indexing from a fixed origin.
-It is represented by `multi::cursor_t<ElementPtr, D, StridesType>` and obtained via the `.home()` member of any array or subarray, which returns a cursor pointing to the top-corner element at index stem:[[0, 0, \ldots, 0\]].
+It is represented by `multi::cursor_t<ElementPtr, D, StridesType>` and obtained via the `.home()` member of any array or subarray, which returns a cursor pointing to the top-corner element at index `[0, 0, ..., 0]`.
 
 Unlike iterators, which are one-dimensional and step through `D-1`-dimensional subarrays, a cursor carries the full stride information for all `D` dimensions and can reach any element in a single indexing expression.
 

@@ -38,7 +38,7 @@ link:https://godbolt.org/z/555893MqW[(open with Compiler Explorer)].
 | Non-owning view of data              | **yes**, via `multi::array_ref<T, D>(ptr, {n1, n2, ..., nD})`              | **yes**, via `mdspan m{T*, extents{n1, n2, ..., nD}};`                          | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[n1][n2]...[nD])` | **yes**, via `Eigen::Map<Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>>(ptr, n1, n2)`
 | Compile-time dim size                | no                                                                         | **yes**, via template parameters `mdspan{T*, extent<16, dynamic_extents>+{32}+ }` | no                                                                             | **yes**, via `Eigen::Array<T, N1, N2>`
 | Array values (owning data)           | **yes**, via `multi::array<T, D>({n1, n2, ..., nD})`                       | yes? (planned for `mdarray`)                                                    | **yes**, via `boost::multi_array<T, D>(boost::extents[n1][n2]...[nD])`         | **yes**, via `Eigen::Array<T>(n1, n2)`
-| Value semantic (Regular)             | **yes**, via cctor, mctor, assign, massign, auto decay of views            | yes? (planned for `mdarray`)                                                    | partial, assignment on equal extensions                                         | **yes** (?)
+| Value semantic (Regular)             | **yes**, via cctor, mctor, assign, massign, auto decay of views            | yes? (planned for `mdarray`)                                                    | partial, assignment on equal extents                                            | **yes** (?)
 | Move semantic                        | **yes**, via mctor and massign                                             | yes? for `mdarray` (depends on adapted container)                               | no (C++98 library)                                                             | **yes** (?)
 | const-propagation semantics          | **yes**, via `const` or `const&`                                           | no, const mdspan elements are assignable!                                       | no, inconsistent                                                               | (?)
 | Element initialization               | **yes**, via nested init-list                                              | no (?)                                                                          | no                                                                             | no, only delayed init via `A << v1, v2, ...;`
@@ -182,7 +182,7 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 | Indexing                    | `A[i;j]`                 | `+A[i][j]+` or `+A(i, j)+` (or `+A[i, j]+` in C++23)
 | row `i`                     | `A[i;]`                   | `+A(i, _)+` or `A[i]` or `A[i, _]` (C++23)
 | column `j`                  | `A[;j]`                   | `+A(_, j)+` (or `+A[_, j]+` in C++23)
-| subrange of indices `I`     | `V[I]`                    | `+V(I)+` or `+V({f, l})+` (limited: `I` must be a integer interval or use `multi::restriction` https://godbolt.org/z/Ka3f3T9xj)
+| subrange of indices `I`     | `V[I]`                    | `+V(I)+` or `+V({f, l})+` (limited: `I` must be an integer interval or use `multi::restriction` https://godbolt.org/z/Ka3f3T9xj)
 | Compress                    | `U / V`                   | no (approx: https://godbolt.org/z/z8M6qhq5G)
 | Compress last axis          | `U / A`                   | no
 | Restructuring (elements)    | `,A`                      | `A.elements()`
@@ -192,7 +192,7 @@ In this case, `std::fill(D2D.elements().begin(), D2D.elements().end(), 0);` will
 | Transposition               | `⍉ A`                     | `~A` or `A.transposed()`
 | Main diagonal               | `1 1 ⍉ A`                 | `A.diagonal()`
 | Drop                        | `3 ↓ V`                   | `V.dropped(3)`
-| Drop (from both side)       | `2 -1 ↓ A`                | `A.taked(A.size() - 1).dropped(2)`
+| Drop (from both sides)      | `2 -1 ↓ A`                | `A.taked(A.size() - 1).dropped(2)`
 | Rotate (3 places left)      | `3 ⌽ A`                   | no (approx: use `std::rotate`)
 | Rotate (2 places right)     | `-2 ⌽ A`                  | no (approx: use `std::rotate`)
 | Reversal                    | `⌽ V`                     | `V.reversed()`

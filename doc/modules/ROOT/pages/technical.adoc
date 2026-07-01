@@ -56,7 +56,7 @@ It holds no hidden shared state: there is no copy-on-write, no reference countin
 Concretely, without any external synchronization it is safe for multiple threads to:
 
 * access _distinct_ array objects concurrently;
-* perform only read-only (`const`) operations on the _same_ object concurrently, including reading distinct elements, iterating, and querying the shape (`size()`, `extensions()`, `strides()`, etc.); and
+* perform only read-only (`const`) operations on the _same_ object concurrently, including reading distinct elements, iterating, and querying the shape (`size()`, `extents()`, `strides()`, etc.); and
 * write to _distinct, non-overlapping_ elements of the same array.
 
 Conversely, if any thread modifies an array (assignment, reallocation, or writing an element) while another thread accesses the same array or the same element, the behavior is a data race, and the user must provide external synchronization.
