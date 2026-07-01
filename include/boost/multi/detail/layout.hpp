@@ -581,7 +581,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	template<class Archive, std::size_t... I>
 	void serialize_impl_(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
-		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension", get<I>(this->base())), 0U)...};
+		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extent", get<I>(this->base())), 0U)...};
 	}
 
  public:
@@ -975,7 +975,7 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using boost::multi::detail::get;
 		auto&  extension_ = get<0>(this->base());
-		arxiv& multi::archive_traits<Archive>::make_nvp("extension", extension_);
+		arxiv& multi::archive_traits<Archive>::make_nvp("extent", extension_);
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)

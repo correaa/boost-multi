@@ -1602,7 +1602,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
 		auto extents_ = this->extents();
 
-		arxiv& ArTraits::make_nvp("extensions", extents_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
+		arxiv& ArTraits::make_nvp("extents", extents_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
 		if(this->extents() != extents_) {
 			clear();
 			this->reextent(extents_);

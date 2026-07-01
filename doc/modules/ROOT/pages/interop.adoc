@@ -332,14 +332,14 @@ The output JSON file created by Cereal in the previous example looks like this.
 {
     "value": {
         "cereal_class_version": 0,
-        "extensions": {
+        "extents": {
             "cereal_class_version": 0,
-            "extension": {
+            "extent": {
                 "cereal_class_version": 0,
                 "first": 0,
                 "last": 2
             },
-            "extension": {
+            "extent": {
                 "first": 0,
                 "last": 2
             }
