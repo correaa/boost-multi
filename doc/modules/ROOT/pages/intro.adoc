@@ -19,13 +19,6 @@ NOTE: This library is proposed for inclusion in Boost and is currently under Boo
 
 Multidimensional array data structures are essential in various fields of computing, including data analysis, image processing, and scientific simulations. When combined with GPUs, they also play a significant role in Artificial Intelligence and Machine Learning.
 
-In many simulations, space is divided into a grid, and values are stored at each grid cell.
-For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or the velocity field of a fluid.
-The state of a game can be represented by placing pieces in a board made of squares.
-Arrays can also be used to represent numerical matrices, vectors, and, more generally, tensors, to perform linear algebra operations.
-They can represent other abstract data structures, such as networks, graph connections, or store data in multiple columns.
-Arrays are amenable to efficient bulk processing, slicing, and reductions.
-
 Here are 3 examples of arrays of different dimensionalities:
 
 [source]
@@ -85,7 +78,7 @@ The library offers the following _combination of features_ (some of which are no
 * Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible (ideally `std::mdarray` will address this partially, post C{plus}{plus}26).
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
 A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
-* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust -- CUDA and AMD GPUs --, Boost), specifically through iterators and ranges (not present in the Standard library).
+* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust for CUDA and AMD GPUs, Boost), specifically through iterators and ranges (not present in the Standard library).
 * Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 * Lazy arrays and evaluation of array expressions well integrated with the rest of the library.
 
@@ -104,7 +97,7 @@ The Standard also provides no owning, allocator-aware container for special memo
 In summary, if you need owning arrays, clear value semantics, and iterators or ranges compatibility, and you only need strided array layouts, use this library instead of `std::mdspan` or xref:appendix.adoc#appendix_comparison[other libraries].
 
 The library does not throw exceptions and provides basic exception guarantees, such as no memory leaks, in their presence.
-Exceptions are propagated transparantly from allocations or element construction.
+Exceptions are propagated transparently from allocations or element construction.
 Indexing, e.g. out-of-bounds errors, and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
 === More About Use Cases
@@ -112,12 +105,22 @@ Indexing, e.g. out-of-bounds errors, and other logical errors result in undefine
 :idprefix: usecases_
 
 Multidimensional arrays appear everywhere in practice.
+
+The state of a game can be represented by placing pieces in a board made of squares that resembles an array.
+Arrays can also be used to represent numerical matrices, vectors, and, more generally, tensors, to perform linear algebra operations.
+They can represent other abstract data structures, such as networks, graph connections, or store data in multiple columns.
+Arrays are amenable to efficient bulk processing, slicing, and reductions.
+
+In many simulations, space is divided into a grid, and values are stored at each grid cell.
+For example, arrays can represent fields of physical values, such as temperature variations within a block of material, or the velocity field of a fluid.
+
+
 A digital photograph is a two-dimensional grid of pixels, or three-dimensional once color channels are included (height × width × channel), and a video adds a further time axis.
 Spreadsheets and database extracts are two-dimensional tables of rows and columns, while machine-learning workloads continuously move large tensors (of shape batch × channel × height × width) between CPU and GPU.
 Audio spectrograms, medical CT and MRI scans that sample a volume, and climate models spanning latitude, longitude, altitude, and time are all naturally expressed as arrays of three or more dimensions.
 In each case the data is logically a single object addressed by several coordinates, which is precisely what a multidimensional array represents.
 
-The common geometric interpretation is that multidimensional array, `F[i][j][k]` represents with a certain resolution a continuous function stem:[f(x, y, z)] with a certain resolution in a given domain.
+The common geometric interpretation is that a multidimensional array `F[i][j][k]` represents a continuous function stem:[f(x, y, z)] with a certain resolution in a given domain.
 
 In the author's own field of condensed matter physics and chemistry, the quantum states of individual electrons are discretized on a regular 3-dimensional grid of complex numbers.
 Many quantities of interest are obtained by summing functions evaluated over these elements.
