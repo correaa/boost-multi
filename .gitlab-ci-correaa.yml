@@ -1657,7 +1657,7 @@ antora:
     - git add -f doc/modules/reference/pages/  # stage mrdocs artifacts so Antora (branches: HEAD) can read them
     - cd doc
     - tree .
-    - npm install --ignore-scripts
+    - npm ci --ignore-scripts
     - npx antora multi-playbook.yml
     - tree .
     - cd ..
