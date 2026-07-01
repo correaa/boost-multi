@@ -434,7 +434,16 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(exts).num_elements()),  // NOLINT(readability-redundant-typename) for C++23
 								nullptr)
 	  ) {
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), elements_first, this->num_elements(), this->elements().begin());
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
+#else
 		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), elements_first, this->num_elements(), this->elements().begin());
+#endif
 	}
 
 	// NOLINT(readability-redundant-typename)
@@ -542,7 +551,16 @@ struct                                                                          
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{other.extents()}.num_elements())),
 		  other.extents()
 	  ) {
+#if defined(__cpp_exceptions) && (__cplusplus >= 202002L)
+		try {
+			adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+		} catch(...) {
+			this->deallocate();  // basic guarantee: release the raw buffer if an element constructor throws
+			throw;
+		}
+#else
 		adl_alloc_uninitialized_copy_n(dynamic_array::alloc(), other.elements().begin(), this->num_elements(), this->data_elements());
+#endif
 	}
 
 	template<class F>  // ArrayElementsLike, class = typename ArrayElementsLike::elements_t>

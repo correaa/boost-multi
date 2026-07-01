@@ -177,12 +177,48 @@ Elementwise operations are available through the inclusion of the `multi/element
 
 The library offers random-access iterators to subarrays of dimension `D - 1`, and they are represented by types of the form `multi::[sub]array<T, D, P>::(const_)iterator`.
 These are generally used to interact with or implement algorithms.
-They can be default constructed but do not expose other constructors since they are generally created from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
+They can be default constructed but do not expose other constructors since they are generally obtained from `begin` or `end`, manipulated arithmetically, `operator--`, `operator++` (pre and postfix), or random jumps `operator+`/`operator-` and `operator+=`/`operator-=`.
 They can be dereferenced by `operator*` and index access `operator[]`, returning objects of lower dimension `subarray<T, D, ... >::reference` (see above).
 Note that this is the same type for all related arrays, for example, `multi::array<T, D, P >::(const_)iterator`.
 
 `iterator` can be invalidated when its original array is invalidated, destroyed or resized.
 An `iterator` that stems from `dynamic_array` becomes invalid only if the original array was destroyed (e.g. out-of-scope).
+
+Both concrete arrays (and subarrays) and restrictions have iterators (`.begin()` and `.end()` member functions)
+
+[#ref_cursors]
+=== Cursors
+
+A cursor is a pointer-like type that supports direct multidimensional indexing from a fixed origin.
+It is represented by `multi::cursor_t<ElementPtr, D, StridesType>` and obtained via the `.home()` member of any array or subarray, which returns a cursor pointing to the top-corner element at index stem:[[0, 0, \ldots, 0\]].
+
+Unlike iterators, which are one-dimensional and step through `D-1`-dimensional subarrays, a cursor carries the full stride information for all `D` dimensions and can reach any element in a single indexing expression.
+
+Chained `operator[]` notation steps through dimensions one at a time:
+[source,cpp]
+----
+auto c = A.home();
+auto& elem = c[i][j][k];  // equivalent to A[i][j][k]
+----
+// Alternatively, the call operator accepts all indices at once:
+// [source,cpp]
+// ----
+// auto& elem = c(i, j, k);
+// ----
+// `operator+=` with a tuple of indices advances the cursor's base pointer by the dot product of the indices and the strides, allowing efficient pointer arithmetic:
+// [source,cpp]
+// ----
+// c += {i, j, k};  // moves the cursor to position (i, j, k)
+// auto& elem = *c;
+// ----
+// `operator*` and `operator->` dereference the cursor at its current position, and `.base()` returns the underlying element pointer.
+
+Cursor objects are cheap (and trivial) to copy.
+Cursors are particularly useful in GPU and SIMD contexts where direct pointer arithmetic over strided memory is more natural than iterator-based traversal.
+
+In some loose sense, cursors are like array-references that "forgot" their sizes, they are a way to pass arrays to interfaces that are restricted to take object by value (such as CUDA kernels or C functions)
+
+Both concrete arrays (and subarrays) and restrictions have cursors (`.home()` member function).
 
 [#ref_reqs]
 == Type Requirements
