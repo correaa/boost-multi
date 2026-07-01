@@ -120,7 +120,7 @@ Spreadsheets and database extracts are two-dimensional tables of rows and column
 Audio spectrograms, medical CT and MRI scans that sample a volume, and climate models spanning latitude, longitude, altitude, and time are all naturally expressed as arrays of three or more dimensions.
 In each case the data is logically a single object addressed by several coordinates, which is precisely what a multidimensional array represents.
 
-The common geometric interpretation is that multidimensional array, `F[i][j][k]` represents with a certain resolution a continuous function latexmath:[f(x, y, z)] with a certain resolution in a given domain.
+The common geometric interpretation is that a multidimensional array, `F[i][j][k]` can numerically represent a continuous a function latexmath:[f(x, y, z)] with a certain resolution in a given domain.
 
 In the author's own field of condensed matter physics and chemistry, the quantum states of individual electrons are discretized on a regular 3-dimensional grid of complex numbers.
 Many quantities of interest are obtained by summing functions evaluated over these elements.
