@@ -104,6 +104,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	if(TBB_FOUND)
 		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
+		target_compile_definitions(${TEST_EXE} PRIVATE MULTI_HAVE_TBB)  # gate parallel-execution code paths on TBB availability (libstdc++ std::execution::par needs TBB at link time)
 	endif()
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
