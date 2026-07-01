@@ -228,9 +228,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::num_elements;
 	using layout_type::offset;
 
-	using typename layout_type::index;
+    /// Type to store an index in the leading dimension
+	using index = typename layout_type::index;
+
 	using typename layout_type::index_extension;
-	using typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
+
+	/// Type that represents a range of indicies
+	using index_range = typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
 
 	using typename layout_type::strides_type;
 
@@ -248,7 +252,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::extension;
 	using layout_type::extent;
 
-	/// A type to store the extent of an array (the range of valid indices in the leading dimension)
+	/// A type to store the extent of an array (the range of valid indices in the leading dimension), returned from `.extent()`.
 	using extent_type = typename layout_type::extent_type;
 
 	/// (deprecated) use `extent_type`
