@@ -2622,10 +2622,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	/// A an array view in which elementes references are r-values
 	constexpr auto element_moved() & { return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_}); }
 	constexpr auto element_moved() && { return element_moved(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
+	/// serializes data to generic archive (e.g. Boost or Cereal archive)
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {  // cppcheck-suppress duplInheritedMember ; to override
 		using AT = multi::archive_traits<Archive>;
