@@ -987,99 +987,99 @@ struct                                                                          
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-	BOOST_MULTI_HD constexpr auto splitted() && {
-		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+	// BOOST_MULTI_HD constexpr auto splitted() && {
+	// 	multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+	// 	multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto ptr1 = this->base_;                  // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+	// 	auto ptr1 = this->base_;                  // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+	// 	auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		return std::pair<
-			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
-		);
-	}
+	// 	return std::pair<
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>,
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>>(
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
+	// 	);
+	// }
 
-	BOOST_MULTI_HD constexpr auto splitted() & {
-		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+	// BOOST_MULTI_HD constexpr auto splitted() & {
+	// 	multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+	// 	multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto ptr1 = this->base_;                  // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+	// 	auto ptr1 = this->base_;                  // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+	// 	auto ptr2 = this->base_ + lyt1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		return std::pair<
-			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
-		);
-	}
+	// 	return std::pair<
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>,
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>>(
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+	// 		subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
+	// 	);
+	// }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-#ifdef __GNUC__
-	[[gnu::always_inline]]
-#endif
-	BOOST_MULTI_HD constexpr auto fancy_splitted() && {
-		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+// #ifdef __GNUC__
+// 	[[gnu::always_inline]]
+// #endif
+// 	BOOST_MULTI_HD constexpr auto fancy_splitted() && {
+// 		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+// 		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		auto ptr1 = mallocate_me_(this->base_);                  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		auto ptr1 = mallocate_me_(this->base_);                  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-#ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
-#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
-		[[assume(
-			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
-			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
-		)]];
-#endif
-#endif
-		return std::pair<
-			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
-		);
-	}
+// #ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
+// #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
+// 		[[assume(
+// 			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
+// 			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
+// 		)]];
+// #endif
+// #endif
+// 		return std::pair<
+// 			subarray<T, 1, typename dynamic_array::element_ptr>,
+// 			subarray<T, 1, typename dynamic_array::element_ptr>>(
+// 			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+// 			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
+// 		);
+// 	}
 
-	BOOST_MULTI_HD constexpr auto fancy_splitted() & {
-		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
-		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
+// 	BOOST_MULTI_HD constexpr auto fancy_splitted() & {
+// 		multi::layout_t<1> const lyt1({}, this->layout().stride(), 0, this->layout().nelems() / this->layout().stride() / 2 * this->layout().stride());
+// 		multi::layout_t<1> const lyt2({}, this->layout().stride(), 0, (this->layout().nelems() / this->layout().stride() + 1) / 2 * this->layout().stride());
 
-		// auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		// auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		// auto p1 = this->base_;                // mallocate_me_(this->base_);                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		// auto p2 = this->base_ + l1.nelems();  // mallocate_me_(this->base_ + l1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-		auto ptr1 = mallocate_me_(this->base_);                  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		auto ptr1 = mallocate_me_(this->base_);                  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+// 		auto ptr2 = mallocate_me_(this->base_ + lyt1.nelems());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 
-#ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
-#if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
-		[[assume(
-			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
-			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
-		)]];
-#endif
-#endif
-		return std::pair<
-			subarray<T, 1, typename dynamic_array::element_ptr>,
-			subarray<T, 1, typename dynamic_array::element_ptr>>(
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
-			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
-		);
-	}
+// #ifndef _BOOST_MULTI_SUPPRESS_ASSUMPTIONS
+// #if defined(__cpp_attributes_assume) && __cpp_attributes_assume >= 202207L
+// 		[[assume(
+// 			std::less_equal<>{}(ptr1 + lyt1.nelems(), ptr2) ||
+// 			std::less_equal<>{}(ptr2 + lyt2.nelems(), ptr1)
+// 		)]];
+// #endif
+// #endif
+// 		return std::pair<
+// 			subarray<T, 1, typename dynamic_array::element_ptr>,
+// 			subarray<T, 1, typename dynamic_array::element_ptr>>(
+// 			subarray<T, 1, typename dynamic_array::element_ptr>(lyt1, ptr1),
+// 			subarray<T, 1, typename dynamic_array::element_ptr>(lyt2, ptr2)
+// 		);
+// 	}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
 #endif
 
-	BOOST_MULTI_HD constexpr auto split() & {
-		return std::move(*this).splitted();
-	}
+	// BOOST_MULTI_HD constexpr auto split() & {
+	// 	return std::move(*this).splitted();
+	// }
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
