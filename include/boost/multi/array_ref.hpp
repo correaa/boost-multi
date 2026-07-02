@@ -1968,6 +1968,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// a view with the elements transformed
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {
 		return static_array_cast_<
@@ -1978,6 +1979,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 				std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
 				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>>(std::forward<UF>(fun));
 	}
+
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) & {
 		return static_array_cast_<
@@ -2945,18 +2947,18 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		return *this;
 	}
 
-	constexpr auto elements_at(size_type idx [[maybe_unused]]) const& -> element_cref {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		return *(this->base_);
-	}
-	constexpr auto elements_at(size_type idx [[maybe_unused]]) && -> element_ref {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		return *(this->base_);
-	}
-	constexpr auto elements_at(size_type idx [[maybe_unused]]) & -> element_ref {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		return *(this->base_);
-	}
+	// constexpr auto elements_at(size_type idx [[maybe_unused]]) const& -> element_cref {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	return *(this->base_);
+	// }
+	// constexpr auto elements_at(size_type idx [[maybe_unused]]) && -> element_ref {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	return *(this->base_);
+	// }
+	// constexpr auto elements_at(size_type idx [[maybe_unused]]) & -> element_ref {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	return *(this->base_);
+	// }
 
 	constexpr auto operator!=(const_subarray const& other) const { return !adl_equal(other.base_, other.base_ + 1, this->base_); }
 	constexpr auto operator==(const_subarray const& other) const { return adl_equal(other.base_, other.base_ + 1, this->base_); }
