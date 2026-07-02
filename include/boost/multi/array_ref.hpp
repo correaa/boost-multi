@@ -228,7 +228,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::num_elements;
 	using layout_type::offset;
 
-    /// Type to store an index in the leading dimension
+	/// Type to store an index in the leading dimension
 	using index = typename layout_type::index;
 
 	using typename layout_type::index_extension;
