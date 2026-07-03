@@ -1311,9 +1311,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
 
  private:
-	using index_gen [[deprecated("here to fulfill MultiArray concept")]]    = char*;
-	using extent_gen [[deprecated("here to fulfill MultiArray concept")]]   = void;
-	using extent_range [[deprecated("here to fulfill MultiArray concept")]] = void;
+	using index_gen [[deprecated("here to fulfill backward-compatible MultiArray concept")]]    = char*;
+	using extent_gen [[deprecated("here to fulfill backward-compatible  MultiArray concept")]]   = void;
+	using extent_range [[deprecated("here to fulfill backward-compatible MultiArray concept")]] = void;
 
 	// private:
 	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
@@ -2254,17 +2254,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 	template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	template<class TT = typename subarray::element>
-	constexpr auto fill(TT const& value) & -> decltype(auto) {
-		return adl_fill_n(this->begin(), this->size(), value), *this;
-	}
-	constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element{}); }
+	// template<class TT = typename subarray::element>
+	// constexpr auto fill(TT const& value) & -> decltype(auto) {
+	// 	return adl_fill_n(this->begin(), this->size(), value), *this;
+	// }
+	// constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element{}); }
 
-	template<class TT = typename subarray::element>
-	[[deprecated]] constexpr auto fill(TT const& value) && -> decltype(auto) { return std::move(this->fill(value)); }
-	[[deprecated]] constexpr auto fill() && -> decltype(auto) {
-		return std::move(*this).fill(typename subarray::element{});
-	}
+	// template<class TT = typename subarray::element>
+	// [[deprecated]] constexpr auto fill(TT const& value) && -> decltype(auto) { return std::move(this->fill(value)); }
+	// [[deprecated]] constexpr auto fill() && -> decltype(auto) {
+	// 	return std::move(*this).fill(typename subarray::element{});
+	// }
 
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite

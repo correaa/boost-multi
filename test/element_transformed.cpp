@@ -267,7 +267,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
 #ifndef _MSC_VER
-		indirect_v.fill(880);
+		std::fill(indirect_v.begin(), indirect_v.end(), 880);
+		// indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
 		auto const& const_indirect_v = indirect_v;
