@@ -1608,21 +1608,21 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
-	constexpr auto elements_at(multi::ssize_t idx) const& -> decltype(auto) {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	}
-	constexpr auto elements_at(multi::ssize_t idx) && -> decltype(auto) {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	}
-	constexpr auto elements_at(multi::ssize_t idx) & -> decltype(auto) {
-		BOOST_MULTI_ASSERT(idx < this->num_elements());
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	}
+	// constexpr auto elements_at(multi::ssize_t idx) const& -> decltype(auto) {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	auto const sub_num_elements = this->begin()->num_elements();
+	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
+	// }
+	// constexpr auto elements_at(multi::ssize_t idx) && -> decltype(auto) {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	auto const sub_num_elements = this->begin()->num_elements();
+	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
+	// }
+	// constexpr auto elements_at(multi::ssize_t idx) & -> decltype(auto) {
+	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
+	// 	auto const sub_num_elements = this->begin()->num_elements();
+	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
+	// }
 
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
