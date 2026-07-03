@@ -148,7 +148,12 @@ It inherits the behavior interface (including constructors) of `dynamic_array`, 
 
 `reextent` changes the size of the array to new extents, `reextent({e1, e2, ...})`, while elements are preserved when possible.
 New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`.
-The first argument is of `extents_type`, and the second is optional for element types with a default constructor. 
+The first argument is of `extents_type`, and the second is optional for element types with a default constructor.
+
+Finally `multi::inplace_array` is a template especialization of `multi::array` that uses a internal stack-based allocator; this guarantees total interface compatibility with `multi::array`.
+The third template argument of `multi::inplace_array<T, D, MaxCapacity>` is the maximum capacity of the array (not an allocator.).
+The number of elements of the array is dynamic as long as the number of elements is less or equal than `MaxCapacity` (the behavior is undefined otherwise.)
+Because it stack allocated it doesn't have O(1) moves (move falls back to copy), although copies are fast because memore is in the stack.
 
 [#ref_restriction]
 === Restrictions
