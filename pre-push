@@ -112,6 +112,6 @@ ccache -s
 # sudo gem install rouge
 # single-file PDF of the documentation (local check; requires `gem install asciidoctor-pdf`).
 # Cross-page `xref:file.adoc#id[]` links may emit warnings under plain Asciidoctor; the PDF is still produced.
-asciidoctor-pdf --safe-mode unsafe --failure-level WARN -a pdf-theme=doc/pdf-theme.yml -a localdatetime="$(date)" doc/single.adoc -a allow-uri-read -o multi-documentation.pdf && echo "generated multi-documentation.pdf"
+PATH="/usr/bin:$PATH" asciidoctor-pdf --safe-mode unsafe --failure-level WARN -a pdf-theme=doc/pdf-theme.yml -a localdatetime="$(date)" doc/single.adoc -a allow-uri-read -o multi-documentation.pdf && echo "generated multi-documentation.pdf"
 
 # fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm

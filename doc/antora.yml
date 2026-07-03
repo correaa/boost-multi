@@ -7,5 +7,4 @@ asciidoc:
     stem: latexmath
 nav:
   - modules/ROOT/nav.adoc
-  - modules/reference/nav.adoc
 start_page: intro.adoc
