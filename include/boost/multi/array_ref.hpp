@@ -1645,16 +1645,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
-	[[deprecated("is_flattable will be a property of the layout soon")]]
+	// [[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {
 		return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
-	}
-
-	// friend constexpr auto flatted(const_subarray const& self) {return self.flatted();}
-	constexpr auto flatted() const& {
-		multi::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return const_subarray<T, D - 1, ElementPtr>{new_layout, types::base_};
 	}
 
  private:
@@ -1665,6 +1658,13 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  public:
 	auto flattened() const& { return flattened_aux_().as_const(); }
+
+	constexpr auto flatted() const& {
+		assert(is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
 
  private:
 	constexpr auto broadcasted() const& {  // NOLINT(readability-identifier-naming)  TODO(correaa) remove?
@@ -2546,14 +2546,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
-	using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	constexpr auto flatted() const& {
+		assert(this->is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
+
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
+		assert(this->is_flattable());
 		// assert(is_flattable() && "flatted doesn't work for all layouts!");
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
 	}
+
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
@@ -3822,6 +3831,25 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// return type removed for MSVC
 	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
+
+	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	constexpr auto flatted() const& {
+		assert(this->is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
+
+	// cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto flatted() & {
+		assert(this->is_flattable());
+		// assert(is_flattable() && "flatted doesn't work for all layouts!");
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+	}
+
+	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 	// using element_type = typename array_ref::element;
