@@ -267,7 +267,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
 #ifndef _MSC_VER
-		std::fill(indirect_v.begin(), indirect_v.end(), 880);
+		std::fill(indirect_v.begin(), indirect_v.end(), 880);  // NOLINT(modernize-use-ranges) for C++20
 		// indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
