@@ -11,8 +11,8 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-// IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
-// IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
+#include <algorithm>  // for std::fill
+// IWYU pragma: no_include <type_traits>   // for declval  // for GNU stdlib
 #include <complex>   // IWYU pragma: keep  // for complex, operator*, operator+
 #include <iterator>  // IWYU pragma: keep  // for weakly_incrementable
 #include <utility>   // IWYU pragma: keep  // for declval, forward

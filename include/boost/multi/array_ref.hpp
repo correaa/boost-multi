@@ -1312,7 +1312,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  private:
 	using index_gen [[deprecated("here to fulfill backward-compatible MultiArray concept")]]    = char*;
-	using extent_gen [[deprecated("here to fulfill backward-compatible  MultiArray concept")]]   = void;
+	using extent_gen [[deprecated("here to fulfill backward-compatible  MultiArray concept")]]  = void;
 	using extent_range [[deprecated("here to fulfill backward-compatible MultiArray concept")]] = void;
 
 	// private:
