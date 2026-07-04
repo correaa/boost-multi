@@ -11,8 +11,8 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-// IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
-// IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
+#include <algorithm>  // for std::fill
+// IWYU pragma: no_include <type_traits>   // for declval  // for GNU stdlib
 #include <complex>   // IWYU pragma: keep  // for complex, operator*, operator+
 #include <iterator>  // IWYU pragma: keep  // for weakly_incrementable
 #include <utility>   // IWYU pragma: keep  // for declval, forward
@@ -267,7 +267,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
 #ifndef _MSC_VER
-		indirect_v.fill(880);
+		std::fill(indirect_v.begin(), indirect_v.end(), 880);
+		// indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
 		auto const& const_indirect_v = indirect_v;
