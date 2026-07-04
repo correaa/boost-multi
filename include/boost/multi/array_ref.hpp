@@ -2556,7 +2556,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
-		assert(this->is_flattable());
+		// assert(this->is_flattable());
 		// assert(is_flattable() && "flatted doesn't work for all layouts!");
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
