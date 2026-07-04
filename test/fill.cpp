@@ -117,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		namespace multi = boost::multi;
 
 		multi::array<int, 1> d1D = {10, 20, 30, 40};
-		std::fill(d1D.begin(), d1D.end(), 420);
+		std::fill(d1D.begin(), d1D.end(), 420);  // NOLINT(modernize-use-ranges) for C++20
 
 		multi::array<int, 2> d2D = {
 			{1500, 160, 170, 180, 190},
