@@ -1736,7 +1736,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// A transpose view \f$A^T\f$, that exchanges the first two indices
+	/// A transpose view latexmath:[A^T], that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
