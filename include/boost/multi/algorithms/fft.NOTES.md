@@ -396,3 +396,41 @@ expressing butterflies through strided iterators would block the tight,
 auto-vectorizable batched loops that make this competitive with FFTW. The
 boundary between the two is the gather/scatter (or, on the fast paths, a raw
 `base()` pointer handed across) — FFTW draws the same line.
+
+---
+
+## 8. CUDA adaptation plan (not yet implemented)
+
+The architecture is already CUDA-shaped: Stockham (no bit-reversal, uniform
+stages) is what GPU FFT libraries use; the batched layout `buf[k*m + j]`
+(batch contiguous) is exactly warp-coalesced when `j` maps to `threadIdx.x`;
+the fused strided stages' (pointer, stride, width) interface is
+layout-agnostic; and plans already separate "build tables once" (host) from
+"execute many" (upload once, launch many). Incremental steps:
+
+1. **Extract butterfly bodies** into `BOOST_MULTI_HD` inline functions (the
+   per-(block, r, j) work) shared by the host loops and device kernels. Pure
+   refactor; CPU codegen must not regress (re-benchmark).
+2. **`fft_memory_space<Ptr>` trait** dispatching host (raw `T*`, current
+   paths) vs device (thrust/Multi-CUDA fancy pointers), specialized in an
+   opt-in adaptor header so the core stays CUDA-free. The current
+   host-iterator gather fallback must *never* run on device pointers.
+3. **Device table mirror**: keep host `std::vector` tables; add a lazily
+   uploaded POD `engine_view` (raw device pointers + sizes) per engine.
+4. **Device stage launchers**: one `__global__` kernel per stage kind around
+   the shared butterfly body; thread → (j, r, block); stream-ordered launches
+   replace the host stage loop. Grids are natively 3-D, so an extra
+   (outer-slab, stride) index runs a whole 3-D middle axis in one launch.
+5. **Granularity flip**: same rotation/rank-descent orchestration, but the
+   device branch batches the whole axis (m = all fibers; `mb_` is a host
+   cache concern) and skips slab pairing (a CPU cache optimization). Needs a
+   cap-and-tile fallback for the 2·n·m device scratch on huge arrays.
+6. **Bluestein**: pointwise chirp/kernel multiplies as elementwise kernels;
+   sub-engine recursion stays host-side (it only orchestrates launches).
+   **Six-step**: skip on device (its cache-blocking rationale is CPU-only).
+7. **Tests**: mirror `algorithms_fft.cpp` on Multi-thrust device arrays (the
+   test already compiles as CUDA in the nvcc lane); `thrust::complex` should
+   work unchanged through the `T{re,im}`/`+`/`-`/`*` contract and `fft_ops`.
+8. **Benchmark vs cuFFT** with the `adaptors/cufft` harness — the goal is
+   *generic* device FFT (custom element types, arbitrary strided layouts,
+   header-only), not beating cuFFT's tuned codelets for `float/double`.
