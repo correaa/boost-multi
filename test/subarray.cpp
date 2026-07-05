@@ -303,6 +303,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arr.apply(std::array<int, 1>{{1}})[1] == &arr[1][1] );
 		}
 	}
+	// {
+	// 	multi::array<int, 1> A({6}, 99);
+	// 	[[maybe_unused]] auto&& B = A.stride(2);  // ok, should not compile
+	// }
 
 	return boost::report_errors();
 }
