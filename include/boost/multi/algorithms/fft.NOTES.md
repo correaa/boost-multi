@@ -20,12 +20,26 @@ are computed once and reused across repeated transforms):
 // reusable plan: tables + scratch built once, executed many times
 multi::fft_plan<complex, 2> plan{multi::extents_t<2>{1024, 1024}, multi::fft_forward};
 multi::fft_plan             plan2{A, multi::fft_forward};   // CTAD from a prototype array
-plan(A);            // in place; A: any array/subarray with the planned sizes,
-plan.execute(B);    // of ANY strided layout, repeatedly, no re-allocation
+
+// the plan holds the *extents*; it is applied on a *cursor* -- base + strides,
+// the complement of extents -- obtained from any array/subarray with `.home()`:
+plan(A.home());     // primitive form: cursor supplies base+strides, plan supplies shape
+plan(A);            // sugar: checks A.extensions() == plan shape, then applies on A.home()
+plan.execute(B);    // same, in place, any strided layout, repeatedly, no re-allocation
 
 // one-shot convenience (builds a throw-away plan)
 multi::fft_inplace(A, sign);   // also fft_inplace_forward / fft_inplace_backward
 ```
+
+The plan/cursor split is deliberate: a plan is *shape + precomputed tables*, and
+a cursor (`.home()`) is *where the data lives* (base pointer + strides), with no
+shape of its own. `plan(cursor)` trusts the cursor to have the planned shape (a
+cursor carries no sizes to check); `plan(array)` is the checked convenience that
+extracts `array.home()`. This is also the GPU-facing shape: a cursor is exactly
+what a device kernel receives (base + strides), so the same execution primitive
+carries over (see section 8). Internally `plan(cursor)` rebuilds a strided view
+from the plan's extents + the cursor via `layout_t`'s size = nelems/stride
+invariant; that view then drives the unchanged orchestration.
 
 Properties:
 
@@ -414,7 +428,10 @@ layout-agnostic; and plans already separate "build tables once" (host) from
 2. **`fft_memory_space<Ptr>` trait** dispatching host (raw `T*`, current
    paths) vs device (thrust/Multi-CUDA fancy pointers), specialized in an
    opt-in adaptor header so the core stays CUDA-free. The current
-   host-iterator gather fallback must *never* run on device pointers.
+   host-iterator gather fallback must *never* run on device pointers. The
+   entry point is already the right one: `plan(cursor)` accepts any pointer
+   type in `cursor.base()`, so a device cursor flows in unchanged and the
+   trait picks the device orchestration.
 3. **Device table mirror**: keep host `std::vector` tables; add a lazily
    uploaded POD `engine_view` (raw device pointers + sizes) per engine.
 4. **Device stage launchers**: one `__global__` kernel per stage kind around

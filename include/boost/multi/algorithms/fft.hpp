@@ -56,6 +56,8 @@
 #ifndef BOOST_MULTI_ALGORITHMS_FFT_HPP
 #define BOOST_MULTI_ALGORITHMS_FFT_HPP
 
+#include <boost/multi/array_ref.hpp>  // for layout_t and subarray (cursor -> strided view reconstruction)
+
 #include <algorithm>    // for copy, fill, min, max, find_if
 #include <array>        // for plan sizes
 #include <cassert>      // for assert
@@ -1129,6 +1131,56 @@ void fft_apply_last(ViewND&& view, fft_engine<T> const& eng) {  // NOLINT(cppcor
 	}
 }
 
+// A Multi cursor (`.home()`) is base + strides with no extents. These helpers
+// recover its rank and rebuild a full strided view once the extents (which the
+// plan owns) are supplied -- the "extents (plan) + cursor (target)" split.
+template<class Cursor>
+using fft_cursor_strides_t = std::decay_t<decltype(std::declval<Cursor>().strides())>;
+
+// A cursor exposes base()/strides() but, unlike an array/subarray, no sizes().
+template<class C, class = void> struct fft_is_cursor_like : std::false_type {};
+template<class C>
+struct fft_is_cursor_like<C, std::void_t<decltype(std::declval<C>().base()), decltype(std::declval<C>().strides()), std::enable_if_t<!fft_is_multi_like<C>::value>>> : std::true_type {};
+
+template<class Cursor>
+inline constexpr std::ptrdiff_t fft_cursor_rank = static_cast<std::ptrdiff_t>(std::tuple_size_v<fft_cursor_strides_t<Cursor>>);
+
+// Build layout_t<D> from extents and strides (all offsets 0, as for a home
+// cursor): each level carries nelems = size*stride, which is the invariant
+// layout_t uses to recover size() = nelems/stride and extent() bounds.
+template<std::ptrdiff_t D>
+auto fft_layout_from(std::array<std::size_t, static_cast<std::size_t>(D)> const& ext, std::array<std::ptrdiff_t, static_cast<std::size_t>(D)> const& str) -> multi::layout_t<D> {
+	if constexpr(D == 0) {
+		return multi::layout_t<0>{};
+	} else {
+		std::array<std::size_t, static_cast<std::size_t>(D) - 1>    sub_ext{};
+		std::array<std::ptrdiff_t, static_cast<std::size_t>(D) - 1> sub_str{};
+		for(std::size_t i = 0; i != static_cast<std::size_t>(D) - 1; ++i) {
+			sub_ext.at(i) = ext.at(i + 1);
+			sub_str.at(i) = str.at(i + 1);
+		}
+		return multi::layout_t<D>{
+			fft_layout_from<D - 1>(sub_ext, sub_str),
+			str[0], 0,
+			static_cast<std::ptrdiff_t>(ext[0]) * str[0]
+		};  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) [0] is valid for D>=1
+	}
+}
+
+template<class Cursor, std::size_t... Is>
+auto fft_strides_array(Cursor const& cur, std::index_sequence<Is...> /*unused*/)
+	-> std::array<std::ptrdiff_t, sizeof...(Is)> {
+	return {{static_cast<std::ptrdiff_t>(cur.template stride<static_cast<multi::dimensionality_type>(Is)>())...}};
+}
+
+// (cursor, extents) -> strided subarray sharing the cursor's memory.
+template<class T, std::ptrdiff_t D, class Cursor>
+auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast<std::size_t>(D)> const& ext) {
+	auto const str = fft_strides_array(cur, std::make_index_sequence<static_cast<std::size_t>(D)>{});
+	using ptr_type = typename Cursor::element_ptr;
+	return multi::subarray<T, D, ptr_type>{fft_layout_from<D>(ext, str), cur.base()};
+}
+
 }  // end namespace detail
 
 // Reusable multidimensional FFT plan: precomputes twiddle tables, stage
@@ -1202,32 +1254,57 @@ class fft_plan {
 	explicit fft_plan(MultiSubArray const& arr, int sign = fft_forward)
 	: sizes_{to_sizes_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{})}, sign_{sign} { init_(); }
 
-	auto sign() const -> int { return sign_; }
-
-	// Execute the plan on `arr` in place. `arr` must have the planned sizes;
-	// its layout (strides, subarray-ness) is free to differ between calls.
-	template<class MultiSubArray>
-	auto operator()(MultiSubArray&& arr) const -> MultiSubArray&& {  // NOLINT(cppcoreguidelines-missing-std-forward)
-		static_assert(std::decay_t<MultiSubArray>::dimensionality == D, "array rank must match the plan");
-		assert(matches_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}));
+ private:
+	// The axis walk, shared by the cursor and array entry points. `view` is a
+	// strided view of the planned shape; transformed in place.
+	template<class View>
+	void apply_(View&& view) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		if constexpr(D == 1) {
-			detail::fft_apply_last(arr(), engine_<0>());
+			detail::fft_apply_last(view, engine_<0>());
 		} else {
 			// Transform the last two axes together, slab by slab (cache
 			// locality), then the remaining axes 0 .. D-3 by static recursion
 			// over rotated views (each axis bound to its engine at compile
 			// time; no runtime axis parameter anywhere).
-			detail::fft_apply_last_pair(arr(), engine_<D - 1>(), engine_<D - 2>());
+			detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>());
 			if constexpr(D >= 3) {
-				transform_middle_<1>(arr().rotated());
+				transform_middle_<1>(view.rotated());
 			}
 		}
+	}
+
+ public:
+	auto sign() const -> int { return sign_; }
+
+	auto sizes() const -> std::array<std::size_t, static_cast<std::size_t>(D)> const& { return sizes_; }
+
+	// Apply the plan on a cursor (`A.home()`) -- base + strides, no extents.
+	// The plan supplies the extents, so the cursor's rank must match and its
+	// shape is *trusted* to be the planned one (a cursor carries no sizes to
+	// check). This is the primitive execution form; the array overload below
+	// delegates to it. Transforms in place; returns the cursor.
+	template<class Cursor, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
+	auto operator()(Cursor const& home) const -> Cursor {
+		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
+		auto view = detail::fft_view_from_cursor<T, D>(home, sizes_);
+		apply_(view);
+		return home;  // cursors are value types (base + strides); returned by value
+	}
+
+	// Execute the plan on `arr` in place. `arr` must have the planned sizes;
+	// its layout (strides, subarray-ness) is free to differ between calls.
+	// Delegates to the cursor form via `arr.home()`.
+	template<class MultiSubArray, std::enable_if_t<detail::fft_is_multi_like<std::decay_t<MultiSubArray>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
+	auto operator()(MultiSubArray&& arr) const -> MultiSubArray&& {                                                          // NOLINT(cppcoreguidelines-missing-std-forward)
+		static_assert(std::decay_t<MultiSubArray>::dimensionality == D, "array rank must match the plan");
+		assert(matches_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}));
+		operator()(arr.home());
 		return std::forward<MultiSubArray>(arr);
 	}
 
-	template<class MultiSubArray>
-	auto execute(MultiSubArray&& arr) const -> MultiSubArray&& {
-		return operator()(std::forward<MultiSubArray>(arr));
+	template<class Target>
+	auto execute(Target&& tgt) const -> decltype(auto) {
+		return operator()(std::forward<Target>(tgt));
 	}
 };
 
@@ -1241,20 +1318,20 @@ fft_plan(MultiSubArray const&) -> fft_plan<typename MultiSubArray::element, Mult
 // throw-away plan; for repeated transforms of the same shape, build an
 // fft_plan once and execute it).
 template<class MultiSubArray>
-auto fft_inplace(MultiSubArray&& A, int sign = fft_forward) -> MultiSubArray&& {
+auto fft_inplace(MultiSubArray&& arr, int sign = fft_forward) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
-	fft_plan<typename array_type::element, array_type::dimensionality> const plan{A, sign};
-	return plan(std::forward<MultiSubArray>(A));
+	fft_plan<typename array_type::element, array_type::dimensionality> const plan{arr, sign};
+	return plan(std::forward<MultiSubArray>(arr));
 }
 
 template<class MultiSubArray>
-auto fft_inplace_forward(MultiSubArray&& A) -> MultiSubArray&& {
-	return fft_inplace(std::forward<MultiSubArray>(A), fft_forward);
+auto fft_inplace_forward(MultiSubArray&& arr) -> MultiSubArray&& {
+	return fft_inplace(std::forward<MultiSubArray>(arr), fft_forward);
 }
 
 template<class MultiSubArray>
-auto fft_inplace_backward(MultiSubArray&& A) -> MultiSubArray&& {
-	return fft_inplace(std::forward<MultiSubArray>(A), fft_backward);
+auto fft_inplace_backward(MultiSubArray&& arr) -> MultiSubArray&& {
+	return fft_inplace(std::forward<MultiSubArray>(arr), fft_backward);
 }
 
 }  // end namespace boost::multi
