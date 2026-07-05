@@ -6,7 +6,7 @@ non-obvious **library idioms** discovered while writing it, and a concrete
 **future-work** list.
 
 - Implementation: [`fft.hpp`](./fft.hpp)
-- Tests: [`../../../../test/fft.cpp`](../../../../test/fft.cpp) (auto-registered by the `test/*.cpp` glob)
+- Tests: [`../../../../test/algorithms_fft.cpp`](../../../../test/algorithms_fft.cpp) (auto-registered by the `test/*.cpp` glob)
 
 ---
 
@@ -173,7 +173,7 @@ else is gathered interleaved with the copy loop order chosen from the strides.
 
 Verified two independent ways:
 
-- Against a direct O(N²) reference DFT in `test/fft.cpp`: radix and mixed sizes
+- Against a direct O(N²) reference DFT in `test/algorithms_fft.cpp`: radix and mixed sizes
   2…2048 (including all pow-2 stage combinations), Bluestein sizes 67, 101,
   134 = 2·67, 331, 1009; plus round-trips (1-D/2-D/3-D/4-D and the 65536
   six-step path), DC = sum, 2-D = composition of 1-D, 4-D = composition of
