@@ -327,6 +327,48 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( m / static_cast<double>(n) < tol );
 	}
 
+	// plan applied on a cursor (.home()): extents live in the plan, the cursor
+	// supplies base + strides
+	{
+		multi::array<complex, 2> arr({6, 10}, complex{});
+		for(int i = 0; i != 6; ++i) {
+			for(int j = 0; j != 10; ++j) {
+				arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>((i * j) % 7)};
+			}
+		}
+		auto reference = arr;
+
+		multi::fft_plan<complex, 2> const plan{
+			multi::extents_t<2>{6, 10},
+			multi::fft_forward
+		};
+		plan(arr.home());  // apply on the cursor directly
+		plan(reference);   // apply on the array (delegates to .home())
+		BOOST_TEST( max_abs_diff(arr.elements(), reference.elements()) < tol );
+	}
+
+	// cursor application on a strided sub-block matches the same plan on a contiguous copy
+	{
+		multi::array<complex, 3> big({6, 7, 8}, complex{});
+		int                      c = 0;
+		for(auto& e : big.elements()) {
+			e = complex{static_cast<double>(c % 11) - 5.0, static_cast<double>(c % 7) - 3.0};
+			++c;
+		}
+		auto&& blk = big({1, 5}, {2, 6}, {1, 7});  // 4 x 4 x 6 strided view
+
+		multi::array<complex, 3> flat{blk};  // contiguous copy of the same values
+
+		multi::fft_plan<complex, 3> const plan{
+			multi::extents_t<3>{4, 4, 6},
+			multi::fft_forward
+		};
+		plan(flat.home());  // contiguous cursor
+		plan(blk.home());   // strided cursor, same plan
+
+		BOOST_TEST( max_abs_diff(blk.elements(), flat.elements()) < tol );
+	}
+
 	// 3D round-trip
 	{
 		multi::array<complex, 3> arr({3, 4, 5}, complex{});
