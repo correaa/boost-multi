@@ -1526,10 +1526,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D + 1, element_ptr>(new_layout, this->base_);
 	}
 
- public:
-	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }
+// public:
+	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove
 
- private:
+// private:
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
