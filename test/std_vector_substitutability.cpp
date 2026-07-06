@@ -37,10 +37,10 @@ void resize_copy_4(It first, It last, DynamicArray& darr) {
 	darr = DynamicArray(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())
 }
 
-template<class It, class DynamicArray>  // e.g. std::vector or multi::array
-void resize_copy_5(It first, It last, DynamicArray& darr) {
-	darr.assign(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())
-}
+// template<class It, class DynamicArray>  // e.g. std::vector or multi::array
+// void resize_copy_5(It first, It last, DynamicArray& darr) {
+// 	darr.assign(first, last);  // or std::decay_t<decltype(da)>(source.begin(), source.end())
+// }
 
 // void resize_copy_6   ----> see below test_resize_copy_6
 }  // end unnamed namespace
@@ -128,25 +128,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( dest_v[3] == 30 );
 	}
 
-	BOOST_AUTO_TEST_CASE(test_resize_copy_5) {
-		std::vector<int> const source = {0, 10, 20, 30};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+	// BOOST_AUTO_TEST_CASE(test_resize_copy_5) {
+	// 	std::vector<int> const source = {0, 10, 20, 30};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 
-		std::vector<int>     dest_v = {990, 990};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
-		multi::array<int, 1> dest_a = {880, 880};
+	// 	std::vector<int>     dest_v = {990, 990};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+	// 	multi::array<int, 1> dest_a = {880, 880};
 
-		BOOST_TEST( dest_v.size() == 2 );
-		BOOST_TEST( dest_a.size() == 2 );
+	// 	BOOST_TEST( dest_v.size() == 2 );
+	// 	BOOST_TEST( dest_a.size() == 2 );
 
-		resize_copy_5(source.begin(), source.end(), dest_v);
+	// 	resize_copy_5(source.begin(), source.end(), dest_v);
 
-		BOOST_TEST( dest_v.size() == 4 );
-		BOOST_TEST( dest_v[3] == 30 );
+	// 	BOOST_TEST( dest_v.size() == 4 );
+	// 	BOOST_TEST( dest_v[3] == 30 );
 
-		resize_copy_5(source.begin(), source.end(), dest_a);
+	// 	resize_copy_5(source.begin(), source.end(), dest_a);
 
-		BOOST_TEST( dest_v.size() == 4 );
-		BOOST_TEST( dest_v[3] == 30 );
-	}
+	// 	BOOST_TEST( dest_v.size() == 4 );
+	// 	BOOST_TEST( dest_v[3] == 30 );
+	// }
 
 	BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
 		std::vector<int> const source = {0, 10, 20, 30};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)

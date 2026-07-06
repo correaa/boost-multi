@@ -1810,45 +1810,45 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		return *this;
 	}
 
-	template<
-		class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
-		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	auto from(Range&& other) -> array& {                                            // TODO(correaa) : check that LHS is not read-only?
-		if(array::extents() == other.extents()) {
-			this->operator()() = other;
-		} else if(this->num_elements() == other.extents().num_elements()) {
-			reshape(other.extents());
-			this->operator()() = other;
-		} else {
-			operator=(static_cast<array>(std::forward<Range>(other)));
-		}
-		return *this;
-	}
+	// template<
+	// 	class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
+	// 	std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
+	// auto from(Range&& other) -> array& {                                            // TODO(correaa) : check that LHS is not read-only?
+	// 	if(array::extents() == other.extents()) {
+	// 		this->operator()() = other;
+	// 	} else if(this->num_elements() == other.extents().num_elements()) {
+	// 		reshape(other.extents());
+	// 		this->operator()() = other;
+	// 	} else {
+	// 		operator=(static_cast<array>(std::forward<Range>(other)));
+	// 	}
+	// 	return *this;
+	// }
 
-	friend void swap(array& self, array& other) noexcept(true /*noexcept(self.swap(other))*/) { self.swap(other); }
+	friend void swap(array& self, array& other) noexcept { self.swap(other); }
 
-	void assign(typename array::extents_type extensions, typename array::element const& elem) {
-		if(array::extents() == extensions) {
-			adl_fill_n(this->base_, this->num_elements(), elem);
-		} else {
-			this->clear();
-			(*this).array::layout_t::operator=(layout_t<D>{extensions});
-			this->base_ = this->dynamic_::array_alloc::allocate(this->num_elements(), nullptr);
-			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
-		}
-	}
+	// void assign(typename array::extents_type extensions, typename array::element const& elem) {
+	// 	if(array::extents() == extensions) {
+	// 		adl_fill_n(this->base_, this->num_elements(), elem);
+	// 	} else {
+	// 		this->clear();
+	// 		(*this).array::layout_t::operator=(layout_t<D>{extensions});
+	// 		this->base_ = this->dynamic_::array_alloc::allocate(this->num_elements(), nullptr);
+	// 		adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
+	// 	}
+	// }
 
-	/// Assigns elements from an iterator range [`first`, `last`), resizing if necessary. complexity: O(n)
-	template<class It>
-	void assign(It first, It last) {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		using std::all_of;
-		using std::next;
-		if(adl_distance(first, last) == this->size()) {
-			dynamic_::ref_::assign(first);
-		} else {
-			this->operator=(array(first, last));
-		}
-	}
+	// /// Assigns elements from an iterator range [`first`, `last`), resizing if necessary. complexity: O(n)
+	// template<class It>
+	// void assign(It first, It last) {  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// 	using std::all_of;
+	// 	using std::next;
+	// 	if(adl_distance(first, last) == this->size()) {
+	// 		dynamic_::ref_::assign(first);
+	// 	} else {
+	// 		this->operator=(array(first, last));
+	// 	}
+	// }
 
 	void assign(std::initializer_list<value_type> values) {
 		if(values.size() != 0) {
@@ -1860,15 +1860,15 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 
-	// Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
-	auto operator=(std::initializer_list<value_type> values) -> array& {
-		if(values.size() == 0) {
-			this->clear();
-		} else {
-			assign(values.begin(), values.end());
-		}
-		return *this;
-	}
+	// // Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
+	// auto operator=(std::initializer_list<value_type> values) -> array& {
+	// 	if(values.size() == 0) {
+	// 		this->clear();
+	// 	} else {
+	// 		assign(values.begin(), values.end());
+	// 	}
+	// 	return *this;
+	// }
 
 	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
 	// at the moment requires nothrow default constructible
