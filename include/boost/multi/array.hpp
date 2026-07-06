@@ -159,7 +159,8 @@ struct                                                                          
 	using decay_type     = array<T, D, allocator_type>;
 
 	/// returns the allocator that is used to acquire/release memory and to construct/destroy the elements in that memory
-	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type { return this->alloc_; }
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type { return detail::array_allocator<
+	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator(); }
 
 	/*[[deprecated]]*/ auto operator new(std::size_t count) -> void* { return ::operator new(count); }                  // overrides the deleted new operator in reference (base) class subarray
 	/*[[deprecated]]*/ auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }  // overrides the deleted new operator in reference (base) class subarray

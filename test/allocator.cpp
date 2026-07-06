@@ -282,6 +282,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<char, 2, std::pmr::polymorphic_allocator<char>> Barr({3, 2}, 'o', &pool);
 
+		BOOST_TEST( Aarr.get_allocator() == Barr.get_allocator() );
+
 		BOOST_TEST(( buffer != std::array<char, 13>{{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}} ));
 
 #ifdef __GLIBCXX__
