@@ -151,10 +151,8 @@ struct                                                                          
  public:
 	/// Allocator type (returned by `get_allocator()`)
 	using allocator_type = typename detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;  // NOLINT(readability-redundant-typename) needed for C++17
-
 	/// Layout type (generally a strided layout `multi::layout_t<D>`)
 	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;  // NOLINT(readability-redundant-typename) needed for C++17
-
 	/// Associalted array value type (generally itself, `multi::array<element, dimensionality, allocator_type>`)
 	using decay_type     = array<T, D, allocator_type>;
 
