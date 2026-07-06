@@ -1389,9 +1389,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto const_elements_() const -> const_elements_range { return elements_aux_(); }
 
  public:
-	constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
-		return {this->base(), std::abs(this->hull_size())};
-	}
+	// constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
+	// 	return {this->base(), std::abs(this->hull_size())};
+	// }
 
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -3429,14 +3429,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	constexpr auto celements() const -> const_elements_range { return elements_aux_(); }
 
-	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
-		return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
-	}
+	// constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
+	// 	return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
+	// }
 
-	/*[[gnu::pure]]*/ constexpr auto blocked(index first, index last) & -> const_subarray {
+	constexpr auto blocked(index first, index last) & -> const_subarray {
 		return sliced(first, last).reindexed(first);
 	}
-	/*[[gnu::pure]]*/ constexpr auto stenciled(typename const_subarray::index_extension ext) -> const_subarray {
+	constexpr auto stenciled(typename const_subarray::index_extension ext) -> const_subarray {
 		return blocked(ext.first(), ext.last());
 	}
 
