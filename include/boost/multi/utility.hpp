@@ -538,8 +538,6 @@ auto extents(Container const& cont) {
 	}
 }
 
-template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
-
 template<class T, typename = decltype(std::declval<T const&>().elements())>
 auto        has_elements_aux(T const&) -> std::true_type;
 inline auto has_elements_aux(...) -> std::false_type;
@@ -569,16 +567,6 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 	return boost::multi::extents_t<BoostMultiArray::dimensionality>(
 		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	);
-}
-
-template<class Element, class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-[[nodiscard]] auto extents_of(T const& array) {
-	if constexpr(std::is_convertible_v<T const&, Element>) {
-		return boost::multi::extents_t<0>{};
-	}
-	if constexpr(std::is_convertible_v<typename T::reference, Element>) {
-		return boost::multi::extents_t<1>{array.extents()};
-	}
 }
 
 template<class Arr2D>
@@ -612,18 +600,6 @@ template<dimensionality_type D, class T, std::enable_if_t<has_extent<T>::value, 
 auto extents(T const& array) {
 	return extensions_aux<D>::call(array);
 }
-
-template<class T1> struct extensions_t_aux;
-
-template<class T1, class T2> auto extensions_me(T2 const& array) {
-	return extensions_t_aux<T1>::call(array);
-}
-
-template<class T1> struct extension_t_aux {
-	static auto call(T1 const& /*unused*/) { return std::make_tuple(); }
-	template<class T2>
-	static auto call(T2 const& array) { return tuple_cat(std::make_tuple(array.extent()), extensions_me<T1>(*begin(array))); }
-};
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>
 auto        has_layout_member_aux(T const&) -> std::true_type;
