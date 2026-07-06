@@ -52,11 +52,6 @@ target_link_libraries(matrix_multiplication.cpp.x benchmark::benchmark)
 target_link_libraries(matrix_multiplication.cpp.x -ltbb)
 add_test(NAME matrix_multiplication.cpp.x COMMAND matrix_multiplication.cpp.x)
 
-add_executable(algorithms_fft.cpp.x algorithms_fft.cpp)
-target_link_libraries(algorithms_fft.cpp.x fftw3)
-target_include_directories(algorithms_fft.cpp.x PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-add_test(NAME algorithms_fft.cpp.x COMMAND algorithms_fft.cpp.x)
-
 add_executable(algorithms_gemm.cpp.x algorithms_gemm.cpp)
 target_link_libraries(algorithms_gemm.cpp.x benchmark::benchmark Boost::unit_test_framework)
 target_link_libraries(algorithms_gemm.cpp.x -ltbb)
