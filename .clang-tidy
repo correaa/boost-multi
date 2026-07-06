@@ -18,7 +18,7 @@ Checks: >
   -fuchsia-*,
   -hicpp-no-array-decay,
   -llvm-prefer-static-over-anonymous-namespace,
-  -llvm-use-ranges,
+  -llvm-use-range,
   -llvmlibc-*,
   -modernize-use-nodiscard,
   -readability-magic-numbers,
@@ -60,7 +60,7 @@ CheckOptions:
 #  -fuchsia-overloaded-operator: This library deliberately overloads math/comparison operators (==, <, +, &).
 #  -hicpp-no-array-decay: Required compatibility for Boost Lightweight Test framework.
 #  -llvm-prefer-static-over-anonymous-namespace: Contradicts alternative internal namespace layout rules.
-#  -llvm-use-ranges: Asks to use things like llvm::filld1D
+#  -llvm-use-range: Asks to use things like llvm::filld1D
 #  -llvmlibc-*: Suppresses noise; target rules are strictly for internal LLVM implementation developers.
 #  -modernize-use-nodiscard: Avoids flooding the API surface with noisy [[nodiscard]] attributes everywhere.
 #  -readability-magic-numbers: Suppressed because test suites heavily utilize magic numbers.
