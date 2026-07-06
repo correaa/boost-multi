@@ -149,19 +149,23 @@ struct                                                                          
 	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>;
 
  public:
-	using detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator;
-
-	/// Alloc
+	/// Allocator type (returned by `get_allocator()`)
 	using allocator_type = typename detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;  // NOLINT(readability-redundant-typename) needed for C++17
+
 	/// Layout type (generally a strided layout `multi::layout_t<D>`)
 	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;  // NOLINT(readability-redundant-typename) needed for C++17
+
 	/// Associalted array value type (generally itself, `multi::array<element, dimensionality, allocator_type>`)
 	using decay_type     = array<T, D, allocator_type>;
 
-	[[deprecated]] auto operator new(std::size_t count) -> void* { return ::operator new(count); }
-	[[deprecated]] auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }
+	/// returns the allocator that is used to acquire/release memory and to construct/destroy the elements in that memory
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type { return detail::array_allocator<
+	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator(); }
 
-	[[deprecated]] void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // this overrides the deleted delete operator in reference (base) class subarray
+	/*[[deprecated]]*/ auto operator new(std::size_t count) -> void* { return ::operator new(count); }                  // overrides the deleted new operator in reference (base) class subarray
+	/*[[deprecated]]*/ auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }  // overrides the deleted new operator in reference (base) class subarray
+
+	/*[[deprecated]]*/ void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // overrides the deleted delete operator in reference (base) class subarray
 
  protected:  // TODO(correaa) make private
 	/// Associated array reference type, also its base class  (generally `multi::array_ref<element, dimensionality, allocator_type>`)
@@ -867,7 +871,7 @@ struct                                                                          
 	/// Random-access iterator in the leading dimension, in general they dereference to an immutable subarrays of lower dimension (`multi::const_subarray<...>`) or, for `D == 1`, to an element immutable reference (`T const&`)
 	using const_iterator = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
 
-	friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
+	// friend auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	/// gets a const-pointer to a contigous range of size `.num_elements()` containing the data of the array
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
