@@ -1527,7 +1527,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D + 1, element_ptr>(new_layout, this->base_);
 	}
 
- public:
+// public:
 	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }
 
  private:
