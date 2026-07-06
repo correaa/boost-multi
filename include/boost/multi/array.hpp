@@ -796,6 +796,7 @@ struct                                                                          
 		return multi::move(ref_::operator[](idx));
 	}
 
+	/// returns the maximum number of elements that the vector can hold.
 	constexpr auto max_size() const noexcept { return static_cast<typename dynamic_array::size_type>(multi::allocator_traits<allocator_type>::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
  protected:

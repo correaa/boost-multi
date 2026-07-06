@@ -1271,10 +1271,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
-	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
-	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
-
-	// using basic_const_array [[decprecated]] = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
+	/// returns the internal layout information of the array
+	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 
 	const_subarray()                                         = default;
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
@@ -1389,9 +1387,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto const_elements_() const -> const_elements_range { return elements_aux_(); }
 
  public:
-	constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
-		return {this->base(), std::abs(this->hull_size())};
-	}
+	// constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
+	// 	return {this->base(), std::abs(this->hull_size())};
+	// }
 
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -1646,16 +1644,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
-	[[deprecated("is_flattable will be a property of the layout soon")]]
+	// [[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {
 		return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
-	}
-
-	// friend constexpr auto flatted(const_subarray const& self) {return self.flatted();}
-	constexpr auto flatted() const& {
-		multi::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return const_subarray<T, D - 1, ElementPtr>{new_layout, types::base_};
 	}
 
  private:
@@ -1666,6 +1657,13 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  public:
 	auto flattened() const& { return flattened_aux_().as_const(); }
+
+	constexpr auto flatted() const& {
+		assert(is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
 
  private:
 	constexpr auto broadcasted() const& {  // NOLINT(readability-identifier-naming)  TODO(correaa) remove?
@@ -2547,14 +2545,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
-	using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	constexpr auto flatted() const& {
+		assert(this->is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
+
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
+		// assert(this->is_flattable());
 		// assert(is_flattable() && "flatted doesn't work for all layouts!");
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
 	}
+
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
@@ -3421,14 +3428,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	constexpr auto celements() const -> const_elements_range { return elements_aux_(); }
 
-	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
-		return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
-	}
+	// constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
+	// 	return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
+	// }
 
-	/*[[gnu::pure]]*/ constexpr auto blocked(index first, index last) & -> const_subarray {
+	constexpr auto blocked(index first, index last) & -> const_subarray {
 		return sliced(first, last).reindexed(first);
 	}
-	/*[[gnu::pure]]*/ constexpr auto stenciled(typename const_subarray::index_extension ext) -> const_subarray {
+	constexpr auto stenciled(typename const_subarray::index_extension ext) -> const_subarray {
 		return blocked(ext.first(), ext.last());
 	}
 
@@ -3823,6 +3830,25 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// return type removed for MSVC
 	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
+
+	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	constexpr auto flatted() const& {
+		assert(this->is_flattable());
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+	}
+
+	// cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto flatted() & {
+		assert(this->is_flattable());
+		// assert(is_flattable() && "flatted doesn't work for all layouts!");
+		multi::layout_t<D - 1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+	}
+
+	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
 	// using element_type = typename array_ref::element;
