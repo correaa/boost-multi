@@ -1271,10 +1271,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
-	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
-	BOOST_MULTI_HD constexpr auto layout() const -> decltype(auto) { return array_types<T, D, ElementPtr, Layout>::layout(); }
-
-	// using basic_const_array [[decprecated]] = subarray<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
+	/// returns the internal layout information of the array
+	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 
 	const_subarray()                                         = default;
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
