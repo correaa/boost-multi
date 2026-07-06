@@ -157,13 +157,17 @@ struct                                                                          
 	using decay_type     = array<T, D, allocator_type>;
 
 	/// returns the allocator that is used to acquire/release memory and to construct/destroy the elements in that memory
-	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type { return detail::array_allocator<
-	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator(); }
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type {
+		return detail::array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator();
+	}
 
-	/*[[deprecated]]*/ auto operator new(std::size_t count) -> void* { return ::operator new(count); }                  // overrides the deleted new operator in reference (base) class subarray
-	/*[[deprecated]]*/ auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }  // overrides the deleted new operator in reference (base) class subarray
+	/// @internal
+	auto operator new(std::size_t count) -> void* { return ::operator new(count); }                  // overrides the deleted new operator in reference (base) class subarray
+	/// @internal
+	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }  // overrides the deleted new operator in reference (base) class subarray
 
-	/*[[deprecated]]*/ void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // overrides the deleted delete operator in reference (base) class subarray
+	/// @internal
+	void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // overrides the deleted delete operator in reference (base) class subarray
 
  protected:  // TODO(correaa) make private
 	/// Associated array reference type, also its base class  (generally `multi::array_ref<element, dimensionality, allocator_type>`)
@@ -1856,9 +1860,9 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		}
 	}
 
-	template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {
-		return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
-	}
+	// template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {
+	// 	return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+	// }
 
 	// // Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
 	// auto operator=(std::initializer_list<value_type> values) -> array& {
