@@ -1528,7 +1528,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
 // public:
-	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }
+	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove
 
  private:
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
