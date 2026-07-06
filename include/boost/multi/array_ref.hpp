@@ -1272,7 +1272,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
 	/// returns the internal layout information of the array
-	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
+	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 
 	const_subarray()                                         = default;
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
