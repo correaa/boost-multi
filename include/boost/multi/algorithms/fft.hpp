@@ -1193,22 +1193,8 @@ class fft_plan {
 	static_assert(D >= 1, "fft_plan requires at least one dimension");
 
 	std::array<std::size_t, static_cast<std::size_t>(D)> sizes_{};
-	int                                                  sign_;
 	std::vector<detail::fft_engine<T>>                   engines_;  // one per distinct axis length
 	std::array<std::size_t, static_cast<std::size_t>(D)> which_{};  // axis -> index into engines_
-
-	void init_() {
-		auto const rank = static_cast<std::size_t>(D);
-		for(std::size_t a = 0; a != rank; ++a) {
-			auto const len = sizes_.at(a);
-			auto       it  = std::find_if(engines_.begin(), engines_.end(), [len](auto const& e) { return e.n_ == len; });
-			if(it == engines_.end()) {
-				engines_.emplace_back(len, sign_);
-				it = std::prev(engines_.end());
-			}
-			which_.at(a) = static_cast<std::size_t>(it - engines_.begin());
-		}
-	}
 
 	// Engine serving axis `A` (compile-time axis index, resolved at plan build).
 	template<std::ptrdiff_t A>
@@ -1236,23 +1222,22 @@ class fft_plan {
 		return {{detail::fft_extent_size(get<Is>(ext))...}};
 	}
 
-	template<class Sizes, std::size_t... Is>
-	auto matches_(Sizes const& szs, std::index_sequence<Is...> /*unused*/) const -> bool {
-		using std::get;
-		return ((static_cast<std::size_t>(get<Is>(szs)) == sizes_[Is]) && ...);
-	}
-
  public:
-	// Plan for a shape given as any tuple-like of extents or integral sizes
-	// (e.g. multi::extents_t<D>, A.sizes(), std::array<int, D>).
 	template<class Extents, std::enable_if_t<!detail::fft_is_multi_like<Extents>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++17 compatibility
 	explicit fft_plan(Extents const& extents, int sign = fft_forward)
-	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})}, sign_{sign} { init_(); }
-
-	// Plan deduced from a prototype array/subarray (only its shape is used).
-	template<class MultiSubArray, std::enable_if_t<detail::fft_is_multi_like<MultiSubArray>::value && (MultiSubArray::dimensionality == D), int> = 0>  // NOLINT(modernize-use-constraints)
-	explicit fft_plan(MultiSubArray const& arr, int sign = fft_forward)
-	: sizes_{to_sizes_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{})}, sign_{sign} { init_(); }
+	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})} {
+		engines_.reserve(D);
+		auto const rank = static_cast<std::size_t>(D);
+		for(std::size_t a = 0; a != rank; ++a) {
+			auto const len = sizes_.at(a);
+			auto       it  = std::find_if(engines_.begin(), engines_.end(), [len](auto const& e) { return e.n_ == len; });
+			if(it == engines_.end()) {
+				engines_.emplace_back(len, sign);
+				it = std::prev(engines_.end());
+			}
+			which_.at(a) = static_cast<std::size_t>(it - engines_.begin());
+		}
+	}
 
  private:
 	// The axis walk, shared by the cursor and array entry points. `view` is a
@@ -1274,54 +1259,21 @@ class fft_plan {
 	}
 
  public:
-	auto sign() const -> int { return sign_; }
-
-	auto sizes() const -> std::array<std::size_t, static_cast<std::size_t>(D)> const& { return sizes_; }
-
-	// Apply the plan on a cursor (`A.home()`) -- base + strides, no extents.
-	// The plan supplies the extents, so the cursor's rank must match and its
-	// shape is *trusted* to be the planned one (a cursor carries no sizes to
-	// check). This is the primitive execution form; the array overload below
-	// delegates to it. Transforms in place; returns the cursor.
 	template<class Cursor, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
-	auto operator()(Cursor const& home) const -> Cursor {
+	auto execute(Cursor const& home) const -> Cursor {
 		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
 		auto view = detail::fft_view_from_cursor<T, D>(home, sizes_);
 		apply_(view);
 		return home;  // cursors are value types (base + strides); returned by value
 	}
-
-	// Execute the plan on `arr` in place. `arr` must have the planned sizes;
-	// its layout (strides, subarray-ness) is free to differ between calls.
-	// Delegates to the cursor form via `arr.home()`.
-	template<class MultiSubArray, std::enable_if_t<detail::fft_is_multi_like<std::decay_t<MultiSubArray>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
-	auto operator()(MultiSubArray&& arr) const -> MultiSubArray&& {                                                          // NOLINT(cppcoreguidelines-missing-std-forward)
-		static_assert(std::decay_t<MultiSubArray>::dimensionality == D, "array rank must match the plan");
-		assert(matches_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}));
-		operator()(arr.home());
-		return std::forward<MultiSubArray>(arr);
-	}
-
-	template<class Target>
-	auto execute(Target&& tgt) const -> decltype(auto) {
-		return operator()(std::forward<Target>(tgt));
-	}
 };
 
 template<class MultiSubArray>
-fft_plan(MultiSubArray const&, int) -> fft_plan<typename MultiSubArray::element, MultiSubArray::dimensionality>;
-
-template<class MultiSubArray>
-fft_plan(MultiSubArray const&) -> fft_plan<typename MultiSubArray::element, MultiSubArray::dimensionality>;
-
-// Generic in-place multidimensional FFT (one-shot convenience: builds a
-// throw-away plan; for repeated transforms of the same shape, build an
-// fft_plan once and execute it).
-template<class MultiSubArray>
-auto fft_inplace(MultiSubArray&& arr, int sign = fft_forward) -> MultiSubArray&& {
+auto fft_inplace(MultiSubArray&& arr, int sign) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
-	fft_plan<typename array_type::element, array_type::dimensionality> const plan{arr, sign};
-	return plan(std::forward<MultiSubArray>(arr));
+	fft_plan<typename array_type::element, array_type::dimensionality> const plan{arr.sizes(), sign};
+	plan.execute(arr.home());
+	return std::forward<MultiSubArray>(arr);
 }
 
 template<class MultiSubArray>

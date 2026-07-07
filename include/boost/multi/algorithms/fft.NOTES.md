@@ -60,6 +60,8 @@ Properties:
   transform is **unnormalized** (forward∘backward = N·identity).
 - **Thread-safety**: a plan owns `mutable` scratch — concurrent `execute` on the
   *same* plan needs external synchronization (one plan copy per thread is fine).
+  This is current-design-only: the §9 redesign removes every `mutable` member
+  from the engine hierarchy, which retires this caveat entirely — see §9.2.
 
 Architecture: `fft_plan<T, D>` holds one `detail::fft_engine<T>` per **distinct
 axis length** (a cube shares one engine across all three axes). An engine owns
@@ -388,7 +390,20 @@ feature already existed under an idiom I didn't know.
   `plan(in, out)`, a `shared`/thread-safe execute mode, and possibly a
   layout-bound tier (`plan.bind(A.layout())`) precomputing per-axis strategy —
   the current plan is deliberately extents-only, with layout-dependent routing
-  decided cheaply at execute time.
+  decided cheaply at execute time. Per-axis mixed direction (forward on some
+  axes, backward or skipped on others) is a real future direction, but not a
+  drop-in extension of the current single-`sign`-per-plan design: the engine
+  dedup key (currently `n_ == len`, correct only because every engine in a
+  plan shares one sign — see §9) must widen to `(len, sign)` once sign is
+  per-axis, or it would silently reuse a wrong-direction engine — a
+  correctness bug, not just a missed optimization. "Skip this axis" is a
+  third, distinct state, not representable as a trivial engine: it must be a
+  bypass in the orchestration itself (`apply_`/`transform_middle_`/
+  `fft_apply_last_pair`), since even a no-op engine would still pay for
+  gathering/scattering that axis's data. `fft_apply_last_pair` in particular
+  assumes its two axes get uniform treatment for the cache-locality win
+  (§2.5); a mixed pair (different sign, or one skipped) needs a fallback to
+  two independent single-axis passes for that one case.
 - **Depends on Multi core: a rank-generic `fibers(d)`** — a flat, iterable,
   layout-agnostic range of 1-D fibers along axis `d` (the rank-1 analog of
   `elements()`). A *single* fiber is already expressible as
@@ -451,3 +466,138 @@ layout-agnostic; and plans already separate "build tables once" (host) from
 8. **Benchmark vs cuFFT** with the `adaptors/cufft` harness — the goal is
    *generic* device FFT (custom element types, arbitrary strided layouts,
    header-only), not beating cuFFT's tuned codelets for `float/double`.
+
+---
+
+## 9. Plan internals: redundancy audit and the T-decoupling redesign
+
+This section is design analysis and an agreed-upon direction, not necessarily
+fully reflected in the current class body — the plan/engine split is being
+actively restructured toward it. It came out of asking, plainly: does
+`fft_plan` need to store *this* particular piece of state, or is it already
+recoverable from something else the plan holds anyway?
+
+### 9.1 Redundancy audit of `fft_plan`'s own members
+
+- **`sign_` is genuinely redundant.** It's written once at construction and
+  read only inside `init_()` (same construction call) to seed `engines_`.
+  Every `fft_engine` already stores its own `sign_` (needed there — see
+  below), and every engine in one plan is built with the *same* sign, so
+  `engines_.front().sign_` already holds exactly what `fft_plan::sign_` holds.
+  Its only remaining job is to answer the public `sign()` accessor, which can
+  just delegate to an engine instead of keeping a second copy.
+- **`sizes_` is not redundant in the same way**, even though
+  `engines_[which_[a]].n_ == sizes_[a]` also holds by construction. The
+  difference is *when* it's read: `sign_` was construction-only, but
+  `sizes_` is read on every single `execute()` — `fft_view_from_cursor(home,
+  sizes_)` needs the whole shape to reconstruct a view from a bare cursor
+  (cursors carry no size of their own), and the checked array overload's
+  `matches_()` validates the caller's shape against it. Deriving that array
+  by gathering `engines_[which_[a]].n_` for every `a`, on every call, would
+  trade a flat, cheap, direct read for repeated indirection through
+  (possibly large) engine objects, for a member that's a few bytes and never
+  changes. Worth keeping as-is.
+- **Reusing one engine per distinct axis length (not per axis) is correct
+  and worth keeping.** A cubic 3-D plan shares a single engine across all
+  three axes rather than building three identical ones — real savings
+  (twiddle table, direct-prime matrices, any Bluestein/six-step sub-tree,
+  each is genuine O(N)-ish construction work) for the common case of
+  square/cubic transforms, at the cost of one linear scan over at most `D`
+  engines during construction only. Free: `D` is always tiny (array rank),
+  and the scan never runs on the execute path (`which_[a]` is a flat O(1)
+  index by then).
+- **The engine list should stay a `std::vector` with linear scan, not a
+  `std::map`.** At `N ≤ D` (tiny), a tree's O(log N) has no room to beat a
+  contiguous scan on constant factors alone, and a node-based container adds
+  cache-unfriendly pointer-chasing a flat array doesn't have. The lookup is
+  also construction-time-only (see above), so even a hypothetically "faster"
+  map would save nanoseconds against the microseconds-to-milliseconds of
+  actual engine construction it's guarding.
+
+### 9.2 The bigger move: decoupling the plan from the array's element type
+
+Prompted by a specific requirement: **the plan should not own the ping-pong
+scratch buffers (`buf_`/`out_`/`xbuf_`), only their required sizes**;
+allocation happens at `execute()` time, and if that allocation is a real
+concern, the fix is a fast (e.g. monotonic/arena) allocator, not baking the
+memory into the plan. The consequence, once buffers are out of the picture,
+is that the *only* T-typed state left in `fft_engine`/`fft_plan` is the
+twiddle machinery (`tw_`, `wmat_`, `chirp_`, `postc_`, `kernel_ft_`) — so the
+plan need not be templated on the array's element type `T` at all, only on
+whatever type the twiddle tables use.
+
+Shape this implies:
+
+- **`fft_plan<TW, D>`, not `fft_plan<T, D>`.** `TW` is the twiddle/table
+  element type, a plan-level choice independent of any array it's later
+  applied to (natural default: `TW = std::complex<double>`, always, per §2.4
+  / the twiddle-precision discussion below).
+- **`execute()` becomes a template on the array's element type, deduced per
+  call** (`template<class MultiSubArray> auto execute(MultiSubArray&&...)`,
+  pulling `T` from `std::decay_t<MultiSubArray>::element`). One plan, built
+  once for a shape, can then execute against a `complex<float>` array today
+  and a `complex<double>` array tomorrow without rebuilding any tables.
+- **Buffers move from persistent engine members to execute-time-local
+  state**, sized from an element-count query the engine exposes (e.g.
+  `scratch_elements()` returning `n_ * mb_`, plus whatever Bluestein/six-step
+  sub-engines need) — the plan reports *how many* `T`s are needed without
+  ever storing a `T`.
+- **The stage kernels need a genuine cross-type multiply**: today's
+  `fft_ops<T>::mul(T, T) -> T` generalizes to `fft_ops<T, TW>::mul(T const&,
+  TW const&) -> T`. This is where a real, explicit tradeoff surfaces rather
+  than staying implicit: if `TW` matches `T`'s own precision, this costs
+  nothing extra (today's behavior). If `TW` is deliberately wider than `T`
+  (double twiddle, float data — the likely default), every multiply promotes
+  the float operand up, multiplies in double, narrows the result once — this
+  is *better* accuracy than the earlier "compute wide, store narrow" twiddle
+  proposal (the twiddle value itself is never prematurely rounded down at
+  all now, only the per-multiply result rounds once), but it is not free:
+  inside the batched SIMD loop, widening a register of floats to double and
+  narrowing back is real work, and a double op fills half the same-width
+  vector register a float op would — a genuine accuracy-for-throughput
+  trade, not a strict win, and one `TW` conveniently exposes as a dial rather
+  than a hidden default (picking `TW` to match `T`'s own precision opts back
+  into today's zero-overhead behavior).
+- **Decision (1), settled: `TW` defaults to `std::complex<double>`, but only
+  for ergonomics** — so a plan declaration doesn't force spelling out the
+  twiddle type for the common case. This is explicitly *not* a claim that
+  double is fundamentally the right twiddle precision; `TW` is a fully free
+  parameter and every choice is equally "correct" for its own tradeoff (§2.4).
+  The default just avoids boilerplate, it doesn't privilege double.
+- **Decision (2), settled in the common case, open at the edge: the
+  allocator is passed explicitly to `execute()`.** No default is assumed by
+  the plan. The alternative — the *plan itself* holding a default allocator
+  to fall back on when the caller passes none — is explicitly parked as
+  "ergonomic but dangerous," unresolved. Two concrete reasons it's genuinely
+  tricky, not just a style call: (a) a `std::allocator<T>`-shaped default
+  can't live in the plan at all without reintroducing the very `T`-dependency
+  this redesign removes — the plan would need a *type-erased* resource (e.g.
+  `std::pmr::memory_resource*`) rebound to a `T`-typed
+  `std::pmr::polymorphic_allocator<T>` only at `execute()` time, to stay
+  T-agnostic; (b) even type-erased, a *shared* default resource reintroduces
+  the exact concurrent-`execute()` hazard that motivated pulling the scratch
+  buffers out of the engine in the first place (mutable shared state needs
+  external synchronization, or one instance per thread) — so a plan-owned
+  default wouldn't just be a convenience shortcut, it would quietly bring
+  back a thread-safety caveat this whole redesign was trying to shed. Left
+  open; explicit-allocator-to-`execute()` is the default path either way.
+- **Corollary, verified: this removes every `mutable` member in the engine,
+  not just the obvious ones.** Grepping the current file, `mutable` appears
+  in exactly three places — `buf_`, `out_`, `xbuf_` — all three the scratch
+  this redesign externalizes. Everything else (`tw_`, `wmat_`, `stages_`,
+  the Bluestein state, the six-step state, and `sub_`, the nested sub-engine
+  tree) is set once at construction and read-only after. Since `sub_` is
+  instances of the same template, this holds *recursively*: the entire
+  engine hierarchy — top-level plus every nested Bluestein/six-step
+  sub-engine — becomes genuinely immutable post-construction, with zero
+  remaining mutable state to race on. That directly retires the
+  thread-safety caveat in §1: concurrent `execute()` on the *same* plan from
+  multiple threads becomes safe automatically, as long as each call supplies
+  its own scratch/allocator — no more "one plan copy per thread" needed.
+
+This composes cleanly with the CUDA plan in §8, and arguably more directly
+than that section originally assumed: a plan that isn't tied to a fixed `T`,
+whose `execute()` deduces the array type per call and receives its scratch
+from outside, maps naturally onto "same plan, host float array today, device
+double array tomorrow" — the memory-space dispatch in §8 step 2 and this
+redesign are pulling in the same direction.

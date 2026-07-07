@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 1.0,  1.0},
 		};
 		auto const ref = dft_reference(arr, multi::fft_forward);
-		multi::fft_inplace(arr);
+		multi::fft_inplace(arr, multi::fft_forward);
 		BOOST_TEST( max_abs_diff(arr, ref) < tol );
 	}
 
@@ -81,7 +81,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{-2.0,  1.0},
 		};
 		auto const ref = dft_reference(arr, multi::fft_forward);
-		multi::fft_inplace(arr);
+		multi::fft_inplace(arr, multi::fft_forward);
 		BOOST_TEST( max_abs_diff(arr, ref) < tol );
 	}
 
@@ -92,7 +92,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			arr[i] = complex{static_cast<double>(i), static_cast<double>((i * 7) % 5)};
 		}
 		auto const ref = dft_reference(arr, multi::fft_forward);
-		multi::fft_inplace(arr);
+		multi::fft_inplace(arr, multi::fft_forward);
 		BOOST_TEST( max_abs_diff(arr, ref) < tol );
 	}
 
@@ -152,7 +152,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 
-		multi::fft_inplace(arr);
+		multi::fft_inplace(arr, multi::fft_forward);
 
 		double m = 0.0;
 		for(int i = 0; i != 4; ++i) {
@@ -196,7 +196,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 1> const col_copy(col);
 		auto const                     ref = dft_reference(col_copy, multi::fft_forward);
 
-		multi::fft_inplace(col);  // transform the strided column in place
+		multi::fft_inplace(col, multi::fft_forward);  // transform the strided column in place
 
 		double m = 0.0;
 		for(int i = 0; i != 4; ++i) {
@@ -213,7 +213,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				arr[i] = complex{static_cast<double>((i * 3) % 7) - 3.0, static_cast<double>((i * 5) % 11) - 5.0};
 			}
 			auto const ref = dft_reference(arr, multi::fft_forward);
-			multi::fft_inplace(arr);
+			multi::fft_inplace(arr, multi::fft_forward);
 			BOOST_TEST( max_abs_diff(arr, ref) < 1e-8 );
 		}
 	}
@@ -226,7 +226,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				arr[i] = complex{static_cast<double>((i * 3) % 7) - 3.0, static_cast<double>((i * 5) % 11) - 5.0};
 			}
 			auto const ref = dft_reference(arr, multi::fft_forward);
-			multi::fft_inplace(arr);
+			multi::fft_inplace(arr, multi::fft_forward);
 			BOOST_TEST( max_abs_diff(arr, ref) < 1e-7 );
 		}
 	}
@@ -240,27 +240,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 
-		multi::fft_plan const plan{arr, multi::fft_forward};  // CTAD from a prototype array
+		multi::fft_plan<complex, 2> const plan{arr.sizes(), multi::fft_forward};  // CTAD from a prototype array
 
 		auto a1 = arr;
 		auto a2 = arr;
-		plan(a1);
+		plan.execute(a1.home());
 		multi::fft_inplace(a2, multi::fft_forward);
 		BOOST_TEST( max_abs_diff(a1.elements(), a2.elements()) < tol );
 
 		auto a3 = arr;  // second execution of the same plan, same result
-		plan.execute(a3);
+		plan.execute(a3.home());
 		BOOST_TEST( max_abs_diff(a3.elements(), a2.elements()) < tol );
 	}
 
 	// a plan built from extents (no prototype array) round-trips fwd + bwd
 	{
 		multi::fft_plan<complex, 2> const fwd{
-			multi::extents_t<2>{5, 8},
+			multi::extents_t<2>{5, 8}
+				.sizes(),
 			multi::fft_forward
 		};
 		multi::fft_plan<complex, 2> const bwd{
-			multi::extents_t<2>{5, 8},
+			multi::extents_t<2>{5, 8}
+				.sizes(),
 			multi::fft_backward
 		};
 
@@ -271,7 +273,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 		auto const original = arr;
-		bwd(fwd(arr));
+		bwd.execute(fwd.execute(arr.home()));
 		auto const nn = static_cast<double>(arr.num_elements());
 		double     m  = 0.0;
 		for(int i = 0; i != 5; ++i) {
@@ -294,9 +296,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> flat{block};  // contiguous copy of the same values
 
-		multi::fft_plan const plan{flat, multi::fft_forward};
-		plan(flat);   // contiguous layout
-		plan(block);  // strided layout, same plan
+		multi::fft_plan<complex, 2> const plan{flat.sizes(), multi::fft_forward};
+		plan.execute(flat.home());   // contiguous layout
+		plan.execute(block.home());  // strided layout, same plan
 
 		double m = 0.0;
 		for(int i = 0; i != 4; ++i) {
@@ -339,11 +341,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto reference = arr;
 
 		multi::fft_plan<complex, 2> const plan{
-			multi::extents_t<2>{6, 10},
+			multi::extents_t<2>{6, 10}
+				.sizes(),
 			multi::fft_forward
 		};
-		plan(arr.home());  // apply on the cursor directly
-		plan(reference);   // apply on the array (delegates to .home())
+		plan.execute(arr.home());
+		plan.execute(reference.home());
 		BOOST_TEST( max_abs_diff(arr.elements(), reference.elements()) < tol );
 	}
 
@@ -360,11 +363,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 3> flat{blk};  // contiguous copy of the same values
 
 		multi::fft_plan<complex, 3> const plan{
-			multi::extents_t<3>{4, 4, 6},
+			multi::extents_t<3>{4, 4, 6}
+				.sizes(),
 			multi::fft_forward
 		};
-		plan(flat.home());  // contiguous cursor
-		plan(blk.home());   // strided cursor, same plan
+		plan.execute(flat.home());  // contiguous cursor
+		plan.execute(blk.home());   // strided cursor, same plan
 
 		BOOST_TEST( max_abs_diff(blk.elements(), flat.elements()) < tol );
 	}
