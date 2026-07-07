@@ -1,1 +1,1 @@
-* xref:index.adoc[API Reference (MrDocs generated)]
+* xref:index.adoc[API Reference (auto-generated)]

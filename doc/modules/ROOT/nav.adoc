@@ -39,7 +39,7 @@
 *** xref:reference.adoc#ref_array[Arrays]
 *** xref:reference.adoc#ref_restriction[Restriction]
 *** xref:reference.adoc#ref_iterators[Iterators]
-* xref:reference:index.adoc[API Reference (MrDocs generated)]
+* xref:reference:index.adoc[API Reference (auto-generated)]
 * xref:howto.adoc[How-To Guides]
 ** xref:howto.adoc#howto_fill[How to Fill Elements?]
 * xref:technical.adoc[]
