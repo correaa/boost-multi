@@ -1854,11 +1854,11 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	// 	}
 	// }
 
-	void assign(std::initializer_list<value_type> values) {
-		if(values.size() != 0) {
-			assign(values.begin(), values.end());
-		}
-	}
+	// void assign(std::initializer_list<value_type> values) {
+	// 	if(values.size() != 0) {
+	// 		assign(values.begin(), values.end());
+	// 	}
+	// }
 
 	// template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {
 	// 	return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
