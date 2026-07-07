@@ -342,19 +342,19 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// Returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
 
-	/// Returns the base move-pointer of the array (arithmetic base of the layout, generally the first element)
-	BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr& { return base_; }
+	// /// returns the base move-pointer of the array (arithmetic base of the layout, generally the first element).
+	// BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr& { return base_; }
 
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
-	friend constexpr auto         layout(array_types const& self) -> layout_type const& { return self.layout(); }
+	// friend constexpr auto         layout(array_types const& self) -> layout_type const& { return self.layout(); }
 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
 	// [[clang::unsafe_buffer_usage]]
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	[[deprecated("for compatibility with BMA")]] constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
 
-	friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
+	// friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
 #ifdef _MSC_VER
@@ -2239,7 +2239,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto end() & noexcept { return this->end_aux_(); }
 
+	/// returns an move-iterator (moves on dereference) to the beginning in the leading dimension
 	BOOST_MULTI_HD constexpr auto mbegin() { return move_iterator{this->begin()}; }
+	/// returns an move-iterator (moves on dereference) to the ending in the leading dimension
 	BOOST_MULTI_HD constexpr auto mend() { return move_iterator{this->end()}; }
 
 	using const_subarray<T, D, ElementPtr, Layout>::home;
