@@ -375,15 +375,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  public:
 	array_types() = default;  // cppcheck-suppress uninitMemberVar ; base_ not initialized
 
-	// BOOST_MULTI_HD constexpr array_types(layout_t const& lyt, element_ptr const& data)
-	// : Layout{lyt}, base_{data} {}
 	BOOST_MULTI_HD constexpr array_types(layout_type const& lyt, element_ptr data)
 	: Layout{lyt}, base_{std::move(data)} {}
 
  protected:
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>, 
+		typename                                                                                      = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::detail::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr>
 	// underlying pointers are explicitly convertible
 	BOOST_MULTI_HD constexpr explicit array_types(ArrayTypes const& other)
@@ -391,13 +389,11 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		typename                                                                                      = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::detail::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	BOOST_MULTI_HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : inherit behavior of underlying pointer
 	: Layout{other.layout()}, base_{other.base_} {}
-
-	// template<class, dimensionality_type, class> friend struct array;
 
 	template<
 		typename ElementPtr2,
@@ -1273,7 +1269,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
 
 	/// returns the internal layout information of the array
-	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }	// cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
+	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
 
 	const_subarray()                                         = default;
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
@@ -1527,7 +1523,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D + 1, element_ptr>(new_layout, this->base_);
 	}
 
-// public:
+	// public:
 	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove
 
 // private:
