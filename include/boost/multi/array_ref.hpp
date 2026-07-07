@@ -1632,15 +1632,15 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+ 	/// A subarray-view of the array with skipping `step` in the leading dimension
 	constexpr auto strided(difference_type step) const& { return strided_aux_(step).as_const(); }
 
+	/// A subarray-view from index `first` to index `last` (not inclusive) skipping `step` in the leading dimension
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index step
 	) const& -> const_subarray {
 		return sliced(first, last).strided(step);
 	}
-
-	// using index_range = typename const_subarray::index_range;
 
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
@@ -2248,12 +2248,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto home() && { return this->home_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto home() & { return this->home_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	template<class It> constexpr auto assign(It first) & -> It {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		adl_copy_n(first, this->size(), begin());
-		std::advance(first, this->size());
-		return first;
-	}
-	template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// /// assigns `.size()` values after an iterator into the array.
+	// template<class It> constexpr auto assign(It first) & -> It {  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// 	adl_copy_n(first, this->size(), begin());
+	// 	std::advance(first, this->size());
+	// 	return first;
+	// }
+	// template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	// template<class TT = typename subarray::element>
 	// constexpr auto fill(TT const& value) & -> decltype(auto) {
