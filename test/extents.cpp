@@ -669,14 +669,17 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		std::vector<int> v(20);
+
 		multi::array<int, 2> A(multi::extents_t<2>(v.size(), v.size()), 99);
 	}
 	{
 		std::vector<int> v(20);
+
 		multi::array<int, 2> A(multi::extents_t(v.size(), v.size()), 99);
 	}
 	{
 		std::vector<int> v(20);
+
 		multi::array<int, 2> A({static_cast<multi::ssize_t>(v.size()), static_cast<multi::ssize_t>(v.size())}, 99);  // needs to be explicit, good
 	}
 	// {

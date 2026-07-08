@@ -1629,7 +1629,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
- 	/// A subarray-view of the array with skipping `step` in the leading dimension
+	/// A subarray-view of the array with skipping `step` in the leading dimension
 	constexpr auto strided(difference_type step) const& { return strided_aux_(step).as_const(); }
 
 	/// A subarray-view from index `first` to index `last` (not inclusive) skipping `step` in the leading dimension
