@@ -162,7 +162,7 @@ struct                                                                          
 	}
 
 	/// @internal
-	auto operator new(std::size_t count) -> void* { return ::operator new(count); }                  // overrides the deleted new operator in reference (base) class subarray
+	auto operator new(std::size_t count) -> void* { return ::operator new(count); }  // overrides the deleted new operator in reference (base) class subarray
 	/// @internal
 	auto operator new(std::size_t count, void* ptr) -> void* { return ::operator new(count, ptr); }  // overrides the deleted new operator in reference (base) class subarray
 
