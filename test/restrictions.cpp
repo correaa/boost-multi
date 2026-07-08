@@ -305,9 +305,8 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i) -> int& { return vec[i];} ^ multi::extents_t<1>(vec.size());
+		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)];} ^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
-		// multi::detail::what(arr[1], arr[1][1]);
 		arr[1] = 99;
 
 		BOOST_TEST( vec[1] == 99 );
