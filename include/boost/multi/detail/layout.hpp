@@ -237,7 +237,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
 			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
 			&& std::conjunction_v<std::is_integral<Exts>...>
-			&& std::conjunction_v<std::is_signed<Exts>...>,
+			&& std::conjunction_v<std::is_signed<Exts>...>,  // NOLINT(modernize-type-traits) for C++20
 			int> = 0
 	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
