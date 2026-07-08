@@ -8,6 +8,8 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 
+#include <boost/multi/detail/what.hpp>
+
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -300,6 +302,30 @@ auto main() -> int {
 		multi::array<double, 3> arr;
 		arr = [](auto i, auto j, auto k) { return static_cast<double>(i + j + k); } ^ multi::extents_t<3>(2, 3, 4);
 	}
+	{
+		std::vector<int> vec = {1, 2, 3};
+
+		auto&& arr = [&vec](auto i) -> int& { return vec[i];} ^ multi::extents_t<1>(vec.size());
+
+		// multi::detail::what(arr[1], arr[1][1]);
+		arr[1] = 99;
+
+		BOOST_TEST( vec[1] == 99 );
+	}
+
+	// {
+	// 	std::vector<std::vector<int>> vvec = {
+	// 		{1, 2, 3},
+	// 		{4, 5, 6}
+	// 	};
+
+	// 	auto&& arr = [p = &vvec](auto i, auto j) -> int& { return (*p)[i][j];} ^ multi::extents_t<2>(vvec.size(), vvec.front().size());
+
+	// 	// multi::detail::what(arr[1], arr[1][1]);
+	// 	arr[1][1] = 99;
+
+	// 	BOOST_TEST( vvec[1][1] == 99 );
+	// }
 
 	return boost::report_errors();
 }

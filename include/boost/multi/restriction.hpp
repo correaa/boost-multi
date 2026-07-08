@@ -108,7 +108,13 @@ struct bind_front_t {
 
 	// bind_front_t(multi::index idx, Proj& proj) : idx_{idx}, proj_{proj} {}
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+
+	template<class... Args>
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+
+	template<class... Args>
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)&& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
 };
 
 template<dimensionality_type D, class Proj>
@@ -414,6 +420,18 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
 			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extents_t<D - 1>(xs_.base().tail());
 			return bind_front_t<Proj>{idx, std::move(proj_)} ^ extents_t<D - 1>(xs_.base().tail());
+		} else {
+			return proj_(idx);
+		}
+	}
+
+	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> decltype(auto) {
+		// assert( extent().contains(idx) );
+		if constexpr(D != 1) {
+			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
+			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extents_t<D - 1>(xs_.base().tail());
+			return bind_front_t<Proj>{idx, proj_} ^ extents_t<D - 1>(xs_.base().tail());
 		} else {
 			return proj_(idx);
 		}
