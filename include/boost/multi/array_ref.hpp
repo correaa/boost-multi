@@ -389,7 +389,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<
 		class ArrayTypes,
-		typename = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		typename                                                                                      = std::enable_if_t<!std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
 		decltype(multi::detail::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	BOOST_MULTI_HD constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : inherit behavior of underlying pointer
