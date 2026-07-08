@@ -436,6 +436,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		BOOST_TEST( m / nn < tol );
 	}
+	{
+		multi::array<complex, 3> arr = {
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}
+		};
+
+		multi::fft_inplace(arr, multi::fft_forward);
+		// multi::fft_inplace(arr.flattened(), multi::fft_forward);
+	}
 
 	return boost::report_errors();
 }
