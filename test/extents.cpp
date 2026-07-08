@@ -668,19 +668,19 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 	}
 	{
-		std::vector<int> v(20);
+		std::vector<int> const v(20);
 
-		multi::array<int, 2> A(multi::extents_t<2>(v.size(), v.size()), 99);
+		multi::array<int, 2> const A(multi::extents_t<2>(v.size(), v.size()), 99);
 	}
 	{
-		std::vector<int> v(20);
+		std::vector<int> const v(20);
 
 		multi::array<int, 2> A(multi::extents_t(v.size(), v.size()), 99);
 	}
 	{
-		std::vector<int> v(20);
+		std::vector<int> const v(20);
 
-		multi::array<int, 2> A({static_cast<multi::ssize_t>(v.size()), static_cast<multi::ssize_t>(v.size())}, 99);  // needs to be explicit, good
+		multi::array<int, 2> const A({static_cast<multi::ssize_t>(v.size()), static_cast<multi::ssize_t>(v.size())}, 99);  // needs to be explicit, good
 	}
 	// {
 	// 	std::vector<int> v(20);
