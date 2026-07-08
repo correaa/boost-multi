@@ -314,6 +314,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.elements()[2] == 2 );
 		// BOOST_TEST( arr.elements()[3] = 22 );  // doesn't compile, good
 	}
+	{
+		multi::array<double, 3> arr = {
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}
+		};
+
+		BOOST_TEST( arr.flattened().size() == 8 );
+	}
 
 	return boost::report_errors();
 }
