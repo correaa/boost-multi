@@ -111,10 +111,10 @@ struct bind_front_t {
 	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) & noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)&& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) && noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 };
 
 template<dimensionality_type D, class Proj>

@@ -8,8 +8,6 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 
-#include <boost/multi/detail/what.hpp>
-
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
@@ -327,7 +325,7 @@ auto main() -> int {
 			{4, 5, 6}
 		};
 
-		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[i][j];} ^ multi::extents_t<2>(vvec.size(), vvec.front().size());
+		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]; } ^ multi::extents_t<2>(static_cast<multi::ssize_t>(vvec.size()), static_cast<multi::ssize_t>(vvec.front().size()));
 
 		arr[1][1] = 99;
 
