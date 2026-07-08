@@ -305,26 +305,34 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)];} ^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
+		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
 		arr[1] = 99;
 
 		BOOST_TEST( vec[1] == 99 );
 	}
+	{
+		std::vector<int> vec = {1, 2, 3};
 
-	// {
-	// 	std::vector<std::vector<int>> vvec = {
-	// 		{1, 2, 3},
-	// 		{4, 5, 6}
-	// 	};
+		auto&& arr = [&vec](auto i, auto /*j*/) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<2>(static_cast<multi::extents_t<1>::size_type>(vec.size()), static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
-	// 	auto&& arr = [p = &vvec](auto i, auto j) -> int& { return (*p)[i][j];} ^ multi::extents_t<2>(vvec.size(), vvec.front().size());
+		arr[1][1] = 99;
 
-	// 	// multi::detail::what(arr[1], arr[1][1]);
-	// 	arr[1][1] = 99;
+		BOOST_TEST( vec[1] == 99 );
+	}
 
-	// 	BOOST_TEST( vvec[1][1] == 99 );
-	// }
+	{
+		std::vector<std::vector<int>> vvec = {
+			{1, 2, 3},
+			{4, 5, 6}
+		};
+
+		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[i][j];} ^ multi::extents_t<2>(vvec.size(), vvec.front().size());
+
+		arr[1][1] = 99;
+
+		BOOST_TEST( vvec[1][1] == 99 );
+	}
 
 	return boost::report_errors();
 }

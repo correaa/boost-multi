@@ -108,13 +108,13 @@ struct bind_front_t {
 
 	// bind_front_t(multi::index idx, Proj& proj) : idx_{idx}, proj_{proj} {}
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)&& noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest)&& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 };
 
 template<dimensionality_type D, class Proj>
