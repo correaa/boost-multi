@@ -19,6 +19,7 @@
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <utility>  // for declval, forward, move
 // IWYU pragma: no_include <variant>  // for get, iwyu bug
+#include <vector>
 
 namespace multi = boost::multi;
 
