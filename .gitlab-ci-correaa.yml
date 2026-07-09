@@ -38,6 +38,13 @@ before_script:
 
 default:
   interruptible: true  # jobs may override with `interruptible: false`
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - unknown_failure
+      - api_failure
+      - stuck_or_timeout_failure
 
 cache:
   key: apt-$CI_JOB_IMAGE

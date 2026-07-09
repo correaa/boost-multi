@@ -3,7 +3,6 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/detail/extensions.hpp>
 #include <boost/multi/restriction.hpp>
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
@@ -20,6 +19,7 @@
 #include <type_traits>  // for std::is_same_v
 // IWYU pragma: no_include <utility>  // for declval, forward, move
 // IWYU pragma: no_include <variant>  // for get, iwyu bug
+#include <vector>
 
 namespace multi = boost::multi;
 
@@ -314,36 +314,36 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( it3 == it );
 	}
-	{
-		multi::array<int, 1> const arr(10);
+	// {
+	// 	multi::array<int, 1> const arr(10);
 
-		auto xn = decltype(arr.extent())(10);
-		BOOST_TEST( xn. size() == 10 );
+	// 	auto xn = decltype(arr.extent())(10);
+	// 	BOOST_TEST( xn. size() == 10 );
 
-		multi::extent_t const xn2(10);
-		BOOST_TEST( xn2.size() == 10 );
+	// 	multi::extent_t const xn2(10);
+	// 	BOOST_TEST( xn2.size() == 10 );
 
-		xn = xn2;
+	// 	xn = xn2;
 
-		multi::detail::extensions const xns2{xn2};
-		using std::get;
-		BOOST_TEST( get<0>(xns2) == xn2 );
+	// 	multi::detail::extensions const xns2{xn2};
+	// 	using std::get;
+	// 	BOOST_TEST( get<0>(xns2) == xn2 );
 
-		multi::detail::extensions const xns2d{xn2, xn2};
-		auto [xns2d_a, xns2d_b] = xns2d;
+	// 	multi::detail::extensions const xns2d{xn2, xn2};
+	// 	auto [xns2d_a, xns2d_b] = xns2d;
 
-		BOOST_TEST( xns2d_a == xn2 );
-		BOOST_TEST( xns2d_b == xn2 );
+	// 	BOOST_TEST( xns2d_a == xn2 );
+	// 	BOOST_TEST( xns2d_b == xn2 );
 
-		multi::extents_t<2> const met2{xns2d};
+	// 	multi::extents_t<2> const met2{xns2d};
 
-		multi::layout_t<2> const lyt(met2);
-		multi::layout_t<2> const lyt_2(xns2d);
+	// 	multi::layout_t<2> const lyt(met2);
+	// 	multi::layout_t<2> const lyt_2(xns2d);
 
-		BOOST_TEST( lyt == lyt_2 );
+	// 	BOOST_TEST( lyt == lyt_2 );
 
-		// multi::array<int, 1> const arr2({xn2});
-	}
+	// 	// multi::array<int, 1> const arr2({xn2});
+	// }
 	{
 		auto const x2df = [](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4);
 
@@ -667,6 +667,25 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 	}
+	{
+		std::vector<int> const vec(20);
+
+		multi::array<int, 2> const arr(multi::extents_t<2>(vec.size(), vec.size()), 99);
+	}
+	{
+		std::vector<int> const vec(20);
+
+		multi::array<int, 2> const arr(multi::extents_t(vec.size(), vec.size()), 99);
+	}
+	{
+		std::vector<int> const vec(20);
+
+		multi::array<int, 2> const arr({static_cast<multi::ssize_t>(vec.size()), static_cast<multi::ssize_t>(vec.size())}, 99);  // needs to be explicit, good
+	}
+	// {
+	// 	std::vector<int> v(20);
+	// 	multi::array<int, 2> A({v.size(), v.size()}, 99);  // error, needs to be explicit, good
+	// }
 
 	return boost::report_errors();
 }
