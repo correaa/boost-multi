@@ -1455,7 +1455,7 @@ struct bilayout {
 
 	constexpr auto nelems() const { return nelems1_ - stride1_ + nelems2_; }  // span to one-past-end: (nsegs-1) outer strides + the last segment (NOT just nelems2_, which is one segment short)
 	[[deprecated("use extent")]] void extension() const  = delete;
-	void extent() const     = delete;
+	auto extent() const { return multi::extent_t{0, size()}; }
 
 	[[deprecated("use extents")]] auto extensions() const = delete;
 	auto extents() const = delete;
