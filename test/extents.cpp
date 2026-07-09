@@ -675,7 +675,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		std::vector<int> const vec(20);
 
-		multi::array<int, 2> arr(multi::extents_t(vec.size(), vec.size()), 99);
+		multi::array<int, 2> const arr(multi::extents_t(vec.size(), vec.size()), 99);
 	}
 	{
 		std::vector<int> const vec(20);
