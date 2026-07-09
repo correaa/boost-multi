@@ -330,10 +330,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr({0, 3}).flattened().size() == 6 );
 		BOOST_TEST( (*arr({0, 3}).flattened().begin()).size() == 3 );
 		BOOST_TEST( arr({0, 3}).flattened()[0].size() == 3 );
-
-		// []{}(arr({0, 3}).flattened().stride());
-		// auto str = arr.stride();
-
 	}
 
 	return boost::report_errors();
