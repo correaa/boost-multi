@@ -299,9 +299,11 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
 	static constexpr auto num_dimensions() { return dimensionality; }
 
+ private:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error
 
+ public:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
