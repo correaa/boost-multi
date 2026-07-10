@@ -579,8 +579,10 @@ Shape this implies:
   buffers out of the engine in the first place (mutable shared state needs
   external synchronization, or one instance per thread) — so a plan-owned
   default wouldn't just be a convenience shortcut, it would quietly bring
-  back a thread-safety caveat this whole redesign was trying to shed. Left
-  open; explicit-allocator-to-`execute()` is the default path either way.
+  back a thread-safety caveat this whole redesign was trying to shed.
+  *Update: settled in §10.4(b)* — there IS a defaulted overload, but its
+  default is a fresh stateless `std::allocator<T>` constructed per call,
+  never plan-owned state, which sidesteps both hazards above.
 - **Corollary, verified: this removes every `mutable` member in the engine,
   not just the obvious ones.** Grepping the current file, `mutable` appears
   in exactly three places — `buf_`, `out_`, `xbuf_` — all three the scratch
@@ -601,3 +603,377 @@ whose `execute()` deduces the array type per call and receives its scratch
 from outside, maps naturally onto "same plan, host float array today, device
 double array tomorrow" — the memory-space dispatch in §8 step 2 and this
 redesign are pulling in the same direction.
+
+## 10. Partial / mixed-direction FFTs — settled design + implementation plan
+
+Feature request (2026-07): per-axis transform directions, e.g. on a 4-D array
+
+    multi::fft_inplace({{forward, none, backward, forward}}, inout);
+
+where `none` means "leave that axis completely untouched." A plan with `none`
+on some axes *is* a batched lower-dimensional FFT (`{none, forward}` on a 2-D
+array = "FFT each row") — the same unification FFTW's guru interface gets
+from loop-dimensions vs transform-dimensions, obtained here by simply
+skipping passes. This section records the decisions (all settled, discussed
+and agreed with the maintainer) and a step-by-step plan detailed enough for
+another model/developer to execute without re-deriving the rationale.
+
+### 10.1 Settled decisions and why
+
+1. **Direction is a per-axis, three-valued property**: `forward`, `none`,
+   `backward`. Suggested representation: `enum class fft_direction : int
+   { forward = -1, none = 0, backward = +1 }` — values chosen so `forward`/
+   `backward` interconvert trivially with the existing `int` sign convention
+   (`fft_forward == -1`, `fft_backward == +1`, FFTW-compatible) and `none`
+   is falsy.
+
+2. **Runtime values, compile-time arity.** The spec is a
+   `std::array<fft_direction, D>` (D entries enforced by the type — wrong
+   rank fails to compile), NOT template parameters
+   (`fft_inplace<forward, none, ...>`). Rationale, settled after explicit
+   challenge: direction is consumed once per *pass* (one branch per axis per
+   O(N log N) execution — unmeasurable), so lifting it into the type buys no
+   codegen; it would infect `fft_plan`'s type (different combos = different
+   types: no containers, no runtime selection), break the natural callers of
+   this exact feature (solvers flipping forward↔backward per phase,
+   rank-generic code building the list in a loop), and risk 3^D
+   instantiations of the call path in a header-only library. The *only*
+   statically checkable property of a direction spec is its arity (every
+   value combination is legal), and `std::array<_, D>` already checks that.
+   A constexpr template sugar forwarding to the runtime API can be added
+   later, non-breaking, if ever wanted.
+
+3. **Directions are baked into the plan at construction, not passed to
+   `execute()`.** Constructor takes extents + the direction array; `execute`
+   keeps its current lean signature. Rationale (this reverses an initial
+   execute-time proposal, on these grounds):
+   - *Immutability/thread-safety*: execute-time direction would force the
+     plan to either eagerly build engines for every axis — wasteful in
+     exactly the partial-FFT scenario (e.g. batched 1-D over the rows of a
+     matrix whose column count is a large prime: a full Bluestein engine,
+     chirp + convolution twiddles, for an axis never transformed) — or build
+     them lazily at execute, i.e. mutate the engine list, reintroducing the
+     very mutable-shared-state / shared-plan-concurrency hazard §9.2 just
+     eliminated. Direction-at-construction keeps the engine set exact,
+     fixed, and immutable.
+   - *Plan reuse across directions is low-value here*: unlike FFTW (plan =
+     expensive measured search), our construction is O(n) trig per distinct
+     axis length — negligible next to O(N^D) data. The forward/backward
+     roundtrip case is served fine by two plans.
+   - *Bonuses*: exact scratch sizing (a skipped axis can't inflate the
+     buffer requirement — relevant to §9.2's `scratch_elements()`), no new
+     runtime-mismatch error class at execute, and the plan fully describes
+     its transform (printable, cacheable by key).
+
+4. **Engines stay direction-neutral; direction lives only in the plan's
+   pass schedule.** Target state: tables are stored for one canonical sign
+   (forward); the backward kernel conjugates twiddles *on load* (one sign
+   flip in register, vectorizable, free); kernels are templated on sign, and
+   the per-pass dispatch picks the instantiation. Engine reuse then stays
+   keyed on size alone, so two same-size axes with *opposite* directions
+   share one engine — this is precisely the answer to the concern recorded
+   earlier that mixed directions would "play against" size-keyed engine
+   sharing. Explicit anti-goal: do NOT bake per-direction conjugated tables
+   into engines "since the plan knows the direction anyway" — that forfeits
+   the sharing for no measurable kernel speedup.
+
+5. **Normalization**: stays unnormalized (current convention). With mixed
+   forward/backward there is no coherent single 1/N convention; document
+   that `{forward, backward}` on two axes is *not* an identity on either
+   axis, and that forward-then-backward on the same axis scales by that
+   axis's length.
+
+6. **Semantics guarantees**: elements are *never written* for `none` axes'
+   passes (the skip is total, so untransformed data is bit-identical, not
+   approximately equal — testable); an all-`none` plan is a valid no-op.
+
+7. **API surface**: new constructor overload
+   `fft_plan(extents, std::array<fft_direction, D>)`; the existing
+   `(extents, int sign)` constructor stays as the broadcast convenience
+   (sign applied to every axis). One-shot convenience gains a
+   directions-array overload. **Naming (maintainer decision)**: keep the
+   existing `multi::fft_inplace` family name for the wrapper — `do_fft`
+   appeared in discussion only as a placeholder example and must NOT be
+   used as the actual name.
+
+8. **The plan stays parameterized on a complex (twiddle) type that is
+   agnostic of what it executes on** — i.e. this feature builds on, and
+   must not regress, the §9.2 decoupling: `fft_plan<TW, D>` where `TW` is
+   the table element type chosen at plan construction, while the array
+   element type `T` is deduced per `execute()` call. Nothing in the
+   direction schedule touches `T` or `TW`; `dirs_` is plain data. An
+   implementer working before §9.2 has fully landed should still keep every
+   piece of this feature (`fft_direction`, `dirs_`, pass skipping,
+   engine pruning) independent of the array element type.
+
+9. **Exploit the compile-time dimension `D` to bound allocations.** The
+   plan is already a template on `D`, and the number of distinct engines is
+   bounded by `D` (fewer still when axes share a length or are `none`). So
+   the engine list does not need heap allocation at all: a fixed-capacity
+   inline container of at most `D` engines (e.g. `std::array` of
+   engine-sized slots plus a count — an `inplace_vector`-style member)
+   replaces the current `std::vector`, making plan construction
+   allocation-free at the top level and keeping engines contiguous for the
+   (construction-only) linear-scan reuse lookup of §9.1. Note the engines
+   themselves still own O(n) tables internally; the bound is on the *list*,
+   not the tables.
+
+### 10.2 Current-code obstacles the implementer must know
+
+(Verified against the file as of this writing; §9's restructuring is in
+flight, so re-audit before starting.)
+
+- **Engines are sign-aware today**: `fft_engine` stores `sign_`; `tw_` is
+  built with sign-scaled theta; `wmat_` (direct-prime DFT matrices) is
+  derived from `tw_`; Bluestein's `chirp_`/`postc_` use sign-scaled theta
+  and `kernel_ft_` is the FFT of the chirp; sub-engines are constructed
+  with `sign_` (and Bluestein's convolution pair with `sign_`/`-sign_`).
+  Migrating to direction-neutral engines (decision 4) touches all of these.
+- **Bluestein subtlety**: the backward chirp is the conjugate of the forward
+  chirp, but `kernel_ft_` is a *transform of* the chirp, and
+  FFT(conj(x)) = conj(FFT(x)) *index-reversed* — so "conjugate on load" for
+  the precomputed `kernel_ft_` is not a plain elementwise conj. If this
+  proves fiddly, the sanctioned fallback is: neutral tables for the smooth
+  Stockham path (where conj-on-load is straightforward), but keep
+  Bluestein engines direction-keyed (share on `(n, direction)` there only).
+- **The execute path pairs the last two axes** (`fft_apply_last_pair`
+  transforms axes D-1 and D-2 together, slab by slab, for cache locality;
+  remaining axes via `transform_middle_` static recursion over rotated
+  views). A `none` on exactly one of the last two axes must degrade the
+  pair-optimization to a single `fft_apply_last` on the appropriate
+  rotation; `none` on both skips the slab pass entirely.
+- **1-D FFTs along different axes commute**, so skipping/mixing needs no
+  new orchestration math — pass order stays a free (cache-driven) choice.
+
+### 10.3 Step-by-step implementation plan
+
+Phase A first (correct, minimal diff), Phase B after (the target state);
+each phase leaves the tree green under the full strict-flags test build.
+
+**Phase A — feature lands, engines stay sign-aware:**
+
+1. Add `enum class fft_direction` (§10.1 item 1) next to the existing
+   `fft_forward`/`fft_backward` constants, plus tiny helpers
+   (`to_sign(fft_direction) -> int`, validity as "is not none").
+2. `fft_plan` gains member `std::array<fft_direction, D> dirs_` (the pass
+   schedule) and the new constructor. The existing `(extents, sign)`
+   constructor delegates by broadcasting. Engine-construction loop: skip
+   axes with `dirs_[a] == none` (sentinel value in `which_[a]`, e.g.
+   `size_t(-1)`, never dereferenced for none axes); engine-reuse lookup
+   keyed on `(length, direction)` for now (Phase A keeps sign inside the
+   engine), i.e. the `find_if` predicate tests `e.n_ == len && e.sign_ ==
+   to_sign(dirs_[a])`.
+3. `apply_()` consults `dirs_`: skip `none` passes; degrade the last-pair
+   optimization per §10.2; `transform_middle_` skips none axes (runtime
+   branch per axis — per-pass cost, irrelevant). D == 1 case: none = no-op.
+4. `fft_inplace(dirs, arr)` overload (name settled per §10.1 item 7 — not
+   `do_fft`); header-comment API block updated.
+5. Tests (extend `test/algorithms_fft.cpp`, same strict `-Werror` build):
+   - all-`none` plan is a bit-identical no-op;
+   - `none` axes bit-identical while other axes transform (memcmp-style
+     equality on untouched fibers, not tolerance-based);
+   - composability: `{f, none}` then `{none, f}` ≈ `{f, f}` (tolerance);
+   - batched equivalence: `{none, f}` on a 2-D array ≈ looping the existing
+     1-D plan over rows;
+   - mixed roundtrip: `{f, none, b}` then `{b, none, f}` ≈ n₀·n₂ × original;
+   - reference-DFT cross-check of a mixed spec on small sizes including a
+     prime length (exercises Bluestein backward) and smooth lengths;
+   - same-size opposite directions (square 2-D, `{f, b}`) — exercises the
+     engine keying; verify against reference DFT.
+
+**Phase B — direction-neutral engines (the §10.1-item-4 target):**
+
+6. Remove `sign_` from `fft_engine`; build `tw_`/`wmat_` with canonical
+   (forward) sign; template the Stockham stage kernels on a `Sign` (or
+   `bool Backward`) parameter that conjugates twiddles on load; per-pass
+   dispatch in `fft_apply_last`/`fft_apply_last_pair` selects the
+   instantiation from the plan's `dirs_`. Direct-prime `wmat_` path: same
+   conj-on-load treatment.
+7. Bluestein: attempt the neutral form (conjugate chirp on load; derive the
+   backward convolution from the forward `kernel_ft_` via the
+   conjugate/index-reversal identity, or store the one extra table if that's
+   cleaner); if it degrades clarity, take the sanctioned fallback of §10.2
+   and leave Bluestein engines direction-keyed.
+8. Engine reuse key drops back to size alone. Re-run the full test battery;
+   the same-size-opposite-direction test from step 5 now also proves the
+   sharing (can assert `engines_.size() == 1` for square `{f, b}` via a
+   test-only observer or just by the numerics).
+9. Update §1's thread-safety text and this file if Phase B changes any of
+   the §9.2 immutability conclusions (it shouldn't — it only *removes*
+   state from engines).
+
+**Ordering vs the §9 T-decoupling**: orthogonal state (direction schedule
+vs TW/T split and buffer externalization) — can land before or after §9's
+restructuring; if §9 lands first, step 2's "skip none axes" also feeds the
+exact `scratch_elements()` max (decision 3, bonuses). Whichever lands
+second must re-run the other's tests.
+
+**Optional step (either phase)**: replace the `std::vector` engine list
+with the `D`-bounded inline-capacity container of §10.1 item 9 —
+independent of the direction feature proper, but this is the natural moment
+since the engine-construction loop is being touched anyway.
+
+**Optional follow-up benchmark** (not part of the feature): batched 1-D via
+`{none, f}` vs FFTW's advanced (`fftw_plan_many_dft`) interface, same
+methodology as `benchmark/algorithms_fft.cpp`.
+
+### 10.4 Standing requirements restated (maintainer: "even if redundant")
+
+These repeat §9.2/§8 on purpose, so an implementer reading only §10 cannot
+miss them; where a point *updates* an earlier section, that is called out.
+
+- **(a) No execution buffers in the plan.** The plan/engines hold no
+  ping-pong or scratch storage (`buf_`/`out_`/`xbuf_` in the old layout) —
+  only the required *sizes* (element counts). All scratch is materialized
+  at `execute()` time. This is the §9.2 externalization; the direction
+  feature must not reintroduce any of it (and prunes it further: `none`
+  axes contribute nothing to the scratch max).
+- **(b) `execute()` takes allocator parameters — and now also gets a
+  defaulted overload.** This *settles* §9.2's "decision (2)", which had
+  left the no-allocator-passed case open: the maintainer has since decided
+  there should be an overload with defaults. The safe shape: the defaulted
+  overload constructs a fresh stateless `std::allocator<T>` (for `T`
+  deduced from the executed array) *per call* — never a plan-owned
+  allocator or shared resource, which would reintroduce both the
+  T-dependency and the concurrent-execute hazard §9.2 documents. Callers
+  with allocation pressure pass their own (arena/monotonic/pool, or a
+  device allocator — see (c)).
+- **(c) Keep the code shaped for a GPU (CUDA + Thrust) implementation.**
+  §8 has the adaptation plan; the concrete implications for anyone touching
+  the plan/engine/execute structure now:
+  - the allocator-on-execute design of (b) is the GPU entry point for
+    memory: a `thrust::device_allocator`-style allocator (or one wrapping a
+    CUDA stream-ordered pool) must be passable where `std::allocator` is,
+    so scratch acquisition must go through the allocator abstraction only —
+    no raw `new`/`malloc`/`std::vector` for execute-time scratch;
+  - keep the §7 design boundary intact: N-D orchestration in idiomatic
+    Multi (memory-space-agnostic), numeric kernels behind a dispatch seam
+    where device kernels can be substituted per §8 step 2 (dispatch on the
+    pointer/cursor's memory space);
+  - twiddle tables (`TW`-typed, per §10.1 item 8) are host-built today;
+    nothing in this feature may assume they are addressable from kernel
+    inner loops in any way that would block a later device-side copy
+    (i.e. keep table *access* funneled through the engine, not scattered
+    raw pointer arithmetic in new code);
+  - the direction schedule (`dirs_`) is trivially-copyable plain data by
+    construction — keep it that way (it must be shippable to a device or
+    captured by a lambda without host references).
+
+### 10.5 Code tricks and operational details for the executor
+
+Concrete facts verified against the current file, plus the non-obvious
+tricks. Identifiers/line references are as of this writing — the file is
+under active §9 restructuring, so **re-grep every anchor before relying on
+it**.
+
+**Anchor map (what to touch, where):**
+
+- `fft_plan<T, D>` (~line 1192): members `sizes_` (`std::array<size_t, D>`,
+  used by `fft_view_from_cursor` on every execute — must keep entries for
+  ALL axes including `none` ones), `engines_` (`std::vector<fft_engine<T>>`,
+  one per distinct length), `which_` (axis → engine index).
+- `engine_<A>()` (compile-time axis accessor, `static_assert`s the range) —
+  must gain a guard (assert or `if constexpr` at call sites) that axis `A`
+  is not `none` before indexing `engines_[which_[A]]`.
+- `apply_()`: `D == 1` → `fft_apply_last`; else `fft_apply_last_pair(view,
+  engine_<D-1>(), engine_<D-2>())` then `transform_middle_<1>` static
+  recursion (axis K−1 per level, via `view.rotated()`).
+- `fft_engine<T>::fft_engine(std::size_t nn, int sign)` (~line 201); stage
+  kernels `stage_radix2_/4_/8_/3_/5_/generic_` dispatched by a runtime
+  `switch(st.kind)` inside `run_stages_<Batched>` (~line 839) and the fused
+  variant (~line 817).
+- `fft_ops<T>` customization point (~line 99): generic `mul(a,b) = a*b`,
+  `std::complex<R>` specialization with the explicit 4-mul/2-add form.
+- Tests: `test/algorithms_fft.cpp`, Boost lightweight_test (`BOOST_TEST`,
+  `return boost::report_errors();`), helpers `dft_reference(in, sign)`
+  (1-D, reference direct DFT), `max_abs_diff`, `tol = 1e-9`. The 2-D
+  reference pattern (apply `dft_reference` per row, then per column of the
+  running result, ~lines 140–165) is exactly the pattern to imitate for
+  mixed-direction references. Picked up by the `test/*.cpp` CMake glob.
+
+**The uniform-conjugation invariant (Phase B's key enabler, verified):**
+every direction-dependent value in every smooth-path kernel is *loaded from
+a table* — the per-stage twiddles, the fixed roots `w1c`/`w2c`/… in
+radix-3/5 (`tw_[n3]`, `tw_[n5]`, …), the ±i constant `imu` in radix-4/8
+(`tw_[q]`, `tw_[2*q]` — the comments even say "-i for forward, +i for
+backward"), and the direct-prime `wmat_` (built purely from `tw_`). There
+are NO direction-dependent literals or sign-flipped constants in kernel
+bodies. Therefore: conjugate every table load uniformly and the entire
+smooth path is direction-correct. Corollary pitfall: do not "optimize" by
+special-casing `imu` or the fixed roots out of the conjugation — they need
+it exactly as much as the loop twiddles.
+
+**The fused conjugate-multiply trick (zero extra instructions):** don't
+materialize `conj(w)` then multiply. Add a sibling to `fft_ops<T>::mul`:
+
+    conj_mul(a, b) == mul(conj(a), b)
+    // std::complex specialization — same 4 mul + 2 add, two signs flipped:
+    { (a.real()*b.real()) + (a.imag()*b.imag()),
+      (a.real()*b.imag()) - (a.imag()*b.real()) }
+
+(generic fallback: `mul(conj(a), b)` with ADL `conj`). Then a tiny
+compile-time selector, e.g. `fft_mul_dir<bool Backward>(w, x)` → `mul` or
+`conj_mul`, and the kernel diff is mechanical: every `fft_mul(table_value,
+datum)` becomes `fft_mul_dir<Backward>(table_value, datum)`. Convention to
+keep: the *table* operand is always the first argument (already true
+everywhere today) — conjugation must apply to that operand only.
+
+**Plumbing the sign down:** add `bool Backward` alongside `Batched` on
+`run_stages_` and the stage kernels; the runtime `switch(st.kind)` stays
+untouched. The engine's public entry gains a runtime direction argument
+that selects the `<Batched, Backward>` instantiation once per invocation —
+one branch per *pass*, nothing per element.
+
+**Bluestein specifics (Phase B):** the constructor currently builds *two*
+convolution sub-engines, `sub_.emplace_back(conv_n_, sign_)` and
+`(conv_n_, -sign_)` (~lines 474–475) — with sign-templated kernels these
+collapse into ONE sub-engine run with opposite `Backward` values (a real
+table-memory win, not just tidiness). The precomputed spectrum obeys
+`kernel_ft_backward[k] == conj(kernel_ft_forward[(N-k) mod N])` (FFT of a
+conjugated sequence = conjugated, index-reversed FFT) — the index reversal
+is why plain conj-on-load doesn't work for `kernel_ft_` and why the
+sanctioned fallback (direction-keyed Bluestein engines only) exists.
+`chirp_`/`postc_` are plain elementwise conjugates, no reversal.
+
+**Wrapper deduction trick (why the argument order is dirs-first, and how
+`{{...}}` compiles):** a braced-init-list is a non-deduced context, so
+`std::array<fft_direction, DD>` can never deduce `DD` from `{{f, none}}`.
+Make the dirs parameter's type *dependent on the array argument's rank*
+(e.g. `std::array<fft_direction, rank_of<Arr>>` where `Arr` deduces from
+the second parameter): deduction succeeds from `arr` alone, the dirs type
+is then fixed, and the braced list just initializes it. Do NOT fall back
+to `std::initializer_list<fft_direction>` — that compiles everywhere but
+demotes the arity check to runtime, violating §10.1 decision 2. (For the
+`fft_plan` constructor there is no issue: `D` is the class parameter.)
+
+**C++17 constraints and naming collisions:** the library is C++17 — no
+`using enum` for ergonomics. `enum class fft_direction { forward = -1,
+none = 0, backward = +1 }` does not collide with the existing
+`inline constexpr int fft_forward/fft_backward` (different scopes), but
+users must then spell `multi::fft_direction::forward` etc.; if shorter
+spellings are wanted, add distinct `inline constexpr fft_direction`
+constants (NOT named `fft_forward`/`fft_backward` — those names are taken
+by the `int` constants and must stay for API stability).
+
+**Known trait footgun (relevant when adding overloads):**
+`detail::fft_is_multi_like` (line ~142) is satisfied by `multi::extents_t`
+too, not just arrays — it already cost one debugging session (a vestigial
+SFINAE guard rejecting legitimate extents arguments had to be removed). If
+new overloads need to distinguish "directions array" / "extents" / "multi
+array", dispatch on something structural (e.g. the element type being
+`fft_direction`) rather than trusting that trait.
+
+**Build/verify commands (as used throughout this project):**
+
+    # strict test build (must stay green after every step):
+    g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Wshadow -Wconversion \
+        -Wsign-conversion -Werror -Iinclude \
+        test/algorithms_fft.cpp -o /tmp/fft_test.x && /tmp/fft_test.x
+
+    # benchmark (only on an idle, unthrottled machine; see the
+    # COMPILATION_INSTRUCTIONS comment at the top of the file):
+    #   benchmark/algorithms_fft.cpp
+
+Bit-identity tests for `none` axes must use exact equality (`==` on
+elements / memcmp semantics), not `tol` — the guarantee in §10.1 item 6 is
+"never written", not "numerically close".

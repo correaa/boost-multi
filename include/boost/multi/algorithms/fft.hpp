@@ -1223,7 +1223,7 @@ class fft_plan {
 	}
 
  public:
-	template<class Extents, std::enable_if_t<!detail::fft_is_multi_like<Extents>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++17 compatibility
+	template<class Extents>
 	explicit fft_plan(Extents const& extents, int sign = fft_forward)
 	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})} {
 		engines_.reserve(D);
