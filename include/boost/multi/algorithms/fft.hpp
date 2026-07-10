@@ -1264,16 +1264,16 @@ struct fft_engine {
 // array's element type, deduced from `arena`) is independent of `TW` (the
 // engine's own, fixed twiddle-table type).
 template<class View1D, class T, class TW>
-void fft_exec_fiber(View1D&& fib, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+void fft_exec_fiber(View1D&& fib, fft_engine<TW> const& eng, bool backward, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	if constexpr(std::is_pointer_v<std::decay_t<decltype(fib.base())>>) {
 		if(fib.stride() == 1) {  // contiguous fiber: no gather, and the final pass writes back directly
-			eng.run_contig_inplace(fib.base(), arena);
+			eng.run_contig_inplace(fib.base(), arena, backward);
 			return;
 		}
 	}
 	T* const b = eng.buf_ptr(arena);
 	std::copy(fib.begin(), fib.end(), b);  // gather strided fiber
-	T const* const res = eng.run(1, arena);
+	T const* const res = eng.run(1, backward, arena);
 	std::copy(res, res + eng.n_, fib.begin());  // scatter result back
 }
 
@@ -1281,7 +1281,7 @@ void fft_exec_fiber(View1D&& fib, fft_engine<TW> const& eng, T* arena) {  // NOL
 // tiles of up to eng.mb_ fibers are gathered interleaved (batch index
 // contiguous) and pushed through the batched stage kernels together.
 template<class View2D, class T, class TW>
-void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward,readability-function-cognitive-complexity)
+void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward,readability-function-cognitive-complexity)
 	using std::get;
 	auto const yy = static_cast<std::size_t>(slab.size());
 	auto const nn = eng.n_;
@@ -1297,7 +1297,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOL
 		if(get<1>(slab.strides()) == 1) {
 			auto const ylim = static_cast<std::ptrdiff_t>(yy);
 			for(std::ptrdiff_t y = 0; y != ylim; ++y) {
-				fft_exec_fiber(slab[y], eng, arena);
+				fft_exec_fiber(slab[y], eng, backward, arena);
 			}
 			return;
 		}
@@ -1310,11 +1310,11 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOL
 			for(std::size_t y0 = 0; y0 < yy; y0 += mb) {
 				std::size_t const mt = std::min(mb, yy - y0);
 				if(mt == 1) {
-					fft_exec_fiber(slab[static_cast<std::ptrdiff_t>(y0)], eng, arena);
+					fft_exec_fiber(slab[static_cast<std::ptrdiff_t>(y0)], eng, backward, arena);
 					continue;
 				}
 				T* const tile0 = std::addressof(slab[static_cast<std::ptrdiff_t>(y0)][0]);
-				eng.run_fused(tile0, sf, tile0, sf, mt, arena);
+				eng.run_fused(tile0, sf, tile0, sf, mt, backward, arena);
 			}
 			return;
 		}
@@ -1329,7 +1329,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOL
 	for(std::size_t y0 = 0; y0 < yy; y0 += mb) {
 		std::size_t const mt = std::min(mb, yy - y0);
 		if(mt == 1) {
-			fft_exec_fiber(slab[static_cast<std::ptrdiff_t>(y0)], eng, arena);
+			fft_exec_fiber(slab[static_cast<std::ptrdiff_t>(y0)], eng, backward, arena);
 			continue;
 		}
 		T* const bp = eng.buf_ptr(arena);
@@ -1354,7 +1354,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOL
 			}
 		}
 
-		T const* const res = eng.run(mt, arena);
+		T const* const res = eng.run(mt, backward, arena);
 
 		if(fiber_near) {
 			constexpr std::size_t kb = 64;
@@ -1396,15 +1396,18 @@ auto fft_min_abs_mid_stride(Strides const& strs, std::index_sequence<Is...> /*un
 // slab is a small fraction of the whole array, so this replaces two
 // full-array memory sweeps by one (the second axis' fibers also become
 // slab-local strides instead of array-wide ones).
+// `last_backward`/`prev_backward` are independent (the last two axes may
+// have different directions, e.g. `{forward, backward}` on a square shape --
+// exactly the case that shares one engine across both axes in Phase B).
 template<class ViewND, class T, class TW>
-void fft_apply_last_pair(ViewND&& view, fft_engine<TW> const& last_eng, fft_engine<TW> const& prev_eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+void fft_apply_last_pair(ViewND&& view, fft_engine<TW> const& last_eng, bool last_backward, fft_engine<TW> const& prev_eng, bool prev_backward, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	constexpr auto rank = std::decay_t<ViewND>::dimensionality;
 	if constexpr(rank == 2) {
-		fft_apply_last(view, last_eng, arena);            // fibers along axis 1
-		fft_apply_last(view.rotated(), prev_eng, arena);  // fibers along axis 0, slab still hot
+		fft_apply_last(view, last_eng, last_backward, arena);            // fibers along axis 1
+		fft_apply_last(view.rotated(), prev_eng, prev_backward, arena);  // fibers along axis 0, slab still hot
 	} else {
 		for(auto&& sub : view) {
-			fft_apply_last_pair(sub, last_eng, prev_eng, arena);
+			fft_apply_last_pair(sub, last_eng, last_backward, prev_eng, prev_backward, arena);
 		}
 	}
 }
@@ -1414,12 +1417,12 @@ void fft_apply_last_pair(ViewND&& view, fft_engine<TW> const& last_eng, fft_engi
 // of smallest stride alive (via transposed(), which swaps the first two axes),
 // so that at rank 2 the batch axis is the one closest in memory.
 template<class ViewND, class T, class TW>
-void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, bool backward, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	constexpr auto rank = std::decay_t<ViewND>::dimensionality;
 	if constexpr(rank == 1) {
-		fft_exec_fiber(view, eng, arena);
+		fft_exec_fiber(view, eng, backward, arena);
 	} else if constexpr(rank == 2) {
-		fft_exec_slab(view, eng, arena);
+		fft_exec_slab(view, eng, backward, arena);
 	} else {
 		using std::get;
 		auto const strs = view.strides();
@@ -1427,11 +1430,11 @@ void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, T* arena) {  // NO
 		auto const s0a  = (s0 < 0) ? -s0 : s0;
 		if(s0a <= fft_min_abs_mid_stride(strs, std::make_index_sequence<static_cast<std::size_t>(rank) - 2>{})) {
 			for(auto&& sub : view.transposed()) {
-				fft_apply_last(sub, eng, arena);
+				fft_apply_last(sub, eng, backward, arena);
 			}
 		} else {
 			for(auto&& sub : view) {
-				fft_apply_last(sub, eng, arena);
+				fft_apply_last(sub, eng, backward, arena);
 			}
 		}
 	}
@@ -1615,7 +1618,7 @@ class fft_plan {
 	void transform_axes_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		constexpr std::ptrdiff_t axis = (K == 0) ? D - 1 : K - 1;
 		if(dirs_[static_cast<std::size_t>(axis)] != fft_direction::none) {
-			detail::fft_apply_last(view, engine_<axis>(), arena);
+			detail::fft_apply_last(view, engine_<axis>(), dirs_[static_cast<std::size_t>(axis)] == fft_direction::backward, arena);
 		}
 		if constexpr(K < Stop) {
 			transform_axes_<K + 1, Stop>(view.rotated(), arena);
@@ -1653,11 +1656,13 @@ class fft_plan {
 				which_.at(a) = no_engine_;
 				continue;
 			}
-			auto const len  = sizes_.at(a);
-			int const  sign = detail::fft_to_sign(dirs_[a]);
-			auto       it   = std::find_if(engines_.begin(), engines_.end(), [len, sign](auto const& e) { return e.n_ == len && e.sign_ == sign; });
+			// Direction-neutral engines (Phase B, NOTES §10.5): reuse is keyed
+			// on length ALONE, so e.g. a square {forward, backward} plan
+			// shares ONE engine where Phase A built two.
+			auto const len = sizes_.at(a);
+			auto       it  = std::find_if(engines_.begin(), engines_.end(), [len](auto const& e) { return e.n_ == len; });
 			if(it == engines_.end()) {
-				engines_.emplace_back(len, sign);
+				engines_.emplace_back(len);
 				it = std::prev(engines_.end());
 			}
 			which_.at(a) = static_cast<std::size_t>(it - engines_.begin());
@@ -1701,6 +1706,12 @@ class fft_plan {
 	// regardless of which array element type a given execute() call uses.
 	auto scratch_elements() const -> std::size_t { return scratch_elements_; }
 
+	// Number of distinct top-level engines the plan built (harmless, genuinely
+	// useful to callers). Direction-neutral engines (Phase B, NOTES §10.5)
+	// share one engine per distinct AXIS LENGTH regardless of direction, so
+	// e.g. a square {forward, backward} plan reports 1 here (2 in Phase A).
+	auto engine_count() const -> std::size_t { return engines_.size(); }
+
  private:
 	// The axis walk, shared by the cursor and array entry points. `view` is a
 	// strided view of the planned shape; transformed in place. `T` (the
@@ -1718,7 +1729,12 @@ class fft_plan {
 	void apply_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		if constexpr(D >= 2) {
 			if(dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none && dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none) {
-				detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>(), arena);
+				detail::fft_apply_last_pair(
+				    view,
+				    engine_<D - 1>(), dirs_[static_cast<std::size_t>(D - 1)] == fft_direction::backward,
+				    engine_<D - 2>(), dirs_[static_cast<std::size_t>(D - 2)] == fft_direction::backward,
+				    arena
+				);
 				if constexpr(D >= 3) {
 					transform_axes_<1, D - 2>(view.rotated(), arena);  // axes 0 .. D-3
 				}

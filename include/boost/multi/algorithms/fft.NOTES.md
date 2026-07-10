@@ -824,26 +824,42 @@ accepted while implementing it):
    - same-size opposite directions (square 2-D, `{f, b}`) — exercises the
      engine keying; verify against reference DFT.
 
-**Phase B — direction-neutral engines (the §10.1-item-4 target):**
+**Phase B — direction-neutral engines (the §10.1-item-4 target) — DONE**
+(fft.PLAN.md Session 3; see that file's DONE note for the two decision
+points — Bluestein's fwd/bwd sub-engine pair collapsed to one, and the
+`kernel_ft_bwd_` closed-form table — and the ASan/parity verification of
+the resulting scratch aliasing):
 
 6. Remove `sign_` from `fft_engine`; build `tw_`/`wmat_` with canonical
    (forward) sign; template the Stockham stage kernels on a `Sign` (or
    `bool Backward`) parameter that conjugates twiddles on load; per-pass
    dispatch in `fft_apply_last`/`fft_apply_last_pair` selects the
    instantiation from the plan's `dirs_`. Direct-prime `wmat_` path: same
-   conj-on-load treatment.
+   conj-on-load treatment. **Landed as designed** — see §10.5's updated
+   anchor map for the resulting shape (`fft_mul_dir<Backward>`, the
+   `<Batched, Backward, T>` stage kernels, the runtime `bool backward`
+   public entries).
 7. Bluestein: attempt the neutral form (conjugate chirp on load; derive the
    backward convolution from the forward `kernel_ft_` via the
    conjugate/index-reversal identity, or store the one extra table if that's
    cleaner); if it degrades clarity, take the sanctioned fallback of §10.2
-   and leave Bluestein engines direction-keyed.
+   and leave Bluestein engines direction-keyed. **Landed via the second
+   table** (`kernel_ft_bwd_`, the closed-form conjugate/index-reversal —
+   no direction-keyed fallback needed); the fwd/bwd conv sub-engine pair
+   also collapsed to one neutral engine (a further win beyond what this
+   step asked for — see fft.PLAN.md Session 3 DONE note for the aliasing
+   argument this required).
 8. Engine reuse key drops back to size alone. Re-run the full test battery;
    the same-size-opposite-direction test from step 5 now also proves the
    sharing (can assert `engines_.size() == 1` for square `{f, b}` via a
-   test-only observer or just by the numerics).
+   test-only observer or just by the numerics). **Landed**: a public
+   `engine_count()` accessor was added (harmless, useful to callers too),
+   and the existing test updated in place to assert `engine_count() == 1`.
 9. Update §1's thread-safety text and this file if Phase B changes any of
    the §9.2 immutability conclusions (it shouldn't — it only *removes*
-   state from engines).
+   state from engines). **Confirmed**: no immutability conclusion changed;
+   engines are, if anything, more clearly immutable post-construction now
+   that `sign_` (the last piece of per-engine direction state) is gone.
 
 **Ordering vs the §9 T-decoupling**: orthogonal state (direction schedule
 vs TW/T split and buffer externalization) — can land before or after §9's
@@ -1029,22 +1045,39 @@ datum)` becomes `fft_mul_dir<Backward>(table_value, datum)`. Convention to
 keep: the *table* operand is always the first argument (already true
 everywhere today) — conjugation must apply to that operand only.
 
-**Plumbing the sign down:** add `bool Backward` alongside `Batched` on
-`run_stages_` and the stage kernels; the runtime `switch(st.kind)` stays
-untouched. The engine's public entry gains a runtime direction argument
-that selects the `<Batched, Backward>` instantiation once per invocation —
-one branch per *pass*, nothing per element.
+**Plumbing the sign down — landed as designed.** `bool Backward` sits
+alongside `Batched` on `run_stages_`/`run_fused_impl_`/`stage_subplan_` and
+the stage kernels (`<Batched, Backward, T>`); the runtime `switch(st.kind)`
+is untouched. `run_sixstep_`/`run_bluestein_` are also templated on
+`Backward` (not just the stage kernels) so their own direction-dependent
+table loads (the six-step transpose twiddle; Bluestein's chirp/postc/
+kernel-table selection) get the same one-instantiation-per-pass treatment.
+The engine's public entries (`run`, `run_fused`, `run_contig_inplace`) take
+a runtime `bool backward` and dispatch ONCE per invocation to the
+`<..., Backward>` instantiation.
 
-**Bluestein specifics (Phase B):** the constructor currently builds *two*
-convolution sub-engines, `sub_.emplace_back(conv_n_, sign_)` and
-`(conv_n_, -sign_)` (~lines 474–475) — with sign-templated kernels these
-collapse into ONE sub-engine run with opposite `Backward` values (a real
-table-memory win, not just tidiness). The precomputed spectrum obeys
-`kernel_ft_backward[k] == conj(kernel_ft_forward[(N-k) mod N])` (FFT of a
-conjugated sequence = conjugated, index-reversed FFT) — the index reversal
-is why plain conj-on-load doesn't work for `kernel_ft_` and why the
-sanctioned fallback (direction-keyed Bluestein engines only) exists.
-`chirp_`/`postc_` are plain elementwise conjugates, no reversal.
+**Bluestein specifics (Phase B) — landed.** The constructor now builds
+*one* neutral convolution sub-engine (`sub_.emplace_back(conv_n_)`, no
+sign), run twice from `run_bluestein_`: forward (`<false>`) to produce
+`yf`, then backward (`<true>`) on the pointwise product to produce `zc` —
+regardless of the OUTER transform's own direction, which only affects
+chirp/postc conjugation and kernel-table selection, never the conv
+mechanism itself. The precomputed spectrum obeys `kernel_ft_backward[k] ==
+conj(kernel_ft_forward[(N-k) mod N])` (FFT of a conjugated sequence =
+conjugated, index-reversed FFT) — the index reversal is why plain
+conj-on-load doesn't work for `kernel_ft_`; landed as a second table
+(`kernel_ft_bwd_`), computed by this closed form at construction (no extra
+engine run needed) rather than the direction-keyed-Bluestein-engines
+fallback. `chirp_`/`postc_` are plain elementwise conjugates (no reversal),
+so `fft_mul_dir<Backward>` handles them directly, no second table.
+**Aliasing consequence of the one-engine collapse** (verified under ASan,
+both stage-count parities — n=101 gives 4 stages/even, n=331 gives 5/odd):
+the second run's default input region, `conv.buf_ptr(arena)`, can be the
+exact SAME memory as `yf` (the first run's result) when the engine's stage
+count is even. Safe regardless: the pointwise-product write `z[i] =
+f(yf[i])` only ever reads and writes the SAME index, so full aliasing
+between `z` and `yf` across the whole array is not a hazard (documented at
+`run_bluestein_`'s definition in fft.hpp).
 
 **Wrapper deduction trick (why the argument order is dirs-first, and how
 `{{...}}` compiles):** a braced-init-list is a non-deduced context, so

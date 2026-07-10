@@ -167,8 +167,62 @@ Checkpoint commit: "fft: per-axis directions incl. none (Phase A, NOTES
 
 ## Session 3 — §10.3 Phase B: direction-neutral engines
 
-(Revised after Sessions 1-2 + the review passes landed; the original
-thinner version predated the T/TW split, the allocator threading, and the
+**DONE.** Landed in two checkpoints as suggested below (smooth-path
+templating, then Bluestein + tests), after fixing a broken hand-off: the
+session that started this work had templated the stage kernels
+(`stage_radix2_/3_/4_/5_/8_/generic_`) on `bool Backward` but left every
+call site passing only `<Batched>` — a non-compiling tree. All of steps
+1-7 below are landed as written, with these outcomes on the two
+maintainer-left decision points:
+
+- **Bluestein conv sub-engine pair**: collapsed to ONE neutral engine (not
+  kept as two identical ones) — run forward (`<false>`) then inverse
+  (`<true>`) sequentially. This makes `run_bluestein_`'s pointwise-product
+  step's `z` (the second run's default input region) potentially the SAME
+  memory as `yf` (the first run's result) when the engine's stage count is
+  even — confirmed by direct probe (`fft_engine` constructed standalone)
+  that n=101 gives an even (4-stage) conv and n=331/1009 give odd
+  (5-stage); both parities pass under ASan+UBSan, covering the aliasing
+  case flagged in this file's original text. The write is elementwise
+  same-index (`z[i] = f(yf[i])`), safe even fully aliased; documented at
+  the `run_bluestein_` definition.
+- **`kernel_ft_bwd_`**: computed via the closed form
+  `conj(kernel_ft_[(conv_n_ - k) % conv_n_])` at construction (no second
+  engine run needed), rather than running the conv engine backward once
+  more — cheaper and matches NOTES §10.5's stated invariant directly.
+- Task 6's `engine_count()` accessor landed; the pre-existing "same-size
+  opposite directions" test (Phase A) was updated in place to assert
+  `engine_count() == 1` (was 2 in Phase A) rather than adding a duplicate
+  test, since it already built the exact shape task 6 asks for.
+- Five new tests landed in `test/algorithms_fft.cpp`: 1-D n=101 BACKWARD
+  through Bluestein (the pre-existing large-prime test only ever ran
+  forward, so `kernel_ft_bwd_` was previously untested by anything); a
+  six-step-length (n=8192) forward-then-backward roundtrip; a non-cubic
+  3-D `{backward, forward, none}` vs per-axis reference composition; the
+  `engine_count() == 1` sharing proof (above); an all-forward
+  bit-identical cross-check between the broadcast int-sign constructor and
+  the explicit all-forward directions constructor (both should — and do —
+  hit the exact same `Backward = false` instantiations). All pre-existing
+  tests (Sessions 0-2's) still pass unchanged, at unchanged tolerances —
+  the practical stand-in for "bit-identical to Phase A" now that Phase A's
+  sign-baked code no longer exists in the tree to diff against.
+- Sweep confirmed: `grep -w sign_`/`grep -w mutable` in fft.hpp → 0 (word-
+  boundary grep; naive `grep -c` false-positives on substrings like
+  `assign_offsets_`/`immutable`). Gates green: strict `-O2 -Wall -Wextra
+  -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Werror` (both g++ and
+  clang++), `-O3 -Walloc-zero`, ASan+UBSan. Benchmark
+  (`benchmark/algorithms_fft.cpp`) recompiles clean against FFTW and runs;
+  no perf-relevant API changed shape (`execute()`'s signature is
+  untouched — direction is plan-construction-time state, same as Phase A).
+- NOT done, left for Session 4 or a future doc pass: benchmarking whether
+  Phase B's engine sharing actually recovers any of the scratch-
+  externalization regression noted at the end of Session 1 (that
+  regression was about allocator cost, orthogonal to engine count, so no
+  change expected here) — not attempted, no claim made either way.
+
+(Original session brief, still accurate for the design rationale — revised
+after Sessions 1-2 + the review passes landed; the original thinner
+version predated the T/TW split, the allocator threading, and the
 recursive-walk dispatch. The enabling facts are in NOTES §10.5 — its
 anchor map is current as of the recursive walk — plus the additions
 below, derived from re-reading the code as it exists NOW. Re-grep anchors

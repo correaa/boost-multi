@@ -694,12 +694,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 
 		// 7) same-size opposite directions (square 2-D, {forward, backward}):
-		//    exercises the (length, direction) engine-keying -- both axes
-		//    share a length but need two DISTINCT engines since the sign
-		//    differs. Verified against the reference DFT, not just
-		//    self-consistency.
+		//    Phase A keyed engines on (length, direction), so this needed two
+		//    DISTINCT engines; Phase B engines are direction-neutral (NOTES
+		//    §10.5), so the two same-length axes now share ONE engine --
+		//    engine_count() proves the sharing, not just self-consistency.
+		//    Verified against the reference DFT too.
 		{
-			constexpr int nn = 6;
+			constexpr int             nn = 6;
 			multi::array<complex, 2> arr({nn, nn}, complex{});
 			for(int i = 0; i != nn; ++i) {
 				for(int j = 0; j != nn; ++j) {
@@ -716,7 +717,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				for(int i = 0; i != nn; ++i) { reference[i][j] = col[i]; }
 			}
 
-			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, backward}}, arr);
+			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, backward}}};
+			BOOST_TEST( plan.engine_count() == 1U );  // Phase B: one engine shared across both same-length axes
+			plan.execute(arr);
 
 			double m = 0.0;
 			for(int i = 0; i != nn; ++i) {
@@ -779,6 +782,106 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, forward, none}}, result);
 				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 			}
+		}
+	}
+
+	// --- Direction-neutral engines (fft.NOTES.md §10, Phase B) --------------
+	{
+		constexpr auto forward  = multi::fft_direction::forward;
+		constexpr auto none     = multi::fft_direction::none;
+		constexpr auto backward = multi::fft_direction::backward;
+
+		// 1) 1-D BACKWARD through Bluestein (n = 101, prime > fft_max_direct_
+		//    radix): the pre-existing large-prime test above only ever ran
+		//    forward, which cannot exercise kernel_ft_bwd_ at all (a plain
+		//    conj-on-load doesn't work for that table -- it needs the
+		//    separately precomputed, index-reversed spectrum). This is the
+		//    test that decides kernel_ft_bwd_'s correctness.
+		{
+			constexpr int nn = 101;
+			multi::array<complex, 1> arr(multi::extents_t<1>{nn}, complex{});
+			for(int i = 0; i != nn; ++i) {
+				arr[i] = complex{static_cast<double>((i * 3) % 7) - 3.0, static_cast<double>((i * 5) % 11) - 5.0};
+			}
+			auto const ref = dft_reference(arr, multi::fft_backward);
+			multi::fft_inplace(std::array<multi::fft_direction, 1>{{backward}}, arr);
+			BOOST_TEST( max_abs_diff(arr, ref) < 1e-7 );
+		}
+
+		// 2) 1-D six-step-length forward-then-backward roundtrip == n * id:
+		//    exercises the six-step transpose-twiddle conjugation (fft_mul_
+		//    dir<Backward> in run_sixstep_) without needing an O(n^2)
+		//    reference at this size.
+		{
+			constexpr int nn = 8192;  // == fft_sixstep_min, smallest size that takes the six-step path
+			multi::array<complex, 1> arr(multi::extents_t<1>{nn}, complex{});
+			for(int i = 0; i != nn; ++i) {
+				arr[i] = complex{static_cast<double>((i * 7) % 13) - 6.0, static_cast<double>((i * 11) % 17) - 8.0};
+			}
+			auto const original = arr;
+			multi::fft_inplace(std::array<multi::fft_direction, 1>{{forward}}, arr);
+			multi::fft_inplace(std::array<multi::fft_direction, 1>{{backward}}, arr);
+			double m = 0.0;
+			for(int i = 0; i != nn; ++i) {
+				m = std::max(m, std::abs(arr[i] - (original[i] * static_cast<double>(nn))));
+			}
+			BOOST_TEST( m / static_cast<double>(nn) < tol );
+		}
+
+		// 3) non-cubic 3-D {backward, forward, none} vs a per-axis reference
+		//    composition (D >= 3, NON-CUBIC -- Session-2's lesson: cubic
+		//    shapes and D == 2 both mask axis mix-ups).
+		{
+			multi::array<complex, 3> arr({3, 5, 4}, complex{});
+			for(int i = 0; i != 3; ++i) {
+				for(int j = 0; j != 5; ++j) {
+					for(int k = 0; k != 4; ++k) {
+						arr[i][j][k] = complex{static_cast<double>((i * 20) + (j * 4) + k), static_cast<double>(i - j + k)};
+					}
+				}
+			}
+			auto reference = arr;
+			for(int j = 0; j != 5; ++j) {
+				for(int k = 0; k != 4; ++k) {
+					auto fib = dft_reference(reference.rotated()[j][k], multi::fft_backward);  // fiber along axis 0
+					for(int i = 0; i != 3; ++i) { reference[i][j][k] = fib[i]; }
+				}
+			}
+			for(int i = 0; i != 3; ++i) {
+				for(int k = 0; k != 4; ++k) {
+					auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
+					for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+				}
+			}
+			auto result = arr;
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{{backward, forward, none}}, result);
+			BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
+		}
+
+		// 4) all-forward operation-equivalence check (not a hard numeric
+		//    gate, just a same-tables/same-kernels-at-Backward=false sanity
+		//    check): the broadcast int-sign constructor and the explicit
+		//    all-forward directions constructor must produce bit-identical
+		//    results, since both dispatch to the exact same `Backward =
+		//    false` instantiations.
+		{
+			multi::array<complex, 2> arr({6, 10}, complex{});
+			for(int i = 0; i != 6; ++i) {
+				for(int j = 0; j != 10; ++j) { arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>(i + j)}; }
+			}
+			auto via_broadcast = arr;
+			auto via_dirs       = arr;
+			multi::fft_plan<2> const bplan{arr.sizes(), multi::fft_forward};
+			multi::fft_plan<2> const dplan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, forward}}};
+			bplan.execute(via_broadcast);
+			dplan.execute(via_dirs);
+			bool bit_identical = true;
+			for(int i = 0; i != 6; ++i) {
+				for(int j = 0; j != 10; ++j) {
+					if(via_broadcast[i][j] != via_dirs[i][j]) { bit_identical = false; }
+				}
+			}
+			BOOST_TEST( bit_identical );  // report, not a hard gate (per fft.PLAN.md Session 3 task 6)
 		}
 	}
 
