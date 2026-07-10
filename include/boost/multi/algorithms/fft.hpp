@@ -111,19 +111,32 @@ template<class T> struct fft_real {
 // precision, and narrows the *result* back to `T` once -- deliberately not
 // narrowing `w` to `T` first, which would round the table value on every
 // multiply instead of just the final result (see fft.NOTES.md §9.2 on the
-// accuracy/throughput trade this exposes when TW is wider than T). For the
-// common same-type case (T == TW, e.g. both std::complex<double>) the
-// specialization below uses the plain formula instead of `operator*`: the
-// operator carries C-Annex-G infinity/NaN fixups (a branch and a libcall
-// fallback) that prevent the batched inner loops from vectorizing. Users can
-// specialize this for custom element types with a faster product.
+// accuracy/throughput trade this exposes when TW is wider than T). For every
+// std::complex pairing -- same-type AND mixed (e.g. complex<float> data
+// through a complex<double>-twiddle plan) -- the specialization below uses
+// the plain widen-multiply-narrow formula instead of `operator*`: the
+// operator carries C-Annex-G infinity/NaN fixups (a branch and a __muldc3
+// libcall fallback) that prevent the batched inner loops from vectorizing;
+// routing the mixed case through it (as an earlier version of this file did,
+// via the generic default) put a libcall in every twiddle multiply of the
+// T != TW path. Users can specialize this for custom element types with a
+// faster product.
 template<class T, class TW = T> struct fft_ops {
 	static constexpr auto mul(TW const& w, T const& x) -> T { return static_cast<T>(w * static_cast<TW>(x)); }
 };
 
-template<class R> struct fft_ops<std::complex<R>, std::complex<R>> {
-	static constexpr auto mul(std::complex<R> const& w, std::complex<R> const& x) -> std::complex<R> {
-		return {(w.real() * x.real()) - (w.imag() * x.imag()), (w.real() * x.imag()) + (w.imag() * x.real())};
+template<class R1, class R2> struct fft_ops<std::complex<R1>, std::complex<R2>> {
+	static constexpr auto mul(std::complex<R2> const& w, std::complex<R1> const& x) -> std::complex<R1> {
+		// Products form in the wider of the two precisions (arithmetic on
+		// mixed operands promotes); each result component narrows once. For
+		// R1 == R2 every conversion is an identity and this is byte-for-byte
+		// the previous same-type-only specialization.
+		using promoted   = std::common_type_t<R1, R2>;
+		promoted const wr = w.real();
+		promoted const wi = w.imag();
+		promoted const xr = x.real();
+		promoted const xi = x.imag();
+		return {static_cast<R1>((wr * xr) - (wi * xi)), static_cast<R1>((wr * xi) + (wi * xr))};
 	}
 };
 
@@ -158,6 +171,30 @@ inline constexpr std::size_t fft_max_direct_radix = 64;
 // whole fiber. Threshold chosen by measurement (2^13 is neutral, 2^14..2^15
 // gain 10-25%).
 inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
+
+// Small fixed-size local buffer that is deliberately NOT initialized for
+// trivially copyable element types. A plain `std::array<T, N>` local
+// default-initializes its elements, and for `std::complex` (trivially
+// copyable but NOT trivially default-constructible -- its default
+// constructor zero-initializes) that compiles to a memset of the whole
+// buffer on every entry to the enclosing function; the six-step transpose
+// tile below hit this once per fiber. Elements are always fully written
+// before being read, so the zero-fill is pure waste. Cache-line aligned as
+// a bonus. Same implicit-object-creation footing as fft_scratch_arena (see
+// there): a std::byte array implicitly creates the trivially-copyable
+// objects stored into it. Non-trivially-copyable types fall back to a
+// properly constructed std::array.
+template<class T, std::size_t N, bool = std::is_trivially_copyable_v<T>>
+struct fft_tile_buffer {
+	alignas(64) std::byte storage_[sizeof(T) * N];  // NOLINT(cppcoreguidelines-avoid-c-arrays,misc-non-private-member-variables-in-classes)
+	auto data() -> T* { return reinterpret_cast<T*>(storage_); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+};
+
+template<class T, std::size_t N>
+struct fft_tile_buffer<T, N, false> {
+	std::array<T, N> arr_{};  // NOLINT(misc-non-private-member-variables-in-classes)
+	auto data() -> T* { return arr_.data(); }
+};
 
 // Detects Multi arrays/subarrays (as opposed to extents/shape tuples).
 template<class A, class = void> struct fft_is_multi_like : std::false_type {};
@@ -607,7 +644,7 @@ struct fft_engine {
 
 		TW const inv_m = TW{real{1} / static_cast<real>(conv_n_), real{0}};
 		for(std::size_t k = 0; k != n_; ++k) {
-			postc_[k] = chirp_[k] * inv_m;
+			postc_[k] = fft_mul(inv_m, chirp_[k]);  // branch-free product, same as the kernels (construction-time, but no reason to take the operator* libcall path)
 		}
 
 		TW const* kft = fwd.run(1, boot_arena.data());
@@ -982,9 +1019,9 @@ struct fft_engine {
 
 		T const* const z = e1.run(n2, in, arena);  // column FFTs: layout [n1][n2] is already batched
 
-		T* const               yt = e2.buf_ptr(arena);
-		constexpr std::size_t  tb = 32;  // 32 x 32 tiles staged through an L1 buffer, so both
-		std::array<T, tb * tb> tile;     // the read and the write side stream contiguously
+		T* const                        yt = e2.buf_ptr(arena);
+		constexpr std::size_t           tb = 32;  // 32 x 32 tiles staged through an L1 buffer, so both
+		fft_tile_buffer<T, tb * tb> tile;         // the read and the write side stream contiguously (uninitialized for trivially-copyable T -- see fft_tile_buffer)
 		for(std::size_t k10 = 0; k10 < n1; k10 += tb) {
 			std::size_t const k1e = std::min(n1, k10 + tb);
 			for(std::size_t j20 = 0; j20 < n2; j20 += tb) {
@@ -1293,11 +1330,22 @@ auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast
 // storage for the plan's whole scratch arena. Every element is always fully
 // written (by a gather step or a stage kernel) before it is ever read, so
 // zero-initializing it first -- what a plain `std::vector<T>` would do -- is
-// pure waste on every single `execute()` call. `uninitialized_default_construct_n`
-// still starts each object's lifetime (required to be legal in strict C++17,
-// pre-P0593 implicit-object-creation rules), but for a trivial `T` (e.g.
-// std::complex<double>) that construction is a no-op: no store instructions,
-// unlike `std::vector<T>(n)`'s value-init.
+// pure waste on every single `execute()` call.
+//
+// For trivially copyable `T` the constructor deliberately does NOT run
+// `uninitialized_default_construct_n` either: `std::complex` is trivially
+// copyable but NOT trivially default-constructible (its default constructor
+// zero-initializes through defaulted arguments), so default-constructing the
+// arena compiles to a full memset of the whole allocation on every call --
+// verified in generated code -- silently reintroducing the very zero-fill
+// this class exists to avoid (an earlier version of this file did exactly
+// that, with a comment claiming it was free). Skipping construction for
+// storage that is only ever stored-to-then-read is the pattern every
+// high-performance buffer uses; it is formally blessed by implicit object
+// creation (C++20 P0593 -- std::complex qualifies as an implicit-lifetime
+// class via its trivial copy constructor and trivial destructor) and is
+// honored by every supported toolchain in C++17 mode as well. Types that are
+// not trivially copyable still get proper lifetime starts.
 // `Allocator` is the §10.4(c) GPU seam: any caller-supplied allocator
 // satisfying the standard Allocator concept (allocate(n)/deallocate(p,n))
 // for `T` directly can be threaded through here -- a fixed single-slot
@@ -1332,8 +1380,10 @@ class fft_scratch_arena {
 	// but part of this project's actual CI).
 	explicit fft_scratch_arena(std::size_t n, Allocator const& alloc = Allocator{})
 	: alloc_(alloc), p_(n == 0 ? nullptr : alloc_traits::allocate(alloc_, n)), n_(n) {
-		if(n_ != 0) {
-			std::uninitialized_default_construct_n(p_, n_);
+		if constexpr(!std::is_trivially_copyable_v<T>) {  // see class comment: for trivially copyable T this would memset the arena
+			if(n_ != 0) {
+				std::uninitialized_default_construct_n(p_, n_);
+			}
 		}
 	}
 	fft_scratch_arena(fft_scratch_arena const&)                    = delete;
@@ -1342,7 +1392,9 @@ class fft_scratch_arena {
 	auto operator=(fft_scratch_arena&&) -> fft_scratch_arena&      = delete;
 	~fft_scratch_arena() {
 		if(n_ != 0) {
-			std::destroy_n(p_, n_);
+			if constexpr(!std::is_trivially_copyable_v<T>) {  // matches the constructor: only destroy what was constructed
+				std::destroy_n(p_, n_);
+			}
 			alloc_traits::deallocate(alloc_, p_, n_);
 		}
 	}
@@ -1485,14 +1537,43 @@ class fft_plan {
 		apply_(view, arena.data());
 		return home;  // cursors are value types (base + strides); returned by value
 	}
+
+	// Checked convenience overload: the documented `plan.execute(A)` form,
+	// taking the array/subarray itself instead of its bare cursor. Rank is
+	// checked at compile time; the shape is validated against the planned
+	// sizes with an assert (debug builds -- a cursor carries no sizes, so the
+	// cursor overload above cannot check anything; this one can, and should).
+	// SFINAE note: constrained on `fft_real<element>` being well-formed
+	// rather than on a "looks like an array" trait -- shape/extents objects
+	// (whose `element` is an index tuple with no `value_type`) drop out here
+	// structurally, per the `fft_is_multi_like` footgun in fft.NOTES.md §10.5.
+	template<
+	    class MultiSubArray, class Allocator = std::allocator<typename std::decay_t<MultiSubArray>::element>,
+	    class = detail::fft_real_t<typename std::decay_t<MultiSubArray>::element>,
+	    std::enable_if_t<!detail::fft_is_cursor_like<std::decay_t<MultiSubArray>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
+	auto execute(MultiSubArray&& arr, Allocator alloc = Allocator{}) const -> MultiSubArray&& {
+		static_assert(static_cast<std::ptrdiff_t>(std::decay_t<MultiSubArray>::dimensionality) == D, "array rank must match the plan");
+		assert(to_sizes_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}) == sizes_ && "array shape must match the planned sizes");
+		execute(arr.home(), alloc);
+		return std::forward<MultiSubArray>(arr);
+	}
+
+	// The documented `plan(A)` spelling; forwards to whichever execute()
+	// overload matches (array/subarray or cursor, with or without allocator).
+	// The trailing return type keeps it SFINAE-friendly: a non-matching
+	// argument produces "no matching operator()" at the call site instead of
+	// an instantiation error inside.
+	template<class... Args>
+	auto operator()(Args&&... args) const -> decltype(execute(std::forward<Args>(args)...)) {
+		return execute(std::forward<Args>(args)...);
+	}
 };
 
 template<class MultiSubArray>
 auto fft_inplace(MultiSubArray&& arr, int sign) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
 	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), sign};
-	plan.execute(arr.home());
-	return std::forward<MultiSubArray>(arr);
+	return plan.execute(std::forward<MultiSubArray>(arr));
 }
 
 template<class MultiSubArray>

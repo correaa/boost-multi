@@ -944,9 +944,14 @@ it** (§10 itself hasn't landed yet, so more churn is expected):
   `run_fused_impl_<Batched, T>`.
 - **`fft_ops<T, TW = T>` customization point (two type parameters now)**:
   `mul(TW const& w, T const& x) -> T`, twiddle first. Generic default widens
-  `x` to `TW`, multiplies, narrows the result once; `fft_ops<std::complex<R>,
-  std::complex<R>>` (same-type) partial specialization keeps the explicit
-  4-mul/2-add form. `fft_mul(w, x)` free-function convention is
+  `x` to `TW`, multiplies, narrows the result once; the
+  `fft_ops<std::complex<R1>, std::complex<R2>>` partial specialization keeps
+  the explicit 4-mul/2-add form for ALL complex pairings, same-type and
+  mixed alike — an earlier same-type-only (`<complex<R>, complex<R>>`)
+  version routed the mixed T ≠ TW case through the generic default's
+  `operator*`, i.e. a `__muldc3` libcall in every twiddle multiply of the
+  mixed path (found and fixed in a review pass; verified by counting
+  libcalls in generated assembly). `fft_mul(w, x)` free-function convention is
   twiddle-first everywhere in the smooth-path kernels *except* one spot in
   `run_sixstep_`'s twiddle-transpose step, which had data-first and was
   fixed to match during the T/TW split — a real (if harmless pre-split)
