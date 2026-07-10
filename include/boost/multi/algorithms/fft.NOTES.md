@@ -765,7 +765,16 @@ flight, so re-audit before starting.)
   remaining axes via `transform_middle_` static recursion over rotated
   views). A `none` on exactly one of the last two axes must degrade the
   pair-optimization to a single `fft_apply_last` on the appropriate
-  rotation; `none` on both skips the slab pass entirely.
+  rotation; `none` on both skips the slab pass entirely. **The
+  "appropriate rotation" for the axis-D-2-active case is
+  `view.unrotated()`** (sends the LAST axis to the front → new last axis is
+  D-2 at every rank), NOT `view.rotated()` (sends axis 0 to the back → new
+  last axis is 0). The two coincide only at D == 2, which made
+  rotated() pass every 2-D test while being wrong -- out-of-bounds wrong,
+  for non-cubic shapes -- at D >= 3. This exact bug was shipped by the
+  Phase A implementation and caught in review (fixed, with non-cubic 3-D
+  regression tests); verify rotation semantics empirically on a probe
+  before relying on them.
 - **1-D FFTs along different axes commute**, so skipping/mixing needs no
   new orchestration math — pass order stays a free (cache-driven) choice.
 

@@ -117,18 +117,31 @@ standing matters more than the direction feature right now.
 
 ## Session 2 — §10.3 Phase A: direction feature, engines stay sign-aware
 
-**DONE.** All six steps landed together (steps 1-4 and 6 were small enough
-not to warrant separate checkpoints; step 5's seven tests all pass,
-including under ASan+UBSan). One real gap found and resolved with the
-maintainer while implementing step 4: `std::array<fft_direction, D>`
-catches too-many directions in a braced-init-list as a hard compile error,
-but NOT too-few (aggregate-init zero-pads, and zero == `fft_direction::none`
-by construction) -- tried closing this via independent-N deduction with a
-static_assert cross-check; confirmed empirically that a braced-init-list
-is a non-deduced context for `std::array<T, N>`'s `N` too, so it can't be
-closed without a custom fixed-arity wrapper replacing `std::array` here.
-Maintainer decision: accept and document (not worth the added complexity)
--- see the `fft_inplace(dirs, arr)` overload's comment in fft.hpp.
+**DONE** (with one post-session review fix -- see below). All six steps
+landed together (steps 1-4 and 6 were small enough not to warrant separate
+checkpoints; step 5's seven tests all pass, including under ASan+UBSan).
+One real gap found and resolved with the maintainer while implementing
+step 4: `std::array<fft_direction, D>` catches too-many directions in a
+braced-init-list as a hard compile error, but NOT too-few (aggregate-init
+zero-pads, and zero == `fft_direction::none` by construction) -- tried
+closing this via independent-N deduction with a static_assert cross-check;
+confirmed empirically that a braced-init-list is a non-deduced context for
+`std::array<T, N>`'s `N` too, so it can't be closed without a custom
+fixed-arity wrapper replacing `std::array` here. Maintainer decision:
+accept and document (not worth the added complexity) -- see the
+`fft_inplace(dirs, arr)` overload's comment in fft.hpp.
+
+**Post-session review found and fixed one real bug the seven tests
+missed**: apply_'s degraded-pair branch used `view.rotated()` where
+`view.unrotated()` is required -- correct at D == 2 (they coincide), wrong
+axis AND out-of-bounds writes at D >= 3 with a non-cubic shape and dirs
+like `{none, forward, none}`. The test battery's only D >= 3 case (the
+mixed roundtrip) happened to have its `none` on axis D-2, so the broken
+branch was never exercised. Lesson for Session 3's test design: every
+branch of apply_'s direction dispatch needs a D >= 3, NON-CUBIC case --
+cubic shapes and D == 2 both mask axis mix-ups. Fixed with two such
+regression tests (verified to fail against the bugged code); §10.2 now
+records the correct rotation.
 
 Execute §10.3 steps 1–5 exactly as written there; supporting detail in
 §10.1 (decisions), §10.2 (obstacles), §10.5 (tricks). Order within the
