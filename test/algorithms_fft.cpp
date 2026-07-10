@@ -11,8 +11,36 @@
 #include <cmath>      // for std::abs
 #include <complex>    // for std::complex
 #include <cstddef>    // for std::size_t
+#include <memory>     // for std::allocator
 
 namespace multi = boost::multi;
+
+// Minimal counting allocator (Allocator concept, value_type == T, no
+// rebinding needed since fft_plan::execute() never asks for anything but
+// T): proves execute() actually threads the caller's allocator through
+// (fft.NOTES.md §9.2/§10.4(b)) rather than silently using its own
+// std::allocator<T>, and that the requested size is stable across repeated
+// calls on one plan (no creeping growth, no unmatched allocate/deallocate).
+template<class T>
+struct counting_allocator {
+	using value_type = T;
+
+	std::size_t* alloc_count;
+	std::size_t* dealloc_count;
+	std::size_t* last_alloc_n;
+
+	auto allocate(std::size_t n) -> T* {
+		++(*alloc_count);
+		*last_alloc_n = n;
+		return std::allocator<T>{}.allocate(n);
+	}
+	void deallocate(T* p, std::size_t n) {
+		++(*dealloc_count);
+		std::allocator<T>{}.deallocate(p, n);
+	}
+	auto operator==(counting_allocator const& other) const -> bool { return alloc_count == other.alloc_count; }
+	auto operator!=(counting_allocator const& other) const -> bool { return !(*this == other); }
+};
 
 // NOLINTBEGIN(altera-id-dependent-backward-branch,altera-unroll-loops,readability-identifier-length)
 // test loops iterate runtime sizes; short names (m = max difference, n = size)
@@ -489,6 +517,28 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		double const ftol = 1e-3 * static_cast<double>(nn);  // float precision, loose
 		BOOST_TEST( m < ftol );
 		BOOST_TEST( m2 < ftol );
+	}
+
+	// execute() threads a caller-supplied allocator through instead of
+	// always using its own std::allocator<T> (fft.NOTES.md §9.2/§10.4(b)):
+	// same size requested every call, exactly plan.scratch_elements().
+	{
+		std::size_t alloc_count = 0, dealloc_count = 0, last_n = 0;
+		counting_allocator<complex> alloc{&alloc_count, &dealloc_count, &last_n};
+
+		multi::array<complex, 1> arr(multi::extents_t<1>{1024}, complex{1.0, 0.0});
+		multi::fft_plan<1> const plan{arr.sizes(), multi::fft_forward};
+
+		plan.execute(arr.home(), alloc);
+		std::size_t const n_after_1st = last_n;
+		BOOST_TEST( alloc_count == 1 );
+		BOOST_TEST( dealloc_count == 1 );
+		BOOST_TEST( n_after_1st == plan.scratch_elements() );
+
+		plan.execute(arr.home(), alloc);  // same plan, same allocator, again
+		BOOST_TEST( alloc_count == 2 );
+		BOOST_TEST( dealloc_count == 2 );
+		BOOST_TEST( last_n == n_after_1st );  // stable across repeated calls
 	}
 
 	return boost::report_errors();

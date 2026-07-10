@@ -1298,11 +1298,30 @@ auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast
 // pre-P0593 implicit-object-creation rules), but for a trivial `T` (e.g.
 // std::complex<double>) that construction is a no-op: no store instructions,
 // unlike `std::vector<T>(n)`'s value-init.
-template<class T>
+// `Allocator` is the §10.4(c) GPU seam: any caller-supplied allocator
+// satisfying the standard Allocator concept (allocate(n)/deallocate(p,n))
+// for `T` directly can be threaded through here -- a fixed single-slot
+// arena (allocate() always returns the same buffer, deallocate() a no-op)
+// is the correct minimal fit for this class's own access pattern (exactly
+// one allocate() followed by exactly one matching deallocate() per
+// execute() call, never interleaved with any other request through the
+// same allocator); a device allocator (Thrust/CUDA) is the same shape
+// later. Deliberately does NOT rebind via allocator_traits: this class
+// only ever allocates `T`, never some other node type, so requiring
+// `Allocator` to be a rebindable class template (as e.g. std::vector's
+// internal machinery does) would needlessly exclude simple, monomorphic,
+// already-T-typed allocators. `Allocator::value_type` must already be `T`.
+// Assumes allocate() returns a plain `T*` (true for std::allocator and
+// std::pmr::polymorphic_allocator) -- fancy-pointer support is a separate,
+// not-yet-needed extension.
+template<class T, class Allocator = std::allocator<T>>
 class fft_scratch_arena {
-	std::allocator<T> alloc_;
-	T*                p_;
-	std::size_t       n_;
+	static_assert(std::is_same_v<typename Allocator::value_type, T>, "Allocator::value_type must be T; fft_scratch_arena does not rebind");
+	using alloc_traits = std::allocator_traits<Allocator>;
+
+	Allocator   alloc_;
+	T*          p_;
+	std::size_t n_;
 
  public:
 	// A plan needing zero scratch (e.g. a trivial n < 2 size) is legitimate;
@@ -1311,7 +1330,8 @@ class fft_scratch_arena {
 	// suspicious under a stricter warning set than this file's own build
 	// (e.g. GCC's -Walloc-zero, not part of this header's own tested flags
 	// but part of this project's actual CI).
-	explicit fft_scratch_arena(std::size_t n) : p_(n == 0 ? nullptr : alloc_.allocate(n)), n_(n) {
+	explicit fft_scratch_arena(std::size_t n, Allocator const& alloc = Allocator{})
+	: alloc_(alloc), p_(n == 0 ? nullptr : alloc_traits::allocate(alloc_, n)), n_(n) {
 		if(n_ != 0) {
 			std::uninitialized_default_construct_n(p_, n_);
 		}
@@ -1323,7 +1343,7 @@ class fft_scratch_arena {
 	~fft_scratch_arena() {
 		if(n_ != 0) {
 			std::destroy_n(p_, n_);
-			alloc_.deallocate(p_, n_);
+			alloc_traits::deallocate(alloc_, p_, n_);
 		}
 	}
 	auto data() const -> T* { return p_; }
@@ -1412,6 +1432,14 @@ class fft_plan {
 		scratch_elements_ = cursor;
 	}
 
+	// Element count `execute()` will request from its allocator, for a
+	// caller who wants to size their own scratch (e.g. a
+	// std::pmr::monotonic_buffer_resource's byte size is this times
+	// sizeof(T), plus alignment slack) rather than accept a fresh
+	// std::allocator<T> per call. T-agnostic: the count is the same
+	// regardless of which array element type a given execute() call uses.
+	auto scratch_elements() const -> std::size_t { return scratch_elements_; }
+
  private:
 	// The axis walk, shared by the cursor and array entry points. `view` is a
 	// strided view of the planned shape; transformed in place. `T` (the
@@ -1438,12 +1466,22 @@ class fft_plan {
 	// construction-time) twiddle-table type (see fft.NOTES.md §9.2): one
 	// plan, built once for a shape, can execute a complex<float> array today
 	// and a complex<double> array tomorrow without rebuilding any tables.
-	template<class Cursor, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
-	auto execute(Cursor const& home) const -> Cursor {
+	//
+	// `Allocator` defaults to a fresh, stateless `std::allocator<T>` per call
+	// (never plan-owned state -- that would reintroduce the concurrent-
+	// execute() hazard §9.2 removed). A caller who wants to avoid paying for
+	// allocation on every call -- e.g. the same pattern as this benchmark's
+	// own repeated-execute() loop -- can pass any allocator satisfying the
+	// standard Allocator concept instead, such as an arena/monotonic one
+	// (`std::pmr::polymorphic_allocator<T>` backed by a
+	// `std::pmr::monotonic_buffer_resource` the caller owns and reuses
+	// across calls); this class does not implement or ship one itself.
+	template<class Cursor, class Allocator = std::allocator<typename std::decay_t<Cursor>::element>, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
+	auto execute(Cursor const& home, Allocator alloc = Allocator{}) const -> Cursor {
 		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
 		using T = typename std::decay_t<Cursor>::element;
-		auto                         view = detail::fft_view_from_cursor<T, D>(home, sizes_);
-		detail::fft_scratch_arena<T> arena(scratch_elements_);  // execute-time-local scratch; the plan itself owns none
+		auto                                    view = detail::fft_view_from_cursor<T, D>(home, sizes_);
+		detail::fft_scratch_arena<T, Allocator> arena(scratch_elements_, alloc);  // execute-time-local scratch; the plan itself owns none
 		apply_(view, arena.data());
 		return home;  // cursors are value types (base + strides); returned by value
 	}
