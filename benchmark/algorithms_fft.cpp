@@ -53,6 +53,15 @@
 //     sweep) warns on stderr if the machine looks like it throttled mid-run --
 //     this is a supplement to, not a substitute for, only starting the sweep
 //     on an idle, unthrottled machine.
+//   * multi::fft_plan::execute() is passed a std::pmr::polymorphic_allocator
+//     backed by one std::pmr::unsynchronized_pool_resource per plan, built
+//     once outside the timed region and reused across the warm-up and every
+//     timed repetition -- this is the fft.NOTES.md §10.4(b) mitigation for
+//     the per-call scratch-allocation cost the default std::allocator<T>
+//     overload pays every time (verified separately: this pool resource
+//     genuinely reclaims on deallocate(), stabilizing after a handful of
+//     upstream allocations, unlike std::pmr::monotonic_buffer_resource).
+//     FFTW is unaffected -- it already reuses its own plan-owned buffers.
 #include <boost/multi/algorithms/fft.hpp>
 #include <boost/multi/array.hpp>
 
@@ -64,6 +73,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdio>
+#include <memory_resource>
 #include <random>
 #include <utility>
 #include <vector>
@@ -174,14 +184,17 @@ auto reps_for(double n_total) -> long {
 auto calibrate() -> double {
 	multi::array<complex, 1>          a(multi::extents_t<1>{16384}, complex{1.0, 0.0});
 	multi::fft_plan<1, complex> const plan{multi::extents_t<1>{16384}, multi::fft_forward};
-	plan.execute(a.home());
-	return time_it(200, [&] { plan.execute(a.home()); });
+	std::pmr::unsynchronized_pool_resource  pool;
+	std::pmr::polymorphic_allocator<complex> alloc(&pool);
+	plan.execute(a.home(), alloc);
+	return time_it(200, [&] { plan.execute(a.home(), alloc); });
 }
 
 template<std::ptrdiff_t D>
 void sweep(std::vector<int> const& sides, char const* fname, char const* label) {
 	std::FILE* out = std::fopen(fname, "w");
 	std::fprintf(out, "# %s: multi::fft_plan vs FFTW 3 (plan recycled, exec only, plan-build time excluded for both, interleaved timing)\n", label);
+	std::fprintf(out, "# multi::fft_plan::execute() uses a std::pmr::unsynchronized_pool_resource-backed allocator, built once per plan and reused across all reps\n");
 #if defined(DISABLE_WISDOM) && defined(USE_ESTIMATE)
 	std::fprintf(out, "# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
 #elif defined(DISABLE_WISDOM)
@@ -207,6 +220,12 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 		std::array<multi::ssize_t, D> ext_arr{};
 		ext_arr.fill(n);
 		multi::fft_plan<D, complex> const plan{ext_arr, multi::fft_forward};  // plan build: not timed
+
+		// One pool per plan, built once and reused across the warm-up and
+		// every timed repetition below -- the §10.4(b) mitigation for the
+		// default execute() overload's per-call allocation cost.
+		std::pmr::unsynchronized_pool_resource   pool;
+		std::pmr::polymorphic_allocator<complex> alloc(&pool);
 
 		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
 		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
@@ -235,27 +254,27 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 		double ffw  = 0.0;
 		if constexpr(D == 1) {
 			load();
-			plan.execute(flat.home());  // untimed warm-up, symmetric with FFTW's below
+			plan.execute(flat.home(), alloc);  // untimed warm-up, symmetric with FFTW's below
 			loadf();
 			fftw_execute(p);  // untimed warm-up, symmetric with multi's above
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(flat.home()); }, [&] { loadf(); fftw_execute(p); });
+				reps, [&] { load(); plan.execute(flat.home(), alloc); }, [&] { loadf(); fftw_execute(p); });
 		} else if constexpr(D == 2) {
 			multi::array_ref<complex, 2> v(flat.data_elements(), {n, n});
 			load();
-			plan.execute(v.home());
+			plan.execute(v.home(), alloc);
 			loadf();
 			fftw_execute(p);
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(v.home()); }, [&] { loadf(); fftw_execute(p); });
+				reps, [&] { load(); plan.execute(v.home(), alloc); }, [&] { loadf(); fftw_execute(p); });
 		} else {
 			multi::array_ref<complex, 3> v(flat.data_elements(), {n, n, n});
 			load();
-			plan.execute(v.home());
+			plan.execute(v.home(), alloc);
 			loadf();
 			fftw_execute(p);
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(v.home()); }, [&] { loadf(); fftw_execute(p); });
+				reps, [&] { load(); plan.execute(v.home(), alloc); }, [&] { loadf(); fftw_execute(p); });
 		}
 
 		fftw_destroy_plan(p);
