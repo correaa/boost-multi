@@ -548,6 +548,184 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( last_n == n_after_1st );  // stable across repeated calls
 	}
 
+	// --- Per-axis directions (fft.NOTES.md §10, Phase A) -------------------
+	{
+		constexpr auto forward  = multi::fft_direction::forward;
+		constexpr auto none     = multi::fft_direction::none;
+		constexpr auto backward = multi::fft_direction::backward;
+
+		// 1) all-`none` is a bit-identical no-op (fft.NOTES.md §10.1 item 6).
+		{
+			multi::array<complex, 2> arr({4, 5}, complex{});
+			for(int i = 0; i != 4; ++i) {
+				for(int j = 0; j != 5; ++j) { arr[i][j] = complex{static_cast<double>(i), static_cast<double>(j)}; }
+			}
+			auto const                original = arr;
+			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{none, none}}};
+			plan.execute(arr.home());
+			BOOST_TEST( max_abs_diff(arr.elements(), original.elements()) == 0.0 );
+		}
+
+		// 2) `none` gives exact fiber independence: with dirs = {forward,
+		//    none} (axis 1 is `none`, so no pass ever mixes across columns),
+		//    changing ONE column of the input must not change any OTHER
+		//    column of the output -- bit-identical, not tolerance-based.
+		{
+			auto const           make = [](double perturb_col3) {
+                multi::array<complex, 2> arr({6, 4}, complex{});
+                for(int i = 0; i != 6; ++i) {
+                    for(int j = 0; j != 4; ++j) {
+                        arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>((i * j) % 3)};
+                    }
+                }
+                arr[2][3] += complex{perturb_col3, 0.0};  // perturb only column 3
+                return arr;
+			};
+			auto                     base      = make(0.0);
+			auto                     perturbed = make(100.0);
+			multi::fft_plan<2> const plan{base.sizes(), std::array<multi::fft_direction, 2>{{forward, none}}};
+			plan.execute(base.home());
+			plan.execute(perturbed.home());
+			double m = 0.0;
+			for(int i = 0; i != 6; ++i) {
+				for(int j = 0; j != 3; ++j) {  // columns 0,1,2: untouched by the column-3 perturbation
+					m = std::max(m, std::abs(base[i][j] - perturbed[i][j]));
+				}
+			}
+			BOOST_TEST( m == 0.0 );
+		}
+
+		// 3) composability (tolerance: two separate passes vs. one plan
+		//    doing both axes -- same math, different floating-point order):
+		//    {forward, none} then {none, forward} == {forward, forward}.
+		{
+			multi::array<complex, 2> arr({4, 5}, complex{});
+			for(int i = 0; i != 4; ++i) {
+				for(int j = 0; j != 5; ++j) { arr[i][j] = complex{static_cast<double>(i + j), static_cast<double>(i - j)}; }
+			}
+			auto composed = arr;
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, none}}, composed);
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{{none, forward}}, composed);
+
+			auto direct = arr;
+			multi::fft_inplace(direct, multi::fft_forward);  // {forward, forward} broadcast
+
+			BOOST_TEST( max_abs_diff(composed.elements(), direct.elements()) < tol );
+		}
+
+		// 4) batched equivalence: {none, forward} on a 2-D array equals
+		//    looping the equivalent 1-D plan over every row.
+		{
+			multi::array<complex, 2> arr({5, 7}, complex{});
+			for(int i = 0; i != 5; ++i) {
+				for(int j = 0; j != 7; ++j) { arr[i][j] = complex{static_cast<double>(i * 2 - j), static_cast<double>(j % 4)}; }
+			}
+			auto looped = arr;
+			multi::fft_plan<1> const row_plan{multi::extents_t<1>{7}, multi::fft_forward};
+			for(int i = 0; i != 5; ++i) { row_plan.execute(looped[i].home()); }
+
+			auto batched = arr;
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{{none, forward}}, batched);
+
+			BOOST_TEST( max_abs_diff(looped.elements(), batched.elements()) < tol );
+		}
+
+		// 5) mixed roundtrip (3-D): {forward, none, backward} then
+		//    {backward, none, forward} recovers n0*n2 * original (axis 1
+		//    untouched throughout; axes 0 and 2 each get a fwd+bwd
+		//    roundtrip, in opposite order -- still n_axis * identity).
+		{
+			multi::array<complex, 3> arr({3, 2, 5}, complex{});
+			for(int i = 0; i != 3; ++i) {
+				for(int j = 0; j != 2; ++j) {
+					for(int k = 0; k != 5; ++k) {
+						arr[i][j][k] = complex{static_cast<double>(i + k), static_cast<double>(j - k)};
+					}
+				}
+			}
+			auto const original = arr;
+			auto       result   = arr;
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, none, backward}}, result);
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{{backward, none, forward}}, result);
+
+			double const scale = 3.0 * 5.0;  // n0 * n2; axis 1 (size 2) never touched
+			double       m     = 0.0;
+			for(int i = 0; i != 3; ++i) {
+				for(int j = 0; j != 2; ++j) {
+					for(int k = 0; k != 5; ++k) {
+						m = std::max(m, std::abs(result[i][j][k] - (original[i][j][k] * scale)));
+					}
+				}
+			}
+			BOOST_TEST( m < tol );
+		}
+
+		// 6) reference-DFT cross-check of a mixed spec including a prime
+		//    length (exercises Bluestein under a non-default direction).
+		{
+			constexpr int nn0 = 11;  // prime > fft_max_direct_radix would be needed to force Bluestein at construction;
+			constexpr int nn1 = 6;   // 11 is direct-kernel range but still an odd prime, exercising stage_generic_/backward sign
+			multi::array<complex, 2> arr({nn0, nn1}, complex{});
+			for(int i = 0; i != nn0; ++i) {
+				for(int j = 0; j != nn1; ++j) {
+					arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>((i + j) % 5)};
+				}
+			}
+			auto reference = arr;
+			// axis 1 (backward) first, then axis 0 (forward) -- order doesn't
+			// matter mathematically for a mixed separable transform, matching
+			// the row-then-column reference pattern used elsewhere in this file
+			for(int i = 0; i != nn0; ++i) {
+				auto row = dft_reference(reference[i], multi::fft_backward);
+				for(int j = 0; j != nn1; ++j) { reference[i][j] = row[j]; }
+			}
+			for(int j = 0; j != nn1; ++j) {
+				auto col = dft_reference(reference.rotated()[j], multi::fft_forward);
+				for(int i = 0; i != nn0; ++i) { reference[i][j] = col[i]; }
+			}
+
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, backward}}, arr);
+
+			double m = 0.0;
+			for(int i = 0; i != nn0; ++i) {
+				for(int j = 0; j != nn1; ++j) { m = std::max(m, std::abs(arr[i][j] - reference[i][j])); }
+			}
+			BOOST_TEST( m < tol );
+		}
+
+		// 7) same-size opposite directions (square 2-D, {forward, backward}):
+		//    exercises the (length, direction) engine-keying -- both axes
+		//    share a length but need two DISTINCT engines since the sign
+		//    differs. Verified against the reference DFT, not just
+		//    self-consistency.
+		{
+			constexpr int nn = 6;
+			multi::array<complex, 2> arr({nn, nn}, complex{});
+			for(int i = 0; i != nn; ++i) {
+				for(int j = 0; j != nn; ++j) {
+					arr[i][j] = complex{static_cast<double>(i * i - j), static_cast<double>(i - (j * j))};
+				}
+			}
+			auto reference = arr;
+			for(int i = 0; i != nn; ++i) {
+				auto row = dft_reference(reference[i], multi::fft_backward);
+				for(int j = 0; j != nn; ++j) { reference[i][j] = row[j]; }
+			}
+			for(int j = 0; j != nn; ++j) {
+				auto col = dft_reference(reference.rotated()[j], multi::fft_forward);
+				for(int i = 0; i != nn; ++i) { reference[i][j] = col[i]; }
+			}
+
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, backward}}, arr);
+
+			double m = 0.0;
+			for(int i = 0; i != nn; ++i) {
+				for(int j = 0; j != nn; ++j) { m = std::max(m, std::abs(arr[i][j] - reference[i][j])); }
+			}
+			BOOST_TEST( m < tol );
+		}
+	}
+
 	return boost::report_errors();
 }
 

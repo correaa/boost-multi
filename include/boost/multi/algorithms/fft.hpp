@@ -12,7 +12,15 @@
 //                                    construction (default complex<double>,
 //                                    for ergonomics only -- not a claim that
 //                                    double is the "right" twiddle precision)
-//     fft_plan<D, TW>(extents, sign) plan for a shape (any tuple-like extents)
+//     fft_plan<D, TW>(extents, sign) plan for a shape (any tuple-like extents),
+//                                    one direction broadcast to every axis
+//     fft_plan<D, TW>(extents, dirs) per-axis direction plan: dirs is a
+//                                    std::array<fft_direction, D>; an axis
+//                                    set to fft_direction::none is left
+//                                    completely untouched (also gives
+//                                    batched lower-rank FFTs for free, e.g.
+//                                    {none, forward} on a 2-D array is
+//                                    "FFT each row")
 //     plan.execute(A)                transform A in place; A can be any array
 //                                    or subarray with the planned sizes, of
 //                                    any strided layout, with element type T
@@ -26,7 +34,15 @@
 //                                    locally, on every execute() call)
 //   multi::fft_inplace(A, sign)      one-shot convenience (plans, then runs;
 //                                    TW = A's own element type)
+//   multi::fft_inplace(dirs, A)      one-shot convenience, per-axis
+//                                    directions (dirs first: see fft.hpp's
+//                                    fft_inplace overload comment for the
+//                                    deduction trick this argument order
+//                                    enables, and its one documented gap)
 //   multi::fft_forward/fft_backward  direction constants (FFTW convention)
+//   multi::fft_direction             per-axis direction enum: forward/
+//                                    none/backward (values match
+//                                    fft_forward/fft_backward exactly)
 //   multi::fft_real<T>               trait: real type underlying T
 //
 // It is a self-contained (no FFTW/cuFFT dependency) implementation that works
@@ -96,6 +112,20 @@ namespace boost::multi {
 // Sign of the exponent in the discrete Fourier transform.
 inline constexpr int fft_forward  = -1;  // exp(-2*pi*i*...), same as FFTW_FORWARD
 inline constexpr int fft_backward = +1;  // exp(+2*pi*i*...), same as FFTW_BACKWARD
+
+// Per-axis transform direction for partial/mixed-direction FFTs (see
+// fft.NOTES.md §10): `none` means "leave this axis completely untouched" --
+// a plan with `none` on some axes is a batched lower-rank FFT for free
+// (`{none, forward}` on a 2-D array = "FFT each row"). Values match
+// fft_forward/fft_backward exactly (checked below) so `to_sign()` is a
+// plain cast, not a branch.
+enum class fft_direction : int { forward = fft_forward, none = 0, backward = fft_backward };
+
+namespace detail {
+constexpr auto fft_to_sign(fft_direction d) -> int { return static_cast<int>(d); }
+}  // namespace detail
+static_assert(detail::fft_to_sign(fft_direction::forward) == fft_forward);
+static_assert(detail::fft_to_sign(fft_direction::backward) == fft_backward);
 
 // Trait that maps a complex-algebra element type to its underlying real type.
 // Specialize this for custom complex-like types that do not expose `value_type`.
@@ -1436,12 +1466,18 @@ template<std::ptrdiff_t D, class TW = std::complex<double>>
 class fft_plan {
 	static_assert(D >= 1, "fft_plan requires at least one dimension");
 
-	std::array<std::size_t, static_cast<std::size_t>(D)> sizes_{};
-	std::vector<detail::fft_engine<TW>>                  engines_;  // one per distinct axis length
-	std::array<std::size_t, static_cast<std::size_t>(D)> which_{};  // axis -> index into engines_
-	std::size_t                                          scratch_elements_ = 0;  // total arena size for execute()
+	static constexpr std::size_t no_engine_ = static_cast<std::size_t>(-1);  // which_[a] sentinel for a `none` axis: never dereferenced
 
-	// Engine serving axis `A` (compile-time axis index, resolved at plan build).
+	std::array<std::size_t, static_cast<std::size_t>(D)>    sizes_{};
+	std::vector<detail::fft_engine<TW>>                     engines_;  // one per distinct (length, direction) pair; none-axes contribute no engine
+	std::array<std::size_t, static_cast<std::size_t>(D)>    which_{};  // axis -> index into engines_, or no_engine_ for a `none` axis
+	std::array<fft_direction, static_cast<std::size_t>(D)>  dirs_{};   // per-axis pass schedule (fft.NOTES.md §10)
+	std::size_t                                             scratch_elements_ = 0;  // total arena size for execute()
+
+	// Engine serving axis `A` (compile-time axis index, resolved at plan
+	// build). Caller must first confirm axis `A` is not `none` (dirs_[A] !=
+	// fft_direction::none) -- which_[A] is a sentinel otherwise, never a
+	// valid engines_ index.
 	template<std::ptrdiff_t A>
 	auto engine_() const -> detail::fft_engine<TW> const& {
 		static_assert(A >= 0 && A < D, "axis out of range");
@@ -1454,9 +1490,12 @@ class fft_plan {
 	// its engine at compile time; rotated() preserves rank and type, so the
 	// recursion depth is exactly D-2 with a single View type. `T` (the
 	// array's element type) is deduced from `arena`, independent of `TW`.
+	// Axis K-1 is skipped (not even reaching engine_<K-1>()) when `none`.
 	template<std::ptrdiff_t K, class View, class T>
 	void transform_middle_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
-		detail::fft_apply_last(view, engine_<K - 1>(), arena);
+		if(dirs_[static_cast<std::size_t>(K - 1)] != fft_direction::none) {
+			detail::fft_apply_last(view, engine_<K - 1>(), arena);
+		}
 		if constexpr(K < D - 2) {
 			transform_middle_<K + 1>(view.rotated(), arena);
 		}
@@ -1468,15 +1507,34 @@ class fft_plan {
 		return {{detail::fft_extent_size(get<Is>(ext))...}};
 	}
 
+	static auto broadcast_dirs_(int sign) -> std::array<fft_direction, static_cast<std::size_t>(D)> {
+		std::array<fft_direction, static_cast<std::size_t>(D)> dirs{};
+		dirs.fill(static_cast<fft_direction>(sign));
+		return dirs;
+	}
+
  public:
+	// Per-axis direction constructor (fft.NOTES.md §10): `dirs[a] ==
+	// fft_direction::none` leaves axis `a` completely untouched -- no engine
+	// is built for it (exact scratch sizing; a `none` axis on a large/prime
+	// length costs nothing), and it is never visited by apply_(). Engines
+	// are still sign-aware in this phase (Phase A -- see fft.NOTES.md §10.3):
+	// reuse is keyed on `(length, direction)`, so two same-length axes with
+	// *different* directions get two engines; direction-neutral engines
+	// (one engine shared regardless of direction) are Phase B.
 	template<class Extents>
-	explicit fft_plan(Extents const& extents, int sign = fft_forward)
-	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})} {
+	explicit fft_plan(Extents const& extents, std::array<fft_direction, static_cast<std::size_t>(D)> const& dirs)
+	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})}, dirs_{dirs} {
 		engines_.reserve(D);
 		auto const rank = static_cast<std::size_t>(D);
 		for(std::size_t a = 0; a != rank; ++a) {
-			auto const len = sizes_.at(a);
-			auto       it  = std::find_if(engines_.begin(), engines_.end(), [len](auto const& e) { return e.n_ == len; });
+			if(dirs_[a] == fft_direction::none) {
+				which_.at(a) = no_engine_;
+				continue;
+			}
+			auto const len  = sizes_.at(a);
+			int const  sign = detail::fft_to_sign(dirs_[a]);
+			auto       it   = std::find_if(engines_.begin(), engines_.end(), [len, sign](auto const& e) { return e.n_ == len && e.sign_ == sign; });
 			if(it == engines_.end()) {
 				engines_.emplace_back(len, sign);
 				it = std::prev(engines_.end());
@@ -1494,7 +1552,8 @@ class fft_plan {
 		// site. For D == 1, apply_() never batches (fft_apply_last's rank==1
 		// case always goes through fft_exec_fiber at m=1) -- note_reach_(mb_)
 		// would only reserve scratch for a path that never runs, up to mb_
-		// (<=64) times larger than needed.
+		// (<=64) times larger than needed. engines_ only ever holds engines
+		// for non-`none` axes, so this loop is automatically exact.
 		for(auto& e : engines_) {
 			if constexpr(D >= 2) {
 				e.note_reach_(e.mb_);
@@ -1507,6 +1566,11 @@ class fft_plan {
 		}
 		scratch_elements_ = cursor;
 	}
+
+	// Broadcast convenience: applies `sign` to every axis (the pre-§10 API).
+	template<class Extents>
+	explicit fft_plan(Extents const& extents, int sign = fft_forward)
+	: fft_plan(extents, broadcast_dirs_(sign)) {}
 
 	// Element count `execute()` will request from its allocator, for a
 	// caller who wants to size their own scratch (e.g. a
@@ -1523,13 +1587,31 @@ class fft_plan {
 	template<class View, class T>
 	void apply_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		if constexpr(D == 1) {
-			detail::fft_apply_last(view, engine_<0>(), arena);
+			// All-`none` (D == 1) is a valid no-op (fft.NOTES.md §10.1 item 6).
+			if(dirs_[0] != fft_direction::none) {
+				detail::fft_apply_last(view, engine_<0>(), arena);
+			}
 		} else {
 			// Transform the last two axes together, slab by slab (cache
 			// locality), then the remaining axes 0 .. D-3 by static recursion
 			// over rotated views (each axis bound to its engine at compile
-			// time; no runtime axis parameter anywhere).
-			detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>(), arena);
+			// time; no runtime axis parameter anywhere). `none` on exactly one
+			// of the last two axes degrades the pair to a single fft_apply_last
+			// on the appropriate rotation (fft.NOTES.md §10.2); `none` on both
+			// skips the slab pass entirely. The decision is made HERE, before
+			// engine_<D-1>()/engine_<D-2>() are ever called, since a `none`
+			// axis has no engine to reference at all (fft_apply_last_pair's
+			// own signature is unchanged -- it is only ever called when both
+			// axes are active).
+			bool const last_active = dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none;
+			bool const prev_active = dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none;
+			if(last_active && prev_active) {
+				detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>(), arena);
+			} else if(last_active) {
+				detail::fft_apply_last(view, engine_<D - 1>(), arena);
+			} else if(prev_active) {
+				detail::fft_apply_last(view.rotated(), engine_<D - 2>(), arena);
+			}
 			if constexpr(D >= 3) {
 				transform_middle_<1>(view.rotated(), arena);
 			}
@@ -1587,6 +1669,32 @@ template<class MultiSubArray>
 auto fft_inplace(MultiSubArray&& arr, int sign) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
 	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), sign};
+	return plan.execute(std::forward<MultiSubArray>(arr));
+}
+
+// Per-axis direction overload (fft.NOTES.md §10), e.g.
+//   multi::fft_inplace({{forward, none, backward, forward}}, arr);
+// `dirs` first, matching NOTES §10.5's deduction trick: the array parameter
+// deduces MultiSubArray; the dirs parameter's type is then a *non-deduced*
+// std::array<fft_direction, dimensionality-of-MultiSubArray>, so the braced
+// list just initializes an already-known-size array (std::initializer_list
+// would compile for any size, deliberately not used -- NOTES §10.1
+// decision 2). This catches TOO MANY directions as a hard compile error
+// (verified: "no matching function", not a SFINAE near-miss). It does NOT
+// catch too FEW: std::array's own aggregate-init rules zero-pad missing
+// trailing elements, and zero is fft_direction::none by construction, so
+// e.g. `fft_inplace({{forward, backward}}, arr4d)` on a rank-4 array
+// silently means `{forward, backward, none, none}`, not a compile error.
+// Verified this can't be closed within std::array (N is a non-deduced
+// context on both the dirs-argument and the array-argument side; tried and
+// confirmed empirically). Accepted, documented gap (maintainer decision):
+// closing it fully would need a custom fixed-arity wrapper type in place
+// of std::array here, which wasn't judged worth the complexity -- get the
+// direction count right.
+template<class MultiSubArray>
+auto fft_inplace(std::array<fft_direction, static_cast<std::size_t>(std::decay_t<MultiSubArray>::dimensionality)> const& dirs, MultiSubArray&& arr) -> MultiSubArray&& {
+	using array_type = std::decay_t<MultiSubArray>;
+	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), dirs};
 	return plan.execute(std::forward<MultiSubArray>(arr));
 }
 
