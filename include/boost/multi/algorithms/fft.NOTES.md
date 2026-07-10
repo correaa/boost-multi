@@ -641,18 +641,29 @@ another model/developer to execute without re-deriving the rationale.
    is falsy.
 
 2. **Runtime values, compile-time arity.** The spec is a
-   `std::array<fft_direction, D>` (D entries enforced by the type — wrong
-   rank fails to compile), NOT template parameters
-   (`fft_inplace<forward, none, ...>`). Rationale, settled after explicit
-   challenge: direction is consumed once per *pass* (one branch per axis per
-   O(N log N) execution — unmeasurable), so lifting it into the type buys no
-   codegen; it would infect `fft_plan`'s type (different combos = different
-   types: no containers, no runtime selection), break the natural callers of
-   this exact feature (solvers flipping forward↔backward per phase,
-   rank-generic code building the list in a loop), and risk 3^D
-   instantiations of the call path in a header-only library. The *only*
-   statically checkable property of a direction spec is its arity (every
-   value combination is legal), and `std::array<_, D>` already checks that.
+   `std::array<fft_direction, D>` (D entries enforced by the type), NOT
+   template parameters (`fft_inplace<forward, none, ...>`). Rationale,
+   settled after explicit challenge: direction is consumed once per *pass*
+   (one branch per axis per O(N log N) execution — unmeasurable), so
+   lifting it into the type buys no codegen; it would infect `fft_plan`'s
+   type (different combos = different types: no containers, no runtime
+   selection), break the natural callers of this exact feature (solvers
+   flipping forward↔backward per phase, rank-generic code building the list
+   in a loop), and risk 3^D instantiations of the call path in a
+   header-only library. The *only* statically checkable property of a
+   direction spec is its arity, and `std::array<_, D>` mostly checks that —
+   **update, verified while implementing (§10.3 step 4): only one-sided.**
+   `{{f, none}}` against a rank-4 `std::array<fft_direction, 4>` (too FEW
+   entries) is legal aggregate-init, zero-padding the rest, and zero is
+   `fft_direction::none` — silently *not* a compile error. Only too MANY
+   entries fails to compile (confirmed: "no matching function", overload
+   resolution rejects it outright). A from-scratch attempt to close this
+   (deduce the direction-array's length independently and `static_assert`
+   it against the array's rank) confirmed a braced-init-list is a
+   non-deduced context for `std::array<T, N>`'s `N` too — so this can't be
+   closed without replacing `std::array` here with a custom fixed-arity
+   wrapper (a constructor template constrained to exactly `D` arguments).
+   Maintainer decision: accept and document, not worth the complexity.
    A constexpr template sugar forwarding to the runtime API can be added
    later, non-breaking, if ever wanted.
 
@@ -763,7 +774,9 @@ flight, so re-audit before starting.)
 Phase A first (correct, minimal diff), Phase B after (the target state);
 each phase leaves the tree green under the full strict-flags test build.
 
-**Phase A — feature lands, engines stay sign-aware:**
+**Phase A — feature lands, engines stay sign-aware — DONE** (fft.PLAN.md
+Session 2; see that file's DONE note for the one design gap found and
+accepted while implementing it):
 
 1. Add `enum class fft_direction` (§10.1 item 1) next to the existing
    `fft_forward`/`fft_backward` constants, plus tiny helpers
