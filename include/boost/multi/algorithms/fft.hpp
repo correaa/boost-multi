@@ -1251,6 +1251,36 @@ auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast
 	return multi::subarray<T, D, ptr_type>{fft_layout_from<D>(ext, str), cur.base()};
 }
 
+// Raw, execute()-time-local scratch: allocates (never value-initializes) T
+// storage for the plan's whole scratch arena. Every element is always fully
+// written (by a gather step or a stage kernel) before it is ever read, so
+// zero-initializing it first -- what a plain `std::vector<T>` would do -- is
+// pure waste on every single `execute()` call. `uninitialized_default_construct_n`
+// still starts each object's lifetime (required to be legal in strict C++17,
+// pre-P0593 implicit-object-creation rules), but for a trivial `T` (e.g.
+// std::complex<double>) that construction is a no-op: no store instructions,
+// unlike `std::vector<T>(n)`'s value-init.
+template<class T>
+class fft_scratch_arena {
+	std::allocator<T> alloc_;
+	T*                p_;
+	std::size_t       n_;
+
+ public:
+	explicit fft_scratch_arena(std::size_t n) : p_(alloc_.allocate(n)), n_(n) {
+		std::uninitialized_default_construct_n(p_, n_);
+	}
+	fft_scratch_arena(fft_scratch_arena const&)                    = delete;
+	auto operator=(fft_scratch_arena const&) -> fft_scratch_arena& = delete;
+	fft_scratch_arena(fft_scratch_arena&&)                         = delete;
+	auto operator=(fft_scratch_arena&&) -> fft_scratch_arena&      = delete;
+	~fft_scratch_arena() {
+		std::destroy_n(p_, n_);
+		alloc_.deallocate(p_, n_);
+	}
+	auto data() const -> T* { return p_; }
+};
+
 }  // end namespace detail
 
 // Reusable multidimensional FFT plan: precomputes twiddle tables, stage
@@ -1311,13 +1341,19 @@ class fft_plan {
 
 		// Compute every engine's (and its whole sub_ tree's) peak scratch
 		// requirement, then lay out one flat arena with disjoint, immutable
-		// offsets -- see fft.NOTES.md §9.2/§10.4(a). Each top-level engine is
-		// reachable from two entry scenarios (batched via fft_exec_slab at
-		// its own mb_, and single-fiber via fft_exec_fiber at m=1, which may
-		// itself divert to six-step); note_reach_ is monotonic-max, so
-		// visiting both is safe and covers every real call site.
+		// offsets -- see fft.NOTES.md §9.2/§10.4(a). For D >= 2, each
+		// top-level engine is reachable from two entry scenarios (batched via
+		// fft_exec_slab at its own mb_, and single-fiber via fft_exec_fiber at
+		// m=1, which may itself divert to six-step); note_reach_ is
+		// monotonic-max, so visiting both is safe and covers every real call
+		// site. For D == 1, apply_() never batches (fft_apply_last's rank==1
+		// case always goes through fft_exec_fiber at m=1) -- note_reach_(mb_)
+		// would only reserve scratch for a path that never runs, up to mb_
+		// (<=64) times larger than needed.
 		for(auto& e : engines_) {
-			e.note_reach_(e.mb_);
+			if constexpr(D >= 2) {
+				e.note_reach_(e.mb_);
+			}
 			e.note_reach_(1);
 		}
 		std::size_t cursor = 0;
@@ -1350,8 +1386,8 @@ class fft_plan {
 	template<class Cursor, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
 	auto execute(Cursor const& home) const -> Cursor {
 		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
-		auto           view = detail::fft_view_from_cursor<T, D>(home, sizes_);
-		std::vector<T> arena(scratch_elements_);  // execute-time-local scratch; the plan itself owns none
+		auto                        view = detail::fft_view_from_cursor<T, D>(home, sizes_);
+		detail::fft_scratch_arena<T> arena(scratch_elements_);  // execute-time-local scratch; the plan itself owns none
 		apply_(view, arena.data());
 		return home;  // cursors are value types (base + strides); returned by value
 	}
