@@ -1438,7 +1438,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT((/*this->stride() == 0 ||*/ (this->extent().contains(idx))) && ("out of bounds"));
 
 		// clang-format off
 	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -1447,7 +1447,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	#endif
 		return reference(
 			this->layout().sub(),
-			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			this->base_ + (/*idx **/ this->layout().stride() * idx - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		);  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
