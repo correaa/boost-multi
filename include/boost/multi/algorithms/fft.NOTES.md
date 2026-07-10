@@ -66,7 +66,9 @@ Properties:
 Architecture: `fft_plan<T, D>` holds one `detail::fft_engine<T>` per **distinct
 axis length** (a cube shares one engine across all three axes). An engine owns
 the twiddle table, the stage factorization, the direct-prime DFT matrices, the
-Bluestein/six-step sub-engines, and grow-only scratch buffers.
+Bluestein/six-step sub-engines, and grow-only scratch buffers. This paragraph
+is the original design, kept for context; see §9.2 (landed) for the current
+`fft_plan<D, TW>` / externalized-scratch shape.
 
 ---
 
@@ -528,13 +530,20 @@ whatever type the twiddle tables use.
 
 Shape this implies:
 
-- **`fft_plan<TW, D>`, not `fft_plan<T, D>`.** `TW` is the twiddle/table
-  element type, a plan-level choice independent of any array it's later
-  applied to (natural default: `TW = std::complex<double>`, always, per §2.4
-  / the twiddle-precision discussion below).
+- **`fft_plan<D, TW = std::complex<double>>`, not `fft_plan<T, D>`.** `TW` is
+  the twiddle/table element type, a plan-level choice independent of any
+  array it's later applied to. **Implemented as `<D, TW>`, not `<TW, D>`** —
+  C++ requires every template parameter after one with a default to also
+  have one, and `D` (the rank) has no sensible default, so a default for
+  `TW` is only expressible if `D` comes first. This reorders the existing
+  `fft_plan<T, D>` spelling (a discussed, deliberate API break — see the
+  landed implementation's commit for the two calling files updated).
 - **`execute()` becomes a template on the array's element type, deduced per
-  call** (`template<class MultiSubArray> auto execute(MultiSubArray&&...)`,
-  pulling `T` from `std::decay_t<MultiSubArray>::element`). One plan, built
+  call.** Implemented via `Cursor::element` (every Multi cursor already
+  exposes this nested typedef), not by switching the public call convention
+  to take the array/subarray directly — `plan.execute(arr.home())` keeps
+  working unchanged; only the *implementation* deduces `T` where it
+  previously used the class's own (now removed) `T`. One plan, built
   once for a shape, can then execute against a `complex<float>` array today
   and a `complex<double>` array tomorrow without rebuilding any tables.
 - **Buffers move from persistent engine members to execute-time-local
@@ -702,7 +711,7 @@ another model/developer to execute without re-deriving the rationale.
 
 8. **The plan stays parameterized on a complex (twiddle) type that is
    agnostic of what it executes on** — i.e. this feature builds on, and
-   must not regress, the §9.2 decoupling: `fft_plan<TW, D>` where `TW` is
+   must not regress, the §9.2 decoupling (landed): `fft_plan<D, TW>` where `TW` is
    the table element type chosen at plan construction, while the array
    element type `T` is deduced per `execute()` call. Nothing in the
    direction schedule touches `T` or `TW`; `dirs_` is plain data. An
@@ -866,28 +875,48 @@ miss them; where a point *updates* an earlier section, that is called out.
 ### 10.5 Code tricks and operational details for the executor
 
 Concrete facts verified against the current file, plus the non-obvious
-tricks. Identifiers/line references are as of this writing — the file is
-under active §9 restructuring, so **re-grep every anchor before relying on
-it**.
+tricks. **Update, post-§9.2 (both scratch-externalization and T/TW split
+have now landed)**: the anchor map below predates that work and is stale in
+one important way beyond line numbers — the *shapes* changed, not just
+positions. Corrected facts, still **re-grep every anchor before relying on
+it** (§10 itself hasn't landed yet, so more churn is expected):
 
-**Anchor map (what to touch, where):**
-
-- `fft_plan<T, D>` (~line 1192): members `sizes_` (`std::array<size_t, D>`,
-  used by `fft_view_from_cursor` on every execute — must keep entries for
-  ALL axes including `none` ones), `engines_` (`std::vector<fft_engine<T>>`,
-  one per distinct length), `which_` (axis → engine index).
-- `engine_<A>()` (compile-time axis accessor, `static_assert`s the range) —
-  must gain a guard (assert or `if constexpr` at call sites) that axis `A`
-  is not `none` before indexing `engines_[which_[A]]`.
+- **`fft_plan<D, TW = std::complex<double>>`, not `fft_plan<T, D>`** (order
+  reordered from the plan originally described here — see §9.2 item on
+  `fft_plan<D, TW>`). Members: `sizes_` (`std::array<size_t, D>`, used by
+  `fft_view_from_cursor` on every execute — must keep entries for ALL axes
+  including `none` ones), `engines_` (`std::vector<detail::fft_engine<TW>>`,
+  one per distinct length), `which_` (axis → engine index), `dirs_` (§10's
+  new member, not yet added). `execute()` is now itself where `T` (the
+  array's element type) is deduced, via `typename
+  std::decay_t<Cursor>::element` — `apply_`/`transform_middle_` are
+  templates on `T`, taking the execute-time arena as `T* arena`.
+- **`fft_engine<TW>`, not `fft_engine<T>`.** Every data-touching method
+  (`run`, `run_fused*`, `run_stages_`, `run_sixstep_`, `run_bluestein_`, all
+  `stage_*_` kernels) is now `template<..., class T>`, with `T` deduced from
+  the data-pointer arguments, independent of the enclosing `TW`. Any new
+  direction-aware dispatch parameter (§10's `Backward`) slots in alongside
+  `Batched`/`T` the same way. `engine_<A>()` (compile-time axis accessor,
+  `static_assert`s the range) — must gain a guard (assert or `if constexpr`
+  at call sites) that axis `A` is not `none` before indexing
+  `engines_[which_[A]]`.
 - `apply_()`: `D == 1` → `fft_apply_last`; else `fft_apply_last_pair(view,
-  engine_<D-1>(), engine_<D-2>())` then `transform_middle_<1>` static
+  engine_<D-1>(), engine_<D-2>(), arena)` then `transform_middle_<1>` static
   recursion (axis K−1 per level, via `view.rotated()`).
-- `fft_engine<T>::fft_engine(std::size_t nn, int sign)` (~line 201); stage
-  kernels `stage_radix2_/4_/8_/3_/5_/generic_` dispatched by a runtime
-  `switch(st.kind)` inside `run_stages_<Batched>` (~line 839) and the fused
-  variant (~line 817).
-- `fft_ops<T>` customization point (~line 99): generic `mul(a,b) = a*b`,
-  `std::complex<R>` specialization with the explicit 4-mul/2-add form.
+- `fft_engine<TW>::fft_engine(std::size_t nn, int sign)`; stage kernels
+  `stage_radix2_/4_/8_/3_/5_/generic_` dispatched by a runtime
+  `switch(st.kind)` inside `run_stages_<Batched, T>` and the fused variant
+  `run_fused_impl_<Batched, T>`.
+- **`fft_ops<T, TW = T>` customization point (two type parameters now)**:
+  `mul(TW const& w, T const& x) -> T`, twiddle first. Generic default widens
+  `x` to `TW`, multiplies, narrows the result once; `fft_ops<std::complex<R>,
+  std::complex<R>>` (same-type) partial specialization keeps the explicit
+  4-mul/2-add form. `fft_mul(w, x)` free-function convention is
+  twiddle-first everywhere in the smooth-path kernels *except* one spot in
+  `run_sixstep_`'s twiddle-transpose step, which had data-first and was
+  fixed to match during the T/TW split — a real (if harmless pre-split)
+  bug, worth knowing about if you're conjugating/direction-templating that
+  call.
 - Tests: `test/algorithms_fft.cpp`, Boost lightweight_test (`BOOST_TEST`,
   `return boost::report_errors();`), helpers `dft_reference(in, sign)`
   (1-D, reference direct DFT), `max_abs_diff`, `tol = 1e-9`. The 2-D
