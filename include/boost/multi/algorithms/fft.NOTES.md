@@ -606,6 +606,10 @@ redesign are pulling in the same direction.
 
 ## 10. Partial / mixed-direction FFTs — settled design + implementation plan
 
+> Session-by-session execution ordering for this section and §9.2 (with
+> gates, commit checkpoints, and a definition of done) lives in the
+> companion file `fft.PLAN.md`.
+
 Feature request (2026-07): per-axis transform directions, e.g. on a 4-D array
 
     multi::fft_inplace({{forward, none, backward, forward}}, inout);
