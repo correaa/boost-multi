@@ -1486,20 +1486,32 @@ class fft_plan {
 		return engines_[which_[static_cast<std::size_t>(A)]];
 	}
 
-	// Static recursion over the remaining axes D-3 .. 0: `view` is `arr`
-	// rotated K times (rotated() sends axis 0 to the back), so its last axis
-	// is original axis K-1. Each axis is a distinct instantiation, bound to
-	// its engine at compile time; rotated() preserves rank and type, so the
-	// recursion depth is exactly D-2 with a single View type. `T` (the
-	// array's element type) is deduced from `arena`, independent of `TW`.
-	// Axis K-1 is skipped (not even reaching engine_<K-1>()) when `none`.
-	template<std::ptrdiff_t K, class View, class T>
-	void transform_middle_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
-		if(dirs_[static_cast<std::size_t>(K - 1)] != fft_direction::none) {
-			detail::fft_apply_last(view, engine_<K - 1>(), arena);
+	// Uniform recursive axis walk, made possible by per-axis directions:
+	// every axis is one "transform the last axis of the current view if
+	// active, then rotate and recurse" step, so `none`-skipping, the D == 1
+	// case, and every partially-degraded combination fall out of ONE code
+	// path instead of bespoke branches (an earlier three-way degraded-pair
+	// branch hand-picked rotations per case and got one wrong -- see git
+	// history; here the view is correctly positioned by construction).
+	//
+	// `view` is `arr` rotated K times (rotated() sends axis 0 to the back),
+	// so its last axis is original axis K-1 -- or D-1 for K == 0. Walking
+	// K = Start .. Stop therefore visits original axes in the order
+	// D-1, 0, 1, ..., D-2 (order is free: 1-D passes along different axes
+	// commute). Each axis is a distinct instantiation, bound to its engine
+	// at compile time; rotated() preserves rank and type, so there is a
+	// single View type per plan. `Stop` lets apply_ end the walk early at
+	// axis D-3 when axes D-1/D-2 were already handled by the fused pair
+	// pass. `T` (the array's element type) is deduced from `arena`,
+	// independent of `TW`.
+	template<std::ptrdiff_t K, std::ptrdiff_t Stop, class View, class T>
+	void transform_axes_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
+		constexpr std::ptrdiff_t axis = (K == 0) ? D - 1 : K - 1;
+		if(dirs_[static_cast<std::size_t>(axis)] != fft_direction::none) {
+			detail::fft_apply_last(view, engine_<axis>(), arena);
 		}
-		if constexpr(K < D - 2) {
-			transform_middle_<K + 1>(view.rotated(), arena);
+		if constexpr(K < Stop) {
+			transform_axes_<K + 1, Stop>(view.rotated(), arena);
 		}
 	}
 
@@ -1586,45 +1598,27 @@ class fft_plan {
 	// The axis walk, shared by the cursor and array entry points. `view` is a
 	// strided view of the planned shape; transformed in place. `T` (the
 	// array's element type) is deduced from `arena`, independent of `TW`.
+	//
+	// One fast-path check, then the uniform recursion does everything else:
+	// when BOTH of the last two axes are active, they are fused into a
+	// single slab-by-slab pass (fft_apply_last_pair: both transforms run
+	// while the rank-2 slab is cache-resident -- a measured win, see NOTES
+	// §2.5) and the walk covers only the remaining axes 0 .. D-3. In every
+	// other combination -- D == 1, any axis `none`, all axes `none` -- the
+	// walk alone handles all D axes, skipping inactive ones; no per-case
+	// rotation choices left to get wrong.
 	template<class View, class T>
 	void apply_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
-		if constexpr(D == 1) {
-			// All-`none` (D == 1) is a valid no-op (fft.NOTES.md §10.1 item 6).
-			if(dirs_[0] != fft_direction::none) {
-				detail::fft_apply_last(view, engine_<0>(), arena);
-			}
-		} else {
-			// Transform the last two axes together, slab by slab (cache
-			// locality), then the remaining axes 0 .. D-3 by static recursion
-			// over rotated views (each axis bound to its engine at compile
-			// time; no runtime axis parameter anywhere). `none` on exactly one
-			// of the last two axes degrades the pair to a single fft_apply_last
-			// on the appropriate rotation (fft.NOTES.md §10.2); `none` on both
-			// skips the slab pass entirely. The decision is made HERE, before
-			// engine_<D-1>()/engine_<D-2>() are ever called, since a `none`
-			// axis has no engine to reference at all (fft_apply_last_pair's
-			// own signature is unchanged -- it is only ever called when both
-			// axes are active).
-			bool const last_active = dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none;
-			bool const prev_active = dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none;
-			if(last_active && prev_active) {
+		if constexpr(D >= 2) {
+			if(dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none && dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none) {
 				detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>(), arena);
-			} else if(last_active) {
-				detail::fft_apply_last(view, engine_<D - 1>(), arena);
-			} else if(prev_active) {
-				// unrotated(), NOT rotated(): unrotated() sends the LAST axis to
-				// the front, so the new last axis is original axis D-2 -- the one
-				// this branch must transform -- at every rank. rotated() sends
-				// axis 0 to the back, which coincides with D-2 only at D == 2;
-				// at D >= 3 it would transform axis 0 with axis D-2's engine
-				// (wrong axis, and out-of-bounds writes for non-cubic shapes --
-				// a real bug caught in review, by Multi's own bounds assert).
-				detail::fft_apply_last(view.unrotated(), engine_<D - 2>(), arena);
-			}
-			if constexpr(D >= 3) {
-				transform_middle_<1>(view.rotated(), arena);
+				if constexpr(D >= 3) {
+					transform_axes_<1, D - 2>(view.rotated(), arena);  // axes 0 .. D-3
+				}
+				return;
 			}
 		}
+		transform_axes_<0, D - 1>(view, arena);  // all axes: D-1, then 0 .. D-2
 	}
 
  public:
