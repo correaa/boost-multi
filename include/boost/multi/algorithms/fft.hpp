@@ -1305,16 +1305,26 @@ class fft_scratch_arena {
 	std::size_t       n_;
 
  public:
-	explicit fft_scratch_arena(std::size_t n) : p_(alloc_.allocate(n)), n_(n) {
-		std::uninitialized_default_construct_n(p_, n_);
+	// A plan needing zero scratch (e.g. a trivial n < 2 size) is legitimate;
+	// skip the allocator call entirely rather than ask for a 0-element
+	// allocation, which some standard libraries' allocate() flags as
+	// suspicious under a stricter warning set than this file's own build
+	// (e.g. GCC's -Walloc-zero, not part of this header's own tested flags
+	// but part of this project's actual CI).
+	explicit fft_scratch_arena(std::size_t n) : p_(n == 0 ? nullptr : alloc_.allocate(n)), n_(n) {
+		if(n_ != 0) {
+			std::uninitialized_default_construct_n(p_, n_);
+		}
 	}
 	fft_scratch_arena(fft_scratch_arena const&)                    = delete;
 	auto operator=(fft_scratch_arena const&) -> fft_scratch_arena& = delete;
 	fft_scratch_arena(fft_scratch_arena&&)                         = delete;
 	auto operator=(fft_scratch_arena&&) -> fft_scratch_arena&      = delete;
 	~fft_scratch_arena() {
-		std::destroy_n(p_, n_);
-		alloc_.deallocate(p_, n_);
+		if(n_ != 0) {
+			std::destroy_n(p_, n_);
+			alloc_.deallocate(p_, n_);
+		}
 	}
 	auto data() const -> T* { return p_; }
 };
