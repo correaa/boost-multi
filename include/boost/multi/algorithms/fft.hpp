@@ -13,7 +13,7 @@
 //                                    for ergonomics only -- not a claim that
 //                                    double is the "right" twiddle precision)
 //     fft_plan<D, TW>(extents, sign) plan for a shape (any tuple-like extents)
-//     plan(A) / plan.execute(A)      transform A in place; A can be any array
+//     plan.execute(A)                transform A in place; A can be any array
 //                                    or subarray with the planned sizes, of
 //                                    any strided layout, with element type T
 //                                    deduced fresh per call -- independent of
@@ -172,19 +172,43 @@ inline constexpr std::size_t fft_max_direct_radix = 64;
 // gain 10-25%).
 inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
 
-// Small fixed-size local buffer that is deliberately NOT initialized for
-// trivially copyable element types. A plain `std::array<T, N>` local
-// default-initializes its elements, and for `std::complex` (trivially
-// copyable but NOT trivially default-constructible -- its default
-// constructor zero-initializes) that compiles to a memset of the whole
-// buffer on every entry to the enclosing function; the six-step transpose
-// tile below hit this once per fiber. Elements are always fully written
-// before being read, so the zero-fill is pure waste. Cache-line aligned as
-// a bonus. Same implicit-object-creation footing as fft_scratch_arena (see
-// there): a std::byte array implicitly creates the trivially-copyable
-// objects stored into it. Non-trivially-copyable types fall back to a
-// properly constructed std::array.
-template<class T, std::size_t N, bool = std::is_trivially_copyable_v<T>>
+// Whether skipping element default-construction (and destruction) of a
+// scratch buffer is allowed for `T`. Three ways in:
+//   1. the language already says construction/destruction are trivial;
+//   2. the type is opted in through Multi's own customization point
+//      (`multi::force_element_trivial_default_construction`, array_ref.hpp)
+//      -- the same idiom multi::array itself uses to skip
+//      zero-initialization for its elements;
+//   3. `T` is a std::complex over a trivial real type: complex is trivially
+//      copyable but NOT trivially default-constructible (its default
+//      constructor zero-initializes through defaulted arguments), so
+//      without this every "uninitialized" scratch buffer of complex
+//      compiles to a full memset on each use. array_ref.hpp enables the
+//      same thing through its opt-in only under the global
+//      `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` macro; this header applies
+//      it to its OWN scratch unconditionally (maintainer decision: safe --
+//      scratch elements are always fully written before being read) without
+//      defining that macro, which would change multi::array behavior for
+//      every translation unit that includes this header.
+template<class T> struct fft_is_trivial_complex : std::false_type {};
+template<class R>
+struct fft_is_trivial_complex<std::complex<R>> : std::bool_constant<std::is_trivially_copyable_v<R> && std::is_trivially_default_constructible_v<R>> {};
+
+template<class T>
+inline constexpr bool fft_skip_element_init =
+	((std::is_trivially_default_constructible_v<T> || multi::force_element_trivial_default_construction<T>) &&
+	 (std::is_trivially_destructible_v<T> || multi::force_element_trivial_destruction<T>)) ||
+	fft_is_trivial_complex<T>::value;
+
+// Small fixed-size local buffer that is deliberately NOT initialized when
+// `fft_skip_element_init` allows it. A plain `std::array<T, N>` local
+// default-initializes its elements, so for std::complex it would memset the
+// whole buffer on every entry to the enclosing function; the six-step
+// transpose tile below hit this once per fiber. Elements are always fully
+// written before being read, so the zero-fill is pure waste. Cache-line
+// aligned as a bonus. Types without the opt-in fall back to a properly
+// constructed std::array.
+template<class T, std::size_t N, bool = fft_skip_element_init<T>>
 struct fft_tile_buffer {
 	alignas(64) std::byte storage_[sizeof(T) * N];  // NOLINT(cppcoreguidelines-avoid-c-arrays,misc-non-private-member-variables-in-classes)
 	auto data() -> T* { return reinterpret_cast<T*>(storage_); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -1332,20 +1356,20 @@ auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast
 // zero-initializing it first -- what a plain `std::vector<T>` would do -- is
 // pure waste on every single `execute()` call.
 //
-// For trivially copyable `T` the constructor deliberately does NOT run
-// `uninitialized_default_construct_n` either: `std::complex` is trivially
+// When `fft_skip_element_init<T>` holds (either the language already makes
+// default-construction free, or the type is opted in through Multi's own
+// `force_element_trivial_default_construction` customization point -- which
+// std::complex<float/double> are), the constructor deliberately does NOT
+// run `uninitialized_default_construct_n` either: std::complex is trivially
 // copyable but NOT trivially default-constructible (its default constructor
 // zero-initializes through defaulted arguments), so default-constructing the
 // arena compiles to a full memset of the whole allocation on every call --
 // verified in generated code -- silently reintroducing the very zero-fill
 // this class exists to avoid (an earlier version of this file did exactly
 // that, with a comment claiming it was free). Skipping construction for
-// storage that is only ever stored-to-then-read is the pattern every
-// high-performance buffer uses; it is formally blessed by implicit object
-// creation (C++20 P0593 -- std::complex qualifies as an implicit-lifetime
-// class via its trivial copy constructor and trivial destructor) and is
-// honored by every supported toolchain in C++17 mode as well. Types that are
-// not trivially copyable still get proper lifetime starts.
+// storage that is only ever stored-to-then-read is the same idiom
+// multi::array itself uses (array.hpp); types without the opt-in still get
+// proper lifetime starts.
 // `Allocator` is the §10.4(c) GPU seam: any caller-supplied allocator
 // satisfying the standard Allocator concept (allocate(n)/deallocate(p,n))
 // for `T` directly can be threaded through here -- a fixed single-slot
@@ -1380,7 +1404,7 @@ class fft_scratch_arena {
 	// but part of this project's actual CI).
 	explicit fft_scratch_arena(std::size_t n, Allocator const& alloc = Allocator{})
 	: alloc_(alloc), p_(n == 0 ? nullptr : alloc_traits::allocate(alloc_, n)), n_(n) {
-		if constexpr(!std::is_trivially_copyable_v<T>) {  // see class comment: for trivially copyable T this would memset the arena
+		if constexpr(!fft_skip_element_init<T>) {  // see class comment: for opted-in types (std::complex) this would memset the arena
 			if(n_ != 0) {
 				std::uninitialized_default_construct_n(p_, n_);
 			}
@@ -1392,7 +1416,7 @@ class fft_scratch_arena {
 	auto operator=(fft_scratch_arena&&) -> fft_scratch_arena&      = delete;
 	~fft_scratch_arena() {
 		if(n_ != 0) {
-			if constexpr(!std::is_trivially_copyable_v<T>) {  // matches the constructor: only destroy what was constructed
+			if constexpr(!fft_skip_element_init<T>) {  // matches the constructor: only destroy what was constructed
 				std::destroy_n(p_, n_);
 			}
 			alloc_traits::deallocate(alloc_, p_, n_);
@@ -1406,7 +1430,7 @@ class fft_scratch_arena {
 // Reusable multidimensional FFT plan: precomputes twiddle tables, stage
 // factorizations, DFT matrices and scratch buffers for a given shape and
 // direction, and applies them to any array/subarray of that shape (any
-// strided layout) with `plan(A)` or `plan.execute(A)`, repeatedly, without
+// strided layout) with `plan.execute(A)`, repeatedly, without
 // re-allocation.
 template<std::ptrdiff_t D, class TW = std::complex<double>>
 class fft_plan {
@@ -1556,16 +1580,6 @@ class fft_plan {
 		assert(to_sizes_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}) == sizes_ && "array shape must match the planned sizes");
 		execute(arr.home(), alloc);
 		return std::forward<MultiSubArray>(arr);
-	}
-
-	// The documented `plan(A)` spelling; forwards to whichever execute()
-	// overload matches (array/subarray or cursor, with or without allocator).
-	// The trailing return type keeps it SFINAE-friendly: a non-matching
-	// argument produces "no matching operator()" at the call site instead of
-	// an instantiation error inside.
-	template<class... Args>
-	auto operator()(Args&&... args) const -> decltype(execute(std::forward<Args>(args)...)) {
-		return execute(std::forward<Args>(args)...);
 	}
 };
 

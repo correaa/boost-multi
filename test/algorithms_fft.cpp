@@ -280,16 +280,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		plan.execute(a3.home());
 		BOOST_TEST( max_abs_diff(a3.elements(), a2.elements()) < tol );
 
-		// the documented array-taking forms: plan.execute(A) and plan(A),
-		// equivalent to the cursor form but with rank checked at compile time
-		// and shape asserted against the planned sizes
+		// the documented array-taking form plan.execute(A): equivalent to the
+		// cursor form but with rank checked at compile time and shape
+		// asserted against the planned sizes
 		auto a4 = arr;
 		plan.execute(a4);
 		BOOST_TEST( max_abs_diff(a4.elements(), a2.elements()) < tol );
-
-		auto a5 = arr;
-		plan(a5);
-		BOOST_TEST( max_abs_diff(a5.elements(), a2.elements()) < tol );
 	}
 
 	// a plan built from extents (no prototype array) round-trips fwd + bwd
