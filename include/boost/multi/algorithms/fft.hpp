@@ -309,9 +309,8 @@ auto fft_extent_size(Extent const& ext) -> std::size_t {
 template<class TW>
 struct fft_engine {
 	// NOLINTBEGIN(misc-non-private-member-variables-in-classes) engine is an implementation-detail aggregate
-	std::size_t n_    = 0;
-	int         sign_ = fft_forward;
-	std::size_t mb_   = 1;  // preferred batch width (scratch is sized so 2*n*mb stays cache-resident)
+	std::size_t n_  = 0;
+	std::size_t mb_ = 1;  // preferred batch width (scratch is sized so 2*n*mb stays cache-resident)
 
 	struct stage_t {
 		std::size_t radix;
@@ -332,15 +331,22 @@ struct fft_engine {
 	std::size_t six_i2_  = 0;  // index into sub_ of the length-n2 row plan
 
 	// Bluestein state (used when n_ is a prime > fft_max_direct_radix):
-	// X_k = c_k * sum_n x_n c_n d_{k-n} with c_j = exp(sign*i*pi*j^2/n), d = 1/c,
-	// evaluated as a circular convolution of power-of-two length conv_n_ >= 2n-1.
-	bool            bluestein_ = false;
-	std::size_t     conv_n_    = 0;
-	std::vector<TW> chirp_;      // c_j
-	std::vector<TW> postc_;      // c_k / conv_n_  (fused convolution normalization)
-	std::vector<TW> kernel_ft_;  // FFT of the wrapped d-kernel, precomputed
+	// X_k = c_k * sum_n x_n c_n d_{k-n} with c_j = exp(-i*pi*j^2/n) (canonical
+	// forward sign, Phase B), d = 1/c, evaluated as a circular convolution of
+	// power-of-two length conv_n_ >= 2n-1. `chirp_`/`postc_` are plain
+	// elementwise conjugates across direction, so conj-on-load
+	// (`fft_mul_dir<Backward>`) handles them; `kernel_ft_` does not conjugate
+	// cleanly on load (FFT of a conjugated sequence is a conjugated,
+	// INDEX-REVERSED spectrum), so the backward-direction spectrum is a
+	// second, separately precomputed table (fft.NOTES.md §10.5).
+	bool            bluestein_     = false;
+	std::size_t     conv_n_        = 0;
+	std::vector<TW> chirp_;          // c_j (forward-canonical)
+	std::vector<TW> postc_;          // c_k / conv_n_  (fused convolution normalization, forward-canonical)
+	std::vector<TW> kernel_ft_;      // FFT of the wrapped d-kernel, forward direction
+	std::vector<TW> kernel_ft_bwd_;  // == conj(kernel_ft_[(conv_n_ - k) % conv_n_]), backward direction
 
-	std::vector<fft_engine> sub_;  // nested engines: Bluestein fwd/bwd pair, or large-prime stage sub-plans
+	std::vector<fft_engine> sub_;  // nested engines: single neutral Bluestein conv sub-engine (run forward then backward), or large-prime stage sub-plans
 
 	// Scratch is not owned here: only the *sizes* (peak element counts,
 	// `note_reach_`) and disjoint *offsets* (`assign_offsets_`) into an
@@ -396,8 +402,7 @@ struct fft_engine {
 			return;
 		}
 		if(bluestein_) {
-			sub_[0].note_reach_(m);
-			sub_[1].note_reach_(m);
+			sub_[0].note_reach_(m);  // single neutral conv sub-engine (Phase B collapse), run forward then backward
 			return;
 		}
 		if(sixstep_) {
@@ -429,7 +434,12 @@ struct fft_engine {
 		}
 	}
 
-	fft_engine(std::size_t nn, int sign) : n_{nn}, sign_{sign} {  // NOLINT(readability-function-cognitive-complexity)
+	// Direction-neutral (Phase B, NOTES §10.5): builds forward-canonical
+	// tables only. A backward pass conjugates every table load at run time
+	// (`fft_mul_dir<Backward>`) instead of building a second, sign-baked set
+	// of tables -- see the kernel comments below for the invariant this
+	// relies on.
+	explicit fft_engine(std::size_t nn) : n_{nn} {  // NOLINT(readability-function-cognitive-complexity)
 		if(nn < 2) {
 			return;
 		}
@@ -476,7 +486,7 @@ struct fft_engine {
 		}
 
 		using real      = fft_real_t<TW>;
-		real const step = static_cast<real>(sign) * real{2} * fft_pi<real>() / static_cast<real>(nn);
+		real const step = static_cast<real>(fft_forward) * real{2} * fft_pi<real>() / static_cast<real>(nn);
 		tw_.resize(nn);
 		for(std::size_t k = 0; k != nn; ++k) {
 			real const theta = step * static_cast<real>(k);
@@ -521,7 +531,7 @@ struct fft_engine {
 				six_n2_  = n2;
 				six_i1_  = sub_index_(n1);
 				if(n2 == n1) {  // distinct engine: the two passes' buffers must not alias
-					sub_.emplace_back(n2, sign_);
+					sub_.emplace_back(n2);
 					six_i2_ = sub_.size() - 1;
 				} else {
 					six_i2_ = sub_index_(n2);
@@ -539,13 +549,17 @@ struct fft_engine {
 	// `note_reach_`/`assign_offsets_`); sizes are precomputed, so no runtime
 	// growth check is needed here. `T` (the array's element type) is deduced
 	// from `arena`/`in`, independent of `TW` (this engine's table type).
+	// `backward` is a runtime direction argument (Phase B, NOTES §10.5):
+	// engines store forward-canonical tables only, and this dispatches ONCE
+	// per invocation to the `<..., Backward>` instantiation -- one branch per
+	// pass, nothing per element.
 	template<class T>
-	auto run(std::size_t m, T* arena) const -> T const* { return run(m, buf_ptr(arena), arena); }
+	auto run(std::size_t m, bool backward, T* arena) const -> T const* { return run(m, backward, buf_ptr(arena), arena); }
 
 	template<class T>
-	auto run(std::size_t m, T const* in, T* arena) const -> T const* {
+	auto run(std::size_t m, bool backward, T const* in, T* arena) const -> T const* {
 		if(sixstep_ && m == 1 && n_ >= 2) {
-			return run_sixstep_(in, arena);
+			return backward ? run_sixstep_<true>(in, arena) : run_sixstep_<false>(in, arena);
 		}  // uses only the sub-plans' buffers
 		if(n_ < 2) {
 			T* const b = buf_ptr(arena);
@@ -555,9 +569,12 @@ struct fft_engine {
 			return b;
 		}
 		if(bluestein_) {
-			return run_bluestein_(m, in, arena);
+			return backward ? run_bluestein_<true>(m, in, arena) : run_bluestein_<false>(m, in, arena);
 		}
-		return (m == 1) ? run_stages_<false>(1, in, arena) : run_stages_<true>(m, in, arena);
+		if(m == 1) {
+			return backward ? run_stages_<false, true>(1, in, arena) : run_stages_<false, false>(1, in, arena);
+		}
+		return backward ? run_stages_<true, true>(m, in, arena) : run_stages_<true, false>(m, in, arena);
 	}
 
 	// True when the stage pipeline can read/write user memory directly: the
@@ -570,36 +587,56 @@ struct fft_engine {
 	// contiguous), skipping the separate gather and scatter passes. `in` may
 	// alias `out`. Only valid when can_fuse().
 	template<class T>
-	void run_fused(T const* in, std::size_t si, T* out, std::size_t so, std::size_t m, T* arena) const {
+	void run_fused(T const* in, std::size_t si, T* out, std::size_t so, std::size_t m, bool backward, T* arena) const {
 		assert(can_fuse());
 		assert(m > 1 || (si == 1 && so == 1));  // the unbatched kernels fold strides to 1
 		if(m == 1) {
-			run_fused_impl_<false>(in, 1, out, 1, 1, arena);
+			if(backward) {
+				run_fused_impl_<false, true>(in, 1, out, 1, 1, arena);
+			} else {
+				run_fused_impl_<false, false>(in, 1, out, 1, 1, arena);
+			}
 		} else {
-			run_fused_impl_<true>(in, si, out, so, m, arena);
+			if(backward) {
+				run_fused_impl_<true, true>(in, si, out, so, m, arena);
+			} else {
+				run_fused_impl_<true, false>(in, si, out, so, m, arena);
+			}
 		}
 	}
 
 	// In-place transform of one contiguous (stride-1) fiber in user memory;
 	// the final pass writes straight back (no scatter copy).
 	template<class T>
-	void run_contig_inplace(T* io, T* arena) const {
+	void run_contig_inplace(T* io, T* arena, bool backward) const {
 		if(n_ < 2) {
 			return;
 		}
 		if(sixstep_) {
-			run_sixstep_(io, arena, io);
+			if(backward) {
+				run_sixstep_<true>(io, arena, io);
+			} else {
+				run_sixstep_<false>(io, arena, io);
+			}
 			return;
 		}
 		if(bluestein_) {
-			run_bluestein_(1, io, arena, io);
+			if(backward) {
+				run_bluestein_<true>(1, io, arena, io);
+			} else {
+				run_bluestein_<false>(1, io, arena, io);
+			}
 			return;
 		}
 		if(stages_.size() >= 2) {
-			run_fused_impl_<false>(io, 1, io, 1, 1, arena);
+			if(backward) {
+				run_fused_impl_<false, true>(io, 1, io, 1, 1, arena);
+			} else {
+				run_fused_impl_<false, false>(io, 1, io, 1, 1, arena);
+			}
 			return;
 		}
-		T const* const res = run(1, io, arena);
+		T const* const res = run(1, backward, io, arena);
 		std::copy(res, res + n_, io);
 	}
 
@@ -633,7 +670,7 @@ struct fft_engine {
 				return i;
 			}
 		}
-		sub_.emplace_back(rr, sign_);
+		sub_.emplace_back(rr);
 		return sub_.size() - 1;
 	}
 
@@ -695,32 +732,40 @@ struct fft_engine {
 		chirp_.resize(n_);
 		postc_.resize(n_);
 
-		sub_.emplace_back(conv_n_, sign_);   // convolution "forward" transform
-		sub_.emplace_back(conv_n_, -sign_);  // convolution "inverse" transform (unnormalized)
+		// Single neutral conv sub-engine (Phase B, NOTES §10.5): the two
+		// Phase-A engines ("forward conv" and "inverse conv") were only ever
+		// distinguished by sign, and the convolution mechanism itself is fixed
+		// regardless of the outer transform's direction (canonical fwd conv,
+		// then inverse conv) -- so one engine, run twice with opposite
+		// `Backward` values, replaces the pair. See run_bluestein_ for the
+		// resulting buf_ptr_ aliasing between the two runs (safe, documented
+		// there).
+		sub_.emplace_back(conv_n_);
 
 		// Wrapped convolution kernel b: b[j] = b[conv_n_ - j] = d_j = conj-chirp.
 		// This is a one-time, construction-only bootstrap to precompute the
-		// immutable kernel_ft_ table: `fwd` needs *some* scratch to run once at
-		// m=1, so it gets a private, throwaway local arena sized from its own
-		// (self-contained) subtree requirement. These offsets are provisional;
-		// fft_plan's constructor lays out the real, whole-plan arena afterward
-		// (note_reach_ is monotonic-max, so re-running it there is safe), and
-		// only the immutable table data computed here (chirp_/postc_/
-		// kernel_ft_) survives past this function. Entirely TW-typed: no array
-		// type T exists yet at construction time.
-		fft_engine& fwd = sub_[0];
-		fwd.note_reach_(1);
+		// immutable kernel_ft_ table: `conv` needs *some* scratch to run once
+		// at m=1, so it gets a private, throwaway local arena sized from its
+		// own (self-contained) subtree requirement. These offsets are
+		// provisional; fft_plan's constructor lays out the real, whole-plan
+		// arena afterward (note_reach_ is monotonic-max, so re-running it
+		// there is safe), and only the immutable table data computed here
+		// (chirp_/postc_/kernel_ft_/kernel_ft_bwd_) survives past this
+		// function. Entirely TW-typed: no array type T exists yet at
+		// construction time.
+		fft_engine& conv = sub_[0];
+		conv.note_reach_(1);
 		std::size_t boot_cursor = 0;
-		fwd.assign_offsets_(boot_cursor);
+		conv.assign_offsets_(boot_cursor);
 		std::vector<TW> boot_arena(boot_cursor);
 
-		TW* const y = fwd.buf_ptr(boot_arena.data());
+		TW* const y = conv.buf_ptr(boot_arena.data());
 		std::fill(y, y + conv_n_, TW{});
 
 		real const  pi_n = fft_pi<real>() / static_cast<real>(n_);
 		std::size_t jsq  = 0;  // j^2 mod 2n, updated incrementally to avoid overflow
 		for(std::size_t j = 0; j != n_; ++j) {
-			real const theta = static_cast<real>(sign_) * pi_n * static_cast<real>(jsq);
+			real const theta = static_cast<real>(fft_forward) * pi_n * static_cast<real>(jsq);  // forward-canonical (Phase B); backward via conj-on-load
 			chirp_[j]        = TW{std::cos(theta), std::sin(theta)};
 			TW const dj      = TW{std::cos(theta), -std::sin(theta)};
 			y[j]             = dj;
@@ -738,8 +783,20 @@ struct fft_engine {
 			postc_[k] = fft_mul(inv_m, chirp_[k]);  // branch-free product, same as the kernels (construction-time, but no reason to take the operator* libcall path)
 		}
 
-		TW const* kft = fwd.run(1, boot_arena.data());
+		TW const* kft = conv.run(1, /*backward=*/false, boot_arena.data());  // canonical forward, always -- see run_bluestein_
 		kernel_ft_.assign(kft, kft + conv_n_);
+
+		// kernel_ft_bwd_[k] == conj(kernel_ft_[(conv_n_ - k) % conv_n_]): FFT of
+		// a conjugated sequence is a conjugated, INDEX-REVERSED spectrum, so
+		// plain conj-on-load (fft_mul_dir) does not work for this table --
+		// precompute the reversed/conjugated table once instead (fft.NOTES.md
+		// §10.5).
+		kernel_ft_bwd_.resize(conv_n_);
+		using std::conj;
+		for(std::size_t k = 0; k != conv_n_; ++k) {
+			std::size_t const src = (conv_n_ - k) % conv_n_;
+			kernel_ft_bwd_[k]     = conj(kernel_ft_[src]);
+		}
 	}
 
 	// --- batched Stockham stage kernels -----------------------------------
@@ -1004,7 +1061,7 @@ struct fft_engine {
 	// fibers at once. The sub-plan's [u][r*m+j] output layout coincides with
 	// this stage's required b[(base + r + u*ns)*m + j] layout, so the result
 	// is copied back in one contiguous block.
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_subplan_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, fft_engine const& sub, std::size_t mm, std::size_t sa_, std::size_t sb_, T* arena) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
@@ -1025,11 +1082,11 @@ struct fft_engine {
 					T const* const at = asrc + (t * nr * sa);
 					T* const       yt = y + (((t * ns) + r) * m);
 					for(std::size_t j = 0; j != m; ++j) {
-						yt[j] = fft_mul(w, at[j]);
+						yt[j] = fft_mul_dir<Backward>(w, at[j]);
 					}
 				}
 			}
-			T const* const z = sub.run(m2, arena);
+			T const* const z = sub.run(m2, Backward, arena);  // sub-DFTs of a backward transform are backward
 			if(sb == m) {
 				std::copy(z, z + (rr * ns * m), b + (block * rr * sb));
 			} else {
@@ -1044,7 +1101,7 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void run_fused_impl_(T const* in, std::size_t si, T* out, std::size_t so, std::size_t m, T* arena) const {
 		T const*          src  = in;
 		T*                dst  = out_ptr(arena);
@@ -1057,13 +1114,13 @@ struct fft_engine {
 			T* const          d  = (i == last) ? out : dst;
 			std::size_t const sb = (i == last) ? so : m;
 			switch(st.kind) {
-			case 0: stage_radix2_<Batched>(src, d, ns, m, sa, sb); break;
-			case 1: stage_radix3_<Batched>(src, d, ns, m, sa, sb); break;
-			case 2: stage_radix4_<Batched>(src, d, ns, m, sa, sb); break;
-			case 3: stage_radix5_<Batched>(src, d, ns, m, sa, sb); break;
-			case 4: stage_generic_<Batched>(src, d, ns, st.radix, wmat_.data() + st.aux, m, sa, sb, arena); break;
-			case 6: stage_radix8_<Batched>(src, d, ns, m, sa, sb); break;
-			default: stage_subplan_<Batched>(src, d, ns, st.radix, sub_[st.aux], m, sa, sb, arena); break;
+			case 0: stage_radix2_<Batched, Backward>(src, d, ns, m, sa, sb); break;
+			case 1: stage_radix3_<Batched, Backward>(src, d, ns, m, sa, sb); break;
+			case 2: stage_radix4_<Batched, Backward>(src, d, ns, m, sa, sb); break;
+			case 3: stage_radix5_<Batched, Backward>(src, d, ns, m, sa, sb); break;
+			case 4: stage_generic_<Batched, Backward>(src, d, ns, st.radix, wmat_.data() + st.aux, m, sa, sb, arena); break;
+			case 6: stage_radix8_<Batched, Backward>(src, d, ns, m, sa, sb); break;
+			default: stage_subplan_<Batched, Backward>(src, d, ns, st.radix, sub_[st.aux], m, sa, sb, arena); break;
 			}
 			src = d;
 			std::swap(dst, alt);
@@ -1071,7 +1128,7 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	auto run_stages_(std::size_t m, T const* in, T* arena) const -> T const* {
 		T const*    src = in;
 		T*          dst = out_ptr(arena);
@@ -1079,13 +1136,13 @@ struct fft_engine {
 		std::size_t ns  = 1;
 		for(stage_t const& st : stages_) {
 			switch(st.kind) {
-			case 0: stage_radix2_<Batched>(src, dst, ns, m, m, m); break;
-			case 1: stage_radix3_<Batched>(src, dst, ns, m, m, m); break;
-			case 2: stage_radix4_<Batched>(src, dst, ns, m, m, m); break;
-			case 3: stage_radix5_<Batched>(src, dst, ns, m, m, m); break;
-			case 4: stage_generic_<Batched>(src, dst, ns, st.radix, wmat_.data() + st.aux, m, m, m, arena); break;
-			case 6: stage_radix8_<Batched>(src, dst, ns, m, m, m); break;
-			default: stage_subplan_<Batched>(src, dst, ns, st.radix, sub_[st.aux], m, m, m, arena); break;
+			case 0: stage_radix2_<Batched, Backward>(src, dst, ns, m, m, m); break;
+			case 1: stage_radix3_<Batched, Backward>(src, dst, ns, m, m, m); break;
+			case 2: stage_radix4_<Batched, Backward>(src, dst, ns, m, m, m); break;
+			case 3: stage_radix5_<Batched, Backward>(src, dst, ns, m, m, m); break;
+			case 4: stage_generic_<Batched, Backward>(src, dst, ns, st.radix, wmat_.data() + st.aux, m, m, m, arena); break;
+			case 6: stage_radix8_<Batched, Backward>(src, dst, ns, m, m, m); break;
+			default: stage_subplan_<Batched, Backward>(src, dst, ns, st.radix, sub_[st.aux], m, m, m, arena); break;
 			}
 			src = dst;
 			std::swap(dst, alt);
@@ -1101,14 +1158,14 @@ struct fft_engine {
 	// gather at all); the twiddle multiply is fused into a tiled transpose to
 	// [n2][n1]; the final length-n2 FFT batched over k1 lands directly in
 	// natural (flat) output order.
-	template<class T>
+	template<bool Backward, class T>
 	auto run_sixstep_(T const* in, T* arena, T* uout = nullptr) const -> T const* {
 		auto const&       e1 = sub_[six_i1_];
 		auto const&       e2 = sub_[six_i2_];
 		std::size_t const n1 = six_n1_;
 		std::size_t const n2 = six_n2_;
 
-		T const* const z = e1.run(n2, in, arena);  // column FFTs: layout [n1][n2] is already batched
+		T const* const z = e1.run(n2, Backward, in, arena);  // column FFTs: sub-DFTs of a backward transform are backward
 
 		T* const                        yt = e2.buf_ptr(arena);
 		constexpr std::size_t           tb = 32;  // 32 x 32 tiles staged through an L1 buffer, so both
@@ -1122,7 +1179,7 @@ struct fft_engine {
 					T const* const zr  = z + (k1 * n2);
 					T* const       tr  = tile.data() + ((k1 - k10) * tb);
 					for(std::size_t j2 = j20; j2 != j2e; ++j2) {
-						tr[j2 - j20] = fft_mul(tw_[idx], zr[j2]);  // twiddle first, matching fft_mul(TW, T) convention
+						tr[j2 - j20] = fft_mul_dir<Backward>(tw_[idx], zr[j2]);  // twiddle first, matching fft_mul(TW, T) convention
 						idx += k1;
 						if(idx >= n_) {
 							idx -= n_;
@@ -1140,10 +1197,10 @@ struct fft_engine {
 		}
 
 		if(uout != nullptr && e2.can_fuse()) {  // final stage writes user memory directly
-			e2.template run_fused_impl_<true>(e2.buf_ptr(arena), n1, uout, n1, n1, arena);
+			e2.template run_fused_impl_<true, Backward>(e2.buf_ptr(arena), n1, uout, n1, n1, arena);
 			return uout;
 		}
-		T const* const res = e2.run(n1, arena);  // row FFTs, batched over k1
+		T const* const res = e2.run(n1, Backward, arena);  // row FFTs, batched over k1
 		if(uout != nullptr) {
 			std::copy(res, res + (n2 * n1), uout);
 			return uout;
@@ -1151,37 +1208,50 @@ struct fft_engine {
 		return res;
 	}
 
-	template<class T>
+	// Bluestein (Phase B, NOTES §10.5): the outer `Backward` does NOT change
+	// the convolution sub-transform's own directions -- the mechanism is
+	// fixed (canonical forward conv, then inverse conv), regardless of the
+	// outer transform's direction. Only the chirp/postc conjugation and the
+	// kernel-spectrum table selection depend on `Backward`. `conv` is a
+	// single neutral sub-engine (collapsed fwd/bwd pair, see init_bluestein_)
+	// run twice, forward then backward: `z` (the second run's default input
+	// region, `conv.buf_ptr(arena)`) can therefore be the exact SAME memory
+	// as `yf` (the first run's result) when the stage count is even -- safe
+	// because the pointwise-product write `z[i] = f(yf[i])` only ever reads
+	// and writes the SAME index, never a different one, so full aliasing
+	// between `z` and `yf` is not a hazard (verified under ASan with both
+	// odd- and even-stage-count conv_n_ values).
+	template<bool Backward, class T>
 	auto run_bluestein_(std::size_t m, T const* in, T* arena, T* out = nullptr) const -> T const* {
-		auto const& fwd = sub_[0];
-		auto const& bwd = sub_[1];
+		auto const& conv = sub_[0];
 
-		T* const y = fwd.buf_ptr(arena);  // chirp-premultiplied input, zero-padded to conv_n_
+		T* const y = conv.buf_ptr(arena);  // chirp-premultiplied input, zero-padded to conv_n_
 		for(std::size_t k = 0; k != n_; ++k) {
 			TW const c = chirp_[k];
 			for(std::size_t j = 0; j != m; ++j) {
-				y[(k * m) + j] = fft_mul(c, in[(k * m) + j]);
+				y[(k * m) + j] = fft_mul_dir<Backward>(c, in[(k * m) + j]);
 			}
 		}
 		std::fill(y + (n_ * m), y + (conv_n_ * m), T{});
 
-		T const* const yf = fwd.run(m, arena);
+		T const* const yf = conv.run(m, false, arena);  // canonical forward conv, always
 
-		T* const z = bwd.buf_ptr(arena);  // pointwise product with the precomputed kernel spectrum
+		T* const        z   = conv.buf_ptr(arena);  // pointwise product with the precomputed kernel spectrum (may alias yf -- see comment above)
+		TW const* const kft = Backward ? kernel_ft_bwd_.data() : kernel_ft_.data();
 		for(std::size_t q = 0; q != conv_n_; ++q) {
-			TW const kq = kernel_ft_[q];
+			TW const kq = kft[q];
 			for(std::size_t j = 0; j != m; ++j) {
-				z[(q * m) + j] = fft_mul(kq, yf[(q * m) + j]);
+				z[(q * m) + j] = fft_mul(kq, yf[(q * m) + j]);  // plain mul: table already carries the right direction
 			}
 		}
 
-		T const* const zc = bwd.run(m, arena);
+		T const* const zc = conv.run(m, true, arena);  // inverse conv, always
 
 		T* const res = (out != nullptr) ? out : buf_ptr(arena);
 		for(std::size_t k = 0; k != n_; ++k) {  // chirp-postmultiply (normalization fused into postc_)
 			TW const pc = postc_[k];
 			for(std::size_t j = 0; j != m; ++j) {
-				res[(k * m) + j] = fft_mul(pc, zc[(k * m) + j]);
+				res[(k * m) + j] = fft_mul_dir<Backward>(pc, zc[(k * m) + j]);
 			}
 		}
 		return res;
