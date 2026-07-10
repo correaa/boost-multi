@@ -1477,10 +1477,12 @@ class fft_plan {
 	// Engine serving axis `A` (compile-time axis index, resolved at plan
 	// build). Caller must first confirm axis `A` is not `none` (dirs_[A] !=
 	// fft_direction::none) -- which_[A] is a sentinel otherwise, never a
-	// valid engines_ index.
+	// valid engines_ index; the assert catches any future call site that
+	// forgets (the §10.5 guard).
 	template<std::ptrdiff_t A>
 	auto engine_() const -> detail::fft_engine<TW> const& {
 		static_assert(A >= 0 && A < D, "axis out of range");
+		assert(which_[static_cast<std::size_t>(A)] != no_engine_ && "engine_<A>() called for a `none` axis");
 		return engines_[which_[static_cast<std::size_t>(A)]];
 	}
 
@@ -1610,7 +1612,14 @@ class fft_plan {
 			} else if(last_active) {
 				detail::fft_apply_last(view, engine_<D - 1>(), arena);
 			} else if(prev_active) {
-				detail::fft_apply_last(view.rotated(), engine_<D - 2>(), arena);
+				// unrotated(), NOT rotated(): unrotated() sends the LAST axis to
+				// the front, so the new last axis is original axis D-2 -- the one
+				// this branch must transform -- at every rank. rotated() sends
+				// axis 0 to the back, which coincides with D-2 only at D == 2;
+				// at D >= 3 it would transform axis 0 with axis D-2's engine
+				// (wrong axis, and out-of-bounds writes for non-cubic shapes --
+				// a real bug caught in review, by Multi's own bounds assert).
+				detail::fft_apply_last(view.unrotated(), engine_<D - 2>(), arena);
 			}
 			if constexpr(D >= 3) {
 				transform_middle_<1>(view.rotated(), arena);

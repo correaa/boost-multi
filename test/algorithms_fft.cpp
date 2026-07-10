@@ -724,6 +724,62 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			BOOST_TEST( m < tol );
 		}
+
+		// 8) regression: D >= 3 with the LAST axis `none` and axis D-2 active
+		//    must transform axis D-2, not axis 0. The original Phase A
+		//    implementation used view.rotated() (last axis = axis 0) instead
+		//    of view.unrotated() (last axis = axis D-2) in apply_'s degraded-
+		//    pair branch -- correct at D == 2 where the two coincide, but at
+		//    D >= 3 it transformed the wrong axis with the wrong engine, and
+		//    on a NON-CUBIC shape wrote past the fiber end (caught by Multi's
+		//    own bounds assert under a debug build). Deliberately non-cubic
+		//    (2 x 5 x 4) so any axis mix-up is a loud failure.
+		{
+			multi::array<complex, 3> arr({2, 5, 4}, complex{});
+			for(int i = 0; i != 2; ++i) {
+				for(int j = 0; j != 5; ++j) {
+					for(int k = 0; k != 4; ++k) {
+						arr[i][j][k] = complex{static_cast<double>((i * 20) + (j * 4) + k), static_cast<double>(i - j + k)};
+					}
+				}
+			}
+
+			// (a) {none, forward, none}: ONLY axis 1 (length 5) transforms.
+			{
+				auto reference = arr;
+				for(int i = 0; i != 2; ++i) {
+					for(int k = 0; k != 4; ++k) {
+						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
+						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+					}
+				}
+				auto result = arr;
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{{none, forward, none}}, result);
+				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
+			}
+
+			// (b) {forward, forward, none}: axes 0 and 1 transform (axis 1 via
+			//     the degraded-pair branch, axis 0 via the middle-axis
+			//     recursion), axis 2 untouched.
+			{
+				auto reference = arr;
+				for(int i = 0; i != 2; ++i) {
+					for(int k = 0; k != 4; ++k) {
+						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
+						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+					}
+				}
+				for(int j = 0; j != 5; ++j) {
+					for(int k = 0; k != 4; ++k) {
+						auto fib = dft_reference(reference.rotated()[j][k], multi::fft_forward);  // fiber along axis 0 (rotated(): axes (j,k,i))
+						for(int i = 0; i != 2; ++i) { reference[i][j][k] = fib[i]; }
+					}
+				}
+				auto result = arr;
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, forward, none}}, result);
+				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
+			}
+		}
 	}
 
 	return boost::report_errors();
