@@ -161,13 +161,18 @@ rotated views — every axis is a distinct instantiation bound to its engine
 slot at compile time; there is no runtime axis parameter anywhere:
 
 ```cpp
-detail::fft_apply_last_pair(arr(), engine_<D - 1>(), engine_<D - 2>());
-if constexpr(D >= 3) { transform_middle_<1>(arr().rotated()); }
+// (current shape, post-§10: one fused-pair fast path when both of the
+// last two axes are active, then ONE uniform recursive walk for the rest;
+// with per-axis directions the walk alone handles every other case)
+detail::fft_apply_last_pair(view, engine_<D - 1>(), engine_<D - 2>(), arena);
+if constexpr(D >= 3) { transform_axes_<1, D - 2>(view.rotated(), arena); }
+// ... or, when the pair doesn't apply: transform_axes_<0, D - 1>(view, arena);
 
-template<std::ptrdiff_t K, class View>       // view = arr rotated K times,
-void transform_middle_(View&& view) const {  // so its last axis is axis K-1
-    detail::fft_apply_last(view, engine_<K - 1>());
-    if constexpr(K < D - 2) { transform_middle_<K + 1>(view.rotated()); }
+template<std::ptrdiff_t K, std::ptrdiff_t Stop, class View, class T>  // view = arr rotated K times;
+void transform_axes_(View&& view, T* arena) const {                   // last axis = K-1 (D-1 for K==0)
+    constexpr std::ptrdiff_t axis = (K == 0) ? D - 1 : K - 1;
+    if(dirs_[axis] != fft_direction::none) { detail::fft_apply_last(view, engine_<axis>(), arena); }
+    if constexpr(K < Stop) { transform_axes_<K + 1, Stop>(view.rotated(), arena); }
 }
 ```
 
@@ -400,7 +405,7 @@ feature already existed under an idiom I didn't know.
   per-axis, or it would silently reuse a wrong-direction engine — a
   correctness bug, not just a missed optimization. "Skip this axis" is a
   third, distinct state, not representable as a trivial engine: it must be a
-  bypass in the orchestration itself (`apply_`/`transform_middle_`/
+  bypass in the orchestration itself (`apply_`/`transform_axes_`/
   `fft_apply_last_pair`), since even a no-op engine would still pay for
   gathering/scattering that axis's data. `fft_apply_last_pair` in particular
   assumes its two axes get uniform treatment for the cache-locality win
@@ -761,20 +766,23 @@ flight, so re-audit before starting.)
   Stockham path (where conj-on-load is straightforward), but keep
   Bluestein engines direction-keyed (share on `(n, direction)` there only).
 - **The execute path pairs the last two axes** (`fft_apply_last_pair`
-  transforms axes D-1 and D-2 together, slab by slab, for cache locality;
-  remaining axes via `transform_middle_` static recursion over rotated
-  views). A `none` on exactly one of the last two axes must degrade the
-  pair-optimization to a single `fft_apply_last` on the appropriate
-  rotation; `none` on both skips the slab pass entirely. **The
-  "appropriate rotation" for the axis-D-2-active case is
-  `view.unrotated()`** (sends the LAST axis to the front → new last axis is
-  D-2 at every rank), NOT `view.rotated()` (sends axis 0 to the back → new
-  last axis is 0). The two coincide only at D == 2, which made
-  rotated() pass every 2-D test while being wrong -- out-of-bounds wrong,
-  for non-cubic shapes -- at D >= 3. This exact bug was shipped by the
-  Phase A implementation and caught in review (fixed, with non-cubic 3-D
-  regression tests); verify rotation semantics empirically on a probe
-  before relying on them.
+  transforms axes D-1 and D-2 together, slab by slab, for cache locality)
+  when both are active; every other combination is handled by ONE uniform
+  recursion, `transform_axes_<K, Stop>` ("transform the last axis of the
+  current view if active, rotate, recurse", visiting axes D-1, 0, 1, ...,
+  D-2). History behind that shape: the first Phase A implementation
+  instead used a three-way degraded-pair branch with hand-picked rotations
+  per case, and picked one wrong -- `view.rotated()` (sends axis 0 to the
+  back → new last axis is 0) where `view.unrotated()` (sends the LAST axis
+  to the front → new last axis is D-2) was required. The two coincide only
+  at D == 2, so every 2-D test passed while D >= 3 was wrong --
+  out-of-bounds wrong, for non-cubic shapes. Caught in review (fixed, with
+  non-cubic 3-D regression tests), then the whole branchy dispatch was
+  replaced by the uniform walk, in which the view is correctly positioned
+  by construction and no per-case rotation choice exists at all. Lessons
+  that survive the rewrite: verify rotation semantics empirically on a
+  probe before relying on them, and test every dispatch path at D >= 3
+  with a NON-CUBIC shape (D == 2 and cubic shapes both mask axis mix-ups).
 - **1-D FFTs along different axes commute**, so skipping/mixing needs no
   new orchestration math — pass order stays a free (cache-driven) choice.
 
@@ -938,10 +946,11 @@ it** (§10 itself hasn't landed yet, so more churn is expected):
   `fft_plan<D, TW>`). Members: `sizes_` (`std::array<size_t, D>`, used by
   `fft_view_from_cursor` on every execute — must keep entries for ALL axes
   including `none` ones), `engines_` (`std::vector<detail::fft_engine<TW>>`,
-  one per distinct length), `which_` (axis → engine index), `dirs_` (§10's
-  new member, not yet added). `execute()` is now itself where `T` (the
-  array's element type) is deduced, via `typename
-  std::decay_t<Cursor>::element` — `apply_`/`transform_middle_` are
+  one per distinct `(length, direction)` pair — Phase A landed), `which_`
+  (axis → engine index, or the `no_engine_` sentinel for a `none` axis),
+  `dirs_` (the per-axis schedule — landed). `execute()` is now itself where
+  `T` (the array's element type) is deduced, via `typename
+  std::decay_t<Cursor>::element` — `apply_`/`transform_axes_` are
   templates on `T`, taking the execute-time arena as `T* arena`.
   `execute()` also takes an `Allocator` template parameter (default
   `std::allocator<T>`, deduced/defaulted from `Cursor`), threaded to
@@ -954,12 +963,16 @@ it** (§10 itself hasn't landed yet, so more churn is expected):
   the data-pointer arguments, independent of the enclosing `TW`. Any new
   direction-aware dispatch parameter (§10's `Backward`) slots in alongside
   `Batched`/`T` the same way. `engine_<A>()` (compile-time axis accessor,
-  `static_assert`s the range) — must gain a guard (assert or `if constexpr`
-  at call sites) that axis `A` is not `none` before indexing
-  `engines_[which_[A]]`.
-- `apply_()`: `D == 1` → `fft_apply_last`; else `fft_apply_last_pair(view,
-  engine_<D-1>(), engine_<D-2>(), arena)` then `transform_middle_<1>` static
-  recursion (axis K−1 per level, via `view.rotated()`).
+  `static_assert`s the range) — now also asserts axis `A` is not `none`
+  (which_[A] != no_engine_) at runtime in debug builds; callers must still
+  check `dirs_[A]` before calling.
+- `apply_()` (post-simplification shape): one fast-path check — both of
+  the last two axes active → `fft_apply_last_pair` + `transform_axes_<1,
+  D-2>` over axes 0..D-3; otherwise `transform_axes_<0, D-1>` walks ALL
+  axes (order D-1, 0, 1, ..., D-2), skipping `none` per axis. There is no
+  D == 1 special case and no degraded-pair branch anymore; direction
+  dispatch for Phase B's `Backward` selection slots naturally into the
+  walk (one place) plus the pair call (one place).
 - `fft_engine<TW>::fft_engine(std::size_t nn, int sign)`; stage kernels
   `stage_radix2_/4_/8_/3_/5_/generic_` dispatched by a runtime
   `switch(st.kind)` inside `run_stages_<Batched, T>` and the fused variant
