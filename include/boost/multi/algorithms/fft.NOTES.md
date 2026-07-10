@@ -851,6 +851,36 @@ miss them; where a point *updates* an earlier section, that is called out.
   T-dependency and the concurrent-execute hazard §9.2 documents. Callers
   with allocation pressure pass their own (arena/monotonic/pool, or a
   device allocator — see (c)).
+
+  **Landed** (`execute()`'s `Allocator` template parameter, defaulted;
+  `fft_scratch_arena` retemplated on it, no rebinding — see the commit for
+  the rationale). Recorded here for whoever benchmarks against the task-1
+  per-call-allocation overhead: two patterns were evaluated for a caller
+  wanting to avoid paying for allocation on every `execute()` call, both
+  verified empirically rather than assumed —
+  - A hand-rolled **LIFO stack allocator** (push on `allocate`, pop on a
+    matching `deallocate`) is the correct minimal fit for
+    `fft_scratch_arena`'s own access pattern (exactly one `allocate()` then
+    one matching `deallocate()` per call, never interleaved with anything
+    else through the same allocator instance). Deliberately not a
+    single-slot "always return the same buffer" allocator — that would
+    silently *alias* two logically distinct live allocations under any
+    nested-in-time usage instead of catching the misuse.
+  - **`std::pmr::unsynchronized_pool_resource`** (or `synchronized_` for
+    the thread-safe form) genuinely reclaims on `deallocate()` via
+    per-size-class free lists: measured 100 allocate/deallocate cycles of
+    the same size costing only 3 upstream allocations (one-time warm-up),
+    then fully stable. More general than the stack allocator (any
+    deallocation order, not just LIFO) at more per-call overhead — a
+    reasonable default recommendation for callers who'd rather not write a
+    custom allocator.
+  - **`std::pmr::monotonic_buffer_resource` does NOT give this property**,
+    despite the "reuse" intuition its name suggests — its `deallocate()`
+    is a documented no-op (it only ever grows, releasing everything at
+    once on destruction). Measured: 20 allocate/deallocate cycles of the
+    same size into a pool sized for exactly one triggered 5 separate
+    upstream allocations. Do not recommend this one for repeated-execute()
+    reuse.
 - **(c) Keep the code shaped for a GPU (CUDA + Thrust) implementation.**
   §8 has the adaptation plan; the concrete implications for anyone touching
   the plan/engine/execute structure now:
@@ -891,6 +921,11 @@ it** (§10 itself hasn't landed yet, so more churn is expected):
   array's element type) is deduced, via `typename
   std::decay_t<Cursor>::element` — `apply_`/`transform_middle_` are
   templates on `T`, taking the execute-time arena as `T* arena`.
+  `execute()` also takes an `Allocator` template parameter (default
+  `std::allocator<T>`, deduced/defaulted from `Cursor`), threaded to
+  `fft_scratch_arena<T, Allocator>` — landed, see §10.4(b).
+  `scratch_elements()` is a public accessor now (needed by any caller
+  sizing their own arena).
 - **`fft_engine<TW>`, not `fft_engine<T>`.** Every data-touching method
   (`run`, `run_fused*`, `run_stages_`, `run_sixstep_`, `run_bluestein_`, all
   `stage_*_` kernels) is now `template<..., class T>`, with `T` deduced from

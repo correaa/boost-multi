@@ -49,6 +49,18 @@ sections first, they are the contract. Nothing here overrides them.
 
 ## Session 1 — §9.2: buffers out, TW decoupling, allocator on execute
 
+**DONE** (all three tasks landed, each as its own checkpoint commit rather
+than one combined commit as originally suggested below — commits
+`d3c307857` scratch externalization, `efcf0bbb8` T/TW split +
+`bd4d211d2` docs reconciliation, `895969431` alloc-zero bugfix,
+`045177731` allocator parameter). One API detail changed from what this
+plan originally assumed: `fft_plan<TW, D>` became `fft_plan<D, TW>`
+(D first) — C++ forbids a defaulted template parameter followed by a
+non-defaulted one, and `D` has no sensible default, so `TW`'s default
+could only go after `D`. Discussed with the maintainer before landing;
+see the T/TW-split commit and NOTES §9.2 for the full rationale. Existing
+call sites (`test/`, `benchmark/`) updated accordingly.
+
 Goal state (all from NOTES §9.2 + §10.4(a)(b), which settle every design
 question — consult them rather than deciding anything anew):
 
@@ -88,7 +100,20 @@ Suggested task order (gate between each):
    run; do NOT publish numbers from a non-idle run).
 
 Checkpoint commit: "fft: externalize scratch, decouple TW, allocator on
-execute (§9.2)".
+execute (§9.2)". (Landed as three separate checkpoints instead — see the
+DONE note above.)
+
+Also landed, benchmarked (not just theorized): with the machine genuinely
+idle, the T/TW split showed no measurable regression on the T == TW same-
+type path (as expected, since it's compile-time-identical to before); the
+scratch-externalization allocation cost from task 1 is real and confirmed
+against FFTW (multi::fft_plan lost essentially all its 1-D/2-D wins it had
+pre-refactor) — task 3's allocator parameter is the intended fix, but
+*using* it (e.g. wiring a stack allocator or pmr pool into the benchmark's
+repeated-execute() loop) has not been done — the benchmark still uses the
+default `std::allocator<T>` overload. That's the natural next thing to
+try before moving to Session 2, if reclaiming the pre-refactor benchmark
+standing matters more than the direction feature right now.
 
 ## Session 2 — §10.3 Phase A: direction feature, engines stay sign-aware
 
