@@ -153,6 +153,11 @@ template<class T> struct fft_real {
 // faster product.
 template<class T, class TW = T> struct fft_ops {
 	static constexpr auto mul(TW const& w, T const& x) -> T { return static_cast<T>(w * static_cast<TW>(x)); }
+	// == mul(conj(w), x); ADL so a custom TW's own conj() (if any) is found.
+	static constexpr auto conj_mul(TW const& w, T const& x) -> T {
+		using std::conj;
+		return static_cast<T>(conj(w) * static_cast<TW>(x));
+	}
 };
 
 template<class R1, class R2> struct fft_ops<std::complex<R1>, std::complex<R2>> {
@@ -167,6 +172,19 @@ template<class R1, class R2> struct fft_ops<std::complex<R1>, std::complex<R2>> 
 		promoted const xr = x.real();
 		promoted const xi = x.imag();
 		return {static_cast<R1>((wr * xr) - (wi * xi)), static_cast<R1>((wr * xi) + (wi * xr))};
+	}
+	// == mul(conj(w), x): same 4-mul/2-add shape as mul, two signs flipped
+	// (conjugating w negates wi's contribution). Used for backward-direction
+	// kernel dispatch (fft.NOTES.md §10, Phase B): engines store forward-sign
+	// tables only, and a backward pass conjugates every table load instead of
+	// keeping a second, sign-baked table.
+	static constexpr auto conj_mul(std::complex<R2> const& w, std::complex<R1> const& x) -> std::complex<R1> {
+		using promoted   = std::common_type_t<R1, R2>;
+		promoted const wr = w.real();
+		promoted const wi = w.imag();
+		promoted const xr = x.real();
+		promoted const xi = x.imag();
+		return {static_cast<R1>((wr * xr) + (wi * xi)), static_cast<R1>((wr * xi) - (wi * xr))};
 	}
 };
 
@@ -190,6 +208,25 @@ auto fft_pi() -> Real { return std::acos(Real{-1}); }
 
 template<class T, class TW>
 constexpr auto fft_mul(TW const& w, T const& x) -> T { return fft_ops<T, TW>::mul(w, x); }
+
+// Direction-dispatching multiply (fft.NOTES.md §10, Phase B): `Backward`
+// picks conj_mul (conjugate the table operand `w` on load) or plain mul, so
+// every kernel needs exactly one instantiation-time choice instead of a
+// second, sign-baked table. Uniform-conjugation invariant (verified,
+// NOTES §10.5): every direction-dependent value in every smooth-path kernel
+// is a table load (`tw_`/`wmat_`, including the +-i constant and the fixed
+// radix-3/5 roots -- they are table entries too, never hardcoded literals),
+// so conjugating every `fft_mul_dir` call uniformly makes the whole smooth
+// path direction-correct. Do not special-case any one call site "out" of
+// the conjugation.
+template<bool Backward, class T, class TW>
+constexpr auto fft_mul_dir(TW const& w, T const& x) -> T {
+	if constexpr(Backward) {
+		return fft_ops<T, TW>::conj_mul(w, x);
+	} else {
+		return fft_ops<T, TW>::mul(w, x);
+	}
+}
 
 // Largest prime handled by the direct (table-driven O(p^2)) kernel; larger
 // prime factors use a Bluestein sub-plan, which is O(p log p).
@@ -710,7 +747,7 @@ struct fft_engine {
 	// selects at compile time between the vector inner loop and the m == 1
 	// fast path (no inner loop overhead for single fibers).
 
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_radix2_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;   // folds all offset arithmetic when unbatched
 		std::size_t const sa    = Batched ? sa_ : 1;  // input element stride (user tile when fused)
@@ -727,7 +764,7 @@ struct fft_engine {
 				T* const       b1 = b0 + (ns * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const v0 = a0[j];
-					T const v1 = fft_mul(w, a1[j]);
+					T const v1 = fft_mul_dir<Backward>(w, a1[j]);
 					b0[j]      = v0 + v1;
 					b1[j]      = v0 - v1;
 				}
@@ -737,14 +774,14 @@ struct fft_engine {
 
 	// The multiply-by-(-/+ i) is expressed as a multiply by tw_[n/4] so it
 	// stays generic over the element type and carries the correct sign.
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_radix4_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const q     = n_ / 4;
 		std::size_t const tstep = n_ / (4 * ns);
-		TW const          imu   = tw_[q];  // -i for forward, +i for backward
+		TW const          imu   = tw_[q];  // -i for forward, +i for backward (i.e. under conj-on-load for Backward)
 		for(std::size_t block = 0; block != q; block += ns) {
 			std::size_t const base = block * 4;
 			for(std::size_t r = 0; r != ns; ++r) {
@@ -761,13 +798,13 @@ struct fft_engine {
 				T* const       b3 = b0 + (3 * ns * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const x0 = a0[j];
-					T const x1 = fft_mul(w1, a1[j]);
-					T const x2 = fft_mul(w2, a2[j]);
-					T const x3 = fft_mul(w3, a3[j]);
+					T const x1 = fft_mul_dir<Backward>(w1, a1[j]);
+					T const x2 = fft_mul_dir<Backward>(w2, a2[j]);
+					T const x3 = fft_mul_dir<Backward>(w3, a3[j]);
 					T const t0 = x0 + x2;
 					T const t1 = x0 - x2;
 					T const t2 = x1 + x3;
-					T const t3 = fft_mul(imu, x1 - x3);
+					T const t3 = fft_mul_dir<Backward>(imu, x1 - x3);
 					b0[j]      = t0 + t2;
 					b1[j]      = t1 + t3;
 					b2[j]      = t0 - t2;
@@ -780,14 +817,14 @@ struct fft_engine {
 	// One radix-8 stage, decomposed into two radix-4 sub-butterflies plus a
 	// combining layer; all constants (W8, W8^2 = -/+i, W8^3) come from the
 	// twiddle table so the kernel stays sign- and type-generic.
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_radix8_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const q     = n_ / 8;
 		std::size_t const tstep = n_ / (8 * ns);
-		TW const          imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward
+		TW const          imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward (i.e. under conj-on-load for Backward)
 		TW const          w81   = tw_[q];
 		TW const          w83   = tw_[3 * q];
 		for(std::size_t block = 0; block != q; block += ns) {
@@ -804,18 +841,18 @@ struct fft_engine {
 				T* const       b0 = b + ((base + r) * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const x0            = a0[j];
-					T const x1            = fft_mul(w1, a0[(1 * q * sa) + j]);
-					T const x2            = fft_mul(w2, a0[(2 * q * sa) + j]);
-					T const x3            = fft_mul(w3, a0[(3 * q * sa) + j]);
-					T const x4            = fft_mul(w4, a0[(4 * q * sa) + j]);
-					T const x5            = fft_mul(w5, a0[(5 * q * sa) + j]);
-					T const x6            = fft_mul(w6, a0[(6 * q * sa) + j]);
-					T const x7            = fft_mul(w7, a0[(7 * q * sa) + j]);
+					T const x1            = fft_mul_dir<Backward>(w1, a0[(1 * q * sa) + j]);
+					T const x2            = fft_mul_dir<Backward>(w2, a0[(2 * q * sa) + j]);
+					T const x3            = fft_mul_dir<Backward>(w3, a0[(3 * q * sa) + j]);
+					T const x4            = fft_mul_dir<Backward>(w4, a0[(4 * q * sa) + j]);
+					T const x5            = fft_mul_dir<Backward>(w5, a0[(5 * q * sa) + j]);
+					T const x6            = fft_mul_dir<Backward>(w6, a0[(6 * q * sa) + j]);
+					T const x7            = fft_mul_dir<Backward>(w7, a0[(7 * q * sa) + j]);
 					// radix-4 over the even legs (x0, x2, x4, x6)
 					T const s0            = x0 + x4;
 					T const s1            = x0 - x4;
 					T const s2            = x2 + x6;
-					T const s3            = fft_mul(imu, x2 - x6);
+					T const s3            = fft_mul_dir<Backward>(imu, x2 - x6);
 					T const e0            = s0 + s2;
 					T const e1            = s1 + s3;
 					T const e2            = s0 - s2;
@@ -824,11 +861,11 @@ struct fft_engine {
 					T const u0            = x1 + x5;
 					T const u1            = x1 - x5;
 					T const u2            = x3 + x7;
-					T const u3            = fft_mul(imu, x3 - x7);
+					T const u3            = fft_mul_dir<Backward>(imu, x3 - x7);
 					T const o0            = u0 + u2;
-					T const o1            = fft_mul(w81, u1 + u3);
-					T const o2            = fft_mul(imu, u0 - u2);
-					T const o3            = fft_mul(w83, u1 - u3);
+					T const o1            = fft_mul_dir<Backward>(w81, u1 + u3);
+					T const o2            = fft_mul_dir<Backward>(imu, u0 - u2);
+					T const o3            = fft_mul_dir<Backward>(w83, u1 - u3);
 					b0[j]                 = e0 + o0;
 					b0[(1 * ns * sb) + j] = e1 + o1;
 					b0[(2 * ns * sb) + j] = e2 + o2;
@@ -842,7 +879,7 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_radix3_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
@@ -864,17 +901,17 @@ struct fft_engine {
 				T* const       b2 = b0 + (2 * ns * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const x0 = a0[j];
-					T const x1 = fft_mul(w1, a1[j]);
-					T const x2 = fft_mul(w2, a2[j]);
+					T const x1 = fft_mul_dir<Backward>(w1, a1[j]);
+					T const x2 = fft_mul_dir<Backward>(w2, a2[j]);
 					b0[j]      = x0 + x1 + x2;
-					b1[j]      = x0 + fft_mul(w1c, x1) + fft_mul(w2c, x2);
-					b2[j]      = x0 + fft_mul(w2c, x1) + fft_mul(w1c, x2);
+					b1[j]      = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2);
+					b2[j]      = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w1c, x2);
 				}
 			}
 		}
 	}
 
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_radix5_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
@@ -904,15 +941,15 @@ struct fft_engine {
 				T* const       b4 = b0 + (4 * ns * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const x0 = a0[j];
-					T const x1 = fft_mul(w1, a1[j]);
-					T const x2 = fft_mul(w2, a2[j]);
-					T const x3 = fft_mul(w3, a3[j]);
-					T const x4 = fft_mul(w4, a4[j]);
+					T const x1 = fft_mul_dir<Backward>(w1, a1[j]);
+					T const x2 = fft_mul_dir<Backward>(w2, a2[j]);
+					T const x3 = fft_mul_dir<Backward>(w3, a3[j]);
+					T const x4 = fft_mul_dir<Backward>(w4, a4[j]);
 					b0[j]      = x0 + x1 + x2 + x3 + x4;
-					b1[j]      = x0 + fft_mul(w1c, x1) + fft_mul(w2c, x2) + fft_mul(w3c, x3) + fft_mul(w4c, x4);
-					b2[j]      = x0 + fft_mul(w2c, x1) + fft_mul(w4c, x2) + fft_mul(w1c, x3) + fft_mul(w3c, x4);
-					b3[j]      = x0 + fft_mul(w3c, x1) + fft_mul(w1c, x2) + fft_mul(w4c, x3) + fft_mul(w2c, x4);
-					b4[j]      = x0 + fft_mul(w4c, x1) + fft_mul(w3c, x2) + fft_mul(w2c, x3) + fft_mul(w1c, x4);
+					b1[j]      = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2) + fft_mul_dir<Backward>(w3c, x3) + fft_mul_dir<Backward>(w4c, x4);
+					b2[j]      = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w4c, x2) + fft_mul_dir<Backward>(w1c, x3) + fft_mul_dir<Backward>(w3c, x4);
+					b3[j]      = x0 + fft_mul_dir<Backward>(w3c, x1) + fft_mul_dir<Backward>(w1c, x2) + fft_mul_dir<Backward>(w4c, x3) + fft_mul_dir<Backward>(w2c, x4);
+					b4[j]      = x0 + fft_mul_dir<Backward>(w4c, x1) + fft_mul_dir<Backward>(w3c, x2) + fft_mul_dir<Backward>(w2c, x3) + fft_mul_dir<Backward>(w1c, x4);
 				}
 			}
 		}
@@ -920,7 +957,7 @@ struct fft_engine {
 
 	// Direct radix-p stage for odd primes p <= fft_max_direct_radix, driven by
 	// the precomputed p x p DFT matrix (no modulo in the inner loops).
-	template<bool Batched, class T>
+	template<bool Batched, bool Backward, class T>
 	void stage_generic_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, TW const* wmat, std::size_t mm, std::size_t sa_, std::size_t sb_, T* arena) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
@@ -940,7 +977,7 @@ struct fft_engine {
 					T const* const at = asrc + (t * nr * sa);
 					T* const       xt = x + (t * m);
 					for(std::size_t j = 0; j != m; ++j) {
-						xt[j] = fft_mul(w, at[j]);
+						xt[j] = fft_mul_dir<Backward>(w, at[j]);
 					}
 				}
 				for(std::size_t u = 0; u != rr; ++u) {
@@ -953,7 +990,7 @@ struct fft_engine {
 						TW const       wc = wrow[t];
 						T const* const xt = x + (t * m);
 						for(std::size_t j = 0; j != m; ++j) {
-							dst[j] = dst[j] + fft_mul(wc, xt[j]);
+							dst[j] = dst[j] + fft_mul_dir<Backward>(wc, xt[j]);
 						}
 					}
 				}
