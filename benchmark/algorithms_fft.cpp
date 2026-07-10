@@ -173,7 +173,7 @@ auto reps_for(double n_total) -> long {
 // silently absorbed into the results.
 auto calibrate() -> double {
 	multi::array<complex, 1>          a(multi::extents_t<1>{16384}, complex{1.0, 0.0});
-	multi::fft_plan<complex, 1> const plan{multi::extents_t<1>{16384}, multi::fft_forward};
+	multi::fft_plan<1, complex> const plan{multi::extents_t<1>{16384}, multi::fft_forward};
 	plan.execute(a.home());
 	return time_it(200, [&] { plan.execute(a.home()); });
 }
@@ -206,7 +206,7 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 
 		std::array<multi::ssize_t, D> ext_arr{};
 		ext_arr.fill(n);
-		multi::fft_plan<complex, D> const plan{ext_arr, multi::fft_forward};  // plan build: not timed
+		multi::fft_plan<D, complex> const plan{ext_arr, multi::fft_forward};  // plan build: not timed
 
 		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
 		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));

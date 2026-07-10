@@ -240,7 +240,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 
-		multi::fft_plan<complex, 2> const plan{arr.sizes(), multi::fft_forward};  // CTAD from a prototype array
+		multi::fft_plan<2, complex> const plan{arr.sizes(), multi::fft_forward};  // CTAD from a prototype array
 
 		auto a1 = arr;
 		auto a2 = arr;
@@ -255,12 +255,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// a plan built from extents (no prototype array) round-trips fwd + bwd
 	{
-		multi::fft_plan<complex, 2> const fwd{
+		multi::fft_plan<2, complex> const fwd{
 			multi::extents_t<2>{5, 8}
 				.sizes(),
 			multi::fft_forward
 		};
-		multi::fft_plan<complex, 2> const bwd{
+		multi::fft_plan<2, complex> const bwd{
 			multi::extents_t<2>{5, 8}
 				.sizes(),
 			multi::fft_backward
@@ -296,7 +296,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> flat{block};  // contiguous copy of the same values
 
-		multi::fft_plan<complex, 2> const plan{flat.sizes(), multi::fft_forward};
+		multi::fft_plan<2, complex> const plan{flat.sizes(), multi::fft_forward};
 		plan.execute(flat.home());   // contiguous layout
 		plan.execute(block.home());  // strided layout, same plan
 
@@ -340,7 +340,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		auto reference = arr;
 
-		multi::fft_plan<complex, 2> const plan{
+		multi::fft_plan<2, complex> const plan{
 			multi::extents_t<2>{6, 10}
 				.sizes(),
 			multi::fft_forward
@@ -362,7 +362,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 3> flat{blk};  // contiguous copy of the same values
 
-		multi::fft_plan<complex, 3> const plan{
+		multi::fft_plan<3, complex> const plan{
 			multi::extents_t<3>{4, 4, 6}
 				.sizes(),
 			multi::fft_forward
@@ -446,6 +446,49 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::fft_inplace(arr, multi::fft_forward);
 		// multi::fft_inplace(arr.flattened(), multi::fft_forward);
+	}
+
+	// fft_plan<D, TW>: TW (twiddle-table type) defaults to complex<double> and
+	// is independent of T (the executed array's element type, deduced fresh
+	// per execute() call) -- see fft.NOTES.md §9.2. Same-type plan/array
+	// keeps today's numerics; ONE plan built with the default TW also
+	// executes a complex<float> array, reused across two different arrays
+	// without rebuilding any tables.
+	{
+		using complexf = std::complex<float>;
+
+		constexpr multi::ssize_t nn = 256;
+
+		multi::array<complexf, 1> arr(multi::extents_t<1>{nn}, complexf{});
+		multi::array<complexf, 1> arr2(multi::extents_t<1>{nn}, complexf{});
+		for(multi::ssize_t i = 0; i != nn; ++i) {
+			auto const fi = static_cast<float>(i);
+			arr[i]        = complexf{fi, -fi};
+			arr2[i]       = complexf{-fi, fi * 0.5F};
+		}
+
+		multi::array<complex, 1> arr_d(multi::extents_t<1>{nn}, complex{});
+		multi::array<complex, 1> arr2_d(multi::extents_t<1>{nn}, complex{});
+		for(multi::ssize_t i = 0; i != nn; ++i) {
+			arr_d[i]  = complex{arr[i].real(), arr[i].imag()};
+			arr2_d[i] = complex{arr2[i].real(), arr2[i].imag()};
+		}
+		auto const ref  = dft_reference(arr_d, multi::fft_forward);
+		auto const ref2 = dft_reference(arr2_d, multi::fft_forward);
+
+		multi::fft_plan<1> const plan{arr.sizes(), multi::fft_forward};  // TW defaults to complex<double>
+		plan.execute(arr.home());
+		plan.execute(arr2.home());  // same plan, second (different) float array: no rebuild
+
+		double m  = 0.0;
+		double m2 = 0.0;
+		for(multi::ssize_t i = 0; i != nn; ++i) {
+			m  = std::max(m, std::abs(complex{arr[i].real(), arr[i].imag()} - ref[i]));
+			m2 = std::max(m2, std::abs(complex{arr2[i].real(), arr2[i].imag()} - ref2[i]));
+		}
+		double const ftol = 1e-3 * static_cast<double>(nn);  // float precision, loose
+		BOOST_TEST( m < ftol );
+		BOOST_TEST( m2 < ftol );
 	}
 
 	return boost::report_errors();

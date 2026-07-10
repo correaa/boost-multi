@@ -7,14 +7,25 @@
 // allocations are computed once and reused across repeated transforms).
 //
 // Public interface:
-//   multi::fft_plan<T, D>            reusable transform state:
-//     fft_plan<T, D>(extents, sign)  plan for a shape (any tuple-like extents)
-//     fft_plan(array, sign)          plan deduced from an array (CTAD)
+//   multi::fft_plan<D, TW = complex<double>>  reusable transform state, where
+//                                    TW is the twiddle-table type, fixed at
+//                                    construction (default complex<double>,
+//                                    for ergonomics only -- not a claim that
+//                                    double is the "right" twiddle precision)
+//     fft_plan<D, TW>(extents, sign) plan for a shape (any tuple-like extents)
 //     plan(A) / plan.execute(A)      transform A in place; A can be any array
 //                                    or subarray with the planned sizes, of
-//                                    any strided layout, as many times as
-//                                    desired without re-allocating
-//   multi::fft_inplace(A, sign)      one-shot convenience (plans, then runs)
+//                                    any strided layout, with element type T
+//                                    deduced fresh per call -- independent of
+//                                    TW, so one plan (built once for a shape)
+//                                    can execute a complex<float> array today
+//                                    and a complex<double> array tomorrow
+//                                    without rebuilding any tables -- as many
+//                                    times as desired without re-allocating
+//                                    the tables (scratch is allocated fresh,
+//                                    locally, on every execute() call)
+//   multi::fft_inplace(A, sign)      one-shot convenience (plans, then runs;
+//                                    TW = A's own element type)
 //   multi::fft_forward/fft_backward  direction constants (FFTW convention)
 //   multi::fft_real<T>               trait: real type underlying T
 //
@@ -92,18 +103,27 @@ template<class T> struct fft_real {
 	using type = typename T::value_type;
 };
 
-// Multiplication customization point for the transform kernels. The default
-// uses `operator*`. For `std::complex` the plain formula is used instead:
-// the operator carries C-Annex-G infinity/NaN fixups (a branch and a libcall
+// Multiplication customization point for the transform kernels: `w` is a
+// table value (twiddle/root-of-unity/DFT-matrix entry, type `TW`, the plan's
+// own fixed precision); `x` is a data value (type `T`, the array being
+// transformed, deduced fresh per execute() call -- see fft.NOTES.md §9.2).
+// The generic default widens `x` up to `TW`'s precision, multiplies at that
+// precision, and narrows the *result* back to `T` once -- deliberately not
+// narrowing `w` to `T` first, which would round the table value on every
+// multiply instead of just the final result (see fft.NOTES.md §9.2 on the
+// accuracy/throughput trade this exposes when TW is wider than T). For the
+// common same-type case (T == TW, e.g. both std::complex<double>) the
+// specialization below uses the plain formula instead of `operator*`: the
+// operator carries C-Annex-G infinity/NaN fixups (a branch and a libcall
 // fallback) that prevent the batched inner loops from vectorizing. Users can
 // specialize this for custom element types with a faster product.
-template<class T> struct fft_ops {
-	static constexpr auto mul(T const& a, T const& b) -> T { return a * b; }
+template<class T, class TW = T> struct fft_ops {
+	static constexpr auto mul(TW const& w, T const& x) -> T { return static_cast<T>(w * static_cast<TW>(x)); }
 };
 
-template<class R> struct fft_ops<std::complex<R>> {
-	static constexpr auto mul(std::complex<R> const& a, std::complex<R> const& b) -> std::complex<R> {
-		return {(a.real() * b.real()) - (a.imag() * b.imag()), (a.real() * b.imag()) + (a.imag() * b.real())};
+template<class R> struct fft_ops<std::complex<R>, std::complex<R>> {
+	static constexpr auto mul(std::complex<R> const& w, std::complex<R> const& x) -> std::complex<R> {
+		return {(w.real() * x.real()) - (w.imag() * x.imag()), (w.real() * x.imag()) + (w.imag() * x.real())};
 	}
 };
 
@@ -125,8 +145,8 @@ using fft_real_t = typename fft_real<T>::type;
 template<class Real>
 auto fft_pi() -> Real { return std::acos(Real{-1}); }
 
-template<class T>
-constexpr auto fft_mul(T const& a, T const& b) -> T { return fft_ops<T>::mul(a, b); }
+template<class T, class TW>
+constexpr auto fft_mul(TW const& w, T const& x) -> T { return fft_ops<T, TW>::mul(w, x); }
 
 // Largest prime handled by the direct (table-driven O(p^2)) kernel; larger
 // prime factors use a Bluestein sub-plan, which is O(p log p).
@@ -158,7 +178,7 @@ auto fft_extent_size(Extent const& ext) -> std::size_t {
 // "batched": they transform `m` fibers at once, stored interleaved as
 // buf[k*m + j] (element k of fiber j), with the batch index j contiguous so
 // that inner loops vectorize.
-template<class T>
+template<class TW>
 struct fft_engine {
 	// NOLINTBEGIN(misc-non-private-member-variables-in-classes) engine is an implementation-detail aggregate
 	std::size_t n_    = 0;
@@ -171,9 +191,9 @@ struct fft_engine {
 		std::size_t aux;   // generic: offset into wmat_; sub-plan: index into sub_
 	};
 
-	std::vector<T>       tw_;      // tw_[k] = exp(sign*2*pi*i*k/n), k in [0, n)  (sign baked in)
+	std::vector<TW>      tw_;      // tw_[k] = exp(sign*2*pi*i*k/n), k in [0, n)  (sign baked in)
 	std::vector<stage_t> stages_;  // ordered stage factorization of n
-	std::vector<T>       wmat_;    // concatenated p x p DFT matrices for direct generic radices
+	std::vector<TW>      wmat_;    // concatenated p x p DFT matrices for direct generic radices
 	std::size_t          max_gen_ = 0;
 
 	// Six-step state (used for long single-fiber transforms):
@@ -186,11 +206,11 @@ struct fft_engine {
 	// Bluestein state (used when n_ is a prime > fft_max_direct_radix):
 	// X_k = c_k * sum_n x_n c_n d_{k-n} with c_j = exp(sign*i*pi*j^2/n), d = 1/c,
 	// evaluated as a circular convolution of power-of-two length conv_n_ >= 2n-1.
-	bool           bluestein_ = false;
-	std::size_t    conv_n_    = 0;
-	std::vector<T> chirp_;      // c_j
-	std::vector<T> postc_;      // c_k / conv_n_  (fused convolution normalization)
-	std::vector<T> kernel_ft_;  // FFT of the wrapped d-kernel, precomputed
+	bool            bluestein_ = false;
+	std::size_t     conv_n_    = 0;
+	std::vector<TW> chirp_;      // c_j
+	std::vector<TW> postc_;      // c_k / conv_n_  (fused convolution normalization)
+	std::vector<TW> kernel_ft_;  // FFT of the wrapped d-kernel, precomputed
 
 	std::vector<fft_engine> sub_;  // nested engines: Bluestein fwd/bwd pair, or large-prime stage sub-plans
 
@@ -210,9 +230,14 @@ struct fft_engine {
 
 	// Non-owning accessors: locate this engine's scratch inside the caller's
 	// arena. Never stored on the engine (that would make `execute()` racy
-	// across threads); recomputed locally on every call.
+	// across threads); recomputed locally on every call. `T` is the array's
+	// element type, deduced per execute() call -- independent of `TW`, the
+	// engine's own (fixed, construction-time) twiddle-table type.
+	template<class T>
 	auto buf_ptr(T* arena) const -> T* { return arena + buf_off_; }
+	template<class T>
 	auto out_ptr(T* arena) const -> T* { return arena + out_off_; }
+	template<class T>
 	auto xbuf_ptr(T* arena) const -> T* { return arena + xbuf_off_; }
 
 	// Record that this engine's own buf_/out_/xbuf_ must hold at least a
@@ -322,12 +347,12 @@ struct fft_engine {
 			return;
 		}
 
-		using real      = fft_real_t<T>;
+		using real      = fft_real_t<TW>;
 		real const step = static_cast<real>(sign) * real{2} * fft_pi<real>() / static_cast<real>(nn);
 		tw_.resize(nn);
 		for(std::size_t k = 0; k != nn; ++k) {
 			real const theta = step * static_cast<real>(k);
-			tw_[k]           = T{std::cos(theta), std::sin(theta)};
+			tw_[k]           = TW{std::cos(theta), std::sin(theta)};
 		}
 
 		for(std::size_t const rr : fac) {
@@ -384,9 +409,12 @@ struct fft_engine {
 	// plan's own gather region `buf_ptr(arena)`; the caller fills it before
 	// calling. `arena` is the caller-supplied scratch for the whole plan (see
 	// `note_reach_`/`assign_offsets_`); sizes are precomputed, so no runtime
-	// growth check is needed here.
+	// growth check is needed here. `T` (the array's element type) is deduced
+	// from `arena`/`in`, independent of `TW` (this engine's table type).
+	template<class T>
 	auto run(std::size_t m, T* arena) const -> T const* { return run(m, buf_ptr(arena), arena); }
 
+	template<class T>
 	auto run(std::size_t m, T const* in, T* arena) const -> T const* {
 		if(sixstep_ && m == 1 && n_ >= 2) {
 			return run_sixstep_(in, arena);
@@ -413,6 +441,7 @@ struct fft_engine {
 	// in[k*si + j] and the last stage writes out[k*so + j] (batch index j
 	// contiguous), skipping the separate gather and scatter passes. `in` may
 	// alias `out`. Only valid when can_fuse().
+	template<class T>
 	void run_fused(T const* in, std::size_t si, T* out, std::size_t so, std::size_t m, T* arena) const {
 		assert(can_fuse());
 		assert(m > 1 || (si == 1 && so == 1));  // the unbatched kernels fold strides to 1
@@ -425,6 +454,7 @@ struct fft_engine {
 
 	// In-place transform of one contiguous (stride-1) fiber in user memory;
 	// the final pass writes straight back (no scatter copy).
+	template<class T>
 	void run_contig_inplace(T* io, T* arena) const {
 		if(n_ < 2) {
 			return;
@@ -448,7 +478,10 @@ struct fft_engine {
  private:
 	static auto batch_width_(std::size_t nn) -> std::size_t {
 		// Two ping-pong buffers of n*mb elements should stay ~cache-resident.
-		std::size_t const budget = (std::size_t{1} << 22U) / (2 * sizeof(T) * std::max<std::size_t>(nn, 1));
+		// Sized from `sizeof(TW)` since `mb_` is fixed at construction, before
+		// any array type `T` is known -- a reasonable stand-in whenever T's
+		// size is comparable to TW's (same-type, or float-vs-double).
+		std::size_t const budget = (std::size_t{1} << 22U) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
 		return std::clamp<std::size_t>(budget, 1, 64);
 	}
 
@@ -526,7 +559,7 @@ struct fft_engine {
 	}
 
 	void init_bluestein_() {
-		using real = fft_real_t<T>;
+		using real = fft_real_t<TW>;
 		bluestein_ = true;
 
 		conv_n_ = next_smooth_((2 * n_) - 1);
@@ -545,22 +578,23 @@ struct fft_engine {
 		// fft_plan's constructor lays out the real, whole-plan arena afterward
 		// (note_reach_ is monotonic-max, so re-running it there is safe), and
 		// only the immutable table data computed here (chirp_/postc_/
-		// kernel_ft_) survives past this function.
+		// kernel_ft_) survives past this function. Entirely TW-typed: no array
+		// type T exists yet at construction time.
 		fft_engine& fwd = sub_[0];
 		fwd.note_reach_(1);
 		std::size_t boot_cursor = 0;
 		fwd.assign_offsets_(boot_cursor);
-		std::vector<T> boot_arena(boot_cursor);
+		std::vector<TW> boot_arena(boot_cursor);
 
-		T* const y = fwd.buf_ptr(boot_arena.data());
-		std::fill(y, y + conv_n_, T{});
+		TW* const y = fwd.buf_ptr(boot_arena.data());
+		std::fill(y, y + conv_n_, TW{});
 
 		real const  pi_n = fft_pi<real>() / static_cast<real>(n_);
 		std::size_t jsq  = 0;  // j^2 mod 2n, updated incrementally to avoid overflow
 		for(std::size_t j = 0; j != n_; ++j) {
 			real const theta = static_cast<real>(sign_) * pi_n * static_cast<real>(jsq);
-			chirp_[j]        = T{std::cos(theta), std::sin(theta)};
-			T const dj       = T{std::cos(theta), -std::sin(theta)};
+			chirp_[j]        = TW{std::cos(theta), std::sin(theta)};
+			TW const dj      = TW{std::cos(theta), -std::sin(theta)};
 			y[j]             = dj;
 			if(j != 0) {
 				y[conv_n_ - j] = dj;
@@ -571,12 +605,12 @@ struct fft_engine {
 			}
 		}
 
-		T const inv_m = T{real{1} / static_cast<real>(conv_n_), real{0}};
+		TW const inv_m = TW{real{1} / static_cast<real>(conv_n_), real{0}};
 		for(std::size_t k = 0; k != n_; ++k) {
 			postc_[k] = chirp_[k] * inv_m;
 		}
 
-		T const* kft = fwd.run(1, boot_arena.data());
+		TW const* kft = fwd.run(1, boot_arena.data());
 		kernel_ft_.assign(kft, kft + conv_n_);
 	}
 
@@ -585,7 +619,7 @@ struct fft_engine {
 	// selects at compile time between the vector inner loop and the m == 1
 	// fast path (no inner loop overhead for single fibers).
 
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_radix2_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;   // folds all offset arithmetic when unbatched
 		std::size_t const sa    = Batched ? sa_ : 1;  // input element stride (user tile when fused)
@@ -595,7 +629,7 @@ struct fft_engine {
 		for(std::size_t block = 0; block != half; block += ns) {
 			std::size_t const base = block * 2;
 			for(std::size_t r = 0; r != ns; ++r) {
-				T const        w  = tw_[r * tstep];
+				TW const       w  = tw_[r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
 				T const* const a1 = a0 + (half * sa);
 				T* const       b0 = b + ((base + r) * sb);
@@ -612,20 +646,20 @@ struct fft_engine {
 
 	// The multiply-by-(-/+ i) is expressed as a multiply by tw_[n/4] so it
 	// stays generic over the element type and carries the correct sign.
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_radix4_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const q     = n_ / 4;
 		std::size_t const tstep = n_ / (4 * ns);
-		T const           imu   = tw_[q];  // -i for forward, +i for backward
+		TW const          imu   = tw_[q];  // -i for forward, +i for backward
 		for(std::size_t block = 0; block != q; block += ns) {
 			std::size_t const base = block * 4;
 			for(std::size_t r = 0; r != ns; ++r) {
-				T const        w1 = tw_[r * tstep];
-				T const        w2 = tw_[2 * r * tstep];
-				T const        w3 = tw_[3 * r * tstep];
+				TW const       w1 = tw_[r * tstep];
+				TW const       w2 = tw_[2 * r * tstep];
+				TW const       w3 = tw_[3 * r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
 				T const* const a1 = a0 + (q * sa);
 				T const* const a2 = a0 + (2 * q * sa);
@@ -655,26 +689,26 @@ struct fft_engine {
 	// One radix-8 stage, decomposed into two radix-4 sub-butterflies plus a
 	// combining layer; all constants (W8, W8^2 = -/+i, W8^3) come from the
 	// twiddle table so the kernel stays sign- and type-generic.
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_radix8_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const q     = n_ / 8;
 		std::size_t const tstep = n_ / (8 * ns);
-		T const           imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward
-		T const           w81   = tw_[q];
-		T const           w83   = tw_[3 * q];
+		TW const          imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward
+		TW const          w81   = tw_[q];
+		TW const          w83   = tw_[3 * q];
 		for(std::size_t block = 0; block != q; block += ns) {
 			std::size_t const base = block * 8;
 			for(std::size_t r = 0; r != ns; ++r) {
-				T const        w1 = tw_[r * tstep];
-				T const        w2 = tw_[2 * r * tstep];
-				T const        w3 = tw_[3 * r * tstep];
-				T const        w4 = tw_[4 * r * tstep];
-				T const        w5 = tw_[5 * r * tstep];
-				T const        w6 = tw_[6 * r * tstep];
-				T const        w7 = tw_[7 * r * tstep];
+				TW const       w1 = tw_[r * tstep];
+				TW const       w2 = tw_[2 * r * tstep];
+				TW const       w3 = tw_[3 * r * tstep];
+				TW const       w4 = tw_[4 * r * tstep];
+				TW const       w5 = tw_[5 * r * tstep];
+				TW const       w6 = tw_[6 * r * tstep];
+				TW const       w7 = tw_[7 * r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
 				T* const       b0 = b + ((base + r) * sb);
 				for(std::size_t j = 0; j != m; ++j) {
@@ -717,20 +751,20 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_radix3_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const n3    = n_ / 3;
 		std::size_t const tstep = n_ / (3 * ns);
-		T const           w1c   = tw_[n3];      // W_3
-		T const           w2c   = tw_[2 * n3];  // W_3^2
+		TW const          w1c   = tw_[n3];      // W_3
+		TW const          w2c   = tw_[2 * n3];  // W_3^2
 		for(std::size_t block = 0; block != n3; block += ns) {
 			std::size_t const base = block * 3;
 			for(std::size_t r = 0; r != ns; ++r) {
-				T const        w1 = tw_[r * tstep];
-				T const        w2 = tw_[2 * r * tstep];
+				TW const       w1 = tw_[r * tstep];
+				TW const       w2 = tw_[2 * r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
 				T const* const a1 = a0 + (n3 * sa);
 				T const* const a2 = a0 + (2 * n3 * sa);
@@ -749,24 +783,24 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_radix5_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t mm, std::size_t sa_, std::size_t sb_) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
 		std::size_t const n5    = n_ / 5;
 		std::size_t const tstep = n_ / (5 * ns);
-		T const           w1c   = tw_[n5];
-		T const           w2c   = tw_[2 * n5];
-		T const           w3c   = tw_[3 * n5];
-		T const           w4c   = tw_[4 * n5];
+		TW const          w1c   = tw_[n5];
+		TW const          w2c   = tw_[2 * n5];
+		TW const          w3c   = tw_[3 * n5];
+		TW const          w4c   = tw_[4 * n5];
 		for(std::size_t block = 0; block != n5; block += ns) {
 			std::size_t const base = block * 5;
 			for(std::size_t r = 0; r != ns; ++r) {
-				T const        w1 = tw_[r * tstep];
-				T const        w2 = tw_[2 * r * tstep];
-				T const        w3 = tw_[3 * r * tstep];
-				T const        w4 = tw_[4 * r * tstep];
+				TW const       w1 = tw_[r * tstep];
+				TW const       w2 = tw_[2 * r * tstep];
+				TW const       w3 = tw_[3 * r * tstep];
+				TW const       w4 = tw_[4 * r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
 				T const* const a1 = a0 + (n5 * sa);
 				T const* const a2 = a0 + (2 * n5 * sa);
@@ -795,8 +829,8 @@ struct fft_engine {
 
 	// Direct radix-p stage for odd primes p <= fft_max_direct_radix, driven by
 	// the precomputed p x p DFT matrix (no modulo in the inner loops).
-	template<bool Batched>
-	void stage_generic_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, T const* wmat, std::size_t mm, std::size_t sa_, std::size_t sb_, T* arena) const {
+	template<bool Batched, class T>
+	void stage_generic_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, TW const* wmat, std::size_t mm, std::size_t sa_, std::size_t sb_, T* arena) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
 		std::size_t const sb    = Batched ? sb_ : 1;
@@ -811,7 +845,7 @@ struct fft_engine {
 					x[j] = asrc[j];
 				}  // t == 0, twiddle == 1
 				for(std::size_t t = 1; t != rr; ++t) {
-					T const        w  = tw_[t * r * tstep];
+					TW const       w  = tw_[t * r * tstep];
 					T const* const at = asrc + (t * nr * sa);
 					T* const       xt = x + (t * m);
 					for(std::size_t j = 0; j != m; ++j) {
@@ -819,13 +853,13 @@ struct fft_engine {
 					}
 				}
 				for(std::size_t u = 0; u != rr; ++u) {
-					T const* const wrow = wmat + (u * rr);
-					T* const       dst  = b + ((base + r + (u * ns)) * sb);
+					TW const* const wrow = wmat + (u * rr);
+					T* const        dst  = b + ((base + r + (u * ns)) * sb);
 					for(std::size_t j = 0; j != m; ++j) {
 						dst[j] = x[j];
 					}  // wrow[0] == 1
 					for(std::size_t t = 1; t != rr; ++t) {
-						T const        wc = wrow[t];
+						TW const       wc = wrow[t];
 						T const* const xt = x + (t * m);
 						for(std::size_t j = 0; j != m; ++j) {
 							dst[j] = dst[j] + fft_mul(wc, xt[j]);
@@ -842,7 +876,7 @@ struct fft_engine {
 	// fibers at once. The sub-plan's [u][r*m+j] output layout coincides with
 	// this stage's required b[(base + r + u*ns)*m + j] layout, so the result
 	// is copied back in one contiguous block.
-	template<bool Batched>
+	template<bool Batched, class T>
 	void stage_subplan_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, fft_engine const& sub, std::size_t mm, std::size_t sa_, std::size_t sb_, T* arena) const {
 		std::size_t const m     = Batched ? mm : 1;
 		std::size_t const sa    = Batched ? sa_ : 1;
@@ -859,7 +893,7 @@ struct fft_engine {
 					y0[j] = asrc[j];
 				}
 				for(std::size_t t = 1; t != rr; ++t) {
-					T const        w  = tw_[t * r * tstep];
+					TW const       w  = tw_[t * r * tstep];
 					T const* const at = asrc + (t * nr * sa);
 					T* const       yt = y + (((t * ns) + r) * m);
 					for(std::size_t j = 0; j != m; ++j) {
@@ -882,7 +916,7 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched>
+	template<bool Batched, class T>
 	void run_fused_impl_(T const* in, std::size_t si, T* out, std::size_t so, std::size_t m, T* arena) const {
 		T const*          src  = in;
 		T*                dst  = out_ptr(arena);
@@ -909,7 +943,7 @@ struct fft_engine {
 		}
 	}
 
-	template<bool Batched>
+	template<bool Batched, class T>
 	auto run_stages_(std::size_t m, T const* in, T* arena) const -> T const* {
 		T const*    src = in;
 		T*          dst = out_ptr(arena);
@@ -939,6 +973,7 @@ struct fft_engine {
 	// gather at all); the twiddle multiply is fused into a tiled transpose to
 	// [n2][n1]; the final length-n2 FFT batched over k1 lands directly in
 	// natural (flat) output order.
+	template<class T>
 	auto run_sixstep_(T const* in, T* arena, T* uout = nullptr) const -> T const* {
 		auto const&       e1 = sub_[six_i1_];
 		auto const&       e2 = sub_[six_i2_];
@@ -959,7 +994,7 @@ struct fft_engine {
 					T const* const zr  = z + (k1 * n2);
 					T* const       tr  = tile.data() + ((k1 - k10) * tb);
 					for(std::size_t j2 = j20; j2 != j2e; ++j2) {
-						tr[j2 - j20] = fft_mul(zr[j2], tw_[idx]);
+						tr[j2 - j20] = fft_mul(tw_[idx], zr[j2]);  // twiddle first, matching fft_mul(TW, T) convention
 						idx += k1;
 						if(idx >= n_) {
 							idx -= n_;
@@ -988,13 +1023,14 @@ struct fft_engine {
 		return res;
 	}
 
+	template<class T>
 	auto run_bluestein_(std::size_t m, T const* in, T* arena, T* out = nullptr) const -> T const* {
 		auto const& fwd = sub_[0];
 		auto const& bwd = sub_[1];
 
 		T* const y = fwd.buf_ptr(arena);  // chirp-premultiplied input, zero-padded to conv_n_
 		for(std::size_t k = 0; k != n_; ++k) {
-			T const c = chirp_[k];
+			TW const c = chirp_[k];
 			for(std::size_t j = 0; j != m; ++j) {
 				y[(k * m) + j] = fft_mul(c, in[(k * m) + j]);
 			}
@@ -1005,7 +1041,7 @@ struct fft_engine {
 
 		T* const z = bwd.buf_ptr(arena);  // pointwise product with the precomputed kernel spectrum
 		for(std::size_t q = 0; q != conv_n_; ++q) {
-			T const kq = kernel_ft_[q];
+			TW const kq = kernel_ft_[q];
 			for(std::size_t j = 0; j != m; ++j) {
 				z[(q * m) + j] = fft_mul(kq, yf[(q * m) + j]);
 			}
@@ -1015,7 +1051,7 @@ struct fft_engine {
 
 		T* const res = (out != nullptr) ? out : buf_ptr(arena);
 		for(std::size_t k = 0; k != n_; ++k) {  // chirp-postmultiply (normalization fused into postc_)
-			T const pc = postc_[k];
+			TW const pc = postc_[k];
 			for(std::size_t j = 0; j != m; ++j) {
 				res[(k * m) + j] = fft_mul(pc, zc[(k * m) + j]);
 			}
@@ -1026,9 +1062,11 @@ struct fft_engine {
 
 // --- N-D orchestration ------------------------------------------------------
 
-// Transform one (possibly strided) 1-D fiber through the engine.
-template<class View1D, class T>
-void fft_exec_fiber(View1D&& fib, fft_engine<T> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+// Transform one (possibly strided) 1-D fiber through the engine. `T` (the
+// array's element type, deduced from `arena`) is independent of `TW` (the
+// engine's own, fixed twiddle-table type).
+template<class View1D, class T, class TW>
+void fft_exec_fiber(View1D&& fib, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	if constexpr(std::is_pointer_v<std::decay_t<decltype(fib.base())>>) {
 		if(fib.stride() == 1) {  // contiguous fiber: no gather, and the final pass writes back directly
 			eng.run_contig_inplace(fib.base(), arena);
@@ -1044,8 +1082,8 @@ void fft_exec_fiber(View1D&& fib, fft_engine<T> const& eng, T* arena) {  // NOLI
 // Transform every row-fiber of a rank-2 slab [batch][n] in vector batches:
 // tiles of up to eng.mb_ fibers are gathered interleaved (batch index
 // contiguous) and pushed through the batched stage kernels together.
-template<class View2D, class T>
-void fft_exec_slab(View2D&& slab, fft_engine<T> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward,readability-function-cognitive-complexity)
+template<class View2D, class T, class TW>
+void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward,readability-function-cognitive-complexity)
 	using std::get;
 	auto const yy = static_cast<std::size_t>(slab.size());
 	auto const nn = eng.n_;
@@ -1160,8 +1198,8 @@ auto fft_min_abs_mid_stride(Strides const& strs, std::index_sequence<Is...> /*un
 // slab is a small fraction of the whole array, so this replaces two
 // full-array memory sweeps by one (the second axis' fibers also become
 // slab-local strides instead of array-wide ones).
-template<class ViewND, class T>
-void fft_apply_last_pair(ViewND&& view, fft_engine<T> const& last_eng, fft_engine<T> const& prev_eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+template<class ViewND, class T, class TW>
+void fft_apply_last_pair(ViewND&& view, fft_engine<TW> const& last_eng, fft_engine<TW> const& prev_eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	constexpr auto rank = std::decay_t<ViewND>::dimensionality;
 	if constexpr(rank == 2) {
 		fft_apply_last(view, last_eng, arena);            // fibers along axis 1
@@ -1177,8 +1215,8 @@ void fft_apply_last_pair(ViewND&& view, fft_engine<T> const& last_eng, fft_engin
 // The rank-descent drops leading axes one at a time but keeps the leading axis
 // of smallest stride alive (via transposed(), which swaps the first two axes),
 // so that at rank 2 the batch axis is the one closest in memory.
-template<class ViewND, class T>
-void fft_apply_last(ViewND&& view, fft_engine<T> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
+template<class ViewND, class T, class TW>
+void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	constexpr auto rank = std::decay_t<ViewND>::dimensionality;
 	if constexpr(rank == 1) {
 		fft_exec_fiber(view, eng, arena);
@@ -1288,18 +1326,18 @@ class fft_scratch_arena {
 // direction, and applies them to any array/subarray of that shape (any
 // strided layout) with `plan(A)` or `plan.execute(A)`, repeatedly, without
 // re-allocation.
-template<class T, std::ptrdiff_t D>
+template<std::ptrdiff_t D, class TW = std::complex<double>>
 class fft_plan {
 	static_assert(D >= 1, "fft_plan requires at least one dimension");
 
 	std::array<std::size_t, static_cast<std::size_t>(D)> sizes_{};
-	std::vector<detail::fft_engine<T>>                   engines_;  // one per distinct axis length
+	std::vector<detail::fft_engine<TW>>                  engines_;  // one per distinct axis length
 	std::array<std::size_t, static_cast<std::size_t>(D)> which_{};  // axis -> index into engines_
 	std::size_t                                          scratch_elements_ = 0;  // total arena size for execute()
 
 	// Engine serving axis `A` (compile-time axis index, resolved at plan build).
 	template<std::ptrdiff_t A>
-	auto engine_() const -> detail::fft_engine<T> const& {
+	auto engine_() const -> detail::fft_engine<TW> const& {
 		static_assert(A >= 0 && A < D, "axis out of range");
 		return engines_[which_[static_cast<std::size_t>(A)]];
 	}
@@ -1308,8 +1346,9 @@ class fft_plan {
 	// rotated K times (rotated() sends axis 0 to the back), so its last axis
 	// is original axis K-1. Each axis is a distinct instantiation, bound to
 	// its engine at compile time; rotated() preserves rank and type, so the
-	// recursion depth is exactly D-2 with a single View type.
-	template<std::ptrdiff_t K, class View>
+	// recursion depth is exactly D-2 with a single View type. `T` (the
+	// array's element type) is deduced from `arena`, independent of `TW`.
+	template<std::ptrdiff_t K, class View, class T>
 	void transform_middle_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		detail::fft_apply_last(view, engine_<K - 1>(), arena);
 		if constexpr(K < D - 2) {
@@ -1365,8 +1404,9 @@ class fft_plan {
 
  private:
 	// The axis walk, shared by the cursor and array entry points. `view` is a
-	// strided view of the planned shape; transformed in place.
-	template<class View>
+	// strided view of the planned shape; transformed in place. `T` (the
+	// array's element type) is deduced from `arena`, independent of `TW`.
+	template<class View, class T>
 	void apply_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		if constexpr(D == 1) {
 			detail::fft_apply_last(view, engine_<0>(), arena);
@@ -1383,10 +1423,16 @@ class fft_plan {
 	}
 
  public:
+	// `T`, the array's element type, is deduced fresh per call from
+	// `Cursor::element` -- independent of `TW`, the plan's own (fixed,
+	// construction-time) twiddle-table type (see fft.NOTES.md §9.2): one
+	// plan, built once for a shape, can execute a complex<float> array today
+	// and a complex<double> array tomorrow without rebuilding any tables.
 	template<class Cursor, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
 	auto execute(Cursor const& home) const -> Cursor {
 		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
-		auto                        view = detail::fft_view_from_cursor<T, D>(home, sizes_);
+		using T = typename std::decay_t<Cursor>::element;
+		auto                         view = detail::fft_view_from_cursor<T, D>(home, sizes_);
 		detail::fft_scratch_arena<T> arena(scratch_elements_);  // execute-time-local scratch; the plan itself owns none
 		apply_(view, arena.data());
 		return home;  // cursors are value types (base + strides); returned by value
@@ -1396,7 +1442,7 @@ class fft_plan {
 template<class MultiSubArray>
 auto fft_inplace(MultiSubArray&& arr, int sign) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
-	fft_plan<typename array_type::element, array_type::dimensionality> const plan{arr.sizes(), sign};
+	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), sign};
 	plan.execute(arr.home());
 	return std::forward<MultiSubArray>(arr);
 }
