@@ -1012,14 +1012,17 @@ special-casing `imu` or the fixed roots out of the conjugation — they need
 it exactly as much as the loop twiddles.
 
 **The fused conjugate-multiply trick (zero extra instructions):** don't
-materialize `conj(w)` then multiply. Add a sibling to `fft_ops<T>::mul`:
+materialize `conj(w)` then multiply. Add a sibling to the (now two-type)
+`fft_ops<T, TW>::mul` — `w` is the TW-typed table operand, `x` the T-typed
+datum, exactly as `mul` has them:
 
-    conj_mul(a, b) == mul(conj(a), b)
-    // std::complex specialization — same 4 mul + 2 add, two signs flipped:
-    { (a.real()*b.real()) + (a.imag()*b.imag()),
-      (a.real()*b.imag()) - (a.imag()*b.real()) }
+    conj_mul(w, x) == mul(conj(w), x)   // -> T; conjugates ONLY the table operand
+    // fft_ops<complex<R1>, complex<R2>> specialization — same 4 mul + 2 add
+    // as mul, two signs flipped, same promoted-type widening:
+    { (wr*xr) + (wi*xi),
+      (wr*xi) - (wi*xr) }
 
-(generic fallback: `mul(conj(a), b)` with ADL `conj`). Then a tiny
+(generic fallback: `mul(conj(w), x)` with ADL `conj`). Then a tiny
 compile-time selector, e.g. `fft_mul_dir<bool Backward>(w, x)` → `mul` or
 `conj_mul`, and the kernel diff is mechanical: every `fft_mul(table_value,
 datum)` becomes `fft_mul_dir<Backward>(table_value, datum)`. Convention to

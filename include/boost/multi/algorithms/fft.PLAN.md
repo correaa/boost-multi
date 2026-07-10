@@ -167,26 +167,135 @@ Checkpoint commit: "fft: per-axis directions incl. none (Phase A, NOTES
 
 ## Session 3 — §10.3 Phase B: direction-neutral engines
 
-Execute §10.3 steps 6–9. The enabling facts are all in §10.5 (uniform-
-conjugation invariant, fused `conj_mul`, `Backward` plumbing through
-`run_stages_`, Bluestein collapse + `kernel_ft_` index-reversal identity).
+(Revised after Sessions 1-2 + the review passes landed; the original
+thinner version predated the T/TW split, the allocator threading, and the
+recursive-walk dispatch. The enabling facts are in NOTES §10.5 — its
+anchor map is current as of the recursive walk — plus the additions
+below, derived from re-reading the code as it exists NOW. Re-grep anchors
+anyway; the maintainer live-edits.)
 
-- Do the smooth Stockham path first (radix kernels + `wmat_`/generic),
-  gate, then Bluestein separately.
-- **Bluestein fallback rule (pre-authorized — taking it is a valid
-  outcome, not a failure)**: attempt the neutral form once; if the
-  index-reversal handling of `kernel_ft_` isn't clean and clearly correct,
-  keep Bluestein engines direction-keyed (§10.2) and say so in the commit
-  message. The prime-length backward test decides correctness, not
-  intuition.
-- Engine reuse key drops back to length alone (except Bluestein if the
-  fallback was taken); the square-`{f, b}` test from Phase A now also
-  proves the sharing.
-- Sweep: `sign_` gone from engines (or reduced to Bluestein-only), no new
-  `mutable`, thread-safety comment still true.
+Goal: engines lose `sign_` and store canonical-forward tables only;
+kernels conjugate table values on load when running backward; engine
+reuse keys on length alone, so a square `{forward, backward}` plan shares
+ONE engine where Phase A builds two.
 
-Checkpoint commit: "fft: direction-neutral engines, conj-on-load (Phase B,
-NOTES §10)".
+Task order, gate between each:
+
+1. **`fft_ops` gains `conj_mul`** — mind the two-type shape it has now:
+   `fft_ops<T, TW>::conj_mul(TW const& w, T const& x) -> T`, semantics
+   `mul(conj(w), x)`, conjugating ONLY the table operand. Generic default:
+   `mul(conj(w), x)` via ADL `conj`. The `fft_ops<complex<R1>,
+   complex<R2>>` partial specialization adds the fused branch-free form
+   (same 4-mul/2-add as `mul`, two signs flipped):
+   `{(wr*xr) + (wi*xi), (wr*xi) - (wi*xr)}` with the same promoted-type
+   widening `mul` uses. Then a compile-time selector in `detail`, e.g.
+   `template<bool Backward> fft_mul_dir(w, x)` → `mul` or `conj_mul`, so
+   the kernel diff is mechanical: every `fft_mul(table_value, datum)`
+   becomes `fft_mul_dir<Backward>(table_value, datum)`. (Table operand is
+   already first at every call site — verified during the T/TW split,
+   which fixed the one violation, in run_sixstep_'s transpose.)
+
+2. **Template the engine's execution path on `bool Backward`** alongside
+   the existing `Batched`/`T` parameters: `stage_radix2_/3_/4_/5_/8_/
+   generic_/subplan_`, `run_fused_impl_`, `run_stages_`, `run_sixstep_`,
+   `run_bluestein_`. Uniform-conjugation rule (§10.5, verified): EVERY
+   `tw_`/`wmat_` load conjugates under Backward, INCLUDING `imu` and the
+   fixed roots `w1c..w4c` (they are table loads too — do not special-case
+   them out), the generic kernel's `wmat` rows, `stage_subplan_`'s input
+   twiddles, and run_sixstep_'s transpose twiddle. The public entries
+   `run(m, arena)`, `run(m, in, arena)`, `run_fused(...)`,
+   `run_contig_inplace(...)` gain a runtime `bool backward` parameter and
+   dispatch ONCE per invocation to the `<..., Backward>` instantiation
+   (one branch per pass, nothing per element). `stage_subplan_` and
+   run_sixstep_'s `e1.run`/`e2.run`/`run_fused_impl_` calls forward the
+   SAME Backward (sub-DFTs of a backward transform are backward).
+
+3. **Thread the direction through the orchestration free functions**:
+   `fft_exec_fiber`, `fft_exec_slab`, `fft_apply_last` each gain
+   `bool backward`; `fft_apply_last_pair` gains TWO independent flags
+   (its two axes can have DIFFERENT directions now — `{forward,
+   backward}` is exactly the sharing test case). `apply_` passes
+   `dirs_[axis] == fft_direction::backward` at its two call sites (the
+   pair call and the walk body — the recursive-walk refactor reduced this
+   to exactly these two places).
+
+4. **Canonicalize construction**: `tw_` (and hence `wmat_`) built with
+   forward sign unconditionally; delete `sign_` and the constructor's
+   `sign` parameter; `sub_index_(rr)` and all `sub_.emplace_back` sites
+   lose the sign argument; `fft_plan`'s ctor `find_if` drops the
+   `e.sign_ == sign` conjunct (length-only reuse again). TRAP: keep the
+   six-step `n2 == n1` DISTINCT-engine `emplace_back` (do not "simplify"
+   it into `sub_index_`) — the two passes' scratch regions must not alias,
+   and they only get distinct arena offsets by being distinct engines.
+
+5. **Bluestein** (`init_bluestein_`/`run_bluestein_`). Facts that make
+   this tractable, in preference order:
+   - `chirp_`/`postc_` are plain elementwise conjugates across direction
+     (`postc_ = fft_mul(inv_m, chirp_)` with REAL `inv_m`, so conj passes
+     through) — conj-on-load via `fft_mul_dir<Backward>` just works.
+   - `kernel_ft_` does NOT conj-on-load (FFT of a conjugated sequence =
+     conjugated, INDEX-REVERSED spectrum). Preferred resolution: also
+     precompute the backward-direction spectrum at construction
+     (`kernel_ft_bwd_`, one extra conv_n_-sized table — trivial memory
+     against what sharing saves) and select the table by flag at
+     execution. On-the-fly index-reversal in the pointwise loop is
+     possible but mixes forward/backward streams — not recommended.
+     Direction-KEYED Bluestein engines (the old fallback wording) is now
+     the LAST resort: with keying otherwise gone it would reintroduce
+     per-engine direction state and complicate the plan's find_if; prefer
+     the second table.
+   - The outer `Backward` must NOT change the convolution sub-transform
+     directions: the convolution mechanism is fixed (canonical fwd conv
+     then inverse conv, i.e. sub runs at `<false>` then `<true>`)
+     regardless of the outer transform's direction. Only chirp/postc/
+     kernel-table selection depend on the outer direction.
+   - The fwd/bwd conv sub-engine PAIR may collapse to ONE neutral engine
+     (real table-memory win) — but this changes scratch aliasing:
+     today the pointwise product writes into the second engine's region
+     while reading the first's; with one engine, `z` and `yf` can be the
+     SAME region depending on run_stages_'s ping-pong parity (result lands
+     in `out` after an odd stage count, `buf` after even). The write is
+     elementwise same-index (`z[i]` from `yf[i]` only), which is safe even
+     fully aliased — but this argument must go in a comment and be
+     verified under ASan with both parities (pick two conv_n_ values with
+     odd and even stage counts). Keeping two now-identical neutral conv
+     engines is an acceptable simpler outcome; say which was chosen in the
+     commit message.
+   - `init_bluestein_`'s construction-time bootstrap runs the conv engine
+     forward (`<false>`) — unchanged.
+
+6. **Tests** (extend test/algorithms_fft.cpp; per the Session-2 lesson,
+   every new dispatch path needs a D >= 3 NON-CUBIC case):
+   - 1-D n = 101 (prime > fft_max_direct_radix → real Bluestein) BACKWARD
+     vs `dft_reference` — this is the test that decides kernel_ft
+     correctness, per the original plan;
+   - 1-D six-step-length (>= 8192) forward-then-backward roundtrip = n·id
+     (exercises the transpose-twiddle conjugation without an O(n²)
+     reference);
+   - non-cubic 3-D `{backward, forward, none}` vs per-axis reference
+     composition;
+   - sharing proof for square `{forward, backward}`: add a small public
+     `engine_count()` accessor (harmless, genuinely useful to callers) and
+     assert it returns 1 there and 2 for Phase A semantics... i.e. 1 now;
+     also keep the existing numeric check;
+   - expectation to CHECK and report (not a hard gate): all-FORWARD
+     results should be bit-identical to Phase A's, since forward is the
+     canonical sign (tables unchanged) and `<Backward=false>`
+     instantiations should be operation-identical — if they are not
+     bit-identical, understand why before proceeding.
+
+7. Sweep: `grep -c sign_` → 0 in fft.hpp (or Bluestein-only with the
+   last-resort fallback, justified in the commit message); no new
+   `mutable`; NOTES §10.5 anchor map updated for the new signatures;
+   usual gates (strict O2, CI-like O3 -Walloc-zero) + ASan+UBSan on main
+   and stress suites; benchmark rebuilt and smoke-run (all-forward path
+   must be perf-neutral — same tables, same kernels at Backward=false).
+
+Checkpoint commits: one for the smooth Stockham path (tasks 1-4 can land
+with Bluestein still direction-CONSTRUCTED if split there is cleaner --
+tables built with a sign parameter kept temporarily), one for Bluestein +
+the keying change + tests. Or all together if the tree stays green
+throughout; prefer two.
 
 ## Session 4 (optional, lowest priority) — polish
 
