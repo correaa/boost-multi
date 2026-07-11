@@ -1591,3 +1591,44 @@ and a catastrophic loss at execute time. Both remain unshippable regardless
 (libc++ non-support + libstdc++'s `-ltbb` requirement, §11.1) -- this
 section is about WHERE the mechanism would help IF that were solved, for
 if/when it ever is.
+
+### 11.12 `-ffast-math` — tried, net regression, confirms the existing ban (2026-07-11)
+
+Maintainer asked to build with `-ffast-math` and compare against the
+baseline, purely to check -- this is the flag the project's own benchmark
+header already documents as deliberately never used ("the fft_ops
+customization point exists specifically to get vectorized performance
+under strict IEEE semantics... relaxing that here would make the
+comparison less representative of how the library actually ships").
+Result confirms that stance was correct, empirically:
+
+- **Correctness**: essentially unaffected on representative sizes (smooth
+  n=1024, Bluestein prime n=1009, six-step n=8192) -- max relative error
+  vs a reference DFT stayed at the 1e-12 to 1e-11 level under both strict
+  IEEE and `-ffast-math`, no meaningful precision loss detected by this
+  check. (Not exhaustive -- adversarial inputs, e.g. near-cancellation
+  cases, weren't probed.)
+- **Speed**: full benchmark suite (1D/2D/3D + both `many` sweeps),
+  `-ffast-math` added to the existing `-O3 -march=native -mtune=native
+  -funroll-loops -fno-math-errno` build, same idle/AC machine, clean run
+  (no calibration-drift warning). Mean delta vs the no-`-ffast-math`
+  baseline: 1D **-19.8%**, 2D **-11.1%**, 3D **-9.3%**, many(h32) **-10.1%**,
+  many(h256) **-9.1%** -- a NET REGRESSION on every sweep, not an
+  improvement. Per-size range: mostly losses (worst case -59.5% on a 1D
+  size), with a handful of small wins scattered in 2D/3D/many (up to
+  +17.8%) -- i.e. unpredictable and size-dependent, the downside
+  materially larger than the upside.
+- Consistent with §11.9's FMA finding and §11.1's general pattern this
+  session: this codebase's kernels are already well-matched to the
+  compiler's DEFAULT (strict-but-contracting) auto-vectorization for these
+  loop shapes, and further "help" via aggressive reassociation
+  (`-fassociative-math`/`-freciprocal-math`, part of `-ffast-math`) tends
+  to change the vectorizer's instruction-selection choices for the worse
+  here, the same mechanism (not just a coincidence) as explicit `fma()`
+  reducing packed-vector instruction counts in §11.9.
+
+**Conclusion: stays banned**, now on THREE independent grounds instead of
+one -- the existing "keeps the benchmark representative" argument, the
+already-known accuracy-relaxation risk `-ffast-math` carries in general,
+and now a measured, repeatable, net SPEED regression on this specific
+codebase. Not a close call.
