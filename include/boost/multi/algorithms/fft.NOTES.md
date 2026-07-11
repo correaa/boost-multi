@@ -1632,3 +1632,108 @@ one -- the existing "keeps the benchmark representative" argument, the
 already-known accuracy-relaxation risk `-ffast-math` carries in general,
 and now a measured, repeatable, net SPEED regression on this specific
 codebase. Not a close call.
+
+### 11.13 Split-radix — implemented, correctness-verified, reverted on speed (2026-07-11)
+
+Maintainer-requested "mixed-radix" implementation, scoped (after
+clarification) to the "surgical split-radix" option: a real recursive
+N/2 + N/4 + N/4 decomposition (Yavne 1968 / Duhamel-Hollmann 1984 combine)
+as a NEW top-level engine mode, parallel to how Bluestein and six-step
+already work -- chosen at construction time for pure powers of two in
+`[16, fft_sixstep_min)`, via recursive delegation to sub-engines rather
+than a `stages_` list entry (split-radix's asymmetric per-level split
+doesn't factor into "a list of uniform radices" the way radix-4/8/2 do --
+see the discussion that preceded implementation).
+
+**Design** (for anyone revisiting this): `init_splitradix_()` builds three
+sub-engines -- one length-n/2 ("even" stream E) via the normal
+`sub_index_` dedup, and TWO length-n/4 ("odd" streams O1 from x[4m+1], O3
+from x[4m+3]) as DISTINCT `sub_` entries (NOT deduped), because unlike
+Bluestein's single-neutral-engine collapse (§10.5, two SEQUENTIAL calls),
+split-radix's combine step needs O1[k] and O3[k] alive SIMULTANEOUSLY --
+same aliasing hazard six-step's n1==n2 case already guards against, same
+fix. `run_splitradix_` gathers the three strided sub-sequences, runs each
+sub-engine, then combines via:
+
+    X[k]             = E[k] + U + V
+    X[k + n/2]       = E[k] - (U + V)
+    X[k + n/4]       = E[k + n/4] - i(U - V)
+    X[k + n/4 + n/2] = E[k + n/4] + i(U - V)
+
+for k in [0, n/4), U = W_n^k·O1[k], V = W_n^{3k}·O3[k]. Uses `tw_[k]`,
+`tw_[3k]` (never needs a modulo: 3k < n_ always for k < n/4), and `tw_[n/4]`
+for the "±i" combine -- the same table entry and `fft_mul_dir` trick
+`stage_radix4_`/`stage_radix8_`'s `imu` already use, so the existing
+uniform-conjugation invariant (§10.5) extends unchanged to backward.
+
+**Bug found and fixed during implementation** (real lesson, not just
+process): `tw_[n/4]` evaluates to `-i` (forward), not `+i` -- the
+initial code computed `neg_i_diff = fft_mul_dir<Backward>(tw_[quarter],
+diff)` intending it to MEAN `+i*diff`, then wrote `ekq - neg_i_diff` /
+`ekq + neg_i_diff`, which is backwards. Symptom was a clean SWAP of
+`X[k+n/4]` and `X[k+n/4+n/2]` (each held the other's correct value) --
+caught immediately via a standalone n=16 vs `dft_reference` debug dump,
+not by guessing from the failing test suite's aggregate output. Fix:
+either flip the +/- at the call sites, or rename to make the sign explicit
+(`neg_i_diff`) and swap the following two lines accordingly (done).
+
+**Correctness, fully verified after the fix**: every power of two in
+scope (16 through 4096) forward AND backward against `dft_reference`
+(1e-14 to 1e-15 relative error, scaling sanely with size), a batched
+(m>1, via a `{none,forward}` 2-D plan) check at 5 fiber sizes, and --
+notably -- Bluestein's own n=1009 case (whose internal `conv_n_=2048` now
+ALSO recurses through split-radix, confirmed via a standalone probe: this
+is why the bit-identity harness showed exactly ONE divergence, at n=1009,
+after this landed -- an EXPECTED consequence of an internal algorithm
+swap, not a bug, and the tolerance-based Bluestein tests already
+confirmed it stayed correct). Full gate green: g++/clang++ strict, `-O3
+-Walloc-zero`, ASan+UBSan (both the full suite and the standalone
+exhaustive sweep) -- no aliasing bugs surfaced, confirming the
+distinct-sub-engine scratch design was right.
+
+**Benchmarked and REVERTED -- 50-80% SLOWER, not faster:**
+
+| size | before | after (split-radix) | delta |
+|---|---|---|---|
+| 1D n=128 | 1910 MFLOPS | 548 | -71.3% |
+| 1D n=1024 | 4729 | 1024 | -78.3% |
+| 1D n=4096 | 5990 | 1228 | -79.5% |
+| 2D n=128 | 7196 | 2987 | -58.5% |
+| 2D n=1024 | 7393 | 2517 | -66.0% |
+| 3D n=64 | 8014 | 3478 | -56.6% |
+| 3D n=256 | 7507 | 3182 | -57.6% |
+
+Uniformly, dramatically worse across every size and dimensionality tested
+(idle/AC machine, clean run, no drift warning). **Root cause**: split-
+radix's real ~20% fewer-FLOPs algebraic advantage is completely swamped by
+the cost of the RECURSIVE DELEGATION strategy chosen to implement it.
+Every recursion level (and split-radix recurses `log4(n)` levels deep,
+since each half/quarter sub-engine also qualifies and recurses further)
+pays its own STRIDED gather (stride-2 for the even stream, stride-4 for
+the two odd streams) plus a combine pass -- real extra memory traffic at
+EVERY level, reintroducing exactly what the existing Stockham autosort
+engine was carefully designed to AVOID (no gather/scatter between internal
+stages, just ping-pong buffer swaps within one flat, cache-friendly
+iteration). This was flagged as the likely integration cost BEFORE
+implementation began (see the design discussion this section's intro
+refers to: "a genuinely different (recursive, or specially-iterativized)
+engine structure... not a stage-list addition") -- confirmed, and the
+magnitude (worse than every other rejected optimization this session,
+including `std::execution::par` misused inside `execute()`) settles it.
+
+**Reverted completely** (all of: member state, constructor branch,
+`note_reach_` branch, `run()` dispatch, `build_tw_`/`init_splitradix_`
+helpers, `run_splitradix_` itself) -- confirmed via `git diff` showing
+zero difference against the pre-experiment commit, and the bit-identity
+harness confirming exact restoration.
+
+**What WOULD be needed for this to pay off** (for whoever revisits): a
+genuinely ITERATIVE split-radix, integrated into the SAME flat
+`stages_`-list-plus-ping-pong-buffer machinery the rest of this engine
+uses -- i.e. expressing the N/2+N/4+N/4 split as one or more STAGE KINDS
+processed in-place within the existing autosort loop (the way `stage_
+radix8_` is already "two fused radix-4 sub-butterflies plus a combine,"
+just with an asymmetric split instead of a uniform one), not as recursive
+sub-engine delegation. That is a substantially larger design task --
+closer in scope to Phase B's direction-neutral rework than to anything
+attempted this session -- and wasn't attempted here.
