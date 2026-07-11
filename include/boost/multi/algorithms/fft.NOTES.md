@@ -2160,3 +2160,66 @@ binary (tracked in-repo per existing convention). The new
 `fft_bench_many_h{32,256}_nowisdom.dat` follow the repo's established
 convention of NOT tracking "many"-family sweep outputs -- left as local
 artifacts, not committed.
+
+### 11.17 Does cross-axis gather/transpose cap candidate #3's payoff in 2-D/3-D? Measured: no (2026-07-11)
+
+Follow-up question, not covered by §11.14: candidate #3 (radix-16 kernel)
+was scoped against P1/P2/P4, all effectively 1-D (P4's `{none,forward}`
+transforms exactly one axis). A genuine multi-axis transform (both/all
+axes forward) does more than repeat that per-axis kernel -- it also has
+to move data BETWEEN axis passes, since only one axis at a time is
+contiguous in a row-major layout. Before committing to a radix-16
+prototype scoped only from 1-D evidence, this measures whether that
+cross-axis data movement is a separate, non-trivial cost that would cap
+radix-16's payoff in the 2-D/3-D cases the maintainer is most worried
+about.
+
+**Method**: measurement only, scratchpad harness (`prof_2d3d.cpp`), same
+build flags and machine-quiet protocol as §11.14, persistent monotonic
+arena per §11.15/§11.16 (no allocator noise in these numbers). Two cases,
+both full transforms (every axis `forward`, not a batched/degenerate
+case): **M1** 2-D, n=1024x1024, 600 reps; **M2** 3-D, n=256^3, 40 reps.
+`perf record --call-graph dwarf`, self-time split between the per-axis
+kernel (`run_fused_impl_`/`stage_radix4_`, wherever the compiler inlined
+it) and the explicitly-separate gather/scatter functions
+(`fft_exec_slab`, `fft_exec_fiber` -- the functions the original
+§11.14 task named as the gather/scatter suspects).
+
+| case | kernel self-time (all `run_fused_impl_` instantiations) | `fft_exec_slab`+`fft_exec_fiber` self-time | IPC | L1-miss% |
+|---|---|---|---|---|
+| M1 (2-D, 1024x1024) | 98.93% | 0.40% | 2.20 | 20.9% |
+| M2 (3-D, 256^3) | 95.90% | 1.26% | 1.66 | 18.2% |
+
+**Verdict: cross-axis gather/transpose is NOT a hidden cost center in
+either case** -- consistent with P4's finding (§11.14, gather/scatter
+0.84% for a single-axis batch), not a new, worse number for genuine
+multi-axis transforms. Mechanism, from reading `fft.hpp`
+(`fft_apply_last_pair`, `include/boost/multi/algorithms/fft.hpp:1399-1406`):
+the last two axes of any transform are fused into ONE slab-by-slab pass
+("slab still hot") rather than a separate transpose-then-transform step,
+so there is no explicit bulk-transpose call for `perf` to attribute time
+to in either M1 (2 axes, fully covered by the fused pair) or M2 (the
+third axis's separate `transform_axes_` recursion still resolves to the
+same low gather/scatter share).
+
+**The one real difference from 1-D, and why it doesn't change the
+verdict**: IPC drops with dimensionality (1-D P1/P2/P4's per-axis kernel:
+~3.1-3.2; M1: 2.20; M2: 1.66) and L1-miss% climbs (single digits/teens in
+1-D vs 18-21% here). This is NOT a separate transpose cost hiding
+outside the measured gather/scatter functions -- it's the strided access
+pattern for non-innermost axes, which is fused directly into the same
+kernel call (no separate copy loop exists to attribute it to
+separately). Read correctly, this STRENGTHENS the case for candidate #3
+rather than complicating it: fewer, larger radix-16 passes mean fewer
+strided sweeps over non-innermost axes too, so radix-16's benefit should
+compound with dimensionality, not get capped by an untouched transpose
+bottleneck.
+
+**Answer to the maintainer's question**: no, there is no 2-D/3-D-specific
+ceiling on candidate #3. The 2-D/3-D full-transform cost is, to within
+~1-4%, the same per-axis kernel arithmetic that dominates the 1-D case,
+repeated per axis with no separate gather/transpose tax. A radix-16
+prototype scoped from the 1-D evidence should transfer to 2-D/3-D
+essentially intact; no additional design work (e.g. reworking
+`fft_apply_last_pair` or adding an explicit transpose stage) is indicated
+before starting that prototype.
