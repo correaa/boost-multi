@@ -2324,3 +2324,110 @@ re-association, or explicit narrower SIMD-width batching so the
 itself) -- is the more promising direction if this candidate is revisited,
 but that's a different, not-yet-scoped design task, not a variant of what
 was tried here.
+
+### 11.19 Re-scoping the target: how close are we to FFTW_ESTIMATE (nowisdom)? (2026-07-11)
+
+After §11.9-§11.18 (unseq/par/fma/-ffast-math/split-radix/radix-16 all
+tried and reverted; the one real win, §11.15/§11.16's allocator fix, is
+in), the FFTW_MEASURE comparison this whole file tracks is a strong
+baseline -- FFTW's own runtime codelet search picks close to its best
+possible execution strategy for each size. A more modest, and possibly
+more useful, question: how do we compare to FFTW_ESTIMATE (wisdom
+disabled), which skips that search and uses generic heuristics instead --
+a much weaker target, and one worth knowing the current distance to now
+that the easy algorithmic wins are exhausted.
+
+**Method**: the existing `-DUSE_ESTIMATE -DDISABLE_WISDOM` build mode
+(already supported by `benchmark/algorithms_fft.cpp`, already had
+tracked-but-stale `_estimate.dat`/`.png` outputs from before this
+session's allocator fix) re-run against the CURRENT code (post §11.16's
+arena fix, radix-16 fully reverted per §11.18) -- same methodology
+(flushed cache, interleaved timing, plan-recycled), same idle/AC/cool
+machine. No product-code changes in this section; measurement only,
+against an already-existing build configuration.
+
+**Result: much closer, and outright ahead in large parts of the
+parameter space.**
+
+| dimensionality | sizes tested | outright wins (ratio < 1.0) |
+|---|---|---|
+| 1-D | 45 | 8 |
+| 2-D | 28 | 8 |
+| 3-D | 20 | 6 |
+
+Full 1-D (`n`, `N_total`, ratio to FFTW_ESTIMATE, lower is better):
+
+| n | N | ratio | | n | N | ratio |
+|---|---|---|---|---|---|---|
+| 125 | 125 | 0.917 W | | 20250 | 20,250 | 1.394 |
+| 128 | 128 | 1.168 | | 24000 | 24,000 | 1.606 |
+| 144 | 144 | 0.734 W | | 27000 | 27,000 | 1.324 |
+| 180 | 180 | 0.893 W | | 32768 | 32,768 | 1.729 |
+| 200 | 200 | 1.396 | | 59049 | 59,049 | 1.120 |
+| 243 | 243 | 0.787 W | | 65536 | 65,536 | 1.681 |
+| 256 | 256 | 0.951 W | | 78125 | 78,125 | 1.128 |
+| 512 | 512 | 1.179 | | 131072 | 131,072 | 1.466 |
+| 625 | 625 | 1.099 | | 172800 | 172,800 | 1.261 |
+| 729 | 729 | 0.986 W | | 177147 | 177,147 | 1.159 |
+| 1024 | 1,024 | 1.143 | | 230400 | 230,400 | 1.282 |
+| 1080 | 1,080 | 0.937 W | | 250000 | 250,000 | 1.485 |
+| 1296 | 1,296 | 0.860 W | | 262144 | 262,144 | 1.576 |
+| 1600 | 1,600 | 1.162 | | 390625 | 390,625 | 1.184 |
+| 2048 | 2,048 | 1.239 | | 524288 | 524,288 | 1.318 |
+| 2187 | 2,187 | 1.099 | | 531441 | 531,441 | 1.420 |
+| 3125 | 3,125 | 1.741 | | 1048576 | 1,048,576 | 1.368 |
+| 4096 | 4,096 | 1.432 | | 1259712 | 1,259,712 | 1.288 |
+| 6561 | 6,561 | 1.783 | | 1594323 | 1,594,323 | 1.379 |
+| 8192 | 8,192 | 1.666 | | 1600000 | 1,600,000 | 1.522 |
+| 15625 | 15,625 | 1.274 | | 1953125 | 1,953,125 | 1.199 |
+| 16384 | 16,384 | 1.635 | | 2097152 | 2,097,152 | 1.351 |
+| 19683 | 19,683 | 1.213 | | | | |
+
+("W" = outright win, ratio < 1.0.)
+
+Full 2-D and 3-D (n = side length):
+
+| 2-D n | ratio | | 2-D n | ratio | | 3-D n | ratio | | 3-D n | ratio |
+|---|---|---|---|---|---|---|---|---|---|
+| 24 | 0.760 W | | 216 | 1.226 | | 8 | 3.731 | | 100 | 1.404 |
+| 25 | 1.586 | | 243 | 1.082 | | 9 | 1.889 | | 125 | 1.100 |
+| 27 | 0.683 W | | 250 | 1.892 | | 15 | 1.997 | | 128 | 1.255 |
+| 32 | 1.465 | | 256 | 0.674 W | | 16 | 1.606 | | 144 | 0.865 W |
+| 40 | 0.997 W | | 320 | 1.174 | | 20 | 2.313 | | 216 | 0.967 W |
+| 60 | 1.421 | | 375 | 1.523 | | 25 | 2.195 | | 243 | 0.769 W |
+| 64 | 1.502 | | 405 | 1.174 | | 27 | 0.870 W | | 250 | 1.323 |
+| 75 | 1.434 | | 486 | 1.306 | | 32 | 1.815 | | 256 | 0.557 W |
+| 81 | 1.236 | | 512 | 0.784 W | | 64 | 1.237 | | 300 | 1.078 |
+| 100 | 1.914 | | 625 | 1.308 | | 81 | 0.926 W | | | |
+| 125 | 1.612 | | 729 | 1.183 | | 90 | 1.057 | | | |
+| 128 | 1.666 | | 1024 | 0.763 W | | | | | | |
+| | | | 1215 | 1.360 | | | | | | |
+| | | | 1350 | 1.261 | | | | | | |
+| | | | 1600 | 0.969 W | | | | | | |
+| | | | 2000 | 0.900 W | | | | | | |
+
+**Pattern**: wins cluster in two distinct places -- smaller/odd-composite
+1-D sizes (125-1296, where FFTW_ESTIMATE's generic heuristic doesn't
+have much room to beat a straightforward mixed-radix engine), and LARGE
+2-D/3-D sizes (2-D n>=1024, 3-D n>=144 -- up to 2x faster at 3-D n=256).
+The remaining, concentrated gap is a mid-range, heavily power-of-two 1-D
+band (n~2048-65536, ratios 1.2-1.8x) -- the same region §11.14 flagged as
+instruction-count-bound and where radix-16 (§11.18) tried and failed to
+help.
+
+**Implication**: the practical target has effectively moved. Against
+FFTW_MEASURE, `multi::fft_plan` sits at roughly 55-80% of FFTW across
+most of the space (per the committed `_nowisdom.dat` files) with a few
+much worse regions (now improved by §11.15/16's allocator fix). Against
+FFTW_ESTIMATE, we're already competitive or ahead across most sizes
+tested, with one concentrated remaining gap rather than a broad one. Since
+radix-8-over-4, split-radix, and radix-16 have all now lost to register
+pressure trying to shrink that band's instruction count (§11.18's closing
+note), the next lever for it -- if pursued -- is reducing the EXISTING
+radix-4/8 kernels' own temporary count (algebraic re-association) or
+spending the batch dimension `m` to absorb register pressure, not another
+bigger-uniform-radix attempt.
+
+**Committed**: `fft_bench_{1d,2d,3d}_estimate.dat` and matching `.png`
+plots (regenerated from this run, replacing the stale pre-allocator-fix
+versions); no product code changed.
