@@ -2666,3 +2666,36 @@ calls specifically -- construction-time threading was a genuine 2-4x win
 never by the underlying idea; a hand-rolled pool sidesteps that blocker
 but is a substantially bigger design task (persistent state, lifetime,
 thread-safety) than anything attempted in this series.
+
+**Follow-up: is §11.21/§11.22's regression an `-march=native`-specific
+artifact?** Checked before concluding this series, since both reverted
+changes plausibly interact with the compiler's auto-vectorizer, and this
+machine's `-march=native` resolves to `-march=skylake` (confirmed via
+`gcc -march=native -dM -E`: AVX2/FMA/BMI2, no AVX-512) -- a specific
+tuning model, not a neutral baseline. Built all three variants (baseline,
+§11.21 twiddle-skip, §11.22 `±i` shortcut) under three targets:
+`-march=native -mtune=native`, `-march=x86-64-v3 -mtune=generic` (same
+ISA level, generic scheduling model instead of Skylake-specific), and
+`-march=x86-64 -mtune=generic` (SSE2 baseline, no AVX2/FMA at all), using
+a flushed-cache-per-call `perf stat` probe (cycles/instructions/icache-
+misses, mirroring §11.21's own confirmatory methodology) at n=256/1024/
+4096.
+
+**Result: inconclusive, and not worth further investment.** At n=1024,
+§11.21's icache-miss increase reproduced under ALL THREE targets (not
+just native) -- the code-bloat mechanism isn't an `-march=native`
+artifact. At n=256 and n=4096, the signal was within run-to-run noise for
+both variants, and §11.22's severe regression (clearly visible in the
+full official benchmark, §11.22) did not reproduce at all in this
+single-size, non-interleaved probe -- meaning the probe itself isn't an
+adequate stand-in for the official benchmark's methodology (interleaved
+FFTW timing, `reps_for()`-scaled rep counts, a multi-minute sweep with
+its own drift characteristics) for this question. Getting a real answer
+would require re-running the FULL official benchmark under each
+alternative `-march` for both variants -- a multi-run investment
+significantly larger than this check, on top of two changes that have
+already failed once each. Judged not worth it: nothing so far suggests
+either change would behave differently under a different target, and the
+one data point that DID reproduce cleanly (§11.21 at n=1024) reproduced
+the SAME failure, not a different one. Not pursued further; flagged here
+so it isn't re-asked without this context.
