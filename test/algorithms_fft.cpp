@@ -782,6 +782,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, forward, none}}, result);
 				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 			}
+
+			// (c) {none, forward, forward}: a full 2-D forward FFT per batch
+			//     layer (axes 1 and 2), axis 0 (batch) untouched -- the
+			//     "batched many-2D" shape (fft.NOTES.md §11's sweep_many3d).
+			//     Reference via two sequential 1-D passes: a 2-D DFT is
+			//     separable, so transforming axis 2 (direct fiber, already
+			//     innermost) then axis 1 (via .rotated(), same fiber
+			//     extraction as case (a)) gives the same result as either
+			//     order.
+			{
+				auto reference = arr;
+				for(int i = 0; i != 2; ++i) {
+					for(int j = 0; j != 5; ++j) {
+						auto fib = dft_reference(reference[i][j], multi::fft_forward);  // fiber along axis 2
+						for(int k = 0; k != 4; ++k) { reference[i][j][k] = fib[k]; }
+					}
+				}
+				for(int i = 0; i != 2; ++i) {
+					for(int k = 0; k != 4; ++k) {
+						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
+						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+					}
+				}
+				auto result = arr;
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{{none, forward, forward}}, result);
+				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
+			}
 		}
 	}
 

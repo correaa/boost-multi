@@ -2034,3 +2034,129 @@ design), or (b) documenting the monotonic-arena-plus-`release()` pattern
 above as the recommended caller-side idiom for repeated huge-n calls,
 which requires no product-code change at all. Not decided here; flagging
 both options for the maintainer.
+
+**Decision (2026-07-11): option (b).** Rejected (a) on design grounds, not
+just convenience: `fft_plan` owning persistent scratch would make
+`execute()` mutable and bind the plan to one allocator/type at
+construction, defeating the point of a `const`, allocator-per-call plan
+that's meant to be shared across callers/threads/allocator contexts. The
+arena-plus-`release()` idiom is the documented fix; see §11.16 for it
+applied to the official benchmark.
+
+### 11.16 Official benchmark re-run with the arena fix, plus a new batched-2D case (2026-07-11)
+
+Unlike §11.14/§11.15 (measurement-only, scratchpad-only), this section
+covers real changes to tracked files, requested directly: (1) apply
+§11.15's monotonic-arena fix to `benchmark/algorithms_fft.cpp` itself,
+replacing its per-plan `std::pmr::unsynchronized_pool_resource` (whose
+file-header comment claimed -- incorrectly, per §11.14/§11.15's direct
+measurement -- to "genuinely reclaim on deallocate()"); (2) add a new
+`sweep_many3d()` benchmark case for `{none, forward, forward}` on a 3-D
+array (a full 2-D FFT per batch layer) against FFTW's rank-2
+`fftw_plan_many_dft`; (3) add a matching correctness test in
+`test/algorithms_fft.cpp` for the same direction combination (previously
+covered: `{none,forward,none}` and `{forward,forward,none}` on a 3-D
+array, §11's regression tests; NOT previously covered: both trailing axes
+active with the leading axis `none` -- the shape `sweep_many3d` now
+benchmarks). All three: `arena_alloc<Plan>` (a small struct pairing a
+`std::vector<std::byte>` sized to `plan.scratch_elements()` with a
+`std::pmr::monotonic_buffer_resource`, `.reset()` calling `.release()`)
+replaces the pool in `calibrate()`, `sweep<D>()`, and `sweep_many()`;
+`sweep_many3d()` follows `sweep_many()`'s structure with `fftw_n[2] =
+{n,n}`, `fftw_plan_many_dft(2, fftw_n, depth, ..., 1, n*n, ..., 1, n*n,
+...)` (rank 2, contiguous n x n layers, `idist = odist = n*n`, matching
+the row-major `(depth, n, n)` layout exactly).
+
+**Correctness first**: the new `test/algorithms_fft.cpp` case (c)
+verifies `{none, forward, forward}` on the existing non-cubic `(2,5,4)`
+regression array (chosen there specifically because it catches axis
+mix-ups that a cubic shape would hide) via a separable two-pass reference
+(axis 2 direct, axis 1 via `.rotated()`, order-independent since a 2-D
+DFT is separable) -- passes at the existing `tol`. Full test binary
+(`test/algorithms_fft.cpp`) still green after both changes.
+
+**Confirmed the pool resource's own file-header claim was wrong,
+directly in the official flushed-cache benchmark** (not just the
+profiling harness): re-running `sweep<1>` end to end, the huge-N tail
+(single-fiber sizes at or above `fft_sixstep_min = 8192`) drops
+substantially:
+
+| n | old ratio (pool) | new ratio (arena) |
+|---|---|---|
+| 390,625 | 2.977 | **1.010** |
+| 524,288 | 3.372 | 1.765 |
+| 531,441 | 2.810 | 1.379 |
+| 1,048,576 | 3.560 | 1.938 |
+| 1,259,712 | 3.292 | 1.680 |
+| 1,594,323 | 2.714 | 1.487 |
+| 1,600,000 | 3.863 | 2.029 |
+| 1,953,125 | 2.843 | 1.407 |
+| 2,097,152 | 3.408 | 1.916 |
+
+Every size at or above `fft_sixstep_min` improved, several by close to
+2x, matching §11.15's profiling-harness prediction almost exactly (n=
+390,625 landed at 1.010 -- essentially matching FFTW). Below
+`fft_sixstep_min` (n <= 65,536), the ratio moves both up and down by
+single-digit-to-~20% between runs with no consistent direction -- ordinary
+run-to-run noise (this is one benchmark run, not the multi-run average
+the methodology comment recommends for publication-grade numbers), not a
+regression, and consistent with the arena fix mattering only for
+allocations large enough to hit the mmap threshold.
+
+**2-D and 3-D barely moved, and that's expected, not a discrepancy**:
+`fft_sixstep_min` gates on a single transform axis's length, not total
+array size, and the tested 2-D sweep tops out at side 2000, 3-D at side
+300 -- neither ever reaches 8192 on any axis, so neither sweep exercises
+the six-step path (or its allocator tax) at all. Their post-fix numbers
+move within the same run-to-run noise band as 1-D's sub-8192 region, for
+the same reason. This is a real (if narrow) prior gap in the benchmark's
+size ranges: the 2-D/3-D sweeps as configured cannot currently measure
+whether the allocator fix (or a future six-step rework) helps
+multi-dimensional huge transforms, only single-axis ones -- worth a
+note for whoever extends this sweep's size ranges next, not something
+fixed here.
+
+**New `{none, forward, forward}` batched-2D benchmark** (depth=32, one
+run, `_nowisdom`):
+
+| n (layer side) | N_total | mine mflops | FFTW mflops | ratio |
+|---|---|---|---|---|
+| 8 | 2,048 | 1853 | 5602 | 3.023 |
+| 9 | 2,592 | 2607 | 4461 | 1.711 |
+| 16 | 8,192 | 5377 | 10775 | 2.004 |
+| 20 | 12,800 | 4881 | 12152 | 2.490 |
+| 25 | 20,000 | 4362 | 9830 | 2.253 |
+| 27 | 23,328 | 5174 | 6280 | 1.214 |
+| 32 | 32,768 | 6877 | 13922 | 2.024 |
+| 64 | 131,072 | 7556 | 11257 | 1.490 |
+| 81 | 209,952 | 6278 | 9038 | 1.440 |
+| 100 | 320,000 | 5549 | 10711 | 1.930 |
+| 125 | 500,000 | 4774 | 7690 | 1.611 |
+| 128 | 524,288 | 6616 | 10148 | 1.534 |
+| 243 | 1,889,568 | 5974 | 5762 | **0.964** |
+| 256 | 2,097,152 | 7722 | 9161 | 1.186 |
+
+Broadly in the same 1.2-2.5x-of-FFTW band as the existing 1-D `{none,
+forward}` batched sweep (§11's "many" cases, 55-61%-ish region) -- no
+sign of a batching-specific penalty for the 2-D case either, consistent
+with §11.14's P4 finding that gather/scatter overhead is negligible
+regardless of how many axes are actually transformed per batch element.
+n=243 (a pure `3^5`, one `stage_radix3_`-only layer) landed at 0.964 --
+we beat FFTW there, in this one run; plausible (radix-3 is a
+comparatively simple, well-matched kernel) but not something to
+generalize from a single sample -- worth a repeat run before reading
+anything into it. None of these sizes reach `fft_sixstep_min` either
+(max n=256), so this table says nothing about the allocator fix; it's a
+pure "does the per-axis direction feature cost anything for a 2-axis
+batch" measurement, and the answer is no more than the existing 1-D
+batched case already showed.
+
+**Committed**: `benchmark/algorithms_fft.cpp` (arena fix +
+`sweep_many3d`), `test/algorithms_fft.cpp` (new correctness case),
+`fft_bench_{1d,2d,3d}_nowisdom.dat` and matching `.png` plots
+(regenerated from this run), and the rebuilt `algorithms_fft_nowisdom.x`
+binary (tracked in-repo per existing convention). The new
+`fft_bench_many3d_h32_nowisdom.dat` and the pre-existing, never-tracked
+`fft_bench_many_h{32,256}_nowisdom.dat` follow the repo's established
+convention of NOT tracking "many"-family sweep outputs -- left as local
+artifacts, not committed.
