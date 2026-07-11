@@ -2223,3 +2223,104 @@ prototype scoped from the 1-D evidence should transfer to 2-D/3-D
 essentially intact; no additional design work (e.g. reworking
 `fft_apply_last_pair` or adding an explicit transpose stage) is indicated
 before starting that prototype.
+
+### 11.18 Radix-16 kernel -- implemented, correctness-verified, reverted on speed (2026-07-11)
+
+Candidate #3, the lever §11.14/§11.17 pointed at (P1/P2/P4 showed higher
+IPC than FFTW but 2.7-3.7x more cycles/point -- an instruction-count, not
+bandwidth, problem; §11.17 confirmed no 2-D/3-D-specific transpose
+bottleneck would cap it either). Implemented as a NEW flat stage kind
+(`stage_radix16_`, `kind=7`), following `stage_radix8_`'s own precedent
+exactly: two internal radix-8 sub-DFTs (even legs `x0,x2,...,x14`, odd
+legs `x1,x3,...,x15`, each itself two radix-4 sub-DFTs plus a W8
+combine, byte-for-byte the same butterfly network `stage_radix8_` already
+uses) plus a final W16 combine. `W16^2 == W8^1` and `W16^6 == W8^3`
+(already computed for the internal radix-8s) and `W16^4` is the same
+global `tw_[n_/4]` "+/-i" constant `stage_radix4_`/`stage_radix8_` use --
+all reused, not re-derived. Critically, this stays a FLAT stage in the
+existing `stages_` list plus ping-pong buffer -- no recursive sub-engine,
+no extra gather/scatter -- explicitly avoiding split-radix's (§11.13)
+mistake.
+
+**Factorization**: the power-of-two part's greedy chunking was extended
+to prefer radix-16 (4 bits/stage) over radix-4 (2 bits/stage), with a
+radix-8+radix-4 tail absorbing a stray 1-bit remainder (borrowed from the
+radix-16 count, mirroring how the existing scheme already borrows 3 bits
+for a trailing radix-8 rather than ever emitting a lone radix-2), plain
+radix-4/radix-8 tails for 2-/3-bit remainders, and radix-2 only for
+n == 2 itself. Verified independently (a standalone script replicating
+the arithmetic, not by reading the C++ back) that this actually selects
+radix-16 broadly: n=1024 -> `[16,16,4]`, n=4096 -> `[16,16,16]`,
+n=1,048,576 -> five `16`s, n=2048 (Bluestein's own internal `conv_n_` for
+n=1009) -> `[16,16,8]`.
+
+**Correctness, fully verified**: standalone exhaustive sweep (535 sizes:
+every multiple of 16 from 16 to 8176, all pure powers of two through
+4096, several odd-mixed composites), forward AND backward against
+`dft_reference`, all passing at 1e-9 relative tolerance; a batched
+(m>1, `{none,forward}` 2-D plan) check at 8 radix-16-triggering fiber
+sizes; Bluestein n=1009 (internal `conv_n_=2048`, now recursing through
+radix-16) both directions; a six-step n=1,048,576 forward-then-backward
+roundtrip (`== n * id`) to 1e-21 relative residual. Separately, a
+10-size ASan+UBSan smoke test (one representative size per distinct
+factorization shape, not a full re-sweep -- the O(n^2) reference DFT
+dominates sweep time regardless of sanitizer, so re-running all 535
+sizes under ASan was correctly judged not worth the wall-clock cost)
+found no memory-safety issues. Full test suite green under g++, clang++,
+and g++ with `-fsanitize=address,undefined`.
+
+**Benchmarked and REVERTED -- regression, not improvement, and it lands
+specifically on the sizes that actually use radix-16:**
+
+| size | old (radix-4/8) ratio to FFTW | new (radix-16) ratio | delta |
+|---|---|---|---|
+| 1D n=1024 | 1.142 | 1.401 | +22.7% |
+| 1D n=4096 | 1.428 | 1.858 | +30.1% |
+| 1D n=16384 | 1.771 | 2.471 | +39.5% |
+| 1D n=65536 | 1.792 | 2.319 | +29.4% |
+| 2D n=256 | 1.391 | 1.926 | +38.5% |
+| 2D n=1024 | 1.505 | 1.789 | +18.9% |
+| 3D n=16 | 1.392 | 2.505 | +80.0% |
+| 3D n=64 | 1.389 | 1.720 | +23.8% |
+| 3D n=256 | 1.153 | 1.611 | +39.7% |
+
+Full official (flushed-cache) benchmark, all three dimensionalities,
+against the currently-committed (arena-fixed, §11.16) baseline: sizes
+whose factorization actually uses radix-16 stages are worse across the
+board, several by 20-80%; sizes that barely touch it (odd-factor-heavy,
+where the power-of-two part is small or absent) stay flat or move within
+ordinary run-to-run noise. That pattern -- degradation tracking radix-16
+USAGE, not size or dimensionality in general -- is itself the evidence:
+this is the kernel's own cost, not a confound.
+
+**Root cause, matching the risk flagged before implementation**: register
+pressure, the same failure mode that already beat an all-radix-8 scheme
+(the standing code comment) and split-radix (§11.13). `stage_radix16_`
+holds 16 twiddle-multiplied inputs plus ~20 live intermediate combine
+terms (`E0..E7`, `O0..O7`, `t1..t7`) at peak inside the innermost loop --
+roughly double `stage_radix8_`'s own live-value count, which itself
+already sits at the edge of what wins on this architecture. The ~20-30%
+extra instructions-per-point that IPC/cycle profiling (§11.14) showed
+FFTW avoiding is real, but a radix-16 kernel built this way pays it back
+and more in spill/reload traffic -- fewer passes, but each pass costs
+more than a radix-4/8 pass did, net negative.
+
+**Reverted completely**: `stage_radix16_` itself, the `kind=7` dispatch
+arm in both `run_fused_impl_`/`run_stages_`'s switches, the `case 16`
+in the radix-to-kind switch, and the factorization greedy-chunking
+change -- confirmed via `git diff` showing zero difference against the
+pre-experiment commit, matching split-radix's (§11.13) revert protocol
+exactly.
+
+**What WOULD be needed for this to pay off**: not a bigger prototype of
+the same shape -- the register-pressure ceiling is now confirmed twice
+(radix-8-over-4, and this) at increasing severity, so a THIRD attempt at
+"one bigger uniform-radix stage, more live values per butterfly" is not
+indicated. A different angle on candidate #3 -- e.g. restructuring the
+radix-8 (or even radix-4) kernel's OWN instruction count without adding
+more simultaneous live values (fewer temporaries via algebraic
+re-association, or explicit narrower SIMD-width batching so the
+"batch" dimension `m` absorbs register pressure instead of the radix
+itself) -- is the more promising direction if this candidate is revisited,
+but that's a different, not-yet-scoped design task, not a variant of what
+was tried here.
