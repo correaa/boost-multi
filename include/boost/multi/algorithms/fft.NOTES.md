@@ -2496,3 +2496,95 @@ of anything specific to multi-axis walking. Closing it further requires
 the same not-yet-scoped 1-D kernel work §11.18 closed with (reducing the
 existing radix-4/8 kernels' own temporary count without adding live
 values) -- not new 2-D/3-D-specific design work.
+
+### 11.21 First-stage twiddle-skip fast path -- implemented, correctness-verified, reverted: real cycle win, net regression under flushed cache (2026-07-11)
+
+A genuinely different, low-risk candidate: `run_fused_impl_`'s stage loop
+always starts with `ns = 1` for the first stage, and inside
+`stage_radix{2,3,4,5,8}_`, `ns == 1` forces the inner `r`-loop to only
+ever take `r == 0` -- meaning `w1`/`w2`/... `== tw_[0] == 1` for every
+single block of the FIRST stage (the whole first pass over the array).
+Those twiddle multiplies are providably no-ops, but `tw_` is a runtime-
+built table, so the compiler can't fold them away on its own. Added an
+`if(ns == 1) { ...fast path, twiddle multiplies elided... return; }`
+branch, checked once per function call (not per iteration), to each of
+the five direct kernels -- no register-pressure change, no algorithm
+change, unlike every previous candidate in this series.
+
+**Correctness, fully verified**: 523-size sweep (dense n=2..512, plus
+larger explicit sizes) forward+backward, 18 batched fiber sizes, three
+Bluestein sizes (101, 1009, 2), and the n=1,048,576 six-step roundtrip --
+all passing. ASan+UBSan clean. g++ and clang++ both green.
+
+**Preliminary check (misleading in hindsight)**: a hot, back-to-back
+(no cache flush) `perf stat` comparison showed a clean, consistent win --
+P1 (n=1024): cycles -9.6%, instructions -16.7%; P2 (n=4096): cycles
+-12.1%, instructions -14.2%, wall time -9.7%; P4 (batched): cycles
+-11.9%, instructions -16.8%, wall time -14.2%. No regression anywhere in
+this harness. This is exactly the kind of result that looked like it
+should ship.
+
+**Full official (flushed-cache) benchmark told a different story.**
+2-D and 3-D mostly improved (2-D: outright wins 8->11/28, most sizes
+better by 5-20%; 3-D: wins 6->8/20, similar pattern) -- consistent with
+the preliminary check. **1-D showed severe, unambiguous regressions** at
+several mid-range sizes: n=256 +124%, n=1024 +116%, n=512 +88%, n=2048
++54%, n=1296 +56%, n=144 +57% (ratio to FFTW_ESTIMATE, worse = higher).
+Outright wins dropped 8->4/45. Not noise -- these are 2-4x the size of
+any other single-run fluctuation seen in this file's benchmarking.
+
+**Root cause, confirmed directly, not just inferred**: the `if(ns==1)`
+branch duplicates the ENTIRE block/element loop body inside each kernel
+function -- and since every stage of every `execute()` call runs through
+the SAME compiled function (the switch in `run_fused_impl_` calls
+`stage_radix4_` for every stage regardless of that stage's `ns`), this
+roughly doubles the function's code size for ALL calls, not just the
+`ns==1` ones. A targeted flushed-cache-per-call comparison at n=1024
+(mirroring the official benchmark's own methodology, not the hot-loop
+preliminary check) showed: instruction count flat (15.037B -> 15.014B,
+as expected -- the removed multiplies are a small fraction of a
+`flush_cache()`-dominated call), but **L1-icache-load-misses up 24%**
+(3.88M -> 4.80M) and **iTLB-load-misses up 19%** (106K -> 127K). Under a
+COLD icache (the flushed-benchmark's actual regime, and every real
+caller's likely regime too -- a plan is typically not called in a tight
+tofrom-nowhere loop), the extra code has to be re-fetched from L2/L3/RAM
+on every single call, and that cost outweighs the saved arithmetic. The
+preliminary hot-loop check missed this entirely because repeated calls
+let the icache warm up once and stay warm across all reps -- exactly the
+regime this file's own methodology notes (§11's intro, and repeated
+throughout) warn isn't representative of steady-state, cache-cold
+callers, which is why the OFFICIAL benchmark flushes caches before every
+timed call in the first place.
+
+**Why 2-D/3-D didn't regress the same way**: plausibly because their
+per-call compute is much larger relative to the fixed cold-icache-fetch
+cost (more total array elements processed per call), so the same
+absolute icache-refetch tax is a smaller fraction of a much bigger call,
+while 1-D's benchmark sizes have comparatively small per-call work and
+very high rep counts, making the fixed per-call icache cost a much larger
+relative fraction of each call's time. Not measured further; the
+official benchmark's per-dimensionality asymmetry is consistent with
+this but wasn't independently isolated.
+
+**Reverted completely**: all five `if(ns==1)` fast-path branches (the
+diff was saved and reverse-applied via `git apply -R`, then confirmed
+byte-identical to the pre-experiment commit via `git diff`). Full test
+suite green after revert.
+
+**What WOULD be needed for this to pay off**: the same optimization
+without doubling code size -- e.g. a single shared loop body with the
+"skip the multiply when `ns==1`" decision folded into a per-r branch
+INSIDE the existing loop (checked `ns` times total per call instead of
+duplicating the whole body), accepting a small, predictable per-iteration
+branch in exchange for not bloating the function; or, more in the spirit
+of "no register pressure, no code growth," rely on `fft_mul_dir`'s own
+generality being just as cheap as a copy for a genuine `1.0 + 0.0i`
+multiply on this architecture (worth directly measuring the codegen
+difference between "multiply by a runtime-provably-1 complex value" and
+"copy" before assuming the win requires a branch at all). Not attempted
+here; this is the second candidate this session (after §11.13's
+recursive split-radix and §11.18's radix-16) to look like a clean win in
+isolation and lose once measured against the benchmark's own, more
+representative, cold-cache methodology -- a pattern worth remembering
+before trusting any future preliminary micro-benchmark that doesn't
+flush caches.
