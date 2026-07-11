@@ -1941,3 +1941,96 @@ parsing script (cosmetic; IPC and miss-rate fields, which the verdicts
 depend on, parsed correctly and were spot-checked against the raw `perf
 stat` text). Machine was idle/AC/cool for the full run; no drift or
 throttling observed between cases.
+
+### 11.15 P3 allocator fix, measured: monotonic arena vs per-call pool (2026-07-11)
+
+Direct follow-up to §11.14's recommendation. Same P3 harness (1-D
+n=1,048,576, six-step, 120 reps + 1 warm-up), same build flags, same idle/
+AC/cool machine -- only the allocator changed. Added `run_1d_arena()` to
+the scratchpad harness: instead of a fresh `std::pmr::unsynchronized_
+pool_resource` per call, a `std::vector<std::byte>` arena is allocated
+**once**, outside the loop, sized to `plan.scratch_elements() *
+sizeof(complex) + 4096` (alignment slack), backing a
+`std::pmr::monotonic_buffer_resource`; `mbr.release()` is called after
+every `execute()` to rewind the bump pointer to the front of the same
+buffer without freeing it (per the mechanism discussed with the
+maintainer: monotonic + release() never touches the upstream resource
+once the initial buffer is large enough, unlike a pool, which caps what
+it pools internally and delegates anything above that -- and a 100.7 MB
+one-shot request is always above that cap regardless of pool tuning).
+
+**`strace -f -c` confirms the mechanism directly**: pool version, 120
+reps, showed 124 `munmap` + 145 `mmap` (essentially one pair per call,
+99.85% of syscall time, per §11.14). Arena version, same 120 reps: **4
+`munmap` + 25 `mmap` total for the entire process** (process/library
+startup plus the one-time arena allocation) -- i.e. the per-call
+allocator syscalls are gone, not reduced.
+
+**`perf stat -d -d` result — this is not a marginal win:**
+
+| metric | pool (old, §11.14) | monotonic arena (new) | change |
+|---|---|---|---|
+| wall time | 6.237s | 3.067s | **2.03x faster** |
+| cycles/point | 211.86 | 104.72 | **2.02x fewer** |
+| instructions/point | 156.90 | 67.67 | **2.32x fewer** |
+| sys time | 2.771s | 0.051s | 54x less |
+| page faults (whole run) | 1,991,049 | 32,917 | 60x fewer |
+| IPC | 0.74 | 0.65 | slightly lower |
+| L1-dcache-miss% | 26.03% | 60.77% | up (see below) |
+| LLC-miss% | 29.67% | 23.74% | down |
+
+`perf record` self-time confirms it lands where predicted: kernel-space
+(`[k]`) samples drop from **43.77% to 2.48%** of total self-time. The
+remaining self-time redistributes across the same three symbols as
+before, now as a larger share of a much smaller total: column-FFT
+(`run_stages_<true,false>`/`run_fused_impl_<true,false>`) ~35.7%,
+`run_sixstep_` (transpose+combine) 25.29%.
+
+**Why instructions/point dropped too, not just cycles**: this wasn't
+predicted going in -- the pool resource's own free-list/chunk-search
+bookkeeping costs real retired instructions in addition to the syscalls,
+and (bigger effect) every fresh `mmap` hands back zero-filled virtual
+pages that fault in one at a time on first touch: 1,991,049 page faults
+across the pool run (~16,600 per call, close to 100MB/4KiB=25,600 pages,
+partly amortized) vs 32,917 for the WHOLE arena run (the buffer is
+touched once; every subsequent `execute()` reuses already-resident
+pages). Minor-fault handling is real instructions +a trap, not just
+kernel `sys` time, which is why `user` time also dropped (3.465s ->
+3.014s) even though the FFT computation itself is unchanged.
+
+**Why L1-miss% went UP (26.03% -> 60.77%) despite everything getting
+faster**: this is a ratio, and the denominator changed more than the
+numerator. Total L1-dcache-loads fell from 4.24B to 1.53B (fewer
+instructions overall, per above) while L1-dcache-load-misses fell only
+from 1.10B to 0.93B -- the genuine FFT-kernel cache misses (transpose,
+twiddle, six-step gather) are largely fixed costs of the algorithm on
+this size and didn't shrink nearly as much as the allocator-induced load
+volume around them did. Read as: the pool version's L1-miss% was
+ARTIFICIALLY LOW because it was diluted by a flood of cheap, mostly-
+resident-page pool-bookkeeping loads; the arena version's 60.77% is
+closer to the true miss rate of the underlying six-step computation
+itself.
+
+**Effect on the §11.14 candidate verdicts**: strengthens rather than
+overturns them. #4 (six-step rework) remains WEAKENED for now, but the
+reasoning sharpens: with the allocator artifact removed, P3's REAL
+per-point cost is roughly half what §11.14's raw numbers suggested, and
+the still-standing self-time split (~61% column/row-FFT arithmetic vs
+~25% transpose+combine) means any six-step rework is now competing
+against a smaller, more arithmetic-dominated baseline than it looked to
+be facing before this fix -- worth re-deriving the "25-35% of FFTW"
+figure from the official flushed-cache benchmark (§11's methodology)
+with this allocator fix applied to the actual `execute()` scratch
+strategy (not just this harness) before scoping any six-step work
+further.
+
+**Scope note**: this experiment only touched the scratchpad harness's
+allocator usage, per the standing rule -- `fft.hpp` and the official
+benchmark are unchanged. Applying this fix for real requires either (a)
+`fft_plan` growing an option to own/reuse a persistent scratch arena
+across `execute()` calls (a real, if small, API/lifetime design task --
+`execute()` is currently `const` and stateless about scratch reuse by
+design), or (b) documenting the monotonic-arena-plus-`release()` pattern
+above as the recommended caller-side idiom for repeated huge-n calls,
+which requires no product-code change at all. Not decided here; flagging
+both options for the maintainer.
