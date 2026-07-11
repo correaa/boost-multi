@@ -1,0 +1,20 @@
+# many3d n x n (depth=32) (depth=32): multi::fft_plan{none,forward,forward} vs fftw_plan_many_dft rank=2 (plan recycled, exec only, plan-build time excluded for both, interleaved timing)
+# multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call
+# FFTW: FFTW_MEASURE, wisdom DISABLED (fftw_forget_wisdom() before every plan)
+# layout: 32 contiguous n x n layers (layer stride == n*n, batch axis 0 untouched)
+# mflops = 5*depth*n*n*log2(n*n)/time_us (batched benchFFT convention)
+# n  N_total  mine_ms  fftw_ms  mine_mflops  fftw_mflops  ratio_mine_over_fftw
+       8       2048      0.03315      0.01097       1853.3       5602.0    3.023
+       9       2592      0.03152      0.01842       2606.7       4461.3    1.711
+      16       8192      0.06094      0.03041       5377.4      10774.7    2.004
+      20      12800      0.11335      0.04552       4880.7      12152.3    2.490
+      25      20000      0.21291      0.09448       4362.3       9829.9    2.253
+      27      23328      0.21439      0.17662       5173.9       6280.4    1.214
+      32      32768      0.23825      0.11769       6876.9      13921.6    2.024
+      64     131072      1.04087      0.69861       7555.5      11257.1    1.490
+      81     209952      2.12018      1.47282       6278.1       9037.5    1.440
+     100     320000      3.83123      1.98489       5549.2      10711.1    1.930
+     125     500000      7.29620      4.52898       4773.6       7690.2    1.611
+     128     524288      5.54715      3.61648       6616.0      10148.0    1.534
+     243    1889568     25.06651     25.98924       5973.9       5761.8    0.964
+     256    2097152     21.72552     18.31381       7722.4       9161.0    1.186
