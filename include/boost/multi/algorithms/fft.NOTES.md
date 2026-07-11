@@ -2588,3 +2588,81 @@ isolation and lose once measured against the benchmark's own, more
 representative, cold-cache methodology -- a pattern worth remembering
 before trusting any future preliminary micro-benchmark that doesn't
 flush caches.
+
+### 11.22 `-i`/`+i` multiply shortcut (`imu`) -- implemented, correctness-verified, reverted: worse than §11.21, and by a different mechanism (2026-07-11)
+
+A different-in-kind candidate from everything else in this series: the
+`imu` constant (`tw_[n/4]`, used in `stage_radix4_`'s combine once per
+element and `stage_radix8_`'s combine three times per element) is
+provably exactly `-i` (forward) or `+i` (backward) by construction --
+never a general twiddle -- yet every use went through the full generic
+4-multiply/2-add complex product (`fft_ops::mul`/`conj_mul`). Multiplying
+by `±i` is a component swap and sign flip, not a product. Added
+`fft_ops::mul_neg_i`/`mul_pos_i` (generic fallback = the existing product,
+for user-specialized element types; `std::complex` specialization = the
+branchless swap-negate) and a matching `fft_mul_i_dir<Backward>`
+dispatcher preserving the same conjugation convention as `fft_mul_dir`,
+then swapped the four `imu` call sites (one in `stage_radix4_`, three in
+`stage_radix8_`) to use it. Unlike §11.21, this adds NO branch and NO
+code duplication -- if anything the replacement code is simpler/smaller.
+
+**Correctness, fully verified**: same 523-size exhaustive sweep (dense
+n=2..512 plus larger sizes) forward+backward, 18 batched fiber sizes,
+three Bluestein sizes, six-step n=1,048,576 roundtrip -- all passing.
+ASan+UBSan clean. g++ and clang++ both green.
+
+**Learned from §11.21: went straight to the full official flushed-cache
+benchmark, skipped trusting a hot-loop preliminary check.** Good thing --
+the result is a clear, severe regression, WORSE than §11.21's and hitting
+ALL THREE dimensionalities this time (§11.21 only hurt 1-D): 1-D n=4096
++178%, n=1024 +158%, n=256 +108%; 2-D n=256 +114%, n=1024 +112%, n=64
++94%; 3-D n=64 +92%, n=256 +73%, n=128 +45%. Outright wins collapsed:
+1-D 8->4/45, 2-D 8->2/28, 3-D 6->5/20.
+
+**Root cause: plausible but NOT confirmed to the same depth as §11.21**
+(no asm-level or vectorization-report investigation was completed before
+reverting, given the severity of the result). Working hypothesis: the
+original code computed w1/w2/w3/imu as four structurally IDENTICAL
+generic-multiply expressions in a row inside the same loop body, which
+plausibly let the compiler's auto-vectorizer treat them as a uniform,
+schedulable/vectorizable sequence (this file has no manual SIMD --
+fft-simd-policy in project memory -- so it depends entirely on the
+compiler recognizing and exploiting exactly this kind of uniformity).
+Replacing ONE of the four with a differently-shaped operation (swap-
+negate instead of multiply) breaks that uniformity, and losing whatever
+auto-vectorization or instruction-scheduling pattern the compiler was
+applying to the uniform version costs more than the removed arithmetic
+saves -- consistent with the severity being similar across all three
+dimensionalities (unlike §11.21's code-bloat mechanism, which hit 1-D
+specifically because of its higher call-count/lower-per-call-work
+profile). Should be confirmed with `-fopt-info-vec-missed` or a
+disassembly diff before anyone revisits this shape of change.
+
+**Reverted completely**: all `fft_ops::mul_neg_i`/`mul_pos_i`,
+`fft_mul_i_dir`, and the four call-site swaps, via `git apply -R` against
+the saved diff, confirmed byte-identical to the pre-experiment commit via
+`git diff`. Full test suite green after revert.
+
+**Running tally for this session's "reduce the kernel's own work, without
+adding registers/passes/code-size" attempts**: split-radix (extra passes),
+radix-16 (register pressure), first-stage twiddle-skip (icache bloat),
+and this `±i` shortcut (vectorization/scheduling, unconfirmed mechanism)
+have now ALL failed, each for a different micro-architectural reason.
+Four independent negative results at this level of the design space is a
+strong signal that the compiler's existing auto-vectorized codegen for
+the uniform, generic kernel shape is already close to a local optimum
+that resists further ad-hoc algebraic simplification -- not proof no
+lever exists, but enough evidence that the next attempt at THIS level
+should not be another micro-optimization guess without first getting a
+vectorization report or disassembly to justify it. The two substantive
+options genuinely still open, neither tried this session: (a) SIMD
+intrinsics, explicit control instead of hoping the auto-vectorizer keeps
+cooperating -- the standing policy explicitly reserves this as a last
+resort, and it's now backed by four repeated demonstrations of auto-
+vectorization fragility to any manual tweaking; (b) a persistent,
+non-`<execution>`-dependent thread pool for large-transform execute()
+calls specifically -- construction-time threading was a genuine 2-4x win
+(§11.10) blocked only by `<execution>`'s libc++/TBB portability issues,
+never by the underlying idea; a hand-rolled pool sidesteps that blocker
+but is a substantially bigger design task (persistent state, lifetime,
+thread-safety) than anything attempted in this series.
