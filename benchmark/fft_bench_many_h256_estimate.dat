@@ -1,0 +1,20 @@
+# many n (howmany=256) (howmany=256): multi::fft_plan{none,forward} vs fftw_plan_many_dft (plan recycled, exec only, plan-build time excluded for both, interleaved timing)
+# multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call
+# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)
+# row layout: 256 contiguous fibers of length n (row stride == n, batch axis untouched)
+# mflops = 5*howmany*n*log2(n)/time_us (batched benchFFT convention)
+# n  N_total  mine_ms  fftw_ms  mine_mflops  fftw_mflops  ratio_mine_over_fftw
+      32       8192      0.04912      0.02690       4169.4       7613.9    1.826
+      64      16384      0.09514      0.05369       5166.3       9155.2    1.772
+      81      20736      0.17067      0.08990       3851.5       7311.7    1.898
+     100      25600      0.22983      0.09861       3700.2       8623.8    2.331
+     125      32000      0.32893      0.14874       3388.4       7492.9    2.211
+     128      32768      0.20192      0.12533       5679.8       9150.9    1.611
+     243      62208      0.57758      0.39723       4267.7       6205.3    1.454
+     256      65536      0.46763      0.28649       5605.8       9150.2    1.632
+     512     131072      0.91931      0.54997       6415.9      10724.6    1.672
+     625     160000      2.06560      0.93859       3597.1       7916.3    2.201
+     729     186624      1.90297      1.14197       4663.1       7770.5    1.666
+    1024     262144      1.93336      1.17052       6779.5      11197.7    1.652
+    2048     524288      4.43852      2.51865       6496.7      11448.9    1.762
+    4096    1048576      9.44547      6.84476       6660.8       9191.6    1.380
