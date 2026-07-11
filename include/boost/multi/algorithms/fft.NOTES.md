@@ -1313,11 +1313,45 @@ have prior art elsewhere. Each would subsume concrete loops in this file:
   `MDRangePolicy` analog. The (block, r) spaces of every stage kernel are
   independent 2-D iteration domains; this is the natural policy carrier
   that needs no kernel restructuring.
-- **W5. Broadcasted views as algorithm inputs** — Multi already has
-  `.broadcasted()` (array_ref.hpp ~1666, carrying maintainer TODOs). If a
-  broadcasted 1-D view can zip against a [n][m] view in a W1/W3-style
-  transform, all three Bluestein loops and stage_generic_'s row-scaling
-  become one-liners of the form `Y = mul(chirp.broadcasted(...), IN)`.
+- **W5. Broadcasted views as algorithm inputs** — Multi already has two
+  candidate primitives, and (discussed with the maintainer 2026-07-10)
+  neither is zippable as-is; the refinement below is the agreed direction.
+  - `.broadcasted()` (array_ref.hpp ~3249) builds
+    `layout_t<2>(inner, 0, 0, 1)` — stride 0, nelems 1, unbounded leading
+    extent. Degenerate as an algorithm operand: `layout_t`'s own
+    `size() == nelems/stride` invariant divides by zero (the in-source
+    TODO "introduce a broadcasted_layout?" acknowledges this), shape
+    equality against a real [n][m] view cannot hold, the trip count can
+    never come from it, and pointer-stepping iterators collapse at
+    stride 0 (`begin() == end()` along the broadcast axis) unless
+    iterators carry an explicit index.
+  - `.repeated(n)` (array_ref.hpp ~3257) has the right *semantics* —
+    finite extent restores shape equality and a usable trip count, and
+    every FFT call site knows the batch width, so the unbounded form is
+    never actually needed: `chirp.repeated(m)` is [m][n] with row j ==
+    chirp, zippable against `in.rotated()` into `y.rotated()` with no
+    rotation of the repeated view itself. BUT it is a lambda-backed
+    function view (`f ^ extensions`, element access through
+    `invoke_square`), not a strided view: hoisting the per-row constant
+    out of the inner loop (which the hand-written kernels get by
+    construction — `chirp_[k]` loaded once per row into a register) then
+    depends on the optimizer seeing through the lambda layer, and a
+    lambda view has no mapping onto the Thrust iterator model (§11.8),
+    where a stride-0 strided view maps directly onto a
+    constant/permutation iterator, trivially coalesced.
+  - **Agreed refinement — the primitive to build**: realize the
+    `broadcasted_layout` TODO as *finite* `repeated(n)` semantics on a
+    strided view — stride 0 with a definite extent n (i.e. repeated =
+    broadcasted + finite extent, as ONE strided primitive, not a
+    lambda). That single form is zippable by any stride-aware W1/W3
+    algorithm, hoistable by construction (a stride-0 inner axis is a
+    visible loop invariant, no lambda in the way), and GPU-mappable.
+    With it, all three Bluestein loops and stage_generic_'s row-scaling
+    become one-liners of the form `Y = mul(chirp.repeated(m), IN)`.
+  - Either way W5 stays contingent on W1/W3: a broadcast view without an
+    N-ary elementwise transform to feed it into has no consumer (C++17's
+    binary `std::transform` over Multi views iterates ROWS, so its op
+    would have to return a whole row value — an allocation per row).
 
 ### 11.7 Verification protocol (for the implementer)
 

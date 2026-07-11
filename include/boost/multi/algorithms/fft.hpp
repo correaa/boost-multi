@@ -86,13 +86,14 @@
 
 #include <boost/multi/array_ref.hpp>  // for layout_t and subarray (cursor -> strided view reconstruction)
 
-#include <algorithm>    // for copy, fill, min, max, find_if
+#include <algorithm>    // for copy, copy_n, fill, min, max, find_if, transform
 #include <array>        // for plan sizes
 #include <cassert>      // for assert
 #include <cmath>        // for cos, sin, acos
 #include <complex>      // for the fft_ops<std::complex> fast product
 #include <cstddef>      // for size_t, ptrdiff_t
 #include <functional>   // for greater
+#include <iterator>     // for prev, next, reverse iterators
 #include <limits>       // for numeric_limits
 #include <memory>       // for addressof
 #include <type_traits>  // for decay_t, enable_if_t, void_t
@@ -670,10 +671,9 @@ struct fft_engine {
 	}
 
 	auto sub_index_(std::size_t rr) -> std::size_t {
-		for(std::size_t i = 0; i != sub_.size(); ++i) {
-			if(sub_[i].n_ == rr) {
-				return i;
-			}
+		auto const it = std::find_if(sub_.begin(), sub_.end(), [rr](fft_engine const& e) { return e.n_ == rr; });
+		if(it != sub_.end()) {
+			return static_cast<std::size_t>(it - sub_.begin());
 		}
 		sub_.emplace_back(rr);
 		return sub_.size() - 1;
@@ -784,9 +784,7 @@ struct fft_engine {
 		}
 
 		TW const inv_m = TW{real{1} / static_cast<real>(conv_n_), real{0}};
-		for(std::size_t k = 0; k != n_; ++k) {
-			postc_[k] = fft_mul(inv_m, chirp_[k]);  // branch-free product, same as the kernels (construction-time, but no reason to take the operator* libcall path)
-		}
+		std::transform(chirp_.begin(), chirp_.end(), postc_.begin(), [inv_m](TW const& c) { return fft_mul(inv_m, c); });  // branch-free product, same as the kernels (construction-time, but no reason to take the operator* libcall path)
 
 		TW const* kft = conv.run(1, /*backward=*/false, boot_arena.data());  // canonical forward, always -- see run_bluestein_
 		kernel_ft_.assign(kft, kft + conv_n_);
@@ -795,13 +793,13 @@ struct fft_engine {
 		// a conjugated sequence is a conjugated, INDEX-REVERSED spectrum, so
 		// plain conj-on-load (fft_mul_dir) does not work for this table --
 		// precompute the reversed/conjugated table once instead (fft.NOTES.md
-		// §10.5).
+		// §10.5). k == 0 is its own mirror; the rest is a reversed conjugate
+		// copy: kernel_ft_.rbegin() is kernel_ft_[conv_n_-1] -> kernel_ft_bwd_[1],
+		// down to kernel_ft_[1] -> kernel_ft_bwd_[conv_n_-1].
 		kernel_ft_bwd_.resize(conv_n_);
 		using std::conj;
-		for(std::size_t k = 0; k != conv_n_; ++k) {
-			std::size_t const src = (conv_n_ - k) % conv_n_;
-			kernel_ft_bwd_[k]     = conj(kernel_ft_[src]);
-		}
+		kernel_ft_bwd_[0] = conj(kernel_ft_[0]);
+		std::transform(kernel_ft_.rbegin(), std::prev(kernel_ft_.rend()), std::next(kernel_ft_bwd_.begin()), [](TW const& v) { return conj(v); });
 	}
 
 	// --- batched Stockham stage kernels -----------------------------------
@@ -1031,9 +1029,7 @@ struct fft_engine {
 			std::size_t const base = block * rr;
 			for(std::size_t r = 0; r != ns; ++r) {
 				T const* const asrc = a + ((block + r) * sa);
-				for(std::size_t j = 0; j != m; ++j) {
-					x[j] = asrc[j];
-				}  // t == 0, twiddle == 1
+				std::copy_n(asrc, m, x);  // t == 0, twiddle == 1
 				for(std::size_t t = 1; t != rr; ++t) {
 					TW const       w  = tw_[t * r * tstep];
 					T const* const at = asrc + (t * nr * sa);
@@ -1045,9 +1041,7 @@ struct fft_engine {
 				for(std::size_t u = 0; u != rr; ++u) {
 					TW const* const wrow = wmat + (u * rr);
 					T* const        dst  = b + ((base + r + (u * ns)) * sb);
-					for(std::size_t j = 0; j != m; ++j) {
-						dst[j] = x[j];
-					}  // wrow[0] == 1
+					std::copy_n(x, m, dst);  // wrow[0] == 1
 					for(std::size_t t = 1; t != rr; ++t) {
 						TW const       wc = wrow[t];
 						T const* const xt = x + (t * m);
@@ -1079,9 +1073,7 @@ struct fft_engine {
 			for(std::size_t r = 0; r != ns; ++r) {
 				T const* const asrc = a + ((block + r) * sa);
 				T* const       y0   = y + (r * m);
-				for(std::size_t j = 0; j != m; ++j) {
-					y0[j] = asrc[j];
-				}
+				std::copy_n(asrc, m, y0);  // t == 0, twiddle == 1
 				for(std::size_t t = 1; t != rr; ++t) {
 					TW const       w  = tw_[t * r * tstep];
 					T const* const at = asrc + (t * nr * sa);
@@ -1098,9 +1090,7 @@ struct fft_engine {
 				for(std::size_t idx = 0; idx != rr * ns; ++idx) {
 					T const* const zr = z + (idx * m);
 					T* const       br = b + (((block * rr) + idx) * sb);
-					for(std::size_t j = 0; j != m; ++j) {
-						br[j] = zr[j];
-					}
+					std::copy_n(zr, m, br);
 				}
 			}
 		}
@@ -1233,9 +1223,7 @@ struct fft_engine {
 		T* const y = conv.buf_ptr(arena);  // chirp-premultiplied input, zero-padded to conv_n_
 		for(std::size_t k = 0; k != n_; ++k) {
 			TW const c = chirp_[k];
-			for(std::size_t j = 0; j != m; ++j) {
-				y[(k * m) + j] = fft_mul_dir<Backward>(c, in[(k * m) + j]);
-			}
+			std::transform(in + (k * m), in + ((k + 1) * m), y + (k * m), [c](T const& v) { return fft_mul_dir<Backward>(c, v); });
 		}
 		std::fill(y + (n_ * m), y + (conv_n_ * m), T{});
 
@@ -1245,9 +1233,10 @@ struct fft_engine {
 		TW const* const kft = Backward ? kernel_ft_bwd_.data() : kernel_ft_.data();
 		for(std::size_t q = 0; q != conv_n_; ++q) {
 			TW const kq = kft[q];
-			for(std::size_t j = 0; j != m; ++j) {
-				z[(q * m) + j] = fft_mul(kq, yf[(q * m) + j]);  // plain mul: table already carries the right direction
-			}
+			// plain mul: table already carries the right direction. z may fully
+			// alias yf here (see comment above); std::transform explicitly
+			// permits the output range to equal the input range for a unary op.
+			std::transform(yf + (q * m), yf + ((q + 1) * m), z + (q * m), [kq](T const& v) { return fft_mul(kq, v); });
 		}
 
 		T const* const zc = conv.run(m, true, arena);  // inverse conv, always
@@ -1255,9 +1244,7 @@ struct fft_engine {
 		T* const res = (out != nullptr) ? out : buf_ptr(arena);
 		for(std::size_t k = 0; k != n_; ++k) {  // chirp-postmultiply (normalization fused into postc_)
 			TW const pc = postc_[k];
-			for(std::size_t j = 0; j != m; ++j) {
-				res[(k * m) + j] = fft_mul_dir<Backward>(pc, zc[(k * m) + j]);
-			}
+			std::transform(zc + (k * m), zc + ((k + 1) * m), res + (k * m), [pc](T const& v) { return fft_mul_dir<Backward>(pc, v); });
 		}
 		return res;
 	}
@@ -1353,9 +1340,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 			for(std::size_t k = 0; k != nn; ++k) {
 				auto     it  = cols[static_cast<std::ptrdiff_t>(k)].begin() + static_cast<std::ptrdiff_t>(y0);
 				T* const row = bp + (k * mt);
-				for(std::size_t j = 0; j != mt; ++j) {
-					row[j] = it[static_cast<std::ptrdiff_t>(j)];
-				}
+				std::copy_n(it, mt, row);
 			}
 		}
 
@@ -1376,9 +1361,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 			for(std::size_t k = 0; k != nn; ++k) {
 				auto           it  = cols[static_cast<std::ptrdiff_t>(k)].begin() + static_cast<std::ptrdiff_t>(y0);
 				T const* const row = res + (k * mt);
-				for(std::size_t j = 0; j != mt; ++j) {
-					it[static_cast<std::ptrdiff_t>(j)] = row[j];
-				}
+				std::copy_n(row, mt, it);
 			}
 		}
 	}
@@ -1469,10 +1452,8 @@ auto fft_layout_from(std::array<std::size_t, static_cast<std::size_t>(D)> const&
 	} else {
 		std::array<std::size_t, static_cast<std::size_t>(D) - 1>    sub_ext{};
 		std::array<std::ptrdiff_t, static_cast<std::size_t>(D) - 1> sub_str{};
-		for(std::size_t i = 0; i != static_cast<std::size_t>(D) - 1; ++i) {
-			sub_ext.at(i) = ext.at(i + 1);
-			sub_str.at(i) = str.at(i + 1);
-		}
+		std::copy(ext.begin() + 1, ext.end(), sub_ext.begin());
+		std::copy(str.begin() + 1, str.end(), sub_str.begin());
 		return multi::layout_t<D>{
 			fft_layout_from<D - 1>(sub_ext, sub_str),
 			str[0], 0,
