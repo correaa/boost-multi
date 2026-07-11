@@ -1121,3 +1121,236 @@ array", dispatch on something structural (e.g. the element type being
 Bit-identity tests for `none` axes must use exact equality (`==` on
 elements / memcmp semantics), not `tol` — the guarantee in §10.1 item 6 is
 "never written", not "numerically close".
+
+## 11. Algorithm-ification survey — raw loops → named algorithms (2026-07-10)
+
+Maintainer-requested survey (this section is the deliverable; the implementer
+— Sonnet — executes from it). Task: replace raw loops with *named* standard
+algorithms where a good fit exists, so that (a) the code reads conceptually
+and (b) execution policies can slot in later. Constraints set by the
+maintainer, all binding:
+
+- `std::for_each` is allowed but is the **last resort** — prefer algorithms
+  that name the operation (`transform`, `copy_n`, `reverse_copy`, `find_if`).
+- No SIMD intrinsics, no `std::simd` (except, far future, as a localized
+  last resort). Vectorization must come from the compiler. The preference
+  ladder (recorded 2026-07-10): stride-1 layouts first, algorithms that can
+  later take `unseq` second, other compiler hints (`__restrict`, no
+  `-ffast-math`) third.
+- No behavior change: every rewrite in Tier A below is an order-preserving
+  elementwise operation, so outputs must be **bit-identical** before/after
+  (see §11.7). Anything that would reassociate a floating-point reduction
+  (e.g. `transform_reduce` on stage_generic_'s t-sum) is out of scope
+  without explicit maintainer sign-off.
+- No perf regressions (protocol in §11.7). Anchors below are as of commit
+  9808b00df — **re-grep before editing**, the file drifts.
+
+### 11.1 The C++17 policy trap (read first)
+
+`std::execution::unseq` is **C++20** (P1001R2), not C++17. C++17's
+`<execution>` has only `seq`/`par`/`par_unseq`, and the parallel ones imply
+threading (maintainer: not now) plus a TBB link dependency on libstdc++.
+Therefore: land the algorithm *shapes* now with **no policy argument** —
+policy-free `std::transform`/`std::copy_n` inline to code identical to the
+raw loops (verify per §11.7), and the conceptual win is immediate. The
+`unseq` first argument is a one-token addition later, behind
+`#if defined(__cpp_lib_execution) && __cpp_lib_execution >= 201902L` or when
+the project baseline moves to C++20. Do NOT add `par`/`par_unseq` anywhere.
+
+### 11.2 What is already algorithmic (no work)
+
+`std::copy` (fiber gather/scatter in `fft_exec_fiber`, `run`'s n<2 path,
+`run_contig_inplace`'s tail, `stage_subplan_`'s contiguous fast path,
+`run_sixstep_`'s uout copy), `std::fill` (Bluestein zero-pad, bootstrap),
+`std::find_if` (plan ctor engine reuse), `std::sort`/`min`/`max`/`clamp`
+(construction). The survey's overall finding: the raw loops that remain are
+mostly the ones C++17's std *cannot* express — which is exactly what
+motivates the wishlist in §11.6.
+
+### 11.3 Tier A — implement now (bit-identical, C++17-clean)
+
+Hot-path items first. For each: anchor grep key → current shape → change.
+
+**A1. `run_bluestein_`'s three elementwise loops** (grep
+`chirp-premultiplied input`, `pointwise product with the precomputed`,
+`chirp-postmultiply`; ~lines 1234-1261). Each inner j-loop is a
+`std::transform` with a bound scalar; keep the outer k/q loop:
+
+    // premultiply (per row k):
+    std::transform(in + (k * m), in + ((k + 1) * m), y + (k * m),
+        [c](T const& v) { return fft_mul_dir<Backward>(c, v); });
+    // pointwise product (per row q) -- z may FULLY alias yf (documented
+    // above the loop); std::transform explicitly permits result == first
+    // for unary ops, and the buffers are otherwise disjoint (never partial
+    // overlap: same arena offsets or different regions entirely):
+    std::transform(yf + (q * m), yf + ((q + 1) * m), z + (q * m),
+        [kq](T const& v) { return fft_mul(kq, v); });
+    // postmultiply (per row k): same shape as premultiply, with postc_[k].
+
+These are the Bluestein hot path: perf-check per §11.7 (the 5-smooth
+benchmark does NOT cover Bluestein — ad-hoc timing needed). m == 1 gives
+length-1 transforms; confirm inlining leaves the scalar path unchanged.
+
+**A2. `stage_subplan_` copies** (grep `y0[j] = asrc[j]` and the scatter
+`br[j] = zr[j]`; ~lines 1082-1084, 1098-1104): `std::copy_n(asrc, m, y0)`
+for the t == 0 gather row; `std::copy_n(zr, m, br)` inside the scatter's
+outer idx loop. (The twiddle-gather loop `yt[j] = fft_mul_dir(...)` is the
+same zip shape as the butterflies — Tier C, stays.)
+
+**A3. `stage_generic_`'s two copy loops** (grep `t == 0, twiddle == 1` and
+`wrow[0] == 1`; ~lines 1034-1036, 1048-1050): both are `std::copy_n(src, m,
+dst)`. Only the copies — the twiddle gather and the accumulation loop stay
+raw (§11.5 C2).
+
+**A4. `fft_exec_slab` batch-near gather/scatter inner loops** (grep
+`batch axis contiguous-ish`; ~lines 1352-1359 and the scatter twin
+~1375-1383): the inner j-loops copy through a Multi strided iterator —
+`std::copy_n(it, mt, row)` (gather) and `std::copy_n(row, mt, it)`
+(scatter). The iterator is random-access; elementwise semantics identical.
+The `fiber_near` kb-blocked variants are NOT in this tier (§11.5 C5).
+
+**A5. `init_bluestein_` cold loops** (construction; clarity-only):
+- `postc_` (grep `branch-free product, same as the kernels`):
+  `std::transform(chirp_.begin(), chirp_.end(), postc_.begin(),
+  [inv_m](TW const& c) { return fft_mul(inv_m, c); });`
+- `kernel_ft_bwd_` (grep `INDEX-REVERSED spectrum, so`): the k = 0 element
+  is its own mirror; the rest is a reversed conjugate copy —
+
+      kernel_ft_bwd_.resize(conv_n_);
+      using std::conj;
+      kernel_ft_bwd_[0] = conj(kernel_ft_[0]);
+      std::transform(kernel_ft_.rbegin(), std::prev(kernel_ft_.rend()),
+          std::next(kernel_ft_bwd_.begin()),
+          [](TW const& v) { return conj(v); });
+
+  (rbegin() is kft[N-1] → kbwd[1]; N-1 elements. The n = 101 BACKWARD test
+  is the correctness gate for this one.)
+
+**A6. `sub_index_`** (grep `auto sub_index_`): linear scan →
+`std::find_if(sub_.begin(), sub_.end(), [rr](fft_engine const& e) { return
+e.n_ == rr; })` — matches the plan ctor's existing idiom.
+
+**A7. `fft_layout_from`'s element loop** (grep `sub_ext.at(i)`): two
+`std::copy` calls over the tail of `ext`/`str` — but note the `.at()` there
+is doing bounds documentation, not real work; drop to `std::copy(ext.begin()
++ 1, ext.end(), sub_ext.begin())` and same for `str`. Cold; cosmetic.
+
+### 11.4 Tier B — propose, measurement- or maintainer-gated
+
+**B1. Bluestein wrapped-kernel mirror** (grep `y[conv_n_ - j] = dj`): after
+the chirp loop fills `chirp_` (that loop keeps its sequential `jsq` scan —
+the incremental mod-2n update is deliberate overflow avoidance), the
+wrapped kernel `y` becomes two named steps:
+
+    std::transform(chirp_.begin(), chirp_.end(), y,
+        [](TW const& c) { using std::conj; return conj(c); });
+    std::reverse_copy(y + 1, y + n_, y + (conv_n_ - (n_ - 1)));
+
+(no overlap: conv_n_ >= 2n-1 guarantees the mirrored tail starts at or
+after y + n_). Reads as the math ("kernel = conj-chirp plus mirrored
+tail"). Cold path; do it if the split survives review as clearer.
+
+**B2. Slab blocked-transpose gather/scatter as Multi assignment**: the
+`fiber_near` gather is conceptually `scratch_view.rotated() = slab_block`
+(an `array_ref<T, 2>` over `bp` with shape [nn][mt]). Blocked on wishlist
+item W1: Multi's elementwise assignment today has no cache tiling, and the
+hand-written kb = 64 blocking exists because it measured faster. Only adopt
+behind a benchmark comparison (2-D sweep + the many sweep).
+
+### 11.5 Tier C — stays raw, with the reason on record
+
+- **C1. Butterfly inner j-loops** (radix-2/3/4/5/8): P-input/P-output zip
+  transform. C++17 has no zip iterator; a `for_each` over j would rename
+  the loop without naming the *operation* (last-resort clause). The loops
+  already vectorize (contiguous j, `__restrict`, no `-ffast-math`
+  needed). Revisit when W3/W4 exist, or C++23 `views::zip` + C++26
+  parallel range algorithms arrive.
+- **C2. `stage_generic_` twiddle-gather + accumulation**: the gather is a
+  row-scaling (BLAS dgmm shape), the accumulation is a small complex GEMM
+  (OUT[u][j] = Σ_t W[u][t]·X[t][j], p ≤ 64, m ≤ 64). `transform_reduce`
+  would reassociate the t-sum (forbidden). BLAS dispatch (multi has
+  adaptors) loses at these sizes to call overhead and forfeits generic-T.
+  Name the shapes in a comment; keep the loops.
+- **C3. Six-step fused twiddle-transpose**: the `idx` recurrence is a
+  sequential scan (incremental mod-n avoids a per-element div/mod — it
+  exploits tw[(k1·j2) % n] being an outer product of phases), and the
+  32×32 tiling is measured. The std-expressible version would split one
+  fused pass into two and pay div/mod. Wishlist W2 is the algorithmic
+  form.
+- **C4. Construction scans**: trial-division factorization, `next_smooth_`'s
+  argmin (a `min_element` over a transformed iota — not expressible in
+  C++17 without materializing), the chirp `jsq` scan. Cold, inherently
+  sequential or clearest as written.
+- **C5. `fiber_near` kb-blocked gather/scatter**: same tiled-transpose-copy
+  shape as C3 minus the twiddle; W1's territory.
+
+### 11.6 Wishlist — truly multidimensional algorithms (for the maintainer)
+
+None of these exist in std C++17/20/23 as parallel-algorithm shapes; all
+have prior art elsewhere. Each would subsume concrete loops in this file:
+
+- **W1. Policy-aware copy/transform between strided multidimensional
+  views** — `multi::copy(policy, src_view, dst_view)` choosing loop order
+  from strides and cache-tiling when the views are relatively transposed.
+  Prior art: Kokkos `deep_copy`, HPTT, MKL `mkl_zomatcopy`, cuBLAS `geam`.
+  Subsumes: A4's loops, B2, C5, stage_subplan_'s strided scatter. This is
+  the single highest-value ask — the slab path it would own is exactly
+  where the new `fftw_plan_many_dft` benchmark shows the largest gap.
+- **W2. Indexed transform / multidimensional tabulate** — elementwise op
+  receiving the multi-index: `multi::tabulate(view, f(i, j, ...))` and the
+  fused transposed variant `B = f(indices, A_transposed)`. Covers: twiddle
+  table, `wmat_` (a gather `tw_[(t·u%rr)·wr]`), chirp, and — fused with
+  W1's tiling — the six-step twiddle-transpose (C3). `thrust::tabulate` is
+  the 1-D special case; nothing multidimensional exists anywhere in C++.
+- **W3. N-ary zip transform / "apply a small linear operator along one
+  axis, batched over the rest"** — the butterfly shape (P same-shape input
+  views → P output views, elementwise over the batch domain), and its
+  runtime-size sibling (stage_generic_'s GEMM). Prior art:
+  `thrust::zip_iterator`, numpy `einsum`/`apply_along_axis`, BLAS
+  `gemm_strided_batched`, FFTW codelets.
+- **W4. Execution-policy `for_each` over an index domain** —
+  `multi::for_each(policy, extensions, f(i, j))`: the Kokkos
+  `MDRangePolicy` analog. The (block, r) spaces of every stage kernel are
+  independent 2-D iteration domains; this is the natural policy carrier
+  that needs no kernel restructuring.
+- **W5. Broadcasted views as algorithm inputs** — Multi already has
+  `.broadcasted()` (array_ref.hpp ~1666, carrying maintainer TODOs). If a
+  broadcasted 1-D view can zip against a [n][m] view in a W1/W3-style
+  transform, all three Bluestein loops and stage_generic_'s row-scaling
+  become one-liners of the form `Y = mul(chirp.broadcasted(...), IN)`.
+
+### 11.7 Verification protocol (for the implementer)
+
+1. Usual gates: strict `-O2 -Werror` (g++ AND clang++), `-O3 -Walloc-zero`,
+   ASan+UBSan, full test suite, plus `-Wfloat-equal -Wcast-align=strict`
+   (both bit the CI recently — keep them in the local gate).
+2. **Bit-identity harness** (the real gate for this task): build the test
+   battery at HEAD and with the changes; every Tier-A rewrite is
+   order-preserving elementwise, so transformed arrays must be
+   byte-identical across builds for identical inputs. Minimum coverage:
+   Bluestein n = 101/331/1009 forward AND backward, six-step n = 8192
+   roundtrip, the non-cubic 3-D mixed case, a 2-D slab shape that takes
+   the batch-near gather (column-major-ish strides). A temporary test-side
+   memcmp harness is fine; do not commit it.
+3. **Perf**: the 5-smooth benchmark does NOT exercise Bluestein — for A1,
+   time an ad-hoc loop (n = 1009, ~2000 reps, idle machine, AC) before vs
+   after; A4 is covered by the 2-D sweep and the many sweep (smoke run,
+   idle-protocol only for published numbers). m == 1 shapes: confirm the
+   1-D benchmark spot sizes are unchanged (length-1 transform/copy_n must
+   inline away).
+4. Commit message names this section (e.g. "fft: raw loops → named
+   algorithms (NOTES §11 Tier A)"); note any Tier-A item deliberately
+   skipped and why.
+
+### 11.8 Thrust correspondence (why this aligns with the §8 CUDA plan)
+
+Every Tier-A shape has a direct Thrust name, so expressing them as
+algorithms now makes the §8/§10.4(c) port mechanical rather than a
+rewrite: A1 → `thrust::transform` (broadcast scalar per row; or one flat
+`transform` with a `permutation_iterator(chirp, counting/m)` index map),
+A2/A3/A4 → `thrust::copy_n`, A5 → `thrust::transform` (+
+`reverse_iterator`), tabulates (W2's 1-D cases) → `thrust::tabulate`,
+butterflies (C1) → `for_each_n` over a `zip_iterator` — and the dgmm-like
+row scalings have a cuBLAS analog (`cublasZdgmm`). The wishlist items W1-W4
+are likewise the exact shapes a device backend wants (coalescing-aware
+tiled copy, MD-range launch).

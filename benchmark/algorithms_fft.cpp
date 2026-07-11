@@ -289,6 +289,91 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 	std::fclose(out);
 }
 
+// Batched 1-D: `howmany` row-fibers of length `n`, contiguous-row layout
+// (row stride == n), against FFTW's advanced (many) interface -- the
+// specialized-batching adversary to multi::fft_plan's general per-axis
+// direction feature (fft.NOTES.md §10), since {none, forward} on a rank-2
+// array IS the "many" interface here (batch axis untouched, fiber axis
+// transformed), not a separate code path. This isolates the slab
+// gather/scatter machinery (fft_exec_slab's run_fused tile writes when the
+// batch axis is contiguous) rather than the single-fiber path the D==1
+// sweep above already covers.
+void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, char const* label) {
+	std::FILE* out = std::fopen(fname, "w");
+	std::fprintf(out, "# %s (howmany=%d): multi::fft_plan{none,forward} vs fftw_plan_many_dft (plan recycled, exec only, plan-build time excluded for both, interleaved timing)\n", label, howmany);
+	std::fprintf(out, "# multi::fft_plan::execute() uses a std::pmr::unsynchronized_pool_resource-backed allocator, built once per plan and reused across all reps\n");
+#if defined(DISABLE_WISDOM) && defined(USE_ESTIMATE)
+	std::fprintf(out, "# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
+#elif defined(DISABLE_WISDOM)
+	std::fprintf(out, "# FFTW: FFTW_MEASURE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
+#else
+	std::fprintf(out, "# FFTW: FFTW_MEASURE, wisdom allowed (accumulated within and across runs via %s)\n", wisdom_filename);
+#endif
+	std::fprintf(out, "# row layout: %d contiguous fibers of length n (row stride == n, batch axis untouched)\n", howmany);
+	std::fprintf(out, "# mflops = 5*howmany*n*log2(n)/time_us (batched benchFFT convention)\n");
+	std::fprintf(out, "# n  N_total  mine_ms  fftw_ms  mine_mflops  fftw_mflops  ratio_mine_over_fftw\n");
+	for(int n : sides) {
+		long const N = static_cast<long>(n) * howmany;
+
+		std::vector<complex>                   base(static_cast<std::size_t>(N));
+		std::mt19937                           gen(42);
+		std::uniform_real_distribution<double> dist(-1.0, 1.0);
+		for(auto& e : base) { e = complex{dist(gen), dist(gen)}; }
+		long const reps = reps_for(static_cast<double>(howmany) * static_cast<double>(n));
+
+		multi::array<complex, 1>     flat(multi::extents_t<1>{N});
+		multi::array_ref<complex, 2> v(flat.data_elements(), {howmany, n});  // row-major: fiber (axis 1) contiguous, batch (axis 0) untouched
+		auto                          load = [&] { std::copy(base.begin(), base.end(), flat.begin()); };
+
+		multi::fft_plan<2, complex> const plan{
+			v.sizes(),
+			{{multi::fft_direction::none, multi::fft_direction::forward}}
+		};  // plan build: not timed
+
+		std::pmr::unsynchronized_pool_resource   pool;
+		std::pmr::polymorphic_allocator<complex> alloc(&pool);
+
+		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
+		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
+		auto  loadf = [&] {
+            for(long i = 0; i != N; ++i) {
+                in[i][0] = base[static_cast<std::size_t>(i)].real();
+                in[i][1] = base[static_cast<std::size_t>(i)].imag();
+            }
+		};
+		loadf();
+#ifdef DISABLE_WISDOM
+		fftw_forget_wisdom();  // force a cold search/estimate for every size
+#endif
+#ifdef USE_ESTIMATE
+		unsigned const fftw_flag = FFTW_ESTIMATE;
+#else
+		unsigned const fftw_flag = FFTW_MEASURE;
+#endif
+		int        fftw_n[1] = {n};
+		fftw_plan p =  // plan build: not timed; in-place, contiguous rows: istride=ostride=1, idist=odist=n
+			fftw_plan_many_dft(1, fftw_n, howmany, in, nullptr, 1, n, fo, nullptr, 1, n, FFTW_FORWARD, fftw_flag);
+		loadf();  // FFTW_MEASURE overwrites in/out while searching strategies; reload before timing
+
+		load();
+		plan.execute(v.home(), alloc);  // untimed warm-up, symmetric with FFTW's below
+		loadf();
+		fftw_execute(p);  // untimed warm-up, symmetric with multi's above
+		auto [mine, ffw] = time_it_interleaved(
+			reps, [&] { load(); plan.execute(v.home(), alloc); }, [&] { loadf(); fftw_execute(p); });
+
+		fftw_destroy_plan(p);
+		fftw_free(in);
+		fftw_free(fo);
+
+		double const work = 5.0 * static_cast<double>(howmany) * static_cast<double>(n) * std::log2(static_cast<double>(n));
+		std::fprintf(out, "%8d %10ld %12.5f %12.5f %12.1f %12.1f %8.3f\n", n, N, mine * 1e3, ffw * 1e3, work / (mine * 1e6), work / (ffw * 1e6), mine / ffw);
+		std::fflush(out);
+		std::fprintf(stderr, "%s n=%d done (reps=%ld)\n", label, n, reps);
+	}
+	std::fclose(out);
+}
+
 }  // namespace
 
 auto main() -> int {
@@ -332,6 +417,16 @@ auto main() -> int {
 	sweep<3>({8, 9, 15, 16, 20, 25, 27, 32, 64, 81, 90, 100,
 	          125, 128, 144, 216, 243, 250, 256, 300},
 	         "fft_bench_3d" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "3D n x n x n");
+
+	// Batched 1-D ("many"): fiber sizes spanning the radix-2/3/4/5/8 kernel
+	// families, at two batch depths, against fftw_plan_many_dft -- see
+	// sweep_many's comment. Two depths (moderate and deep) so the plot shows
+	// whether the ratio is stable as the batch axis grows, not just a single
+	// point.
+	sweep_many({32, 64, 81, 100, 125, 128, 243, 256, 512, 625, 729, 1024, 2048, 4096},
+	           32, "fft_bench_many_h32" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "many n (howmany=32)");
+	sweep_many({32, 64, 81, 100, 125, 128, 243, 256, 512, 625, 729, 1024, 2048, 4096},
+	           256, "fft_bench_many_h256" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "many n (howmany=256)");
 
 #undef BOOST_MULTI_FFT_BENCH_SUFFIX
 
