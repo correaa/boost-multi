@@ -1737,3 +1737,207 @@ just with an asymmetric split instead of a uniform one), not as recursive
 sub-engine delegation. That is a substantially larger design task --
 closer in scope to Phase B's direction-neutral rework than to anything
 attempted this session -- and wasn't attempted here.
+
+### 11.14 `perf` profiling: where the cycles actually go (2026-07-11)
+
+Per `fft.PROFILE-TASK.md`: measurement only, no product-code changes.
+Harnesses (`prof_mine.cpp`/`prof_fftw.cpp`, both in the session
+scratchpad, never the repo) build a plan once, warm up once, then loop
+`execute()` (mine) or `fftw_execute()` (FFTW, `FFTW_MEASURE`) back-to-back
+with no cache flush and no reload between reps -- deliberate, for perf
+sample density. **This means the cyc/point ratios below are NOT the same
+measurement as the official flushed-cache benchmark's `%-of-FFTW`
+figures** (`benchmark/algorithms_fft.cpp`, `fft_bench_*_nowisdom.dat`);
+they answer a different, narrower question -- "given hot caches and a
+resident plan, where do cycles go within one binary's own execution" --
+and should not be quoted as a re-measurement of the committed 55-68%
+figure. Build: exactly the flags the task specifies (`-O3 -march=native
+-mtune=native -funroll-loops -fno-math-errno -DNDEBUG -g
+-fno-omit-frame-pointer`, no `-fno-inline`). Machine: AC power, idle,
+`perf_event_paranoid=1` (user-set), package temp nominal, checked before
+and after the run.
+
+**Per-case counters** (`perf stat -d -d`, cycles/point = total cycles ÷
+total output points across all reps):
+
+| case | n / shape | mine cyc/pt | mine IPC | mine L1-miss% | mine LLC-miss% | FFTW cyc/pt | FFTW IPC | FFTW L1-miss% | FFTW LLC-miss% | ratio (mine/FFTW) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P1/F1 | 1D n=1024 | 26.60 | 3.23 | 8.8% | 3.7% | 7.23 | 2.71 | 11.5% | 4.4% | 3.68x |
+| P2/F2 | 1D n=4096 | 32.22 | 3.11 | 19.1% | 0.2% | 11.87 | 2.50 | 23.9% | 0.0% | 2.71x |
+| P3/F3 | 1D n=1,048,576 (six-step) | 211.86 | 0.74 | 26.0% | 29.7% | 188.24 | 1.86 | 11.8% | 26.6% | 1.13x |
+| P4/F4 | many [256][1024], `{none,forward}` | 26.66 | 3.19 | 9.5% | 0.9% | 9.17 | 2.12 | 14.4% | 3.4% | 2.91x |
+| P5/F5 | 1D n=1009 (Bluestein) | 166.93 | 2.86 | 15.5% | 1.2% | 89.72 | 3.02 | 12.2% | 0.1% | 1.86x |
+
+Branch-miss rates were <1% for every case, both binaries -- not a factor
+anywhere, omitted from the table.
+
+**The headline pattern, P1/P2/P4**: our IPC is HIGHER than FFTW's (3.1-3.2
+vs 2.1-2.7) yet we burn 2.7-3.7x more cycles per point. Higher IPC with
+more total cycles means more total INSTRUCTIONS retired per output point
+-- this is not a stall/cache problem for these three cases, it's an
+instruction-count problem. L1/LLC-miss rates are unremarkable (single
+digits to ~20%, in FFTW's own range too). This is the opposite of what a
+"we're bandwidth-bound, need bigger radices" story would show (that
+predicts LOW IPC + high miss rates); instead it's exactly what "FFTW's
+codelets are algebraically leaner per point" predicts.
+
+**P3 (six-step, huge n) is qualitatively different**: IPC collapses to
+0.74 (FFTW: 1.86), L1-miss% nearly doubles FFTW's (26.0% vs 11.8%) -- this
+one case IS memory/stall-bound. Only 1.13x FFTW's cyc/point in THIS
+harness (hot-cache, back-to-back reps) -- consistent with, but not a
+re-derivation of, the official benchmark's much worse flushed-cache figure
+for this region; the gap between "1.13x here" and "3-4x slower there" is
+itself informative (see verdict below).
+
+**P5 (Bluestein) sits in between**: 1.86x, IPC close to FFTW's (2.86 vs
+3.02) but LLC-miss% is 1.2% vs FFTW's 0.1% -- some real memory cost from
+the chirp gather/convolution, but instruction count still likely the
+larger term (radix-8-dominated fiber crunch, same story as P1/P2/P4's
+`fft_mul_dir` cost, doubled since the conv runs forward+backward).
+
+**Per-case self-time breakdown** (`perf record --call-graph dwarf` +
+`perf report`, self-time %, non-cumulative):
+
+- **P1/P2** (n=1024, 4096): 97.5-99.0% of all self-time is inside the one
+  fused `run_fused_impl_<...>` / `stage_radix4_` inline blob (everything
+  inlines into `execute()` per the task's build flags, so gather/scatter,
+  twiddle load, and arithmetic are NOT separable symbols -- they're all
+  the same inlined function). Within that blob, `fft_mul_dir`/`fft_ops::mul`
+  (the twiddle complex-multiply itself) accounts for ~34% of self-time in
+  both cases. L1-miss% for these cases (8.8%, 19.1%) is unremarkable, so
+  this 34% reads as arithmetic cost (a complex multiply is 4 mul + 2
+  add/sub, or 3 mul + 5 add/sub with the Karatsuba trick), not a load-miss
+  hotspot on `tw_[r*tstep]` -- no distinct "twiddle load" symbol separates
+  from the arithmetic to test that in isolation, but the miss-rate
+  evidence argues against it being memory-bound.
+- **P4** (batched many): 98.77% in the same fused kernel as P1/P2 (this
+  is literally the same `stage_radix4_` template instantiation, invoked
+  once per fiber). The actual per-fiber gather/scatter (`fft_exec_slab`
+  itself, `fft_exec_fiber`, excluding the inlined kernel call) is **0.76%
+  + 0.08% = 0.84%** of total self-time. Batched-contiguous overhead is
+  negligible; P4's 2.91x gap to FFTW is the same instruction-count story
+  as P1/P2, not a batching-specific inefficiency.
+- **P3** (six-step): `run_stages_<true,false>`/`run_fused_impl_<true,false>`
+  (the column-FFT pass) 17.65%+17.60% (same code, nested self-time,
+  effectively ~17.6% of wall time), `run_sixstep_` itself (the tiled
+  transpose + twiddle combine) **14.32%**, and **43.77% in unresolved
+  kernel-space (`[k]`) samples** -- confirmed via a separate `strace -f -c`
+  run to be `mmap`/`munmap` calls, one pair essentially per `execute()`
+  call (124 `munmap` + 145 `mmap`, ~99.85% of all syscall time). Root
+  cause, confirmed with a standalone probe: `plan.scratch_elements()` for
+  n=1,048,576 is 6,291,456 elements = **100.7 MB** -- an allocation this
+  large falls straight through `std::pmr::unsynchronized_pool_resource`
+  (used both in this harness and in the official benchmark) to a raw
+  `mmap`/`munmap` pair every call. The pool resource, sized for small/
+  medium repeated allocations, provides **zero mitigation** at this scale.
+  This is a distinct finding from anything in candidates #2-#5 below: it's
+  an allocator problem, not an algorithm problem, and it's currently
+  eating a plausible ~40%+ of wall time in the worst-measured region.
+- **P5** (Bluestein): near-exact 50/50 split, `run_stages_<false,false>`
+  21.39% vs `run_stages_<false,true>` 21.14% (plus matching pairs of
+  `stage_radix8_<false,false/true>` at ~11.4% each and `run_bluestein_`
+  itself at 14.28%+3.52%). This symmetry is EXPECTED, not a bug: per
+  Phase B (§10.5), Bluestein's internal convolution is a single neutral
+  sub-engine that always runs forward-then-backward regardless of the
+  outer transform's own direction, so the two nearly-identical `false`/
+  `true` template instantiations doing equal work is exactly the designed
+  behavior.
+
+**FFTW codelets/strategy per size**: F1 (n=1024) and F2 (n=4096) show
+FFTW's execution spread across many small anonymous JIT-generated
+codelets with no exported symbol names (perf sees raw addresses only) --
+a rough diversity proxy (distinct addresses at >=0.1% self-time) counts
+**353 for F1, 203 for F2, 318 for F5** -- consistent with FFTW picking a
+plan built from many small, size-specialized generated kernels rather
+than one generic looped routine (the qualitative basis for "FFTW's
+codelets are algebraically leaner per point," matching the IPC/cyc-point
+pattern above). **F3 (n=1,048,576)**, by contrast, spends its time in
+FFTW's own NAMED library routines, not anonymous codelets -- top self-time
+symbols:
+
+    28.00%  fftw_cpy2d
+     5.95%  fftw_cpy2d_pair
+     1.30%  fftw_dft_zerotens
+     1.24%  fftw_transpose
+     0.55%  fftw_rdft_zerotens
+     0.21%  fftw_twiddle_awake
+     0.18%  fftw_tile2d
+     0.07%  fftw_choose_radix
+
+i.e. ~35%+ of FFTW's OWN time on this size is in transpose/copy machinery
+(`fftw_cpy2d`/`fftw_cpy2d_pair`/`fftw_transpose`/`fftw_tile2d`) --
+confirming huge-N FFTs are inherently transpose/copy-dominated for FFTW
+too, not a defect unique to our six-step path. FFTW simply has more
+highly-tuned copy/transpose primitives (tiled, `fftw_tile2d`-named) and,
+per this profiling run, no allocator tax comparable to ours (FFTW uses
+`fftw_malloc` once at plan-build time via `FFTW_MEASURE`, not per-call).
+
+**Verdict, candidate by candidate:**
+
+- **#2, per-stage sequential twiddle tables**: **NOTHING / WEAK-NO.**
+  L1-miss% for P1/P2/P4 (8.8-19.1%) is unremarkable and comparable to or
+  lower than FFTW's own miss rates on the same sizes -- no visible
+  cache-miss hotspot to attribute to strided `tw_[r*tstep]` reads. The
+  aggressive inlining (per the task's no-`-fno-inline` build) also means
+  we cannot cleanly isolate a "twiddle load" instruction stream from the
+  surrounding arithmetic to test this more precisely; what we CAN say is
+  the data gives no positive signal for it, and the self-time cost that
+  IS visible (`fft_mul_dir`, ~34%) reads as arithmetic, not load-latency.
+- **#3, radix-16 kernel / fewer passes**: **SUPPORTED, but re-scoped.**
+  P1/P2/P4 show HIGHER IPC than FFTW with 2.7-3.7x more cycles/point --
+  classic signature of "more total instructions per point," which fewer,
+  larger-radix passes directly reduces. This is NOT the "low IPC + high
+  LLC-miss" bandwidth-bound signature the task framed as the trigger
+  condition for #3 -- so the mechanism is "fewer arithmetic instructions
+  per output point" (matching FFTW's many-small-specialized-codelet
+  strategy), not "fewer memory passes." Still points at #3 as the right
+  lever for the smooth/batched cases, just via instruction-count
+  reduction rather than bandwidth relief.
+- **#4, six-step rework**: **WEAKENED, and superseded by a cheaper prior
+  fix.** P3's transpose+combine (`run_sixstep_`, 14.32%) plus the
+  column/row-FFT arithmetic (~17.6% each) do NOT dominate the way the
+  task's trigger condition ("supported iff P3's transpose dominates")
+  anticipated -- the single largest attributable cost is **43.77% in
+  kernel-space `mmap`/`munmap`**, an allocator artifact of one 100.7 MB
+  one-shot allocation defeating the pool resource, not an algorithmic
+  defect in the transpose scheme itself. FFTW's own F3 profile confirms
+  huge-N is inherently transpose/copy-heavy for FFTW too (~35%+ of ITS
+  self-time in `fftw_cpy2d`/`fftw_transpose`/`fftw_tile2d`), so a
+  six-step rework competes against an already transpose-bound reference,
+  not a transpose-free one. Re-measuring after fixing the allocator (see
+  recommendation) is a prerequisite before this candidate's real
+  remaining upside can even be estimated.
+- **#5, batched-contiguous heuristic**: **WEAKENED.** P4's actual
+  gather/scatter overhead (`fft_exec_slab`/`fft_exec_fiber`, excluding the
+  inlined per-fiber kernel) is 0.84% of self-time -- essentially all of
+  P4's cost is the SAME `stage_radix4_` arithmetic as the plain 1D case
+  (P1), and P4's 2.91x gap to FFTW tracks P1's 3.68x gap closely. There is
+  no batching-specific inefficiency to fix; whatever fixes #3 for 1D
+  fixes P4 too, for free.
+
+**Recommended next task**: fix the P3 allocator problem BEFORE attempting
+any six-step algorithmic rework. Replace the per-`execute()`-call
+`std::pmr::unsynchronized_pool_resource` scratch allocation (or the
+caller-owned equivalent in the official benchmark) with a persistent,
+reused arena -- e.g. a caller-held buffer backing a
+`std::pmr::monotonic_buffer_resource`, sized once to `scratch_elements()`
+and reused across calls -- for the huge-n path specifically. This is
+justified purely by the numbers above: 43.77% of P3's wall-time is
+currently kernel-space `mmap`/`munmap`, confirmed by both `perf` sampling
+and `strace -c` syscall-time attribution to be essentially one alloc/free
+pair per call. That is larger than either of `run_sixstep_`'s own two
+components (17.6% column-FFT, 14.3% transpose+combine) individually, and
+plausibly larger than #4's entire remaining algorithmic upside. Re-run
+this same profiling case (P3 only) after the allocator fix; only then
+does the six-step-transpose-vs-arithmetic split become measurable enough
+to decide whether #4 is still worth attempting.
+
+**Caveats**: F4's `perf record` call-graph was not captured (only `perf
+stat` counters) -- the FFTW-side self-time breakdown for the batched case
+is not available; this does not affect the P4 verdict above, which rests
+on OUR OWN self-time split. The GHz-derived clock-rate column was
+computed but dropped from the table above due to a units bug in the
+parsing script (cosmetic; IPC and miss-rate fields, which the verdicts
+depend on, parsed correctly and were spot-checked against the raw `perf
+stat` text). Machine was idle/AC/cool for the full run; no drift or
+throttling observed between cases.
