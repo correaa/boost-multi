@@ -278,7 +278,12 @@ inline constexpr bool fft_skip_element_init =
 template<class T, std::size_t N, bool = fft_skip_element_init<T>>
 struct fft_tile_buffer {
 	alignas(64) std::byte storage_[sizeof(T) * N];  // NOLINT(cppcoreguidelines-avoid-c-arrays,misc-non-private-member-variables-in-classes)
-	auto data() -> T* { return reinterpret_cast<T*>(storage_); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	// Cast via void* (not std::byte* -> T* directly): storage_ is already
+	// alignas(64), so this is safe, but -Wcast-align=strict only reasons
+	// about the STATIC pointer types (alignof(std::byte) == 1) and flags
+	// the direct cast regardless of the runtime alignment guarantee; the
+	// void* intermediate is the standard idiom to route around that.
+	auto data() -> T* { return reinterpret_cast<T*>(static_cast<void*>(storage_)); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 };
 
 template<class T, std::size_t N>

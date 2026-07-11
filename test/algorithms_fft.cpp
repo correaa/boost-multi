@@ -563,7 +563,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const                original = arr;
 			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{none, none}}};
 			plan.execute(arr.home());
-			BOOST_TEST( max_abs_diff(arr.elements(), original.elements()) == 1e-10 );
+			BOOST_TEST( max_abs_diff(arr.elements(), original.elements()) <= 0.0 );  // bit-identical: diff is exactly 0, never negative (<=0 avoids -Wfloat-equal)
 		}
 
 		// 2) `none` gives exact fiber independence: with dirs = {forward,
@@ -592,7 +592,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					m = std::max(m, std::abs(base[i][j] - perturbed[i][j]));
 				}
 			}
-			BOOST_TEST( m == 0.0 );
+			BOOST_TEST( m <= 0.0 );  // bit-identical: m is exactly 0, never negative (<=0 avoids -Wfloat-equal)
 		}
 
 		// 3) composability (tolerance: two separate passes vs. one plan
