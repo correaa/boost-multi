@@ -21,16 +21,17 @@
 //                                    batched lower-rank FFTs for free, e.g.
 //                                    {none, forward} on a 2-D array is
 //                                    "FFT each row")
-//     plan.execute(A)                transform A in place; A can be any array
-//                                    or subarray with the planned sizes, of
-//                                    any strided layout, with element type T
-//                                    deduced fresh per call -- independent of
-//                                    TW, so one plan (built once for a shape)
-//                                    can execute a complex<float> array today
-//                                    and a complex<double> array tomorrow
-//                                    without rebuilding any tables -- as many
-//                                    times as desired without re-allocating
-//                                    the tables (scratch is allocated fresh,
+//     plan.execute(A.home())         transform A in place, via its cursor;
+//                                    A can be any array or subarray with the
+//                                    planned sizes, of any strided layout,
+//                                    with element type T deduced fresh per
+//                                    call -- independent of TW, so one plan
+//                                    (built once for a shape) can execute a
+//                                    complex<float> array today and a
+//                                    complex<double> array tomorrow without
+//                                    rebuilding any tables -- as many times
+//                                    as desired without re-allocating the
+//                                    tables (scratch is allocated fresh,
 //                                    locally, on every execute() call)
 //   multi::fft_inplace(A, sign)      one-shot convenience (plans, then runs;
 //                                    TW = A's own element type)
@@ -176,9 +177,9 @@ template<class R1, class R2> struct fft_ops<std::complex<R1>, std::complex<R2>> 
 	}
 	// == mul(conj(w), x): same 4-mul/2-add shape as mul, two signs flipped
 	// (conjugating w negates wi's contribution). Used for backward-direction
-	// kernel dispatch (fft.NOTES.md §10, Phase B): engines store forward-sign
-	// tables only, and a backward pass conjugates every table load instead of
-	// keeping a second, sign-baked table.
+	// kernel dispatch: engines store forward-sign tables only, and a backward
+	// pass conjugates every table load instead of keeping a second, sign-baked
+	// table.
 	static constexpr auto conj_mul(std::complex<R2> const& w, std::complex<R1> const& x) -> std::complex<R1> {
 		using promoted   = std::common_type_t<R1, R2>;
 		promoted const wr = w.real();
@@ -210,16 +211,15 @@ auto fft_pi() -> Real { return std::acos(Real{-1}); }
 template<class T, class TW>
 constexpr auto fft_mul(TW const& w, T const& x) -> T { return fft_ops<T, TW>::mul(w, x); }
 
-// Direction-dispatching multiply (fft.NOTES.md §10, Phase B): `Backward`
-// picks conj_mul (conjugate the table operand `w` on load) or plain mul, so
-// every kernel needs exactly one instantiation-time choice instead of a
-// second, sign-baked table. Uniform-conjugation invariant (verified,
-// NOTES §10.5): every direction-dependent value in every smooth-path kernel
-// is a table load (`tw_`/`wmat_`, including the +-i constant and the fixed
-// radix-3/5 roots -- they are table entries too, never hardcoded literals),
-// so conjugating every `fft_mul_dir` call uniformly makes the whole smooth
-// path direction-correct. Do not special-case any one call site "out" of
-// the conjugation.
+// Direction-dispatching multiply: `Backward` picks conj_mul (conjugate the
+// table operand `w` on load) or plain mul, so every kernel needs exactly one
+// instantiation-time choice instead of a second, sign-baked table.
+// Uniform-conjugation invariant: every direction-dependent value in every
+// smooth-path kernel is a table load (`tw_`/`wmat_`, including the +-i
+// constant and the fixed radix-3/5 roots -- they are table entries too,
+// never hardcoded literals), so conjugating every `fft_mul_dir` call
+// uniformly makes the whole smooth path direction-correct. Do not
+// special-case any one call site "out" of the conjugation.
 template<bool Backward, class T, class TW>
 constexpr auto fft_mul_dir(TW const& w, T const& x) -> T {
 	if constexpr(Backward) {
@@ -254,9 +254,9 @@ inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
 //      compiles to a full memset on each use. array_ref.hpp enables the
 //      same thing through its opt-in only under the global
 //      `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` macro; this header applies
-//      it to its OWN scratch unconditionally (maintainer decision: safe --
-//      scratch elements are always fully written before being read) without
-//      defining that macro, which would change multi::array behavior for
+//      it to its OWN scratch unconditionally -- safe, since scratch elements
+//      are always fully written before being read -- without defining that
+//      macro, which would change multi::array behavior for
 //      every translation unit that includes this header.
 template<class T> struct fft_is_trivial_complex : std::false_type {};
 template<class R>
@@ -338,7 +338,7 @@ struct fft_engine {
 
 	// Bluestein state (used when n_ is a prime > fft_max_direct_radix):
 	// X_k = c_k * sum_n x_n c_n d_{k-n} with c_j = exp(-i*pi*j^2/n) (canonical
-	// forward sign, Phase B), d = 1/c, evaluated as a circular convolution of
+	// forward sign), d = 1/c, evaluated as a circular convolution of
 	// power-of-two length conv_n_ >= 2n-1. `chirp_`/`postc_` are plain
 	// elementwise conjugates across direction, so conj-on-load
 	// (`fft_mul_dir<Backward>`) handles them; `kernel_ft_` does not conjugate
@@ -381,8 +381,8 @@ struct fft_engine {
 	auto xbuf_ptr(T* arena) const -> T* { return arena + xbuf_off_; }
 
 	// Record that this engine's own buf_/out_/xbuf_ must hold at least a
-	// batch of width `m` (mirrors the old `ensure(m)` growth, but as a
-	// static, monotonic-max size computation instead of a runtime resize).
+	// batch of width `m`: a static, monotonic-max size computation, not a
+	// runtime resize.
 	void note_own_(std::size_t m) {
 		std::size_t const need = std::max<std::size_t>(n_, 1) * m;
 		buf_cap_ = std::max(buf_cap_, need);
@@ -408,7 +408,7 @@ struct fft_engine {
 			return;
 		}
 		if(bluestein_) {
-			sub_[0].note_reach_(m);  // single neutral conv sub-engine (Phase B collapse), run forward then backward
+			sub_[0].note_reach_(m);  // single neutral conv sub-engine, run forward then backward
 			return;
 		}
 		if(sixstep_) {
@@ -445,10 +445,10 @@ struct fft_engine {
 	// (n_=0, mb_=1, every table/vector empty) -- not a new/distinct
 	// "invalid" state, just making the ALREADY-existing trivial, no-op
 	// engine reachable without an explicit length. Used to default-fill
-	// `fft_plan::engines_`'s unused (padding) slots -- NOTES §10.1 item 9.
+	// `fft_plan::engines_`'s unused (padding) slots.
 	fft_engine() = default;
 
-	// Direction-neutral (Phase B, NOTES §10.5): builds forward-canonical
+	// Direction-neutral: builds forward-canonical
 	// tables only. A backward pass conjugates every table load at run time
 	// (`fft_mul_dir<Backward>`) instead of building a second, sign-baked set
 	// of tables -- see the kernel comments below for the invariant this
@@ -563,7 +563,7 @@ struct fft_engine {
 	// `note_reach_`/`assign_offsets_`); sizes are precomputed, so no runtime
 	// growth check is needed here. `T` (the array's element type) is deduced
 	// from `arena`/`in`, independent of `TW` (this engine's table type).
-	// `backward` is a runtime direction argument (Phase B, NOTES §10.5):
+	// `backward` is a runtime direction argument:
 	// engines store forward-canonical tables only, and this dispatches ONCE
 	// per invocation to the `<..., Backward>` instantiation -- one branch per
 	// pass, nothing per element.
@@ -745,14 +745,13 @@ struct fft_engine {
 		chirp_.resize(n_);
 		postc_.resize(n_);
 
-		// Single neutral conv sub-engine (Phase B, NOTES §10.5): the two
-		// Phase-A engines ("forward conv" and "inverse conv") were only ever
-		// distinguished by sign, and the convolution mechanism itself is fixed
-		// regardless of the outer transform's direction (canonical fwd conv,
-		// then inverse conv) -- so one engine, run twice with opposite
-		// `Backward` values, replaces the pair. See run_bluestein_ for the
-		// resulting buf_ptr_ aliasing between the two runs (safe, documented
-		// there).
+		// Single neutral conv sub-engine: a "forward conv" and an "inverse
+		// conv" engine would only ever be distinguished by sign, and the
+		// convolution mechanism itself is fixed regardless of the outer
+		// transform's direction (canonical fwd conv, then inverse conv) -- so
+		// one engine, run twice with opposite `Backward` values, replaces the
+		// pair. See run_bluestein_ for the resulting buf_ptr_ aliasing between
+		// the two runs (safe, documented there).
 		sub_.emplace_back(conv_n_);
 
 		// Wrapped convolution kernel b: b[j] = b[conv_n_ - j] = d_j = conj-chirp.
@@ -778,7 +777,7 @@ struct fft_engine {
 		real const  pi_n = fft_pi<real>() / static_cast<real>(n_);
 		std::size_t jsq  = 0;  // j^2 mod 2n, updated incrementally to avoid overflow
 		for(std::size_t j = 0; j != n_; ++j) {
-			real const theta = static_cast<real>(fft_forward) * pi_n * static_cast<real>(jsq);  // forward-canonical (Phase B); backward via conj-on-load
+			real const theta = static_cast<real>(fft_forward) * pi_n * static_cast<real>(jsq);  // forward-canonical; backward via conj-on-load
 			chirp_[j]        = TW{std::cos(theta), std::sin(theta)};
 			TW const dj      = TW{std::cos(theta), -std::sin(theta)};
 			y[j]             = dj;
@@ -1211,7 +1210,7 @@ struct fft_engine {
 		return res;
 	}
 
-	// Bluestein (Phase B, NOTES §10.5): the outer `Backward` does NOT change
+	// Bluestein: the outer `Backward` does NOT change
 	// the convolution sub-transform's own directions -- the mechanism is
 	// fixed (canonical forward conv, then inverse conv), regardless of the
 	// outer transform's direction. Only the chirp/postc conjugation and the
@@ -1394,7 +1393,7 @@ auto fft_min_abs_mid_stride(Strides const& strs, std::index_sequence<Is...> /*un
 // slab-local strides instead of array-wide ones).
 // `last_backward`/`prev_backward` are independent (the last two axes may
 // have different directions, e.g. `{forward, backward}` on a square shape --
-// exactly the case that shares one engine across both axes in Phase B).
+// exactly the case that shares one engine across both axes).
 template<class ViewND, class T, class TW>
 void fft_apply_last_pair(ViewND&& view, fft_engine<TW> const& last_eng, bool last_backward, fft_engine<TW> const& prev_eng, bool prev_backward, T* arena) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	constexpr auto rank = std::decay_t<ViewND>::dimensionality;
@@ -1564,7 +1563,7 @@ class fft_scratch_arena {
 // Reusable multidimensional FFT plan: precomputes twiddle tables, stage
 // factorizations, DFT matrices and scratch buffers for a given shape and
 // direction, and applies them to any array/subarray of that shape (any
-// strided layout) with `plan.execute(A)`, repeatedly, without
+// strided layout) with `plan.execute(A.home())`, repeatedly, without
 // re-allocation.
 template<std::ptrdiff_t D, class TW = std::complex<double>>
 class fft_plan {
@@ -1572,8 +1571,8 @@ class fft_plan {
 
 	static constexpr std::size_t no_engine_ = static_cast<std::size_t>(-1);  // which_[a] sentinel for a `none` axis: never dereferenced
 
-	// `engines_` container type: a plain `std::array` -- NOTES §10.1 item 9
-	// (D-bounded, no heap allocation for this list). Unlike `fft_engine::
+	// `engines_` container type: a plain `std::array`, D-bounded, no heap
+	// allocation for this list. Unlike `fft_engine::
 	// sub_` (Bluestein/six-step/large-prime sub-engines, which is data-
 	// dependent on one length's factorization and NOT bounded by `D`; that
 	// one stays a `std::vector`), the number of distinct TOP-LEVEL engines
@@ -1585,12 +1584,12 @@ class fft_plan {
 	// `[distinct_count_, D)` stays at its cheap default (no heap tables).
 	// `note_reach_`/`assign_offsets_`/`engine_count()` are all bounded to
 	// `distinct_count_` explicitly, so a `none` axis (or a shared length)
-	// still costs exactly nothing extra in scratch (§10.1 decision 3).
+	// still costs exactly nothing extra in scratch.
 	using engines_container_ = std::array<detail::fft_engine<TW>, static_cast<std::size_t>(D)>;
 
 	std::array<std::size_t, static_cast<std::size_t>(D)>    sizes_{};
 	std::array<fft_direction, static_cast<std::size_t>(D)>  dirs_{};    // per-axis pass schedule (fft.NOTES.md §10)
-	engines_container_                                      engines_{};  // one per distinct length (direction-neutral, Phase B), padded to exactly D; see engines_container_'s comment
+	engines_container_                                      engines_{};  // one per distinct length (direction-neutral), padded to exactly D; see engines_container_'s comment
 	std::array<std::size_t, static_cast<std::size_t>(D)>    which_{};  // axis -> index into engines_ (always < distinct_count_), or no_engine_ for a `none` axis
 	std::size_t                                             distinct_count_   = 0;  // live prefix length of engines_ (see engines_container_'s comment)
 	std::size_t                                             scratch_elements_ = 0;  // total arena size for execute()
@@ -1652,20 +1651,17 @@ class fft_plan {
 	// Per-axis direction constructor (fft.NOTES.md §10): `dirs[a] ==
 	// fft_direction::none` leaves axis `a` completely untouched -- no engine
 	// is built for it (exact scratch sizing; a `none` axis on a large/prime
-	// length costs nothing), and it is never visited by apply_(). Engines
-	// are still sign-aware in this phase (Phase A -- see fft.NOTES.md §10.3):
-	// reuse is keyed on `(length, direction)`, so two same-length axes with
-	// *different* directions get two engines; direction-neutral engines
-	// (one engine shared regardless of direction) are Phase B.
+	// length costs nothing), and it is never visited by apply_(). Engines are
+	// direction-neutral: reuse is keyed on length alone, so two same-length
+	// axes with different directions share one engine (see fft_mul_dir).
 	template<class Extents>
 	explicit fft_plan(Extents const& extents, std::array<fft_direction, static_cast<std::size_t>(D)> const& dirs)
 	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})}, dirs_{dirs} {
 		// `engines_` default-constructs (see engines_container_'s comment);
 		// this loop overwrites its live prefix by assignment as distinct
 		// lengths are discovered -- the tail past distinct_count_ stays at
-		// its cheap default. Reuse is keyed on length ALONE (Phase B, NOTES
-		// §10.5): e.g. a square {forward, backward} plan shares ONE engine
-		// where Phase A built two.
+		// its cheap default. Reuse is keyed on length ALONE: e.g. a square
+		// {forward, backward} plan shares ONE engine for both axes.
 		auto const rank = static_cast<std::size_t>(D);
 		for(std::size_t a = 0; a != rank; ++a) {
 			if(dirs_[a] == fft_direction::none) {
@@ -1712,7 +1708,7 @@ class fft_plan {
 		scratch_elements_ = cursor;
 	}
 
-	// Broadcast convenience: applies `sign` to every axis (the pre-§10 API).
+	// Broadcast convenience: applies `sign` to every axis.
 	template<class Extents>
 	explicit fft_plan(Extents const& extents, int sign = fft_forward)
 	: fft_plan(extents, broadcast_dirs_(sign)) {}
@@ -1726,9 +1722,8 @@ class fft_plan {
 	auto scratch_elements() const -> std::size_t { return scratch_elements_; }
 
 	// Number of distinct top-level engines the plan built (harmless, genuinely
-	// useful to callers). Direction-neutral engines (Phase B, NOTES §10.5)
-	// share one engine per distinct AXIS LENGTH regardless of direction, so
-	// e.g. a square {forward, backward} plan reports 1 here (2 in Phase A).
+	// useful to callers): one engine per distinct axis length, regardless of
+	// direction, so e.g. a square {forward, backward} plan reports 1 here.
 	auto engine_count() const -> std::size_t { return distinct_count_; }
 
  private:
@@ -1788,59 +1783,38 @@ class fft_plan {
 		apply_(view, arena.data());
 		return home;  // cursors are value types (base + strides); returned by value
 	}
-
-	// Checked convenience overload: the documented `plan.execute(A)` form,
-	// taking the array/subarray itself instead of its bare cursor. Rank is
-	// checked at compile time; the shape is validated against the planned
-	// sizes with an assert (debug builds -- a cursor carries no sizes, so the
-	// cursor overload above cannot check anything; this one can, and should).
-	// SFINAE note: constrained on `fft_real<element>` being well-formed
-	// rather than on a "looks like an array" trait -- shape/extents objects
-	// (whose `element` is an index tuple with no `value_type`) drop out here
-	// structurally, per the `fft_is_multi_like` footgun in fft.NOTES.md §10.5.
-	template<
-	    class MultiSubArray, class Allocator = std::allocator<typename std::decay_t<MultiSubArray>::element>,
-	    class = detail::fft_real_t<typename std::decay_t<MultiSubArray>::element>,
-	    std::enable_if_t<!detail::fft_is_cursor_like<std::decay_t<MultiSubArray>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
-	auto execute(MultiSubArray&& arr, Allocator alloc = Allocator{}) const -> MultiSubArray&& {
-		static_assert(static_cast<std::ptrdiff_t>(std::decay_t<MultiSubArray>::dimensionality) == D, "array rank must match the plan");
-		assert(to_sizes_(arr.sizes(), std::make_index_sequence<static_cast<std::size_t>(D)>{}) == sizes_ && "array shape must match the planned sizes");
-		execute(arr.home(), alloc);
-		return std::forward<MultiSubArray>(arr);
-	}
 };
 
 template<class MultiSubArray>
 auto fft_inplace(MultiSubArray&& arr, int sign) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
 	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), sign};
-	return plan.execute(std::forward<MultiSubArray>(arr));
+	plan.execute(arr.home());
+	return std::forward<MultiSubArray>(arr);
 }
 
-// Per-axis direction overload (fft.NOTES.md §10), e.g.
+// Per-axis direction overload, e.g.
 //   multi::fft_inplace({{forward, none, backward, forward}}, arr);
-// `dirs` first, matching NOTES §10.5's deduction trick: the array parameter
-// deduces MultiSubArray; the dirs parameter's type is then a *non-deduced*
+// `dirs` first: the array parameter deduces MultiSubArray; the dirs
+// parameter's type is then a *non-deduced*
 // std::array<fft_direction, dimensionality-of-MultiSubArray>, so the braced
 // list just initializes an already-known-size array (std::initializer_list
-// would compile for any size, deliberately not used -- NOTES §10.1
-// decision 2). This catches TOO MANY directions as a hard compile error
-// (verified: "no matching function", not a SFINAE near-miss). It does NOT
-// catch too FEW: std::array's own aggregate-init rules zero-pad missing
-// trailing elements, and zero is fft_direction::none by construction, so
-// e.g. `fft_inplace({{forward, backward}}, arr4d)` on a rank-4 array
-// silently means `{forward, backward, none, none}`, not a compile error.
-// Verified this can't be closed within std::array (N is a non-deduced
-// context on both the dirs-argument and the array-argument side; tried and
-// confirmed empirically). Accepted, documented gap (maintainer decision):
-// closing it fully would need a custom fixed-arity wrapper type in place
-// of std::array here, which wasn't judged worth the complexity -- get the
-// direction count right.
+// would compile for any size, deliberately not used). This catches TOO MANY
+// directions as a hard compile error. It does NOT catch too FEW:
+// std::array's own aggregate-init rules zero-pad missing trailing elements,
+// and zero is fft_direction::none by construction, so e.g.
+// `fft_inplace({{forward, backward}}, arr4d)` on a rank-4 array silently
+// means `{forward, backward, none, none}`, not a compile error. This can't
+// be closed within std::array (N is a non-deduced context on both the
+// dirs-argument and the array-argument side); closing it fully would need a
+// custom fixed-arity wrapper type in place of std::array here -- not done;
+// get the direction count right.
 template<class MultiSubArray>
 auto fft_inplace(std::array<fft_direction, static_cast<std::size_t>(std::decay_t<MultiSubArray>::dimensionality)> const& dirs, MultiSubArray&& arr) -> MultiSubArray&& {
 	using array_type = std::decay_t<MultiSubArray>;
 	fft_plan<array_type::dimensionality, typename array_type::element> const plan{arr.sizes(), dirs};
-	return plan.execute(std::forward<MultiSubArray>(arr));
+	plan.execute(arr.home());
+	return std::forward<MultiSubArray>(arr);
 }
 
 template<class MultiSubArray>

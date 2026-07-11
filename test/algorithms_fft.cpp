@@ -279,13 +279,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto a3 = arr;  // second execution of the same plan, same result
 		plan.execute(a3.home());
 		BOOST_TEST( max_abs_diff(a3.elements(), a2.elements()) < tol );
-
-		// the documented array-taking form plan.execute(A): equivalent to the
-		// cursor form but with rank checked at compile time and shape
-		// asserted against the planned sizes
-		auto a4 = arr;
-		plan.execute(a4);
-		BOOST_TEST( max_abs_diff(a4.elements(), a2.elements()) < tol );
 	}
 
 	// a plan built from extents (no prototype array) round-trips fwd + bwd
@@ -718,8 +711,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 
 			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, backward}}};
-			BOOST_TEST( plan.engine_count() == 1U );  // Phase B: one engine shared across both same-length axes
-			plan.execute(arr);
+			BOOST_TEST( plan.engine_count() == 1U );  // one engine shared across both same-length axes
+			plan.execute(arr.home());
 
 			double m = 0.0;
 			for(int i = 0; i != nn; ++i) {
@@ -900,8 +893,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto via_dirs       = arr;
 			multi::fft_plan<2> const bplan{arr.sizes(), multi::fft_forward};
 			multi::fft_plan<2> const dplan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, forward}}};
-			bplan.execute(via_broadcast);
-			dplan.execute(via_dirs);
+			bplan.execute(via_broadcast.home());
+			dplan.execute(via_dirs.home());
 			bool bit_identical = true;
 			for(int i = 0; i != 6; ++i) {
 				for(int j = 0; j != 10; ++j) {
