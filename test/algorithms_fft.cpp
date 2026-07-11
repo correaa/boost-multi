@@ -77,7 +77,37 @@ auto max_abs_diff(A const& aa, B const& bb) -> double {
 	}
 	return m;
 }
+
+// Custom element type: three independent complex channels, not itself a
+// single complex value -- exercises fft.hpp's documented claim that it works
+// for "arbitrary element types T that obey complex algebra" via the
+// fft_ops customization point (fft.hpp's own comment: "Users can specialize
+// this for custom element types with a faster product"). No .real()/
+// .imag(): vec3 provides only +, -, and multiplication by a complex scalar;
+// the FFT kernels never need anything else from T.
+struct vec3 {
+	complex x{}, y{}, z{};
+
+	friend auto operator+(vec3 const& a, vec3 const& b) -> vec3 { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
+	friend auto operator-(vec3 const& a, vec3 const& b) -> vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
+	friend auto operator*(complex const& w, vec3 const& v) -> vec3 { return {w * v.x, w * v.y, w * v.z}; }
+};
 }  // namespace
+
+// fft_ops specialization (namespace scope, per fft.hpp's customization
+// point): built entirely from vec3's own provided operators -- conj() is
+// only ever applied to the twiddle `w` (a plain complex, which has it
+// natively), never to vec3 itself.
+namespace boost::multi {
+template<>
+struct fft_ops<vec3, std::complex<double>> {
+	static auto mul(std::complex<double> const& w, vec3 const& x) -> vec3 { return w * x; }
+	static auto conj_mul(std::complex<double> const& w, vec3 const& x) -> vec3 {
+		using std::conj;
+		return conj(w) * x;
+	}
+};
+}  // namespace boost::multi
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// 1D power-of-two matches a direct DFT
@@ -903,6 +933,68 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			BOOST_TEST( bit_identical );  // report, not a hard gate (per fft.PLAN.md Session 3 task 6)
 		}
+	}
+
+	// vec3: a custom element type T that is NOT itself a single complex value
+	// (three independent complex channels) -- exercises the T-independent-
+	// of-TW design directly: the plan's twiddle type TW stays `complex`
+	// (there is no other sensible twiddle type for a vec3-of-complex), while
+	// T = vec3 is deduced fresh from the array's cursor at execute() time, so
+	// `fft_inplace(arr, sign)` (which deduces TW = T) is the wrong call here
+	// -- go through fft_plan<D, complex> directly, exactly as the file's own
+	// top-comment example (complex<float> today, complex<double> tomorrow,
+	// same plan) already generalizes to. Checked against a per-channel
+	// reference DFT: FFT-ing a vec3 array must be identical to FFT-ing each
+	// of its three complex channels independently.
+	{
+		constexpr int nn = 12;  // 2^2 * 3: exercises a radix-4 stage and a radix-3 stage
+		multi::array<vec3, 1>    arr(multi::extents_t<1>{nn});
+		multi::array<complex, 1> ref_x(multi::extents_t<1>{nn});
+		multi::array<complex, 1> ref_y(multi::extents_t<1>{nn});
+		multi::array<complex, 1> ref_z(multi::extents_t<1>{nn});
+		for(int i = 0; i != nn; ++i) {
+			complex const cx{static_cast<double>(i), static_cast<double>(-i)};
+			complex const cy{static_cast<double>((2 * i) - 3), static_cast<double>((i * i) % 5)};
+			complex const cz{static_cast<double>(nn - i), 0.5 * static_cast<double>(i)};
+			arr[i]   = vec3{cx, cy, cz};
+			ref_x[i] = cx;
+			ref_y[i] = cy;
+			ref_z[i] = cz;
+		}
+
+		multi::fft_plan<1, complex> const plan{multi::extents_t<1>{nn}, multi::fft_forward};
+		auto                              result = arr;
+		plan.execute(result.home());
+
+		auto const dx = dft_reference(ref_x, multi::fft_forward);
+		auto const dy = dft_reference(ref_y, multi::fft_forward);
+		auto const dz = dft_reference(ref_z, multi::fft_forward);
+
+		double m = 0.0;
+		for(int i = 0; i != nn; ++i) {
+			m = std::max(m, std::abs(result[i].x - dx[i]));
+			m = std::max(m, std::abs(result[i].y - dy[i]));
+			m = std::max(m, std::abs(result[i].z - dz[i]));
+		}
+		BOOST_TEST( m < tol );
+
+		// backward too: exercises conj_mul (the customization point's other
+		// half), same plan type, opposite direction.
+		multi::fft_plan<1, complex> const bwd{multi::extents_t<1>{nn}, multi::fft_backward};
+		auto                              bresult = arr;
+		bwd.execute(bresult.home());
+
+		auto const bx = dft_reference(ref_x, multi::fft_backward);
+		auto const by = dft_reference(ref_y, multi::fft_backward);
+		auto const bz = dft_reference(ref_z, multi::fft_backward);
+
+		double bm = 0.0;
+		for(int i = 0; i != nn; ++i) {
+			bm = std::max(bm, std::abs(bresult[i].x - bx[i]));
+			bm = std::max(bm, std::abs(bresult[i].y - by[i]));
+			bm = std::max(bm, std::abs(bresult[i].z - bz[i]));
+		}
+		BOOST_TEST( bm < tol );
 	}
 
 	return boost::report_errors();
