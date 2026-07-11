@@ -301,6 +301,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
  private:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
+	// NOLINTNEXTLINE(readability-identifier-naming) TODO(correaa) to remove
 	auto index_bases() const -> std::ptrdiff_t const*;  // = delete;  this function is not implemented, it can give a linker error
 
  public:
