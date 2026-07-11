@@ -2699,3 +2699,66 @@ either change would behave differently under a different target, and the
 one data point that DID reproduce cleanly (§11.21 at n=1024) reproduced
 the SAME failure, not a different one. Not pursued further; flagged here
 so it isn't re-asked without this context.
+
+### 11.23 Mixed-precision twiddle table (TW=complex<float> on complex<double> data): no speedup (2026-07-11)
+
+Not part of the main optimization series above -- a follow-up question
+after adding the `vec3` custom-element-type test (T independent of TW,
+fft.hpp's own design point): does a NARROWER twiddle table (`TW =
+complex<float>`) speed up a transform on `T = complex<double>` data,
+versus the normal `TW = T = complex<double>` case? Motivation: the
+twiddle table `tw_` is O(n) and, for large n, doesn't fit cache -- a
+half-size table (float instead of double) means half the bytes to
+stream on every load, a real bandwidth argument, IF twiddle loads are
+actually a bottleneck for the sizes in question.
+
+**Method**: scratchpad harness (`mixed_tw_bench.cpp`), same methodology
+as the official benchmark (`benchmark/algorithms_fft.cpp`): plan built
+once outside the timed region, cache flushed before every individual
+timed call, interleaved timing between the two plans (`fft_plan<3,
+complex<double>>` vs `fft_plan<3, complex<float>>`, same
+`complex<double>` array both times, same persistent monotonic-arena
+allocator per §11.15/16). 3-D sizes n=16..256 (side length), the same
+range the official 3-D sweep covers. `max_rel_err` computed against the
+pure-double result as an accuracy sanity check, not the main question.
+
+| n (3D side) | N total | double (ms) | mixed (ms) | ratio (mixed/double) | max rel. error |
+|---|---|---|---|---|---|
+| 16 | 4,096 | 0.041 | 0.041 | 1.00 | 1.3e-7 |
+| 24 | 13,824 | 0.131 | 0.138 | 1.05 | 4.1e-7 |
+| 32 | 32,768 | 0.301 | 0.302 | 1.00 | 2.5e-7 |
+| 48 | 110,592 | 1.038 | 1.010 | 0.97 | 4.3e-7 |
+| 64 | 262,144 | 2.589 | 2.929 | 1.13 | 3.6e-7 |
+| 96 | 884,736 | 12.746 | 12.789 | 1.00 | 5.1e-7 |
+| 128 | 2,097,152 | 28.85 | 29.37 | 1.02 | 5.0e-7 |
+| 192 | 7,077,888 | 111.35 | 114.23 | 1.03 | 6.2e-7 |
+| 256 | 16,777,216 | 269.68 | 284.00 | 1.05 | 5.9e-7 |
+
+(n=128/192/256 re-run at 10 reps instead of the sweep's initial 3, to
+check the largest-size numbers weren't noise -- the direction held, the
+magnitude came down from the noisier first pass, e.g. n=256 1.136 ->
+1.053.)
+
+**Verdict: no speedup anywhere in the tested range; a small, consistent
+slowdown that grows with size** (up to ~5% at n=256, the largest case
+tested). Accuracy is exactly as expected (~1e-7 relative error, float-
+precision twiddle quantization) -- correctness is fine, the performance
+hypothesis just doesn't pay off. Mechanism: `fft_ops<complex<double>,
+complex<float>>`'s generic formula (fft.hpp's `fft_ops<complex<R1>,
+complex<R2>>` specialization) promotes the narrower operand up to
+`std::common_type_t<R1,R2>` (== `double` here) BEFORE multiplying, and
+narrows only the final result once -- so using `complex<float>`
+twiddles does not reduce the arithmetic work at all; every multiply
+still happens at double precision. Only the table's own memory footprint
+shrinks, and per this data, that's not the bottleneck at these sizes
+(consistent with §11.14's finding that the smooth/batched kernels are
+instruction-count-bound, not memory-bound) -- so there is no bandwidth
+win to collect, while the extra widen/narrow conversion at every twiddle
+load is a small but real fixed cost that shows up instead. The
+T-independent-of-TW mechanism itself works correctly (this is a real,
+supported use case -- see the `vec3` test and its README-style
+walkthrough); it's specifically "narrower TW as a speed trick" that
+doesn't work, on this machine, in this size range. Not investigated
+further (e.g. whether a size regime exists where the twiddle table
+alone exceeds L3 while everything else still fits, which might change
+the balance) -- flagged here rather than assumed either way.
