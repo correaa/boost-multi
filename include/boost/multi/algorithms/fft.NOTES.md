@@ -2431,3 +2431,68 @@ bigger-uniform-radix attempt.
 **Committed**: `fft_bench_{1d,2d,3d}_estimate.dat` and matching `.png`
 plots (regenerated from this run, replacing the stale pre-allocator-fix
 versions); no product code changed.
+
+### 11.20 Redundant full-array-sweep hypothesis for 2-D/3-D: refuted (2026-07-11)
+
+Follow-up question to §11.17: that section ruled out a dominant gather/
+scatter/transpose FUNCTION for 2-D/3-D (`fft_exec_slab`/`fft_exec_fiber`
+self-time <1.5%), but didn't address a different mechanism -- TOTAL
+MEMORY TRAFFIC. `fft_apply_last_pair` (`fft.hpp:1399-1406`) fuses the
+last two axes of any transform into one hot-slab pass, but for D >= 3
+the remaining axis (axis 0 in 3-D) gets its OWN separate full sweep over
+the entire array. For an array that doesn't fit in cache, that second
+sweep re-reads/re-writes everything from RAM after the first sweep
+already touched every element once -- plausibly ~2x the memory traffic
+an ideal single fused cache-blocked pass (the multi-axis analogue of
+six-step) would pay. Hypothesis: this costs us disproportionately more
+than FFTW once the array exceeds the 12 MiB L3 cache on this machine,
+and that gap should widen with size.
+
+**Method**: no new measurement needed -- the already-committed
+`fft_bench_{2d,3d}_nowisdom.dat` (§11.16/current) already span sizes
+from comfortably-cached to far-exceeding-L3 (this machine: L1d 32 KiB/
+core, L2 256 KiB/core, L3 12 MiB shared). Read directly.
+
+| 3-D n | footprint | ratio to FFTW |
+|---|---|---|
+| 32 | 512 KB (fits L2/L3) | 1.815 |
+| 64 | 4 MB (fits L3) | 1.389 |
+| 128 | 32 MB (2.7x over L3) | 1.420 |
+| 256 | 268 MB (22x over L3) | **1.153** |
+
+| 2-D n | footprint | ratio to FFTW |
+|---|---|---|
+| 32 | 16 KB | 1.502 |
+| 64 | 64 KB | 1.350 |
+| 128 | 256 KB (~fits L2) | 1.731 |
+| 256 | 1 MB (fits L3) | 1.391 |
+| 512 | 4 MB (fits L3) | 1.538 |
+| 1024 | 16 MB (over L3) | 1.505 |
+| 2000 | 64 MB (far over L3) | 1.727 |
+
+**Verdict: refuted.** The hypothesis predicts the ratio gets WORSE past
+the L3 boundary. It does the opposite in 3-D: n=32 (comfortably cached)
+is the WORST point in the whole sweep (1.815x), and n=256 (22x over L3,
+by far the largest and most memory-pressured case) is the BEST (1.153x,
+close to FFTW parity). 2-D shows no clean trend at all -- ratio bounces
+between 1.35 and 1.73 with no monotonic relationship to whether the
+array fits in cache. If anything the pattern runs backwards from the
+hypothesis: the worst relative performance is at SMALL sizes, consistent
+with fixed per-call overhead (dispatch, small-batch inefficiency)
+dominating there rather than large sizes exposing an extra-sweep memory
+tax. Either the axis-0 sweep isn't costing us disproportionately versus
+FFTW, or FFTW pays a comparable cache-miss penalty at these sizes too,
+so the RATIO stays flat/improves even as absolute cycles/point rise for
+both libraries.
+
+**Net effect on candidate set for 2-D/3-D specifically**: nothing left.
+§11.17 ruled out a dominant gather/transpose function; this section
+rules out disproportionate memory bandwidth from the multi-axis walk's
+structure. Combined with §11.18's radix-16 failure (register pressure,
+dimensionality-independent since it's the same shared per-axis kernel),
+there is no evidence-backed, 2-D/3-D-specific lever remaining. 2-D/3-D
+track 1-D's residual gap because they run the same kernel, not because
+of anything specific to multi-axis walking. Closing it further requires
+the same not-yet-scoped 1-D kernel work §11.18 closed with (reducing the
+existing radix-4/8 kernels' own temporary count without adding live
+values) -- not new 2-D/3-D-specific design work.
