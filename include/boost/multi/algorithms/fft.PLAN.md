@@ -355,9 +355,55 @@ throughout; prefer two.
 
 - `D`-bounded inline engine storage replacing `std::vector` (§10.1 item 9 /
   §10.3 optional step). Keep the linear-scan reuse lookup (§9.1: no map).
+  **DONE**, on `multi::inplace_array` (array.hpp), not a hand-rolled
+  container — revised after the first landing (a hand-written
+  `detail::fft_inline_vector<T, Cap>`, aligned-raw-storage + placement-new)
+  per maintainer request to dogfood Multi's own facility instead. This
+  needed a real design change, not a drop-in swap: `multi::inplace_array`
+  (`dynamic_array<T, 1, static_allocator<T, N>>`) is shape-fixed-at-
+  construction, no incremental `push_back`/`emplace_back` — a fundamental
+  mismatch with the original one-at-a-time dedup loop. Resolved as:
+  - A pure `dedup_()` pass over axes first (plain `std::size_t` comparisons,
+    no engine construction) produces the distinct lengths and a
+    `distinct_count_` (0..D), independent of container choice.
+  - `engines_` is then built in ONE SHOT via `index_sequence` pack
+    expansion into a `std::array<fft_engine<TW>, D>` (legal for a
+    non-default-constructible element given a FULL brace-init list — one
+    initializer per slot), then move-constructed into the
+    `inplace_array` via its iterator-range constructor
+    (`std::make_move_iterator`, avoiding a second deep copy of each
+    engine's heap-owned tables).
+  - `engines_` is therefore always PHYSICALLY exactly `D` elements — real
+    engines occupy `[0, distinct_count_)`, the tail is padded with cheap
+    `fft_engine{0}` placeholders (nn<2 returns from the engine constructor
+    immediately, no heap tables, matching a prototyped-and-verified
+    pattern). This sidesteps a real hazard the naive approach would have
+    hit: `inplace_array`'s range constructor evaluates `*first`
+    unconditionally even for a nominally empty range (verified in
+    isolation), which is UB for a genuinely empty range — never triggered
+    here since the physical count is never 0, only the logical
+    `distinct_count_` is.
+  - `note_reach_`/`assign_offsets_`/`engine_count()` are explicitly bounded
+    to `distinct_count_`, never the physical `D`, so the placeholder tail
+    costs zero scratch — preserves the "`none` axis costs nothing"
+    guarantee (§10.1 decision 3) exactly.
+  - `dirs_` had to move earlier in the member declaration order (before
+    `engines_`/`which_`) since `engines_`'s initializer now depends on it
+    (member init follows declaration order, not initializer-list order).
+  Verified: bit-identical against the pre-change baseline (same harness as
+  the Tier A task), full gate green (g++/clang++ strict, `-O3
+  -Walloc-zero`, ASan+UBSan), the standalone `inplace_array` prototype
+  (non-default-constructible element, varying live/padded counts including
+  fully-empty, copy/move) clean under ASan+UBSan, and the copy/move stress
+  test (copy ctor, copy assignment, move ctor of a two-Bluestein-engine
+  plan, including the recursive `sub_` tree) re-run clean against the new
+  implementation.
 - Batched-1-D benchmark vs `fftw_plan_many_dft` (§10.3 optional follow-up;
   full methodology rules in `benchmark/algorithms_fft.cpp`'s header —
-  idle-machine protocol applies to *published* numbers).
+  idle-machine protocol applies to *published* numbers). **DONE.** Added
+  `sweep_many()` to `benchmark/algorithms_fft.cpp` ({none, forward} on a
+  rank-2 array against FFTW's advanced interface, contiguous-row layout);
+  run at howmany = 32 and 256 across the usual 5-smooth fiber-size family.
 - Doc pass: NOTES §1 thread-safety text, header comment, and mark §9.2/§10
   items as landed.
 

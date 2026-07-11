@@ -440,6 +440,14 @@ struct fft_engine {
 		}
 	}
 
+	// Default state == fft_engine(0): every member already has an in-class
+	// default initializer matching what the nn<2 early-return below leaves
+	// (n_=0, mb_=1, every table/vector empty) -- not a new/distinct
+	// "invalid" state, just making the ALREADY-existing trivial, no-op
+	// engine reachable without an explicit length. Used to default-fill
+	// `fft_plan::engines_`'s unused (padding) slots -- NOTES §10.1 item 9.
+	fft_engine() = default;
+
 	// Direction-neutral (Phase B, NOTES §10.5): builds forward-canonical
 	// tables only. A backward pass conjugates every table load at run time
 	// (`fft_mul_dir<Backward>`) instead of building a second, sign-baked set
@@ -1564,10 +1572,27 @@ class fft_plan {
 
 	static constexpr std::size_t no_engine_ = static_cast<std::size_t>(-1);  // which_[a] sentinel for a `none` axis: never dereferenced
 
+	// `engines_` container type: a plain `std::array` -- NOTES §10.1 item 9
+	// (D-bounded, no heap allocation for this list). Unlike `fft_engine::
+	// sub_` (Bluestein/six-step/large-prime sub-engines, which is data-
+	// dependent on one length's factorization and NOT bounded by `D`; that
+	// one stays a `std::vector`), the number of distinct TOP-LEVEL engines
+	// is bounded by `D`. `fft_engine` has a default constructor (== the
+	// existing, already-handled n<2 trivial state, not a new one -- see its
+	// definition), so `std::array<fft_engine<TW>, D>` default-constructs
+	// directly: slots `[0, distinct_count_)` get overwritten by assignment
+	// as distinct lengths are discovered in the constructor below; the tail
+	// `[distinct_count_, D)` stays at its cheap default (no heap tables).
+	// `note_reach_`/`assign_offsets_`/`engine_count()` are all bounded to
+	// `distinct_count_` explicitly, so a `none` axis (or a shared length)
+	// still costs exactly nothing extra in scratch (§10.1 decision 3).
+	using engines_container_ = std::array<detail::fft_engine<TW>, static_cast<std::size_t>(D)>;
+
 	std::array<std::size_t, static_cast<std::size_t>(D)>    sizes_{};
-	std::vector<detail::fft_engine<TW>>                     engines_;  // one per distinct (length, direction) pair; none-axes contribute no engine
-	std::array<std::size_t, static_cast<std::size_t>(D)>    which_{};  // axis -> index into engines_, or no_engine_ for a `none` axis
-	std::array<fft_direction, static_cast<std::size_t>(D)>  dirs_{};   // per-axis pass schedule (fft.NOTES.md §10)
+	std::array<fft_direction, static_cast<std::size_t>(D)>  dirs_{};    // per-axis pass schedule (fft.NOTES.md §10)
+	engines_container_                                      engines_{};  // one per distinct length (direction-neutral, Phase B), padded to exactly D; see engines_container_'s comment
+	std::array<std::size_t, static_cast<std::size_t>(D)>    which_{};  // axis -> index into engines_ (always < distinct_count_), or no_engine_ for a `none` axis
+	std::size_t                                             distinct_count_   = 0;  // live prefix length of engines_ (see engines_container_'s comment)
 	std::size_t                                             scratch_elements_ = 0;  // total arena size for execute()
 
 	// Engine serving axis `A` (compile-time axis index, resolved at plan
@@ -1635,26 +1660,30 @@ class fft_plan {
 	template<class Extents>
 	explicit fft_plan(Extents const& extents, std::array<fft_direction, static_cast<std::size_t>(D)> const& dirs)
 	: sizes_{to_sizes_(extents, std::make_index_sequence<static_cast<std::size_t>(D)>{})}, dirs_{dirs} {
-		engines_.reserve(D);
+		// `engines_` default-constructs (see engines_container_'s comment);
+		// this loop overwrites its live prefix by assignment as distinct
+		// lengths are discovered -- the tail past distinct_count_ stays at
+		// its cheap default. Reuse is keyed on length ALONE (Phase B, NOTES
+		// §10.5): e.g. a square {forward, backward} plan shares ONE engine
+		// where Phase A built two.
 		auto const rank = static_cast<std::size_t>(D);
 		for(std::size_t a = 0; a != rank; ++a) {
 			if(dirs_[a] == fft_direction::none) {
 				which_.at(a) = no_engine_;
 				continue;
 			}
-			// Direction-neutral engines (Phase B, NOTES §10.5): reuse is keyed
-			// on length ALONE, so e.g. a square {forward, backward} plan
-			// shares ONE engine where Phase A built two.
 			auto const len = sizes_.at(a);
-			auto       it  = std::find_if(engines_.begin(), engines_.end(), [len](auto const& e) { return e.n_ == len; });
-			if(it == engines_.end()) {
-				engines_.emplace_back(len);
-				it = std::prev(engines_.end());
+			auto const it  = std::find_if(engines_.begin(), engines_.begin() + static_cast<std::ptrdiff_t>(distinct_count_), [len](auto const& e) { return e.n_ == len; });
+			if(it == engines_.begin() + static_cast<std::ptrdiff_t>(distinct_count_)) {
+				engines_.at(distinct_count_) = detail::fft_engine<TW>{len};
+				which_.at(a)                 = distinct_count_;
+				++distinct_count_;
+			} else {
+				which_.at(a) = static_cast<std::size_t>(it - engines_.begin());
 			}
-			which_.at(a) = static_cast<std::size_t>(it - engines_.begin());
 		}
 
-		// Compute every engine's (and its whole sub_ tree's) peak scratch
+		// Compute every REAL engine's (and its whole sub_ tree's) peak scratch
 		// requirement, then lay out one flat arena with disjoint, immutable
 		// offsets -- see fft.NOTES.md §9.2/§10.4(a). For D >= 2, each
 		// top-level engine is reachable from two entry scenarios (batched via
@@ -1664,17 +1693,21 @@ class fft_plan {
 		// site. For D == 1, apply_() never batches (fft_apply_last's rank==1
 		// case always goes through fft_exec_fiber at m=1) -- note_reach_(mb_)
 		// would only reserve scratch for a path that never runs, up to mb_
-		// (<=64) times larger than needed. engines_ only ever holds engines
-		// for non-`none` axes, so this loop is automatically exact.
-		for(auto& e : engines_) {
+		// (<=64) times larger than needed. Bounded to `distinct_count_`
+		// (NOT engines_'s full physical D slots): the padding placeholder
+		// engines past distinct_count_ must never see note_reach_/
+		// assign_offsets_, or a `none`/shared axis would inflate scratch --
+		// see engines_container_'s comment.
+		for(std::size_t i = 0; i != distinct_count_; ++i) {
+			auto& e = engines_[i];
 			if constexpr(D >= 2) {
 				e.note_reach_(e.mb_);
 			}
 			e.note_reach_(1);
 		}
 		std::size_t cursor = 0;
-		for(auto& e : engines_) {
-			e.assign_offsets_(cursor);
+		for(std::size_t i = 0; i != distinct_count_; ++i) {
+			engines_[i].assign_offsets_(cursor);
 		}
 		scratch_elements_ = cursor;
 	}
@@ -1696,7 +1729,7 @@ class fft_plan {
 	// useful to callers). Direction-neutral engines (Phase B, NOTES §10.5)
 	// share one engine per distinct AXIS LENGTH regardless of direction, so
 	// e.g. a square {forward, backward} plan reports 1 here (2 in Phase A).
-	auto engine_count() const -> std::size_t { return engines_.size(); }
+	auto engine_count() const -> std::size_t { return distinct_count_; }
 
  private:
 	// The axis walk, shared by the cursor and array entry points. `view` is a

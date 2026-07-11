@@ -1152,10 +1152,69 @@ maintainer, all binding:
 threading (maintainer: not now) plus a TBB link dependency on libstdc++.
 Therefore: land the algorithm *shapes* now with **no policy argument** —
 policy-free `std::transform`/`std::copy_n` inline to code identical to the
-raw loops (verify per §11.7), and the conceptual win is immediate. The
-`unseq` first argument is a one-token addition later, behind
-`#if defined(__cpp_lib_execution) && __cpp_lib_execution >= 201902L` or when
-the project baseline moves to C++20. Do NOT add `par`/`par_unseq` anywhere.
+raw loops (verify per §11.7), and the conceptual win is immediate. Do NOT
+add `par`/`par_unseq` anywhere.
+
+**`unseq` itself tried and rejected (2026-07-11), on three independent
+grounds — do not re-attempt without new evidence on all three:**
+
+1. **Doesn't exist on libc++ at all**, in `-std=c++17` OR `-std=c++20`
+   (`clang++ -stdlib=libc++`, LLVM 18, current as of this test): "no member
+   named 'unseq' in namespace std::execution" -- a hard compile error, not
+   a missing-symbol link error. libc++ has never implemented
+   `<execution>`'s parallel-algorithm overloads. Shipping `unseq` in this
+   header would break every clang+libc++ consumer outright (a real,
+   commonly-chosen toolchain -- e.g. most macOS clang, many Linux users who
+   opt in), not degrade gracefully.
+2. **Requires linking `-ltbb` even for `unseq` alone on libstdc++** --
+   verified: `std::transform(std::execution::unseq, ...)` compiles but
+   fails to LINK ("undefined reference to
+   tbb::detail::r1::execution_slot") without `-ltbb`, even though `unseq`
+   itself does no threading. libstdc++ dispatches every execution-policy
+   overload (including the purely-vectorization-hint ones) through the
+   same PSTL backend, which needs TBB's symbols regardless. This is a new,
+   mandatory external link dependency for a currently zero-dependency
+   header-only library.
+3. **Measured SLOWER, not faster, on libstdc++** (the one toolchain where
+   it even runs) -- three scenarios, `-O3 -march=native`, idle machine, 3
+   reps each averaged over 500-3000 iterations:
+   - Bluestein A1 loops (run_bluestein_'s three `std::transform`s) at
+     `m == 1` (the common 1-D case): unseq ~40 -> ~46 us/rep, **+15%
+     slower**.
+   - Same loops at `m == 64` (Bluestein as a sub-transform of a batched
+     2-D `{none, forward}` plan, n=1009 prime, batch=64 -- the case with
+     genuine per-row vector width to exploit): ~2469 -> ~2934 us/rep,
+     **+19% slower**.
+   - `fft_exec_slab`'s A4 `std::copy_n` calls (mt=64 batch-near
+     gather/scatter): no measurable difference either way (noise-level) --
+     a plain memory copy has nothing left for a vectorization hint to add.
+   Plausible cause: these ranges are short (`m` <= ~64) and the plain,
+   policy-free overloads already auto-vectorize fully under `-O3
+   -march=native` (verified by the Tier A bit-identity+perf-neutral
+   checks) -- so `unseq` adds only the policy-dispatch/PSTL-backend
+   indirection cost with no vectorization gain left to capture.
+
+   **Full-suite confirmation (2026-07-11, maintainer requested "try
+   everywhere, GCC-only, ignore portability"):** patched ALL 12 Tier A
+   call sites (A1, A2, A3, A4, A5, A7 -- every `std::transform`/`copy_n`
+   this section landed) with `std::execution::unseq` and re-ran the full
+   benchmark suite (1D/2D/3D + both `many` sweeps) against the unpatched
+   baseline, same machine, same idle/AC protocol, no drift warning either
+   run. Mean delta (mine MFLOPS, unseq vs baseline): 1D **-4.9%**, 2D
+   **-1.3%**, 3D **+0.9%** (noise), many(h32) **+0.1%** (noise),
+   many(h256) **-0.6%** (noise). Never a clear win anywhere; 1D's clear
+   loss lines up exactly with the isolated Bluestein numbers above (1D has
+   the most prime/Bluestein-forcing sizes in the sweep). Confirms the
+   single-site findings generalize -- this was not a fluke of the two
+   sites originally tested.
+
+Conclusion: `unseq` is a dead end for this file on all three axes
+(portability, dependency-freedom, and actual speed) with the current
+compilers/stdlibs. Compiler auto-vectorization of the plain, policy-free
+Tier A algorithms remains the only viable lever per the maintainer's
+SIMD policy (memory: `fft-simd-policy`) -- look for stride-1/layout wins
+(§11.6 W1) or restructure loops to expose more to the optimizer, not
+execution policies.
 
 ### 11.2 What is already algorithmic (no work)
 
@@ -1388,3 +1447,147 @@ butterflies (C1) → `for_each_n` over a `zip_iterator` — and the dgmm-like
 row scalings have a cuBLAS analog (`cublasZdgmm`). The wishlist items W1-W4
 are likewise the exact shapes a device backend wants (coalescing-aware
 tiled copy, MD-range launch).
+
+### 11.9 FMA customization point — tried and reverted (2026-07-11)
+
+Maintainer asked whether `fft_ops` should also customize `mul_add(w, x, y)
+-> w*x + y` (an accumulate-fused counterpart to `mul`), for
+`stage_generic_`'s accumulation loop (`dst[j] = dst[j] + fft_mul_dir(wc,
+xt[j])`, the one genuine hot AXPY/GEMV-shaped site among the Tier A
+rewrites, run O(p^2) times per direct-radix stage for primes <= 64).
+Implemented, measured, reverted — net loss both times, for two distinct
+reasons worth recording so this isn't re-attempted blind:
+
+- **First attempt** — naive nested `fma(wr, xr, fma(-wi, xi, y))`: chains
+  TWO fma latencies onto the loop-carried accumulator `y`, instead of the
+  original code's ONE (the complex product was independent of `y`, computed
+  ahead of/parallel with the accumulator dependency; only the final add
+  touched it). Measured **~75% SLOWER** (n=61 direct-prime stage, m=1: 3.7
+  -> 6.6 us/rep; m=64 batched: 237 -> 419 us/rep). Classic FMA-chaining
+  anti-pattern: fusing accumulation into a MULTI-fma chain can serialize
+  work that was previously pipelined.
+- **Second attempt** — corrected shallow-chain form: ONE fma per component
+  computes the product *independent of y* (`fma(wr, xr, -(wi*xi))`), then a
+  single plain add folds in the accumulator last (same chain depth as the
+  original). Still **~13-16% SLOWER** (m=1: 3.7 -> 4.3 us/rep; m=64: 237 ->
+  269 us/rep) -- root cause this time confirmed via assembly diff (`-S`,
+  packed `ymm` instruction counts): explicit `std::fma()` calls measurably
+  REDUCE the compiler's auto-vectorization of this loop (packed
+  mul/add/sub/fma instruction count 299 -> 259 comparing before/after at
+  identical `-O3 -march=native`), so it falls back to more scalar work.
+  GCC's own automatic FP contraction (already confirmed present: 811
+  vfmadd/vfmsub/vfnmadd instructions with NO code change, §11.1) picks
+  fusion opportunities THROUGH vectorization; forcing `fma()` explicitly
+  short-circuits that choice and loses more from reduced vectorization than
+  it gains from fused rounding.
+- Both attempts passed correctness (existing `dft_reference`-tolerance
+  tests, not bit-identity -- maintainer explicitly waived that for this
+  experiment) and the full strict/ASan/UBSan gate; reverted purely on
+  measured performance. Removed entirely rather than left dead
+  (`fft_ops::mul_add`/`conj_mul_add`, `detail::fft_mul_add_dir` all
+  deleted) -- no unused speculative API surface kept around.
+
+**Conclusion, consistent with §11.1's `unseq` finding**: for THIS file's
+loop shapes (short-to-medium ranges, `m` <= ~64, already relying on the
+compiler's own auto-vectorization + auto-contraction under strict `-O3
+-march=native`), manually forcing a lower-level numeric strategy
+(execution policies, explicit `fma()`) tends to fight the optimizer rather
+than help it. The compiler already has more context (the whole loop, target
+ISA, vector width) than a call-site-local `fma()` hint does. Matches the
+maintainer's SIMD policy (memory: `fft-simd-policy`) directly: compiler-
+driven vectorization wins here, manual numeric-strategy overrides don't.
+
+### 11.10 `std::execution::par` — genuine win, same fatal blockers (2026-07-11)
+
+Maintainer asked to try `std::execution::par` (real threading, not just a
+vectorization hint) "in algorithms that could benefit from it." Unlike
+§11.1/§11.9's negative results, this needed picking a DIFFERENT kind of
+site: every Tier A execute()-path loop is short (`m` <= ~64 per call),
+where thread-dispatch overhead would dominate even worse than `unseq`'s
+policy-dispatch overhead did. The one genuinely good candidate: the
+twiddle-table build loop (`fft_engine`'s constructor, `tw_.resize(nn); for
+k in [0,nn): tw_[k] = {cos(theta), sin(theta)};`) -- large (up to millions
+of elements for big 1-D sizes), expensive-per-element (real `cos`+`sin`),
+embarrassingly parallel (no cross-k dependency), and CONSTRUCTION-time only
+(runs once per plan, not once per `execute()`).
+
+Patched (scratch copy only, `/tmp`, never touched the real header) to
+`std::for_each(std::execution::par, tw_.begin(), tw_.end(), [step,
+tw_base](TW& v) { auto const k = static_cast<std::size_t>(&v - tw_base);
+... })` (index recovered via pointer difference -- C++17 has no
+`views::iota`, and materializing an index vector just to feed `transform`
+would add unfair allocation overhead to the comparison). Measured plan
+CONSTRUCTION time (not execute()) on this 12-core machine, idle/AC:
+
+| n | sequential | `par` | speedup |
+|---|---|---|---|
+| 65,536 | 894 us | 312 us | 2.9x |
+| 262,144 | 3,410 us | 931 us | 3.7x |
+| 1,048,576 | 15,264 us | 3,925 us | 3.9x |
+| 2,097,152 | 39,763 us | 18,679 us | 2.1x (six-step sub-engine construction, unparallelized, starts dominating at this size) |
+
+Correctness confirmed (full test suite, tolerance-based). **This IS a real
+win** -- a genuinely different result from §11.1/§11.9, because this site
+has the profile parallelism actually wants (large N, real per-element
+work, one-shot) rather than fighting the compiler's own vectorization
+choices on tiny per-call ranges.
+
+**Not adopted, for the same reasons as §11.1's `unseq` rejection --
+unchanged by this result:** `std::execution::par` is the SAME `<execution>`
+facility with the SAME two blockers: doesn't exist on libc++ at all (hard
+compile error, not degraded-but-working), and requires linking `-ltbb` on
+libstdc++ even to use it. A genuine speedup doesn't override "breaks every
+clang+libc++ consumer outright" for a header-only, zero-dependency
+library. Also worth weighing even if portability were solved: this is
+CONSTRUCTION-time, not execute()-time -- the library's whole design
+(§9.2, "plan once, execute many times, cheaply") already treats
+construction cost as off the hot path; a 2-4x win here only matters for
+callers who build many large plans or build large plans on a latency-
+sensitive first call, not for the steady-state repeated-execute() pattern
+the benchmarks in this file otherwise measure. If `<execution>` portability
+is ever solved (e.g. a future std baseline bump, or a build-time opt-in
+`-DBOOST_MULTI_FFT_ALLOW_PAR` gated behind `__cpp_lib_execution` AND an
+explicit TBB-link acknowledgment from the consumer), this specific site --
+and its likely sibling, Bluestein's `chirp_`/wrapped-kernel construction
+loops, also O(n) trig, also construction-time, not separately measured
+here -- would be the ones to revisit first.
+
+### 11.11 `std::execution::par` INSIDE execute() — tried, catastrophically worse (2026-07-11)
+
+Follow-up to §11.10 (which only tried `par` at plan CONSTRUCTION time):
+does `par` help any of the Tier A EXECUTE()-path sites themselves? Patched
+A1 (Bluestein's three `std::transform`s) and A4 (slab `copy_n`
+gather/scatter) with `std::execution::par` (scratch copy only, `/tmp`, real
+header untouched) and re-ran the exact same microbenchmarks as §11.1's
+`unseq` test, for direct comparison:
+
+| site | baseline | `unseq` (§11.1) | `par` |
+|---|---|---|---|
+| Bluestein, m=1 (n=1009) | ~40 us/rep | ~46 us/rep (+15%) | **373 us/rep (9.3x slower)** |
+| Bluestein, m=64 batched | ~2469 us/rep | ~2934 us/rep (+19%) | **23637 us/rep (9.6x slower)** |
+| slab `copy_n`, mt=64 | ~68 us/rep | ~67 us/rep (noise) | **1814 us/rep (~27x slower)** |
+
+Correctness confirmed (full test suite). As predicted before measuring (and
+now confirmed rather than assumed): real thread-pool dispatch/
+synchronization overhead per `par` call is enormous relative to the actual
+work in these ranges (a few dozen complex multiplies, `m` <= 64) --
+dramatically worse than `unseq`'s policy-dispatch-only overhead, because
+`par` actually spins up/synchronizes worker threads per call, not just
+picks a vectorization strategy. Every Tier A execute()-path site is a
+per-call, short-range loop (`m` <= ~64) -- the exact opposite of what
+threading wants (large N, amortized dispatch cost). No further per-site
+exploration inside execute() is warranted: the mechanism (real threading
+overhead on tiny per-call ranges) generalizes to every remaining
+unconverted Tier A/Tier C site too, all of which are the same
+`m`-bounded shape or smaller.
+
+**Where `par` DOES help (§11.10, unchanged): construction-time-only, large-N
+loops** (the twiddle table; likely Bluestein's chirp/wrapped-kernel
+construction, not separately measured) -- fundamentally different profile
+from anything reachable inside `execute()`'s per-call hot path. Combined
+picture for `<execution>` policies in this file: `unseq` is a wash-to-
+slight-loss everywhere (§11.1); `par` is a large win at construction time
+and a catastrophic loss at execute time. Both remain unshippable regardless
+(libc++ non-support + libstdc++'s `-ltbb` requirement, §11.1) -- this
+section is about WHERE the mechanism would help IF that were solved, for
+if/when it ever is.
