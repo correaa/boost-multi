@@ -1696,6 +1696,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a subarray of higher dimension by splitting the leading dimension into `n` equal-sized partitions (`n` must divide `size()`)
 	BOOST_MULTI_HD constexpr auto partitioned(size_type n) const& -> const_subarray<T, D + 1, element_ptr> { return partitioned_aux_(n); }
 
  private:
@@ -3467,7 +3468,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
 #endif
 
-	/// Subarray that is one dimension lower at index `idx`
+	/// yields a ubarray that is one dimension lower at index `idx`
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 
 	/// Subarray spanning the given index range `rng` along the outermost dimension
@@ -3503,6 +3504,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  public:
+	/// Yields a view of higher dimension by splitting the leading dimension into `size` equal-sized partitions (`size() % size` must be zero)
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) const& -> const_subarray<T, 2, element_ptr> { return partitioned_aux_(size); }
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
