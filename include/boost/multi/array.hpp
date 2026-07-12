@@ -890,9 +890,9 @@ struct                                                                          
 	/// Returns the base pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }
 
-	[[deprecated("for compatibility with BMA")]]
+	[[deprecated("for compatibility with BMA, use .data_elements()")]]
 	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
-	[[deprecated("for compatibility with BMA")]]
+	[[deprecated("for compatibility with BMA, use .data_elements()")]]
 	constexpr auto origin() const& -> typename dynamic_array::element_const_ptr { return ref_::origin(); }
 
 	template<class TT, typename EElementPtr, class LLayout>
