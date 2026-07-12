@@ -1642,7 +1642,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	// NOLINT(readability-identifier-naming) TODO(correaa) to remove
+	// NOLINTNEXTLINE(readability-identifier-naming) TODO(correaa) to remove
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
  public:
