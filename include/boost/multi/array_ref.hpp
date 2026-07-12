@@ -354,10 +354,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
 	// [[clang::unsafe_buffer_usage]]
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	[[deprecated("for compatibility with BMA")]] constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	[[deprecated("for compatibility with BMA, use .base()")]]
+	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
-
-	// friend constexpr auto origin(array_types const& self) -> decltype(auto) { return self.origin(); }
 
  protected:
 #ifdef _MSC_VER
