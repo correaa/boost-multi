@@ -2,16 +2,23 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
-> **⚠️ ALERT** 
-> This library is under active Boost review until **March 15, 2026**.  
+<!--
+> **⚠️ ALERT**
+> This library is under active Boost review until **March 15, 2026**.
 > If you are interested in reviewing the library, please send an email to the review manager, **Matt Borland** (matt AT mattborland DOT com).
+-->
 
-Quick start: 
+## Quick start
+
+```bash
+git clone https://gitlab.com/correaa/boost-multi.git
+cd boost-multi
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
-git clone https://gitlab.com/correaa/boost-multi && cd boost-multi
-cmake . -B ./build && camke --build ./build && ctest -C ./build
-```
-read the [documentation](https://correaa.gitlab.io/boost-multi/) or explore `./test`.
+
+Read the [documentation](https://correaa.github.io/boost-multi/multi/intro.html) or explore `test/`.
 
 **[Boost.] Multi**
 
@@ -23,7 +30,7 @@ _Multi_ is a modern C++ library that provides manipulation and access of data in
 
 ```cpp
 #include <cassert>          // for assert
-#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi or https://gitlab.com/correaa/boost-multi
+#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
 
 namespace multi = boost::multi;
 
@@ -62,9 +69,9 @@ int main() {
 
 ## Try Multi
 
-Before installing the library, you can try it [online](https://godbolt.org/z/occ7Yz78d) through the Godbolt's Compiler Explorer.
+Before installing the library, you can try it [online](https://godbolt.org/z/occ7Yz78d) through Godbolt's Compiler Explorer.
 
-Alternatively, the core of the library can be downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp as a single (amalgamated) header, and used locally with `#include <DIR/boost-multi.hpp>`,
+Alternatively, the core of the library can be downloaded as a [single amalgamated header](https://correaa.gitlab.io/boost-multi/boost-multi.hpp) and used locally with `#include <boost-multi.hpp>`.
 
 ## Install Multi
 
@@ -82,23 +89,24 @@ int main() { ... }
 ```
 
 The library can be also installed with CMake.
-The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
+The headers and CMake package files will be installed under the chosen prefix (by default, `/usr/local`).
 ```bash
 cd boost-multi
-mkdir build
-cmake . -B ./build  # --install-prefix=$HOME/.local
-cmake --install ./build  # or sudo ...
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX="$HOME/.local"
+cmake --build build
+cmake --install build
 ```
 
-_Testing_ the library requires Boost.Core (headers), installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
-A CMake build system is provided to compile and run basic tests.
+Testing requires Boost.Test. For example, install `libboost-test-dev` on Debian/Ubuntu or `boost-devel` on Fedora.
+A CMake build system is provided to compile and run the tests.
 ```bash
-ctest -C ./build
+ctest --test-dir build --output-on-failure
 ```
 
-Once installed, other CMake projects (targets) can depend on Multi by adding `add_subdirectory(my_multi_path)` or by `find_package`:
+In a CMake project, add Multi from an in-tree source directory and link its interface target:
 ```cmake
-find_package(multi)  # see https://gitlab.com/correaa/boost-multi
+add_subdirectory(path/to/boost-multi)
+target_link_libraries(my_target PRIVATE multi)
 ```
 
 Alternatively, the library can be fetched on demand:
