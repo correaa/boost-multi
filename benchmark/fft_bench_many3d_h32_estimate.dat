@@ -1,20 +1,20 @@
-# many3d n x n (depth=32) (depth=32): multi::fft_plan{none,forward,forward} vs fftw_plan_many_dft rank=2 (plan recycled, exec only, plan-build time excluded for both, interleaved timing)
+# many3d n x n (depth=32) (depth=32): in-place multi::fft_plan{none,forward,forward} vs in-place fftw_plan_many_dft rank=2 (plan recycled; input setup and plan-build excluded; interleaved cold-cache timing)
 # multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call
 # FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)
 # layout: 32 contiguous n x n layers (layer stride == n*n, batch axis 0 untouched)
 # mflops = 5*depth*n*n*log2(n*n)/time_us (batched benchFFT convention)
 # n  N_total  mine_ms  fftw_ms  mine_mflops  fftw_mflops  ratio_mine_over_fftw
-       8       2048      0.03392      0.01151       1811.4       5336.2    2.946
-       9       2592      0.03157      0.01907       2602.9       4307.5    1.655
-      16       8192      0.06148      0.03119       5329.5      10504.9    1.971
-      20      12800      0.11533      0.04807       4796.5      11507.7    2.399
-      25      20000      0.22122      0.09384       4198.3       9897.1    2.357
-      27      23328      0.22816      0.21385       4861.6       5187.0    1.067
-      32      32768      0.24419      0.12073       6709.5      13570.3    2.023
-      64     131072      0.97384      0.66731       8075.5      11785.2    1.459
-      81     209952      2.05211      1.71501       6486.3       7761.3    1.197
-     100     320000      3.62348      2.05543       5867.4      10343.5    1.763
-     125     500000      7.06733      4.58319       4928.2       7599.3    1.542
-     128     524288      5.46266      3.76009       6718.4       9760.4    1.453
-     243    1889568     24.97900     27.75388       5994.8       5395.5    0.900
-     256    2097152     21.65225     34.47955       7748.5       4865.8    0.628
+       8       2048      0.03587      0.00918       1712.9       6694.1    3.908
+       9       2592      0.03374      0.01731       2434.9       4747.5    1.950
+      16       8192      0.05981      0.02690       5478.9      12182.4    2.224
+      20      12800      0.11741      0.04148       4711.7      13336.5    2.830
+      25      20000      0.21402      0.08082       4339.7      11491.4    2.648
+      27      23328      0.20573      0.20372       5391.5       5444.8    1.010
+      32      32768      0.22281      0.08603       7353.3      19043.9    2.590
+      64     131072      0.94041      0.49152       8362.6      16000.1    1.913
+      81     209952      2.59847      2.08822       5122.5       6374.1    1.244
+     100     320000      4.20428      1.95399       5056.8      10880.5    2.152
+     125     500000      7.98980      5.43406       4359.2       6409.4    1.470
+     128     524288      5.00213      2.54420       7336.9      14425.0    1.966
+     243    1889568     25.20329     23.26308       5941.5       6437.0    1.083
+     256    2097152     23.56391     31.82541       7119.9       5271.6    0.740

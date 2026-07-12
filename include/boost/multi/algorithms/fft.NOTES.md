@@ -2762,3 +2762,61 @@ doesn't work, on this machine, in this size range. Not investigated
 further (e.g. whether a size regime exists where the twiddle table
 alone exceeds L3 while everything else still fits, which might change
 the balance) -- flagged here rather than assumed either way.
+
+### 11.24 Experimental packed contiguous batches: useful for active 2-D, not a solution for generalized-many (2026-07-12)
+
+The current slab executor has a deliberately cheap fast path for
+contiguous fibers: invoke the 1-D engine directly once per fiber.  This
+is the right thing for a genuinely independent batch of 1-D transforms,
+but it means a 2-D/3-D transform pays the dispatch/setup cost of the
+1-D engine separately for every row.  The experiment here asks whether
+the existing blocked gather/run/scatter path can do better by packing a
+contiguous fiber batch into one rank-2 scratch block before calling the
+engine.
+
+**Implementation.** `BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES`
+suppresses that direct contiguous-fiber early return for non-six-step
+engines only.  It therefore reuses the generic blocked pack ->
+`eng.run(m)` -> scatter path already used for non-contiguous fibers.
+Six-step transforms retain their direct path.  The macro is off by
+default: this is a schedule experiment, not a proposed default
+behavior.  The complete strict `test/algorithms_fft.cpp` build and run
+passed both with and without the macro.
+
+**Benchmark.** Full official sweeps, in-place for both Multi and FFTW;
+FFTW used `FFTW_ESTIMATE` with wisdom disabled, plans were built outside
+the timed region, input restoration was also outside the timed region,
+and the cache was flushed before each timed call.  The direct baseline
+was taken on a quiet machine; the packed run was usable but less clean
+(its calibration changed 0.2434 -> 0.2343 ms, 3.7%).  Consequently the
+numbers below compare the geometric mean of Multi/FFTW *within each
+run*; the packed/direct wall-time ratio is informative but not treated
+as a precise cross-run speedup.
+
+| sweep | direct Multi/FFTW | packed Multi/FFTW | packed/direct time | sizes packed wins |
+|---|---:|---:|---:|---:|
+| 1-D | 1.219 | 1.234 | 1.194 | 2/45 |
+| 2-D | 1.193 | 1.075 | 1.056 | 12/28 |
+| 3-D | 1.427 | 1.260 | 0.966 | 12/20 |
+| generalized-many, h=256, `{none, forward}` | 2.075 | 2.031 | 1.065 | 6/14 |
+| generalized-many 3-D, h=32, `{none, forward, forward}` | 1.806 | 1.522 | 0.911 | 10/14 |
+
+The 1-D control behaves as expected: packing is not beneficial and the
+small difference in its within-run ratio also bounds the amount of
+ambient-run skew.  The active 2-D/3-D cases do benefit in their ratio
+to FFTW, especially the 3-D generalized-many case.  The h=256
+generalized-many case -- the primary target -- improves only about 2%
+geometrically, with regressions concentrated at several powers of two
+(and a large regression at n=2048).  It is therefore not credible to
+enable this blanket per-axis packing rule by default.
+
+**Conclusion and next experiment.** The evidence supports amortizing
+work over a full active rank-2 tile, not blindly packing each
+contiguous batch on every axis.  The promising follow-up is a fused
+rank-2 scratch schedule: pack a tile once, perform its row transform,
+transpose or hand off in scratch for its column transform, then scatter
+once.  That removes the repeated per-axis gather/scatter traffic which
+this experiment leaves in place.  It needs a scratch-layout/cost-model
+extension and a careful memory bound, followed by the same strict test
+gate and a paired, idle-machine benchmark before considering it for the
+default schedule.

@@ -158,20 +158,24 @@ template<class F> auto time_it(long reps, F f) -> double {
 	return t / reps;
 }
 
-// Interleaved pairwise timing: alternates single timed calls to `f`/`g`,
-// flushing the cache immediately before each individual call, so both series
-// experience the same drift (thermal, frequency-scaling, background load)
-// instead of one running entirely before the other.
-template<class F, class G> auto time_it_interleaved(long reps, F f, G g) -> std::pair<double, double> {
+// Interleaved pairwise timing: alternates single timed calls to `f`/`g`.
+// Each input is restored before its cache flush and outside the timed region;
+// the reported times therefore contain only the in-place FFT execution.
+// Interleaving still cancels drift from temperature, frequency scaling, and
+// background load.
+template<class PrepareF, class F, class PrepareG, class G>
+auto time_it_interleaved(long reps, PrepareF prepare_f, F f, PrepareG prepare_g, G g) -> std::pair<double, double> {
 	double tf = 0;
 	double tg = 0;
 	for(long r = 0; r != reps; ++r) {
+		prepare_f();
 		flush_cache();
 		{
 			watch w;
 			f();
 			tf += w.sec();
 		}
+		prepare_g();
 		flush_cache();
 		{
 			watch w;
@@ -219,7 +223,12 @@ auto calibrate() -> double {
 template<std::ptrdiff_t D>
 void sweep(std::vector<int> const& sides, char const* fname, char const* label) {
 	std::FILE* out = std::fopen(fname, "w");
-	std::fprintf(out, "# %s: multi::fft_plan vs FFTW 3 (plan recycled, exec only, plan-build time excluded for both, interleaved timing)\n", label);
+	std::fprintf(out, "# %s: in-place multi::fft_plan vs in-place FFTW 3 (plan recycled; input setup and plan-build excluded; interleaved cold-cache timing)\n", label);
+	#if defined(BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES)
+	std::fprintf(out, "# Multi schedule: experimental packed contiguous batches\n");
+	#else
+	std::fprintf(out, "# Multi schedule: direct contiguous fibers\n");
+	#endif
 	std::fprintf(out, "# multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call\n");
 #if defined(DISABLE_WISDOM) && defined(USE_ESTIMATE)
 	std::fprintf(out, "# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
@@ -253,7 +262,6 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 		arena_alloc<decltype(plan)> arena(plan);
 
 		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
-		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
 		auto  loadf = [&] {
             for(long i = 0; i != N; ++i) {
                 in[i][0] = base[static_cast<std::size_t>(i)].real();
@@ -269,10 +277,10 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 #else
 		unsigned const fftw_flag = FFTW_MEASURE;
 #endif
-		fftw_plan p =  // plan build: not timed
-			D == 1 ? fftw_plan_dft_1d(n, in, fo, FFTW_FORWARD, fftw_flag)
-			: D == 2 ? fftw_plan_dft_2d(n, n, in, fo, FFTW_FORWARD, fftw_flag)
-			        : fftw_plan_dft_3d(n, n, n, in, fo, FFTW_FORWARD, fftw_flag);
+		fftw_plan p =  // plan build: not timed; input and output are the same buffer
+			D == 1 ? fftw_plan_dft_1d(n, in, in, FFTW_FORWARD, fftw_flag)
+			: D == 2 ? fftw_plan_dft_2d(n, n, in, in, FFTW_FORWARD, fftw_flag)
+			        : fftw_plan_dft_3d(n, n, n, in, in, FFTW_FORWARD, fftw_flag);
 		loadf();  // FFTW_MEASURE overwrites in/out while searching strategies; reload before timing (harmless no-op difference for ESTIMATE)
 
 		double mine = 0.0;
@@ -284,7 +292,7 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 			loadf();
 			fftw_execute(p);  // untimed warm-up, symmetric with multi's above
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(flat.home(), arena.alloc); arena.reset(); }, [&] { loadf(); fftw_execute(p); });
+				reps, load, [&] { plan.execute(flat.home(), arena.alloc); arena.reset(); }, loadf, [&] { fftw_execute(p); });
 		} else if constexpr(D == 2) {
 			multi::array_ref<complex, 2> v(flat.data_elements(), {n, n});
 			load();
@@ -293,7 +301,7 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 			loadf();
 			fftw_execute(p);
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(v.home(), arena.alloc); arena.reset(); }, [&] { loadf(); fftw_execute(p); });
+				reps, load, [&] { plan.execute(v.home(), arena.alloc); arena.reset(); }, loadf, [&] { fftw_execute(p); });
 		} else {
 			multi::array_ref<complex, 3> v(flat.data_elements(), {n, n, n});
 			load();
@@ -302,12 +310,11 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 			loadf();
 			fftw_execute(p);
 			std::tie(mine, ffw) = time_it_interleaved(
-				reps, [&] { load(); plan.execute(v.home(), arena.alloc); arena.reset(); }, [&] { loadf(); fftw_execute(p); });
+				reps, load, [&] { plan.execute(v.home(), arena.alloc); arena.reset(); }, loadf, [&] { fftw_execute(p); });
 		}
 
 		fftw_destroy_plan(p);
 		fftw_free(in);
-		fftw_free(fo);
 
 		double const work = 5.0 * static_cast<double>(N) * std::log2(static_cast<double>(N));
 		std::fprintf(out, "%8d %10ld %12.5f %12.5f %12.1f %12.1f %8.3f\n", n, N, mine * 1e3, ffw * 1e3, work / (mine * 1e6), work / (ffw * 1e6), mine / ffw);
@@ -328,7 +335,12 @@ void sweep(std::vector<int> const& sides, char const* fname, char const* label) 
 // sweep above already covers.
 void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, char const* label) {
 	std::FILE* out = std::fopen(fname, "w");
-	std::fprintf(out, "# %s (howmany=%d): multi::fft_plan{none,forward} vs fftw_plan_many_dft (plan recycled, exec only, plan-build time excluded for both, interleaved timing)\n", label, howmany);
+	std::fprintf(out, "# %s (howmany=%d): in-place multi::fft_plan{none,forward} vs in-place fftw_plan_many_dft (plan recycled; input setup and plan-build excluded; interleaved cold-cache timing)\n", label, howmany);
+	#if defined(BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES)
+	std::fprintf(out, "# Multi schedule: experimental packed contiguous batches\n");
+	#else
+	std::fprintf(out, "# Multi schedule: direct contiguous fibers\n");
+	#endif
 	std::fprintf(out, "# multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call\n");
 #if defined(DISABLE_WISDOM) && defined(USE_ESTIMATE)
 	std::fprintf(out, "# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
@@ -361,7 +373,6 @@ void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, c
 		arena_alloc<decltype(plan)> arena(plan);
 
 		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
-		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
 		auto  loadf = [&] {
             for(long i = 0; i != N; ++i) {
                 in[i][0] = base[static_cast<std::size_t>(i)].real();
@@ -379,7 +390,7 @@ void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, c
 #endif
 		int        fftw_n[1] = {n};
 		fftw_plan p =  // plan build: not timed; in-place, contiguous rows: istride=ostride=1, idist=odist=n
-			fftw_plan_many_dft(1, fftw_n, howmany, in, nullptr, 1, n, fo, nullptr, 1, n, FFTW_FORWARD, fftw_flag);
+			fftw_plan_many_dft(1, fftw_n, howmany, in, nullptr, 1, n, in, nullptr, 1, n, FFTW_FORWARD, fftw_flag);
 		loadf();  // FFTW_MEASURE overwrites in/out while searching strategies; reload before timing
 
 		load();
@@ -388,11 +399,10 @@ void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, c
 		loadf();
 		fftw_execute(p);  // untimed warm-up, symmetric with multi's above
 		auto [mine, ffw] = time_it_interleaved(
-			reps, [&] { load(); plan.execute(v.home(), arena.alloc); arena.reset(); }, [&] { loadf(); fftw_execute(p); });
+			reps, load, [&] { plan.execute(v.home(), arena.alloc); arena.reset(); }, loadf, [&] { fftw_execute(p); });
 
 		fftw_destroy_plan(p);
 		fftw_free(in);
-		fftw_free(fo);
 
 		double const work = 5.0 * static_cast<double>(howmany) * static_cast<double>(n) * std::log2(static_cast<double>(n));
 		std::fprintf(out, "%8d %10ld %12.5f %12.5f %12.1f %12.1f %8.3f\n", n, N, mine * 1e3, ffw * 1e3, work / (mine * 1e6), work / (ffw * 1e6), mine / ffw);
@@ -410,7 +420,12 @@ void sweep_many(std::vector<int> const& sides, int howmany, char const* fname, c
 // plan's row-major layout exactly.
 void sweep_many3d(std::vector<int> const& sides, int depth, char const* fname, char const* label) {
 	std::FILE* out = std::fopen(fname, "w");
-	std::fprintf(out, "# %s (depth=%d): multi::fft_plan{none,forward,forward} vs fftw_plan_many_dft rank=2 (plan recycled, exec only, plan-build time excluded for both, interleaved timing)\n", label, depth);
+	std::fprintf(out, "# %s (depth=%d): in-place multi::fft_plan{none,forward,forward} vs in-place fftw_plan_many_dft rank=2 (plan recycled; input setup and plan-build excluded; interleaved cold-cache timing)\n", label, depth);
+	#if defined(BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES)
+	std::fprintf(out, "# Multi schedule: experimental packed contiguous batches\n");
+	#else
+	std::fprintf(out, "# Multi schedule: direct contiguous fibers\n");
+	#endif
 	std::fprintf(out, "# multi::fft_plan::execute() uses a std::pmr::monotonic_buffer_resource over a persistent arena, released (not freed) after every call\n");
 #if defined(DISABLE_WISDOM) && defined(USE_ESTIMATE)
 	std::fprintf(out, "# FFTW: FFTW_ESTIMATE, wisdom DISABLED (fftw_forget_wisdom() before every plan)\n");
@@ -444,7 +459,6 @@ void sweep_many3d(std::vector<int> const& sides, int depth, char const* fname, c
 		arena_alloc<decltype(plan)> arena(plan);
 
 		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
-		auto* fo = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * static_cast<std::size_t>(N)));
 		auto  loadf = [&] {
             for(long i = 0; i != N; ++i) {
                 in[i][0] = base[static_cast<std::size_t>(i)].real();
@@ -462,7 +476,7 @@ void sweep_many3d(std::vector<int> const& sides, int depth, char const* fname, c
 #endif
 		int        fftw_n[2] = {n, n};
 		fftw_plan p =  // plan build: not timed; in-place, contiguous layers: istride=ostride=1, idist=odist=n*n, no embedding
-			fftw_plan_many_dft(2, fftw_n, depth, in, nullptr, 1, n * n, fo, nullptr, 1, n * n, FFTW_FORWARD, fftw_flag);
+			fftw_plan_many_dft(2, fftw_n, depth, in, nullptr, 1, n * n, in, nullptr, 1, n * n, FFTW_FORWARD, fftw_flag);
 		loadf();  // FFTW_MEASURE overwrites in/out while searching strategies; reload before timing
 
 		load();
@@ -471,11 +485,10 @@ void sweep_many3d(std::vector<int> const& sides, int depth, char const* fname, c
 		loadf();
 		fftw_execute(p);  // untimed warm-up, symmetric with multi's above
 		auto [mine, ffw] = time_it_interleaved(
-			reps, [&] { load(); plan.execute(v.home(), arena.alloc); arena.reset(); }, [&] { loadf(); fftw_execute(p); });
+			reps, load, [&] { plan.execute(v.home(), arena.alloc); arena.reset(); }, loadf, [&] { fftw_execute(p); });
 
 		fftw_destroy_plan(p);
 		fftw_free(in);
-		fftw_free(fo);
 
 		double const work = 5.0 * static_cast<double>(depth) * static_cast<double>(nn) * std::log2(static_cast<double>(nn));
 		std::fprintf(out, "%8d %10ld %12.5f %12.5f %12.1f %12.1f %8.3f\n", n, N, mine * 1e3, ffw * 1e3, work / (mine * 1e6), work / (ffw * 1e6), mine / ffw);
@@ -506,6 +519,12 @@ auto main() -> int {
 #define BOOST_MULTI_FFT_BENCH_SUFFIX ""
 #endif
 
+#if defined(BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES)
+#define BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX "_packed"
+#else
+#define BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ""
+#endif
+
 	// Sizes are exactly 2^a * 3^b * 5^c: every pure power of 2, 3, and 5 that
 	// fits in the tested range, plus mixed 2-/3-way composites at several
 	// magnitudes, so every radix-2/3/4/5/8 combination is exercised both in
@@ -515,19 +534,19 @@ auto main() -> int {
 	          15625, 16384, 19683, 20250, 24000, 27000, 32768, 59049, 65536,
 	          78125, 131072, 172800, 177147, 230400, 250000, 262144, 390625,
 	          524288, 531441, 1048576, 1259712, 1594323, 1600000, 1953125, 2097152},
-	         "fft_bench_1d" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "1D n");
+	         "fft_bench_1d" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "1D n");
 	// 2D: every pure power of 2/3/5 that fits in [24,2000]
 	// (32,64,128,256,512,1024 / 27,81,243,729 / 25,125,625) plus mixed
 	// composites, for a denser view of the radix-2/3/4/5/8 kernel space.
 	sweep<2>({24, 25, 27, 32, 40, 60, 64, 75, 81, 100, 125, 128,
 	          216, 243, 250, 256, 320, 375, 405, 486, 512, 625, 729,
 	          1024, 1215, 1350, 1600, 2000},
-	         "fft_bench_2d" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "2D n x n");
+	         "fft_bench_2d" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "2D n x n");
 	// 3D: every pure power of 2/3/5 that fits in [8,300]
 	// (16,32,128,256 / 9,81,243 / already had 25,125) plus mixed composites.
 	sweep<3>({8, 9, 15, 16, 20, 25, 27, 32, 64, 81, 90, 100,
 	          125, 128, 144, 216, 243, 250, 256, 300},
-	         "fft_bench_3d" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "3D n x n x n");
+	         "fft_bench_3d" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "3D n x n x n");
 
 	// Batched 1-D ("many"): fiber sizes spanning the radix-2/3/4/5/8 kernel
 	// families, at two batch depths, against fftw_plan_many_dft -- see
@@ -535,17 +554,18 @@ auto main() -> int {
 	// whether the ratio is stable as the batch axis grows, not just a single
 	// point.
 	sweep_many({32, 64, 81, 100, 125, 128, 243, 256, 512, 625, 729, 1024, 2048, 4096},
-	           32, "fft_bench_many_h32" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "many n (howmany=32)");
+	           32, "fft_bench_many_h32" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "many n (howmany=32)");
 	sweep_many({32, 64, 81, 100, 125, 128, 243, 256, 512, 625, 729, 1024, 2048, 4096},
-	           256, "fft_bench_many_h256" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "many n (howmany=256)");
+	           256, "fft_bench_many_h256" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "many n (howmany=256)");
 
 	// Batched 2-D ("many3d"): n x n layer sizes spanning the radix-2/3/4/5/8
 	// kernel families, {none, forward, forward} on a (depth, n, n) array vs
 	// fftw_plan_many_dft rank=2 -- see sweep_many3d's comment.
 	sweep_many3d({8, 9, 16, 20, 25, 27, 32, 64, 81, 100, 125, 128, 243, 256},
-	             32, "fft_bench_many3d_h32" BOOST_MULTI_FFT_BENCH_SUFFIX ".dat", "many3d n x n (depth=32)");
+	             32, "fft_bench_many3d_h32" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "many3d n x n (depth=32)");
 
 #undef BOOST_MULTI_FFT_BENCH_SUFFIX
+#undef BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX
 
 	double const calib_after = calibrate();
 	std::fprintf(stderr, "calibration (after):  %.4f ms\n", calib_after * 1e3);

@@ -596,6 +596,11 @@ struct fft_engine {
 	// distinct last stage exists to produce the final values.
 	auto can_fuse() const -> bool { return !bluestein_ && stages_.size() >= 2; }
 
+	// Six-step decomposes one fiber at a time; the ordinary stage pipeline and
+	// Bluestein both support the interleaved [frequency][batch] scratch layout.
+	// This is used by the experimental packed-contiguous slab schedule below.
+	auto can_batch() const -> bool { return !sixstep_; }
+
 	// Transform directly between user tiles: the first stage reads
 	// in[k*si + j] and the last stage writes out[k*so + j] (batch index j
 	// contiguous), skipping the separate gather and scatter passes. `in` may
@@ -1290,15 +1295,28 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 
 	std::size_t const mb = std::min<std::size_t>(std::max<std::size_t>(eng.mb_, 1), yy);
 
-	// Contiguous fibers transform faster one at a time straight from user
-	// memory (no transpose gather) than through batched tiles.
+	// Contiguous fibers normally transform one at a time straight from user
+	// memory (no transpose gather). Defining
+	// BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES instead packs a tile
+	// into the [frequency][batch] scratch layout below and exercises the
+	// batched stage kernels; its crossover is benchmarked separately.
 	if constexpr(std::is_pointer_v<std::decay_t<decltype(slab.base())>>) {
 		if(get<1>(slab.strides()) == 1) {
+		#if !defined(BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES)
 			auto const ylim = static_cast<std::ptrdiff_t>(yy);
 			for(std::ptrdiff_t y = 0; y != ylim; ++y) {
 				fft_exec_fiber(slab[y], eng, backward, arena);
 			}
 			return;
+		#else
+			if(!eng.can_batch()) {
+				auto const ylim = static_cast<std::ptrdiff_t>(yy);
+				for(std::ptrdiff_t y = 0; y != ylim; ++y) {
+					fft_exec_fiber(slab[y], eng, backward, arena);
+				}
+				return;
+			}
+		#endif
 		}
 		// Batch axis contiguous in user memory: the batched stages read each
 		// tile in place (first stage) and write it back (last stage) -- no
