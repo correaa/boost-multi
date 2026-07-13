@@ -2820,3 +2820,48 @@ this experiment leaves in place.  It needs a scratch-layout/cost-model
 extension and a careful memory bound, followed by the same strict test
 gate and a paired, idle-machine benchmark before considering it for the
 default schedule.
+
+---
+
+## §12 GPU porting design notes
+
+### 12.1 Plan internals must become allocator-aware for GPU
+
+For GPU execution, the plan's twiddle tables and related data must reside in device
+memory (or managed/pinned memory).  The current `fft_engine<TW>` uses `std::vector<TW>`
+for all internal tables:
+
+- `tw_` — twiddle table, size n
+- `wmat_` — concatenated DFT matrices for generic radices, size O(n) in the worst case
+- `chirp_`, `postc_`, `kernel_ft_`, `kernel_ft_bwd_` — Bluestein tables, size O(conv_n)
+
+These are O(n) and must be heap-allocated in any case; switching them from
+`std::vector<TW>` to `multi::array<TW, 1, Allocator>` (with `fft_plan` gaining an
+`Allocator` template parameter) would allow them to live in device memory by passing
+a device allocator to the plan constructor.  `multi::array` is exactly the right
+container here since it is already allocator-aware.
+
+**Blocker**: the construction code uses `push_back` / `emplace_back` / `resize` +
+offset tracking to build tables incrementally during factorisation.  `multi::array`
+does not have `push_back`.  The fix requires a two-pass construction: first walk the
+factorisation to compute the final sizes, then allocate and fill.
+
+### 12.2 Factorisation-dependent containers are O(log n) and can live on the stack
+
+Two internal `std::vector`s are bounded not by n but by the number of stages in the
+factorisation:
+
+- `stages_` — one entry per stage; radix-2/3/4/5/8 gives at most log₂(n) stages
+  (≤ 30 for n ≤ 2³⁰).
+- `sub_` — one entry per sub-engine (Bluestein conv sub, six-step pair, generic-stage
+  sub-plans); also bounded by the number of stages, so ≤ ~30–64 entries in practice.
+
+These could be replaced with `std::array<..., MaxStages>` + a count, removing two
+heap allocations per engine construction and making the engine trivially relocatable
+— useful both for stack allocation and for copying engine tables to device memory
+without chasing pointers.  A conservative `MaxStages = 64` covers all realistic
+transform lengths.
+
+The local factorisation scratch (`fac`, a `std::vector<std::size_t>` inside the
+constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` without
+any interface change.
