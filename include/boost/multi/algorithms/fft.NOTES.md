@@ -2827,19 +2827,21 @@ default schedule.
 
 ### 12.1 Plan internals must become allocator-aware for GPU
 
-For GPU execution, the plan's twiddle tables and related data must reside in device
-memory (or managed/pinned memory).  The current `fft_engine<TW>` uses `std::vector<TW>`
-for all internal tables:
+For GPU execution, the GPU kernels only access the twiddle tables — the O(n) bulk
+data.  Control structures (`stages_`, `sub_`, engine metadata) live on the host and
+orchestrate kernel launches; they can stay as `std::vector` on the host.  Only the
+table vectors need to reside in device memory:
 
 - `tw_` — twiddle table, size n
 - `wmat_` — concatenated DFT matrices for generic radices, size O(n) in the worst case
 - `chirp_`, `postc_`, `kernel_ft_`, `kernel_ft_bwd_` — Bluestein tables, size O(conv_n)
 
-These are O(n) and must be heap-allocated in any case; switching them from
-`std::vector<TW>` to `multi::array<TW, 1, Allocator>` (with `fft_plan` gaining an
-`Allocator` template parameter) would allow them to live in device memory by passing
-a device allocator to the plan constructor.  `multi::array` is exactly the right
-container here since it is already allocator-aware.
+Switching these from `std::vector<TW>` to `multi::array<TW, 1, Allocator>` (with
+`fft_engine` / `fft_plan` gaining an `Allocator` template parameter) would allow
+them to live in device memory by passing a device allocator to the plan constructor.
+`multi::array` is exactly the right container here since it is already
+allocator-aware.  The remaining `std::vector` members (stages, sub-engines) are
+unaffected.
 
 **Blocker**: the construction code uses `push_back` / `emplace_back` / `resize` +
 offset tracking to build tables incrementally during factorisation.  `multi::array`
