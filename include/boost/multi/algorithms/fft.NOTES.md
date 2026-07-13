@@ -2848,38 +2848,32 @@ offset tracking to build tables incrementally during factorisation.  `multi::arr
 does not have `push_back`.  The fix requires a two-pass construction: first walk the
 factorisation to compute the final sizes, then allocate and fill.
 
-### 12.2 Factorisation-dependent containers are O(log n) and can live on the stack
+### 12.2 Engine count is already bounded; sub-engines are the remaining dynamic allocation
 
-Two internal `std::vector`s are bounded not by n but by the number of stages in the
-factorisation:
+`fft_plan::engines_` is already `std::array<fft_engine<TW>, D>` (line 1606) — D
+slots, a compile-time constant, no heap allocation.  `distinct_count_` (≤ D) records
+how many are actually used; unused slots are default-constructed (n_ == 0, no-op).
 
-- `stages_` — one entry per stage; radix-2/3/4/5/8 gives at most log₂(n) stages
-  (≤ 30 for n ≤ 2³⁰).
-- `sub_` — one entry per sub-engine (Bluestein conv sub, six-step pair, generic-stage
-  sub-plans); also bounded by the number of stages, so ≤ ~30–64 entries in practice.
+The remaining dynamic allocation in the engine tree is `fft_engine::sub_`, a
+`std::vector<fft_engine>` holding nested engines:
 
-These could be replaced with `std::array<..., MaxStages>`, removing two heap
-allocations per engine construction and making the engine trivially relocatable —
-useful both for stack allocation and for copying engine tables to device memory
-without chasing pointers.  A conservative `MaxStages = 64` covers all realistic
-transform lengths.
+- Bluestein: 1 sub-engine (the convolution sub-plan)
+- Six-step: 2 sub-engines (the n1 and n2 sub-transforms)
+- Generic prime stages: 1 sub-engine per stage (rare; usually 0–1 in practice)
 
-Rather than storing a separate count (a second source of truth that can desync),
-the array is kept fully initialised to `1` and valid entries overwrite from the
-front.  The invariant is: **all entries after the last valid one are `1`** — not
-just the first position past the end, but every remaining slot.
+In practice `sub_.size()` is 0, 1, or 2 for the vast majority of transform lengths;
+it is bounded by the number of stages which is at most log₂(n) ≤ 30.  Replacing
+`sub_` with `std::array<fft_engine, MaxSub>` (e.g. `MaxSub = 4` for almost all
+cases, `MaxSub = 32` for a conservative bound) would eliminate this last per-engine
+heap allocation.
 
-The primary benefit is **branchless, vectorisable iteration**: the whole fixed-size
-array can be processed unconditionally without any boundary check, because `1` is
-the multiplicative identity and a length-1 DFT is a no-op.  The loop has no
-data-dependent branch and no early exit, so the compiler can vectorise it freely.
+`stages_` (one entry per radix stage, also ≤ log₂(n)) and the local factorisation
+scratch `fac` (a `std::vector<std::size_t>` inside the constructor) are similarly
+bounded and could become `std::array<stage_t, 32>` / `std::array<std::size_t, 32>`.
 
-- `stages_`: every unused `stage_t` slot has `radix == 1`.  A stage with radix 1
-  contributes a factor of 1 to the product and does no butterfly work — the whole
-  array can be multiplied/iterated unconditionally.
-- `sub_`: every unused `fft_engine` slot has `n_ == 1` (a length-1 DFT).  Invoking
-  it is a no-op, so the sub-engine array can also be traversed unconditionally.
-
-The local factorisation scratch (`fac`, a `std::vector<std::size_t>` inside the
-constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` terminated
-by a `1` sentinel, without any interface change.
+For all of these fixed-size arrays the preferred sentinel convention is: **all slots
+are initialised to `1`**; valid entries overwrite from the front.  `1` is the
+multiplicative identity, so a stage with `radix == 1` is a no-op and an engine with
+`n_ == 1` is a length-1 DFT (also a no-op).  The primary benefit is **branchless,
+vectorisable iteration**: the whole array can be processed unconditionally with no
+data-dependent branch, no early exit, and no separate count variable.
