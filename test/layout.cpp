@@ -1213,6 +1213,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( lyt.extent().front() == 3 );
 		BOOST_TEST( lyt.extent().back() == 8 );
+
+		auto sorted_lyt = lyt.sort();
+
+		BOOST_TEST( sorted_lyt == lyt );
+
+		auto lyt_transpose = lyt.transpose();
+
+		auto sorted_lyt2 = lyt_transpose.transpose();
+
+		BOOST_TEST( sorted_lyt2 == sorted_lyt );
 	}
 	{
 		multi::extent_t<int> const ext(5);
