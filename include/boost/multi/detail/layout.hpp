@@ -1767,6 +1767,29 @@ struct layout_t
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
+	BOOST_MULTI_HD constexpr auto sort() const {
+		auto ret = layout_t {
+			this->sub().sort(),
+			this->stride(),
+			this->offset(),
+			this->nelems()
+		};
+
+		if constexpr(D > 1) {
+			if( ret.stride() < ret.sub().stride() ) {
+				auto ret2 = ret.transpose();
+				ret = layout_t {
+					ret2.sub().sort(),
+					ret2.stride(),
+					ret2.offset(),
+					ret2.nelems()
+				};
+			}
+		}
+
+		return ret;
+	}
+
 	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
 		assert(count <= this->size());
 
@@ -2001,6 +2024,8 @@ struct layout_t<0, SSize>
 	constexpr auto offset() const -> offset_type { return offset_; }
 	constexpr auto nelems() const noexcept -> nelems_type { return nelems_; }
 	constexpr auto sub() const -> sub_type = delete;
+
+	constexpr auto sort() const noexcept { return *this; }
 
 	constexpr auto size() const -> size_type           = delete;
 
