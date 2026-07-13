@@ -2825,6 +2825,10 @@ default schedule.
 
 ## §12 GPU porting design notes
 
+> **Review note**: the GPU-specific statements in this section (kernel launch
+> strategy, shared-memory limits, synchronisation model) should be reviewed by
+> Fable before any implementation begins.
+
 ### 12.1 Plan internals must become allocator-aware for GPU
 
 For GPU execution, the GPU kernels only access the twiddle tables — the O(n) bulk
@@ -2884,3 +2888,9 @@ multiplicative identity, so a stage with `radix == 1` is a no-op and an engine w
 `n_ == 1` is a length-1 DFT (also a no-op).  The primary benefit is **branchless,
 vectorisable iteration**: the whole array can be processed unconditionally with no
 data-dependent branch, no early exit, and no separate count variable.
+
+**CPU impact**: these changes do not meaningfully speed up `execute()` on CPU.  The
+hot path is the butterfly arithmetic; the stage loop is ≤ 30 iterations already in
+L1 cache regardless of storage type.  Moving `stages_` from a heap-pointed vector to
+an in-struct array gives at best a rounding-error cache-locality improvement.  The
+motivation is GPU porting, not CPU performance.
