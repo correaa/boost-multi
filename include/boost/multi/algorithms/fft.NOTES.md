@@ -2856,12 +2856,22 @@ factorisation:
 - `sub_` — one entry per sub-engine (Bluestein conv sub, six-step pair, generic-stage
   sub-plans); also bounded by the number of stages, so ≤ ~30–64 entries in practice.
 
-These could be replaced with `std::array<..., MaxStages>` + a count, removing two
-heap allocations per engine construction and making the engine trivially relocatable
-— useful both for stack allocation and for copying engine tables to device memory
+These could be replaced with `std::array<..., MaxStages>`, removing two heap
+allocations per engine construction and making the engine trivially relocatable —
+useful both for stack allocation and for copying engine tables to device memory
 without chasing pointers.  A conservative `MaxStages = 64` covers all realistic
 transform lengths.
 
+Rather than storing a separate count (a second source of truth that can desync),
+the end of valid entries is marked with a sentinel value of `1`:
+
+- `stages_`: a `stage_t` with `radix == 1` never appears in a real factorisation
+  (all real radices are ≥ 2), so it is the natural terminator.  Iteration stops at
+  the first entry whose `radix == 1`.
+- `sub_`: an `fft_engine` with `n_ == 1` (a length-1 DFT, trivially a no-op) serves
+  as the terminator.  (`n_ == 0` is already the default-constructed state and could
+  also be used, but `1` is more explicit about "nothing to do".)
+
 The local factorisation scratch (`fac`, a `std::vector<std::size_t>` inside the
-constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` without
-any interface change.
+constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` terminated
+by a `1` sentinel, without any interface change.
