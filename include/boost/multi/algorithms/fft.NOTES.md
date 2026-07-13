@@ -2863,14 +2863,15 @@ without chasing pointers.  A conservative `MaxStages = 64` covers all realistic
 transform lengths.
 
 Rather than storing a separate count (a second source of truth that can desync),
-the end of valid entries is marked with a sentinel value of `1`:
+the array is kept fully initialised to `1` and valid entries overwrite from the
+front.  The invariant is: **all entries after the last valid one are `1`** — not
+just the first position past the end, but every remaining slot.  This means:
 
-- `stages_`: a `stage_t` with `radix == 1` never appears in a real factorisation
-  (all real radices are ≥ 2), so it is the natural terminator.  Iteration stops at
-  the first entry whose `radix == 1`.
-- `sub_`: an `fft_engine` with `n_ == 1` (a length-1 DFT, trivially a no-op) serves
-  as the terminator.  (`n_ == 0` is already the default-constructed state and could
-  also be used, but `1` is more explicit about "nothing to do".)
+- `stages_`: every unused `stage_t` slot has `radix == 1` (never a real radix).
+  Iteration stops at the first `radix == 1`; accidentally reading past it executes
+  a no-op stage.
+- `sub_`: every unused `fft_engine` slot has `n_ == 1` (a length-1 DFT, trivially
+  a no-op).  Accidentally invoking it does nothing.
 
 The local factorisation scratch (`fac`, a `std::vector<std::size_t>` inside the
 constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` terminated
