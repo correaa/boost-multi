@@ -2851,8 +2851,15 @@ factorisation to compute the final sizes, then allocate and fill.
 ### 12.2 Engine count is already bounded; sub-engines are the remaining dynamic allocation
 
 `fft_plan::engines_` is already `std::array<fft_engine<TW>, D>` (line 1606) — D
-slots, a compile-time constant, no heap allocation.  `distinct_count_` (≤ D) records
-how many are actually used; unused slots are default-constructed (n_ == 0, no-op).
+slots, a compile-time constant, no heap allocation.  Currently `distinct_count_` (≤ D)
+records how many slots are actually used and gates iteration over them.
+
+Applying the same sentinel convention as `sub_` and `stages_`: initialise all D
+slots to `fft_engine(1)` and let real engines overwrite from the front.
+`fft_engine(1)` is a natural trivial sentinel — its constructor hits `if(n_ < 2)
+return` immediately (no twiddle tables built) and any `apply_()` call on it also
+returns immediately.  With this invariant `distinct_count_` becomes unnecessary: all
+D slots can be iterated unconditionally with no data-dependent branch.
 
 The remaining dynamic allocation in the engine tree is `fft_engine::sub_`, a
 `std::vector<fft_engine>` holding nested engines:
