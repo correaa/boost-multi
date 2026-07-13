@@ -2865,13 +2865,18 @@ transform lengths.
 Rather than storing a separate count (a second source of truth that can desync),
 the array is kept fully initialised to `1` and valid entries overwrite from the
 front.  The invariant is: **all entries after the last valid one are `1`** — not
-just the first position past the end, but every remaining slot.  This means:
+just the first position past the end, but every remaining slot.
 
-- `stages_`: every unused `stage_t` slot has `radix == 1` (never a real radix).
-  Iteration stops at the first `radix == 1`; accidentally reading past it executes
-  a no-op stage.
-- `sub_`: every unused `fft_engine` slot has `n_ == 1` (a length-1 DFT, trivially
-  a no-op).  Accidentally invoking it does nothing.
+The primary benefit is **branchless, vectorisable iteration**: the whole fixed-size
+array can be processed unconditionally without any boundary check, because `1` is
+the multiplicative identity and a length-1 DFT is a no-op.  The loop has no
+data-dependent branch and no early exit, so the compiler can vectorise it freely.
+
+- `stages_`: every unused `stage_t` slot has `radix == 1`.  A stage with radix 1
+  contributes a factor of 1 to the product and does no butterfly work — the whole
+  array can be multiplied/iterated unconditionally.
+- `sub_`: every unused `fft_engine` slot has `n_ == 1` (a length-1 DFT).  Invoking
+  it is a no-op, so the sub-engine array can also be traversed unconditionally.
 
 The local factorisation scratch (`fac`, a `std::vector<std::size_t>` inside the
 constructor) is also O(log n) and could be a `std::array<std::size_t, 64>` terminated
