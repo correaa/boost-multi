@@ -354,5 +354,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 #endif
 
+	// BOOST_AUTO_TEST_CASE(unordered)
+	{
+		multi::array<int, 2> arr = {
+			{1, 2},
+			{3, 4},
+		};
+
+		BOOST_TEST((
+			arr.transposed().unordered() == 
+			multi::array<int, 2>({
+				{ 1, 2},
+				{ 3, 4},
+			})
+		));
+
+		for(auto&& elem : arr.transposed().unordered().elements()) {
+			elem += 2;
+		}
+
+		BOOST_TEST( arr[1][1] == 6 );
+	}
+
 	return boost::report_errors();
 }
