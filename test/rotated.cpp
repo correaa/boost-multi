@@ -376,7 +376,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::for_each(
 			arr.transposed().unordered().elements().begin(),
 			arr.transposed().unordered().elements().end(),
-			[](auto&& elem) { elem += 3; }
+			[](auto&& elem) { elem += 1; }
 		);
 
 		BOOST_TEST( arr[1][1] == 7 );
