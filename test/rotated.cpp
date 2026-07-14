@@ -369,7 +369,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			})
 		));
 
-		for(auto&& elem : arr.transposed().unordered().elements()) {
+		for(auto&& elem : arr.transposed().unordered().elements()) {  // NOLINT(altera-unroll-loops)  //
 			elem += 2;
 		}
 
