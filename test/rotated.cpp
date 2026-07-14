@@ -369,11 +369,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			})
 		));
 
-		for(auto&& elem : arr.transposed().unordered().elements()) {  // NOLINT(altera-unroll-loops)  //
+		for(auto&& elem : arr.transposed().unordered().elements()) {  // NOLINT(altera-unroll-loops)
 			elem += 2;
 		}
 
-		BOOST_TEST( arr[1][1] == 6 );
+		std::for_each(
+			arr.transposed().unordered().elements().begin(),
+			arr.transposed().unordered().elements().end(),
+			[](auto&& elem) { elem += 3; }
+		);
+
+		BOOST_TEST( arr[1][1] == 7 );
 	}
 
 	return boost::report_errors();
