@@ -7,8 +7,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <array>      // for array
 #include <algorithm>  // for for_each
+#include <array>      // for array
 #include <numeric>    // for iota
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
