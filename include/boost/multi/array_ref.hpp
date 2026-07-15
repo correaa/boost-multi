@@ -1606,22 +1606,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
-	// constexpr auto elements_at(multi::ssize_t idx) const& -> decltype(auto) {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	auto const sub_num_elements = this->begin()->num_elements();
-	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	// }
-	// constexpr auto elements_at(multi::ssize_t idx) && -> decltype(auto) {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	auto const sub_num_elements = this->begin()->num_elements();
-	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	// }
-	// constexpr auto elements_at(multi::ssize_t idx) & -> decltype(auto) {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	auto const sub_num_elements = this->begin()->num_elements();
-	// 	return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
-	// }
-
  private:
 	constexpr auto strided_aux_(difference_type diff) const {
 		// auto new_layout = this->layout().do_stride();
@@ -1734,11 +1718,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
  private:
 	BOOST_MULTI_HD constexpr auto transposed_aux_() const {
-		return const_subarray(layout().transpose(), types::base_);
+		return const_subarray(layout().transpose(), types::base_);  // TODO(correaa) should be subarray(...)?
 	}
 
  public:
-	/// A transpose view $A^T$, that exchanges the first two indices
+	/// A transpose view $A^\mathrm{T}$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
@@ -1754,6 +1738,17 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	BOOST_MULTI_HD constexpr auto rotated() const& -> const_subarray { return rotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
+
+ private:
+	BOOST_MULTI_HD constexpr auto unordered_aux_() const {
+		return const_subarray(layout().sort(), types::base_);
+	}
+
+ public:
+	/// yields a view in which indices are unordered (generally to optimize access)
+	BOOST_MULTI_HD constexpr auto unordered() const {
+		return unordered_aux_().as_const();
+	}
 
  private:
 	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class const_subarray;
@@ -2300,6 +2295,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::transposed;
 	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto transposed() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	using const_subarray<T, D, ElementPtr, Layout>::unordered;
+	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	// auto operator~ (subarray const& self) { return self.transposed(); }
@@ -3017,6 +3016,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	BOOST_MULTI_HD constexpr auto reindexed() const& { return operator()(); }
 	BOOST_MULTI_HD constexpr auto rotated() const& { return operator()(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }
+	BOOST_MULTI_HD constexpr auto unordered() const& { return operator()(); }
 
 	auto transposed() const&              = delete;
 	auto flatted() const&                 = delete;
@@ -3572,6 +3572,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	BOOST_MULTI_HD constexpr auto rotated() const& { return operator()(); }    // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.9
 	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.9
+	BOOST_MULTI_HD constexpr auto unordered() const& { return operator()(); }
 
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
