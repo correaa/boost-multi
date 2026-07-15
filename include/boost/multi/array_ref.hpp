@@ -340,7 +340,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
-	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
+	// BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
 
 	/// Returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
@@ -2121,7 +2121,7 @@ template<typename T, multi::dimensionality_type D, typename ElementPtr, class La
 class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr move_subarray(subarray<T, D, ElementPtr, Layout>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  TODO(correa) check if this is necessary
-	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.mutable_base()) {}
+	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.base()) {}
 
 	friend class subarray<T, D, ElementPtr, Layout>;
 
@@ -2147,7 +2147,7 @@ template<typename T, multi::dimensionality_type D, typename ElementPtr, class La
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  TODO(correa) check if this is necessary
-	: subarray(other.layout(), other.mutable_base()) {}
+	: subarray(other.layout(), other.base_) {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct detail::subarray_ptr;
