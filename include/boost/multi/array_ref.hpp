@@ -1377,7 +1377,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
 #endif
 
-	/// possible moves the contents
+	/// possibly moves the contents
 	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray const& { return self; }
 
 	/// returns a random-access range with all the elements of the array
