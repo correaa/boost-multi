@@ -1378,7 +1378,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 #endif
 
 	/// possibly moves the contents
-	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray const& { return self; }
+	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
 
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
