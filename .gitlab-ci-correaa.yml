@@ -111,24 +111,6 @@ g++-omp-thrust:
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["g++"]
 
-g++-stray-thrust:
-  stage: build
-  #only:
-  #  refs:
-  #    - develop
-  tags:
-    - docker
-    - non-shared
-  script:
-    # - apt-get -qq update --allow-unauthenticated
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates libthrust-dev cmake ninja-build g++ make libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev pkg-config
-    - g++ --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
-  needs: ["g++"]
-
 g++-m32 sanitize:
   stage: build
   image: debian:latest
@@ -239,6 +221,70 @@ g++ cppcheck cpplint memcheck lto:
 g++ thrust:
   stage: build
   allow_failure: false
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet libthrust-dev ca-certificates cmake ninja-build g++ make  libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["g++"]
+
+g++ thrust trixie:
+  stage: build
+  allow_failure: false
+  image: debian:trixie
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet libthrust-dev ca-certificates cmake ninja-build g++ make  libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["g++"]
+
+g++ thrust bookworm:
+  stage: build
+  allow_failure: false
+  image: debian:bookworm
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet libthrust-dev ca-certificates cmake ninja-build g++ make  libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["g++"]
+
+g++ thrust bullseye:
+  stage: build
+  allow_failure: false
+  image: debian:bullseye
+  tags:
+    - non-shared
+    - docker
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet libthrust-dev ca-certificates cmake ninja-build g++ make  libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev libmpich-dev pkg-config
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["g++"]
+
+g++ thrust testing:
+  stage: build
+  allow_failure: false
+  image: debian:testing
   tags:
     - non-shared
     - docker
