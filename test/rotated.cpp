@@ -369,20 +369,25 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{1},
 			{3},
+			{5},
 		};
 
-		BOOST_TEST( arr.size() == 2 );
+		BOOST_TEST( arr.size() == 3 );
 		BOOST_TEST( arr[0].size() == 1 );
 
-		BOOST_TEST( arr.unordered().extents() == arr.extents() );
+		BOOST_TEST( arr.unordered().extents() != arr.extents() );
+
+		BOOST_TEST((
+			arr.unordered() == multi::array<int, 2>({{1, 3, 5}})
+		));
 	}
 	{
 		multi::array<int, 2> arr = {
-			{1, 3},
+			{1, 3, 5},
 		};
 
 		BOOST_TEST( arr.size() == 1 );
-		BOOST_TEST( arr[0].size() == 2 );
+		BOOST_TEST( arr[0].size() == 3 );
 
 		BOOST_TEST( arr.unordered().extents() == arr.extents() );
 	}
