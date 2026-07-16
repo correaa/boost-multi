@@ -544,8 +544,6 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }  // cppcheck-suppress returnByReference;
 
-	// friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
-
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
 		-> decltype(base_ == other.base_ && layout_ == other.layout_) {
@@ -1379,6 +1377,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
 #endif
 
+	/// possibly moves the contents
+	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
+
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
@@ -1386,10 +1387,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto const_elements_() const -> const_elements_range { return elements_aux_(); }
 
  public:
-	// constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
-	// 	return {this->base(), std::abs(this->hull_size())};
-	// }
-
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
