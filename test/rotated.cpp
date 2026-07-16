@@ -338,7 +338,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 #endif
 
-	// BOOST_AUTO_TEST_CASE(unordered)
+	// unordered
 	{
 		multi::array<int, 2> arr = {
 			{1, 2},
@@ -364,6 +364,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 
 		BOOST_TEST( arr[1][1] == 7 );
+	}
+	{
+		multi::array<int, 2> arr = {
+			{1},
+			{3},
+		};
+
+		BOOST_TEST( arr.size() == 2 );
+		BOOST_TEST( arr[0].size() == 1 );
+
+		BOOST_TEST( arr.unordered().extents() == arr.extents() );
+	}
+	{
+		multi::array<int, 2> arr = {
+			{1, 3},
+		};
+
+		BOOST_TEST( arr.size() == 1 );
+		BOOST_TEST( arr[0].size() == 2 );
+
+		BOOST_TEST( arr.unordered().extents() == arr.extents() );
 	}
 
 	return boost::report_errors();
