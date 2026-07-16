@@ -3270,11 +3270,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	constexpr auto repeated(size_type n) && {
 		auto exts = this->extents();  // mull-ignore: cxx_init_const
 
-		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n* exts /*)*/;
+		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ boost::multi::operator*(n, exts) /*)*/;
 	}
 
 	constexpr auto repeated(size_type n) const& {
-		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n* this->extents() /*)*/;
+		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ boost::multi::operator*(n, this->extents()) /*)*/;
 	}
 
 	// template<template<class...> class Container = std::vector, class... As>
