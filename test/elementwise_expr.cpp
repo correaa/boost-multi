@@ -24,9 +24,9 @@ auto main() -> int {
 		{30, 40, 50}
 	};
 
-	using multi::elementwise::apply;
+	using multi::elementwise::apply_bind;
 
-	multi::array<int, 2> const C1 = apply(std::plus<>{}, A, B);
+	multi::array<int, 2> const C1 = apply_bind(std::plus<>{}, A, B);
 
 	BOOST_TEST( C1[1][1] == std::plus<>{}(A[1][1], B[1][1]) );  // NOLINT(build/include_what_you_use)
 
@@ -57,7 +57,7 @@ auto main() -> int {
 	// | std::views::transform([](auto nums) { return nums | stdv::transform([den = sumR1(nums)](auto num) { return num / den; }); });
 
 	// 	{
-	// 		using multi::elementwise::apply;
+	// 		using multi::elementwise::apply_bind;
 
 	// 		auto const matrix =
 	// 			([](auto ii) noexcept { return static_cast<float>(ii); } ^
