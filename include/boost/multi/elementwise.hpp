@@ -121,6 +121,7 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 		} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
 			return map(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega).repeated(get<std::decay_t<A>::dimensionality - std::decay_t<B>::dimensionality - 1>(alpha.sizes())));
 		} else {
+			using std::apply;
 			return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
 		}
 	}
