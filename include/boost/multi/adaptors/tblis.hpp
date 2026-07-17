@@ -116,30 +116,30 @@ template<> struct datatype<std::complex<double>> { static constexpr tblis_dataty
 template<class Element, multi::dimensionality_type D>
 struct indexed_tensor;
 
-template<class Element, multi::dimensionality_type D>
-struct tensor : ::tblis::tblis_tensor{
+// template<class Element, multi::dimensionality_type D>
+// struct tensor : ::tblis::tblis_tensor{
 
-	std::array<::tblis::len_type   , D> lens_;
-	std::array<::tblis::stride_type, D> strides_;
-	template<class A, std::enable_if_t<not std::is_base_of<tensor, std::decay_t<A>>{}, int> =0>
-	explicit tensor(A&& a) :  // NOLINT(bugprone-forwarding-reference-overload) workaround for DeepSource
-		lens_   (std::apply([](auto... s){return std::array<::tblis::len_type   , D>{s...};}, sizes  (a))),
-		strides_(std::apply([](auto... s){return std::array<::tblis::stride_type, D>{s...};}, strides(a)))
-	{
-		// tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(base(a)), strides_.data());
-		tblis_init_tensor>(this, tblis::datatype<Element>, D, lens_.data(), const_cast<std::decay_t<Element>*>(base(a)), strides_.data());
-	}
-	tensor(tensor const&) = delete;
-	tensor(tensor&& other) noexcept : lens_{other.lens_}, strides_{other.strides_}{
-		tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(other.data()), strides_.data());
-	}
-	using dimensionality_type = multi::dimensionality_type;
-	static constexpr dimensionality_type dimensionality(){return D;}
-	indexed_tensor<Element, D> operator[](std::string_view indices)&&;
-	Element* data() const{return static_cast<Element*>(::tblis::tblis_tensor::data);}
-	template<class... Rest>
-	auto operator()(Rest...)&&;
-};
+// 	std::array<::tblis::len_type   , D> lens_;
+// 	std::array<::tblis::stride_type, D> strides_;
+// 	template<class A, std::enable_if_t<not std::is_base_of<tensor, std::decay_t<A>>{}, int> =0>
+// 	explicit tensor(A&& a) :  // NOLINT(bugprone-forwarding-reference-overload) workaround for DeepSource
+// 		lens_   (std::apply([](auto... s){return std::array<::tblis::len_type   , D>{s...};}, sizes  (a))),
+// 		strides_(std::apply([](auto... s){return std::array<::tblis::stride_type, D>{s...};}, strides(a)))
+// 	{
+// 		// tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(base(a)), strides_.data());
+// 		tblis_init_tensor>(this, tblis::datatype<Element>, D, lens_.data(), const_cast<std::decay_t<Element>*>(base(a)), strides_.data());
+// 	}
+// 	tensor(tensor const&) = delete;
+// 	tensor(tensor&& other) noexcept : lens_{other.lens_}, strides_{other.strides_}{
+// 		tblis::init_tensor<std::decay_t<Element>>(this, D, lens_.data(), const_cast<std::decay_t<Element>*>(other.data()), strides_.data());
+// 	}
+// 	using dimensionality_type = multi::dimensionality_type;
+// 	static constexpr dimensionality_type dimensionality(){return D;}
+// 	indexed_tensor<Element, D> operator[](std::string_view indices)&&;
+// 	Element* data() const{return static_cast<Element*>(::tblis::tblis_tensor::data);}
+// 	template<class... Rest>
+// 	auto operator()(Rest...)&&;
+// };
 
 template<class A, class P = decltype(std::declval<A&&>().base())> tensor(A&&)->tensor<typename std::pointer_traits<P>::element_type, std::decay_t<A>::dimensionality>;
 

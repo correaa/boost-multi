@@ -4,81 +4,153 @@
 
 #include <boost/multi/array.hpp>
 
-
 #include <boost/core/lightweight_test.hpp>
 // #include <boost/multi/adaptors/tblis.hpp>
+
+#include <numeric>
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #include <tblis/tblis.h>
 namespace boost::multi::tblis {
-	class tensor {
+	class const_tensor {
+	 public:
 		::tblis::tblis_tensor impl_;
 
 	 public:
+		const_tensor(const_tensor const&) = delete;
 		template<class Array>
-		tensor(Array&& arr) {
+		const_tensor(Array const& arr) {
 			auto lens = apply([](auto... el) { return std::array{static_cast<::tblis::len_type>(el)...}; }, arr.sizes());
 			auto strides = apply([](auto... el) { return std::array{static_cast<::tblis::stride_type>(el)...}; }, arr.strides());
-			::tblis::tblis_init_tensor_d(&impl_, arr.dimensionality, lens.data(), arr.base(), strides.data());
+			::tblis::tblis_init_tensor_d(&impl_, lens.size(), lens.data(), const_cast<double*>(arr.base()), strides.data());
+		}
+		auto operator&() const { return &impl_; }
+		auto operator&() { return const_cast<::tblis::tblis_tensor*>(&impl_); }
+	// ~tensor();  not needed impl_ doesn't need free
+	};
+
+	class tensor {
+	 public:
+		::tblis::tblis_tensor impl_;
+		std::array<::tblis::len_type, 28> lens_;
+		std::array<::tblis::stride_type, 28> strides_;
+
+		template<class Array>
+		tensor(Array& arr) : 
+			lens_(apply([](auto... el) { return std::array<::tblis::len_type, 28>{static_cast<::tblis::len_type>(el)...}; }, arr.sizes())),
+			strides_(apply([](auto... el) { return std::array<::tblis::stride_type, 28>{static_cast<::tblis::stride_type>(el)...}; }, arr.strides()))
+		{
+			// the pointers to lens and strides need to be maintained alive
+			::tblis::tblis_init_tensor_d(&impl_, lens_.size(), lens_.data(), const_cast<double*>(arr.base()), strides_.data());
 		}
 	};
+
+	// void mult(
+	// 	const_tensor const& A, std::string idx_A,
+	// 	const_tensor const& B, std::string idx_B,
+	// 	tensor& C, std::string idx_C
+	// ) {
+	// 	::tblis::tblis_tensor_mult(
+	// 		NULL, NULL,
+	// 		&A, idx_A.data(),
+	// 		&B, idx_B.data(),
+	// 		&C, idx_C.data()
+	// 	);
+	// }
 }
 
 namespace multi = boost::multi;
 
 int main() {
-	std::unordered_map<char, multi::extent_t<>> ext = {
-		{'a', 8},
-		{'b', 10},
-		{'c', 2},
-		{'d', 7}
-	};
+	{
+		using namespace tblis;
+		multi::array<double, 2> Aarr = {
+			{1.0, 2.0},
+			{3.0, 4.0}
+		};
+		multi::tblis::tensor A(Aarr);
 
-	multi::array<double, 4> Aarr({10, 9, 2, 5});
+		multi::array<double, 2> Carr({2, 2}, 0.0);
+		multi::tblis::tensor C(Carr);
 
-	double data_A[10 * 9 * 2 * 5];
+		// Perform tensor multiplication / contraction
+		tblis_tensor_mult(tblis_single, NULL, &A.impl_, "ij", &A.impl_, "jk", &C.impl_, "ik");
 
-	tblis::tblis_tensor A;
-	tblis::tblis_init_tensor_d(&A, 4, (tblis::len_type[]){10, 9, 2, 5}, data_A, (tblis::stride_type[]){1, 10, 90, 180});
+		std::cout << "Result:";
+		for (int i = 0; i < 2; ++i) {
+			for (int j = 0; j < 2; ++j) {
+				std::cout << " " << Carr[i][j];
+			}
+		}
+		std::cout << std::endl;
 
-	double data_B[7 * 5 * 9 * 8];
+		BOOST_TEST(false);
+	}
+	// std::unordered_map<char, multi::extent_t<>> ext = {
+	// 	{'a', 8},
+	// 	{'b', 10},
+	// 	{'c', 2},
+	// 	{'d', 7}
+	// };
 
-	tblis::tblis_tensor B;
-	tblis::tblis_init_tensor_d(&B, 4, (tblis::len_type[]){7, 5, 9, 8}, data_B, (tblis::stride_type[]){1, 7, 35, 315});
+	// // multi::array<double, 4> Carr({ext['a'], ext['b'], ext['c'], ext['d']});
 
-	double data_C[7 * 2 * 10 * 8];
+	// auto const Aarr = [&ext]{
+	// 	multi::array<double, 4> ret({ext['c'], ext['e'], ext['b'], ext['f']});
+	// 	std::iota(ret.elements().begin(), ret.elements().end(), 10.0);
+	// 	return ret;
+	// }();
 
-	tblis::tblis_tensor C;
-	tblis::tblis_init_tensor_d(&C, 4, (tblis::len_type[]){7, 2, 10, 8}, data_C, (tblis::stride_type[]){1, 7, 14, 140});
+	// auto const Barr = [&ext]{
+	// 	multi::array<double, 4> ret({ext['c'], ext['e'], ext['b'], ext['f']});
+	// 	std::iota(ret.elements().begin(), ret.elements().end(), 12.0);
+	// 	return ret;
+	// }();
 
-	multi::array<double, 4> Carr({ext['a'], ext['b'], ext['c'], ext['d']}, 0.0);
-
-	// initialize data_A and data_B...
-
-	// this computes C[abcd] += A[cebf] B[afed]
-	tblis::tblis_tensor_mult(NULL, NULL, &A, "cebf", &B, "afed", &C, "abcd");
-
-	// auto const C_gold = [&A, &B]{
-	// 	multi::array<double, 4> _({8, 10, 2, 7}, 0.);
+	// auto const C_gold = std::invoke([&Aarr, &Barr, &ext]{
+	// 	multi::array<double, 4> ret({ext['a'], ext['b'], ext['c'], ext['d']}, 0.0);
 	// 	// this computers C_check[abcd] += A[cebf] B[afed]
-	// 	for(auto a = 0; a != 8; ++a){
-	// 		for(auto b = 0; b != 10; ++b){
-	// 			for(auto c = 0; c != 2; ++c){
-	// 				for(auto d = 0; d != 7; ++d){
-
-	// 					for(auto e = 0; e != 5; ++e){
-	// 						for(auto f = 0; f != 9; ++f){
-	// 							_[a][b][c][d] += A[c][e][b][f]*B[a][f][e][d];
+	// 	for(auto a : ext['a']) {
+	// 		for(auto b : ext['b']) {
+	// 			for(auto c : ext['c']) {
+	// 				for(auto d : ext['d']) {
+	// 					auto ret_abcd = ret[a][b][c][d];
+	// 					for(auto e : ext['e']) {
+	// 						for(auto f : ext['f']) {
+	// 							ret_abcd += Aarr[c][e][b][f]*Barr[a][f][e][d];
 	// 						}
 	// 					}
-
+	// 					ret[a][b][c][d] = ret_abcd;
 	// 				}
 	// 			}
 	// 		}
 	// 	}
-	// 	return _;
-	// }();
+	// 	return ret;
+	// });
 
+	// multi::tblis::const_tensor A(Aarr);
+	// multi::tblis::const_tensor B(Barr);
+
+	// multi::array<double, 4> Carr(C_gold.extents());
+
+	// multi::tblis::tensor C(Carr);
+
+	// ::tblis::tblis_tensor_mult(
+	// 	NULL, NULL,
+	// 	&A.impl_, "cebf",
+	// 	&B.impl_, "afed",
+	// 	&C.impl_, "abcd"
+	// );
+
+	// multi::tblis::mult(A, "cebf", B, "afed", C, "abcd");
+
+	// tblis::tblis_tensor C;
+	// tblis::tblis_init_tensor_d(&C, 4, (tblis::len_type[]){7, 2, 10, 8}, data_C, (tblis::stride_type[]){1, 7, 14, 140});
+
+	// // initialize data_A and data_B...
+
+	// // this computes C[abcd] += A[cebf] B[afed]
+	// tblis::tblis_tensor_mult(NULL, NULL, &A, "cebf", &B, "afed", &C, "abcd");
 
 	// BOOST_AUTO_TEST_CASE(blis_matrix)
 	// {
