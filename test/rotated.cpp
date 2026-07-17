@@ -391,6 +391,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.unordered().extents() == arr.extents() );
 	}
+	{
+		multi::array<int, 2> arr = {
+			{1},
+		};
+
+		BOOST_TEST( arr.size() == 1 );
+		BOOST_TEST( arr[0].size() == 1 );
+
+		BOOST_TEST( arr.unordered().extents() == arr.extents() );
+	}
 
 	return boost::report_errors();
 }

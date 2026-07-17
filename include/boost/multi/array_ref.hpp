@@ -1491,7 +1491,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::index;
 
- private:
+	/// yeilds an equivalent subarray with a specific starting index
 	constexpr auto reindexed(index first) const& {  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 		return const_subarray(this->layout().reindex(first), types::base_);
 	}
@@ -1506,6 +1506,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return reindexed(first).rotated().reindexed(idxs...).unrotated();
 	}
 
+ private:
 	constexpr auto taked_aux_(difference_type n) const {
 		BOOST_MULTI_ASSERT(n <= this->size());
 		return const_subarray(this->layout().take(n), this->base_);

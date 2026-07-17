@@ -26,6 +26,8 @@ export CMAKE_CUDA_COMPILER_LAUNCHER="ccache"
 export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 # CMAKE_COMPILE_WARNING_AS_ERROR is NOT read from the environment by CMake
 
+export MACOSX_DEPLOYMENT_TARGET=26.0
+
 ccache -z
 
 if [[ $OSTYPE == "darwin"* ]]; then
