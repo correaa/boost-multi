@@ -1111,7 +1111,7 @@ cuda-13.3.0:
 
 rocm:
   stage: build
-  image: rocm/dev-ubuntu-24.04
+  image: rocm/dev-ubuntu-24.04:7.0.2
   allow_failure: true  # TODO(correaa) flip to false once the (re-enabled) HIP subdirs build clean on ROCm 7 / CCCL 3
   tags:
     - non-shared
@@ -1395,7 +1395,7 @@ inq cuda:
 
 inq rocm:
   stage: test
-  image: rocm/dev-ubuntu-24.04
+  image: rocm/dev-ubuntu-24.04:6.4.4
   allow_failure: false
   tags:
     - non-shared
