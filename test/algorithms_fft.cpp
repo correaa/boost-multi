@@ -7,11 +7,13 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for std::max
-#include <cmath>      // for std::abs
-#include <complex>    // for std::complex
-#include <cstddef>    // for std::size_t
-#include <memory>     // for std::allocator
+#include <algorithm>         // for std::max
+#include <array>             // for array
+#include <cmath>             // for std::abs
+#include <complex>           // for std::complex
+#include <cstddef>           // for std::size_t
+#include <initializer_list>  // for initializer_list
+#include <memory>            // for std::allocator
 
 namespace multi = boost::multi;
 
@@ -553,7 +555,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// always using its own std::allocator<T> (fft.NOTES.md §9.2/§10.4(b)):
 	// same size requested every call, exactly plan.scratch_elements().
 	{
-		std::size_t alloc_count = 0, dealloc_count = 0, last_n = 0;
+		std::size_t                 alloc_count = 0, dealloc_count = 0, last_n = 0;
 		counting_allocator<complex> alloc{&alloc_count, &dealloc_count, &last_n};
 
 		multi::array<complex, 1> arr(multi::extents_t<1>{1024}, complex{1.0, 0.0});
@@ -581,9 +583,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> arr({4, 5}, complex{});
 			for(int i = 0; i != 4; ++i) {
-				for(int j = 0; j != 5; ++j) { arr[i][j] = complex{static_cast<double>(i), static_cast<double>(j)}; }
+				for(int j = 0; j != 5; ++j) {
+					arr[i][j] = complex{static_cast<double>(i), static_cast<double>(j)};
+				}
 			}
-			auto const                original = arr;
+			auto const               original = arr;
 			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{none, none}}};
 			plan.execute(arr.home());
 			BOOST_TEST( max_abs_diff(arr.elements(), original.elements()) <= 0.0 );  // bit-identical: diff is exactly 0, never negative (<=0 avoids -Wfloat-equal)
@@ -594,15 +598,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//    changing ONE column of the input must not change any OTHER
 		//    column of the output -- bit-identical, not tolerance-based.
 		{
-			auto const           make = [](double perturb_col3) {
-                multi::array<complex, 2> arr({6, 4}, complex{});
-                for(int i = 0; i != 6; ++i) {
-                    for(int j = 0; j != 4; ++j) {
-                        arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>((i * j) % 3)};
-                    }
-                }
-                arr[2][3] += complex{perturb_col3, 0.0};  // perturb only column 3
-                return arr;
+			auto const make = [](double perturb_col3) {
+				multi::array<complex, 2> arr({6, 4}, complex{});
+				for(int i = 0; i != 6; ++i) {
+					for(int j = 0; j != 4; ++j) {
+						arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>((i * j) % 3)};
+					}
+				}
+				arr[2][3] += complex{perturb_col3, 0.0};  // perturb only column 3
+				return arr;
 			};
 			auto                     base      = make(0.0);
 			auto                     perturbed = make(100.0);
@@ -624,11 +628,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> arr({4, 5}, complex{});
 			for(int i = 0; i != 4; ++i) {
-				for(int j = 0; j != 5; ++j) { arr[i][j] = complex{static_cast<double>(i + j), static_cast<double>(i - j)}; }
+				for(int j = 0; j != 5; ++j) {
+					arr[i][j] = complex{static_cast<double>(i + j), static_cast<double>(i - j)};
+				}
 			}
 			auto composed = arr;
-			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, none}}, composed);
-			multi::fft_inplace(std::array<multi::fft_direction, 2>{{none, forward}}, composed);
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{
+								   {forward, none}
+            },
+							   composed);
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{
+								   {none, forward}
+            },
+							   composed);
 
 			auto direct = arr;
 			multi::fft_inplace(direct, multi::fft_forward);  // {forward, forward} broadcast
@@ -641,14 +653,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> arr({5, 7}, complex{});
 			for(int i = 0; i != 5; ++i) {
-				for(int j = 0; j != 7; ++j) { arr[i][j] = complex{static_cast<double>(i * 2 - j), static_cast<double>(j % 4)}; }
+				for(int j = 0; j != 7; ++j) {
+					arr[i][j] = complex{static_cast<double>(i * 2 - j), static_cast<double>(j % 4)};
+				}
 			}
-			auto looped = arr;
+			auto                     looped = arr;
 			multi::fft_plan<1> const row_plan{multi::extents_t<1>{7}, multi::fft_forward};
-			for(int i = 0; i != 5; ++i) { row_plan.execute(looped[i].home()); }
+			for(int i = 0; i != 5; ++i) {
+				row_plan.execute(looped[i].home());
+			}
 
 			auto batched = arr;
-			multi::fft_inplace(std::array<multi::fft_direction, 2>{{none, forward}}, batched);
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{
+								   {none, forward}
+            },
+							   batched);
 
 			BOOST_TEST( max_abs_diff(looped.elements(), batched.elements()) < tol );
 		}
@@ -668,8 +687,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 			auto const original = arr;
 			auto       result   = arr;
-			multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, none, backward}}, result);
-			multi::fft_inplace(std::array<multi::fft_direction, 3>{{backward, none, forward}}, result);
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{
+								   {forward, none, backward}
+            },
+							   result);
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{
+								   {backward, none, forward}
+            },
+							   result);
 
 			double const scale = 3.0 * 5.0;  // n0 * n2; axis 1 (size 2) never touched
 			double       m     = 0.0;
@@ -686,8 +711,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// 6) reference-DFT cross-check of a mixed spec including a prime
 		//    length (exercises Bluestein under a non-default direction).
 		{
-			constexpr int nn0 = 11;  // prime > fft_max_direct_radix would be needed to force Bluestein at construction;
-			constexpr int nn1 = 6;   // 11 is direct-kernel range but still an odd prime, exercising stage_generic_/backward sign
+			constexpr int            nn0 = 11;  // prime > fft_max_direct_radix would be needed to force Bluestein at construction;
+			constexpr int            nn1 = 6;   // 11 is direct-kernel range but still an odd prime, exercising stage_generic_/backward sign
 			multi::array<complex, 2> arr({nn0, nn1}, complex{});
 			for(int i = 0; i != nn0; ++i) {
 				for(int j = 0; j != nn1; ++j) {
@@ -700,18 +725,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// the row-then-column reference pattern used elsewhere in this file
 			for(int i = 0; i != nn0; ++i) {
 				auto row = dft_reference(reference[i], multi::fft_backward);
-				for(int j = 0; j != nn1; ++j) { reference[i][j] = row[j]; }
+				for(int j = 0; j != nn1; ++j) {
+					reference[i][j] = row[j];
+				}
 			}
 			for(int j = 0; j != nn1; ++j) {
 				auto col = dft_reference(reference.rotated()[j], multi::fft_forward);
-				for(int i = 0; i != nn0; ++i) { reference[i][j] = col[i]; }
+				for(int i = 0; i != nn0; ++i) {
+					reference[i][j] = col[i];
+				}
 			}
 
-			multi::fft_inplace(std::array<multi::fft_direction, 2>{{forward, backward}}, arr);
+			multi::fft_inplace(std::array<multi::fft_direction, 2>{
+								   {forward, backward}
+            },
+							   arr);
 
 			double m = 0.0;
 			for(int i = 0; i != nn0; ++i) {
-				for(int j = 0; j != nn1; ++j) { m = std::max(m, std::abs(arr[i][j] - reference[i][j])); }
+				for(int j = 0; j != nn1; ++j) {
+					m = std::max(m, std::abs(arr[i][j] - reference[i][j]));
+				}
 			}
 			BOOST_TEST( m < tol );
 		}
@@ -723,7 +757,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//    engine_count() proves the sharing, not just self-consistency.
 		//    Verified against the reference DFT too.
 		{
-			constexpr int             nn = 6;
+			constexpr int            nn = 6;
 			multi::array<complex, 2> arr({nn, nn}, complex{});
 			for(int i = 0; i != nn; ++i) {
 				for(int j = 0; j != nn; ++j) {
@@ -733,11 +767,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto reference = arr;
 			for(int i = 0; i != nn; ++i) {
 				auto row = dft_reference(reference[i], multi::fft_backward);
-				for(int j = 0; j != nn; ++j) { reference[i][j] = row[j]; }
+				for(int j = 0; j != nn; ++j) {
+					reference[i][j] = row[j];
+				}
 			}
 			for(int j = 0; j != nn; ++j) {
 				auto col = dft_reference(reference.rotated()[j], multi::fft_forward);
-				for(int i = 0; i != nn; ++i) { reference[i][j] = col[i]; }
+				for(int i = 0; i != nn; ++i) {
+					reference[i][j] = col[i];
+				}
 			}
 
 			multi::fft_plan<2> const plan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, backward}}};
@@ -746,7 +784,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			double m = 0.0;
 			for(int i = 0; i != nn; ++i) {
-				for(int j = 0; j != nn; ++j) { m = std::max(m, std::abs(arr[i][j] - reference[i][j])); }
+				for(int j = 0; j != nn; ++j) {
+					m = std::max(m, std::abs(arr[i][j] - reference[i][j]));
+				}
 			}
 			BOOST_TEST( m < tol );
 		}
@@ -776,11 +816,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				for(int i = 0; i != 2; ++i) {
 					for(int k = 0; k != 4; ++k) {
 						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
-						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+						for(int j = 0; j != 5; ++j) {
+							reference[i][j][k] = fib[j];
+						}
 					}
 				}
 				auto result = arr;
-				multi::fft_inplace(std::array<multi::fft_direction, 3>{{none, forward, none}}, result);
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{
+									   {none, forward, none}
+                },
+								   result);
 				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 			}
 
@@ -792,17 +837,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				for(int i = 0; i != 2; ++i) {
 					for(int k = 0; k != 4; ++k) {
 						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
-						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+						for(int j = 0; j != 5; ++j) {
+							reference[i][j][k] = fib[j];
+						}
 					}
 				}
 				for(int j = 0; j != 5; ++j) {
 					for(int k = 0; k != 4; ++k) {
 						auto fib = dft_reference(reference.rotated()[j][k], multi::fft_forward);  // fiber along axis 0 (rotated(): axes (j,k,i))
-						for(int i = 0; i != 2; ++i) { reference[i][j][k] = fib[i]; }
+						for(int i = 0; i != 2; ++i) {
+							reference[i][j][k] = fib[i];
+						}
 					}
 				}
 				auto result = arr;
-				multi::fft_inplace(std::array<multi::fft_direction, 3>{{forward, forward, none}}, result);
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{
+									   {forward, forward, none}
+                },
+								   result);
 				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 			}
 
@@ -819,17 +871,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				for(int i = 0; i != 2; ++i) {
 					for(int j = 0; j != 5; ++j) {
 						auto fib = dft_reference(reference[i][j], multi::fft_forward);  // fiber along axis 2
-						for(int k = 0; k != 4; ++k) { reference[i][j][k] = fib[k]; }
+						for(int k = 0; k != 4; ++k) {
+							reference[i][j][k] = fib[k];
+						}
 					}
 				}
 				for(int i = 0; i != 2; ++i) {
 					for(int k = 0; k != 4; ++k) {
 						auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
-						for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+						for(int j = 0; j != 5; ++j) {
+							reference[i][j][k] = fib[j];
+						}
 					}
 				}
 				auto result = arr;
-				multi::fft_inplace(std::array<multi::fft_direction, 3>{{none, forward, forward}}, result);
+				multi::fft_inplace(std::array<multi::fft_direction, 3>{
+									   {none, forward, forward}
+                },
+								   result);
 				BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 			}
 		}
@@ -848,7 +907,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//    separately precomputed, index-reversed spectrum). This is the
 		//    test that decides kernel_ft_bwd_'s correctness.
 		{
-			constexpr int nn = 101;
+			constexpr int            nn = 101;
 			multi::array<complex, 1> arr(multi::extents_t<1>{nn}, complex{});
 			for(int i = 0; i != nn; ++i) {
 				arr[i] = complex{static_cast<double>((i * 3) % 7) - 3.0, static_cast<double>((i * 5) % 11) - 5.0};
@@ -863,7 +922,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//    dir<Backward> in run_sixstep_) without needing an O(n^2)
 		//    reference at this size.
 		{
-			constexpr int nn = 8192;  // == fft_sixstep_min, smallest size that takes the six-step path
+			constexpr int            nn = 8192;  // == fft_sixstep_min, smallest size that takes the six-step path
 			multi::array<complex, 1> arr(multi::extents_t<1>{nn}, complex{});
 			for(int i = 0; i != nn; ++i) {
 				arr[i] = complex{static_cast<double>((i * 7) % 13) - 6.0, static_cast<double>((i * 11) % 17) - 8.0};
@@ -894,17 +953,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			for(int j = 0; j != 5; ++j) {
 				for(int k = 0; k != 4; ++k) {
 					auto fib = dft_reference(reference.rotated()[j][k], multi::fft_backward);  // fiber along axis 0
-					for(int i = 0; i != 3; ++i) { reference[i][j][k] = fib[i]; }
+					for(int i = 0; i != 3; ++i) {
+						reference[i][j][k] = fib[i];
+					}
 				}
 			}
 			for(int i = 0; i != 3; ++i) {
 				for(int k = 0; k != 4; ++k) {
 					auto fib = dft_reference(reference[i].rotated()[k], multi::fft_forward);  // fiber along axis 1
-					for(int j = 0; j != 5; ++j) { reference[i][j][k] = fib[j]; }
+					for(int j = 0; j != 5; ++j) {
+						reference[i][j][k] = fib[j];
+					}
 				}
 			}
 			auto result = arr;
-			multi::fft_inplace(std::array<multi::fft_direction, 3>{{backward, forward, none}}, result);
+			multi::fft_inplace(std::array<multi::fft_direction, 3>{
+								   {backward, forward, none}
+            },
+							   result);
 			BOOST_TEST( max_abs_diff(result.elements(), reference.elements()) < tol );
 		}
 
@@ -917,10 +983,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> arr({6, 10}, complex{});
 			for(int i = 0; i != 6; ++i) {
-				for(int j = 0; j != 10; ++j) { arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>(i + j)}; }
+				for(int j = 0; j != 10; ++j) {
+					arr[i][j] = complex{static_cast<double>(i - j), static_cast<double>(i + j)};
+				}
 			}
-			auto via_broadcast = arr;
-			auto via_dirs       = arr;
+			auto                     via_broadcast = arr;
+			auto                     via_dirs      = arr;
 			multi::fft_plan<2> const bplan{arr.sizes(), multi::fft_forward};
 			multi::fft_plan<2> const dplan{arr.sizes(), std::array<multi::fft_direction, 2>{{forward, forward}}};
 			bplan.execute(via_broadcast.home());
@@ -928,7 +996,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			bool bit_identical = true;
 			for(int i = 0; i != 6; ++i) {
 				for(int j = 0; j != 10; ++j) {
-					if(via_broadcast[i][j] != via_dirs[i][j]) { bit_identical = false; }
+					if(via_broadcast[i][j] != via_dirs[i][j]) {
+						bit_identical = false;
+					}
 				}
 			}
 			BOOST_TEST( bit_identical );  // report, not a hard gate (per fft.PLAN.md Session 3 task 6)
@@ -947,7 +1017,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// reference DFT: FFT-ing a vec3 array must be identical to FFT-ing each
 	// of its three complex channels independently.
 	{
-		constexpr int nn = 12;  // 2^2 * 3: exercises a radix-4 stage and a radix-3 stage
+		constexpr int            nn = 12;  // 2^2 * 3: exercises a radix-4 stage and a radix-3 stage
 		multi::array<vec3, 1>    arr(multi::extents_t<1>{nn});
 		multi::array<complex, 1> ref_x(multi::extents_t<1>{nn});
 		multi::array<complex, 1> ref_y(multi::extents_t<1>{nn});
