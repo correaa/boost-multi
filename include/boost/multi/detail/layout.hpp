@@ -1776,7 +1776,14 @@ struct layout_t
 		};
 
 		if constexpr(D > 1) {
-			if( ret.stride() < ret.sub().stride() ) {
+			if(
+				    ret.stride() < ret.sub().stride()
+				|| (
+					   ret.stride() == ret.sub().stride() 
+					&& ret.sub().size() < ret.size()
+				)
+			)
+			{
 				auto ret2 = ret.transpose();
 				ret = layout_t {
 					ret2.sub().sort(),

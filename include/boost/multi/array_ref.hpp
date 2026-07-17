@@ -340,7 +340,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
 
-	BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
+	// BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
 
 	/// Returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
@@ -543,8 +543,6 @@ struct subarray_ptr  // : to allow mixin CRTP
 	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto base() const -> typename reference::element_ptr { return base_; }  // cppcheck-suppress returnByReference;
-
-	// friend BOOST_MULTI_HD constexpr auto base(subarray_ptr const& self) { return self.base(); }
 
 	template<class OtherSubarrayPtr, std::enable_if_t<!std::is_base_of_v<subarray_ptr, OtherSubarrayPtr>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator==(OtherSubarrayPtr const& other) const
@@ -1379,6 +1377,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
 #endif
 
+	/// possibly moves the contents
+	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
+
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
@@ -1386,10 +1387,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto const_elements_() const -> const_elements_range { return elements_aux_(); }
 
  public:
-	// constexpr auto hull() const -> std::pair<element_const_ptr, multi::ssize_t> {
-	// 	return {this->base(), std::abs(this->hull_size())};
-	// }
-
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
@@ -2121,7 +2118,7 @@ template<typename T, multi::dimensionality_type D, typename ElementPtr, class La
 class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr move_subarray(subarray<T, D, ElementPtr, Layout>& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  TODO(correa) check if this is necessary
-	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.mutable_base()) {}
+	: subarray<T, D, ElementPtr, Layout>(other.layout(), other.base()) {}
 
 	friend class subarray<T, D, ElementPtr, Layout>;
 
@@ -2147,7 +2144,7 @@ template<typename T, multi::dimensionality_type D, typename ElementPtr, class La
 class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr subarray(const_subarray<T, D, ElementPtr, Layout> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  TODO(correa) check if this is necessary
-	: subarray(other.layout(), other.mutable_base()) {}
+	: subarray(other.layout(), other.base_) {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct detail::subarray_ptr;
