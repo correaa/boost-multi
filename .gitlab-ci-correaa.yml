@@ -1170,7 +1170,7 @@ rocm-release:
 
 rocm-latest:
   stage: build
-  image: rocm/dev-ubuntu-24.04:latest
+  image: rocm/dev-ubuntu-24.04:7.2.3-complete
   allow_failure: false
   only:
     refs:
@@ -1199,7 +1199,7 @@ rocm-latest:
 
 rocm-6.4.4:
   stage: build
-  image: rocm/dev-ubuntu-24.04:6.4.4
+  image: rocm/dev-ubuntu-24.04:6.4.4-complete
   allow_failure: false
   only:
     refs:
