@@ -1395,7 +1395,7 @@ inq cuda:
 
 inq rocm:
   stage: test
-  image: rocm/dev-ubuntu-24.04
+  image: rocm/dev-ubuntu-24.04:6.4.4
   allow_failure: false
   tags:
     - non-shared
