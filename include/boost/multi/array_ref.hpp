@@ -1492,19 +1492,17 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using typename types::index;
 
  private:
-	constexpr auto reindexed(index first) const& {  // TODO(correaa) decide if making it public
-		// typename types::layout_t new_layout = this->layout();
-		// new_layout.reindex(first);
+	constexpr auto reindexed(index first) const& {  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 		return const_subarray(this->layout().reindex(first), types::base_);
 	}
-	constexpr auto reindexed(index first) & {  // TODO(correaa) decide if making it public
+	constexpr auto reindexed(index first) & {  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 		return const_subarray(this->layout().reindex(first), types::base_);
 	}
-	constexpr auto reindexed(index first) && { return const_subarray(this->layout().reindex(first), types::base_); }  // TODO(correaa) decide if making it public
+	constexpr auto reindexed(index first) && { return const_subarray(this->layout().reindex(first), types::base_); }  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
-	constexpr auto reindexed(index first, Indexes... idxs) const& -> const_subarray {
+	constexpr auto reindexed(index first, Indexes... idxs) const& -> const_subarray {  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 		return reindexed(first).rotated().reindexed(idxs...).unrotated();
 	}
 
