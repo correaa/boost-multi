@@ -96,7 +96,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(decltype(carr({0, 3}, 1))::rank_v == 1);
 		BOOST_TEST( carr.sliced(0, 3).size() == 3 );
 
-		BOOST_TEST( carr.range({0, 3}).rotated()[1].unrotated().size() == 3 );
+		BOOST_TEST( carr({0, 3}).rotated()[1].unrotated().size() == 3 );
 
 		BOOST_TEST( carr({0, 3}, {0, 3})[1][1] == '9' );
 
