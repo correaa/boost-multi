@@ -1577,7 +1577,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using iextension = typename const_subarray::index_extension;
 
- public:
+// public:
+	/// yields a stencil of the original array with the same dimensionality
 	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }
 	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
@@ -1602,7 +1603,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
- private:
+// private:
 	constexpr auto strided_aux_(difference_type diff) const {
 		// auto new_layout = this->layout().do_stride();
 		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
