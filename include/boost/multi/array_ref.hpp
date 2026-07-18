@@ -2055,6 +2055,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a view of the subarray where elements are reinterpreted as a different type (elements must have compatible size)
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast() const& { return reinterpret_array_cast_aux_<T2, P2>().as_const(); }
 
@@ -2155,6 +2156,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	subarray(subarray const&) = delete;
 
+	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
