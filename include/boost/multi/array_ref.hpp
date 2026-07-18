@@ -1579,27 +1579,27 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 // public:
 	/// yields a stencil of the original array with the same dimensionality
-	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
+	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
-	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }                                                              // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                         // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
+	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }                                                              // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                         // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
-	constexpr auto stenciled(iextension iex) const& { return blocked(iex.first(), iex.last()).as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1) const& { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated().as_const(); }
+	constexpr auto stenciled(iextension iex) const& { return blocked(iex.first(), iex.last()).as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) const& { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated().as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& {
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& {  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
