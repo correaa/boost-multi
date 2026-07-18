@@ -1013,6 +1013,24 @@ cuda:
     - ctest || ctest --rerun-failed --output-on-failure
   needs: ["g++"]
 
+g++ not-cuda:
+  stage: build
+  allow_failure: false
+  image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04
+  tags:
+    - non-shared
+    - nvidia-gpu
+  script:
+    - nvidia-smi
+    - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - g++-12 --version
+    - /usr/local/cuda/bin/nvcc --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest || ctest --rerun-failed --output-on-failure
+  needs: ["g++", "cuda"]
+
 cuda-11.6.1:
   stage: build
   image: nvcr.io/nvidia/cuda:11.6.1-devel-ubuntu20.04  # nvcr.io/nvidia/cuda:11.5.2-devel-ubuntu20.04
