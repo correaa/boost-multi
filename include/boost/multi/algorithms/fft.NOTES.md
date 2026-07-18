@@ -2821,6 +2821,351 @@ extension and a careful memory bound, followed by the same strict test
 gate and a paired, idle-machine benchmark before considering it for the
 default schedule.
 
+### 11.25 Direct O(p^2) kernel for small power-of-two sizes (n=16, 32) -- implemented, correctness-verified, reverted: 6-8x regression (2026-07-16)
+
+Motivation: at n=32 the 2-D sweep shows multi::fft_plan running at roughly
+half FFTW's speed (ratio ~2.0), the worst gap in the whole size range.
+FFTW's advantage at sizes this small is generally attributed to its
+generated, fully-unrolled codelets, which do the whole transform in one
+pass with compile-time-constant twiddles and no intermediate memory
+traffic. `fft.hpp` instead always splits the power-of-two part of `n`
+into radix-4/8 stages -- for n=32 that is `[4, 8]`, two stages with a
+full scratch read/write and twiddle-multiply pass between them.
+
+**Implementation.** `fft.hpp` already has a direct, table-driven O(p^2)
+kernel (`stage_generic_`, `kind==4`, driven by a precomputed p x p DFT
+matrix) used today only for prime factors up to `fft_max_direct_radix`
+(64). `BOOST_MULTI_FFT_EXPERIMENT_DIRECT_POW2_KERNEL` extends that same
+existing, already-tested machinery to the power-of-two part of `n` when
+it is exactly 16 or 32: instead of pushing `[4,4]` or `[4,8]` stages, it
+pushes a single composite factor (16 or 32) which falls through to the
+same direct-kernel `default:` case a prime of that size would use. No
+new kernel code, only a change to which sizes reach the existing path.
+Capped at 32, deliberately *not* `fft_max_direct_radix` (64): n=64 is a
+common six-step sub-transform size (e.g. n=16384 = 256*64, used by this
+file's own `calibrate()` self-check), invoked once per row: enabling the
+direct kernel at 64 caused a ~4x regression in that self-check alone,
+diagnosed and confirmed via `calibrate()`'s before/after drift readings
+before any real sweep was run, and is not otherwise reported here.  The
+complete strict `test/algorithms_fft.cpp` build
+(`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion
+-Werror`) and an `-fsanitize=address,undefined` build both passed, capped
+at 32.
+
+**Benchmark.** 2-D and generalized-many-3-D (h=32) sweeps, in-place,
+`FFTW_ESTIMATE` with wisdom disabled, cold-cache, on an idle machine
+(calibration drift 0.3-5.7% across the three back-to-back direct/packed/
+pow2direct runs used for the numbers below).
+
+| sweep | direct Multi/FFTW | pow2direct Multi/FFTW | pow2direct/direct time | sizes pow2direct wins |
+|---|---:|---:|---:|---:|
+| 2-D | 1.206 | 1.339 | 1.109 | 14/28 |
+| generalized-many 3-D, h=32 | 1.821 | 2.408 | 1.292 | 7/14 |
+
+The aggregate numbers already show a net regression, but the effect is
+concentrated and severe exactly at n=16 and n=32 (the only sizes the
+macro touches) rather than spread thin: n=32 is 6.9x slower in 2-D and
+8.1x slower in many-3-D; n=16 is 5.2x slower in many-3-D. n=64 (outside
+the macro's range) is unchanged in both sweeps, confirming the
+regression is caused by the direct-kernel substitution and not some
+unrelated run-to-run variation.
+
+**Root cause.** Arithmetic, not overhead. O(32^2) = 1024 multiply-adds
+for the direct matrix kernel vs. the existing 2-stage radix-4/radix-8
+decomposition at roughly O(32 log2 32) ~ 160 operations -- about a 6x
+arithmetic blow-up, matching the observed ~6-8x wall-time regression
+closely enough that no other mechanism needs to be invoked. The
+motivating premise (removing a memory/twiddle pass would offset the
+extra arithmetic at small n, the same overhead-bound argument that
+partly justified [[fft-flushed-cache-methodology|this file's other cold-cache experiments]])
+does not hold here: the arithmetic cost increase is too large to be
+masked by saving one pass.
+
+**Conclusion.** Reusing the existing O(p^2) direct kernel for small
+power-of-two sizes is not a viable path to closing the n=32 gap with
+FFTW -- ruled out decisively, not just "not beneficial." If FFTW's
+real advantage at these sizes is architectural (a true O(p log p)
+fully-unrolled codelet with no intermediate memory pass and
+compile-time-constant twiddles), closing that gap requires building an
+actual codelet-style kernel, which is a substantially larger,
+from-scratch effort than routing existing machinery differently -- not
+attempted here.
+
+### 11.26 Fused rank-2 scratch schedule -- implemented, correctness-verified, reverted: no viable mechanism under this benchmark's methodology (2026-07-17)
+
+Follow-up to §11.24's proposed next step: a genuinely fused D==2 schedule
+(row-FFT axis 1 into scratch, transpose in scratch, batched axis-0 FFT,
+scatter once) instead of the default two independent full-array axis passes
+(`fft_apply_last_pair`).
+
+**Design correction made before implementation.** The initial framing (a
+small, cache-resident "tile" processed independently per axis) does not
+work: axis-1's FFT needs every element of a row to produce any output value,
+and axis-0's FFT needs every element of a column -- neither transform is
+decomposable into a small partial block. The only structurally valid fused
+schedule needs a full `O(n0*n1)` scratch buffer (one complete extra copy of
+the last-pair slab), not a small tile. Working through the concrete gather
+step further showed the fused schedule does not reduce total bytes moved
+either: the default schedule already does the *contiguous* axis-1 pass
+optimally (1 read + 1 write, in place, no gather); the fused schedule
+replaces that with 1 read (user memory) + 1 write (scratch), then still pays
+the same unavoidably-strided axis-0 gather/scatter either way. Total
+traffic is the same 4 array-sized touches, just 2-to-user-memory + 2-to-
+scratch instead of 4-to-user-memory. The only remaining hypothesized win:
+the axis-0 gather reads from a buffer *just written*, potentially still
+warm in cache, versus user memory that may have been evicted by the time
+the second pass runs.
+
+**Implementation.** `BOOST_MULTI_FFT_EXPERIMENT_FUSED_PAIR_SCHEDULE`, gated
+at `fft_apply_last_pair`'s `rank==2` base case (the same site reached for
+every D>=2 plan's last-pair, including D>=3's recursion into it). New
+`fft_plan`-level (not engine-level) scratch region `fused_off_`, sized
+`n0*n1` from the last two axes' engine lengths, computed once in the
+constructor and folded into the existing single-arena `scratch_elements_`
+-- no plan-owned buffer, `execute()` stays allocator-per-call. New function
+`fft_exec_fused_pair` does the row-FFT-into-scratch / gather-from-scratch /
+batched-axis-0 / scatter-to-user-memory sequence; falls back to the default
+two-pass schedule when axis 1 isn't contiguous. As a byproduct, the
+six-step decomposition's existing tiled transpose-with-twiddle loop
+(`run_sixstep_`) was extracted into a shared `fft_transpose_tile_` helper
+(`WithTwiddle` compile-time switch) so the new schedule's plain (no-twiddle)
+transpose reuses it instead of duplicating the loop -- this refactor alone
+is behavior-preserving (verified below) and does not depend on the macro.
+
+The complete strict `test/algorithms_fft.cpp` build
+(`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Werror`)
+and an `-fsanitize=address,undefined` build both passed, in all four
+combinations (macro on/off x plain/ASan). A `.text` size check confirmed
+the transpose-helper refactor alone is not a code-size regression for the
+default (macro-off) build (496755 -> 495839 bytes, a small *reduction*,
+consistent with the compiler sharing one out-of-line transpose
+instantiation instead of duplicating it inline at every six-step call
+site) and the new schedule adds only ~1.5KB (~0.3%) when the macro is on.
+
+**Benchmark.** 2-D, generalized-many-3-D (h=32), and a 1-D control (this
+macro's code path is structurally unreachable from D==1, included as a
+noise-floor check), in-place, `FFTW_ESTIMATE` with wisdom disabled,
+cold-cache, idle machine (calibration drift 3-6% across the two runs used
+below; two earlier attempts were discarded for elevated drift from
+background browser load).
+
+| sweep | direct Multi/FFTW | fusedpair Multi/FFTW | fusedpair/direct time | sizes fusedpair wins |
+|---|---:|---:|---:|---:|
+| 1-D (control, unreachable) | 1.208 | 1.201 | 0.929 | 32/45 |
+| 2-D | 1.220 | 1.372 | 1.118 | 1/28 |
+| generalized-many 3-D, h=32 | 1.839 | 1.959 | 1.044 | 2/14 |
+
+The 1-D control's ~7% divergence, despite the macro's code being provably
+unreachable from that path, sets a noise floor from incidental cross-binary
+codegen/layout differences alone. The 2-D (+12%) and many-3-D (+4% overall,
+but only 2/14 sizes actually faster) regressions are well outside that
+floor and consistent across almost every individual size, not concentrated
+at a few outliers the way §11.25's regression was.
+
+**Root cause.** The benchmark this project uses to evaluate every `fft.hpp`
+change (`benchmark/algorithms_fft.cpp`) deliberately flushes a 64MB buffer
+before *every single timed call*, precisely to simulate a cold-cache real
+caller (see [[fft-flushed-cache-methodology]]). The fused schedule's one
+remaining hypothesized win -- reading the axis-0 gather from a buffer still
+warm from just being written -- is exactly the kind of warmth this
+methodology is designed to erase: after the flush, both user memory and the
+new scratch buffer start equally cold. So the schedule paid the cost of a
+more complex code path and an extra `O(n)` scratch touch while structurally
+forfeiting the only benefit it could have collected under this benchmark.
+This is a different flavor of the same lesson as the twiddle-skip case
+(§11.21/[[fft-flushed-cache-methodology]]): there, a hot-loop check hid a
+real cold-cache cost; here, the intended benefit itself depends on warmth
+that a cold-cache benchmark cannot show by construction.
+
+**Conclusion.** Reverted (code only; this write-up and the transpose-helper
+refactor's lesson -- that extraction was and remains behavior-preserving --
+are the only lasting artifacts). §11.24's open thread is now closed: the
+fused rank-2 schedule does not have a viable mechanism for improvement
+under this project's cold-cache benchmark methodology, and there is no
+indication a warm-cache scenario is what real callers of this library
+experience either. Any future attempt in this direction should identify a
+mechanism that does not depend on cache warmth carrying over between an
+array's two axis passes before implementing anything.
+
+### 11.27 Feasibility check for a size-32 flat codelet: naive shape loses 2.4-2.6x in the batched case that matters (2026-07-17)
+
+Follow-up to §11.25 (which ruled out reusing the existing O(p^2) direct
+kernel for n=16/32). The remaining, not-yet-tried mechanism for closing the
+n=32 gap with FFTW (roughly 2x at that size) is a genuine FFTW-style
+codelet: one flat, fully-unrolled O(p log p) pass with no intermediate
+memory round-trip. Before attempting a real engine-integrated
+implementation, this was scoped as a cheap, throwaway feasibility check
+(prototype code lives outside the repo, in the session scratchpad --
+nothing here touches `fft.hpp`), because this codebase has already failed
+twice at "one bigger single-stage kernel" (all-radix-8 rejected outright;
+`stage_radix16_`, §11.18, reverted after a 20-80% regression, root-caused to
+register pressure) and a true codelet is architecturally further in that
+same direction.
+
+**What was built.** A from-scratch radix-16 reconstruction (`stage_radix16_`
+was never committed -- git history confirms only its NOTES write-up landed
+-- so there was nothing to recover; this rebuilds the documented shape: two
+internal radix-8-style sub-DFTs on even/odd legs + a W16 combine, using
+plain scalar `cx{re,im}` arithmetic with the same hand-expanded multiply
+form `fft_ops` uses in production, to avoid `std::complex::operator*`'s
+Annex-G branch biasing the comparison) as a calibration point, then a size-32
+one-shot prototype built the same way one level deeper (two radix-16
+sub-DFTs + W32 combine). Both verified correct against a naive DFT reference
+(max abs error < 1e-9, forward direction, m=1 and m=3 batch, multiple random
+trials).
+
+**Stack-usage proxy (`-fstack-usage`), same production flags:** inconclusive.
+The radix-16 reconstruction showed only 88-264 bytes -- smaller than
+`stage_radix8_`'s own already-in-production 568 bytes, and far short of the
+"~20 live values, roughly double radix8" the real (unrecoverable) failed
+attempt was described as having. Either this reconstruction's algebra
+happens to need fewer live values than whatever was originally tried, or
+stack-usage genuinely doesn't capture the failure mode that hurt the
+original (register pressure that hurts instruction scheduling without
+literally spilling to the stack). The size-32 prototype did show a real
+escalation (1184-1216 bytes, roughly 2x `stage_radix5_`'s 968), but this
+number alone was not treated as decisive either way, precisely because the
+radix-16 calibration point didn't reproduce the expected signal.
+
+**Timing (hot-loop, not flushed-cache -- a fast filter only, per
+[[fft-flushed-cache-methodology]]):** the picture reversed completely
+between the unbatched and batched case.
+- m=1 (unbatched): the flat codelet ran ~10-11% *faster* than the full
+  `fft_plan<1>::execute()` path for n=32 (consistent across repeated runs).
+- m=64 (batched, matching this size's actual `batch_width_()` clamp and
+  what the 2-D/many3d benchmarks actually exercise): the flat codelet ran
+  **2.4-2.6x slower**, not faster.
+
+**Root cause, confirmed via `-fopt-info-vec-missed` (the "hard evidence"
+[[fft-register-pressure-pattern]] asks for), not just inferred:** the
+prototype's batch (`m`) loop calls a function taking 32 scalar-by-value `cx`
+inputs and 32 scalar-by-reference outputs per batch element -- `gcc`
+reported `couldn't vectorize loop` for exactly this loop. Production
+kernels (`stage_radix4_`/`stage_radix8_`) never hit this: their batch loop
+is written directly as a raw, contiguous array-indexed loop with every
+twiddle constant hoisted *outside* the `j` loop, so the compiler sees a
+uniform SIMD-izable stream over `j`. A naive flat codelet, structured as "one
+function call per batch element," is invisible to the vectorizer as a
+batch loop at all -- a *different* failure mode than the register-pressure
+spilling §11.18 hit, discovered specifically because this check measured
+the batched case instead of stopping at the (misleadingly encouraging)
+unbatched number.
+
+**Conclusion.** The naive, first-attempt codelet shape is a decisive loss
+for the regime that actually matters (batched, as the real benchmarks
+exercise) -- not adopted, no engine integration attempted. A codelet that
+preserved the vectorization-friendly shape (batch loop as the primitive,
+raw array indexing, twiddles hoisted outside) is still theoretically
+possible, but restructuring for it means every one of the ~30 named
+temporaries in the butterfly network (e0..e15, o0..o15, plus twiddled
+intermediates) becomes a batch-width-wide vector quantity instead of a
+scalar -- a substantially bigger rewrite than this feasibility check
+attempted, and one with a real, not-yet-evidenced risk of reintroducing
+`stage_radix16_`'s own register-pressure failure from a different angle
+(vector-width-many live values instead of scalar-many). Not scoped further
+in this pass; a future attempt should prototype that SIMD-preserving shape
+specifically and re-run this same batched vec-info + timing check before
+considering engine integration, rather than assuming the unbatched result
+generalizes.
+
+### 11.28 Size-32 codelet, both shapes prototyped + one integrated and benchmarked: reverted, 2-D n=32 regresses ~70% under cold cache (2026-07-17)
+
+Full successor to §11.27, executed from a written plan. Two codelet shapes
+were prototyped standalone (scratchpad, using the real `fft_mul_dir`
+customization point so the multiply algebra matches production), then one
+was integrated behind `BOOST_MULTI_FFT_EXPERIMENT_CODELET32` (off by
+default) and run through the official flushed-cache benchmark. Both compute
+exactly the default `[4,8]` stage pair (radix-4 ns=1, then radix-8 ns=4) in
+one pass, twiddles from `tw_` via `fft_mul_dir<Backward>`, unity multiplies
+structurally omitted.
+
+**Phase-1 path trace (verified against source).** A 2-D 32x32 transform runs
+its ROW pass as 32 separate m=1 fibers (`fft_exec_fiber` ->
+`run_contig_inplace` -> fused `run_fused_impl_`) and its COLUMN pass as one
+batched m=32 call (`run_fused`). So the codelet's real workload is
+m=1-dominated (32x the fiber count of the single batched column call). Two
+integration requirements found and confirmed: (T1) a single-stage `[32]`
+plan makes `can_fuse()` (`stages_.size()>=2`) and `run_contig_inplace`'s
+`>=2` gate both false, so without a gated fix the codelet silently falls off
+the fused fast path onto slower gather/copy paths -- correct results, but
+defeating the whole point; (T2) the fused in-place path passes `a==b`, so
+the codelet (unlike every other stage kernel, where ping-pong guarantees
+distinct per-stage buffers) must NOT `restrict`-qualify its user pointers --
+safe because it reads all 32 inputs into local scratch before writing any
+output. No size-32 sub-engine arises in any benchmark sweep (5-smooth sizes
+=> no Bluestein/large-prime; six-step only for n>=8192 with balanced sides
+>=~90), so only a genuine size-32 axis routes through the codelet.
+
+**Two prototype shapes (Phase 2).**
+- *Variant A (monolithic):* one `for j` batch loop, the whole 32-network in
+  its body, 32-element local scratch. Vec-info: the batch loop does NOT
+  vectorize (two consecutive inner loops); a structural inner loop
+  vectorizes instead.
+- *Variant B (layered, j-tiled):* radix-4 layer then radix-8 layer, each an
+  innermost `jj` loop over a raw `[32][JT]` L1 tile. Vec-info: BOTH batch
+  loops vectorize (layer 1 at 32-byte, layer 2 at 16-byte). This is the
+  shape §11.27 concluded was needed.
+
+Both correct to ~1e-13 vs naive DFT (forward+backward, m in {1,3,32,64,100},
+interleaved and strided, and -- for the integrated one -- in-place a==b).
+
+**Hot-loop timing (Phase 2, the misleading signal).** ratio = codelet/prod:
+| m  | Variant A | Variant B |
+|----|----------:|----------:|
+| 1  | 0.55 (+45% faster) | 1.09 (9% slower) |
+| 32 | 1.36 (36% slower)  | 0.78 (+22% faster) |
+| 64 | 1.22 (22% slower)  | 0.80 (+20% faster) |
+Variant A wins unbatched (as §11.27 found, larger here from fusing both
+stages); Variant B wins batched (its vectorization paying off). Since the
+2-D path is m=1-dominated, a hot-loop composite (32x row + 1x column)
+predicted **Variant A ~19% faster** for the real 2-D transform and Variant B
+~break-even -- so, against the plan's vectorization-centric design, VARIANT A
+was integrated and benchmarked. (Explicit caveat recorded at the time: the
+m=1 prod number carried per-call plan overhead the in-2D row pass does not,
+so A's advantage was an upper bound; and hot-loop != flushed-cache.)
+
+**Official flushed-cache benchmark (Phase 5), 2 runs, idle machine, n=32
+rows (codelet vs base, +delta = slower):**
+| sweep | run 1 | run 2 |
+|---|---:|---:|
+| 2-D (primary target) | +67.8% | +71.1% |
+| 3-D | +10.2% | +7.6% |
+| many h=32 | +40.4% | +47.8% |
+| many h=256 | -11.7% | -10.7% |
+| many3d h=32 (primary target) | -8.6% | -9.2% |
+
+**Decisive reversal, and the mechanism.** The hot-loop composite predicted
+A ~19% FASTER on 2-D; the real benchmark shows it ~70% SLOWER. The sign of
+the effect tracks batch width: the codelet WINS the wide-batch cases (many
+h=256, many3d h=32 -- one wide `run_fused` call amortizes the fetch of the
+fully-unrolled kernel over 64+ fibers, and avoiding the inter-stage arena
+round-trip saves real cold-cache memory traffic) and LOSES badly the
+m=1-dominated cases (2-D, many h=32 -- the row pass makes 32 separate cold
+codelet calls per transform; the fully-unrolled, non-vectorized kernel's
+large code footprint is re-fetched cold each time, and its scalar per-element
+work is slow). This is the §11.21/[[fft-flushed-cache-methodology]] lesson a
+third time: a hot-loop win (icache warm, kept hot across reps) hid a
+cold-cache icache/code-size cost that the flushed benchmark -- and real
+callers -- actually pay. The m=1 dominance that made the composite favor A is
+exactly what makes A worst under cold cache: 32 cold big-codelet fetches per
+2-D transform.
+
+**Decision.** G3 required the 2-D n=32 primary target to improve >=10%; it
+regresses ~70%. Reverted (`fft.hpp` + benchmark back to HEAD, confirmed
+diff-clean; this write-up is the only artifact). Both open threads from
+§11.27 are now closed with evidence: the naive (A) shape loses under cold
+cache in the case that matters, and the SIMD-preserving (B) shape, while it
+does vectorize, was only ~break-even on the m=1-dominated 2-D path in
+hot-loop and was not integrated (its batched wins don't help a workload
+whose dominant cost is m=1 fibers). The structural obstacle is not the
+kernel's arithmetic or vectorization but the schedule: n=32's 2-D cost is
+dominated by 32 independent m=1 row transforms, and no single-fiber codelet
+(vectorized or not) changes that the row pass pays a cold per-fiber cost 32
+times. A future attempt would have to change the SCHEDULE (batch the row
+fibers too), which is the packed-contiguous-batches direction already
+reverted in §11.24 -- i.e. the codelet and the batching schedule would have
+to succeed together, neither alone. Not pursued further.
+
 ---
 
 ## §12 GPU porting design notes
