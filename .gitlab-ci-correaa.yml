@@ -1024,7 +1024,7 @@ g++ not-cuda:
     - nvidia-smi
     - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - g++-12 --version
+    - g++ --version
     - /usr/local/cuda/bin/nvcc --version
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . || cmake --build . --parallel 1 --verbose
