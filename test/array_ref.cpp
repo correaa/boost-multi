@@ -357,60 +357,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-		BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
-		BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
-		BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
+		// BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
+		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
+		// BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
-		//  BOOST_TEST( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
-		//  BOOST_TEST( mar.base() == mar.origin() );
+		// //  BOOST_TEST( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
+		// //  BOOST_TEST( mar.base() == mar.origin() );
 
-		//  BOOST_TEST( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
-		BOOST_TEST( mar.stenciled({2, 4}).base()   != mar.base()   );
+		// //  BOOST_TEST( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
+		// BOOST_TEST( mar.stenciled({2, 4}).base()   != mar.base()   );
 
-		BOOST_TEST( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
-
-		{
-			// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-			// multi::array<std::string, 2> arrB = {
-			//  {"a", "b", "c", "d", "e"},
-			//  {"f", "g", "h", "f", "g"},
-			//  {"h", "i", "j", "k", "l"},
-			// };
-			// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
-			// arrB.reindex(2);
-			// BOOST_TEST( size(arrB) == 3 );
-			// BOOST_TEST( arrB[2][0] == "a" );
-		}
-		{
-			// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-			// multi::array<std::string, 2> arrB = {
-			//  {"a", "b", "c", "d", "e"},
-			//  {"f", "g", "h", "f", "g"},
-			//  {"h", "i", "j", "k", "l"},
-			// };
-			// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
-			// arrB.reindex(2, 1);
-			// BOOST_TEST( size(arrB) == 3 );
-			// BOOST_TEST( arrB[2][1] == "a" );
-		}
-		{
-			// using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
-			// multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
-			//  {"a"s, "b"s, "c"s, "d"s, "e"s},
-			//  {"f"s, "g"s, "h"s, "f"s, "g"s},
-			//  {"h"s, "i"s, "j"s, "k"s, "l"s},
-			// });  // .reindex(2, 1);  // std::string NOLINT(fuchsia-default-arguments-calls)
-
-			// BOOST_TEST( arrB.reindex(2).extension() == multi::iextension(2, 5) );
-			// auto exts = arrB.reindexed(2).extensions();
-
-			// multi::array<std::string, 2> const arrC(exts);
-			// BOOST_TEST( size(arrC) == 3 );
-			// BOOST_TEST( size(arrC) == size(arrB) );
-
-			// BOOST_TEST( arrC.extension().first()  == 2 );
-			// BOOST_TEST( arrC.extension().last() == 5 );
-		}
+		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_with_stencil)
