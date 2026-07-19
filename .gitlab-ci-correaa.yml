@@ -528,6 +528,7 @@ vs2022-shell:
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git C:\
     # - C:\vcpkg\bootstrap-vcpkg.bat
     # - C:\vcpkg\vcpkg install blas fftw3
+    - C:\vcpkg\vcpkg install boost-core
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - $Env:Path -split ';'
     - cmake --version
