@@ -1243,6 +1243,25 @@ circle:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
 
+circle-dev:
+  stage: build
+  allow_failure: false
+  tags:
+    - non-shared
+    - x86_64  # for circle executable
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang cmake g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar tree wget
+    - mkdir -p build_latest ; cd build_latest
+    - wget https://www.circle-lang.org/linux/circle_dev.tgz --no-verbose
+    - tar -zxvf circle_dev.tgz
+    - tree -L 4
+    - cd ..
+    - ./build_latest/circle --version
+    - mkdir build && cd build
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+
 circle-202:
   stage: build
   allow_failure: false
