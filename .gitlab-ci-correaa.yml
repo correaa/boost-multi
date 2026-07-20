@@ -1245,12 +1245,13 @@ circle:
 
 circle-dev:
   stage: build
+  image: debian:bookworm  # for python 3.12
   allow_failure: false
   tags:
     - non-shared
     - x86_64  # for circle executable
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang cmake g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar tree wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang cmake g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar tree wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/linux/circle_dev.tgz --no-verbose
     - tar -zxvf circle_dev.tgz
