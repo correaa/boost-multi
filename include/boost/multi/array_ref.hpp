@@ -1932,6 +1932,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare(*this, other); }
 	constexpr auto operator>(const_subarray const& other) const& -> bool { return other < *this; }
 
+	/// yields a view of the array in which the internal representation is static_cast to another type (and/or pointer)
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, std::enable_if_t<std::is_const_v<typename std::pointer_traits<P2>::element_type>, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa)
 			 >
 	constexpr auto static_array_cast() const& {                                    // name taken from std::static_pointer_cast
