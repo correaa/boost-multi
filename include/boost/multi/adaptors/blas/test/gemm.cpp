@@ -845,14 +845,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			auto                    ar = +~a;
-			multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( c[1][0] == 184.0 );
 		}
 		{
 			auto                    ar = +~a;
-			multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm_n(1.0, begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
+			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( c[1][0] == 184.0 );
 		}
 	}
@@ -885,14 +885,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			auto                     ar = +~a;
-			multi::array<complex, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);
+			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);
 			BOOST_TEST( c[1][0] == 184.0 );
 		}
 		{
 			auto                     ar = +~a;
-			multi::array<complex, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm_n(1.0, begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0.0, begin(~c));
+			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));
 			BOOST_TEST( c[1][0] == 184.0 );
 		}
 	}
@@ -926,14 +926,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			auto                    ar = +~a;
-			multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( c[0][0] == 82.0 );
 		}
 		{
 			auto                    ar = +~a;
-			multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-			blas::gemm_n(1.0, begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
+			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});
+			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( c[0][0] == 82.0 );
 		}
 	}
