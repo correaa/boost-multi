@@ -290,6 +290,7 @@ else()
 	-Wall -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
+	-Wno-documentation-unknown-command
 	-Wno-poison-system-directories
 	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
 	# -Wno-exit-time-destructors  # Boost.LightweightTest uses static objects with destructor

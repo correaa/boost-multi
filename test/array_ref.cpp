@@ -251,7 +251,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
 		std::unique_ptr<int const[]> const arrp(new int const[4UL * 4UL]{0, 10, 20, 30, 50, 60, 70, 80, 100, 110, 120, 130, 150, 160, 170, 180});  // cppcheck-suppress leakReturnValNotUsed;  // NOLINT(whitespace/line_length)
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage-in-unique-ptr-array-access"
+#endif
 		BOOST_TEST( arrp[3] == 30 );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		{
 			multi::array_ref<int, 2, int const*> const map(arrp.get(), {4, 4});
 

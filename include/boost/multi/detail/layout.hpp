@@ -1374,9 +1374,6 @@ class bistride {
 
 		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
-	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-	#pragma clang diagnostic pop
-	#endif
 
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
@@ -1386,6 +1383,9 @@ class bistride {
 		auto ret = base + (i * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
+	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
 };
 
 template<dimensionality_type D>
