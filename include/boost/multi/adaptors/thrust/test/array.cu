@@ -810,7 +810,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_double)
 	{
 		using T         = double;
-		auto const exts = multi::extents_t<3>({1024, 1024, 100});
+		auto const exts = multi::extents_t<3>({1024, 1024, 32});
 
 		std::cout << "| 3D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824. << " GB | speed |\n|---|---|" << std::endl;
 
@@ -821,7 +821,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<T, 3> Hos2(exts);
 
 		{
-			Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+			Devc({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
 		}
 		{
 			auto_timer t{""};
@@ -838,8 +838,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    host to devc | " << Host({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Devc({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    host to devc | " << Host({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 		}
 		{
 			auto_timer t{""};
@@ -858,8 +858,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Hos2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    devc to host | " << Host({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Hos2({0, 512}, {0, 512}, {0, 16}) = Devc({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    devc to host | " << Host({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 			// BOOST_TEST(Hos2 == Host);
 		}
 		{
@@ -905,9 +905,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Dev2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+			Dev2({0, 512}, {0, 512}, {0, 16}) = Devc({0, 512}, {0, 512}, {0, 16});  // 0.002859s
 			cudaDeviceSynchronize();
-			std::cout << "| strided    devc to devc | " << Dev2({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			std::cout << "| strided    devc to devc | " << Dev2({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 			// BOOST_TEST(Dev2 == Devc);
 		}
 		{
@@ -925,8 +925,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Hos2({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    host to host | " << Hos2({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Hos2({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    host to host | " << Hos2({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 		}
 		std::cout << "   " << std::endl;
 	}
@@ -934,7 +934,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D_complex)
 	{
 		using T         = thrust::complex<double>;
-		auto const exts = multi::extents_t<3>({1024, 1024, 100});
+		auto const exts = multi::extents_t<3>({1024, 1024, 32});
 
 		std::cout << "| 3D `" << typeid(T).name() << "` max data size " << exts.num_elements() * sizeof(T) / 1073741824. << " GB | speed |\n|---|---|" << std::endl;
 
@@ -945,7 +945,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<T, 3> Hos2(exts);
 
 		{
-			Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+			Devc({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
 		}
 		{
 			auto_timer t{""};
@@ -962,8 +962,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    host to devc | " << Host({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Devc({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    host to devc | " << Host({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 		}
 		{
 			auto_timer t{""};
@@ -982,8 +982,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Hos2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    devc to host | " << Host({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Hos2({0, 512}, {0, 512}, {0, 16}) = Devc({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    devc to host | " << Host({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 			// BOOST_TEST(Hos2 == Host);
 		}
 		{
@@ -1029,9 +1029,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Dev2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+			Dev2({0, 512}, {0, 512}, {0, 16}) = Devc({0, 512}, {0, 512}, {0, 16});  // 0.002859s
 			cudaDeviceSynchronize();
-			std::cout << "| strided    devc to devc | " << Dev2({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			std::cout << "| strided    devc to devc | " << Dev2({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 			// BOOST_TEST(Dev2 == Devc);
 		}
 		{
@@ -1049,8 +1049,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto_timer t{""};
 
-			Hos2({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
-			std::cout << "| strided    host to host | " << Hos2({0, 512}, {0, 512}, {0, 512}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
+			Hos2({0, 512}, {0, 512}, {0, 16}) = Host({0, 512}, {0, 512}, {0, 16});  // 0.002859s
+			std::cout << "| strided    host to host | " << Hos2({0, 512}, {0, 512}, {0, 16}).num_elements() * sizeof(T) / (t.elapsed().wall / 1e9) / 1073741824. << "GB/sec |" << std::endl;
 		}
 		std::cout << "   " << std::endl;
 	}
