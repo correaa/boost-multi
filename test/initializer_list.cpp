@@ -155,7 +155,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array)
 	{
-#if defined(__INTEL_COMPILER) || (defined(__clang__) && (__clang_major__ >= 10))  // doesn't work on gcc
+#if (defined(__INTEL_COMPILER) || (defined(__clang__) && (__clang_major__ >= 10))) && !defined(__circle_build__)  // doesn't work on gcc; circle rejects designator + trailing positional initializers ("list comprehension disabled")
 		{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
