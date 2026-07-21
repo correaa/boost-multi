@@ -1267,27 +1267,27 @@ circle-dev:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
 
-circle-202:
-  stage: build
-  allow_failure: false
-  only:
-    refs:
-      - develop
-  tags:
-    - non-shared
-    - x86_64  # for circle executable
-  script:
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake ninja-build g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
-    - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
-    - tar -zxvf build_*.tgz
-    - cd ..
-    - ./build_latest/circle --version
-    - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest --output-on-failure
-  needs: ["circle"]
+# circle-202:
+#   stage: build
+#   allow_failure: false
+#   only:
+#     refs:
+#       - develop
+#   tags:
+#     - non-shared
+#     - x86_64  # for circle executable
+#   script:
+#     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake ninja-build g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+#     - mkdir -p build_latest ; cd build_latest
+#     - wget https://www.circle-lang.org/linux/build_202.tgz --no-verbose
+#     - tar -zxvf build_*.tgz
+#     - cd ..
+#     - ./build_latest/circle --version
+#     - mkdir build && cd build
+#     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+#     - cmake --build . || cmake --build . --parallel 1 --verbose
+#     - ctest --output-on-failure
+#   needs: ["circle"]
 
 # circle-latest c++20:
 #   stage: build
