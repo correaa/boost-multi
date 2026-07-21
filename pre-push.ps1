@@ -198,9 +198,14 @@ Invoke-Variant -Name 'MSVC (cl.exe) Debug -WX' -BuildDir '.build.msvc' -Config '
 # ---- variant 2: MSVC + AddressSanitizer -------------------------------------
 # RelWithDebInfo (not Debug) because CMake's default Debug flags add /RTC1,
 # which MSVC refuses to combine with /fsanitize=address.
+# /Zi + linker /DEBUG: without debug info, cl.exe emits warning C5072 ("ASAN
+# enabled without debug information emission") and ASAN error reports fall
+# back to raw addresses instead of symbolized file/line stack traces.
 Invoke-Variant -Name 'MSVC (cl.exe) AddressSanitizer' -BuildDir '.build.msvc.asan' -Config 'RelWithDebInfo' -ConfigureArgs (@(
     '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
-    '-DCMAKE_CXX_FLAGS=/fsanitize=address'
+    '-DCMAKE_CXX_FLAGS=/fsanitize=address /Zi',
+    '-DCMAKE_EXE_LINKER_FLAGS=/DEBUG',
+    '-DCMAKE_SHARED_LINKER_FLAGS=/DEBUG'
 ) + $msvcCompilerArgs)
 
 # ---- variant 3: MSVC release, C++23 ------------------------------------------
