@@ -1777,7 +1777,7 @@ struct layout_t
 
 		if constexpr(D > 1) {
 			if(
-				    ret.stride() < ret.sub().stride()  // mull-ignore: cxx_lt_to_le  // if strides are equal, one of the sizes is 1
+				    ret.stride() < ret.sub().stride()  // if strides are equal, one of the sizes is 1  // mull-ignore: cxx_lt_to_le
 				|| (
 					   ret.stride() == ret.sub().stride()
 					&& ret.sub().size() < ret.size()  // mull-ignore: cxx_lt_to_le
