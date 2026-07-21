@@ -1245,7 +1245,7 @@ circle:
 
 circle-dev:
   stage: build
-  image: debian:bookworm  # for python 3.12
+  image: ubuntu:24.04  # ships python 3.12 by default (circle_dev.tgz is linked against libpython3.12.so.1.0)
   allow_failure: false
   tags:
     - non-shared
