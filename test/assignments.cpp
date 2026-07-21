@@ -22,7 +22,7 @@ namespace multi = boost::multi;
 
 namespace {
 
-struct element_test {
+struct element_test {  // NOLINT(cppcoreguidelines-special-member-functions) some of these are trully unused
 	static std::size_t construct_count;
 	static std::size_t destruct_count;
 

@@ -26,6 +26,7 @@ namespace blas  = multi::blas;
 // #define BOOST_REQUIRE_SMALL(X, ToL) BOOST_TEST( std::abs( X ) < (ToL) )
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+#ifndef __circle_build__  // TODO(correaa) circle_dev segfaults (ICE, not a diagnostic) compiling this file; not yet bisected which construct triggers it, see herk.cpp
 	BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T_sub) {
 		namespace blas = multi::blas;
 
@@ -1992,6 +1993,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::blas::gemm(1.0F, A, B, 0.0F, C);
 	}
+#endif
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
