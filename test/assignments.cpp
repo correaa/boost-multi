@@ -33,9 +33,9 @@ struct element_test {
 	explicit element_test(int val = 0) noexcept : value_(val) { ++construct_count; }
 	~element_test() noexcept { ++destruct_count; }
 	element_test(element_test const& other) noexcept : value_(other.value_) { ++construct_count; }  // NOLINT(bugprone-copy-constructor-init)
-	element_test(element_test&& other) noexcept : value_(other.value_) { ++construct_count; }
+	// element_test(element_test&& other) noexcept : value_(other.value_) { ++construct_count; }
 	auto operator=(element_test const& /*other*/) noexcept -> element_test& = default;
-	auto operator=(element_test&& /*other*/) noexcept -> element_test&      = default;
+	// auto operator=(element_test&& /*other*/) noexcept -> element_test&      = default;
 };
 std::size_t element_test::construct_count = 0;
 std::size_t element_test::destruct_count  = 0;
