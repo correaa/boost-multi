@@ -1217,7 +1217,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			auto br = +~b;
 
-			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(br)), 0.0, begin(~c));
+			blas::gemm_n(1.0, a.begin(), a.size(), blas::H(br).begin(), 0.0, (~c).begin());
 			BOOST_TEST( c[0][0] == 80. + 53.*I );
 		}
 	}
