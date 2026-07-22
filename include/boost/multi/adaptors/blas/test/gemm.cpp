@@ -2005,12 +2005,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using complex = std::complex<double>;
 		complex const                  I{0, 1};
-		multi::array<complex, 2> const a({1, 1}, 2. + 1. * I);
-		multi::array<complex, 2> const b({1, 1}, 3. + 4. * I);
+		multi::array<complex, 2> const a({1, 1}, 2.0 + 1.0 * I);  // NOLINT(readability-identifier-length) BLAS name
+		multi::array<complex, 2> const b({1, 1}, 3.0 + 4.0 * I);  // NOLINT(readability-identifier-length) BLAS name
 
-		multi::array<complex, 2> c({1, 1}, 999.);
+		multi::array<complex, 2> c({1, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS name
 		c = blas::gemm(1.0, a, b);
-		BOOST_TEST( c[0][0] == (2. + 1.*I)*(3. + 4.*I) );
+		BOOST_TEST( c[0][0] == (2.0 + 1.0*I)*(3. + 4.0*I) );
 	}
 #endif
 
@@ -2018,12 +2018,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case
 	{
 		using complex = std::complex<double>;
-		multi::array<complex, 2> const a({1, 1}, 2.);
-		multi::array<complex, 2> const b({1, 1}, 3.);
+		multi::array<complex, 2> const a({1, 1}, 2.);  // NOLINT(readability-identifier-length) BLAS name
+		multi::array<complex, 2> const b({1, 1}, 3.);  // NOLINT(readability-identifier-length) BLAS name
 
-		multi::array<complex, 2> c({1, 1}, 999.);
+		multi::array<complex, 2> c({1, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS name
 		c = blas::gemm(1.0, a, b);
-		BOOST_TEST( c[0][0] == 6. );
+		BOOST_TEST( c[0][0] == 6.0 );
 	}
 #endif
 
