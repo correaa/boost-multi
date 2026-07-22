@@ -1173,7 +1173,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
+
 			auto ar = +~a;
+
 			blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=ba
 			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
@@ -1183,30 +1185,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto ar = +~a;
 
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));  // c=ab, c⸆=ba
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     br = +~b;
+
+			auto br = +~b;
+
 			blas::gemm(1.0, a, ~br, 0.0, c);
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     br = +~b;
+
+			auto br = +~b;
+
 			blas::context            ctxt;
 			blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(~br), 0.0, begin(c));
 			BOOST_TEST( c[0][0] == 84.-7.*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     br = +~b;
+
+			auto br = +~b;
+
 			blas::gemm(1.0, a, blas::H(br), 0.0, ~c);
-			BOOST_TEST( c[0][0] == 80. + 53.*I );
+			BOOST_TEST( c[0][0] == 80.0 + 53.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     br = +~b;
+
+			auto br = +~b;
+
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(br)), 0.0, begin(~c));
 			BOOST_TEST( c[0][0] == 80. + 53.*I );
 		}
