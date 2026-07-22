@@ -80,6 +80,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_options(
 		${TEST_EXE} PRIVATE
 		$<$<CXX_COMPILER_ID:GNU>:-Wno-error=terminate>  # -Wterminate is a GCC-only warning; nvc++/Clang/MSVC reject the flag
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=/wd4244>  # conversion, possible loss of data; fires from inside MSVC's own <algorithm> header, not from this code
 	)
 
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
