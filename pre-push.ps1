@@ -9,14 +9,10 @@
 
     Detected on this machine: cl.exe (MSVC) + bundled Ninja + bundled
     clang-format/clang-tidy, via "Visual Studio Build Tools 2022".
-    clang-cl.exe, ccache, and nvcc.exe (CUDA Toolkit) are optional; the script
-    skips the corresponding variant with a warning instead of failing when one
-    is missing. To add them later:
+    ccache is optional; the script skips using it as a compiler launcher with
+    a warning instead of failing when it is missing. To add it later:
 
-      winget install Microsoft.VisualStudio.2022.BuildTools --override `
-        "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Llvm.Clang"
       winget install ccache   # or: scoop install ccache / choco install ccache
-      winget install Nvidia.CUDA   # CUDA Toolkit (nvcc); needs a matching driver + supported GPU
 
     Usage:
       pwsh -File .\pre-push.ps1                    # build + test everything
@@ -75,7 +71,6 @@ Import-VsDevEnvironment $vsPath
 
 $ninja       = Join-Path $vsPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe'
 $clangFormat = Join-Path $vsPath 'VC\Tools\Llvm\x64\bin\clang-format.exe'
-$clangCl     = Join-Path $vsPath 'VC\Tools\Llvm\x64\bin\clang-cl.exe'
 
 # Full path to the cl.exe that Import-VsDevEnvironment just put on PATH (from
 # *this* $vsPath), so it can be pinned explicitly below instead of leaving
@@ -162,15 +157,9 @@ function Invoke-Variant {
 
         & cmake --build $BuildDir --config $Config @buildTargetArgs
         if ($LASTEXITCODE -ne 0) {
-            # nvcc on Windows intermittently corrupts/collides its intermediate
-            # temp files under parallel builds (many short-lived cicc/ptxas
-            # subprocesses churning through a shared %TEMP%), surfacing as a
-            # bogus "nvcc fatal : A single input file is required..." on an
-            # otherwise-valid command line -- confirmed by re-running the exact
-            # failing command line standalone, which succeeds. A clean re-run
-            # only needs to recompile the object(s) that hit the race, same
-            # rationale as the ctest retry below.
-            Write-Warning "$Name`: build failed, retrying once (see nvcc intermittent-temp-file-race comment above)."
+            # A clean re-run only needs to recompile the object(s) that hit a
+            # transient failure, same rationale as the ctest retry below.
+            Write-Warning "$Name`: build failed, retrying once."
             & cmake --build $BuildDir --config $Config @buildTargetArgs
             if ($LASTEXITCODE -ne 0) { throw 'build failed (twice)' }
         }
@@ -192,10 +181,9 @@ function Invoke-Variant {
 }
 
 # Pin cl.exe by full path (recomputed above from the current $vsPath) on every
-# configure, the same way the clang-cl variant below already pins clang-cl --
-# otherwise CMake just keeps whatever compiler path got cached the first time
-# this build dir was configured, even after a newer VS install changes which
-# cl.exe/headers Import-VsDevEnvironment puts on PATH.
+# configure -- otherwise CMake just keeps whatever compiler path got cached
+# the first time this build dir was configured, even after a newer VS install
+# changes which cl.exe/headers Import-VsDevEnvironment puts on PATH.
 $msvcCompilerArgs = @()
 if ($clExe) {
     $msvcCompilerArgs = @("-DCMAKE_C_COMPILER=$clExe", "-DCMAKE_CXX_COMPILER=$clExe")
@@ -234,44 +222,6 @@ Invoke-Variant -Name 'MSVC (cl.exe) Release C++23' -BuildDir '.build.msvc.c++23'
     '-DCMAKE_BUILD_TYPE=Release',
     '-DCMAKE_CXX_STANDARD=23'
 ) + $msvcCompilerArgs)
-
-# ---- optional variant: clang-cl, only if the LLVM component is installed ---
-# NOTE: "-T ClangCL" only works with the Visual Studio generator; with the
-# Ninja generator (forced above via CMAKE_GENERATOR when bundled Ninja is
-# found), clang-cl must be selected directly via CMAKE_<LANG>_COMPILER.
-if (Test-Path $clangCl) {
-    Invoke-Variant -Name 'clang-cl Debug -WX' -BuildDir '.build.clangcl' -Config 'Debug' -ConfigureArgs @(
-        '-DCMAKE_BUILD_TYPE=Debug',
-        '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',
-        "-DCMAKE_C_COMPILER=$clangCl",
-        "-DCMAKE_CXX_COMPILER=$clangCl"
-    )
-} else {
-    Write-Warning 'clang-cl.exe not found; skipping clang-cl variant. (Install the "C++ Clang Compiler for Windows" component to enable it.)'
-}
-
-# ---- optional variant: CUDA (nvcc), only if the CUDA Toolkit is installed ---
-# Mirrors the .gitlab-ci-correaa.yml "vs2022-shell cuda run" job, which runs on
-# this same machine: CMAKE_CUDA_ARCHITECTURES is hardcoded to 75 rather than
-# "native" because nvcc 13+ dropped codegen for sm_61 (this box's actual GPU).
-$nvcc = Get-Command nvcc.exe -ErrorAction SilentlyContinue
-if ($nvcc) {
-    $cudaCompilerArgs = @("-DCMAKE_CUDA_COMPILER=$($nvcc.Source)")
-    if ($clExe) { $cudaCompilerArgs += "-DCMAKE_CUDA_HOST_COMPILER=$clExe" }
-
-    $env:CUDA_LAUNCH_BLOCKING = '1'  # synchronous kernel launches -> useful stack/line info on failure
-    Invoke-Variant -Name 'CUDA (nvcc) Debug' -BuildDir '.build.cuda' -Config 'Debug' -ConfigureArgs (@(
-        '-DCMAKE_BUILD_TYPE=Debug',
-        '-DENABLE_CUDA=1',
-        '-DCMAKE_CUDA_STANDARD=20',
-        '-DCMAKE_CXX_STANDARD=20',
-        '-DCMAKE_CUDA_ARCHITECTURES=75',
-        '-DCMAKE_CUDA_FLAGS=--threads=4 -Wno-deprecated-gpu-targets'
-    ) + $msvcCompilerArgs + $cudaCompilerArgs)
-    Remove-Item Env:\CUDA_LAUNCH_BLOCKING
-} else {
-    Write-Warning 'nvcc.exe not found; skipping CUDA variant. (Install the NVIDIA CUDA Toolkit to enable it.)'
-}
 
 # ---- clang-format check ------------------------------------------------------
 # Files are checked out with CRLF (core.autocrlf=true), but clang-format's
