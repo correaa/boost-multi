@@ -11,12 +11,14 @@
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-#include <algorithm>  // for generate
-#include <cmath>      // for abs  // IWYU pragma: keep
-#include <complex>    // for complex, operator*
-#include <iterator>   // for begin, size
-#include <numeric>    // for inner_product
-#include <random>     // for mt19937, normal_distribution
+
+#include <algorithm>    // for generate
+#include <cmath>        // for abs  // IWYU pragma: keep
+#include <complex>      // for complex, operator*
+#include <iterator>     // for begin, size
+#include <numeric>      // for inner_product
+#include <random>       // for mt19937, normal_distribution
+#include <type_traits>  // for is_same_v
 // IWYU pragma: no_include <memory>
 // IWYU pragma: no_include <utility>                                   // for forward
 // IWYU pragma: no_include <cstdlib>                                   // for abs
