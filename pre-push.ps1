@@ -17,7 +17,10 @@
     nvcc (CUDA Toolkit) is also optional: when found, a 4th variant builds
     with -DENABLE_CUDA=1 using cl.exe as the CUDA host compiler, exercising
     the .cu sources under include/boost/multi/adaptors/cuda/cublas/test.
-    Skipped with a warning when nvcc isn't installed.
+    Skipped with a warning when nvcc isn't installed. To add it (pinned to
+    the version this script is tested against):
+
+      winget install --id Nvidia.CUDA --version 12.9
 
     Usage:
       pwsh -File .\pre-push.ps1                    # build + test everything
@@ -119,7 +122,7 @@ if ($nvccExe) {
     # "'ptxas' is not recognized as an internal or external command".
     $env:PATH = "$(Split-Path $nvccExe);$env:PATH"
 } else {
-    Write-Warning 'nvcc not found (checked PATH, CUDA_PATH, and the default install root); skipping the CUDA variant. Install the CUDA Toolkit to add it: https://developer.nvidia.com/cuda-downloads'
+    Write-Warning 'nvcc not found (checked PATH, CUDA_PATH, and the default install root); skipping the CUDA variant. Install it with: winget install --id Nvidia.CUDA --version 12.9'
 }
 
 if (Test-Path $ninja) {
@@ -277,6 +280,12 @@ if ($nvccExe) {
     if ($clExe) { $cudaHostCompilerArgs = @("-DCMAKE_CUDA_HOST_COMPILER=$clExe") }
     Invoke-Variant -Name 'MSVC (cl.exe) + nvcc CUDA' -BuildDir '.build.msvc.cuda' -Config 'Release' -ConfigureArgs (@(
         '-DCMAKE_BUILD_TYPE=Release',
+        # Explicit OFF (not just "unset"): this variant reuses .build.msvc.cuda
+        # across runs, and CMake cache BOOLs persist across reconfigures, so a
+        # stale ON from an earlier ad-hoc configure would otherwise silently
+        # turn unrelated pre-existing warnings (e.g. system CUDA headers) into
+        # hard failures here, unlike variant 1 which sets this ON on purpose.
+        '-DCMAKE_COMPILE_WARNING_AS_ERROR=OFF',
         '-DENABLE_CUDA=1',
         "-DCMAKE_CUDA_COMPILER=$nvccExe",
         '-DCMAKE_CUDA_ARCHITECTURES=native',
