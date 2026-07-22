@@ -54,6 +54,13 @@ else()
 
         add_executable(omp.cpp.x omp.cpp)
 
+        if(MSVC)
+        target_compile_options(omp.cpp.x PRIVATE
+            /external:I "${cccl-cmake_SOURCE_DIR}/libcudacxx/include"
+            /external:I "${cccl-cmake_SOURCE_DIR}/cub"
+            /external:W0)
+        endif()
+
         target_include_directories(omp.cpp.x SYSTEM PUBLIC ${_THRUST_INCLUDE_DIR})  # needs this to include thrust as an -isystem header
         target_link_libraries(omp.cpp.x PRIVATE ThrustOMP)  # SYSTEM has no effect here
         target_link_libraries(omp.cpp.x PRIVATE multi Boost::boost)
