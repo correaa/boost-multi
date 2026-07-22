@@ -14,6 +14,11 @@
 
       winget install ccache   # or: scoop install ccache / choco install ccache
 
+    nvcc (CUDA Toolkit) is also optional: when found, a 4th variant builds
+    with -DENABLE_CUDA=1 using cl.exe as the CUDA host compiler, exercising
+    the .cu sources under include/boost/multi/adaptors/cuda/cublas/test.
+    Skipped with a warning when nvcc isn't installed.
+
     Usage:
       pwsh -File .\pre-push.ps1                    # build + test everything
       pwsh -File .\pre-push.ps1 multi_array_ref     # limit to one target/ctest filter
@@ -42,6 +47,29 @@ function Find-VsInstallation {
         -property installationPath
     if (-not $installPath) { return $null }
     return $installPath.Trim()
+}
+
+function Find-CudaCompiler {
+    $nvcc = Get-Command nvcc.exe -ErrorAction SilentlyContinue
+    if ($nvcc) { return $nvcc.Source }
+    if ($env:CUDA_PATH) {
+        $candidate = Join-Path $env:CUDA_PATH 'bin\nvcc.exe'
+        if (Test-Path $candidate) { return $candidate }
+    }
+    # Fall back to scanning the default install root directly (picking the
+    # newest version by directory name) in case nvcc isn't on PATH and
+    # CUDA_PATH wasn't set for this process (e.g. installed after this shell
+    # started).
+    $cudaRoot = Join-Path ${env:ProgramFiles} 'NVIDIA GPU Computing Toolkit\CUDA'
+    if (Test-Path $cudaRoot) {
+        $latest = Get-ChildItem $cudaRoot -Directory -Filter 'v*' -ErrorAction SilentlyContinue |
+            Sort-Object Name -Descending | Select-Object -First 1
+        if ($latest) {
+            $candidate = Join-Path $latest.FullName 'bin\nvcc.exe'
+            if (Test-Path $candidate) { return $candidate }
+        }
+    }
+    return $null
 }
 
 function Import-VsDevEnvironment([string]$VsPath) {
@@ -81,6 +109,18 @@ $clangFormat = Join-Path $vsPath 'VC\Tools\Llvm\x64\bin\clang-format.exe'
 # fresh every run, above) point at the *new* install's MSVC STL headers --
 # silent version-mismatch UB at best, a hard STL1000 static_assert at worst.
 $clExe = (Get-Command cl.exe -ErrorAction SilentlyContinue).Source
+
+$nvccExe = Find-CudaCompiler
+if ($nvccExe) {
+    Write-Host "nvcc detected at $nvccExe"
+    # nvcc locates its sibling tools (ptxas.exe, cudafe++.exe, fatbinary.exe,
+    # ...) via PATH rather than relative to its own full path, so pinning
+    # $nvccExe alone isn't enough -- without this, the build fails with
+    # "'ptxas' is not recognized as an internal or external command".
+    $env:PATH = "$(Split-Path $nvccExe);$env:PATH"
+} else {
+    Write-Warning 'nvcc not found (checked PATH, CUDA_PATH, and the default install root); skipping the CUDA variant. Install the CUDA Toolkit to add it: https://developer.nvidia.com/cuda-downloads'
+}
 
 if (Test-Path $ninja) {
     $env:PATH = "$(Split-Path $ninja);$env:PATH"
@@ -222,6 +262,27 @@ Invoke-Variant -Name 'MSVC (cl.exe) Release C++23' -BuildDir '.build.msvc.c++23'
     '-DCMAKE_BUILD_TYPE=Release',
     '-DCMAKE_CXX_STANDARD=23'
 ) + $msvcCompilerArgs)
+
+# ---- variant 4: MSVC + nvcc CUDA --------------------------------------------
+# Host compiler is cl.exe (via $msvcCompilerArgs and -DCMAKE_CUDA_HOST_COMPILER
+# below), mirroring the Linux script's nvcc variants (pre-push:68) which use
+# g++ as host compiler there. Skipped entirely when nvcc isn't installed.
+# The cublas test subdirectory (include/boost/multi/adaptors/cuda/cublas/test)
+# also requires a host BLAS (e.g. `vcpkg install openblas`); if that isn't
+# found, its CMakeLists.txt warns and returns without adding any CUDA test
+# executables, so this variant would compile but run no tests -- the same
+# "no tests found" note the Boost-less variants above already surface.
+if ($nvccExe) {
+    $cudaHostCompilerArgs = @()
+    if ($clExe) { $cudaHostCompilerArgs = @("-DCMAKE_CUDA_HOST_COMPILER=$clExe") }
+    Invoke-Variant -Name 'MSVC (cl.exe) + nvcc CUDA' -BuildDir '.build.msvc.cuda' -Config 'Release' -ConfigureArgs (@(
+        '-DCMAKE_BUILD_TYPE=Release',
+        '-DENABLE_CUDA=1',
+        "-DCMAKE_CUDA_COMPILER=$nvccExe",
+        '-DCMAKE_CUDA_ARCHITECTURES=native',
+        '-DCMAKE_CUDA_FLAGS=--extended-lambda'
+    ) + $msvcCompilerArgs + $cudaHostCompilerArgs)
+}
 
 # ---- clang-format check ------------------------------------------------------
 # Files are checked out with CRLF (core.autocrlf=true), but clang-format's
