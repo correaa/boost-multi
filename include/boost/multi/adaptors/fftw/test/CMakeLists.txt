@@ -173,6 +173,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 						-Xcompiler=/wd5027
 						-Xcompiler=/wd5045
 						-Xcompiler=/wd4464
+						-Xcompiler=/wd4619  # #pragma warning: there is no warning number 'N' (from CUDA Toolkit's own cuda/std/cstddef)
+						-Xcompiler=/wd5031  # #pragma warning(pop): likely mismatch, popping warning state pushed in different file (from CUDA Toolkit's cuda_fp16.hpp/cuda_bf16.hpp)
+						-Xcompiler=/wd4365  # signed/unsigned mismatch (from CUDA Toolkit's own cuda_fp8.hpp)
 					>
 				>
 		)
