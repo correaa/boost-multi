@@ -22,17 +22,20 @@
 namespace multi = boost::multi;
 
 namespace {
-// minimal RAII wall-clock timer (replaces boost::timer::auto_cpu_timer)
 class auto_timer {
-	std::string                           label_;
+	std::string label_;
+
 	std::chrono::steady_clock::time_point start_ = std::chrono::steady_clock::now();
 
  public:
 	explicit auto_timer(std::string label = {}) : label_{std::move(label)} {}
+
 	auto_timer(auto_timer const&)                    = delete;
 	auto_timer(auto_timer&&)                         = delete;
+
 	auto operator=(auto_timer const&) -> auto_timer& = delete;
 	auto operator=(auto_timer&&) -> auto_timer&      = delete;
+
 	~auto_timer() {
 		std::cerr << label_ << std::chrono::duration<double>(std::chrono::steady_clock::now() - start_).count() << " s (wall)\n";
 	}

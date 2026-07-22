@@ -153,6 +153,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 						/wd5027  # move assignment operator was implicitly defined as deleted
 						/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 						# /wd5246  # '_Elems': the initialization of a subobject should be wrapped in braces
+						/wd4464  # relative include path contains '..' (triggered by CUDA Toolkit's own cooperative_groups headers)
 					>
 					$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 						-Xcompiler=/GS
@@ -171,6 +172,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 						-Xcompiler=/wd5026
 						-Xcompiler=/wd5027
 						-Xcompiler=/wd5045
+						-Xcompiler=/wd4464
 					>
 				>
 		)
