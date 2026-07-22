@@ -1151,34 +1151,37 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// multi_adaptors_blas_gemm_complex_1x3_3x1
 	{
 		using complex = std::complex<double>;
-		complex const                  I{0, 1};
-		multi::array<complex, 2> const a = {
-			{1. + 2. * I, 9. - 1. * I, 1. + 1. * I},
+		complex const I{0, 1};  // NOLINT(readability-identifier-length) BLAS name
+
+		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS name
+			{1.0 + 2.0 * I, 9.0 - 1.0 * I, 1.0 + 1.0 * I},
 		};
-		multi::array<complex, 2> const b = {
-			{11. - 2. * I},
-			{7. - 3. * I},
-			{8. - 1. * I}
+		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS name
+			{11.0 - 2.0 * I},
+			{7.0 - 3.0 * I},
+			{8.0 - 1.0 * I}
 		};
 		{
-			multi::array<complex, 2> c({1, 1});
+			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS name
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     ar = +~a;
+			auto ar = +~a;
 			blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=ba
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});
-			auto                     ar = +~a;
+
+			auto ar = +~a;
+
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));  // c=ab, c⸆=ba
 			BOOST_TEST( c[0][0] == 84.-7.*I );
 		}
@@ -2031,7 +2034,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// blas_gemm_inq_case  // https://gitlab.com/correaa/boost-multi/-/issues/97
 	{
 		using complex = std::complex<double>;
-		complex const I{0, 1};
+		complex const I{0, 1};  // NOLINT(readability-identifier-length) BLAS name
 
 		multi::array<complex, 2> mat({10, 2}, 1.0 + 3. * I);
 		multi::array<complex, 2> vec({10, 1}, -2.0 + 4. * I);
