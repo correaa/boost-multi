@@ -9,12 +9,14 @@
 
     Detected on this machine: cl.exe (MSVC) + bundled Ninja + bundled
     clang-format/clang-tidy, via "Visual Studio Build Tools 2022".
-    clang-cl.exe and ccache were NOT found; the script skips those steps
-    with a warning instead of failing. To add them later:
+    clang-cl.exe, ccache, and nvcc.exe (CUDA Toolkit) are optional; the script
+    skips the corresponding variant with a warning instead of failing when one
+    is missing. To add them later:
 
       winget install Microsoft.VisualStudio.2022.BuildTools --override `
         "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Llvm.Clang"
       winget install ccache   # or: scoop install ccache / choco install ccache
+      winget install Nvidia.CUDA   # CUDA Toolkit (nvcc); needs a matching driver + supported GPU
 
     Usage:
       pwsh -File .\pre-push.ps1                    # build + test everything
@@ -159,7 +161,19 @@ function Invoke-Variant {
         if ($LASTEXITCODE -ne 0) { throw 'configure failed' }
 
         & cmake --build $BuildDir --config $Config @buildTargetArgs
-        if ($LASTEXITCODE -ne 0) { throw 'build failed' }
+        if ($LASTEXITCODE -ne 0) {
+            # nvcc on Windows intermittently corrupts/collides its intermediate
+            # temp files under parallel builds (many short-lived cicc/ptxas
+            # subprocesses churning through a shared %TEMP%), surfacing as a
+            # bogus "nvcc fatal : A single input file is required..." on an
+            # otherwise-valid command line -- confirmed by re-running the exact
+            # failing command line standalone, which succeeds. A clean re-run
+            # only needs to recompile the object(s) that hit the race, same
+            # rationale as the ctest retry below.
+            Write-Warning "$Name`: build failed, retrying once (see nvcc intermittent-temp-file-race comment above)."
+            & cmake --build $BuildDir --config $Config @buildTargetArgs
+            if ($LASTEXITCODE -ne 0) { throw 'build failed (twice)' }
+        }
 
         $ctestOutput = & ctest --test-dir $BuildDir -C $Config @ctestFilterArgs 2>&1
         $ctestOutput | ForEach-Object { Write-Host $_ }
@@ -198,9 +212,14 @@ Invoke-Variant -Name 'MSVC (cl.exe) Debug -WX' -BuildDir '.build.msvc' -Config '
 # ---- variant 2: MSVC + AddressSanitizer -------------------------------------
 # RelWithDebInfo (not Debug) because CMake's default Debug flags add /RTC1,
 # which MSVC refuses to combine with /fsanitize=address.
+# /Zi is passed explicitly (not left to CMAKE_CXX_FLAGS_RELWITHDEBINFO's
+# default) because that cache variable is only ever populated once, the first
+# time a build dir is configured; if it was ever left/ended up empty in an
+# existing .build.msvc.asan dir, ASan builds without debug info -- which MSVC
+# flags as warning C5072, fatal here under -WX.
 Invoke-Variant -Name 'MSVC (cl.exe) AddressSanitizer' -BuildDir '.build.msvc.asan' -Config 'RelWithDebInfo' -ConfigureArgs (@(
     '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
-    '-DCMAKE_CXX_FLAGS=/fsanitize=address'
+    '-DCMAKE_CXX_FLAGS=/fsanitize=address /Zi'
 ) + $msvcCompilerArgs)
 
 # ---- variant 3: MSVC release, C++23 ------------------------------------------
@@ -229,6 +248,29 @@ if (Test-Path $clangCl) {
     )
 } else {
     Write-Warning 'clang-cl.exe not found; skipping clang-cl variant. (Install the "C++ Clang Compiler for Windows" component to enable it.)'
+}
+
+# ---- optional variant: CUDA (nvcc), only if the CUDA Toolkit is installed ---
+# Mirrors the .gitlab-ci-correaa.yml "vs2022-shell cuda run" job, which runs on
+# this same machine: CMAKE_CUDA_ARCHITECTURES is hardcoded to 75 rather than
+# "native" because nvcc 13+ dropped codegen for sm_61 (this box's actual GPU).
+$nvcc = Get-Command nvcc.exe -ErrorAction SilentlyContinue
+if ($nvcc) {
+    $cudaCompilerArgs = @("-DCMAKE_CUDA_COMPILER=$($nvcc.Source)")
+    if ($clExe) { $cudaCompilerArgs += "-DCMAKE_CUDA_HOST_COMPILER=$clExe" }
+
+    $env:CUDA_LAUNCH_BLOCKING = '1'  # synchronous kernel launches -> useful stack/line info on failure
+    Invoke-Variant -Name 'CUDA (nvcc) Debug' -BuildDir '.build.cuda' -Config 'Debug' -ConfigureArgs (@(
+        '-DCMAKE_BUILD_TYPE=Debug',
+        '-DENABLE_CUDA=1',
+        '-DCMAKE_CUDA_STANDARD=20',
+        '-DCMAKE_CXX_STANDARD=20',
+        '-DCMAKE_CUDA_ARCHITECTURES=75',
+        '-DCMAKE_CUDA_FLAGS=--threads=4 -Wno-deprecated-gpu-targets'
+    ) + $msvcCompilerArgs + $cudaCompilerArgs)
+    Remove-Item Env:\CUDA_LAUNCH_BLOCKING
+} else {
+    Write-Warning 'nvcc.exe not found; skipping CUDA variant. (Install the NVIDIA CUDA Toolkit to enable it.)'
 }
 
 # ---- clang-format check ------------------------------------------------------
