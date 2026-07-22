@@ -152,12 +152,12 @@ function Invoke-Variant {
         # CMakeCache.txt entries (e.g. a compiler path from a VS install that's
         # since been superseded) silently un-synced with the freshly re-imported
         # environment above, see $clExe comment.
-        # --no-warn-unused-cli: on a reconfigure of an *existing* cache,
+        # -Wno-unused-cli: on a reconfigure of an *existing* cache,
         # CMAKE_TOOLCHAIN_FILE is legitimately re-derived from the cache rather
         # than re-consumed (it only matters before the first project()), so
         # CMake would otherwise flag our always-passed -DCMAKE_TOOLCHAIN_FILE
-        # as "unused" every run.
-        & cmake --no-warn-unused-cli -S . -B $BuildDir @ConfigureArgs @vcpkgToolchainArgs
+        # as "unused" every run. (--no-warn-unused-cli is the deprecated spelling.)
+        & cmake -Wno-unused-cli -S . -B $BuildDir @ConfigureArgs @vcpkgToolchainArgs
         if ($LASTEXITCODE -ne 0) { throw 'configure failed' }
 
         & cmake --build $BuildDir --config $Config @buildTargetArgs
