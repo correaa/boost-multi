@@ -280,7 +280,7 @@ if ($nvccExe) {
         '-DENABLE_CUDA=1',
         "-DCMAKE_CUDA_COMPILER=$nvccExe",
         '-DCMAKE_CUDA_ARCHITECTURES=native',
-        '-DCMAKE_CUDA_FLAGS=--extended-lambda'
+        '-DCMAKE_CUDA_FLAGS=--extended-lambda -Wno-deprecated-gpu-targets'
     ) + $msvcCompilerArgs + $cudaHostCompilerArgs)
 }
 
