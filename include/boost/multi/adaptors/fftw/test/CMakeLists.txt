@@ -154,6 +154,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 						/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 						# /wd5246  # '_Elems': the initialization of a subobject should be wrapped in braces
 						/wd4464  # relative include path contains '..' (triggered by CUDA Toolkit's own cooperative_groups headers)
+						/wd5039  # pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc (from Windows SDK's winbase.h)
 					>
 					$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 						-Xcompiler=/GS
@@ -175,12 +176,15 @@ foreach(TEST_FILE ${TEST_SRCS})
 						-Xcompiler=/wd4464
 						-Xcompiler=/wd4619  # #pragma warning: there is no warning number 'N' (from CUDA Toolkit's own cuda/std/cstddef)
 						-Xcompiler=/wd5031  # #pragma warning(pop): likely mismatch, popping warning state pushed in different file (from CUDA Toolkit's cuda_fp16.hpp/cuda_bf16.hpp)
+						-Xcompiler=/wd5032  # #pragma warning(push) with no corresponding #pragma warning(pop) (nvcc host-code splitting desyncs cl.exe's pragma stack across boost/multi/array_ref.hpp)
 						-Xcompiler=/wd4365  # signed/unsigned mismatch (from CUDA Toolkit's own cuda_fp8.hpp)
 						-Xcompiler=/wd4061  # enumerator in switch of enum is not explicitly handled by a case label (from CUDA Toolkit's own cuda/std/__cuda/ensure_current_device.h switching over cudaError)
 						-Xcompiler=/wd5220  # non-static data member with a volatile qualified type no longer implies (from CUDA Toolkit's own nvtx3/nvtxDetail/nvtxImpl.h)
 						-Xcompiler=/wd4296  # '<': expression is always false (from CUDA Toolkit's own cuda/std/__type_traits/is_signed.h)
 						-Xcompiler=/wd5246  # the initialization of a subobject should be wrapped in braces (from CUDA Toolkit's own cuda/std/__exception/cuda_error.h)
 						-Xcompiler=/wd4555  # result of expression not used (from Windows SDK's winnt.h)
+						-Xcompiler=/wd4191  # unsafe conversion from 'FARPROC' to function pointer type (from CUDA Toolkit's own nvtx3/nvtxDetail/nvtxInit.h)
+						-Xcompiler=/wd5039  # pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc (from Windows SDK's winbase.h)
 					>
 				>
 		)

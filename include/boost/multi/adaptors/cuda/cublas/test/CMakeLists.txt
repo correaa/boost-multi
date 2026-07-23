@@ -143,6 +143,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 					/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
 					/wd5031  # likely mismatch, popping warning state pushed in different file
+					/wd5032  # detected #pragma warning(push) with no corresponding #pragma warning(pop)
 				>
 				$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 					-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4
