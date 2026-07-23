@@ -1709,6 +1709,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
 
  public:
+ 	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
 	constexpr auto reversed() const& { return reversed_aux_().as_const(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
@@ -1733,6 +1734,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a view of the array where the indices are rotated (to the left) (e.g. `a.rotated()[i][j][k] == a[j][k][i]`)
 	BOOST_MULTI_HD constexpr auto rotated() const& -> const_subarray { return rotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
 
@@ -1986,6 +1988,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
+	/// yields a view of the array containing a specific member of original element type
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const>,
 		class Element = typename const_subarray::element,

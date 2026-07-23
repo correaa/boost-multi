@@ -37,15 +37,14 @@ constexpr bool multi::force_element_trivial_default_construction<thrust::complex
 
 template<class T>
 inline
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 __forceinline
 #else
 __attribute__((always_inline))
 #endif
 void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
-#ifdef _MSC_VER
-	_ReadWriteBarrier();
-	(void)value;
+#if defined(_MSC_VER) && !defined(__clang__)
+	_ReadWriteBarrier(); (void)value;
 #else
 	asm volatile("" : "+m"(const_cast<T&>(value)));  // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
 #endif

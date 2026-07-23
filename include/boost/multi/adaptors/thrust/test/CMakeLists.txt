@@ -91,6 +91,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Xcompiler=/wd4464
 				-Xcompiler=/wd4664
 				-Xcompiler=/wd4668
+				-Xcompiler=/wd4296  # '<': expression is always false (from CUDA Toolkit's own cuda/std/__type_traits/is_signed.h)
 			>
 		>
 	>

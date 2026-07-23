@@ -49,6 +49,7 @@ else()
 	message(WARNING
 		"BLAS not found, BLAS-adaptor tests will not be compiled and run. If you want this feature install BLAS, for example please run:"
 		"\n    sudo apt install libblas-dev # in Ubuntu"
-		"\n    sudo dnf install blas-devel  # in Fedora")
+		"\n    sudo dnf install blas-devel  # in Fedora"
+		"\n    vcpkg install openblas  # on Windows, then configure CMake with -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake")
 	message(WARNING "BLA_VENDOR was set to ${BLA_VENDOR}\n")
 endif()

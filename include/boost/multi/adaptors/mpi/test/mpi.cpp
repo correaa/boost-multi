@@ -113,7 +113,7 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 			// auto const& B_msg = multi::mpi::message(BB);
 			// MPI_Send(B_msg.buffer(), B_msg.count(), B_msg.datatype(), 1, 0, comm);
 
-			auto const& B_msg = multi::mpi::message(BB);
+			// auto const& B_msg = multi::mpi::message(BB);
 			// MPI_Send(B_msg.buffer(), 3, B_msg.datatype(), 1, 0, comm);
 
 			// auto const& B_it = multi::mpi::iterator(BB.begin());
