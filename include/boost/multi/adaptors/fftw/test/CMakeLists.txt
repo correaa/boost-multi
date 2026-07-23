@@ -178,6 +178,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 						-Xcompiler=/wd4365  # signed/unsigned mismatch (from CUDA Toolkit's own cuda_fp8.hpp)
 						-Xcompiler=/wd4061  # enumerator in switch of enum is not explicitly handled by a case label (from CUDA Toolkit's own cuda/std/__cuda/ensure_current_device.h switching over cudaError)
 						-Xcompiler=/wd5220  # non-static data member with a volatile qualified type no longer implies (from CUDA Toolkit's own nvtx3/nvtxDetail/nvtxImpl.h)
+						-Xcompiler=/wd4296  # '<': expression is always false (from CUDA Toolkit's own cuda/std/__type_traits/is_signed.h)
 					>
 				>
 		)
