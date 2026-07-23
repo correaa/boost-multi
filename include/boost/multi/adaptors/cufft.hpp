@@ -174,9 +174,9 @@ class plan {
 		std::array<int, D> ostrides{};
 		std::array<int, D> ion{};
 
-		auto const istrides_end = std::transform(dims.begin(), dims_end, istrides.begin(), [](auto elem) { return elem.is; });
-		auto const ostrides_end = std::transform(dims.begin(), dims_end, ostrides.begin(), [](auto elem) { return elem.os; });
-		auto const ion_end      = std::transform(dims.begin(), dims_end, ion.begin(), [](auto elem) { return elem.n; });
+		auto const istrides_end = std::transform(dims.begin(), dims_end, istrides.begin(), [](auto elem) { return static_cast<int>(elem.is); });
+		auto const ostrides_end = std::transform(dims.begin(), dims_end, ostrides.begin(), [](auto elem) { return static_cast<int>(elem.os); });
+		auto const ion_end      = std::transform(dims.begin(), dims_end, ion.begin(), [](auto elem) { return static_cast<int>(elem.n); });
 
 		int  istride = *(istrides_end - 1);
 		auto inembed = istrides;
