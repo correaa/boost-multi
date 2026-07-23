@@ -26,36 +26,36 @@
 namespace boost::multi::cufft {
 
 // cuFFT API errors
-static auto cuda_get_error_enum(cufftResult error) -> char const* {
-	switch(error) {
-	case CUFFT_SUCCESS: return "CUFFT_SUCCESS";
+// static auto cuda_get_error_enum(cufftResult error) -> char const* {
+// 	switch(error) {
+// 	case CUFFT_SUCCESS: return "CUFFT_SUCCESS";
 
-	case CUFFT_ALLOC_FAILED: return "CUFFT_ALLOC_FAILED";
-	case CUFFT_EXEC_FAILED: return "CUFFT_EXEC_FAILED";
-#ifdef CUFFT_INCOMPLETE_PARAMETER_LIST
-	case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
-#endif
-	case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
-	case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
-	case CUFFT_INVALID_PLAN: return "CUFFT_INVALID_PLAN";
-	case CUFFT_INVALID_SIZE: return "CUFFT_INVALID_SIZE";
-	case CUFFT_INVALID_TYPE: return "CUFFT_INVALID_TYPE";
-	case CUFFT_INVALID_VALUE: return "CUFFT_INVALID_VALUE";
-	case CUFFT_NO_WORKSPACE: return "CUFFT_NO_WORKSPACE";
-	case CUFFT_NOT_IMPLEMENTED: return "CUFFT_NOT_IMPLEMENTED";
-	case CUFFT_NOT_SUPPORTED: return "CUFFT_NOT_SUPPORTED";
-	// #if !defined(__HIP_PLATFORM_NVIDIA__)
-	// case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
-	// #endif
-	case CUFFT_SETUP_FAILED: return "CUFFT_SETUP_FAILED";
-	case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
-	// #if !defined(__HIP_PLATFORM_NVIDIA__)
-	// case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
-	// #endif
-	default: assert(0);
-	}
-	return "<unknown>";
-}
+// 	case CUFFT_ALLOC_FAILED: return "CUFFT_ALLOC_FAILED";
+// 	case CUFFT_EXEC_FAILED: return "CUFFT_EXEC_FAILED";
+// #ifdef CUFFT_INCOMPLETE_PARAMETER_LIST
+// 	case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+// #endif
+// 	case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
+// 	case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
+// 	case CUFFT_INVALID_PLAN: return "CUFFT_INVALID_PLAN";
+// 	case CUFFT_INVALID_SIZE: return "CUFFT_INVALID_SIZE";
+// 	case CUFFT_INVALID_TYPE: return "CUFFT_INVALID_TYPE";
+// 	case CUFFT_INVALID_VALUE: return "CUFFT_INVALID_VALUE";
+// 	case CUFFT_NO_WORKSPACE: return "CUFFT_NO_WORKSPACE";
+// 	case CUFFT_NOT_IMPLEMENTED: return "CUFFT_NOT_IMPLEMENTED";
+// 	case CUFFT_NOT_SUPPORTED: return "CUFFT_NOT_SUPPORTED";
+// 	// #if !defined(__HIP_PLATFORM_NVIDIA__)
+// 	// case CUFFT_PARSE_ERROR:    return "CUFFT_PARSE_ERROR";
+// 	// #endif
+// 	case CUFFT_SETUP_FAILED: return "CUFFT_SETUP_FAILED";
+// 	case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
+// 	// #if !defined(__HIP_PLATFORM_NVIDIA__)
+// 	// case CUFFT_LICENSE_ERROR:  return "CUFFT_LICENSE_ERROR";
+// 	// #endif
+// 	default: assert(0);
+// 	}
+// 	return "<unknown>";
+// }
 
 #define cufftSafeCall(err) implcufftSafeCall(err, __FILE__, __LINE__)
 inline void implcufftSafeCall(cufftResult err, const char* /*file*/, const int /*line*/) {
