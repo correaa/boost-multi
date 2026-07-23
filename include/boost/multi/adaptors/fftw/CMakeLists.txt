@@ -29,7 +29,8 @@ if(PKG_CONFIG_FOUND)
 else()
 	message(WARNING "Cannot find PkgConfig and/or FFTW, FFTW-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
 					"\n    sudo apt install pkg-config libfftw3-dev"
-					"\n    sudo dnf install fftw-devel  # in Fedora")
+					"\n    sudo dnf install fftw-devel  # in Fedora"
+					"\n    vcpkg install pkgconf fftw3  # on Windows, then configure CMake with -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake")
 
 	find_package(FFTW3 COMPONENTS fftw3)  # or find_package(FFTW3 COMPONENTS fftw3f fftw3) for specific components
 
