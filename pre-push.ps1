@@ -280,12 +280,15 @@ if ($nvccExe) {
     if ($clExe) { $cudaHostCompilerArgs = @("-DCMAKE_CUDA_HOST_COMPILER=$clExe") }
     Invoke-Variant -Name 'MSVC (cl.exe) + nvcc CUDA' -BuildDir '.build.msvc.cuda' -Config 'Release' -ConfigureArgs (@(
         '-DCMAKE_BUILD_TYPE=Release',
-        # Explicit OFF (not just "unset"): this variant reuses .build.msvc.cuda
-        # across runs, and CMake cache BOOLs persist across reconfigures, so a
-        # stale ON from an earlier ad-hoc configure would otherwise silently
-        # turn unrelated pre-existing warnings (e.g. system CUDA headers) into
-        # hard failures here, unlike variant 1 which sets this ON on purpose.
-        '-DCMAKE_COMPILE_WARNING_AS_ERROR=OFF',
+        # Explicit ON (not just "unset"): this variant reuses .build.msvc.cuda
+        # across runs, and CMake cache BOOLs persist across reconfigures, so
+        # this pins the setting regardless of what an earlier ad-hoc configure
+        # left cached, matching variant 1's intent of catching real warnings.
+        # Requires every CUDA-Toolkit/Windows-SDK header warning under /Wall
+        # to be suppressed per-directory (see the -Xcompiler=/wdNNNN lists in
+        # fftw/test, thrust/test, cublas/test, etc.) so only warnings from our
+        # own code turn into build failures here.
+        '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',
         '-DENABLE_CUDA=1',
         "-DCMAKE_CUDA_COMPILER=$nvccExe",
         '-DCMAKE_CUDA_ARCHITECTURES=native',
