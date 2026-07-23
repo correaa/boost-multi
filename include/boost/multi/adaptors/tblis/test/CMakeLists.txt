@@ -11,7 +11,7 @@ project(
 option(ENABLE_TBLIS "Enable TBLIS tests" OFF)
 
 if(NOT ENABLE_TBLIS)
-	message(WARNING "TBLIS disabled, will not be tested")
+	# message(WARNING "TBLIS disabled, will not be tested")
 	return()
 else()
 	message(WARNING "TBLIS enabled, will be installed and tested")
