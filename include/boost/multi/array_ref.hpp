@@ -238,6 +238,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::strides_type;
 
+	/// returns the layout internal strides of an array as a tuple
 	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress [functionStatic,duplInheritedMember];
 		return layout_type::strides();
 	}
