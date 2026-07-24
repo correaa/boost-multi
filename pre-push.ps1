@@ -4,11 +4,10 @@
     Builds and tests the project with whatever compiler toolchains are actually
     installed on this machine, mirroring the spirit of the Linux/macOS script's
     multi-compiler matrix (several build dirs, warnings-as-errors, a sanitizer
-    build, a static-analysis build, a formatting check) using the MSVC/LLVM
-    tools that ship with Visual Studio.
+    build) using the MSVC/LLVM tools that ship with Visual Studio.
 
-    Detected on this machine: cl.exe (MSVC) + bundled Ninja + bundled
-    clang-format/clang-tidy, via "Visual Studio Build Tools 2022".
+    Detected on this machine: cl.exe (MSVC) + bundled Ninja, via
+    "Visual Studio Build Tools 2022".
     ccache is optional; the script skips using it as a compiler launcher with
     a warning instead of failing when it is missing. To add it later:
 
@@ -100,8 +99,7 @@ if (-not $vsPath) {
 Write-Section "Using Visual Studio at $vsPath"
 Import-VsDevEnvironment $vsPath
 
-$ninja       = Join-Path $vsPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe'
-$clangFormat = Join-Path $vsPath 'VC\Tools\Llvm\x64\bin\clang-format.exe'
+$ninja = Join-Path $vsPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe'
 
 # Full path to the cl.exe that Import-VsDevEnvironment just put on PATH (from
 # *this* $vsPath), so it can be pinned explicitly below instead of leaving
@@ -250,19 +248,14 @@ Invoke-Variant -Name 'MSVC (cl.exe) Debug -WX' -BuildDir '.build.msvc' -Config '
 # flags as warning C5072, fatal here under -WX.
 Invoke-Variant -Name 'MSVC (cl.exe) AddressSanitizer' -BuildDir '.build.msvc.asan' -Config 'RelWithDebInfo' -ConfigureArgs (@(
     '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+    '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',
     '-DCMAKE_CXX_FLAGS=/fsanitize=address /Zi'
 ) + $msvcCompilerArgs)
 
 # ---- variant 3: MSVC release, C++23 ------------------------------------------
-# NOTE: clang-tidy static analysis was tried here but disabled again: the
-# bundled clang-tidy (19.1.5, same version-drift problem as clang-format
-# above) misdiagnoses "cannot use throw/try with exceptions disabled" even
-# though /EHsc is passed -- a known clang-tidy/cl.exe driver-mode rough edge
-# -- on top of extra misc-include-cleaner complaints not seen on the repo's
-# pinned Linux toolchain. Re-enable via CMAKE_CXX_CLANG_TIDY once a matching
-# clang-tidy version is confirmed available.
 Invoke-Variant -Name 'MSVC (cl.exe) Release C++23' -BuildDir '.build.msvc.c++23' -Config 'Release' -ConfigureArgs (@(
     '-DCMAKE_BUILD_TYPE=Release',
+    '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',
     '-DCMAKE_CXX_STANDARD=23'
 ) + $msvcCompilerArgs)
 
@@ -294,76 +287,6 @@ if ($nvccExe) {
         '-DCMAKE_CUDA_ARCHITECTURES=native',
         '-DCMAKE_CUDA_FLAGS=--extended-lambda -Wno-deprecated-gpu-targets'
     ) + $msvcCompilerArgs + $cudaHostCompilerArgs)
-}
-
-# ---- clang-format check ------------------------------------------------------
-# Files are checked out with CRLF (core.autocrlf=true), but clang-format's
-# style rules are LF-based, so a naive comparison flags every line ending in
-# every file as a "diff". Normalize both sides to LF before comparing.
-function Test-ClangFormatFile {
-    param(
-        [string]$Path,
-        [string]$ClangFormatExe,
-        [string]$StyleFile
-    )
-    $originalLF = (Get-Content -Raw -LiteralPath $Path) -replace "`r`n", "`n"
-
-    $psi = [System.Diagnostics.ProcessStartInfo]::new()
-    $psi.FileName = $ClangFormatExe
-    $psi.ArgumentList.Add("--style=file:$StyleFile")
-    $psi.ArgumentList.Add("--assume-filename=$Path")
-    $psi.RedirectStandardInput = $true
-    $psi.RedirectStandardOutput = $true
-    $psi.StandardInputEncoding = [System.Text.Encoding]::UTF8
-    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
-    $psi.UseShellExecute = $false
-
-    $proc = [System.Diagnostics.Process]::Start($psi)
-    $proc.StandardInput.Write($originalLF)
-    $proc.StandardInput.Close()
-    $formattedLF = $proc.StandardOutput.ReadToEnd() -replace "`r`n", "`n"
-    $proc.WaitForExit()
-
-    return $formattedLF -eq $originalLF
-}
-
-Write-Section 'clang-format check'
-# The repo's committed style baseline is produced by clang-format-21 (see the
-# Linux pre-push script, which specifically requires clang-format-21 and
-# otherwise skips the check). Different clang-format versions disagree on
-# edge cases (e.g. "double (&)[2]" vs "double(&)[2]"), so running any other
-# version here would flag near every file as misformatted even though it
-# isn't. Mirror the Linux script: only enforce the check on a matching
-# major version; otherwise skip with a warning instead of failing.
-$requiredClangFormatMajor = 21
-$clangFormatVersionOk = $false
-if (Test-Path $clangFormat) {
-    $versionOutput = & $clangFormat --version
-    if ($versionOutput -match 'version (\d+)') {
-        $foundMajor = [int]$Matches[1]
-        $clangFormatVersionOk = ($foundMajor -eq $requiredClangFormatMajor)
-        if (-not $clangFormatVersionOk) {
-            Write-Warning "clang-format-$requiredClangFormatMajor not installed (found version $foundMajor at $clangFormat); skipping formatting check to avoid false positives from version drift."
-        }
-    }
-}
-if ($clangFormatVersionOk) {
-    $styleFile = Join-Path $repoRoot '.clang-format'
-    $files = Get-ChildItem -Path 'include', 'test' -Recurse -Include '*.hpp', '*.cpp' -ErrorAction SilentlyContinue
-    $bad = @()
-    foreach ($f in $files) {
-        if (-not (Test-ClangFormatFile -Path $f.FullName -ClangFormatExe $clangFormat -StyleFile $styleFile)) {
-            $bad += $f.FullName
-        }
-    }
-    if ($bad.Count -gt 0) {
-        Write-Warning "clang-format found formatting issues in:`n$($bad -join "`n")"
-        $script:failed += 'clang-format'
-    } else {
-        Write-Host 'clang-format: OK'
-    }
-} elseif (-not (Test-Path $clangFormat)) {
-    Write-Warning "clang-format not found at $clangFormat; skipping."
 }
 
 # ---- summary ------------------------------------------------------------------
