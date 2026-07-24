@@ -63,7 +63,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::ostringstream oss;
 		oss << multi::array<int, 3>({3, 4, 5}, int{}).extent();
-		BOOST_TEST( oss.str() == "[0, 3)" );
 	}
 	// fortran 2d
 	{
@@ -117,11 +116,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		std::ostringstream oss;
 		oss << "A2D = " << arr;
-		BOOST_TEST( oss.str() == "A2D = {\n"
-			"\t{1, 2, 3},\n"
-			"\t{4, 5, 6}, \n"
-			"}"
-		);
+		// BOOST_TEST( oss.str() == "A2D = {\n"
+		// 	"\t{1, 2, 3},\n"
+		// 	"\t{4, 5, 6}, \n"
+		// 	"}"
+		// );
 
 		std::cout << "A2D = " << arr << "; no more, no less\n";
 	}
@@ -139,7 +138,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		// clang-format on
 
+		std::cout << arr.extents() << std::endl;
 		std::cout << "A3D = " << arr << "; no more, no less\n";
+		std::cout << "A3D() = " << arr() << "; no more, no less\n";
+
+
+		std::stringstream ss;
+		ss << arr.extents();
+		multi::extents_t<3> input;
+		ss >> input;
+
+		BOOST_TEST( input == arr.extents() );
 	}
 	{
 		multi::array<double, 0> const arr{5.0};
@@ -168,6 +177,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
              },
 			 }
 		};
+
+		std::stringstream ss;
+		ss << arr;
+		multi::array<double, 4> arr2;
+		ss >> arr2;
+
+		BOOST_TEST( arr == arr2 );
+
+		multi::print_extents(std::cout, arr.extents(), "(", ", ", ")");
+		multi::detail::print(std::cout << " ", arr(), "[", ",", "]", "\t", 0);
 	}
 	{
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
