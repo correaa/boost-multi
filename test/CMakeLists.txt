@@ -62,6 +62,9 @@ else()
 	endif()
 
 	find_package(TBB)
+	if(NOT TBB_FOUND)
+		message(WARNING "preliminary: Cannot find TBB, some parallel algorithm tests will be skipped. If you want to test these, please run:\n    sudo apt install libtbb-dev\n    sudo dnf install tbb-devel\n    brew install tbb\n    C:\vcpkg\vcpkg install tbb  # Windows")
+	endif()
 
 	enable_testing()
 	include(CTest)
