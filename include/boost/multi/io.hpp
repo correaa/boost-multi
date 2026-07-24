@@ -208,6 +208,7 @@ auto operator>>(std::istream& is, extent_t<Integer>& ext) -> std::istream& {
 namespace detail {
 
 template<class Exts, std::size_t... Is>
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 auto print_extents(std::ostream& os, Exts const& exts, std::string_view open, std::string_view sep, std::string_view close, std::index_sequence<Is...> /*seq*/) -> std::ostream& {
 	os << open;
 	((os << (Is == 0 ? "" : sep) << exts.template get<Is>()), ...);
@@ -219,7 +220,7 @@ auto print_extents(std::ostream& os, Exts const& exts, std::string_view open, st
 // Keeps parsing robust to the exact spacing/spelling used.
 inline void skip_extents_separator(std::istream& is) {
 	is >> std::ws;
-	while(is.good()) {
+	while(is.good()) {  // NOLINT(altera-unroll-loops)
 		auto const chr = is.peek();
 		if(chr == std::char_traits<char>::eof()) {
 			break;
@@ -244,11 +245,11 @@ auto parse_extents(std::istream& is) -> extents_t<D> {
 	}
 
 	std::array<index_extension, static_cast<std::size_t>(D)> exts{};
-	for(std::size_t i = 0; i != static_cast<std::size_t>(D); ++i) {  // NOLINT(altera-unroll-loops)
-		if(i != 0) {
+	for(auto it = exts.begin(); it != exts.end(); ++it) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		if(it != exts.begin()) {
 			skip_extents_separator(is);
 		}
-		is >> exts[i];
+		is >> *it;
 	}
 
 	is >> std::ws;

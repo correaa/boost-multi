@@ -62,7 +62,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+auto main() -> int {      // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 #ifndef __circle_build__  // circle rejects casting the std::conj overload set (even with explicit <double>) to a function reference: "overload set conj provided where expression expected"
 	{
 		using complex = std::complex<double>;

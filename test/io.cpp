@@ -138,7 +138,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		// clang-format on
 
-		std::cout << arr.extents() << std::endl;
+		std::cout << arr.extents() << '\n';
 		std::cout << "A3D = " << arr << "; no more, no less\n";
 		std::cout << "A3D() = " << arr() << "; no more, no less\n";
 
