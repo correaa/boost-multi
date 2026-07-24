@@ -21,7 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
 
-find_package(Boost)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Core LightweightTest
+find_package(Boost CONFIG)  # tests require Boost.Core LightweightTest
 
 include(CTest)
 enable_testing()

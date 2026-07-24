@@ -7,7 +7,7 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED COMPONENTS serialization unit_test_framework system iostreams)
+find_package(Boost REQUIRED CONFIG COMPONENTS serialization unit_test_framework system iostreams)
 find_package(benchmark REQUIRED)
 
 set(BLA_VENDOR Intel10_64lp) # . /opt/intel/oneapi/mkl/latest/env/vars.sh
