@@ -142,7 +142,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::cout << "A3D = " << arr << "; no more, no less\n";
 		std::cout << "A3D() = " << arr() << "; no more, no less\n";
 
-
 		std::stringstream ss;
 		ss << arr.extents();
 		multi::extents_t<3> input;

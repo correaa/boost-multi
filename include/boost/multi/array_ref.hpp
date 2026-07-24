@@ -1710,7 +1710,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
 
  public:
- 	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
+	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
 	constexpr auto reversed() const& { return reversed_aux_().as_const(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
