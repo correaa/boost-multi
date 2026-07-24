@@ -241,11 +241,9 @@ Invoke-Variant -Name 'MSVC (cl.exe) Debug -WX' -BuildDir '.build.msvc' -Config '
 # ---- variant 2: MSVC + AddressSanitizer -------------------------------------
 # RelWithDebInfo (not Debug) because CMake's default Debug flags add /RTC1,
 # which MSVC refuses to combine with /fsanitize=address.
-# /Zi is passed explicitly (not left to CMAKE_CXX_FLAGS_RELWITHDEBINFO's
-# default) because that cache variable is only ever populated once, the first
-# time a build dir is configured; if it was ever left/ended up empty in an
-# existing .build.msvc.asan dir, ASan builds without debug info -- which MSVC
-# flags as warning C5072, fatal here under -WX.
+# /Zi + linker /DEBUG: without debug info, cl.exe emits warning C5072 ("ASAN
+# enabled without debug information emission") and ASAN error reports fall
+# back to raw addresses instead of symbolized file/line stack traces.
 Invoke-Variant -Name 'MSVC (cl.exe) AddressSanitizer' -BuildDir '.build.msvc.asan' -Config 'RelWithDebInfo' -ConfigureArgs (@(
     '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
     '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',

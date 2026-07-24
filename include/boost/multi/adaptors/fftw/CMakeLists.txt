@@ -43,6 +43,6 @@ else()
 		message(WARNING "Cannot find FFTW3, FFTW3-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:"
 						"\n    sudo apt install libfftw3-dev"
 						"\n    sudo dnf install fftw-devel  # in Fedora"
-						"\n    vcpkg install fftw3  # on Windows")
+						"\n    C:/vcpkg/vcpkg install fftw3  # on Windows")
 	endif()
 endif()

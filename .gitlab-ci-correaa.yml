@@ -1258,7 +1258,11 @@ circle-dev:
     - cd ..
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1
+    # HERK_BISECT_N / GEMM_BISECT_N bisect herk.cpp / gemm.cpp's circle-only segfault: each test
+    # case in those files is individually gated (see the TODO comments at their top), compiling
+    # none of them by default (matching the old blanket disablement) and cases 1..N when set via
+    # pipeline variables of the same name -- binary-search N to find the first case that crashes.
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1 -DCMAKE_CXX_FLAGS="-DHERK_BISECT_N=${HERK_BISECT_N:-0} -DGEMM_BISECT_N=${GEMM_BISECT_N:-0}"
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
 
