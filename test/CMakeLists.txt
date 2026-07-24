@@ -62,6 +62,9 @@ else()
 	endif()
 
 	find_package(TBB)
+	if(NOT TBB_FOUND)
+		message(WARNING "preliminary: Cannot find TBB, some parallel algorithm tests will be skipped. If you want to test these, please run:\n    sudo apt install libtbb-dev\n    sudo dnf install tbb-devel\n    brew install tbb\n    C:/vcpkg/vcpkg install tbb  # Windows")
+	endif()
 
 	enable_testing()
 	include(CTest)
@@ -290,6 +293,7 @@ else()
 	-Wall -Wextra
 	-Wno-error=\#warnings  # -Wno-\#warnings disable this working for a bug in rocm ~5.6
 	-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
+	-Wno-documentation-unknown-command
 	-Wno-poison-system-directories
 	#$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
 	# -Wno-exit-time-destructors  # Boost.LightweightTest uses static objects with destructor
@@ -365,6 +369,7 @@ else()
 			/wd4868  # compiler may not enforce left-to-right evaluation order in braced initializer list
 			/wd5045  # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\include\boost\multi\adaptors\thrust\omp\test\omp.cpp.x.vcxproj]
 			/wd5031  # likely mismatch, popping warning state pushed in different file
+			/wd5032  # detected #pragma warning(push) with no corresponding #pragma warning(pop)
 		>
 		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 			-Xcompiler=/W4  # /volatile:iso /WX /Zc:wchar_t /Zc:forScope /Zc:inline /W4

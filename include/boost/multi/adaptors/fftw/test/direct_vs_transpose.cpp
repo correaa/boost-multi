@@ -43,13 +43,13 @@ namespace {
 // clang-format off
 template<class Tp>
 inline
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 __forceinline
 #else
 __attribute__((always_inline))
 #endif
 void DoNotOptimize(Tp& value) {  // NOLINT(readability-identifier-naming)
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 	_ReadWriteBarrier(); (void)value;
 #else
 #if defined(__clang__) || defined(__circle_build__)

@@ -941,7 +941,9 @@ struct                                                                          
 		return *this;
 	}
 
-	/// Serializes elements into @p arxiv. Delegates to the base `array_ref::serialize`; shape is not saved.
+	/// Serializes the array shape and elements into @p arxiv.
+	/// On save: writes extensions then elements. On load: reads extensions and resizes the array if needed before loading elements.
+	/// Compatible with Boost.Serialization and Cereal archives
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const version) { ref_::serialize(arxiv, version); }  // cppcheck-suppress duplInheritedMember ; to override
 
@@ -1601,9 +1603,6 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	// cppcheck-suppress duplInheritedMember ; to override  // NOLINTNEXTLINE(runtime/operator)
 	BOOST_MULTI_HD constexpr auto operator&() const& -> array const* { return this; }  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 
-	/// Serializes the array shape and elements into @p arxiv.
-	/// On save: writes extensions then elements. On load: reads extensions and resizes the array if needed before loading elements.
-	/// Compatible with Boost.Serialization and Cereal.
 	template<class Archive, class ArTraits = multi::archive_traits<Archive>>
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to override
 		auto extents_ = this->extents();

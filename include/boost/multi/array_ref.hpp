@@ -238,6 +238,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::strides_type;
 
+	/// returns the layout internal strides of an array as a tuple
 	BOOST_MULTI_HD constexpr auto strides() const {  // cppcheck-suppress [functionStatic,duplInheritedMember];
 		return layout_type::strides();
 	}
@@ -1577,32 +1578,33 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using iextension = typename const_subarray::index_extension;
 
- public:
-	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }  // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
+	// public:
+	/// yields a stencil of the original array with the same dimensionality
+	constexpr auto stenciled(iextension iex) & { return blocked(iex.first(), iex.last()).as_const(); }                                                                                            // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) & { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                                                       // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated(); }                         // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) & -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
-	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }                                                              // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                         // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }  // TODO(correaa) fix const
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }
+	constexpr auto stenciled(iextension iex) && { return blocked(iex.first(), iex.last()).as_const(); }                                                                                            // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) && { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                                                       // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) && { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }                                // TODO(correaa) fix const  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) && -> const_subarray { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
-	constexpr auto stenciled(iextension iex) const& { return blocked(iex.first(), iex.last()).as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1) const& { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated().as_const(); }
+	constexpr auto stenciled(iextension iex) const& { return blocked(iex.first(), iex.last()).as_const(); }                                                                                     // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1) const& { return stenciled(iex).rotated().stenciled(iex1).unrotated().as_const(); }                                                // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2) const& { return stenciled(iex).rotated().stenciled(iex1, iex2).unrotated().as_const(); }                         // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& { return stenciled(iex).rotated().stenciled(iex1, iex2, iex3).unrotated().as_const(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 
 	template<class... Xs>
-	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& {
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& {  // NOLINT(readability-identifier-naming) TODO(correaa) remove or rename
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
- private:
+// private:
 	constexpr auto strided_aux_(difference_type diff) const {
 		// auto new_layout = this->layout().do_stride();
 		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
@@ -1708,6 +1710,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
 
  public:
+ 	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
 	constexpr auto reversed() const& { return reversed_aux_().as_const(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
@@ -1732,6 +1735,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a view of the array where the indices are rotated (to the left) (e.g. `a.rotated()[i][j][k] == a[j][k][i]`)
 	BOOST_MULTI_HD constexpr auto rotated() const& -> const_subarray { return rotated_aux_(); }
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
 
@@ -1931,6 +1935,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare(*this, other); }
 	constexpr auto operator>(const_subarray const& other) const& -> bool { return other < *this; }
 
+	/// yields a view of the array in which the internal representation is static_cast to another type (and/or pointer)
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, std::enable_if_t<std::is_const_v<typename std::pointer_traits<P2>::element_type>, int> = 0  // NOLINT(modernize-use-constraints) TODO(correaa)
 			 >
 	constexpr auto static_array_cast() const& {                                    // name taken from std::static_pointer_cast
@@ -1984,6 +1989,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
+	/// yields a view of the array containing a specific member of original element type
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2 const>,
 		class Element = typename const_subarray::element,
@@ -2055,6 +2061,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a view of the subarray where elements are reinterpreted as a different type (elements must have compatible size)
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const>>
 	constexpr auto reinterpret_array_cast() const& { return reinterpret_array_cast_aux_<T2, P2>().as_const(); }
 
@@ -2155,6 +2162,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	subarray(subarray const&) = delete;
 
+	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 
 	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }

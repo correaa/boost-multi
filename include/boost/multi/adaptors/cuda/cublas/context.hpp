@@ -352,7 +352,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	>
 	void dotc(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
-		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
+		[[maybe_unused]] auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
@@ -563,7 +563,7 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 	>
 	void dotu(SSize n, XXP xx, SSize incx, YYP yy, SSize incy, RRP rr) {
 		hicu(blasPointerMode_t) mode;
-		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
+		[[maybe_unused]] auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {

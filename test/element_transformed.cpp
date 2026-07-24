@@ -64,6 +64,7 @@ namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference)
+#ifndef __circle_build__  // circle rejects casting the std::conj overload set (even with explicit <double>) to a function reference: "overload set conj provided where expression expected"
 	{
 		using complex = std::complex<double>;
 		auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
@@ -94,6 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
 	}
+#endif
 
 	// BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda)
 	{

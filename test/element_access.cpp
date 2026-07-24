@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(           arr          ({1, 3}, {2, 5})[0][0] == "h"           );
 		BOOST_TEST(          &arr          ({1, 3}, {2, 5})[0][0] == &arr[1][2]    );
 
-		BOOST_TEST(           arr.stenciled({1, 3}, {2, 5}).size() == 2                  );
+//		BOOST_TEST(           arr.stenciled({1, 3}, {2, 5}).size() == 2                  );
 
 		BOOST_TEST(  arr().elements().size() == arr.num_elements() );
 

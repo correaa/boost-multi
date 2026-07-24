@@ -25,7 +25,17 @@
 
 namespace multi = boost::multi;
 
+// TODO(correaa) circle_dev segfaults (ICE, not a diagnostic) compiling this file.
+// Each case below is independently gated so the failing construct can be bisected from CI:
+// pass -DHERK_BISECT_N=<k> (via the HERK_BISECT_N pipeline variable on the circle-dev job) to
+// compile only cases 1..k under circle; k=0 (the default when unset) compiles none, matching the
+// previous blanket disablement. Non-circle builds always compile every case regardless of
+// HERK_BISECT_N. Not using a `defined()`-inside-a-macro helper here on purpose: that expansion is
+// unspecified behavior per the standard, and unspecified corners are exactly what we're trying to
+// rule out while chasing a circle-specific crash, so each guard below is spelled out in full.
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 1)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk)
 	{
 		namespace blas = multi::blas;
@@ -49,7 +59,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( +blas::gemm(1.0, a, blas::H(a)) == blas::herk(a) );
 		}
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 2)
 	// BOOST_AUTO_TEST_CASE(inq_case)
 	{
 		namespace blas                  = multi::blas;
@@ -75,7 +87,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( blas::herk(2.0, a) == +blas::gemm(2.0, a, blas::T(a)) );
 		}
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 3)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk_real)
 	{
 		namespace blas                  = multi::blas;
@@ -90,7 +104,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( c[0][1] == 34.0 );
 		}
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 4)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case)
 	{
 		namespace blas                  = multi::blas;
@@ -103,7 +119,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( b.size() == 1 );
 		BOOST_TEST( std::abs( b[0][0] - ((1.0*1.0) + (2.0*2.0) + (3.0*3.0))) < 1e-10 );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 5)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale)
 	{
 		namespace blas                  = multi::blas;
@@ -117,7 +135,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( b.size() == 1 );
 		BOOST_TEST( std::abs( b[0][0] - (((1.0*1.0) + (2.0*2.0) + (3.0*3.0))*0.1) ) < 1E-6 );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 6)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case)
 	{
 		namespace blas = multi::blas;
@@ -131,7 +151,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( b.size() == 1 );
 		BOOST_TEST( b[0][0] == (1.0*1.0) + (2.0*2.0) + (3.0*3.0) );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 7)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale)
 	{
 		namespace blas = multi::blas;
@@ -145,7 +167,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( b.size() == 1 );
 		BOOST_TEST( std::abs( real( b[0][0]/0.1 ) - ((1.0*1.0) + (2.0*2.0) + (3.0*3.0)) ) < 1E-6 );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 8)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case)
 	{
 		namespace blas = multi::blas;
@@ -162,7 +186,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::sqrt(real(blas::herk(a)[0][0])) == blas::nrm2(a[0]) );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 9)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_out_param)
 	{
 		namespace blas = multi::blas;
@@ -179,7 +205,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		//  BOOST_TEST( std::sqrt(real(b[0][0])) == blas::nrm2(blas::T(a)[0])() );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 10)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized)
 	{
 		using complex = std::complex<double>;
@@ -201,7 +229,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::sqrt(real(blas::herk(blas::H(a))[0][0])) == blas::nrm2(a.rotated()[0]) );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 11)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto)
 	{
 		namespace blas = multi::blas;
@@ -220,7 +250,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( std::sqrt(real(blas::herk(blas::H(arr))[0][0])) == blas::nrm2(arr.rotated()[0]) );
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 12)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity)
 	{
 		namespace blas = multi::blas;
@@ -292,7 +324,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( c[0][1] == 9999.0 );
 		}
 	}
+#endif
 
+#if !defined(__circle_build__) || (defined(HERK_BISECT_N) && HERK_BISECT_N >= 13)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_square)
 	{
 		namespace blas = multi::blas;
@@ -313,6 +347,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		blas::herk(boost::multi::blas::filling::upper, complex{1.0, 0.0}, A, complex{0.0, 0.0}, C);
 	}
+#endif
 
 	return boost::report_errors();
 }

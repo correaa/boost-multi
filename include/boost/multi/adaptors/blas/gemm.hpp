@@ -59,7 +59,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 		if  (a_count==1)                            {CTXT->gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, a_first.base(), a_first. stride(), b_first.base(), b_first->size()  , &beta, c_first.base(), a_first->size()  );}
 		else                                        {CTXT->gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, a_first.base(), a_first. stride(), b_first.base(), b_first. stride(), &beta, c_first.base(), c_first->stride());}
 	}else if(a_first. stride()==1 && b_first->stride()==1 && c_first->stride()==1) { 
-		if  (a_count==1)                            {CTXT->gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), a_first->stride(), &beta, c_first.base(), a_count         );}
+		if  (a_count==1)                            {CTXT->gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), a_first->stride(), &beta, c_first.base(), c_first->size() );}
 		else                                        {CTXT->gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, b_first.base(), b_first. stride(), a_first.base(), a_first->stride(), &beta, c_first.base(), c_first.stride());}
 	}else if(a_first. stride()==1 && b_first->stride()==1 && c_first. stride()==1) {
 		if  (a_count==1)                            {CTXT->gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, a_first.base(), a_first->stride(), b_first.base(), a_first->size()  , &beta, c_first.base(), b_first->size()  );}
@@ -333,6 +333,11 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(rea
 #ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4715)  // not all control paths return a value
 #endif
 
 template<class A2D, class B2D, class Scalar = typename A2D::element, class = decltype(Scalar{0.0})>
