@@ -21,6 +21,15 @@
 
       winget install --id Nvidia.CUDA --version 12.9
 
+    clang-cl (LLVM's MSVC-compatible driver) is also optional: when found, a
+    5th variant builds with clang-cl.exe standing in for cl.exe -- same
+    command-line flags/ABI/STL, but a different frontend, so it catches a
+    different set of warnings. Skipped with a warning when it isn't installed.
+    To add it, either install the "C++ Clang tools for Windows" component via
+    the Visual Studio Installer, or install standalone LLVM:
+
+      winget install LLVM.LLVM
+
     Usage:
       pwsh -File .\pre-push.ps1                    # build + test everything
       pwsh -File .\pre-push.ps1 multi_array_ref     # limit to one target/ctest filter
@@ -74,6 +83,16 @@ function Find-CudaCompiler {
     return $null
 }
 
+function Find-ClangCl([string]$VsPath) {
+    # Prefer the VS-bundled clang-cl (matches the cl.exe/STL version this
+    # script otherwise pins) over a possibly-mismatched standalone install.
+    $bundled = Join-Path $VsPath 'VC\Tools\Llvm\x64\bin\clang-cl.exe'
+    if (Test-Path $bundled) { return $bundled }
+    $onPath = Get-Command clang-cl.exe -ErrorAction SilentlyContinue
+    if ($onPath) { return $onPath.Source }
+    return $null
+}
+
 function Import-VsDevEnvironment([string]$VsPath) {
     $vsDevCmd = Join-Path $VsPath 'Common7\Tools\VsDevCmd.bat'
     if (-not (Test-Path $vsDevCmd)) { throw "VsDevCmd.bat not found at $vsDevCmd" }
@@ -121,6 +140,13 @@ if ($nvccExe) {
     $env:PATH = "$(Split-Path $nvccExe);$env:PATH"
 } else {
     Write-Warning 'nvcc not found (checked PATH, CUDA_PATH, and the default install root); skipping the CUDA variant. Install it with: winget install --id Nvidia.CUDA --version 12.9'
+}
+
+$clangClExe = Find-ClangCl $vsPath
+if ($clangClExe) {
+    Write-Host "clang-cl detected at $clangClExe"
+} else {
+    Write-Warning 'clang-cl not found (checked the VS "C++ Clang tools for Windows" component and PATH); skipping the clang-cl variant. Install it via the Visual Studio Installer, or: winget install LLVM.LLVM'
 }
 
 if (Test-Path $ninja) {
@@ -285,6 +311,31 @@ if ($nvccExe) {
         '-DCMAKE_CUDA_ARCHITECTURES=native',
         '-DCMAKE_CUDA_FLAGS=--extended-lambda -Wno-deprecated-gpu-targets'
     ) + $msvcCompilerArgs + $cudaHostCompilerArgs)
+}
+
+# ---- variant 5: clang-cl (LLVM) Debug, warnings as errors -------------------
+# clang-cl is clang's MSVC-compatible driver: same command-line flags/ABI as
+# cl.exe (so it still links against the MSVC STL/CRT and links via link.exe on
+# PATH from the imported VS dev environment) but a different frontend and
+# diagnostics engine, catching a different set of warnings/UB than cl.exe or
+# nvcc's cl.exe host-compiler variants above. Skipped entirely when clang-cl
+# isn't installed.
+if ($clangClExe) {
+    Invoke-Variant -Name 'clang-cl (LLVM) Debug -WX' -BuildDir '.build.clangcl' -Config 'Debug' -ConfigureArgs @(
+        '-DCMAKE_BUILD_TYPE=Debug',
+        '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON',
+        "-DCMAKE_C_COMPILER=$clangClExe",
+        "-DCMAKE_CXX_COMPILER=$clangClExe",
+        # thrust/omp/test resolves Thrust from the CUDA Toolkit's bundled
+        # copy (nvcc's bin dir is on PATH for the rest of this script, once
+        # the CUDA variant above has run), pulling in NVIDIA's vendored
+        # libcu++. Its cstdlib does `using ::aligned_alloc;`, which clang-cl
+        # doesn't expose in the global namespace -- fails the build. Not a
+        # real regression to catch here, so skip it via the option this
+        # CMakeLists.txt already exposes rather than special-casing clang-cl
+        # in the CMake files themselves.
+        '-DDISABLE_THRUST_OMP=ON'
+    )
 }
 
 # ---- summary ------------------------------------------------------------------

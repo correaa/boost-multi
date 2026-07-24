@@ -143,7 +143,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #if !defined(__apple_build_version__)
 		std::cout << "std::transform par BLAS\n"
 				  << std::invoke([&, start_time = high_resolution_clock::now()] {
-						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto& row) { return multi::blas::copy(row); });
+						 std::transform(std::execution::par, A2D_block.begin(), A2D_block.end(), B2D_block.begin(), [](auto const& row) { return multi::blas::copy(row); });
 						 return duration<double>{high_resolution_clock::now() - start_time};
 					 }).count()
 				  << '\n';

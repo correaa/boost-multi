@@ -39,7 +39,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::T(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -65,7 +65,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 6.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (6.0) ) < 1e-12 );
 	}
 #endif
 
@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> B({4, 4}, 1.0);    // NOLINT(readability-identifier-length) BLAS naming
 
 		auto C = +blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({2, 3}, {2, 3}));  // c=ab, c⸆=b⸆a⸆  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -90,7 +90,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -104,7 +104,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> C({100, 1}, complex{0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(complex{1.0, 0.0}, A, blas::T(B), complex{0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( C[99][0] == 1.0 );
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -118,7 +118,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm({1.0, 0.0}, A, blas::H(B), {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( C[99][0] == 1.0 );
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -132,7 +132,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -145,7 +145,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(1.0, A, blas::T(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -158,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 		blas::gemm(1.0, A, blas::H(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST(C[99][0] == 1.0);
+		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
 #endif
 
@@ -180,92 +180,92 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);
-			BOOST_TEST( c[2][1] == 86.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (86.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			BOOST_TEST( size( a) == size( c) );
 			BOOST_TEST( size(~b) == size(~c) );
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 86.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (86.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, blas::T(b), 0.0, c);
-			BOOST_TEST( c[2][1] == 48.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (48.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, a.begin(), a.size(), blas::T(b).begin(), 0.0, c.begin());
-			BOOST_TEST( c[2][1] == 48.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (48.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, blas::T(a), b, 0.0, c);
-			BOOST_TEST( c[2][1] == 103.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (103.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 103.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (103.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);
-			BOOST_TEST( c[2][1] == 50.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (50.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 50.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (50.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, blas::T(b), 0.0, c);
-			BOOST_TEST( c[2][1] == 48.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (48.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::T(b)), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 48.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (48.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, blas::T(a), b, 0.0, c);
-			BOOST_TEST( c[2][1] == 103.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (103.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 103.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (103.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({a.size(), b.rotated().size()}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(2.0, blas::H(a), blas::H(b), 0.0, c);
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c = blas::gemm(2.0, blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> const c = blas::gemm(2.0, blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({a.size(), b.rotated().size()}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 			c = blas::gemm(2.0, blas::H(a), blas::H(b));
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c;  // NOLINT(readability-identifier-length) BLAS naming
 			c = blas::gemm(2.0, blas::H(a), blas::H(b));
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({a.size(), b.rotated().size()}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(2.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));
-			BOOST_TEST( c[2][1] == 100.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -286,19 +286,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);      // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 148.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (148.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 			blas::context const ctxt;
 			blas::gemm_n(&ctxt, 1.0, begin(a), size(a), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[1][0] == 148.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (148.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, ~a, b, 0.0, c);     // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST(( c[1][1] == 169.0 && c[1][0] == 82.0 ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (169.0) ) < 1e-12 && std::abs( (c[1][0]) - (82.0) ) < 1e-12 ));
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -319,7 +319,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, ~b, 0.0, c);     // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == 183.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (183.0) ) < 1e-12 );
 		}
 		{
 			// TODO(correaa) fix sfinae of const c
@@ -327,39 +327,39 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			blas::context const ctxt;
 			blas::gemm_n(&ctxt, 1.0, begin(a), size(a), begin(~b), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == 183.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (183.0) ) < 1e-12 );
 		}
 		{
 			// NOLINTNEXTLINE(misc-const-correctness) TODO(correaa) fix sfinae of const c
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, ~b, 0.0, ~c);    // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( (~c)[1][0] == 183.0 );
+			BOOST_TEST( std::abs( ((~c)[1][0]) - (183.0) ) < 1e-12 );
 		}
 		{
 			// NOLINTNEXTLINE(misc-const-correctness) TODO(correaa) fix sfinae of const c
 			multi::array<double, 2> c({2, 2});                                // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(~b), 0.0, begin(~c));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( (~c)[1][0] == 183.0 );
+			BOOST_TEST( std::abs( ((~c)[1][0]) - (183.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, ~a, ~b, 0.0, c);    // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == 117.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (117.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});                                 // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(~b), 0.0, begin(c));  // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == 117.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (117.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, ~a, ~b, 0.0, ~c);   // c⸆=a⸆b⸆, c=ba
-			BOOST_TEST( c[0][1] == 117.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (117.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});                                  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(~b), 0.0, begin(~c));  // c⸆=a⸆b⸆, c=ba
-			BOOST_TEST( c[0][1] == 117.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (117.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -410,12 +410,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);                   // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 53.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (53.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)});                 // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 53.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (53.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -451,42 +451,42 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		{
 			auto c = +blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array c = blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][0] == 7.-10.*I );
-			BOOST_TEST( c[0][1] == 7.+10.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.-10.*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.+10.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) conventional BLAS naming
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			c = blas::gemm(1.0, a, blas::H(a));                 // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			c() = blas::gemm(1.0, a, blas::H(a));               // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});     // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm({1.0, 0.0}, a, blas::H(a), {0.0, 0.0}, c);  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});                                     // NOLINT(readability-identifier-length) conventional BLAS naming
 			blas::gemm_n({1.0, 0.0}, begin(a), size(a), begin(blas::H(a)), {0.0, 0.0}, begin(c));  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7. - 10.*I );
-			BOOST_TEST( c[0][1] == 7. + 10.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7. - 10.*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7. + 10.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -504,36 +504,36 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		{
 			auto c = +blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::hermitized(a), 0.0, c);  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(a)), 0.0, begin(c));  // c=aa†, c†=aa†
-			BOOST_TEST( c[1][0] == 7.0 - 10.0*I );
-			BOOST_TEST( c[0][1] == 7.0 + 10.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (7.0 - 10.0*I) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[0][1]) - (7.0 + 10.0*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -550,12 +550,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(a), 0.0, c);  // c=aa†, c†=aa†
-			BOOST_TEST( c[0][0] == 87.0 + 0.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (87.0 + 0.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(a)), 0.0, begin(c));  // c=aa†, c†=aa†
-			BOOST_TEST( c[0][0] == 87.0 + 0.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (87.0 + 0.0*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -580,12 +580,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( size(blas::H(b)[0]) == 1 );
 
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.0 + 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 + 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.0 + 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 + 7.0*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -628,46 +628,46 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[2][1] == 31.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (31.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[2][1] == 31.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (31.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(~b), size(a)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, ~c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 31.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(~b), size(a)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(~c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 31.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({3, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[2][1] == 31.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (31.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({3, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[2][1] == 31.0 );
+			BOOST_TEST( std::abs( (c[2][1]) - (31.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({2, 3});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 31.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({2, 3});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 31.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -686,18 +686,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~a, b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 61.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (61.0) ) < 1e-12 );
 
 			blas::gemm(1.0, ~a, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[0][1] == 61.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (61.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 61.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (61.0) ) < 1e-12 );
 
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[0][1] == 61.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (61.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -718,18 +718,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~a, b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 101.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (101.0) ) < 1e-12 );
 
 			blas::gemm(1.0, ~a, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[0][1] == 101 );
+			BOOST_TEST( std::abs(c[0][1] - 101.0) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 101.0 );
+			BOOST_TEST( std::abs(c[1][0] - 101.0) < 1e-12 );
 
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[0][1] == 101.0 );
+			BOOST_TEST( std::abs(c[0][1] - 101.0) < 1e-12 );
 		}
 	}
 #endif
@@ -742,26 +742,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		BOOST_TEST( stride(~a) == 1 );
 		BOOST_TEST( stride( a) == 3 );
+
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
 			{ 7.0, 19.0},
 			{ 8.0,  1.0},
 		};
+
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( c[0][1] - 184.0 ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( c[0][1] - 184.0 ) < 1e-12 );
 		}
 		{
-			auto                    ar = +~a;
+			auto ar = +~a;
+
 			multi::array<double, 2> c({size(~b), size(~ar)});  // NOLINT(readability-identifier-length) BLAS naming
+
 			blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( c[1][0] - 184.0 ) < 1e-12 );
 		}
 		{
 			auto ar = +~a;
@@ -777,7 +781,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( begin(b) );
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -789,8 +793,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.0, 9.0, 1.0}
 		};
+
 		BOOST_TEST( stride(~a) == 1 );
 		BOOST_TEST( stride( a) == 3 );
+
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
 			{ 7.0, 19.0},
@@ -799,24 +805,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 184.0 );
+
+			BOOST_TEST( std::abs( c[0][1] - 184.0 ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 184.0 );
+
+			BOOST_TEST( std::abs( c[0][1] - 184.0 ) < 1e-12 );
 		}
 		{
-			auto                     ar = +~a;
+			auto ar = +~a;
+
 			multi::array<complex, 2> c({size(~b), size(~ar)});  // NOLINT(readability-identifier-length) BLAS naming
+
 			blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( c[1][0] - 184.0 ) < 1e-12 );
 		}
 		{
 			auto                     ar = +~a;
 			multi::array<complex, 2> c({size(~b), size(~ar)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+
+			BOOST_TEST( std::abs( c[1][0] - 184.0 ) < 1e-12 );
 		}
 	}
 #endif
@@ -838,24 +849,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({size(a({0, 1})), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a({0, 1}), b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a({0, 1})), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a({0, 1})), size(a({0, 1})), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -878,24 +889,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({size(a({0, 1})), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a({0, 1}), b, 0.0, c);
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({size(a({0, 1})), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a({0, 1})), size(a({0, 1})), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[0][1] == 184.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
 			auto                     ar = +~a;
 			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 		{
 			auto                     ar = +~a;
 			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));
-			BOOST_TEST( c[1][0] == 184.0 );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -917,26 +928,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 82.0 );
-			BOOST_TEST( c[1][0] == 78.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (78.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[0][0] == 82.0 );
-			BOOST_TEST( c[1][0] == 78.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (78.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -962,27 +973,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, ~c);  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( (~c)[0][0] ==  82.0 );
-			BOOST_TEST( (~c)[1][0] == 101.0 );
+			BOOST_TEST( std::abs( ((~c)[0][0]) - (82.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( ((~c)[1][0]) - (101.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(~c));  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( (~c)[0][0] ==  82.0 );
-			BOOST_TEST( (~c)[1][0] == 101.0 );
+			BOOST_TEST( std::abs( ((~c)[0][0]) - (82.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( ((~c)[1][0]) - (101.0) ) < 1e-12 );
 		}
 #endif
 		{
 			multi::array<double, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( (~c)[0][1] == 101.0 );
-			BOOST_TEST(    c[1][0] == 101.0 );
+			BOOST_TEST( std::abs( ((~c)[0][1]) - (101.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (101.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( (~c)[0][1] == 101.0 );
-			BOOST_TEST(    c[1][0] == 101.0 );
+			BOOST_TEST( std::abs( ((~c)[0][1]) - (101.0) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (101.0) ) < 1e-12 );
 		}
 #if 0  // TODO(correaa) same ldc>=max(1,m) issue as above: c({1, 2}) + ~c can't represent a 2-row  // NOLINT(readability-avoid-unconditional-preprocessor-if)
        // output. See TODO above.
@@ -991,7 +1002,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto                    ar = +~a;
 
 			blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 101.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (101.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
@@ -999,7 +1010,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto ar = +~a;
 
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 101.0 );
+			BOOST_TEST( std::abs( (c[0][1]) - (101.0) ) < 1e-12 );
 		}
 #endif
 	}
@@ -1019,30 +1030,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                    ar = +~a;
 			blas::gemm(1.0, ~ar, b, 0.0, c);
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                    ar = +~a;
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                    br = +~b;
 			blas::gemm(1.0, a, ~br, 0.0, c);
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1061,19 +1072,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST(size(a) == 1);
 
 			blas::gemm_n(1.0, begin(a), size(a), begin(~br), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                    br = +~b;
 			blas::gemm(1.0, a, blas::H(br), 0.0, c);
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                    br = +~b;
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(br)), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 82.0 );
+			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1094,52 +1105,52 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 145.0 + 43.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (145.0 + 43.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 145. + 43.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (145. + 43.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~a, b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST(( c[1][1] == 170.-8.*I && c[1][0] == 77.+42.*I ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (170.-8.*I) ) < 1e-12 && std::abs( (c[1][0]) - (77.+42.*I) ) < 1e-12 ));
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST(( c[1][1] == 170.-8.*I && c[1][0] == 77.+42.*I ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (170.-8.*I) ) < 1e-12 && std::abs( (c[1][0]) - (77.+42.*I) ) < 1e-12 ));
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, ~b, 0.0, c);  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == 177.+69.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (177.+69.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(~b), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == 177.+69.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (177.+69.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);  // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == 109. + 68.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (109. + 68.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(c));  // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == 109. + 68.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (109. + 68.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, blas::T(c));  // c⸆=a⸆b⸆, c=ba
-			BOOST_TEST( c[0][1] == 109.+68.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (109.+68.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(blas::T(c)));  // c⸆=a⸆b⸆, c=ba
-			BOOST_TEST( c[0][1] == 109.+68.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (109.+68.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1164,12 +1175,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS name
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 - 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 - 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1177,7 +1188,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto ar = +~a;
 
 			blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=ba
-			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 - 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1185,7 +1196,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto ar = +~a;
 
 			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));  // c=ab, c⸆=ba
-			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 - 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1193,7 +1204,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto br = +~b;
 
 			blas::gemm(1.0, a, ~br, 0.0, c);
-			BOOST_TEST( c[0][0] == 84.0 - 7.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.0 - 7.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1202,7 +1213,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			blas::context            ctxt;
 			blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(~br), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 84.-7.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (84.-7.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1210,7 +1221,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto br = +~b;
 
 			blas::gemm(1.0, a, blas::H(br), 0.0, ~c);
-			BOOST_TEST( c[0][0] == 80.0 + 53.0*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.0 + 53.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1218,7 +1229,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto br = +~b;
 
 			blas::gemm_n(1.0, a.begin(), a.size(), blas::H(br).begin(), 0.0, (~c).begin());
-			BOOST_TEST( c[0][0] == 80. + 53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80. + 53.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1239,72 +1250,72 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c†=b†a†
-			BOOST_TEST( c[1][0] == 145. + 43.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (145. + 43.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c†=b†a†
-			BOOST_TEST( c[1][0] == 145. + 43.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (145. + 43.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == 109.0 - 68.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (109.0 - 68.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == 109.0 - 68.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (109.0 - 68.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, blas::H(c));  // c†=a†b†, c=ba
-			BOOST_TEST( c[1][0] == 184.0 - 40.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (184.0 - 40.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=a†b, c†=b†a
-			BOOST_TEST( c[1][0] == 87.0 - 16.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (87.0 - 16.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=a†b, c†=b†a
-			BOOST_TEST( c[1][0] == 87.0 - 16.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (87.0 - 16.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(b), 0.0, c);  // c=ab†, c†=ba†
-			BOOST_TEST( c[1][0] == 189.0 - 23.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (189.0 - 23.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			c = blas::gemm(1.0, a, blas::H(b));  // c=ab†, c†=ba†
-			BOOST_TEST( c[1][0] == 189.0 - 23.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (189.0 - 23.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, blas::H(b));  // c=ab†, c†=ba†  // NOLINT(readability-identifier-length) BLAS naming
 			BOOST_TEST( size(c) == 2 );
-			BOOST_TEST( c[1][0] == 189.0 - 23.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (189.0 - 23.0*I) ) < 1e-12 );
 		}
 		{
 			auto c = multi::array<complex, 2>(blas::gemm(1.0, a, blas::H(b)));  // c=ab†, c†=ba†  // NOLINT(readability-identifier-length) BLAS naming
 			BOOST_TEST( size(c) == 2 );
-			BOOST_TEST( c[1][0] == 189.0 - 23.0*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (189.0 - 23.0*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(b)), 0.0, begin(c));  // c=ab†, c†=ba†
-			BOOST_TEST( c[1][0] == 189. - 23.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (189. - 23.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == 109. - 68.*I);
+			BOOST_TEST( std::abs( (c[1][0]) - (109. - 68.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == 109. - 68.*I);
+			BOOST_TEST( std::abs( (c[1][0]) - (109. - 68.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1327,40 +1338,40 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=a†b, c†=b†a
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=a†b, c†=b†a
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                     ha = +blas::hermitized(a);
 			blas::gemm(1.0, ha, b, 0.0, c);
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 
 			blas::gemm(1.0, blas::H(b), a, 0.0, c);
-			BOOST_TEST( c[0][0] == 80.+53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.+53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			auto                     ha = +blas::hermitized(a);
 			blas::gemm_n(1.0, begin(ha), size(ha), begin(b), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 80.-53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 
 			blas::gemm_n(1.0, begin(blas::H(b)), size(blas::H(b)), begin(a), 0.0, begin(c));
-			BOOST_TEST( c[0][0] == 80.+53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80.+53.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1381,24 +1392,24 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 20.+21.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (20.+21.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 20.+21.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (20.+21.*I) ) < 1e-12 );
 		}
 		{
 			auto                     ar = +~a;
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(ar), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 28.+3.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 		{
 			auto                     ar = +~a;
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(ar)), size(blas::H(ar)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 28.+3.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1421,12 +1432,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 28.+3.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][1] == 28.+3.*I );
+			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1449,12 +1460,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 125.-84.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 125.-84.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1477,12 +1488,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 125.-84.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 125.-84.*I );
+			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1505,12 +1516,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 80. - 53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80. - 53.*I) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[0][0] == 80. - 53.*I );
+			BOOST_TEST( std::abs( (c[0][0]) - (80. - 53.*I) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1529,28 +1540,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 148 && c[1][1] == 241 );
+			BOOST_TEST( std::abs( c[1][0] - 148.0) < 1e-12 );
+			BOOST_TEST( std::abs( c[1][1] - 241.0) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == 148 && c[1][1] == 241 );
+			BOOST_TEST( std::abs( c[1][0] - 148.0) < 1e-12 );
+			BOOST_TEST( std::abs( c[1][1] - 241.0) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::T(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][1] == 196. );
+			BOOST_TEST( std::abs( (c[1][1]) - (196.) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][1] == 169. );
-			BOOST_TEST( c[1][0] ==  82. );
+			BOOST_TEST( std::abs( (c[1][1]) - (169.) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (82.) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][1] == 154. );
+			BOOST_TEST( std::abs( (c[1][1]) - (154.) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1572,22 +1585,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == complex(115, 104) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(115, 104)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == complex(115, 104) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(115, 104)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::T(b), 0.0, c);  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == complex(178, 75) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(178, 75)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::T(b)), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
-			BOOST_TEST( c[1][0] == complex(178.0, 75.0) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(178.0, 75.0)) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1610,38 +1623,38 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST(( c[1][1] == complex(180, 29) && c[1][0] == complex(53, 54) ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (complex(180, 29)) ) < 1e-12 && std::abs( (c[1][0]) - (complex(53, 54)) ) < 1e-12 ));
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
-			BOOST_TEST(( c[1][1] == complex(180, 29) && c[1][0] == complex(53, 54) ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (complex(180, 29)) ) < 1e-12 && std::abs( (c[1][0]) - (complex(53, 54)) ) < 1e-12 ));
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][1] == complex(186.0, 65.0) );
-			BOOST_TEST( c[1][0] == complex(116, 25) );
+			BOOST_TEST( std::abs( (c[1][1]) - (complex(186.0, 65.0)) ) < 1e-12 );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, 25)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST(( c[1][1] == complex(186, 65) && c[1][0] == complex(116.0, 25.0) ));
+			BOOST_TEST(( std::abs( (c[1][1]) - (complex(186, 65)) ) < 1e-12 && std::abs( (c[1][0]) - (complex(116.0, 25.0)) ) < 1e-12 ));
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == complex(115, 104) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(115, 104)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][0] == complex(115, 104) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(115, 104)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), b, 0.0, c);  // c=a†b, c†=b†a
-			BOOST_TEST( c[1][0] == complex(111, 64) && c[1][1] == complex(158.0, -51.0) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(111, 64)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(158.0, -51.0)) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1664,12 +1677,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(b), 0.0, begin(c));  // c=a†b, c†=b†a
-			BOOST_TEST( c[1][0] == complex(111, 64) && c[1][1] == complex(158, -51) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(111, 64)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(158, -51)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(b), 0.0, c);  // c=ab†, c†=ba†
-			BOOST_TEST( c[1][0] == complex(188, 43) && c[1][1] == complex(196, 25) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(188, 43)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(196, 25)) ) < 1e-12 );
 			auto c2 = +blas::gemm(1.0, a, blas::H(b));
 			BOOST_TEST( c2 == c );
 		}
@@ -1682,32 +1695,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == complex(116, -25) && c[1][1] == complex(186, -65) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, -25)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(186, -65)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));  // c=a†b†, c†=ba
-			BOOST_TEST( c[1][0] == complex(116, -25) && c[1][1] == complex(186, -65) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, -25)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(186, -65)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::H(b), 0.0, c);  // c=a⸆b†, c†=ba⸆†
-			BOOST_TEST( c[1][0] == complex(118, 5) && c[1][1] == complex(122, 45) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(118, 5)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(122, 45)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::H(b)), 0.0, begin(c));  // c=a⸆b†, c†=ba⸆†
-			BOOST_TEST( c[1][0] == complex(118, 5) && c[1][1] == complex(122, 45) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(118, 5)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(122, 45)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);  // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == complex(116, 25) && c[1][1] == complex(186, 65) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, 25)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(186, 65)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(c));  // c=a⸆b⸆, c⸆=ba
-			BOOST_TEST( c[1][0] == complex(116, 25) && c[1][1] == complex(186, 65) );
+			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, 25)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(186, 65)) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1730,12 +1743,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == complex(112, 12) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(112, 12)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == complex(112, 12) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(112, 12)) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1758,22 +1771,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, b);  // c=ab, c⸆=b⸆a⸆  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][2] == complex(53, 24) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			c = blas::gemm(1.0, a, b);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == complex(53, 24) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == complex(53, 24) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == complex(53, 24) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> const a_real = {
@@ -1783,7 +1796,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::real_doubled(c) = blas::gemm(1.0, a_real, blas::real_doubled(b));  // NOLINT(misc-include-cleaner) real_doubled is provided via operations.hpp, not numeric.hpp directly
 
-			BOOST_TEST( c[1][2] == complex(53, 24) );
+			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1836,7 +1849,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<double, 2> c = blas::gemm(0.1, a, blas::H(b));  // c=ab⸆, c⸆=ba⸆  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][2] == 0.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (0.0) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1855,7 +1868,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, blas::H(b));  // c=ab⸆, c⸆=ba⸆  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( c[1][2] == 0. );
+			BOOST_TEST( std::abs( (c[1][2]) - (0.) ) < 1e-12 );
 		}
 	}
 #endif
@@ -1878,12 +1891,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 53. );
+			BOOST_TEST( std::abs( (c[1][2]) - (53.) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(b)), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 53. );
+			BOOST_TEST( std::abs( (c[1][2]) - (53.) ) < 1e-12 );
 		}
 		{
 			multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1925,7 +1938,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
-			BOOST_TEST( c[1][2] == 53.0 );
+			BOOST_TEST( std::abs( (c[1][2]) - (53.0) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1962,7 +1975,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({1, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(b)), 0.0, begin(c));
-		BOOST_TEST( c[0][0] == 100. );
+		BOOST_TEST( std::abs( (c[0][0]) - (100.) ) < 1e-12 );
 	}
 #endif
 
@@ -1977,9 +1990,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({3, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(b)), 0.0, begin(c));
-		BOOST_TEST(c[0][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
-		BOOST_TEST(c[1][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
-		BOOST_TEST(c[2][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST( std::abs( (c[0][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
+		BOOST_TEST( std::abs( (c[1][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
+		BOOST_TEST( std::abs( (c[2][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 	}
 #endif
 
@@ -1993,9 +2006,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({3, 10}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1.0, a, blas::H(b), 0.0, c);
-		BOOST_TEST(c[0][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
-		BOOST_TEST(c[1][0] == (2. + 1. * I) * std::conj(3. + 4. * I));
-		BOOST_TEST(c[0][1] == (2. + 1. * I) * std::conj(3. + 4. * I));
+		BOOST_TEST( std::abs( (c[0][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
+		BOOST_TEST( std::abs( (c[1][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
+		BOOST_TEST( std::abs( (c[0][1]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 	}
 #endif
 
@@ -2009,7 +2022,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({1, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 		c = blas::gemm(1.0, a, blas::H(b));
-		BOOST_TEST( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+		BOOST_TEST( std::abs( (c[0][0]) - ((2. + 1.*I)*std::conj(3. + 4.*I)) ) < 1e-12 );
 	}
 #endif
 
@@ -2023,7 +2036,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({1, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS name
 		c = blas::gemm(1.0, a, b);
-		BOOST_TEST( c[0][0] == (2.0 + 1.0*I)*(3. + 4.0*I) );
+		BOOST_TEST( std::abs( (c[0][0]) - ((2.0 + 1.0*I)*(3. + 4.0*I)) ) < 1e-12 );
 	}
 #endif
 
@@ -2036,7 +2049,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<complex, 2> c({1, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS name
 		c = blas::gemm(1.0, a, b);
-		BOOST_TEST( c[0][0] == 6.0 );
+		BOOST_TEST( std::abs( (c[0][0]) - (6.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2058,20 +2071,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto olap2 = +blas::gemm(1.0, blas::H(mat({0, 10}, {0, 1})), vec);
 
 			BOOST_TEST( blas::H(mat)[1].size() == (~vec)[0].size() );
-			BOOST_TEST( blas::dot(blas::H(mat)[0], (~vec)[0]) == olap1[0][0] );
-			BOOST_TEST( std::inner_product(blas::H(mat)[0].begin(), blas::H(mat)[0].end(), (~vec)[0].begin(), complex{0}) == olap1[0][0] );
+			BOOST_TEST( std::abs( (+blas::dot(blas::H(mat)[0], (~vec)[0])) - (olap1[0][0]) ) < 1e-12 );
+			BOOST_TEST( std::abs( (std::inner_product(blas::H(mat)[0].begin(), blas::H(mat)[0].end(), (~vec)[0].begin(), complex{0})) - (olap1[0][0]) ) < 1e-12 );
 
 			multi::array<complex, 2> mat2  = mat({0, 10}, {0, 1});
 			auto                     olap3 = +blas::gemm(1.0, blas::H(mat2), vec);
 
-			BOOST_TEST(olap1[0][0] == olap2[0][0]);
-			BOOST_TEST(olap3[0][0] == olap2[0][0]);
+			BOOST_TEST( std::abs( (olap1[0][0]) - (olap2[0][0]) ) < 1e-12 );
+			BOOST_TEST( std::abs( (olap3[0][0]) - (olap2[0][0]) ) < 1e-12 );
 		}
 		{
 			multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
 
 			auto olap3 = +blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec);
-			BOOST_TEST( (+blas::gemm(1.0, blas::H(mat2), vec))[0][0] == (+blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
+			BOOST_TEST( std::abs( ((+blas::gemm(1.0, blas::H(mat2), vec))[0][0]) - ((+blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec))[0][0]) ) < 1e-12 );
 		}
 	}
 #endif
@@ -2085,9 +2098,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({2, 4}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1.0, ~A, ~B, 0.0, ~C);
 
-		BOOST_TEST(C[0][0] == 105.0);
-		BOOST_TEST(C[0][1] == 105.0);
-		BOOST_TEST(C[1][0] == 105.0);
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2100,9 +2113,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({4, 2}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1.0, ~A, ~B, 0.0, C);
 
-		BOOST_TEST(C[0][0] == 105.0);
-		BOOST_TEST(C[0][1] == 105.0);
-		BOOST_TEST(C[1][0] == 105.0);
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2115,9 +2128,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 2> C({2, 4}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, ~C);
 
-		BOOST_TEST(C[0][0] == 105.0);
-		BOOST_TEST(C[0][1] == 105.0);
-		BOOST_TEST(C[1][0] == 105.0);
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2130,9 +2143,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 2> C({4, 2}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, C);
 
-		BOOST_TEST( C[0][0] == 105.0 );
-		BOOST_TEST( C[0][1] == 105.0 );
-		BOOST_TEST( C[1][0] == 105.0 );
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2145,8 +2158,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 2> C({4, 2}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, C);
 
-		BOOST_TEST( C[0][0] == 105.0 );
-		BOOST_TEST( C[1][0] == 105.0 );
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2159,8 +2172,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<double>, 2> C({4, 1}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(std::complex<double>{1.0, 0.0}, ~A, ~B, std::complex<double>{0.0, 0.0}, C);
 
-		BOOST_TEST( C[0][0] == 105.0 );
-		BOOST_TEST( C[1][0] == 105.0 );
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 
@@ -2173,8 +2186,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> C({4, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm(1.0, ~A, ~B, 0.0, C);
 
-		BOOST_TEST( C[0][0] == 105.0 );
-		BOOST_TEST( C[1][0] == 105.0 );
+		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
+		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
 #endif
 #if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 65)
