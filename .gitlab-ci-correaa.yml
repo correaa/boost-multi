@@ -1109,7 +1109,7 @@ cuda-13.3.0:
 
 rocm:
   stage: build
-  image: rocm/dev-ubuntu-24.04:7.0.2
+  image: rocm/dev-ubuntu-24.04:7.0.2-complete
   allow_failure: true  # TODO(correaa) flip to false once the (re-enabled) HIP subdirs build clean on ROCm 7 / CCCL 3
   tags:
     - non-shared
@@ -1119,7 +1119,7 @@ rocm:
   # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
     - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
+    # - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - /opt/rocm/llvm/bin/clang++ --version
@@ -1413,7 +1413,7 @@ inq cuda:
 
 inq rocm:
   stage: test
-  image: rocm/dev-ubuntu-24.04:6.4.4
+  image: rocm/dev-ubuntu-24.04:6.4.4-complete
   allow_failure: false
   tags:
     - non-shared
