@@ -88,7 +88,10 @@ auto max_abs_diff(A const& aa, B const& bb) -> double {
 // .imag(): vec3 provides only +, -, and multiplication by a complex scalar;
 // the FFT kernels never need anything else from T.
 struct vec3 {
-	complex x{}, y{}, z{};
+	vec3() noexcept = default;
+	vec3(complex xx, complex yy, complex zz) noexcept : x{xx}, y{yy}, z{zz} {}
+
+	complex x, y, z;
 
 	friend auto operator+(vec3 const& a, vec3 const& b) -> vec3 { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
 	friend auto operator-(vec3 const& a, vec3 const& b) -> vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
