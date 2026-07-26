@@ -225,8 +225,8 @@ struct                                                                          
 
 	using ref_::taked;
 
-	/// yields an array-view of the same dimensionality taking the first @p n subarrays in the leading dimension
-	constexpr auto taked(difference_type n) && -> decltype(auto) { return ref_::taked(n).element_moved(); }
+	/// yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
+	constexpr auto taked(difference_type count) && -> decltype(auto) { return ref_::taked(count).element_moved(); }
 
 	using ref_::dropped;
 
