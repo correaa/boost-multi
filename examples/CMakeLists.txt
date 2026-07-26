@@ -12,7 +12,7 @@ include_directories(../include)
 #...
 #target_link_library(my_target PUBLIC multi)
 
-find_package(Boost REQUIRED COMPONENTS iostreams serialization unit_test_framework)
+find_package(Boost REQUIRED CONFIG COMPONENTS iostreams serialization)
 add_subdirectory("../" multi-bin)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,7 +56,7 @@ if(TBB_FOUND)
 endif()
 
 # Boost (header-only for what we use)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED CONFIG)
 
 # libpng (required by Boost.GIL PNG backend)
 find_package(PNG REQUIRED)
