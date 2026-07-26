@@ -1514,7 +1514,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto taked(difference_type n) const& { return taked_aux_(n).as_const(); }  // cppcheck-suppress duplInheritedMember;
+	/// yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
+	constexpr auto taked(difference_type count) const& { return taked_aux_(count).as_const(); }  // cppcheck-suppress duplInheritedMember;
 
  private:
 	BOOST_MULTI_HD constexpr auto halved_aux_() const {
