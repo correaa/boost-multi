@@ -451,7 +451,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 #endif
 
 	ElementPtr                                                 base_;
-	typename std::iterator_traits<ElementPtr>::difference_type offset_;
+	typename std::iterator_traits<ElementPtr>::difference_type offset_ = 0;  // always a plain integer (unlike base_): zero-cost to keep well-defined through subarray_ptr()'s defaulted default constructor
 
 #ifdef _MSC_VER
 #pragma warning(pop)

@@ -27,9 +27,9 @@ template<class T>
 struct counting_allocator {
 	using value_type = T;
 
-	std::size_t* alloc_count;
-	std::size_t* dealloc_count;
-	std::size_t* last_alloc_n;
+	std::size_t* alloc_count;  // NOLINT(misc-non-private-member-variables-in-classes)
+	std::size_t* dealloc_count;  // NOLINT(misc-non-private-member-variables-in-classes)
+	std::size_t* last_alloc_n;  // NOLINT(misc-non-private-member-variables-in-classes)
 
 	auto allocate(std::size_t n) -> T* {
 		++(*alloc_count);
@@ -89,9 +89,9 @@ auto max_abs_diff(A const& aa, B const& bb) -> double {
 // the FFT kernels never need anything else from T.
 struct vec3 {
 	vec3() noexcept = default;
-	vec3(complex xx, complex yy, complex zz) noexcept : x{xx}, y{yy}, z{zz} {}
+	vec3(complex xx, complex yy, complex zz) noexcept : x{xx}, y{yy}, z{zz} {}  // NOLINT(bugprone-easily-swappable-parameters)
 
-	complex x, y, z;
+	complex x, y, z;  // NOLINT(misc-non-private-member-variables-in-classes)
 
 	friend auto operator+(vec3 const& a, vec3 const& b) -> vec3 { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
 	friend auto operator-(vec3 const& a, vec3 const& b) -> vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
@@ -114,7 +114,7 @@ struct fft_ops<vec3, std::complex<double>> {
 };
 }  // namespace boost::multi
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+auto main() -> int {  // NOLINT(google-readability-function-size,hicpp-function-size,readability-function-size,readability-function-cognitive-complexity,bugprone-exception-escape)
 	// 1D power-of-two matches a direct DFT
 	{
 		multi::array<complex, 1> arr = {
@@ -558,8 +558,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// always using its own std::allocator<T> (fft.NOTES.md §9.2/§10.4(b)):
 	// same size requested every call, exactly plan.scratch_elements().
 	{
-		std::size_t                 alloc_count = 0, dealloc_count = 0, last_n = 0;
-		counting_allocator<complex> alloc{&alloc_count, &dealloc_count, &last_n};
+		std::size_t alloc_count   = 0;
+		std::size_t dealloc_count = 0;
+		std::size_t last_n        = 0;
+
+		counting_allocator<complex> const alloc{&alloc_count, &dealloc_count, &last_n};
 
 		multi::array<complex, 1> arr(multi::extents_t<1>{1024}, complex{1.0, 0.0});
 		multi::fft_plan<1> const plan{arr.sizes(), multi::fft_forward};

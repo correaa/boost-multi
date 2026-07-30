@@ -3166,6 +3166,945 @@ fibers too), which is the packed-contiguous-batches direction already
 reverted in §11.24 -- i.e. the codelet and the batching schedule would have
 to succeed together, neither alone. Not pursued further.
 
+### 11.29 Explicit AVX2 SIMD pilot (stage_radix4_, complex&lt;double&gt;): correct and bit-exact, but no measurable win -- likely memory-bound, not compute-bound (2026-07-17)
+
+Prompted by this session's own diagnostic profiling (the "many"/batched sweeps'
+steady-state ratio to FFTW is ~1.5-2.1x, clearly worse than the ~1.0-1.4x the
+single-transform sweeps show, previously attributed to a batching-schedule gap
+-- see the session's live diagnosis before this section). The project's
+standing policy ([[fft-simd-policy]]) reserves manual SIMD intrinsics as a
+"localized last resort"; this was that resort, attempted deliberately (not a
+speculative try) after ~10 auto-vectorization-preserving kernel-shape
+experiments (§11.13, §11.18, §11.24, §11.25, §11.26, §11.27, §11.28) all
+failed or came back mixed, suggesting the auto-vectorizer itself had
+plateaued below FFTW's hand-tuned-codelet throughput.
+
+**Implementation.** An explicit AVX2 fast path inside `stage_radix4_`'s
+existing `for j` batch loop only (structure otherwise untouched: block/r
+loops, twiddle hoisting, `BOOST_MULTI_FFT_RESTRICT`), gated
+`if constexpr(Batched && T==TW==std::complex<double>)`, `#if
+defined(__AVX2__)` (no CMake/build changes -- code does not exist at all in a
+non-AVX2 TU), with a `BOOST_MULTI_FFT_DISABLE_AVX2` escape hatch. 2 packed
+`complex<double>` per `__m256d`, via the standard shuffle+`addsub_pd`
+complex-multiply technique (the same pattern FFTW's own SIMD codelets use).
+Deliberately `mul_pd`+`addsub_pd`, **not** fused `vfmadd` -- same operation
+order as the scalar `fft_ops` path, so every lane's rounding is bit-identical
+to scalar, not just close. `fft_ops`/`fft_mul_dir` (the customization point
+`vec3` and mixed-precision executions rely on, `test/algorithms_fft.cpp:83-112,
+511-548`) were not touched at all -- the SIMD path is a sibling branch inside
+one kernel's body, invisible to (not instantiated for) every other `T`.
+
+**Correctness**: strict build (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion
+-Wsign-conversion -Werror`) clean in all four combinations (with/without
+`-mavx2`, g++/clang++), `-fsanitize=address,undefined` clean in both build
+modes (in particular confirms the unaligned `loadu`/`storeu` intrinsics never
+read/write out of bounds). **New verification technique**: because the design
+avoids FMA, built the test binary twice -- once with the SIMD path active,
+once with `-mavx2 -DBOOST_MULTI_FFT_DISABLE_AVX2` forcing the scalar path --
+ran both on identical seeded random inputs across every radix-4-exercising
+1-D size (pure powers of 4, mixed composites) and batched "many" cases
+including odd `howmany` (5,7,63,65, exercising the scalar remainder loop
+after the SIMD pairs): 465,144 `complex<double>` output values, **bit-for-bit
+identical** between the two builds -- stronger evidence than a tolerance
+check, and confirms the intrinsics compute exactly what the scalar path
+computes, not just approximately.
+
+**Benchmark: no measurable win.** Two full runs each of `many h=32`, `many
+h=256` (the sweeps that most cleanly showed the diagnosed gap),
+`1-D`/`2-D`/`3-D`/`many3d h=32`, idle machine, calibration clean throughout.
+Per-size AVX2/baseline ratio clusters at 0.98-1.02x **regardless of whether
+the size's factorization uses radix-4** -- e.g. `many h=256` run 2: n=512
+improved 7% (0.928) but n=128 and n=4096 (both radix-4-heavy) regressed 9%
+and 3% (1.091, 1.026); no size showed a repeatable win across both runs.
+Geomean ratio to FFTW barely moved anywhere (`many h=256`: 2.056 -> 2.025,
+well within run-to-run noise per the two-run comparison). This is
+indistinguishable from noise, not a signal tracking radix-4 usage the way a
+real kernel-level win should (contrast §11.18's regression, which tracked
+radix-16 usage cleanly in the same kind of per-size table).
+
+**Decision.** Per this project's standing rule (a kernel change is judged by
+the full benchmark, not by whether the technique is sound), reverted --
+`fft.hpp` confirmed diff-clean against HEAD. Correctness and the bit-exact
+technique are the reusable artifacts; the code itself is not kept.
+
+**Working hypothesis for why (not confirmed -- no hardware performance
+counters available in this environment; `perf` is access-restricted here).**
+The "many" sweeps time one `execute()` call over the whole `howmany*n` block
+after a single cold-cache flush -- e.g. h=256, n=1024 is 4MB, larger than
+typical L1/L2. FFT has low arithmetic intensity (O(n log n) flops over O(n)
+data -- few flops per byte moved), so once the working set exceeds cache,
+wall time is plausibly dominated by memory bandwidth/latency, not ALU
+throughput -- in which case doubling arithmetic throughput via SIMD has
+nothing to buy. This would also retroactively explain the earlier diagnostic
+finding that FFTW itself shows near-zero batch benefit above n~256 (this
+session, live): if FFTW is *also* memory-bound at that point, its edge over
+Multi is not raw per-element arithmetic speed (which this experiment now
+suggests isn't the bottleneck for either library at these sizes) but
+something about total memory traffic or access pattern -- fewer
+passes/bytes moved per transform, not faster per-element compute. If this
+holds, it reframes essentially the whole line of kernel-arithmetic
+experiments in this file (§11.13 onward, now including this one): none of
+them could have closed the gap, because the gap was never primarily an
+arithmetic-throughput problem at the sizes these benchmarks probe. **Not
+verified** -- would need `perf stat` (cache-miss/memory-bandwidth counters)
+on a machine where hardware counters are available, or a controlled
+in-cache-vs-out-of-cache working-set-size sweep, to confirm before treating
+this as established rather than a plausible explanation for an otherwise
+surprising null result.
+
+**Follow-up: FMA variant, same null result.** Before accepting the
+memory-bound hypothesis, re-tried with `_mm256_fmaddsub_pd` (fused
+multiply-add: `x*wr_wr` and the `-/+ (x_sw*wi_wi)` addsub fused into one
+instruction, replacing the separate `mul_pd`+`addsub_pd` pair) -- one fewer
+instruction per twiddle multiply, in case the plain-AVX2 variant's lack of
+effect was itself an artifact of leaving throughput on the table rather than
+evidence of a memory-bound regime. Gated `#if defined(__AVX2__) &&
+defined(__FMA__)` (confirmed `-mavx2` alone does NOT define `__FMA__`;
+needs `-mfma` explicitly, though `-march=native` implies both). Fusing the
+multiply-add means one rounding step instead of two, so results are no
+longer bit-identical to the scalar path (a real, expected IEEE difference,
+not a bug) -- quantified directly: 465,144 values compared against the
+bit-exact reference dump, max absolute difference 2.8e-14, max relative
+difference 1.4e-13, consistent with a few-ULP fusion effect and nothing
+alarming. Full correctness gate repeated and clean (strict build all three
+relevant flag combinations, ASan/UBSan, g++/clang++).
+
+Benchmark (2 full runs, `many h=256` and the other sweeps, idle machine,
+clean calibration throughout): **same null result as the non-FMA variant,
+and the same tell that it's noise** -- the sign of the radix-4-vs-non-radix-4
+differential flips between runs (run 1: radix-4 sizes geomean 0.992 vs
+non-radix-4 control 0.962, i.e. radix-4 sizes did WORSE than the unaffected
+control; run 2: radix-4 0.993 vs control 1.015, reversed), and individual
+sizes flip sign run-to-run too (e.g. n=1024: 1.002 then 0.968; n=2048: 1.010
+then 1.049, consistently regressing both times). Reverted, same as the
+non-FMA variant -- `fft.hpp` confirmed diff-clean against HEAD again.
+
+This strengthens rather than weakens the memory-bound hypothesis above:
+shaving one instruction per twiddle multiply via fusion made no
+measurable difference either, consistent with arithmetic instruction count
+not being the limiting resource at these sizes under this benchmark's
+cold-cache methodology. Still not confirmed via direct hardware-counter
+measurement (unavailable in this environment) -- but two independent
+SIMD variants (plain and fused) both landing on the same null result, with
+the same "control sizes move as much as treatment sizes" tell both times,
+is stronger evidence than either alone.
+
+### 11.30 Closing diagnosis: the gap is memory-bound (stage count / bytes moved), not compute-bound -- constexpr twiddles ruled out, SIMD ruled out (2026-07-17)
+
+Synthesis of the last several sections of this session (§11.24-§11.29), prompted
+directly by §11.29's surprising null result: two independent explicit-SIMD
+variants of `stage_radix4_` (plain AVX2 and FMA), both numerically verified,
+both produced *no* measurable benchmark improvement. That result only makes
+sense if raw arithmetic throughput was never the bottleneck -- this section
+tests that directly, analytically and against measured data, without touching
+`fft.hpp`.
+
+**Twiddle-table traffic (the "would `constexpr` twiddles help" question):
+ruled out, no experiment needed.** For every size in the `many h=256` sweep,
+twiddle-table bytes touched (`tw_`, size `n`) are 250x-3000x smaller than the
+data bytes touched (size `n * howmany`) per `execute()` call -- e.g. n=32:
+twiddle traffic is 0.1% of total; n=4096: 0.03%. Even *completely* eliminating
+twiddle-table loads (which `constexpr` values would not fully do anyway --
+floating-point immediates still cost a `.rodata` load on x86-64, there is no
+"free" way to materialize an arbitrary double in a register) caps out at a
+fraction of a percent of total memory traffic. Not the lever, and cheap enough
+to rule out by direct calculation rather than by building anything.
+
+**Memory-pass count (bytes moved per `execute()` call): the dominant term,
+and it quantitatively predicts measured time.** `fft_engine`'s factorization
+(`fft.hpp:469-494`) reproduced in Python for every `many h=256` size: current
+scheme does 1 full read + 1 full write of the whole `[howmany][n]` batch *per
+stage* (matching `run_stages_`/`run_fused_impl_`'s ping-pong exactly), so
+total bytes moved = `stages * 2 * howmany * n * sizeof(complex<double>)`.
+
+| n | factorization | stages | bytes moved | predicted @ 20 GB/s | measured | pred/meas |
+|---|---|---:|---:|---:|---:|---:|
+| 256 | `[4,4,4,4]` | 4 | 8.39 MB | 0.419 ms | 0.353 ms | 1.19 |
+| 512 | `[4,4,4,8]` | 4 | 16.78 MB | 0.839 ms | 0.807 ms | 1.04 |
+| 1024 | `[4,4,4,4,4]` | 5 | 41.94 MB | 2.097 ms | 1.726 ms | 1.22 |
+| 2048 | `[4,4,4,4,8]` | 5 | 83.89 MB | 4.194 ms | 4.073 ms | 1.03 |
+| 4096 | `[4,4,4,4,4,4]` | 6 | 201.33 MB | 10.066 ms | 8.756 ms | 1.15 |
+
+A single fitted bandwidth constant (20 GB/s, a plausible single-thread
+DDR4/DDR5 figure, not independently measured -- `perf`'s memory-bandwidth
+counters are access-restricted in this environment) predicts measured time
+within 3-22% consistently across a 16x range of `n` spanning 4 to 6 stages
+with genuinely different factorizations. A model driven purely by stage count
+would not track measured time this closely across structurally different
+factorizations if compute time (not memory traffic) were dominant -- this is
+real, if not airtight, quantitative support, not just a plausible story.
+
+**Synthesis with FFTW.** FFTW's codelet library (generated via `genfft`,
+twiddles baked in as compile-time literals, unrolled up to much larger direct
+sizes than this file's radix-8 ceiling) very likely does substantially fewer,
+bigger passes per transform for the same `n` -- e.g. 2 large-codelet passes
+where this library does 5 small-stage passes for n=1024. Under a
+bandwidth-bound regime, halving stage count roughly halves bytes moved and
+roughly halves wall time, which is the right order of magnitude for the
+observed ~2-2.3x gap at n=1024-4096. `FFTW_ESTIMATE` with wisdom disabled
+uses static heuristics, no runtime search -- so this is not FFTW being
+"smarter," it is FFTW's *code* containing structurally less memory traffic,
+baked in at code-generation time.
+
+**Why this reframes §11.13-§11.29.** If correct, every kernel-arithmetic
+experiment in this file's history -- split-radix, all-radix-8, twiddle-skip,
+the `+-i` shortcut, mixed-precision twiddles, both explicit-SIMD variants --
+was attacking a dimension (per-element compute speed) that was never the
+dominant cost at the sizes these benchmarks probe. The two experiments that
+DID attack the right dimension (fewer/bigger passes) both failed for
+*implementation-specific* reasons compatible with the theory rather than
+refuting it: `stage_radix16_` (§11.18, -20 to -80%) grew live-value count
+per pass and hit a register-pressure ceiling; the size-32 codelet (§11.28,
+2-D n=32 +67-71%) was correct and fast in isolation but was deployed into a
+schedule (32 independent cold m=1 row calls per 2-D transform) where a large
+unrolled kernel's own code-refetch cost dominated. Neither result contradicts
+"fewer passes should help" -- both show that *how* you get fewer passes
+matters as much as whether you do.
+
+**Where this leaves the remaining lever.** The only mechanism left standing
+with a real quantitative story is reducing stage count (bytes moved), and
+the target is narrow: a scheme needs to fuse multiple current stages into
+fewer passes *without* growing per-pass live-value count the way a bigger
+flat radix kernel does, and *without* being deployed into an m=1-dominated
+calling pattern the way the size-32 codelet was. Neither prior attempt found
+that combination; this session did not attempt a third. Any future attempt
+should design explicitly against both known failure modes from the start
+(measure live-value count / register pressure before benchmarking, per
+[[fft-register-pressure-pattern]]; check which calling pattern -- batched or
+m=1-dominated -- the target size/context actually uses, per §11.28's lesson)
+rather than discovering either after the fact.
+
+### 11.31 Construction-time stride-aware `fft_plan`: investigated, not implemented -- evidence against it already in this file (2026-07-17)
+
+Maintainer question following §11.30: could `fft_plan` learn the array's
+stride/layout at *construction* time (it currently only knows extents/
+directions -- `execute()` re-derives layout from the runtime `Cursor` fresh
+on every call, via `fft_view_from_cursor`/`fft_layout_from`, `fft.hpp:
+1470-1501`), instead of re-discovering contiguity via runtime branches
+(`fib.stride()==1` in `fft_exec_fiber`; `get<0>/get<1>(slab.strides())==1`
+in `fft_exec_slab`, `fft.hpp:1270-1393`) on every `execute()` call? Given
+§11.30 identified memory traffic as the dominant cost, the question was
+whether hoisting this decision reduces bytes moved or only removes branch
+overhead.
+
+**Investigated (read-only, no code written) rather than implemented,
+because the evidence against it is already in this file's own history:**
+
+1. The contiguity fast paths that actually change bytes moved (skipping a
+   full gather+scatter pass when an axis is unit-stride) are already taken
+   whenever the data warrants it -- the runtime check that selects them is
+   already measured negligible: §11.17 (`fft.hpp` `fft_exec_slab`/
+   `fft_exec_fiber` self-time, 0.40-1.26% of total wall time in full 2-D/3-D
+   transforms). Hoisting an already-negligible per-call branch removes
+   overhead that isn't measurably there.
+2. The remaining runtime stride-dependent choices (`fiber_near` blocking
+   order, `fft_min_abs_mid_stride`-driven axis reordering) affect *how* a
+   strided gather/scatter is laid out, not *whether* one happens or how much
+   data it touches -- no bytes-moved effect to hoist.
+3. **Direct precedent already measured in this file**: §11.26 (this
+   session) implemented and reverted a fused rank-2 schedule built on
+   exactly the reasoning "reschedule *when* a strided gather happens to
+   reduce traffic" -- its own finding was that total bytes moved does not
+   change, because the gather is intrinsic to non-unit-stride data, not to
+   when or how the decision to perform it is made. Construction-time vs.
+   execute-time stride knowledge is a variation on "when," not a new
+   mechanism -- §11.26 already answered the underlying question.
+4. The dominant memory-traffic term §11.30 quantified (engine-internal stage
+   ping-pong, `stages * 2 * howmany * n * sizeof(T)`) lives entirely inside
+   `run_stages_`/`run_fused_impl_`, a layer this idea doesn't touch at all --
+   even a perfect implementation of stride-aware dispatch couldn't reach the
+   cost that actually dominates.
+
+**Conclusion**: not implemented. Recorded as a "stop before building" case
+distinguishable from most of this file's other reverted experiments (which
+were plausible until measured) -- here, three independent already-measured
+facts about this exact codebase point the same way before writing any code,
+and one of them (§11.26) is a directly analogous already-completed
+experiment for the underlying "does rescheduling around strides reduce
+bytes moved" question, not merely a suggestive precedent. If a future
+session revisits this, the open question is not "would hoisting the check
+help" (answered: no) but whether there's a *different* mechanism construction-
+time layout knowledge could unlock beyond re-timing an already-cheap
+dispatch decision -- not identified in this pass.
+
+### 11.32 A benchmark gap, not just a code gap: Multi's genuinely-batched path was never measured, and it beats FFTW_ESTIMATE broadly once it is (2026-07-17)
+
+Direct follow-up to §11.31's trace: while confirming the call path for a
+construction-time-known layout, it became clear that **no existing sweep in
+this file's benchmark suite exercises Multi's genuinely batched (`m>1`,
+fused, no gather/scatter) execution path in isolation.**
+
+- `sweep_many` (`benchmark/algorithms_fft.cpp`) uses `{none, forward}` on a
+  `(howmany, n)` row-major array -- the transformed axis is the *last*
+  (contiguous) axis, which always routes through the m=1-per-fiber path
+  (`fft_exec_fiber`/`run_contig_inplace`), never the batched fused path.
+  Confirmed independently by this session's earlier diagnostic profiling,
+  which measured "Multi batch benefit ~1.00x" for exactly this pattern --
+  no internal batching happens at all, despite the name.
+- The 2-D/3-D/many3d sweeps *do* reach the genuinely batched path (the
+  "column pass" of any transform where both of the last two axes are
+  active, `fft_apply_last_pair`), but only ever mixed with an m=1 row pass
+  in the same reported number -- never isolated.
+
+**The isolating pattern, traced and confirmed against source
+(`fft.hpp:1645-1454`, `apply_`/`transform_axes_`/`fft_apply_last`/
+`fft_exec_slab`):** `fft_plan<2>{(n, howmany), {forward, none}}` -- transform
+the *non-last* axis, leave the last axis `none`. `apply_()`'s fused-pair
+guard requires both `D-1` and `D-2` non-`none`, so it's skipped;
+`transform_axes_` visits axis `D-1` (`none`, zero-cost no-op) then rotates
+and calls `fft_apply_last` on axis 0 -- the same call shape
+`fft_apply_last_pair` uses for its own column pass. In the rotated view,
+`get<0>(strides)==1 && get<1>(strides)==howmany>1 && can_fuse()` routes into
+`fft_exec_slab`'s fused batch-axis-contiguous branch (`fft.hpp:1325-1336`):
+genuinely batched, `mt = min(mb_, howmany)`, no gather/scatter pass at all.
+This is also directly FFTW's native "strided batch" advanced-interface
+pattern (`istride=howmany, idist=1`), so it's a fair, apples-to-apples
+comparison FFTW itself is built to make efficient too.
+
+**Implementation.** Added `sweep_many_strided` to
+`benchmark/algorithms_fft.cpp`, mirroring `sweep_many`'s scaffolding exactly
+(same methodology: flushed cache, interleaved timing, plan-recycled arena
+reuse) but with the array axes swapped (`(n, howmany)` instead of `(howmany,
+n)`, `{forward, none}` instead of `{none, forward}`) and FFTW's istride/idist
+swapped to match (`istride=howmany, idist=1` instead of `istride=1,
+idist=n`). No `fft.hpp` changes -- purely a missing benchmark, not a missing
+feature.
+
+**Result: Multi substantially outperforms FFTW_ESTIMATE in this pattern,
+for most sizes.**
+
+| sweep | geomean (mine/FFTW) | Multi wins |
+|---|---:|---:|
+| many-strided, howmany=32 | 0.825 (Multi ~18% faster on average) | 10/14 |
+| many-strided, howmany=256 | 0.541 (Multi ~85% faster on average) | 11/14 |
+
+Sharp, consistent split by size:
+- **n <= 128** (32, 64, 128 specifically -- the small power-of-two-ish
+  sizes): Multi is slower, 1.2-1.4x. This includes n=32, the exact size
+  targeted by the whole §11.25/§11.27/§11.28/§11.29 codelet/SIMD line.
+- **n >= 243**: Multi is faster, often dramatically -- up to 3.4x faster at
+  n=4096, howmany=256 (ratio 0.29). The advantage grows with batch depth
+  (h=256 beats h=32 substantially at the same n), consistent with deeper
+  batching amortizing a fixed per-call cost more effectively.
+
+**Why this matters beyond one more data point.** Every prior "Multi trails
+FFTW by ~1.2-2x" statement made earlier in this session's live diagnosis was
+built entirely on sweeps that either measure single m=1-dominated transforms,
+or -- as this section discovered -- a "many" sweep that (despite its name)
+never actually exercises batching at all. The one code path that *does*
+genuinely batch turns out to be one of Multi's strongest areas, not a
+weakness, for most of the size range. This is a real correction to the
+overall performance picture this session had been operating under, not a
+footnote: the earlier ~2x-gap framing that motivated the codelet/SIMD
+experiments (§11.25 onward) was accurate for the contexts those experiments
+actually targeted (m=1-dominated row passes, and the mislabeled "many"
+sweep) but should not be read as characterizing Multi's performance broadly.
+
+**What this does and doesn't imply for the small-n gap.** The motivating
+case for a size-32 codelet still exists -- Multi is measurably slower
+exactly where one would apply it (n=32, both howmany values) -- but the gap
+there (1.28-1.42x, likely fixed per-call/dispatch overhead given it
+shrinks as `howmany` work-per-call grows relative to it, not the
+~2x-and-worse arithmetic-throughput framing that originally motivated
+§11.25/§11.27-29) is smaller and differently-located than previously
+assumed. Any future codelet attempt should be scoped and measured against
+*this* sweep (`many-strided`, isolated batched, both `howmany` depths)
+specifically, not the row-dominated 2-D composite that misled the Variant-A
+integration decision in §11.28.
+
+### 11.33 A third axis pattern, {forward,none,forward}: the gap doesn't matter, the m=1 pass does (2026-07-17)
+
+Follow-up to §11.32, requested directly: benchmark `{forward, none,
+forward}` on a `(n, depth, n)` array -- two transformed axes (0 and 2)
+separated by an untouched middle axis, unlike `sweep_many3d`'s adjacent
+`{none, forward, forward}` pair (which hits the fused-pair fast path) or
+`sweep_many_strided`'s single active axis. `apply_()`'s fused-pair guard
+needs both `D-1` and `D-2` non-`none`; here `dirs_[D-2]` (axis 1) is `none`,
+so the guard fails and the two active axes are handled by two *separate*
+passes: axis 2 (last, contiguous) via the ordinary m=1-per-fiber path, axis
+0 (via a once-rotated view) via whatever contiguity its rank-3 recursion
+finds -- traced to still land on the same fused batch-contiguous mechanism
+`sweep_many_strided` isolates (batched over axis 2's stride-1 extent), just
+with an extra outer `depth` loop layered on top of both passes.
+
+**Implementation.** Added `sweep_gap3d` to `benchmark/algorithms_fft.cpp`.
+FFTW comparison needed the *guru* interface (`fftw_plan_guru_dft`), not the
+simpler advanced interface `sweep_many`/`sweep_many3d`/`sweep_many_strided`
+use -- the two transformed dimensions aren't a simple contiguous embedding
+here (`dims = {n, stride=depth*n}` for axis 0, `{n, stride=1}` for axis 2;
+`howmany_dims = {depth, stride=n}` for the gap axis). Verified independently
+before trusting any timing: both Multi's plan output and the hand-derived
+guru-interface parameters checked against a naive DFT reference on a small
+case (n=8, depth=3) -- both correct to ~2e-14.
+
+**Result: Multi is mostly slower here (geomean 1.66, 2/14 wins), and closely
+tracks `sweep_many3d`'s numbers at the same sizes/depth** (e.g. n=8: 3.9-4.1x
+slower in both; n=256: ~0.70x, a real win, in both) despite the structural
+difference (gap vs. adjacent). This is itself the finding: **axis adjacency
+is not what determines the outcome.** What both `gap3d` and `many3d` share,
+and what `many_strided` lacks, is an m=1-per-fiber pass on the last axis --
+`many_strided` deliberately places its one active axis in the *non-last*
+position specifically to avoid that pass entirely, which is why it alone
+shows the dramatic win. `gap3d` and `many3d` both keep axis 2 (or the
+trailing pair) active and last, paying that pass either way, gap or no gap.
+
+**Refines §11.32's diagnosis.** The dividing line isn't "batched vs. not
+batched" or "adjacent vs. gapped" -- it's specifically whether *any* active
+axis is last/contiguous (forcing an m=1-per-fiber pass into the composite).
+Any transform configuration containing such a pass inherits its cost
+regardless of what else the configuration also does well; only a
+configuration that avoids it entirely (like `many_strided`'s single
+non-last active axis) gets to show the batched path's real strength
+undiluted.
+
+### 11.34 Variant B's size-32 codelet, retested in its actual isolated-batched context: still a regression, not a win (2026-07-18)
+
+§11.28's own hot-loop numbers showed "Variant B" (the layered, JT=16-tiled
+size-32 codelet from the SIMD-preserving-codelet experiment,
+`scratchpad/codelet32/proto.hpp`) winning +22%/+20% at batch widths m=32/64
+-- but it was never integrated, because Variant A (monolithic) was chosen
+instead to fit the then-current 2-D benchmark's m=1-dominated row pass. With
+§11.32's `sweep_many_strided` now isolating Multi's genuinely-batched,
+gather/scatter-free fused path (exactly the context Variant B's numbers came
+from), this was the natural next thing to check.
+
+**Integration** (`fft.hpp`, all under `BOOST_MULTI_FFT_EXPERIMENT_CODELET32B`,
+off by default):
+- New `stage_codelet32_<Batched,Backward,T>` kernel: Variant B's code
+  verbatim, ported from the scratchpad's standalone `cx`/`fft_mul_dir` shape
+  to the engine's `T`/`TW`-generic stage-kernel signature
+  `(a, b, ns, mm, sa_, sb_)` (matching `stage_radix4_`/`stage_radix8_` etc.;
+  `ns` is always 1 here and unused beyond an `assert`). Uses the existing
+  `fft_tile_buffer<T, 32*16>` for its [32][JT=16] scratch tile -- no new
+  buffer-management machinery.
+- New `kind = 7`; constructor override replaces the ordinary `{4,8}`
+  two-stage factorization of `nn==32` with a single `{32}`-factor, kind-7
+  stage, so the codelet is reachable as the SOLE stage of a plan, not
+  composed with anything else.
+- `can_fuse()` narrowly relaxed: a lone kind-7 stage now also returns `true`
+  (previously `stages_.size() >= 2` was required for the fused, no-gather-
+  scatter path). Justified because a single codelet32 stage has the same
+  aliasing-safety property multi-stage plans rely on for their first stage
+  (`ns==1`, same in-place-safe kernel shape) -- this is the "single-stage
+  case" extension flagged as needed in the original integration plan.
+  Deliberately scoped to kind==7 only; does NOT relax the rule for other
+  single-stage plans (e.g. small direct-kernel primes). `run_contig_inplace`
+  updated to call `can_fuse()` instead of duplicating the `>= 2` check, so
+  both call sites stay consistent by construction.
+
+**Correctness gate: full green.** Strict `-O2 -Wall -Wextra -Wpedantic
+-Wshadow -Wconversion -Wsign-conversion -Werror` build and the existing
+`test/algorithms_fft.cpp` suite (including the `vec3` generic-type coverage)
+passed for g++ and clang++, macro on and off (4 builds). `-fsanitize=address,undefined`
+clean for both macro states (2 more builds). 6/6 green.
+
+**Benchmark: consistent regression, not noise.** Built two benchmark
+binaries (`-DDISABLE_WISDOM -DUSE_ESTIMATE`, otherwise identical), macro off
+vs. on, and ran a focused n=32 check across `sweep_many_strided` (both the
+target context, h=32 and h=256) plus `sweep_many`/`sweep_many3d`/`sweep_gap3d`
+at n=32 as a regression check. Two full runs each (idle machine, calibration
+drift <2% both times):
+
+| pattern                    | baseline ratio (run1, run2) | codelet32B ratio (run1, run2) |
+|-----------------------------|------------------------------|--------------------------------|
+| many_strided h=32 (target)  | 1.392, 1.310                 | 1.597, 1.655                   |
+| many_strided h=256 (target) | 1.364, 1.294                 | 1.744, 1.280                   |
+| many h=32 (regression)      | 1.866                        | 2.100                          |
+| many3d h=32 (regression)    | 2.726                        | 2.862                          |
+| gap3d h=32 (regression)     | 2.269                        | 2.463                          |
+
+(ratio = mine/FFTW, lower is better.) The target pattern (`many_strided`,
+h=32) got repeatably *worse* with the codelet in both runs (+15%, +26%
+relative to its own baseline); h=256 was worse in one run and roughly flat
+in the other. Every other pattern checked also got mildly worse, never
+better. **Reverted** (`fft.hpp` back to clean HEAD; `git status --short`
+confirms byte-clean); no adoption.
+
+**Why the isolated hot-loop win didn't translate.** The hot-loop comparison
+in §11.28 measured only the codelet's own arithmetic/copy loop, in cache,
+with no surrounding pipeline. In the real engine, `stage_codelet32_` adds an
+extra tile copy in *and* out (`a`/`b` &lt;-&gt; the `[32][16]` tile) on top of
+the single memory pass an ordinary two-stage `{4,8}` pipeline already does --
+i.e. it trades two ordinary stage passes (each already reading and writing
+the ping-pong buffers once) for one pass plus a tile-buffer round trip, which
+is *more*, not less, memory traffic overall for this exact size. This lines
+up with [[fft-simd-policy]]'s working hypothesis (memory-bandwidth-bound, not
+compute-bound, once the batched working set leaves cache): a kernel-shape
+change that adds memory traffic to save arithmetic loses here even when the
+arithmetic-only slice of the work vectorizes better, because arithmetic was
+never the bottleneck. Two independent codelet variants (A in §11.28's
+integrated 2-D benchmark, B here in its own ideal isolated-batched context)
+have now both regressed on contact with a real flushed-cache benchmark --
+closes out the size-32 codelet line of investigation; no further variant is
+planned without new evidence that memory traffic, not arithmetic, is the
+lever being pulled.
+
+### 11.35 Per-stage packed twiddle tables (§6's listed idea) -- implemented, correctness-verified, net wash to mild regression, not adopted (2026-07-24)
+
+Maintainer-requested prototype of §6's "Per-stage packed twiddle tables"
+suggestion, the one item in that list never actually attempted in any §11
+session (unlike compile-time codelets, SIMD, mixed-precision twiddles, all
+tried and reverted). Also asked, separately: whether compiler flags
+(specifically `-ffast-math`, maintainer explicitly waiving IEEE conformance
+this time) change the picture now that the access pattern is different.
+
+**Hypothesis.** Radix-4/8/3/5 stage kernels load `tw_[k*r*tstep]` for several
+`k` per butterfly -- for early/middle stages (`tstep` large), consecutive `r`
+land on different cache lines (`tstep >= 4` complex-doubles per line means
+each load touches a fresh 64B line for 16B of payload). Repacking each
+stage's actually-visited twiddles into a small sequential buffer, built once
+at plan-construction time, should turn that into streaming reads.
+
+**Implementation** (`fft.hpp`, gated by `BOOST_MULTI_FFT_EXPERIMENT_PACKED_TWIDDLE`,
+off by default -- zero diff when undefined): scoped to radix-4 stages only
+(the dominant kernel: the power-of-two factorizer emits almost nothing else,
+see the constructor comment at `fft_engine::fft_engine`). New member
+`twp_`; constructor packs `(w1,w2,w3)` per `r` contiguously into it for every
+radix-4 stage, offset stored in that stage's `st.aux` (unused by kind 2
+otherwise) under a new kind 7. New `stage_radix4_packed_`, a byte-identical
+twin of `stage_radix4_` except its three twiddle loads come from `twp_` at
+that offset instead of the strided `tw_` computation. `run_stages_`/
+`run_fused_impl_` gain a `case 7` next to `case 2`, both macro-gated.
+
+**Correctness gate: full green.** Strict `-O2 -Wall -Wextra -Wpedantic
+-Wshadow -Wconversion -Wsign-conversion -Werror` (g++ and clang++, macro on
+and off -- clang caught an `-Wunused-but-set-variable` on the macro-off path
+for the `ns_build` tracker, fixed by wrapping its declaration in the same
+`#if` as its only use) and `-fsanitize=address,undefined` (same 4 combinations).
+6/6 green.
+
+**Benchmark: net wash, not the hoped-for win.** Used a trimmed copy of
+`benchmark/algorithms_fft.cpp` (`sweep_many_strided` only, howmany 32/256,
+n in {64..4096}, `-DDISABLE_WISDOM -DUSE_ESTIMATE`) -- the correct isolating
+context per §11.32/§11.34 (genuinely-batched, gather-free, radix-4-dominated
+for these sizes). Two runs per configuration to separate signal from noise
+(run-to-run swings up to ~8% were observed even for the SAME binary, e.g.
+baseline h32 n=256: 0.683 -> 0.736).
+
+| n (h32) | baseline (avg of 2) | packed (avg of 2) | packed/baseline |
+|---:|---:|---:|---:|
+| 64 | 1.496 | 1.228 | 0.82 (packing wins) |
+| 128 | 1.401 | 1.410 | 1.01 |
+| 256 | 0.710 | 0.685 | 0.97 |
+| 512 | 0.765 | 0.790 | 1.03 |
+| 1024 | 0.566 | 0.603 | 1.07 |
+| 2048 | 0.576 | 0.718 | 1.25 (packing loses, badly) |
+| 4096 | 0.615 | 0.606 | 0.99 |
+
+(ratio columns are mine/FFTW; the packed/baseline column is the one that
+matters here, <1 = packing helped.) h256 showed the same shape, smaller
+swings (0.96-1.15 range, no size above ~8% either direction). Geomean across
+all 14 (size x howmany) points: **~1.003 -- statistically a wash**, built
+from one real win (n=64, both howmany, -18%/-8%) roughly canceling one real
+loss (n=2048/h32, +25%), with everything else inside the run-to-run noise
+band measured above.
+
+**Why the theory didn't pay off.** `twp_` is a strict *addition* to the bytes
+touched per execution, not a replacement -- nothing stops reading `tw_`
+itself (the radix-4 kernel's `imu = tw_[q]` scalar still reads it, and every
+OTHER stage kind in the same plan still reads `tw_` directly). For these
+problem sizes `tw_` is small enough (n=4096 complex<double> = 64KB) to mostly
+stay resident in L2 across the repeated executions this benchmark's
+methodology measures, so the strided-access penalty the hypothesis targeted
+was likely already cheaper in practice than assumed -- consistent with
+[[fft-flushed-cache-methodology]] and the §11.30/§11.34 pattern that adding
+memory traffic to avoid a supposedly-expensive access pattern tends to lose
+once the "expensive" pattern turns out to be cache-resident anyway. The one
+consistent real win (smallest n, both batch depths) is the case with the
+FEWEST stages and thus the SMALLEST added `twp_` footprint relative to what
+it saves -- suggestive that a much narrower version (pack only the
+first/largest-`tstep` stage, not every radix-4 stage in the plan) might
+isolate the win without the added-footprint cost at larger n, but that is a
+different, untested experiment, not this one.
+
+**`-ffast-math` re-check, maintainer having waived IEEE conformance this
+session: still a net regression, unchanged verdict.** Same trimmed sweep,
+baseline (no packing) with vs without `-ffast-math` added to the existing
+`-O3 -march=native -mtune=native -funroll-loops -fno-math-errno` flags:
+every single size was flat-or-worse (h32: n=64 +47%, n=128 +41%, n=512 +17%,
+n=1024/2048 +5-10%; the only two flat/better points were n=256 and n=4096,
+within noise). Reconfirms §11.12 on a fresh code path -- the ban was never
+about precision policy (which the maintainer has now explicitly waived
+twice), it is a measured, repeatable speed regression on this codebase's
+loop shapes, for a mechanism (aggressive reassociation defeating the
+vectorizer's default instruction selection) that has nothing to do with
+what's being packed or not.
+
+**Disposition: reverted**, following this file's standing practice
+(§11.34) of not leaving unadopted experimental code behind even under a
+default-off macro -- `git diff` on `fft.hpp` confirmed clean after revert.
+If a future session wants to chase the "smallest-n only" thread above, this
+section is the starting point; re-derive rather than uncomment, since the
+scoped-to-first-stage-only variant is a different offset-computation shape,
+not a smaller diff of this one.
+
+### 11.36 Parallelism: the file-header thread-safety claim, actually measured -- a real, zero-code-change ~5x lever (2026-07-24)
+
+§6's future-work list named parallelism as unexplored; every §11 experiment
+to this point is single-threaded. `fft.hpp`'s own file-header comment
+already claims "concurrent `execute()` calls on the SAME plan object from
+multiple threads are safe with no external synchronization needed" (a plan
+owns no scratch; `execute()` allocates its arena locally per call) -- but
+that claim had never been benchmarked, only reasoned about. This session
+did, standalone, no `fft.hpp` changes (this is a usage pattern, not a
+library change).
+
+**Setup.** A standalone prototype (`std::thread` pool, one shared `const
+fft_plan`, one persistent `arena_alloc` monotonic-buffer arena PER THREAD --
+same idiom the official benchmark suite already uses for single-threaded
+runs) against an embarrassingly-parallel workload: many independent
+same-size 1-D transforms, split across threads. Reference: FFTW's own
+`fftw_plan_with_nthreads` on the equivalent single batched
+`fftw_plan_many_dft` call (the fair comparison -- FFTW threading its own
+batch internally, not a hand-rolled loop). Machine: 6-core/12-thread
+(i7-8700). Two workload scales per size (10x apart) to check the result
+wasn't a short-run timing artifact -- both agreed.
+
+| n, count | Multi 1thr | Multi 6thr (x) | Multi 12thr (x) | FFTW 1thr | FFTW 6thr | FFTW 12thr |
+|---|---:|---:|---:|---:|---:|---:|
+| 1024, 40000 | 153k/s | 775k/s (5.05x) | 811k/s (5.29x) | 325k/s | 945k/s | 937k/s |
+| 4096, 10000 | 31k/s | 163k/s (5.19x) | 143k/s (4.55x) | 52k/s | 205k/s | 203k/s |
+| 256, 160000 | 674k/s | 3011k/s (4.47x) | 3209k/s (4.76x) | 1458k/s | 3627k/s | 3533k/s |
+
+**Result: real, substantial, and free.** Multi scales ~2x at 2 threads,
+~3.5-3.7x at 4, peaks at **~4.5-5.3x at 6 threads** (matching this machine's
+6 physical cores -- hyperthreading past that gives little or nothing more,
+consistent with a memory-bandwidth-bound workload not benefiting from extra
+logical threads sharing the same execution units/cache). FFTW shows the
+same shape and roughly the same per-thread-count ratio to Multi as the
+existing single-threaded gap (~15-20%, unchanged by threading) -- i.e.
+**threading is a genuinely orthogonal lever**: it doesn't close the
+per-transform gap §11.30 diagnosed as memory-bound, it multiplies whatever
+throughput was already there by however many cores are actually available,
+for free, using a capability the library already has.
+
+**Why this is unlike every other §11 experiment.** Every compute-kernel
+attempt (SIMD, codelets, split-radix, packed twiddles, ...) required
+`fft.hpp` changes and risked regressions from added complexity or memory
+traffic, for gains that kept evaporating on contact with the flushed-cache
+benchmark. This lever requires **zero library changes** -- the thread-safety
+was already designed in (§9.2's plan/scratch decoupling, specifically to
+make this possible) and just needed a caller to actually use it and someone
+to measure that it works. The only remaining gap is exposure: no example or
+benchmark in this repo currently demonstrates the pattern, so a user reading
+`fft.hpp` would have to derive the `arena_alloc`-per-thread idiom themselves
+from the file-header comment and the benchmark suite's existing (single-
+threaded) arena-reuse pattern.
+
+**Not done in this session**: promoting the prototype into a permanent
+benchmark/example, or documenting the pattern in the header/NOTES beyond
+this record. Candidate follow-ups if this is pursued further: (a) add a
+`sweep_parallel`-style entry to `benchmark/algorithms_fft.cpp` so the
+scaling is tracked over time like every other sweep here; (b) a short
+runnable example (not just prose) showing the shared-plan/per-thread-arena
+pattern, since it is one indirection removed from the direct API surface
+(`execute(home, alloc)` takes an allocator, not a thread pool).
+
+### 11.37 Flattening adjacent untouched batch axes in `fft_apply_last` -- implemented, size-gated, ADOPTED (2026-07-25)
+
+Maintainer-requested continuation of single-threaded improvement work,
+targeting specifically the weakest measured N-D pattern: 3-D `{forward,
+none, forward}` ("gap3d") was up to **5.6x** slower than FFTW (existing
+data, `fft_bench_gap3d_h32_estimate.dat`), far worse than 2-D `{forward,
+forward}` (0.80-1.25x) or 3-D `{forward,forward,forward}` (0.58-0.97x,
+often a Multi win).
+
+**Diagnosis.** 2-D is already near-optimal: the fused-pair path does both
+axes in one full-array pass. 3-D-all-active needs a *minimum* of 2 passes,
+not a missed optimization -- axis 0's transform needs every value along
+that axis for a fixed (j,k), which doesn't exist until the fused-pair pass
+over axes 1,2 has completed for every index; a third axis cannot be folded
+into the same slab-resident pass (a mathematical/data-dependency argument,
+not something that needed measuring -- directly analogous to §11.26's
+"no viable fusion" finding for the rank-2 case, re-derived here from the
+dependency structure for rank 3). The gap case (`{forward,none,forward}`)
+is genuinely different: when the fused-pair guard fails (the middle axis is
+`none`), `fft_apply_last`'s rank>2 branch reaches `fft_exec_slab` (the
+efficient batched kernel, §11.32's strongest-measured mechanism) only after
+peeling the OTHER untouched axis one index at a time through a plain C++
+loop -- confirmed by tracing `sweep_gap3d`'s own file comment ("an extra
+outer depth loop multiplying call count for BOTH passes"). This yields many
+small batched calls instead of one wide one, even though for a plain
+(C-order-adjacent) array the two peeled axes could be merged into a single
+batch dimension with no data movement at all.
+
+**Implementation** (`fft.hpp`, `fft_apply_last`'s rank>2 branch): Multi
+already has the exact primitive needed -- `subarray::is_flattable()` /
+`.flatted()` -- checking precisely "these two leading axes are adjacent in
+memory" (outer axis's stride equals the inner sub-layout's own reported
+element count) and merging them into one axis, one rank lower. Added a
+check before the existing transposed-vs-plain peel: if flattable, recurse
+on the flattened (one-rank-lower) view instead of looping. Recursing
+(rather than a one-shot flatten) means a D>3 case with several
+consecutively-flattable untouched axes collapses all the way to rank 2 in
+one step when possible.
+
+**First cut: real, but a genuine split, not a clean win.** Unconditional
+flattening (`sweep_gap3d`, `{8,16,20,25,27,32,64,81,100,128,243,256}`,
+depth=32, two runs to rule out noise -- confirmed reproducible, not noise):
+n <= 32 gained (up to **-20%**, e.g. n=8: ratio 4.06 -> 3.23), but n >= 64
+*regressed* (up to **+21%**, e.g. n=64: 1.41 -> 1.71). Net geomean ~1.02 --
+a wash tilted slightly negative. Root cause of the large-n regression not
+fully isolated (candidate: some size-dependent routing choice the
+un-flattened peel path was incidentally getting right, bypassed once
+flattening applies unconditionally) -- flagged as an open question, not
+resolved, since the gate below made it moot for shipping purposes.
+
+**Fix: gate on `eng.n_`, matching the observed crossover exactly.** Added
+`eng.n_ <= 32` alongside `is_flattable()` (the crossover in the data above
+is exactly there: n=32 flat/neutral, n=64 the first clear regression) --
+same convention this file already uses for other empirically-tuned,
+size-dependent routing thresholds (e.g.
+`BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES`'s `nn>=48`). Re-measured,
+two runs, averaged against the two ungated baseline runs:
+
+| n | baseline | gated | change |
+|---:|---:|---:|---:|
+| 8 | 4.06 | 2.94 | **-27%** |
+| 16 | 1.97 | 1.79 | -9% |
+| 20 | 2.72 | 2.57 | -6% |
+| 25 | 2.80 | 2.67 | -5% |
+| 27 | 1.04 | 0.99 | -5% |
+| 32 | 2.17 | 2.19 | flat |
+| 64 | 1.41 | 1.47 | +4% (noise) |
+| 81 | 0.82 | 0.78 | -5% (better) |
+| 100 | 0.78 | 0.74 | -5% (better) |
+| 128 | 1.27 | 1.37 | +7% (noise) |
+| 243 | 0.73 | 0.73 | flat |
+| 256 | 0.70 | 0.70 | flat |
+
+Every remaining delta at n >= 64 is inside the ~5-8% run-to-run noise band
+this session already established (repeat-run variance on this exact
+sweep); every n <= 32 point is a real, well-above-noise win. Geomean across
+all 12 points: **~0.955** -- a genuine ~4.5% net improvement, no downside
+anywhere. Cross-checked against `sweep<3>` (`{forward,forward,forward}`,
+which also reaches this same code path for its axis-0 pass): same shape,
+n=8 improved (4.58 -> 3.58, **-22%**), n>32 flat-to-slightly-better, no
+regression.
+
+**Correctness gate: full green.** Strict `-O2 -Wall -Wextra -Wpedantic
+-Wshadow -Wconversion -Wsign-conversion -Werror` and
+`-fsanitize=address,undefined`, g++ and clang++, both the default (fix
+enabled) and `BOOST_MULTI_FFT_DISABLE_FLATTEN_BATCH_AXES`-disabled states.
+8/8 green. `test/algorithms_fft.cpp` already exercises 3-D mixed-direction
+(`none`-containing) plans, so the flattened path is covered by the existing
+suite, not just the benchmark.
+
+**Disposition: ADOPTED, default-on**, with a disable escape hatch
+(`BOOST_MULTI_FFT_DISABLE_FLATTEN_BATCH_AXES`) following the same
+convention as `BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES` -- unlike
+every other experiment in this file, this one is a clean measured win with
+no offsetting regression once gated, so it ships rather than reverts.
+Open thread for a future session: isolate why unconditional flattening
+regressed at n >= 64 specifically (not done here, since the size gate made
+it unnecessary for shipping) -- understanding that mechanism might allow
+widening the `n_ <= 32` threshold instead of just working around it.
+
+### 11.38 Software prefetch for the strided single-fiber gather/scatter -- tried, no measurable effect, reverted (2026-07-25)
+
+Direct follow-up to §11.37, looking for further N-D headroom. Two related
+ideas were considered and ruled out by reasoning alone before writing any
+code (worth recording so they aren't re-attempted blind):
+
+- **Applying §11.37's flatten trick inside `fft_apply_last_pair`'s own
+  rank>2 loop** (used by the fused-pair mechanism itself, i.e. 3-D
+  all-active and `{none,forward,forward}`): this loop peels its outer axis
+  one slice at a time specifically so that, at the rank==2 base case, BOTH
+  halves of the fused pair run on the SAME 2-D slab while it is still
+  cache-resident ("slab still hot", the function's own comment). Batching
+  the outer axis across many slices before the second half runs would
+  separate the two halves in time for any given slab, destroying exactly
+  that warmth -- the same mechanism §11.26 already measured (a warmth-
+  dependent fusion has no viable win under this project's cold-cache
+  benchmark methodology), just pulling in the opposite direction here. Not
+  prototyped; the dependency argument is sufficient on its own.
+
+**What was tried: software prefetch, a mechanism distinct from every prior
+SIMD/`-ffast-math`/codelet attempt.** `fft_exec_fiber`'s strided gather/
+scatter (`std::copy(fib.begin(), fib.end(), b)` and its scatter
+counterpart -- reached whenever a single non-contiguous fiber is
+processed, i.e. `stride() != 1`, the contiguous case already returns
+earlier via `run_contig_inplace`) is a plain strided memory walk, one fresh
+cache line touched per element once the stride exceeds a line's element
+count -- the same cost shape as the early radix-stage twiddle loads §6/§11
+already diagnose, just for the gather itself instead. `__builtin_prefetch`
+a few elements ahead is a pure memory-system hint: no arithmetic, no
+vectorization, not subject to [[fft-simd-policy]]'s SIMD/intrinsics ban (a
+genuinely different lever than every previously-banned idea in this file).
+Implemented behind `BOOST_MULTI_FFT_EXPERIMENT_PREFETCH_GATHER` (an
+explicit loop replacing `std::copy`, since a strided iterator gives
+`std::copy` no hook to interleave prefetches; `pf_dist = 8` elements
+ahead), verified correct (strict `-Wall -Wextra -Wpedantic -Wshadow
+-Wconversion -Wsign-conversion -Werror` and `-fsanitize=address,undefined`,
+g++ and clang++, macro on/off -- 8/8 green).
+
+**Benchmark: no measurable effect, in either direction.** `sweep<2>`,
+`sweep<3>`, `sweep_many3d`, `sweep_gap3d` (same sizes as §11.37), macro on
+vs off. One run showed an eye-catching outlier (2-D n=1024: ratio 0.979 ->
+0.582, a seeming 40% win) -- isolated, no similar effect at neighboring
+sizes (n=729, n=1215 both flat), which on its own is a reason for
+suspicion rather than excitement. A focused 2-D-only re-run, twice more,
+did NOT reproduce it (n=1024 stayed in the 0.978-1.019 band across all 4
+runs) -- confirmed a one-off measurement fluke (background load, thermal,
+or scheduling noise on a single data point), not a real effect. Looking at
+the full 2-D sweep across two clean repeat runs: on/off deltas are the
+same size as off-vs-off run-to-run noise at these sizes (e.g. n=24 alone
+swung 0.657 -> 0.807 between two runs of the SAME unmodified binary) --
+no consistent direction, no signal above that noise floor, at any size in
+any of the four sweeps.
+
+**Why no effect, plausibly.** `fft_exec_fiber`'s single-fiber (m=1,
+non-contiguous) path is a narrower target than it first appears -- most of
+the N-D sweeps here route through the batched `fft_exec_slab` path instead
+(already cache-blocked, `kb=64` tiles, see its own gather/scatter loops),
+so the code actually modified sees limited traffic in these particular
+sweeps. It's also plausible the CPU's own hardware prefetcher already
+handles a plain constant-stride walk adequately without a software hint --
+consistent with [[fft-flushed-cache-methodology]]'s standing diagnosis
+that this codebase's gap vs FFTW is memory-bound in TOTAL BYTES MOVED
+(stage count, pass count), not in how efficiently a given strided access
+is hidden once it happens.
+
+**Disposition: reverted**, `git diff` on `fft.hpp` confirmed clean of the
+macro afterward. Consistent with this file's practice of not leaving
+unadopted experimental code behind. If a future session revisits
+prefetching, do it against `fft_exec_slab`'s own (already-tiled) gather/
+scatter instead -- that is the path actually carrying the bulk of traffic
+in the sweeps that matter (2-D/3-D composite sizes), unlike the narrower
+single-fiber path tried here.
+
+### 11.39 §11.37's open thread, resolved: `mb_`'s cache budget didn't actually adapt with size -- root cause found (cachegrind), fixed, ADOPTED (2026-07-26)
+
+Maintainer follow-up, motivated by a concrete real-workload grid (2-D and
+3-D 32-128, three direction patterns, plus a first-ever 4-D case) that
+landed mostly ABOVE §11.37's `eng.n_ <= 32` gate -- meaning that fix helped
+almost none of it. This made §11.37's own open thread ("isolate why
+unconditional flattening regressed at n_ >= 64") directly load-bearing
+instead of a nice-to-have.
+
+**No perf access** (`perf_event_paranoid=4`, no sudo requested/used) --
+used `valgrind --cachegrind` instead (software-simulated counters, no
+kernel permissions needed) for all measurement in this section.
+
+**Baseline grid, measured fresh** (2-D/3-D 32/64/128, three 3-D direction
+patterns, plus 4-D 32x128x128x128 `{none,fwd,fwd,fwd}` -- correctness-
+verified against FFTW to 3.5e-15 before trusting any of its numbers, a
+brand new pattern never exercised before): ratios 1.4-2.9x across the
+board -- expected, since this grid is ALL pure powers of two, the single
+hardest region for Multi (§11.25-11.29/11.34's exhausted codelet-gap
+territory), not new evidence against those closed threads.
+
+**Diagnosis, this time with real counters instead of a hypothesis.**
+Cachegrind on a single gap3d execute() (n=64, depth=32), comparing the
+shipped gated flatten (§11.37, inert at n_=64) against unconditional
+flattening:
+
+| | gated (no flatten @ 64) | unconditional flatten |
+|---|---:|---:|
+| I refs | 93,776,391 | 89,800,731 (-4.2%) |
+| D1 miss rate | 23.2% | 28.2% (+5.0pp) |
+| D1 write-miss rate | 39.7% | 50.6% (+10.9pp) |
+| LL (L3) miss rate | 0.0% | 0.0% (flat) |
+
+Flat LL confirms this is an L1-locality problem, not a bandwidth one. A
+first hypothesis (the flatten check runs BEFORE the existing
+`transposed()`-vs-plain smallest-stride heuristic, possibly short-
+circuiting a better arrangement) was tested directly (reordered to check
+flattenability AFTER that heuristic's choice) and made **no measurable
+difference** -- ruled out, not the mechanism.
+
+**Actual mechanism, found by instrumenting `run_fused_impl_` to print its
+own `m` parameter** (a call counter, not a profiler, but decisive): gated,
+96 total kernel calls -- 64 at `m=32`, 32 at `m=64` (the two gap3d passes
+happen to batch at different widths, an accident of which axis each pass's
+smallest-stride heuristic picks as outer vs batch). Unconditional flatten:
+64 calls, **all** at `m=64` -- same total work (64*32+32*64 = 64*64 =
+4096, conserved either way), just redistributed into uniformly bigger
+calls. At `n=64`, one ping-pong buffer is `n*m*sizeof(complex<double>)` =
+`64*64*16 = 64KB` at `m=64` -- **double the 32KB L1** -- versus `64*32*16 =
+32KB`, exactly at the L1 boundary, at `m=32`. Flattening doesn't add work --
+it removes the "coincidentally smaller, L1-friendlier" calls the
+non-flattened path happened to have and replaces them with uniformly
+worse ones.
+
+**Root cause traced one level further: `mb_`'s own sizing.**
+`batch_width_(nn)` targets a 4MB (`1<<22`) budget -- L2/L3-class, not L1 --
+then clamps to a flat cap of 64. For every `nn` in this grid's whole range
+(32-2048), the 4MB-budget computation itself always exceeds 64, so the
+clamp saturates and `mb_` is **not actually nn-adaptive at all** over this
+range -- it's a flat 64, coincidentally fine at small nn (buffer fits L1)
+and provably not at nn=64 (buffer is 2x L1).
+
+**Two candidate fixes measured, one overshoots.** (a) An L1-proportional
+budget (`1<<15` instead of `1<<22`, so `mb_` shrinks as nn grows, e.g.
+mb_=4 at nn=256): tested with cachegrind and the real sweep -- WORSE than
+the flat 32 cap at large nn (gap3d n=243: ratio 0.71 -> 1.01; many3d
+n=243: 0.70 -> 1.07). Too-small `m` reintroduces per-call dispatch
+overhead, the opposite failure mode -- there is a real sweet spot, not a
+monotonic "smaller is better" curve. (b) A flat, size-gated cap (64 for
+nn<=32 -- unchanged, already-good regime -- 32 above it): matched or beat
+option (a) everywhere it mattered, simplest to reason about, adopted.
+
+**Also tested: does flatten's own gate still need to stay at n_<=32 once
+the mb_ fix lands, or can it widen/go unconditional?** Compared (mb_ fix)
++ (flatten gated at 32, unchanged) against (mb_ fix) + (flatten
+unconditional): differences were small and inconsistently signed across
+sizes (noise-level) -- no reliable additional win from widening flatten.
+**Flatten's gate stays exactly as shipped in §11.37; only the `mb_` cap
+changed.**
+
+**Result, full sweep, gap3d and many3d** (single confirmatory run against
+the actual shipped file, not a scratch copy):
+
+| n | gap3d before | gap3d after | many3d before | many3d after |
+|---:|---:|---:|---:|---:|
+| 64 | 1.473 | 1.370 | 1.980 | **1.629** |
+| 81 | 0.780 | 0.795 | 0.802 | 0.808 |
+| 100 | 0.738 | 0.765 | 1.379 | 1.369 |
+| 128 | 1.366 | 1.332 | 1.900 | **1.640** |
+| 243 | 0.732 | 0.729 | 0.842 | 0.784 |
+| 256 | 0.697 | 0.676 | 0.749 | 0.674 |
+
+n<=32 unaffected (same cap=64 either way; small deltas there are pure
+run-to-run noise, confirmed by the logic being byte-identical). n=81/100
+mixed, small (noise-level or a minor real effect at the
+`pack_contiguous`/nn>=48 threshold boundary -- not investigated further).
+n=64/128/243/256 -- the maintainer's actual stated range -- show real,
+repeatable wins, many3d especially (-18% and -14% at n=64/128).
+
+**Correctness gate: full green** (strict `-Wall -Wextra -Wpedantic
+-Wshadow -Wconversion -Wsign-conversion -Werror` + `-fsanitize=address,undefined`,
+g++/clang++) plus, since this changes a plan-construction sizing path used
+by every plan in the library (not just FFT-specific benchmarks), the
+**entire project ctest suite** (101/101 -- array core, BLAS, FFTW adaptor,
+MPI, thrust/OMP) re-run and green.
+
+**Disposition: ADOPTED**, `batch_width_`'s cap changed from a flat 64 to
+`(nn > 32) ? 32 : 64` directly in `fft.hpp` (no macro -- this is a plan-
+sizing constant, not a routing branch with a meaningful A/B toggle).
+Closes §11.37's open thread: the n_>=64 unconditional-flatten regression
+was never really about flattening itself, it was `mb_` handing that (and
+every other) code path an L1-hostile batch width once nn grew past the
+one size the flat-64 cap happened to suit.
+
+### 11.40 A separate, unrelated `array_ref.hpp` fix found while investigating a downstream CI failure (2026-07-26)
+
+Not an fft.hpp item, recorded here only because it surfaced mid-session:
+a downstream project (inq) hit a GCC `-Werror=maybe-uninitialized` on
+`array_iterator`'s converting copy constructor, tracing to
+`subarray_ptr`'s defaulted default constructor leaving `offset_` (a plain
+integral `difference_type`) genuinely uninitialized -- the existing
+comment on that constructor only flags `base_` as intentionally left that
+way; `offset_` had the identical problem, unmentioned. Some GCC version/
+flag combination (not reproducing in this project's own local strict
+builds) correctly-or-near-correctly detects this through
+`array_iterator`'s inlined default/converting constructors. Fixed with a
+zero-cost in-class default member initializer (`= 0`) on `offset_` only --
+`base_` stays as-is (a "fancy pointer" in some contexts, where forced
+initialization isn't free or generically possible; `offset_` is always a
+plain integer, safe and free to initialize). Verified: full strict gate
+(both compilers) and the entire ctest suite (101/101) green.
+
 ---
 
 ## §12 GPU porting design notes
