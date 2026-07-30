@@ -4105,6 +4105,64 @@ initialization isn't free or generically possible; `offset_` is always a
 plain integer, safe and free to initialize). Verified: full strict gate
 (both compilers) and the entire ctest suite (101/101) green.
 
+### 11.41 The `nn >= 48` packing threshold was stale after §11.39 -- removing it is both simpler and ~8% faster (2026-07-30)
+
+Follow-up to §11.39, from a simple observation: `fft_exec_slab`'s
+`pack_contiguous = nn >= 48 && mb > 1` was measured back when
+`batch_width_` capped `mb_` at a flat 64. §11.39 changed that cap to 32
+above `nn == 32`. Since the packed tile is `mb * nn` elements, halving
+`mb_` halves the tile -- so the cost the threshold was protecting against
+(a tile too large to stay L1-resident, losing more to misses than the
+batched kernels win back) had already been removed. A constant tuned
+against a since-changed constant is worth re-measuring, not trusting.
+
+**Measured, four threshold values**, on 2-D, 3-D, gap-3-D, many-3-D and
+both `many` sweeps (geomean of per-sweep geomeans; idle machine):
+
+| threshold | overall |
+|---|---:|
+| `nn >= 96` | 1.414 |
+| `nn >= 48` (previous) | 1.354 |
+| `nn >= 32` | 1.336 |
+| none (`mb > 1`) | **1.241** |
+
+Monotonic in the same direction throughout, and the endpoint wins by a
+wide margin: **~8% overall** against the previous threshold. Repeat runs
+put the noise floor far below that (per-variant overall geomean reproduced
+to 0.4% and 0.0% across two runs each), so this is signal, not drift.
+Per sweep, dropping the threshold entirely: gap-3-D **-17%**, many-3-D
+**-16%**, 3-D **-10%**, many(h=256) -5%, 2-D -2%; only many(h=32) went the
+other way, +2%.
+
+**Cross-checked on a real target grid** (2-D/3-D/4-D, 32-128, the
+direction patterns a maintainer workload actually uses) with a useful
+property: the change can only affect `nn < 48` -- above that, both
+versions compile to the same path. Splitting the grid on exactly that line
+separates effect from noise cleanly:
+
+- `nn < 48` (path genuinely changed): **-25.9%**
+- `nn >= 48` (path byte-identical): +2.8% -- necessarily noise, and a
+  useful incidental calibration of how much run-to-run spread these
+  power-of-two sizes carry when the machine is not fully idle.
+
+**Disposition: ADOPTED.** `pack_contiguous` is now just `mb > 1` -- pack
+whenever there is more than one fiber to batch. This is a rare case where
+the simplification and the speedup are the same change: a tuned magic
+constant disappears, and the code gets faster. The
+`BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES` escape hatch is kept for
+A/B work. Correctness: strict gate (`-Wall -Wextra -Wpedantic -Wshadow
+-Wconversion -Wsign-conversion -Werror`) and `-fsanitize=address,undefined`,
+g++ and clang++, macro on and off, plus the full project ctest suite
+(101/101) -- all green.
+
+**Standing lesson**, worth applying beyond this instance: several constants
+in this file were co-tuned against each other on one machine at one time
+(§6 lists plan-time autotuning as future work precisely because of this).
+When one of them moves, the others are suspect -- §11.39 moved `mb_` and
+this section found the next domino. `fft_sixstep_min`, the radix-8 tail
+rule, and `fft_max_direct_radix` have not been re-measured since and are
+the obvious remaining candidates.
+
 ---
 
 ## §12 GPU porting design notes

@@ -1363,15 +1363,24 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 	std::size_t const mb_base = std::max<std::size_t>(eng.mb_, 1);
 	using std::get;
 	std::size_t const mb = std::min<std::size_t>(mb_base, yy);
-	// Packing contiguous fibers pays for an extra scratch copy, but becomes
-	// worthwhile once the fiber is large enough for the SIMD-friendly batched
-	// stages to amortize that copy.  The threshold is deliberately conservative:
-	// very small 2-D slabs are often instruction/cache-bound, where direct fibers win.
-	// Keep an escape hatch for workload-specific tuning and A/B benchmarks.
+	// Packing contiguous fibers costs an extra scratch copy but lets the
+	// SIMD-friendly batched stages run, so it pays whenever there is more
+	// than one fiber to batch.
+	//
+	// This used to additionally require `nn >= 48`. That threshold was
+	// measured back when `mb_` was capped at a flat 64, where packing a
+	// short transform meant a tile of 64*nn elements that overflowed L1 and
+	// lost more to cache misses than the batched kernels won back. Once
+	// `batch_width_` started capping `mb_` at 32 above nn == 32 (see its
+	// comment), the tile stays L1-resident and that reasoning no longer
+	// applies -- re-measuring across 2-D, 3-D, gap-3-D and both batched
+	// sweeps put dropping the threshold entirely ~8% ahead overall, with
+	// gap-3-D and many-3-D ~16-17% faster and only the shallow-batch
+	// many(h=32) sweep ~2% behind. Keep an escape hatch for A/B benchmarks.
 	#if defined(BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES)
 	bool const pack_contiguous = false;
 	#else
-	bool const pack_contiguous = nn >= 48 && mb > 1;
+	bool const pack_contiguous = mb > 1;
 	#endif
 
 	// Contiguous fibers normally transform one at a time straight from user
