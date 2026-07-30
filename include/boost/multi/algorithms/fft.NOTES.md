@@ -4242,6 +4242,66 @@ tuned on a single machine (§6's standing caveat), and until the
 override is the only way a user on different cache geometry can correct
 them without patching the header.
 
+### 11.43 Power-of-two batch strides thrash cache sets in the outer-fused path -- routing those to the per-fiber path is worth ~2.4% (2026-07-30)
+
+Found by looking at per-SIZE numbers instead of per-sweep geomeans, which
+is what had been hiding it. In `many(h=256)` the batched 1-D sweep is not
+uniformly bad -- it splits sharply by factorization:
+
+| n | 81 | 125 | 243 | 256 | 512 | 1024 | 2048 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ratio | 1.00 | 0.87 | 0.79 | 2.17 | **2.80** | 2.48 | 2.35 |
+
+The 3- and 5-smooth sizes are *wins*, while the powers of two next to them
+are 2.2-2.8x losses. Size alone does not explain that (243 and 256 do
+essentially the same amount of work), so it is not an arithmetic or
+stage-count effect.
+
+**Mechanism.** With a contiguous fiber axis, `fft_exec_slab` takes the
+outer-fused path, which walks the batch directly in user memory using the
+caller's fiber stride (`run_fused_outer` -> `run_fused_impl_`'s `ja`).
+When that stride is a large power of two, successive batch elements are
+separated by a power-of-two byte offset and map onto the same cache sets:
+the tile then thrashes one set rather than using the cache. n=512 is
+512*16 = 8KB apart, n=1024 is 16KB, and so on -- exactly the sizes that
+regress. Non-power-of-two strides scatter across sets and are unaffected,
+which is why 243 and 125 are fine.
+
+**Fix, and a false start worth recording.** The first attempt let the
+conflicting strides fall through to the *gather* path (blocked transpose
+into scratch). That made things WORSE, not better -- h=32 n=2048 went
+2.23 -> 2.70 -- because the gather pays for a transpose copy that buys
+nothing when each fiber is already contiguous. Re-routing them instead to
+the plain **per-fiber** path (one fiber at a time, straight from user
+memory, no tile and no copy) is what works. Both alternatives had to be
+measured; reasoning picked the wrong one.
+
+**Result** (guard: fiber stride in bytes >= 8192 and a multiple of 8192;
+8KB is the smallest stride at which the effect was actually observed --
+at 4KB, n=256, packing still won):
+
+| sweep | before | after |
+|---|---:|---:|
+| many(h=32) | 1.444 | **1.357** (-6.0%) |
+| many(h=256) | 1.508 | **1.425** (-5.5%) |
+| gap-3-D | 1.148 | 1.122 (-2.3%) |
+| 2-D | 0.945 | 0.931 (-1.5%) |
+| many-3-D | 1.302 | 1.285 (-1.3%) |
+| 3-D | 1.083 | 1.110 (+2.5%) |
+| **overall** | **1.2219** | **1.1927 (-2.4%)** |
+
+Per size where the guard fires: h=256 n=512 **-22.6%**, n=1024 -13.1%;
+h=32 n=1024 **-16.1%**, n=512 -7.5%. Reproducible: two runs of the new
+code gave 1.1926 and 1.1928 (0.02% apart) against 1.2200/1.2239 before.
+
+**Methodological note.** Individual sizes that the guard does NOT touch
+moved by up to +-15% between runs even though their code path is
+identical. Per-size numbers from a single run are therefore not
+trustworthy on their own here; the geomeans (11 sizes) and the repeat runs
+are what make the -2.4% believable. This also means §11.41's split-by-code-path
+trick -- comparing only sizes the change cannot affect -- is the reliable
+way to calibrate noise in this suite.
+
 ---
 
 ## §12 GPU porting design notes

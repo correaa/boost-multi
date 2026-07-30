@@ -1409,7 +1409,25 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 	// batched stage kernels; its crossover is benchmarked separately.
 	if constexpr(std::is_pointer_v<std::decay_t<decltype(slab.base())>>) {
 		if(get<1>(slab.strides()) == 1) {
-			if(pack_contiguous && eng.can_fuse_outer()) {
+			// The outer-fused path reads/writes user memory directly, walking
+			// the batch with the caller's own fiber stride. That is normally
+			// the right thing (no gather, no scatter), but it degrades badly
+			// when that stride is a large power of two: successive batch
+			// elements then land in the same cache sets and the tile thrashes
+			// a set instead of using the whole cache. The gather path is
+			// immune -- it reads along the contiguous fiber and lays the tile
+			// out itself -- so hand those strides over to it.
+			//
+			// Measured (fft.NOTES.md): packed-vs-gathered per size on the
+			// batched sweeps is a clean split. Packing wins everywhere the
+			// stride is not conflict-prone (often by a lot: n=100 1.27 vs
+			// 2.67, n=243 0.79 vs 1.53) and loses exactly where it is
+			// (h=256 n=512: 2.80 vs 2.32, n=1024: 2.48 vs 2.11).
+			// 8KB is the smallest stride at which the effect was actually
+			// observed here; below it (n=256, 4KB) packing still won.
+			auto const fiber_stride_bytes = static_cast<std::size_t>(get<0>(slab.strides())) * sizeof(T);
+			bool const stride_conflicts   = fiber_stride_bytes >= 8192 && (fiber_stride_bytes % 8192) == 0;
+			if(pack_contiguous && !stride_conflicts && eng.can_fuse_outer()) {
 				auto const sf = static_cast<std::size_t>(get<0>(slab.strides()));
 				for(std::size_t y0 = 0; y0 < yy; y0 += mb) {
 					std::size_t const mt = std::min(mb, yy - y0);
@@ -1422,7 +1440,13 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 				}
 				return;
 			}
-				if(!eng.can_fuse_outer() || !pack_contiguous) {
+				if(!eng.can_fuse_outer() || !pack_contiguous || stride_conflicts) {
+				// One fiber at a time, straight from user memory. For a
+				// conflict-prone stride this beats both alternatives: the
+				// batched tile path would stride the batch through colliding
+				// cache sets, and the gather path (below) would pay for a
+				// transpose copy that buys nothing once each fiber is already
+				// contiguous.
 				auto const ylim = static_cast<std::ptrdiff_t>(yy);
 				for(std::ptrdiff_t y = 0; y != ylim; ++y) {
 					fft_exec_fiber(slab[y], eng, backward, arena);
@@ -1571,7 +1595,10 @@ void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, bool backward, T* 
 		// choices, e.g. BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES's
 		// nn>=48 threshold -- keep an escape hatch for workload-specific
 		// tuning and A/B benchmarks, same convention as that flag.
-		if(eng.n_ <= 32 && view.is_flattable()) {
+#ifndef BOOST_MULTI_FFT_FLATTEN_MAX_N
+#define BOOST_MULTI_FFT_FLATTEN_MAX_N 32
+#endif
+		if(eng.n_ <= std::size_t{BOOST_MULTI_FFT_FLATTEN_MAX_N} && view.is_flattable()) {
 			fft_apply_last(view.flatted(), eng, backward, arena);
 			return;
 		}
