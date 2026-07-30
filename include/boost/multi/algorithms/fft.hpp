@@ -238,14 +238,20 @@ constexpr auto fft_mul_dir(TW const& w, T const& x) -> T {
 
 // Largest prime handled by the direct (table-driven O(p^2)) kernel; larger
 // prime factors use a Bluestein sub-plan, which is O(p log p).
-inline constexpr std::size_t fft_max_direct_radix = 64;
+#ifndef BOOST_MULTI_FFT_MAX_DIRECT_RADIX
+#define BOOST_MULTI_FFT_MAX_DIRECT_RADIX 64
+#endif
+inline constexpr std::size_t fft_max_direct_radix = BOOST_MULTI_FFT_MAX_DIRECT_RADIX;
 
 // Single-fiber transforms at least this long use the six-step decomposition
 // n = n1*n2 (column FFTs, twiddle-transpose, row FFTs): both FFT passes then
 // run batched (vectorized) and cache-blocked instead of striding across the
 // whole fiber. Threshold chosen by measurement (2^13 is neutral, 2^14..2^15
 // gain 10-25%).
-inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
+#ifndef BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2
+#define BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2 13
+#endif
+inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << unsigned{BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2};
 
 // Whether skipping element default-construction (and destruction) of a
 // scratch buffer is allowed for `T`. Three ways in:
@@ -692,18 +698,31 @@ struct fft_engine {
 		// Sized from `sizeof(TW)` since `mb_` is fixed at construction, before
 		// any array type `T` is known -- a reasonable stand-in whenever T's
 		// size is comparable to TW's (same-type, or float-vs-double).
-		std::size_t const budget = (std::size_t{1} << 22U) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
-		// The unconditional 64 cap (below) targets a 4MB (L2/L3-class) budget
-		// and saturates it for every nn in the low hundreds or less -- i.e.
-		// it's not actually nn-adaptive there, just a flat 64. Measured
-		// (cachegrind, fft.NOTES.md): at nn=64 a per-call ping-pong buffer
-		// of nn*64*sizeof(TW) = 64KB already exceeds a typical 32KB L1,
-		// while nn*32*sizeof(TW) = 32KB just fits -- a real, reproducible
-		// D1 miss-rate jump (23%->28% in one measured case), not noise.
-		// Halving the cap once nn is large enough to matter recovers most
-		// of that: keep the original 64 for nn<=32 (already-good regime,
+		//
+		// The budget targets ~L2 (256KB), not L3. It used to be 4MB, which is
+		// large enough that for every nn in the tested range the division
+		// below exceeded the cap and `mb_` was really just the flat cap --
+		// the formula looked nn-adaptive but was not. Sweeping the exponent
+		// (fft.NOTES.md) found a clean minimum here: 2^16..2^22 give 1.276 /
+		// 1.246 / 1.220 / 1.235 / 1.231 / 1.237 / 1.249 overall, i.e. a real
+		// U -- too small a budget forfeits batching, too large lets the
+		// ping-pong pair fall out of L2. 2^18 is where a pair of n*mb
+		// buffers still fits a typical per-core L2, and it is ~2% ahead
+		// overall (batched 1-D sweeps ~5% ahead, everything else neutral).
+#ifndef BOOST_MULTI_FFT_BATCH_BUDGET_LOG2
+#define BOOST_MULTI_FFT_BATCH_BUDGET_LOG2 18
+#endif
+		std::size_t const budget = (std::size_t{1} << unsigned{BOOST_MULTI_FFT_BATCH_BUDGET_LOG2}) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
+		// Cap: measured (cachegrind, fft.NOTES.md) at nn=64 a per-call
+		// ping-pong buffer of nn*64*sizeof(TW) = 64KB already exceeds a
+		// typical 32KB L1, while nn*32*sizeof(TW) = 32KB just fits -- a real,
+		// reproducible D1 miss-rate jump (23%->28% in one measured case),
+		// not noise. Keep the original 64 for nn<=32 (already-good regime,
 		// unaffected), drop to 32 above it.
-		std::size_t const cap  = (nn > 32) ? 32 : 64;
+#ifndef BOOST_MULTI_FFT_BATCH_WIDTH_CAP
+#define BOOST_MULTI_FFT_BATCH_WIDTH_CAP 32
+#endif
+		std::size_t const cap  = (nn > 32) ? std::size_t{BOOST_MULTI_FFT_BATCH_WIDTH_CAP} : 64;
 		std::size_t const base = std::clamp<std::size_t>(budget, 1, cap);
 		return std::clamp<std::size_t>(base * BOOST_MULTI_FFT_BATCH_WIDTH_SCALE, 1, 256);
 	}

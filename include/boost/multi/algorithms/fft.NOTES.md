@@ -4183,6 +4183,65 @@ a marginally-better-on-this-box one. Recorded so a future session with a
 second machine, or with the `fft_measure`-style plan-time autotuning §6
 wants, can settle it with evidence this one does not have.
 
+### 11.42 Two more co-tuned constants re-swept: `fft_sixstep_min` confirmed, the batch-width BUDGET was the stale one (~2%, and it was never really adaptive) (2026-07-30)
+
+Direct application of §11.41's closing lesson, working through the
+constants it named as unverified.
+
+**`fft_sixstep_min` (2^13): confirmed correct, no change.** Swept the
+exponent 11..15 on a large-n 1-D sweep (28 sizes, 4096..2^21):
+geomean 1.419 / 1.418 / **1.416** / 1.427 / 1.536. 11-13 are a plateau
+(differences well inside noise) and 13 sits at the bottom of it, so the
+shipped value stands. The tail is informative though: at 2^15 the
+non-power-of-two sizes just above the threshold blow up badly (15625:
+1.25 -> 2.17, 20250: 1.32 -> 2.32, 24000: 1.60 -> 2.42), which is a
+sharper demonstration than the original tuning note that six-step is
+what keeps awkward large sizes competitive at all.
+
+**The batch-width budget (was 2^22): stale, and hiding a bug-shaped
+problem.** `batch_width_` computes `budget = 2^22 / (2*sizeof(TW)*nn)`
+then clamps to a cap. With a 4MB budget that division exceeds the cap for
+every `nn` in the tested range -- so the "nn-adaptive" formula was in
+practice a flat constant, and only the cap (which §11.39 fixed) ever did
+anything. Note this is exactly the failure §11.39 found and fixed one
+level down; the same latent problem existed one level up and was missed
+then because only the cap was being varied.
+
+Sweeping the exponent (same six-sweep harness as §11.41):
+
+| budget | 2^16 | 2^17 | **2^18** | 2^19 | 2^20 | 2^21 | 2^22 (was) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| overall | 1.276 | 1.246 | **1.220** | 1.235 | 1.231 | 1.237 | 1.249 |
+
+A clean U with its minimum at 2^18 = 256KB -- a pair of `n*mb` ping-pong
+buffers still fitting a typical per-core L2. Both directions off the
+minimum degrade for the expected opposite reasons (too small forfeits
+batching width; too large spills L2), which is the shape a genuine
+optimum has rather than a noise artifact.
+
+Confirmed with repeats: 2^18 mean 1.2219 (spread 0.3%), 2^22 mean 1.2458
+(spread 0.5%) -- **-1.9% overall**, comfortably outside run-to-run noise
+this time (contrast §11.41's `mb_` cap re-sweep, which was 1.6% against a
+1.3% spread and was correctly NOT adopted). Per sweep: many(h=32)
+**-5.5%**, many(h=256) **-4.6%**, 2-D -1.1%, many-3-D -1.0%, gap-3-D and
+3-D neutral (+0.2%, +0.6%). Separately checked on the large-n 1-D sweep:
++0.0%, i.e. no cost there.
+
+**Adopted** (`BOOST_MULTI_FFT_BATCH_BUDGET_LOG2`, default 18). The gains
+land specifically on the two batched 1-D sweeps, which were the worst
+non-4-D numbers in the suite -- these are exactly the shapes where `mb_`
+is the width that decides whether a working set stays in L2.
+
+**Knobs.** While sweeping, the four routing constants gained
+`#ifndef`-guarded macro overrides (`BOOST_MULTI_FFT_MAX_DIRECT_RADIX`,
+`BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2`, `BOOST_MULTI_FFT_BATCH_WIDTH_CAP`,
+`BOOST_MULTI_FFT_BATCH_BUDGET_LOG2`) with unchanged defaults. This is
+worth keeping independently of any one experiment: every one of these was
+tuned on a single machine (§6's standing caveat), and until the
+`fft_measure`-style plan-time autotuning §6 wants exists, a compile-time
+override is the only way a user on different cache geometry can correct
+them without patching the header.
+
 ---
 
 ## §12 GPU porting design notes
