@@ -4163,6 +4163,26 @@ this section found the next domino. `fft_sixstep_min`, the radix-8 tail
 rule, and `fft_max_direct_radix` have not been re-measured since and are
 the obvious remaining candidates.
 
+**Immediate application of that lesson, and a negative result worth
+recording**: `mb_`'s own cap was itself tuned alongside the (now removed)
+threshold, so it was re-swept against the new always-pack baseline --
+16 / 24 / 32 (current) / 48 / 64 giving overall 1.235 / 1.210 / 1.234 /
+1.247 / 1.291. The shape is sensible (a shallow U: too small forfeits
+batching, too large overflows L1, and 64 is worst -- independently
+reconfirming §11.39) and 24 came out best, ~1.6% ahead of the shipped 32
+with all four repeat runs cleanly ordered (both 24-runs below both
+32-runs, no overlap).
+
+**Not adopted.** 1.6% against a 1.3% own-run spread is inside the band
+where this file has repeatedly been wrong before (§11.35's packed twiddles
+looked like a win at similar magnitude and were a wash), and every number
+here comes from one machine -- exactly the portability caveat §6 raises
+against hand-tuned routing constants. Changing a constant to a
+non-power-of-two on that evidence would be trading a known-good value for
+a marginally-better-on-this-box one. Recorded so a future session with a
+second machine, or with the `fft_measure`-style plan-time autotuning §6
+wants, can settle it with evidence this one does not have.
+
 ---
 
 ## §12 GPU porting design notes
