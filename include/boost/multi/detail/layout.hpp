@@ -1767,6 +1767,22 @@ struct layout_t
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
+	// Would this layout rather have its outer axis and its sub's outer axis
+	// swapped -- i.e. is the outer axis more contiguous than the one just
+	// inside it? This is the single ordering predicate `sort()` is built on,
+	// named so that multi-argument orderings (which must agree on ONE
+	// permutation across several operands) can consult the same rule instead
+	// of restating it. Only meaningful for D > 1; a rank-1 layout has no
+	// inner axis to compare against.
+	BOOST_MULTI_HD constexpr auto prefers_swap() const -> bool {
+		static_assert(D > 1, "prefers_swap compares the outer axis against the next one in; rank must exceed 1");
+		return stride() < sub().stride()  // if strides are equal, one of the sizes is 1  // mull-ignore: cxx_lt_to_le
+		    || (
+			       stride() == sub().stride()
+			    && sub().size() < size()  // mull-ignore: cxx_lt_to_le
+		    );
+	}
+
 	BOOST_MULTI_HD constexpr auto sort() const {
 		auto ret = layout_t {
 			this->sub().sort(),
@@ -1776,14 +1792,7 @@ struct layout_t
 		};
 
 		if constexpr(D > 1) {
-			if(
-				    ret.stride() < ret.sub().stride()  // if strides are equal, one of the sizes is 1  // mull-ignore: cxx_lt_to_le
-				|| (
-					   ret.stride() == ret.sub().stride()
-					&& ret.sub().size() < ret.size()  // mull-ignore: cxx_lt_to_le
-				)
-			)
-			{
+			if(ret.prefers_swap()) {
 				auto ret2 = ret.transpose();
 				ret = layout_t {
 					ret2.sub().sort(),
@@ -2100,6 +2109,111 @@ operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extent
 BOOST_MULTI_HD constexpr auto operator*(extents_t<1> const& extensions_1d, extents_t<1> const& self) {
 	using boost::multi::detail::get;
 	return extents_t<2>({get<0>(extensions_1d.base()), get<0>(self.base())});
+}
+
+// --- multi-operand axis ordering ------------------------------------------
+//
+// `layout_t::sort()` picks a cache-friendly axis order for ONE layout. When
+// two operands must be traversed together (an elementwise copy, say), they
+// cannot be reordered independently -- element (i,j,...) of one has to keep
+// corresponding to element (i,j,...) of the other -- so a SINGLE permutation
+// has to be chosen and applied to both.
+//
+// The pieces below express exactly that: the same bubble-of-adjacent-swaps
+// `sort()` performs, but with the swap decision taken by one designated
+// operand and the resulting swap applied to every operand in lockstep.
+
+namespace detail {
+
+// Swap axes `k` and `k+1` of a layout, for a runtime k. `layout_t::transpose()`
+// only ever swaps the outer two, so deeper levels are reached by rebuilding
+// the layout around a transposed sub-layout (the same reassembly `sort()`
+// itself does via the 4-argument constructor).
+template<class L>
+BOOST_MULTI_HD constexpr auto transpose_at(L const& lyt, dimensionality_type k) -> L {
+	if constexpr(L::rank_v < 2) {
+		(void)k;
+		return lyt;  // nothing to swap
+	} else {
+		if(k == 0) {
+			return lyt.transpose();
+		}
+		return L{transpose_at(lyt.sub(), k - 1), lyt.stride(), lyt.offset(), lyt.nelems()};
+	}
+}
+
+// Does the sub-layout `k` levels in prefer swapping its own outer two axes?
+// (`layout_t::prefers_swap()` asks this at level 0; this reaches deeper.)
+template<class L>
+BOOST_MULTI_HD constexpr auto prefers_swap_at(L const& lyt, dimensionality_type k) -> bool {
+	if constexpr(L::rank_v < 2) {
+		(void)k;
+		return false;
+	} else {
+		if(k == 0) {
+			return lyt.prefers_swap();
+		}
+		return prefers_swap_at(lyt.sub(), k - 1);
+	}
+}
+
+}  // end namespace detail
+
+// The permutation `sort_layouts` chose, alongside both reordered layouts.
+// `perm[k]` is the ORIGINAL index of the axis now sitting at position k --
+// the form a projection-based operand (which has no layout to reorder, only
+// arguments to reindex) needs in order to follow the same permutation.
+template<class LV, class LO>
+struct ordered_pair {
+	LV                                                                          voter;
+	LO                                                                          other;
+	std::array<dimensionality_type, static_cast<std::size_t>(LV::rank_v)> perm;
+};
+
+// Reorder two layouts by ONE permutation. `voter` alone decides -- `other`
+// is carried along so its axes keep corresponding. Equivalent to
+// `voter.sort()` in isolation (same adjacent-swap rule, bubbled to a fixed
+// point); what it adds is that every swap also lands on `other`.
+//
+// Which operand should be the voter is the CALLER's choice, and it matters:
+// a cache-missing write generally costs more than a cache-missing read (an
+// ordinary store still fetches the line for ownership first, and then owes a
+// writeback), so a copy should let its destination vote.
+template<class LV, class LO>
+BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<LV, LO> {
+	constexpr auto D = static_cast<std::size_t>(LV::rank_v);
+	static_assert(static_cast<std::size_t>(LO::rank_v) == D, "both operands must have the same rank to share one axis permutation");
+
+	std::array<dimensionality_type, D> perm{};
+	for(std::size_t i = 0; i != D; ++i) {
+		perm[i] = static_cast<dimensionality_type>(i);  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) i < D by construction
+	}
+
+	if constexpr(D >= 2) {
+		// Bubble adjacent swaps to a fixed point. `sort()`'s recursion is the
+		// same sequence of adjacent transposes; D is an array rank (tiny), so
+		// the quadratic bound is immaterial and the flat loop is clearer than
+		// mirroring the recursion twice over.
+		for(std::size_t pass = 0; pass != D; ++pass) {
+			bool swapped = false;
+			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(D) - 1; ++k) {
+				if(detail::prefers_swap_at(voter, k)) {
+					voter    = detail::transpose_at(voter, k);
+					other    = detail::transpose_at(other, k);
+					auto const kk = static_cast<std::size_t>(k);
+					auto const tmp = perm[kk];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) k < D-1
+					perm[kk]       = perm[kk + 1];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+					perm[kk + 1]   = tmp;  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+					swapped        = true;
+				}
+			}
+			if(!swapped) {
+				break;
+			}
+		}
+	}
+
+	return {voter, other, perm};
 }
 
 }  // end namespace boost::multi

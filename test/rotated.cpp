@@ -402,5 +402,76 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.unordered().extents() == arr.extents() );
 	}
 
+	// two-operand unordered(a, b): ONE permutation, applied to both
+	{
+		// agreeing operands: nothing to reorder, both come back unchanged
+		multi::array<int, 3> arr_a({4, 5, 6}, 0);
+		multi::array<int, 3> arr_b({4, 5, 6}, 0);
+
+		auto ord = multi::unordered(arr_a, arr_b);
+
+		BOOST_TEST( ord.first.extents()  == arr_a.extents() );
+		BOOST_TEST( ord.second.extents() == arr_b.extents() );
+	}
+	{
+		// the voter's result must match what it would have chosen alone
+		multi::array<int, 3> arr_a({4, 5, 6}, 0);
+		multi::array<int, 3> arr_b({5, 6, 4}, 0);
+
+		auto rot = arr_a.rotated();  // sizes (5,6,4), non-C-order strides
+		auto ord = multi::unordered(rot, arr_b);
+
+		BOOST_TEST( ord.first.extents() == rot.unordered().extents() );
+		// and the passenger keeps the same rank/element count under that permutation
+		BOOST_TEST( ord.second.num_elements() == arr_b.num_elements() );
+	}
+	{
+		// constness picks the voter: the mutable operand's preference wins,
+		// so a writable C-order destination keeps its contiguous order
+		multi::array<int, 3> arr_a({4, 5, 6}, 0);
+		multi::array<int, 3> arr_b({5, 6, 4}, 0);
+
+		auto        rot   = arr_a.rotated();  // would prefer to be reordered
+		auto const& rot_c = rot;              // ... but it is const here
+
+		auto ord = multi::unordered(rot_c, arr_b);
+
+		// arr_b (mutable, already C-order) votes: it prefers the identity,
+		// so BOTH operands stay as they are
+		BOOST_TEST( ord.second.extents() == arr_b.extents() );
+		BOOST_TEST( ord.first.extents()  == rot.extents() );
+	}
+	{
+		// index correspondence survives the shared permutation: the element
+		// at (i,j,k) of each reordered view must still be the same pair of
+		// elements that (i,j,k) named before reordering
+		multi::array<int, 3> arr_a({2, 3, 4}, 0);
+		multi::array<int, 3> arr_b({2, 3, 4}, 0);
+
+		int counter = 0;
+		for(auto& elem : arr_a.elements()) { elem = counter++; }
+		for(auto& elem : arr_b.elements()) { elem = counter++; }
+
+		auto rot_a = arr_a.rotated();
+		auto rot_b = arr_b.rotated();
+		auto ord   = multi::unordered(rot_a, rot_b);
+
+		auto const& lhs = ord.first;
+		auto const& rhs = ord.second;
+
+		bool matched = true;
+		for(multi::ssize_t i = 0; i != lhs.size(); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+			for(multi::ssize_t j = 0; j != lhs[0].size(); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+				for(multi::ssize_t k = 0; k != lhs[0][0].size(); ++k) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+					// same offset into each array's own storage == same logical cell
+					if((&lhs[i][j][k] - arr_a.base()) != (&rhs[i][j][k] - arr_b.base())) {
+						matched = false;
+					}
+				}
+			}
+		}
+		BOOST_TEST( matched );
+	}
+
 	return boost::report_errors();
 }

@@ -4444,6 +4444,61 @@ using array_const_view = array_ref<T, D, TPtr> const&;
 template<class T, dimensionality_type D, class TPtr = T*>
 using array_view = array_ref<T, D, TPtr>&;
 
+// --- two-operand unordered() ----------------------------------------------
+//
+// `a.unordered()` reorders ONE array's axes for access efficiency. Two arrays
+// traversed together (an elementwise copy, say) cannot each pick their own
+// order: element (i,j,...) of one must keep corresponding to element (i,j,...)
+// of the other. `unordered(a, b)` therefore picks a SINGLE permutation and
+// returns both views under it.
+//
+// Which operand's preference wins is decided by CONSTNESS: a mutable operand
+// outranks a const one. That is not a stylistic tie-break -- it tracks a real
+// asymmetry. A const operand can only be read; a mutable one is the plausible
+// write target, and a cache-missing write generally costs more than a
+// cache-missing read (an ordinary store still fetches the line for ownership
+// before modifying it, and then owes a writeback on eviction). Letting the
+// writable side choose therefore favours contiguous stores. Encoding it in
+// constness -- rather than in argument order -- means a caller cannot get it
+// wrong by forgetting a convention; the types already say which side is
+// written.
+//
+// When both operands have the same constness there is nothing to distinguish
+// them, and the first wins.
+namespace detail {
+
+// Rebuild a view of `arr` under a different (permuted) layout. The pointer
+// type is taken from `arr.base()` rather than from the array type, so a const
+// operand yields a read-only view and a mutable one stays writable.
+template<class A, class L>
+BOOST_MULTI_HD constexpr auto reordered_view(A&& arr, L const& lyt) {  // NOLINT(cppcoreguidelines-missing-std-forward) only base()/layout are read
+	return const_subarray<
+		typename std::decay_t<A>::element,
+		std::decay_t<A>::dimensionality,
+		decltype(arr.base()),
+		L>(lyt, arr.base());
+}
+
+}  // end namespace detail
+
+template<class A, class B>
+BOOST_MULTI_HD constexpr auto unordered(A&& arr_a, B&& arr_b) {
+	// `A&&`/`B&&` are deduced, so constness survives here: a const lvalue
+	// deduces A as `X const&`, a mutable one as `X&`.
+	constexpr bool a_is_const = std::is_const_v<std::remove_reference_t<A>>;
+	constexpr bool b_is_const = std::is_const_v<std::remove_reference_t<B>>;
+	// b votes only when it is the sole mutable operand.
+	constexpr bool b_votes = a_is_const && !b_is_const;
+
+	if constexpr(b_votes) {
+		auto const ord = multi::sort_layouts(arr_b.layout(), arr_a.layout());
+		return std::pair{detail::reordered_view(arr_a, ord.other), detail::reordered_view(arr_b, ord.voter)};
+	} else {
+		auto const ord = multi::sort_layouts(arr_a.layout(), arr_b.layout());
+		return std::pair{detail::reordered_view(arr_a, ord.voter), detail::reordered_view(arr_b, ord.other)};
+	}
+}
+
 }  // end namespace boost::multi
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
