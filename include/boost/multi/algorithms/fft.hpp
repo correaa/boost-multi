@@ -1425,7 +1425,7 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 				}
 				return;
 			}
-				if(!eng.can_fuse_outer() || !pack_contiguous || stride_conflicts) {
+			if(!pack_contiguous || stride_conflicts) {
 				// One fiber at a time, straight from user memory. For a
 				// conflict-prone stride this beats both the batched tile path
 				// (colliding cache sets) and the gather path below (a
@@ -1437,6 +1437,11 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 				}
 				return;
 			}
+			// Otherwise `eng` cannot fuse -- a single-stage plan (n in
+			// {2,3,4,5,8}, a small prime) or a Bluestein one -- so the tile
+			// path above is unavailable. Fall through to the gather path: it
+			// still runs the batched kernels over `mt` fibers at once, which
+			// beats transforming each fiber separately at m == 1.
 		}
 		// Batch axis contiguous in user memory: the batched stages read each
 		// tile in place (first stage) and write it back (last stage) -- no

@@ -4302,6 +4302,62 @@ are what make the -2.4% believable. This also means §11.41's split-by-code-path
 trick -- comparing only sizes the change cannot affect -- is the reliable
 way to calibrate noise in this suite.
 
+### 11.44 Single-stage plans were never batched at all -- the small-n outliers explained and mostly fixed (2026-07-30)
+
+Found immediately after the readability pass, which is the point worth
+recording: naming `stage_kind` and pulling the stride folding into one
+helper made `fft_exec_slab`'s routing legible enough that the gap was
+visible by reading it.
+
+**The deficiency.** `can_fuse()` requires `stages_.size() >= 2` (a distinct
+last stage must exist, so the first can safely alias the output). The
+factorizer emits exactly ONE stage for n in {2, 3, 4, 5, 8} and for every
+prime <= 64 -- n=8 in particular is a lone radix-8 stage under the
+radix-8-tail rule. For those engines `can_fuse_outer()` is false, and the
+contiguous-fiber branch fell through to the **per-fiber** loop: each fiber
+transformed separately at m == 1, fully scalar, no batching whatsoever.
+This is why every sweep's n=8 point was a 3-5x outlier (many4d n=8 was
+5.5x, the single worst number in the whole suite) while n=9 and n=16 --
+two stages, therefore fusable -- were fine.
+
+**The fix is a routing change, not a kernel change.** The gather path
+below already batches any engine: it gathers `mt` fibers into the
+[frequency][batch] scratch, calls `eng.run(mt, ...)` -- which handles
+single-stage, Bluestein and six-step engines alike -- and scatters back.
+It was simply unreachable for contiguous fibers, because the
+`!can_fuse_outer()` case was claimed by the per-fiber branch first. Letting
+non-fusable engines fall through to it costs a gather/scatter pair and buys
+a vectorized m == mt inner loop.
+
+**Measured** (back-to-back A/B, two runs each, same binary pair):
+
+| at n=8 | before | after |
+|---|---:|---:|
+| many-3-D | 4.072 | **3.346 (-17.8%)** |
+| many-4-D | 5.537 | **4.955 (-10.5%)** |
+| gap-3-D | 3.174 | 3.018 (-4.9%) |
+| 3-D | 4.129 | 3.982 (-3.5%) |
+
+Consistently negative across four independent sweeps, which is what makes
+it signal rather than noise. Per sweep overall: many-4-D -3.6%, many-3-D
+-1.8%, gap-3-D -1.6%, 2-D -0.6%, 3-D and many(h=32) flat; overall -0.9%.
+
+**Noise calibration, for free.** many(h=256) moved +1.9% -- but its size
+list starts at n=32 and every entry factors into >= 2 stages, so this
+change *cannot* reach it. That +1.9% is therefore a pure noise
+measurement on an unchanged code path, and a useful reminder that
+per-sweep moves under ~2% in this harness mean nothing on their own. It is
+the same split-by-code-path check §11.41 used.
+
+**Still open.** n=8 remains the worst point in every sweep (3.0-5.0x) even
+after the fix -- batching helps but does not close a gap that is really
+about per-call overhead dominating a 8-point transform. The obvious next
+step is the opposite of this one: make n=8 fusable at all, by having the
+factorizer emit {4, 2} instead of {8} when the caller is going to batch.
+That trades one wider stage for two narrower ones and would need measuring
+against the radix-8 tail rule it contradicts (§6), so it is left as a
+lead, not a change.
+
 ---
 
 ## §12 GPU porting design notes
