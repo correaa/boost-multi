@@ -699,18 +699,24 @@ struct fft_engine {
 		// any array type `T` is known -- a reasonable stand-in whenever T's
 		// size is comparable to TW's (same-type, or float-vs-double).
 		//
-		// The budget targets ~L2 (256KB), not L3. It used to be 4MB, which is
-		// large enough that for every nn in the tested range the division
-		// below exceeded the cap and `mb_` was really just the flat cap --
-		// the formula looked nn-adaptive but was not. Sweeping the exponent
-		// (fft.NOTES.md) found a clean minimum here: 2^16..2^22 give 1.276 /
-		// 1.246 / 1.220 / 1.235 / 1.231 / 1.237 / 1.249 overall, i.e. a real
-		// U -- too small a budget forfeits batching, too large lets the
-		// ping-pong pair fall out of L2. 2^18 is where a pair of n*mb
-		// buffers still fits a typical per-core L2, and it is ~2% ahead
-		// overall (batched 1-D sweeps ~5% ahead, everything else neutral).
+		// Note this budget is large enough that for most `nn` in the tested
+		// range the division below exceeds the cap, so `mb_` is in practice
+		// decided by the cap rather than by this formula.
+		//
+		// Lowering it to ~L2 (2^18) was tried and REVERTED: it looked ~2%
+		// ahead across 2-D/3-D/gap-3-D/many-3-D/many, but that harness
+		// omitted the `many_strided` sweeps, and those are exactly the
+		// genuinely-batched path a narrower `mb_` hurts most --
+		// many_strided(h=256) went 0.548 -> 0.619, i.e. 13% worse on the
+		// case where Multi is furthest AHEAD of FFTW. With those sweeps
+		// included the ordering inverts: 2^18 is 2.0% WORSE than 2^22
+		// overall, and 2^21 (nominally best) is only 0.35% ahead against a
+		// 0.3% run-to-run spread -- inside noise, so the original value
+		// stands. See fft.NOTES.md: the lesson is that a tuning harness
+		// must include the sweeps a change is most likely to hurt, not just
+		// the ones it is aimed at.
 #ifndef BOOST_MULTI_FFT_BATCH_BUDGET_LOG2
-#define BOOST_MULTI_FFT_BATCH_BUDGET_LOG2 18
+#define BOOST_MULTI_FFT_BATCH_BUDGET_LOG2 22
 #endif
 		std::size_t const budget = (std::size_t{1} << unsigned{BOOST_MULTI_FFT_BATCH_BUDGET_LOG2}) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
 		// Cap: measured (cachegrind, fft.NOTES.md) at nn=64 a per-call

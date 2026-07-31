@@ -4198,39 +4198,39 @@ non-power-of-two sizes just above the threshold blow up badly (15625:
 sharper demonstration than the original tuning note that six-step is
 what keeps awkward large sizes competitive at all.
 
-**The batch-width budget (was 2^22): stale, and hiding a bug-shaped
-problem.** `batch_width_` computes `budget = 2^22 / (2*sizeof(TW)*nn)`
-then clamps to a cap. With a 4MB budget that division exceeds the cap for
-every `nn` in the tested range -- so the "nn-adaptive" formula was in
-practice a flat constant, and only the cap (which §11.39 fixed) ever did
-anything. Note this is exactly the failure §11.39 found and fixed one
-level down; the same latent problem existed one level up and was missed
-then because only the cap was being varied.
+**The batch-width budget: swept, adopted at 2^18, then REVERTED at 2^22
+after the harness was found incomplete.** `batch_width_` computes
+`budget = 2^22 / (2*sizeof(TW)*nn)` then clamps to a cap; with a 4MB
+budget that division exceeds the cap for most `nn` in range, so `mb_` is
+really decided by the cap. Sweeping the exponent over
+2-D/3-D/gap-3-D/many-3-D/many(h=32,h=256) showed a clean U with a minimum
+at 2^18 = 256KB (overall 1.276/1.246/**1.220**/1.235/1.231/1.237/1.249 for
+2^16..2^22), reproduced to 0.3%, and it was adopted on that basis.
 
-Sweeping the exponent (same six-sweep harness as §11.41):
+**That was wrong, and the way it was wrong is the point.** The harness
+contained the sweeps the change was aimed at and omitted the one it was
+most likely to hurt. `many_strided` -- the genuinely-batched, gather-free
+path, and the case where Multi is furthest AHEAD of FFTW -- depends
+directly on `mb_` being wide, and a 256KB budget starves it: at h=256 it
+went 0.548 -> **0.619**, 13% worse, on Multi's flagship result. Re-running
+the sweep with `many_strided` included inverts the ordering completely:
 
-| budget | 2^16 | 2^17 | **2^18** | 2^19 | 2^20 | 2^21 | 2^22 (was) |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| overall | 1.276 | 1.246 | **1.220** | 1.235 | 1.231 | 1.237 | 1.249 |
+| budget | 2^18 | 2^20 | 2^21 | 2^22 (shipped) |
+|---|---:|---:|---:|---:|
+| overall (with many_strided) | 1.0430 | 1.0249 | **1.0169** | 1.0222 |
 
-A clean U with its minimum at 2^18 = 256KB -- a pair of `n*mb` ping-pong
-buffers still fitting a typical per-core L2. Both directions off the
-minimum degrade for the expected opposite reasons (too small forfeits
-batching width; too large spills L2), which is the shape a genuine
-optimum has rather than a noise artifact.
+2^18 is now **+2.0% WORSE** than the original. 2^21 is nominally best but
+only -0.35% against a 0.23-0.34% repeat spread -- inside noise by the
+standard §11.41 set -- so **2^22 stands unchanged**.
 
-Confirmed with repeats: 2^18 mean 1.2219 (spread 0.3%), 2^22 mean 1.2458
-(spread 0.5%) -- **-1.9% overall**, comfortably outside run-to-run noise
-this time (contrast §11.41's `mb_` cap re-sweep, which was 1.6% against a
-1.3% spread and was correctly NOT adopted). Per sweep: many(h=32)
-**-5.5%**, many(h=256) **-4.6%**, 2-D -1.1%, many-3-D -1.0%, gap-3-D and
-3-D neutral (+0.2%, +0.6%). Separately checked on the large-n 1-D sweep:
-+0.0%, i.e. no cost there.
-
-**Adopted** (`BOOST_MULTI_FFT_BATCH_BUDGET_LOG2`, default 18). The gains
-land specifically on the two batched 1-D sweeps, which were the worst
-non-4-D numbers in the suite -- these are exactly the shapes where `mb_`
-is the width that decides whether a working set stays in L2.
+**Lesson, and it generalizes past this file:** a tuning harness must
+include the workloads a change is most likely to *hurt*, not only the ones
+it targets. Trimming the benchmark for iteration speed silently selected
+for a favourable answer here. Every constant sweep in §11.41-11.43 used a
+trimmed harness; §11.41's (packing threshold) and §11.43's (stride
+conflicts) were separately confirmed against the full suite, but this one
+was not until after adoption. The rule going forward: no routing constant
+changes on trimmed-harness evidence alone.
 
 **Knobs.** While sweeping, the four routing constants gained
 `#ifndef`-guarded macro overrides (`BOOST_MULTI_FFT_MAX_DIRECT_RADIX`,
