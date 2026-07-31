@@ -4511,19 +4511,54 @@ only ever produce evidence against.
 
 **Disposition: reverted, not shipped.** Shipping a mode that measurably costs
 1.8-2.4% when enabled, justified only by theory, would repeat §11.42's
-mistake (adopting on a harness that could not see the downside). What a
-future attempt needs, in order:
+mistake (adopting on a harness that could not see the downside).
 
-1. **A second machine with different cache geometry.** Without one there is
-   no possible positive evidence. This is the blocking requirement, not an
-   optimisation.
+**Follow-up: the mechanism was then validated separately, and it is sound --
+the margin was the bug.** "Does the tuner need different hardware to be
+proven?" turned out to conflate two questions, only one of which needs it:
+*can a short plan-build measurement rank caps correctly* (testable here) vs
+*is the shipped default already best here* (yes, hence no gain). Testing the
+first: compile-time cap in {8,16,32,64}, and for each, a SHORT measurement
+(3 flushed reps, what a tuner can afford) against a LONG one (40 reps,
+ground truth), three passes:
+
+| shape | short winner | long winner | per-pass agreement | short spread |
+|---|---|---|---|---:|
+| 3-D 64^3 | cap 32 | cap 32 | **3/3** | 5.1-13.9% |
+| many-3-D 32x64^2 | cap 16 | cap 16 | 2/3 | 2.3-7.4% |
+
+So the short probe **reliably rejects a clearly-wrong cap** -- for 3-D 64^3
+cap 8 is +26% and cap 64 is +14% against the winner, and it caught that every
+pass. It **cannot resolve near-ties**: in many-3-D caps 16 and 32 differ by
+1-4%, inside the 2-7% spread of a 3-rep measurement, so it coin-flips.
+
+That is exactly why attempts 1-3 lost. On this machine every candidate sits
+within a few percent of the default, so the tuner was never detecting a real
+difference -- it was flipping coins among near-ties, and each wrong flip
+costs. It is not that measurement cannot work; it is that it was being asked
+a question below its resolution.
+
+**This supplies the number §11.46 was missing.** The acceptance margin must
+exceed the short-measurement spread, measured here at **3.5-13.9%**. The 3%
+margin of attempt 2 was far too loose and 12% (attempt 3) still marginal; a
+defensible threshold is **>=15%**, or more reps to shrink the spread at the
+cost of plan-build time. At >=15% on this box the tuner would essentially
+never fire (harmless), while still correcting a default that is badly wrong
+elsewhere -- which is the actual use case.
+
+What a future attempt needs, in order:
+
+1. **A >=15% acceptance margin** (or enough reps to justify a tighter one),
+   now quantified rather than guessed.
 2. **A probe that does not disturb the process** -- reuse one static buffer
-   across all plans rather than allocating per construction, and size the
-   flush to the machine's LLC instead of a fixed 32MB.
-3. **Per-plan measurement variance small enough to decide on.** The whole-suite
-   geomean reproduces to ~0.3%, but a single plan's timing does not; the
-   acceptance margin has to exceed the latter, and attempt 3 suggests it is
-   larger than 12%. Quantify it before choosing a threshold.
+   across all plans rather than allocating ~96MB per construction, and size
+   the flush to the machine's LLC instead of a fixed 32MB. Attempt 3's
+   inversion (stricter margin, WORSE result) is unexplained without this.
+3. **A second machine with different cache geometry** -- no longer needed to
+   validate the mechanism, only to demonstrate an actual win. This box is
+   32KB L1d / 256KB L2 per core; anything with a materially different L2
+   (AMD Zen 512KB-1MB, Ice Lake+ 48KB L1d, Sapphire Rapids 2MB L2, Apple
+   M-series 128KB L1d) would be a real test.
 4. Only then, tune. Candidate coordinates in priority order: the batch-width
    cap (§11.39), the packing/stride-conflict thresholds (§11.43), the flatten
    gate (§11.37).
