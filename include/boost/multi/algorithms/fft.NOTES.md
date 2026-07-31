@@ -4358,6 +4358,75 @@ That trades one wider stage for two narrower ones and would need measuring
 against the radix-8 tail rule it contradicts (§6), so it is left as a
 lead, not a change.
 
+### 11.45 §8 step 1 ("extract butterfly bodies, pure refactor") is NOT free -- it costs 39% on CPU (2026-07-30)
+
+§8's CUDA plan opens with: *"Extract butterfly bodies into `BOOST_MULTI_HD`
+inline functions (the per-(block, r, j) work) shared by the host loops and
+device kernels. **Pure refactor**; CPU codegen must not regress
+(re-benchmark)."* Implemented it. The caveat in parentheses turns out to be
+the whole story, and "pure refactor" is wrong.
+
+**What was built.** Five free functions at namespace scope (deliberately
+not `fft_engine` members, so device code need not instantiate the engine):
+`fft_butterfly2/3/4/5/8`, each taking the twiddles plus already-loaded
+inputs and producing the outputs, with all addressing left in the caller.
+That is the correct separation on paper -- arithmetic is identical on host
+and device, while the loop nest is exactly where CPU cache blocking and GPU
+thread mapping diverge.
+
+**Three calling conventions, all lossy.** Measured by counting packed-SIMD
+instructions (`vmulpd|vaddpd|vsubpd|vfmadd|vfnmadd|vfmsub`) in the
+optimized benchmark object, against 2498 for the inline kernels:
+
+| convention | packed SIMD |
+|---|---:|
+| inline kernels (shipped) | **2498** |
+| return `std::array<T, R>` | 1458 (-42%) |
+| outputs as `T&` out-params | 1828 (-27%) |
+| inputs by value, outputs `T&` | 2114 (-15%) |
+
+**Wall clock, which is far worse than the proxy suggested.** Best variant
+(2114, "only" -15% on the instruction count), back-to-back A/B, two runs
+each: **+39.1% overall**, and not marginal anywhere -- gap-3-D +59.7%,
+many-3-D +58.5%, 2-D +56.2%, 3-D +42.6%, many(h=256) +40.8%. Run spreads
+0.02% and 0.62%, so this is not noise. Reverted; the restored file
+re-measures at exactly 2498.
+
+**Mechanism.** The stage kernels get their vectorization from
+`BOOST_MULTI_FFT_RESTRICT` on the `a`/`b` pointers: the compiler knows
+loads and stores cannot alias, so the `j` loop vectorizes. Passing
+individual *elements* across a function boundary launders that away --
+inside the butterfly there are only references, with no restrict
+relationship the optimizer can see. Loading at the call site (inputs by
+value) recovers part of it, which is why that variant scored best, but not
+all: the stores still cross the boundary. This is the same class of failure
+as §11.9 (explicit `fma()` reduced vectorization) and §11.1 (`unseq`) --
+anything that puts a call boundary between the restrict pointers and the
+arithmetic costs more than it saves.
+
+**What this means for the GPU port** -- and it is a real constraint, not a
+detail:
+
+- **The host and device paths cannot share butterfly *functions*** without
+  giving up ~40% of CPU performance. §8 step 1 as written is not viable.
+- The remaining options are all worse than the plan assumed: duplicate the
+  arithmetic (host keeps today's inline kernels, device gets its own copy,
+  and the two must be kept in sync by tests rather than by construction);
+  share via macros (preserves inlining, but macro-defined numerics are
+  their own maintenance problem); or share a *loop-level* function that
+  takes the restrict pointers and the whole `j` range -- which keeps CPU
+  codegen but is useless to a device kernel, since there one thread wants
+  ONE butterfly, not a loop over `m`.
+- The third option is probably the right one, and it reframes the port:
+  the shareable unit is not the butterfly, it is the **stage** (restrict
+  pointers + extents in, one full pass out). Host and device then provide
+  different stage implementations over a shared *specification*, rather
+  than sharing a common inner function.
+
+Recorded so the next attempt does not start by re-doing the extraction and
+re-discovering the 39%. §8 step 1 should be struck and replaced with the
+stage-level framing above.
+
 ---
 
 ## §12 GPU porting design notes
