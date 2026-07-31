@@ -85,13 +85,6 @@
 #ifndef BOOST_MULTI_ALGORITHMS_FFT_HPP
 #define BOOST_MULTI_ALGORITHMS_FFT_HPP
 
-// Construction-time tuning knob: scratch sizing and execution batch width
-// stay consistent because the scale is applied before plan offsets are
-// assigned. The default preserves the usual cache-budget heuristic.
-#ifndef BOOST_MULTI_FFT_BATCH_WIDTH_SCALE
-#define BOOST_MULTI_FFT_BATCH_WIDTH_SCALE 1
-#endif
-
 #include <boost/multi/array_ref.hpp>  // for layout_t and subarray (cursor -> strided view reconstruction)
 
 #include <algorithm>    // for copy, copy_n, fill, min, max, find_if, transform
@@ -238,20 +231,14 @@ constexpr auto fft_mul_dir(TW const& w, T const& x) -> T {
 
 // Largest prime handled by the direct (table-driven O(p^2)) kernel; larger
 // prime factors use a Bluestein sub-plan, which is O(p log p).
-#ifndef BOOST_MULTI_FFT_MAX_DIRECT_RADIX
-#define BOOST_MULTI_FFT_MAX_DIRECT_RADIX 64
-#endif
-inline constexpr std::size_t fft_max_direct_radix = BOOST_MULTI_FFT_MAX_DIRECT_RADIX;
+inline constexpr std::size_t fft_max_direct_radix = 64;
 
 // Single-fiber transforms at least this long use the six-step decomposition
 // n = n1*n2 (column FFTs, twiddle-transpose, row FFTs): both FFT passes then
 // run batched (vectorized) and cache-blocked instead of striding across the
 // whole fiber. Threshold chosen by measurement (2^13 is neutral, 2^14..2^15
 // gain 10-25%).
-#ifndef BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2
-#define BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2 13
-#endif
-inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << unsigned{BOOST_MULTI_FFT_SIXSTEP_MIN_LOG2};
+inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
 
 // Whether skipping element default-construction (and destruction) of a
 // scratch buffer is allowed for `T`. Three ways in:
@@ -699,38 +686,15 @@ struct fft_engine {
 		// any array type `T` is known -- a reasonable stand-in whenever T's
 		// size is comparable to TW's (same-type, or float-vs-double).
 		//
-		// Note this budget is large enough that for most `nn` in the tested
-		// range the division below exceeds the cap, so `mb_` is in practice
-		// decided by the cap rather than by this formula.
-		//
-		// Lowering it to ~L2 (2^18) was tried and REVERTED: it looked ~2%
-		// ahead across 2-D/3-D/gap-3-D/many-3-D/many, but that harness
-		// omitted the `many_strided` sweeps, and those are exactly the
-		// genuinely-batched path a narrower `mb_` hurts most --
-		// many_strided(h=256) went 0.548 -> 0.619, i.e. 13% worse on the
-		// case where Multi is furthest AHEAD of FFTW. With those sweeps
-		// included the ordering inverts: 2^18 is 2.0% WORSE than 2^22
-		// overall, and 2^21 (nominally best) is only 0.35% ahead against a
-		// 0.3% run-to-run spread -- inside noise, so the original value
-		// stands. See fft.NOTES.md: the lesson is that a tuning harness
-		// must include the sweeps a change is most likely to hurt, not just
-		// the ones it is aimed at.
-#ifndef BOOST_MULTI_FFT_BATCH_BUDGET_LOG2
-#define BOOST_MULTI_FFT_BATCH_BUDGET_LOG2 22
-#endif
-		std::size_t const budget = (std::size_t{1} << unsigned{BOOST_MULTI_FFT_BATCH_BUDGET_LOG2}) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
-		// Cap: measured (cachegrind, fft.NOTES.md) at nn=64 a per-call
-		// ping-pong buffer of nn*64*sizeof(TW) = 64KB already exceeds a
-		// typical 32KB L1, while nn*32*sizeof(TW) = 32KB just fits -- a real,
-		// reproducible D1 miss-rate jump (23%->28% in one measured case),
-		// not noise. Keep the original 64 for nn<=32 (already-good regime,
-		// unaffected), drop to 32 above it.
-#ifndef BOOST_MULTI_FFT_BATCH_WIDTH_CAP
-#define BOOST_MULTI_FFT_BATCH_WIDTH_CAP 32
-#endif
-		std::size_t const cap  = (nn > 32) ? std::size_t{BOOST_MULTI_FFT_BATCH_WIDTH_CAP} : 64;
-		std::size_t const base = std::clamp<std::size_t>(budget, 1, cap);
-		return std::clamp<std::size_t>(base * BOOST_MULTI_FFT_BATCH_WIDTH_SCALE, 1, 256);
+		// The 4MB budget exceeds the cap for most `nn` in practice, so the cap
+		// is what usually decides. Both were swept (fft.NOTES.md §11.42): a
+		// smaller, L2-sized budget helps the tile paths but starves the
+		// genuinely-batched one, and nets out worse. The cap matters more --
+		// at nn=64, nn*64*sizeof(TW) = 64KB overruns a typical 32KB L1 while
+		// nn*32 = 32KB fits, a measured D1 miss-rate jump.
+		std::size_t const budget = (std::size_t{1} << 22U) / (2 * sizeof(TW) * std::max<std::size_t>(nn, 1));
+		std::size_t const cap    = (nn > 32) ? 32 : 64;
+		return std::clamp<std::size_t>(budget, 1, cap);
 	}
 
 	auto wmat_offset_(std::size_t rr) -> std::size_t {
@@ -1229,25 +1193,16 @@ struct fft_engine {
 
 	template<bool Batched, bool Backward, class T>
 	auto run_stages_(std::size_t m, T const* in, T* arena) const -> T const* {
-		T const*    src = in;
-		T*          dst = out_ptr(arena);
-		T*          alt = buf_ptr(arena);  // NOLINT(misc-const-correctness) written through after swap
-		std::size_t ns  = 1;
-		for(stage_t const& st : stages_) {
-			switch(st.kind) {
-			case 0: stage_radix2_<Batched, Backward>(src, dst, ns, m, m, m); break;
-			case 1: stage_radix3_<Batched, Backward>(src, dst, ns, m, m, m); break;
-			case 2: stage_radix4_<Batched, Backward>(src, dst, ns, m, m, m); break;
-			case 3: stage_radix5_<Batched, Backward>(src, dst, ns, m, m, m); break;
-			case 4: stage_generic_<Batched, Backward>(src, dst, ns, st.radix, wmat_.data() + st.aux, m, m, m, arena); break;
-			case 6: stage_radix8_<Batched, Backward>(src, dst, ns, m, m, m); break;
-			default: stage_subplan_<Batched, Backward>(src, dst, ns, st.radix, sub_[st.aux], m, m, m, arena); break;
-			}
-			src = dst;
-			std::swap(dst, alt);
-			ns *= st.radix;
-		}
-		return src;
+		// Same pipeline as run_fused_impl_ with every stage stride equal to
+		// `m` (no user-memory tile at either end), so it just delegates.
+		// The only thing to supply is where the result lands: the stages
+		// ping-pong out_ptr -> buf_ptr -> ..., starting at out_ptr, so stage
+		// i writes out_ptr for even i and the last stage (index size()-1)
+		// writes out_ptr exactly when the stage count is odd.
+		assert(!stages_.empty());  // guaranteed by run(): n_ < 2 returns earlier
+		T* const fin = ((stages_.size() % 2U) == 1U) ? out_ptr(arena) : buf_ptr(arena);
+		run_fused_impl_<Batched, Backward>(in, m, fin, m, m, arena);
+		return fin;
 	}
 
 	// Six-step transform of one long fiber: with n = n1*n2 and the fiber seen
@@ -1373,6 +1328,42 @@ void fft_exec_fiber(View1D&& fib, fft_engine<TW> const& eng, bool backward, T* a
 	std::copy(res, res + eng.n_, fib.begin());  // scatter result back
 }
 
+// Move one tile of `mt` fibers between user memory and the [frequency][batch]
+// scratch layout the batched stage kernels want. `ToScratch` picks the
+// direction (gather before the stages, scatter after); the two are otherwise
+// mirror images, down to the loop order, so they share this one body.
+// `fiber_near` says which axis is closer in memory and therefore belongs in
+// the inner loop: fibers (blocked, so both sides of the transpose stream) or
+// the batch axis (already contiguous on both sides, so a plain copy_n).
+template<bool ToScratch, class Slab, class Cols, class Scratch>
+void fft_slab_tile(Slab&& slab, Cols&& cols, Scratch scratch, bool fiber_near, std::size_t y0, std::size_t mt, std::size_t nn) {  // NOLINT(cppcoreguidelines-missing-std-forward) views are only indexed
+	if(fiber_near) {
+		constexpr std::size_t kb = 64;  // tile the transpose so both sides stay cache-resident
+		for(std::size_t k0 = 0; k0 < nn; k0 += kb) {
+			std::size_t const ke = std::min(nn, k0 + kb);
+			for(std::size_t j = 0; j != mt; ++j) {
+				auto it = slab[static_cast<std::ptrdiff_t>(y0 + j)].begin();
+				for(std::size_t k = k0; k != ke; ++k) {
+					if constexpr(ToScratch) {
+						scratch[(k * mt) + j] = it[static_cast<std::ptrdiff_t>(k)];
+					} else {
+						it[static_cast<std::ptrdiff_t>(k)] = scratch[(k * mt) + j];
+					}
+				}
+			}
+		}
+	} else {
+		for(std::size_t k = 0; k != nn; ++k) {
+			auto it = cols[static_cast<std::ptrdiff_t>(k)].begin() + static_cast<std::ptrdiff_t>(y0);
+			if constexpr(ToScratch) {
+				std::copy_n(it, mt, scratch + (k * mt));
+			} else {
+				std::copy_n(scratch + (k * mt), mt, it);
+			}
+		}
+	}
+}
+
 // Transform every row-fiber of a rank-2 slab [batch][n] in vector batches:
 // tiles of up to eng.mb_ fibers are gathered interleaved (batch index
 // contiguous) and pushed through the batched stage kernels together.
@@ -1390,47 +1381,16 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 	std::size_t const mb = std::min<std::size_t>(mb_base, yy);
 	// Packing contiguous fibers costs an extra scratch copy but lets the
 	// SIMD-friendly batched stages run, so it pays whenever there is more
-	// than one fiber to batch.
-	//
-	// This used to additionally require `nn >= 48`. That threshold was
-	// measured back when `mb_` was capped at a flat 64, where packing a
-	// short transform meant a tile of 64*nn elements that overflowed L1 and
-	// lost more to cache misses than the batched kernels won back. Once
-	// `batch_width_` started capping `mb_` at 32 above nn == 32 (see its
-	// comment), the tile stays L1-resident and that reasoning no longer
-	// applies -- re-measuring across 2-D, 3-D, gap-3-D and both batched
-	// sweeps put dropping the threshold entirely ~8% ahead overall, with
-	// gap-3-D and many-3-D ~16-17% faster and only the shallow-batch
-	// many(h=32) sweep ~2% behind. Keep an escape hatch for A/B benchmarks.
-	#if defined(BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES)
-	bool const pack_contiguous = false;
-	#else
+	// than one fiber to batch (fft.NOTES.md §11.41).
 	bool const pack_contiguous = mb > 1;
-	#endif
 
-	// Contiguous fibers normally transform one at a time straight from user
-	// memory (no transpose gather). Defining
-	// BOOST_MULTI_FFT_EXPERIMENT_PACK_CONTIGUOUS_BATCHES instead packs a tile
-	// into the [frequency][batch] scratch layout below and exercises the
-	// batched stage kernels; its crossover is benchmarked separately.
 	if constexpr(std::is_pointer_v<std::decay_t<decltype(slab.base())>>) {
 		if(get<1>(slab.strides()) == 1) {
-			// The outer-fused path reads/writes user memory directly, walking
-			// the batch with the caller's own fiber stride. That is normally
-			// the right thing (no gather, no scatter), but it degrades badly
-			// when that stride is a large power of two: successive batch
-			// elements then land in the same cache sets and the tile thrashes
-			// a set instead of using the whole cache. The gather path is
-			// immune -- it reads along the contiguous fiber and lays the tile
-			// out itself -- so hand those strides over to it.
-			//
-			// Measured (fft.NOTES.md): packed-vs-gathered per size on the
-			// batched sweeps is a clean split. Packing wins everywhere the
-			// stride is not conflict-prone (often by a lot: n=100 1.27 vs
-			// 2.67, n=243 0.79 vs 1.53) and loses exactly where it is
-			// (h=256 n=512: 2.80 vs 2.32, n=1024: 2.48 vs 2.11).
-			// 8KB is the smallest stride at which the effect was actually
-			// observed here; below it (n=256, 4KB) packing still won.
+			// The outer-fused path walks the batch in user memory using the
+			// caller's fiber stride. A large power-of-two stride puts
+			// successive batch elements in the same cache sets, so the tile
+			// thrashes one set instead of using the cache; those go to the
+			// per-fiber path below instead (fft.NOTES.md §11.43).
 			auto const fiber_stride_bytes = static_cast<std::size_t>(get<0>(slab.strides())) * sizeof(T);
 			bool const stride_conflicts   = fiber_stride_bytes >= 8192 && (fiber_stride_bytes % 8192) == 0;
 			if(pack_contiguous && !stride_conflicts && eng.can_fuse_outer()) {
@@ -1448,11 +1408,10 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 			}
 				if(!eng.can_fuse_outer() || !pack_contiguous || stride_conflicts) {
 				// One fiber at a time, straight from user memory. For a
-				// conflict-prone stride this beats both alternatives: the
-				// batched tile path would stride the batch through colliding
-				// cache sets, and the gather path (below) would pay for a
-				// transpose copy that buys nothing once each fiber is already
-				// contiguous.
+				// conflict-prone stride this beats both the batched tile path
+				// (colliding cache sets) and the gather path below (a
+				// transpose copy that buys nothing when fibers are already
+				// contiguous).
 				auto const ylim = static_cast<std::ptrdiff_t>(yy);
 				for(std::ptrdiff_t y = 0; y != ylim; ++y) {
 					fft_exec_fiber(slab[y], eng, backward, arena);
@@ -1492,45 +1451,11 @@ void fft_exec_slab(View2D&& slab, fft_engine<TW> const& eng, bool backward, T* a
 			continue;
 		}
 		T* const bp = eng.buf_ptr(arena);
-		if(fiber_near) {  // fibers contiguous-ish: blocked-transpose gather, reads stream along k
-			constexpr std::size_t kb = 64;
-			for(std::size_t k0 = 0; k0 < nn; k0 += kb) {
-				std::size_t const ke = std::min(nn, k0 + kb);
-				for(std::size_t j = 0; j != mt; ++j) {
-					auto it = slab[static_cast<std::ptrdiff_t>(y0 + j)].begin();
-					for(std::size_t k = k0; k != ke; ++k) {
-						bp[(k * mt) + j] = it[static_cast<std::ptrdiff_t>(k)];
-					}
-				}
-			}
-		} else {  // batch axis contiguous-ish: both reads and writes stream along j
-			for(std::size_t k = 0; k != nn; ++k) {
-				auto     it  = cols[static_cast<std::ptrdiff_t>(k)].begin() + static_cast<std::ptrdiff_t>(y0);
-				T* const row = bp + (k * mt);
-				std::copy_n(it, mt, row);
-			}
-		}
+		fft_slab_tile<true>(slab, cols, bp, fiber_near, y0, mt, nn);
 
 		T const* const res = eng.run(mt, backward, arena);
 
-		if(fiber_near) {
-			constexpr std::size_t kb = 64;
-			for(std::size_t k0 = 0; k0 < nn; k0 += kb) {
-				std::size_t const ke = std::min(nn, k0 + kb);
-				for(std::size_t j = 0; j != mt; ++j) {
-					auto it = slab[static_cast<std::ptrdiff_t>(y0 + j)].begin();
-					for(std::size_t k = k0; k != ke; ++k) {
-						it[static_cast<std::ptrdiff_t>(k)] = res[(k * mt) + j];
-					}
-				}
-			}
-		} else {
-			for(std::size_t k = 0; k != nn; ++k) {
-				auto           it  = cols[static_cast<std::ptrdiff_t>(k)].begin() + static_cast<std::ptrdiff_t>(y0);
-				T const* const row = res + (k * mt);
-				std::copy_n(row, mt, it);
-			}
-		}
+		fft_slab_tile<false>(slab, cols, res, fiber_near, y0, mt, nn);
 	}
 }
 
@@ -1579,36 +1504,16 @@ void fft_apply_last(ViewND&& view, fft_engine<TW> const& eng, bool backward, T* 
 	} else if constexpr(rank == 2) {
 		fft_exec_slab(view, eng, backward, arena);
 	} else {
-#if !defined(BOOST_MULTI_FFT_DISABLE_FLATTEN_BATCH_AXES)
-		// When the two leading (untouched/batch) axes are adjacent in memory
-		// (the common case for a plain array -- outer axis's stride equals
-		// the combined size of everything inside it), merge them into one
-		// axis instead of peeling them one at a time through nested C++
-		// loops below. Recursing on the flattened, one-rank-lower view
-		// collapses what would otherwise be many small fft_exec_slab calls
-		// (one per outer-loop index) into fewer, wider ones -- reaching
-		// fft_exec_slab with a much larger batch width `m` is exactly the
-		// mechanism measured (fft.NOTES.md) to be this engine's strongest
-		// lever, and multi-axis "gap" patterns (an untouched axis between
-		// two active ones) pay for exactly the many-small-calls shape this
-		// bypasses when flattening applies.
-		//
-		// Measured (fft.NOTES.md): a real, reproducible split by `eng.n_`,
-		// not noise -- small transform lengths gain (fewer, larger calls
-		// amortize per-call overhead that dominates there); n_ >= 64
-		// regresses instead (mechanism not fully isolated). Gated on n_ the
-		// same way this file already gates other size-dependent routing
-		// choices, e.g. BOOST_MULTI_FFT_DISABLE_PACK_CONTIGUOUS_BATCHES's
-		// nn>=48 threshold -- keep an escape hatch for workload-specific
-		// tuning and A/B benchmarks, same convention as that flag.
-#ifndef BOOST_MULTI_FFT_FLATTEN_MAX_N
-#define BOOST_MULTI_FFT_FLATTEN_MAX_N 32
-#endif
-		if(eng.n_ <= std::size_t{BOOST_MULTI_FFT_FLATTEN_MAX_N} && view.is_flattable()) {
+		// When the two leading (untouched/batch) axes are adjacent in memory,
+		// merge them into one axis instead of peeling them one at a time
+		// through the nested loops below: that reaches fft_exec_slab in
+		// fewer, wider calls, which is this engine's strongest lever.
+		// Gated on `n_` because the win is real only for short transforms,
+		// where per-call overhead dominates (fft.NOTES.md §11.37).
+		if(eng.n_ <= 32 && view.is_flattable()) {
 			fft_apply_last(view.flatted(), eng, backward, arena);
 			return;
 		}
-#endif
 		using std::get;
 		auto const strs = view.strides();
 		auto const s0   = static_cast<std::ptrdiff_t>(get<0>(strs));
@@ -1673,42 +1578,26 @@ auto fft_view_from_cursor(Cursor const& cur, std::array<std::size_t, static_cast
 	return multi::subarray<T, D, ptr_type>{fft_layout_from<D>(ext, str), cur.base()};
 }
 
-// Raw, execute()-time-local scratch: allocates (never value-initializes) T
-// storage for the plan's whole scratch arena. Every element is always fully
-// written (by a gather step or a stage kernel) before it is ever read, so
-// zero-initializing it first -- what a plain `std::vector<T>` would do -- is
-// pure waste on every single `execute()` call.
+// Raw, execute()-time-local scratch for the plan's whole arena. Two
+// deliberate omissions, both easy to "fix" wrongly:
 //
-// When `fft_skip_element_init<T>` holds (either the language already makes
-// default-construction free, or the type is opted in through Multi's own
-// `force_element_trivial_default_construction` customization point -- which
-// std::complex<float/double> are), the constructor deliberately does NOT
-// run `uninitialized_default_construct_n` either: std::complex is trivially
-// copyable but NOT trivially default-constructible (its default constructor
-// zero-initializes through defaulted arguments), so default-constructing the
-// arena compiles to a full memset of the whole allocation on every call --
-// verified in generated code -- silently reintroducing the very zero-fill
-// this class exists to avoid (an earlier version of this file did exactly
-// that, with a comment claiming it was free). Skipping construction for
-// storage that is only ever stored-to-then-read is the same idiom
-// multi::array itself uses (array.hpp); types without the opt-in still get
-// proper lifetime starts.
-// `Allocator` is the §10.4(c) GPU seam: any caller-supplied allocator
-// satisfying the standard Allocator concept (allocate(n)/deallocate(p,n))
-// for `T` directly can be threaded through here -- a fixed single-slot
-// arena (allocate() always returns the same buffer, deallocate() a no-op)
-// is the correct minimal fit for this class's own access pattern (exactly
-// one allocate() followed by exactly one matching deallocate() per
-// execute() call, never interleaved with any other request through the
-// same allocator); a device allocator (Thrust/CUDA) is the same shape
-// later. Deliberately does NOT rebind via allocator_traits: this class
-// only ever allocates `T`, never some other node type, so requiring
-// `Allocator` to be a rebindable class template (as e.g. std::vector's
-// internal machinery does) would needlessly exclude simple, monomorphic,
-// already-T-typed allocators. `Allocator::value_type` must already be `T`.
-// Assumes allocate() returns a plain `T*` (true for std::allocator and
-// std::pmr::polymorphic_allocator) -- fancy-pointer support is a separate,
-// not-yet-needed extension.
+//  * It never value-initializes. Every element is fully written (by a gather
+//    or a stage kernel) before it is read, so the zero-fill a plain
+//    std::vector<T> would do is pure waste on every execute() call.
+//  * When `fft_skip_element_init<T>` holds it does not even
+//    uninitialized_default_construct_n. std::complex is trivially copyable
+//    but NOT trivially default-constructible, so constructing the arena
+//    compiles to a memset of the whole allocation -- reintroducing exactly
+//    the zero-fill this class exists to avoid. Types without the opt-in do
+//    get proper lifetime starts.
+//
+// `Allocator` is the GPU seam (fft.NOTES.md §10.4(c)): anything satisfying
+// allocate(n)/deallocate(p,n) for `T` works, including a device allocator.
+// It is used without allocator_traits rebinding on purpose -- this class only
+// ever allocates `T`, so demanding a rebindable class template would exclude
+// simple monomorphic allocators. `Allocator::value_type` must already be `T`,
+// and allocate() must return a plain `T*` (fancy pointers are a separate,
+// not-yet-needed extension).
 template<class T, class Allocator = std::allocator<T>>
 class fft_scratch_arena {
 	static_assert(std::is_same_v<typename Allocator::value_type, T>, "Allocator::value_type must be T; fft_scratch_arena does not rebind");
