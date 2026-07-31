@@ -4417,15 +4417,45 @@ detail:
   takes the restrict pointers and the whole `j` range -- which keeps CPU
   codegen but is useless to a device kernel, since there one thread wants
   ONE butterfly, not a loop over `m`.
-- The third option is probably the right one, and it reframes the port:
-  the shareable unit is not the butterfly, it is the **stage** (restrict
-  pointers + extents in, one full pass out). Host and device then provide
-  different stage implementations over a shared *specification*, rather
-  than sharing a common inner function.
+- The third option is the right one, and it is now **measured, not
+  assumed** (this was first written as a hypothesis; the numbers below
+  were added after testing it).
 
-Recorded so the next attempt does not start by re-doing the extraction and
-re-discovering the 39%. §8 step 1 should be struck and replaced with the
-stage-level framing above.
+**Stage-level extraction: verified free.** Hoisted `stage_radix4_` out of
+`fft_engine` into a namespace-scope `fft_stage_radix4(tw, n, a, b, ns,
+strides...)` -- same loop, same `BOOST_MULTI_FFT_RESTRICT` pointers, tables
+passed in as parameters instead of read off `this`. The member became a
+one-line forwarder.
+
+| variant | packed SIMD | wall clock |
+|---|---:|---:|
+| inline kernels (shipped) | 2498 | baseline |
+| **stage-level free function** | **2582** | **-1.5%** |
+| butterfly-level (§ above) | 2114 | +39.1% |
+
+Vectorization is fully preserved -- marginally *better*, in fact -- and
+wall clock is neutral-to-slightly-faster (many(h=32) -4.8%, many(h=256)
+-5.0%, everything else within noise; two runs 0.30% apart). The boundary
+is harmless precisely because the `j` loop and the `restrict` pointers stay
+together inside one function, which is the property the butterfly-level
+split destroyed.
+
+**So the port has a viable shape after all**: the stage is the shareable
+unit. A device implementation mirrors the same signature (tables +
+restrict pointers + extents in, one pass out) and supplies its own thread
+mapping, while the host keeps today's vectorized loop. What cannot be
+shared is only the innermost arithmetic, which will have to be duplicated
+between host and device and kept in sync by tests rather than by
+construction.
+
+The experimental hoist was reverted rather than shipped, since converting
+one of seven stages leaves an inconsistent file; the finding is what
+matters, and doing all seven is a coherent follow-up that now has evidence
+behind it.
+
+Recorded so the next attempt does not start by re-doing the butterfly
+extraction and re-discovering the 39%. §8 step 1 should be struck and
+replaced with the stage-level framing above.
 
 ---
 
