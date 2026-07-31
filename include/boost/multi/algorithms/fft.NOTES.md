@@ -4457,6 +4457,81 @@ Recorded so the next attempt does not start by re-doing the butterfly
 extraction and re-discovering the 39%. §8 step 1 should be struck and
 replaced with the stage-level framing above.
 
+### 11.46 Plan-time autotuning (`fft_measure`): implemented twice, both measurably WORSE, not shipped (2026-07-31)
+
+§6 lists plan-time autotuning as "FFTW's actual planner advantage" and it is
+the one item on that list never attempted. This session made the case for it
+concrete: §11.41-11.43 showed that constants here go stale when a neighbour
+moves, that a value winning on one access pattern can lose on another
+(§11.42's revert), and that the `mb_` cap's optimum sat inside noise on this
+box (§11.41) -- i.e. problems hand-tuning structurally cannot fix. Built it.
+It does not work yet, and the reasons are worth more than the code was.
+
+**Design and API.** `enum class fft_planning { estimate, measure }`, a
+defaulted third constructor argument so existing call sites are untouched,
+plus a `batch_width(axis)` accessor so a caller can see what was chosen.
+The tuning coordinate is the batch-width **cap** (one number, shared by all
+engines including sub-engines, threaded through `fft_engine`'s constructor)
+rather than per-engine widths: it is a 1-D search, it moves all engines
+coherently, and it is exactly the constant §11.39 proved matters.
+
+**Attempt 1 -- per-engine microbenchmark: +1.3% worse.** Timed
+`engine.run(m, ...)` on a scratch buffer of the engine's own length, keeping
+the width with the best time per fiber. Correct (bit-identical output; `mb_`
+changes tiling, not arithmetic) and it did pick distinct widths -- n=32 ->
+16, n=64 -> 8 against defaults of 64 and 32. But it measures an isolated,
+**hot-cache** 1-D run, and the real path is cold-cache N-D. It therefore
+systematically preferred narrow widths, which lose once each call starts
+cold. This is [[fft-flushed-cache-methodology]] exactly, and it was cited
+earlier in this same session (§11.35) before being walked into again.
+
+**Attempt 2 -- whole plan, real shape, flushed cache: +1.8% worse.** Probe
+the actual `execute()` on a C-order scratch array of the planned shape, with
+a 32MB flush between timings, five candidate caps, min-of-reps, and a margin
+below which the default is kept. Now measuring the right thing, and much
+more conservative (it mostly kept the default). Still behind.
+
+**Attempt 3 -- stricter acceptance (7 reps, 12% margin): +2.4%, WORSE than
+attempt 2.** This is the informative one. A stricter margin should mean fewer
+deviations and therefore convergence *toward* `estimate`, so getting further
+away falsifies "the margin is the only mechanism". The likely confound is the
+probe itself: measure mode transiently allocates ~96MB (probe array +
+flusher) per plan construction, and the benchmark builds one plan per size,
+so the process's page mappings going into the timed region differ from the
+`estimate` run's. A tuner that perturbs the state it is about to measure is
+measuring itself.
+
+**The deeper problem, and why no amount of margin fixes it here.** This
+machine is the box every default in this file was fitted on, this session
+included. Measure mode has nothing to find; every deviation it makes is
+noise-driven, and noise can only cost. **The feature cannot demonstrate value
+on the machine whose constants were tuned to it** -- that is not a bug in the
+implementation, it is a property of the experiment, and it means this box can
+only ever produce evidence against.
+
+**Disposition: reverted, not shipped.** Shipping a mode that measurably costs
+1.8-2.4% when enabled, justified only by theory, would repeat §11.42's
+mistake (adopting on a harness that could not see the downside). What a
+future attempt needs, in order:
+
+1. **A second machine with different cache geometry.** Without one there is
+   no possible positive evidence. This is the blocking requirement, not an
+   optimisation.
+2. **A probe that does not disturb the process** -- reuse one static buffer
+   across all plans rather than allocating per construction, and size the
+   flush to the machine's LLC instead of a fixed 32MB.
+3. **Per-plan measurement variance small enough to decide on.** The whole-suite
+   geomean reproduces to ~0.3%, but a single plan's timing does not; the
+   acceptance margin has to exceed the latter, and attempt 3 suggests it is
+   larger than 12%. Quantify it before choosing a threshold.
+4. Only then, tune. Candidate coordinates in priority order: the batch-width
+   cap (§11.39), the packing/stride-conflict thresholds (§11.43), the flatten
+   gate (§11.37).
+
+The API shape (`fft_planning` argument, `batch_width()` accessor, cap
+threaded through `fft_engine`) is worth reusing verbatim -- it was the easy
+part and it is right. The measurement is the hard part and remains unsolved.
+
 ---
 
 ## §12 GPU porting design notes
