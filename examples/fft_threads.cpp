@@ -65,17 +65,25 @@ class thread_arena {
 	std::pmr::monotonic_buffer_resource      resource_;
 	std::pmr::polymorphic_allocator<complex> allocator_;
 
+	// Exactly what the plan asks for -- no slack. `operator new[]` returns
+	// memory aligned for any fundamental type (16 bytes on x86-64), and the
+	// allocator requests alignof(complex) == 8, so the resource inserts no
+	// padding and the first carve fits precisely.
 	static auto bytes_for(std::size_t elements) -> std::size_t {
-		// One spare element's worth covers any alignment padding the resource
-		// may insert when it carves the first block.
-		return (elements + 1) * sizeof(complex);
+		return elements * sizeof(complex);
 	}
 
 	// Private delegate so the size is computed once and the resource is
 	// handed exactly the block the buffer owns.
+	//
+	// Upstream is null_memory_resource on purpose: if this block ever failed
+	// to satisfy a request, the resource would quietly allocate from the heap
+	// instead -- defeating the whole point of the arena, and invisibly. With
+	// no upstream it throws instead, so the sizing above is checked on every
+	// run rather than assumed.
 	explicit thread_arena(std::size_t bytes)
 	: buffer_{std::make_unique_for_overwrite<std::byte[]>(bytes)}  // no zero-fill
-	, resource_{buffer_.get(), bytes}
+	, resource_{buffer_.get(), bytes, std::pmr::null_memory_resource()}
 	, allocator_{&resource_} {}
 
  public:
