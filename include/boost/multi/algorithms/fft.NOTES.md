@@ -4567,6 +4567,67 @@ The API shape (`fft_planning` argument, `batch_width()` accessor, cap
 threaded through `fft_engine`) is worth reusing verbatim -- it was the easy
 part and it is right. The measurement is the hard part and remains unsolved.
 
+### 11.47 Stage-level hoist: adopted, and it pays for itself (-1.6% overall, -7% on batched 1-D) (2026-08-01)
+
+§11.45 established that the shareable host/device unit is the STAGE, not the
+butterfly, and verified it on one kernel (-1.5%, vectorization preserved).
+This does all of them.
+
+**What moved.** Six of the seven stage kernels (`radix2/3/4/5/8`, `generic`)
+left `fft_engine` for namespace scope, taking what they used to read off
+`this` as explicit parameters:
+
+	template<bool Batched, bool Backward, class T, class TW>
+	void fft_stage_radix4(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n,
+	                      T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, ...);
+
+The members became one-line forwarders, so every call site is unchanged.
+`stage_generic_` additionally takes its scratch region rather than the arena.
+The stride-folding helper moved out with them.
+
+**`stage_subplan_` stays a member, deliberately.** It calls `sub.run(...)`
+and `sub.buf_ptr(arena)` on a nested engine, so it is coupled to
+`fft_engine` in a way the other six are not. Hoisting it would mean passing
+an engine reference, which defeats the purpose (device code should not have
+to instantiate the engine). It is also the case a first GPU port is least
+likely to support -- it exists for primes above `fft_max_direct_radix`,
+i.e. Bluestein.
+
+**It is faster, which was not the expectation.** The justification was
+"neutral groundwork"; measured back-to-back, two runs each:
+
+| sweep | members | hoisted |
+|---|---:|---:|
+| many(h=32) | 1.394 | **1.296 (-7.0%)** |
+| many(h=256) | 1.442 | **1.363 (-5.5%)** |
+| 2-D | 0.914 | 0.890 (-2.6%) |
+| 3-D, gap-3-D | | +0.3%, +0.5% |
+| many-3-D, many-4-D | | +1.3%, +2.4% |
+| **overall** | **1.2802** | **1.2602 (-1.6%)** |
+
+Overall -1.6% is near the noise band (run spreads 0.92% and 0.56%) and
+should not be leaned on; the batched 1-D wins are well outside it and are
+exactly the sweeps the radix kernels dominate.
+
+**Why it got faster.** `tw_` is a `std::vector` member reached through
+`this`, so the optimizer had to assume a write through `b` might alias the
+vector's internal buffer. Passing `TW const* BOOST_MULTI_FFT_RESTRICT tw`
+asserts it cannot. The hoist therefore did not merely relocate code, it
+supplied an aliasing guarantee that was previously unavailable -- which is
+what the packed-SIMD count shows: 2498 -> 3138 (+26%), with text +11%.
+Note the instruction count alone would NOT have justified adoption (it has
+been misleading in both directions, §11.45); the wall-clock split by sweep
+is what makes the case.
+
+**Gate:** strict `-Wall -Wextra -Wpedantic -Wshadow -Wconversion
+-Wsign-conversion -Werror` and `-fsanitize=address,undefined` on g++ and
+clang++, plus 101/101 ctest.
+
+**For the GPU port**, the header now presents the exact interface a device
+implementation should mirror: tables plus restrict pointers plus extents
+in, one pass out, no `fft_engine` in sight. §8 step 1 (butterfly-level
+sharing) remains struck; this replaces it.
+
 ---
 
 ## §12 GPU porting design notes

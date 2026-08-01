@@ -229,6 +229,271 @@ constexpr auto fft_mul_dir(TW const& w, T const& x) -> T {
 	}
 }
 
+// Strides a stage kernel indexes with. Every kernel takes the caller's
+// strides and, when !Batched, folds them all to 1 -- which is what lets the
+// compiler constant-fold the offset arithmetic and drop the batch loop for the
+// single-fiber case.
+struct fft_stage_strides {
+	std::size_t batch;      // number of fibers processed together (m)
+	std::size_t in_elem;    // between successive frequencies of the input
+	std::size_t out_elem;   // ... and of the output
+	std::size_t in_batch;   // between successive fibers of the input
+	std::size_t out_batch;  // ... and of the output
+};
+
+template<bool Batched>
+constexpr auto fft_fold_strides(std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch, std::size_t out_batch) -> fft_stage_strides {
+	if constexpr(Batched) {
+		return {batch, in_elem, out_elem, in_batch, out_batch};
+	} else {
+		return {1, 1, 1, 1, 1};
+	}
+}
+
+
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_radix2(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const half  = n / 2;
+	std::size_t const tstep = n / (2 * ns);
+	for(std::size_t block = 0; block != half; block += ns) {
+		std::size_t const base = block * 2;
+		for(std::size_t r = 0; r != ns; ++r) {
+			TW const       w  = tw[r * tstep];
+			T const* const a0 = a + ((block + r) * sa);
+			T const* const a1 = a0 + (half * sa);
+			T* const       b0 = b + ((base + r) * sb);
+			T* const       b1 = b0 + (ns * sb);
+			for(std::size_t j = 0; j != m; ++j) {
+				T const v0 = a0[j * ja];
+				T const v1 = fft_mul_dir<Backward>(w, a1[j * ja]);
+				b0[j * jb] = v0 + v1;
+				b1[j * jb] = v0 - v1;
+			}
+		}
+	}
+}
+
+// The multiply-by-(-/+ i) is expressed as a multiply by tw_[n/4] so it
+// stays generic over the element type and carries the correct sign.
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_radix4(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const q     = n / 4;
+	std::size_t const tstep = n / (4 * ns);
+	TW const          imu   = tw[q];  // -i for forward, +i for backward (i.e. under conj-on-load for Backward)
+	for(std::size_t block = 0; block != q; block += ns) {
+		std::size_t const base = block * 4;
+		for(std::size_t r = 0; r != ns; ++r) {
+			TW const       w1 = tw[r * tstep];
+			TW const       w2 = tw[2 * r * tstep];
+			TW const       w3 = tw[3 * r * tstep];
+			T const* const a0 = a + ((block + r) * sa);
+			T const* const a1 = a0 + (q * sa);
+			T const* const a2 = a0 + (2 * q * sa);
+			T const* const a3 = a0 + (3 * q * sa);
+			T* const       b0 = b + ((base + r) * sb);
+			T* const       b1 = b0 + (ns * sb);
+			T* const       b2 = b0 + (2 * ns * sb);
+			T* const       b3 = b0 + (3 * ns * sb);
+			for(std::size_t j = 0; j != m; ++j) {
+				T const x0 = a0[j * ja];
+				T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
+				T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
+				T const x3 = fft_mul_dir<Backward>(w3, a3[j * ja]);
+				T const t0 = x0 + x2;
+				T const t1 = x0 - x2;
+				T const t2 = x1 + x3;
+				T const t3 = fft_mul_dir<Backward>(imu, x1 - x3);
+				b0[j * jb] = t0 + t2;
+				b1[j * jb] = t1 + t3;
+				b2[j * jb] = t0 - t2;
+				b3[j * jb] = t1 - t3;
+			}
+		}
+	}
+}
+
+// One radix-8 stage, decomposed into two radix-4 sub-butterflies plus a
+// combining layer; all constants (W8, W8^2 = -/+i, W8^3) come from the
+// twiddle table so the kernel stays sign- and type-generic.
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_radix8(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const q     = n / 8;
+	std::size_t const tstep = n / (8 * ns);
+	TW const          imu   = tw[2 * q];  // W8^2: -i for forward, +i for backward (i.e. under conj-on-load for Backward)
+	TW const          w81   = tw[q];
+	TW const          w83   = tw[3 * q];
+	for(std::size_t block = 0; block != q; block += ns) {
+		std::size_t const base = block * 8;
+		for(std::size_t r = 0; r != ns; ++r) {
+			TW const       w1 = tw[r * tstep];
+			TW const       w2 = tw[2 * r * tstep];
+			TW const       w3 = tw[3 * r * tstep];
+			TW const       w4 = tw[4 * r * tstep];
+			TW const       w5 = tw[5 * r * tstep];
+			TW const       w6 = tw[6 * r * tstep];
+			TW const       w7 = tw[7 * r * tstep];
+			T const* const a0 = a + ((block + r) * sa);
+			T* const       b0 = b + ((base + r) * sb);
+			for(std::size_t j = 0; j != m; ++j) {
+				T const x0            = a0[j * ja];
+				T const x1            = fft_mul_dir<Backward>(w1, a0[(1 * q * sa) + j * ja]);
+				T const x2            = fft_mul_dir<Backward>(w2, a0[(2 * q * sa) + j * ja]);
+				T const x3            = fft_mul_dir<Backward>(w3, a0[(3 * q * sa) + j * ja]);
+				T const x4            = fft_mul_dir<Backward>(w4, a0[(4 * q * sa) + j * ja]);
+				T const x5            = fft_mul_dir<Backward>(w5, a0[(5 * q * sa) + j * ja]);
+				T const x6            = fft_mul_dir<Backward>(w6, a0[(6 * q * sa) + j * ja]);
+				T const x7            = fft_mul_dir<Backward>(w7, a0[(7 * q * sa) + j * ja]);
+				// radix-4 over the even legs (x0, x2, x4, x6)
+				T const s0            = x0 + x4;
+				T const s1            = x0 - x4;
+				T const s2            = x2 + x6;
+				T const s3            = fft_mul_dir<Backward>(imu, x2 - x6);
+				T const e0            = s0 + s2;
+				T const e1            = s1 + s3;
+				T const e2            = s0 - s2;
+				T const e3            = s1 - s3;
+				// radix-4 over the odd legs (x1, x3, x5, x7), then W8^u twiddles
+				T const u0            = x1 + x5;
+				T const u1            = x1 - x5;
+				T const u2            = x3 + x7;
+				T const u3            = fft_mul_dir<Backward>(imu, x3 - x7);
+				T const o0            = u0 + u2;
+				T const o1            = fft_mul_dir<Backward>(w81, u1 + u3);
+				T const o2            = fft_mul_dir<Backward>(imu, u0 - u2);
+				T const o3            = fft_mul_dir<Backward>(w83, u1 - u3);
+				b0[j * jb]                 = e0 + o0;
+				b0[(1 * ns * sb) + j * jb] = e1 + o1;
+				b0[(2 * ns * sb) + j * jb] = e2 + o2;
+				b0[(3 * ns * sb) + j * jb] = e3 + o3;
+				b0[(4 * ns * sb) + j * jb] = e0 - o0;
+				b0[(5 * ns * sb) + j * jb] = e1 - o1;
+				b0[(6 * ns * sb) + j * jb] = e2 - o2;
+				b0[(7 * ns * sb) + j * jb] = e3 - o3;
+			}
+		}
+	}
+}
+
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_radix3(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const n3    = n / 3;
+	std::size_t const tstep = n / (3 * ns);
+	TW const          w1c   = tw[n3];      // W_3
+	TW const          w2c   = tw[2 * n3];  // W_3^2
+	for(std::size_t block = 0; block != n3; block += ns) {
+		std::size_t const base = block * 3;
+		for(std::size_t r = 0; r != ns; ++r) {
+			TW const       w1 = tw[r * tstep];
+			TW const       w2 = tw[2 * r * tstep];
+			T const* const a0 = a + ((block + r) * sa);
+			T const* const a1 = a0 + (n3 * sa);
+			T const* const a2 = a0 + (2 * n3 * sa);
+			T* const       b0 = b + ((base + r) * sb);
+			T* const       b1 = b0 + (ns * sb);
+			T* const       b2 = b0 + (2 * ns * sb);
+			for(std::size_t j = 0; j != m; ++j) {
+				T const x0 = a0[j * ja];
+				T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
+				T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
+				b0[j * jb] = x0 + x1 + x2;
+				b1[j * jb] = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2);
+				b2[j * jb] = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w1c, x2);
+			}
+		}
+	}
+}
+
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_radix5(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const n5    = n / 5;
+	std::size_t const tstep = n / (5 * ns);
+	TW const          w1c   = tw[n5];
+	TW const          w2c   = tw[2 * n5];
+	TW const          w3c   = tw[3 * n5];
+	TW const          w4c   = tw[4 * n5];
+	for(std::size_t block = 0; block != n5; block += ns) {
+		std::size_t const base = block * 5;
+		for(std::size_t r = 0; r != ns; ++r) {
+			TW const       w1 = tw[r * tstep];
+			TW const       w2 = tw[2 * r * tstep];
+			TW const       w3 = tw[3 * r * tstep];
+			TW const       w4 = tw[4 * r * tstep];
+			T const* const a0 = a + ((block + r) * sa);
+			T const* const a1 = a0 + (n5 * sa);
+			T const* const a2 = a0 + (2 * n5 * sa);
+			T const* const a3 = a0 + (3 * n5 * sa);
+			T const* const a4 = a0 + (4 * n5 * sa);
+			T* const       b0 = b + ((base + r) * sb);
+			T* const       b1 = b0 + (ns * sb);
+			T* const       b2 = b0 + (2 * ns * sb);
+			T* const       b3 = b0 + (3 * ns * sb);
+			T* const       b4 = b0 + (4 * ns * sb);
+			for(std::size_t j = 0; j != m; ++j) {
+				T const x0 = a0[j * ja];
+				T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
+				T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
+				T const x3 = fft_mul_dir<Backward>(w3, a3[j * ja]);
+				T const x4 = fft_mul_dir<Backward>(w4, a4[j * ja]);
+				b0[j * jb] = x0 + x1 + x2 + x3 + x4;
+				b1[j * jb] = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2) + fft_mul_dir<Backward>(w3c, x3) + fft_mul_dir<Backward>(w4c, x4);
+				b2[j * jb] = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w4c, x2) + fft_mul_dir<Backward>(w1c, x3) + fft_mul_dir<Backward>(w3c, x4);
+				b3[j * jb] = x0 + fft_mul_dir<Backward>(w3c, x1) + fft_mul_dir<Backward>(w1c, x2) + fft_mul_dir<Backward>(w4c, x3) + fft_mul_dir<Backward>(w2c, x4);
+				b4[j * jb] = x0 + fft_mul_dir<Backward>(w4c, x1) + fft_mul_dir<Backward>(w3c, x2) + fft_mul_dir<Backward>(w2c, x3) + fft_mul_dir<Backward>(w1c, x4);
+			}
+		}
+	}
+}
+
+// Direct radix-p stage for odd primes p <= fft_max_direct_radix, driven by
+// the precomputed p x p DFT matrix (no modulo in the inner loops).
+template<bool Batched, bool Backward, class T, class TW>
+void fft_stage_generic(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n, T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, TW const* wmat, std::size_t batch, std::size_t in_elem, std::size_t out_elem, T* BOOST_MULTI_FFT_RESTRICT scratch, std::size_t in_batch = 1, std::size_t out_batch = 1) {
+	auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+	std::size_t const nr    = n / rr;
+	std::size_t const tstep = n / (rr * ns);
+	T* const          x     = scratch;
+	for(std::size_t block = 0; block != nr; block += ns) {
+		std::size_t const base = block * rr;
+		for(std::size_t r = 0; r != ns; ++r) {
+			T const* const asrc = a + ((block + r) * sa);
+			if(ja == 1) {
+				std::copy_n(asrc, m, x);
+			} else {
+				for(std::size_t j = 0; j != m; ++j) { x[j] = asrc[j * ja]; }
+			}  // t == 0, twiddle == 1
+			for(std::size_t t = 1; t != rr; ++t) {
+				TW const       w  = tw[t * r * tstep];
+				T const* const at = asrc + (t * nr * sa);
+				T* const       xt = x + (t * m);
+				for(std::size_t j = 0; j != m; ++j) {
+					xt[j] = fft_mul_dir<Backward>(w, at[j * ja]);
+				}
+			}
+			for(std::size_t u = 0; u != rr; ++u) {
+				TW const* const wrow = wmat + (u * rr);
+				T* const        dst  = b + ((base + r + (u * ns)) * sb);
+				if(jb == 1) {
+					std::copy_n(x, m, dst);
+				} else {
+					for(std::size_t j = 0; j != m; ++j) { dst[j * jb] = x[j]; }
+				}  // wrow[0] == 1
+				for(std::size_t t = 1; t != rr; ++t) {
+					TW const       wc = wrow[t];
+					T const* const xt = x + (t * m);
+					for(std::size_t j = 0; j != m; ++j) {
+						dst[j * jb] = dst[j * jb] + fft_mul_dir<Backward>(wc, xt[j]);
+					}
+				}
+			}
+		}
+	}
+}
+
 // Largest prime handled by the direct (table-driven O(p^2)) kernel; larger
 // prime factors use a Bluestein sub-plan, which is O(p log p).
 inline constexpr std::size_t fft_max_direct_radix = 64;
@@ -860,23 +1125,6 @@ struct fft_engine {
 	// lets the compiler constant-fold the whole offset computation and drop
 	// the batch loop for the single-fiber case. Bundling them keeps that
 	// five-line preamble from being restated in each kernel.
-	struct stage_strides {
-		std::size_t batch;      // number of fibers processed together (m)
-		std::size_t in_elem;    // between successive frequencies of the input
-		std::size_t out_elem;   // ... and of the output
-		std::size_t in_batch;   // between successive fibers of the input
-		std::size_t out_batch;  // ... and of the output
-	};
-
-	template<bool Batched>
-	static constexpr auto fold_strides(std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch, std::size_t out_batch) -> stage_strides {
-		if constexpr(Batched) {
-			return {batch, in_elem, out_elem, in_batch, out_batch};
-		} else {
-			return {1, 1, 1, 1, 1};
-		}
-	}
-
 	// --- batched Stockham stage kernels -----------------------------------
 	// Each kernel reads one radix's worth of butterflies from `a` and writes
 	// the combined result to `b` (they never alias -- that is what the
@@ -896,65 +1144,14 @@ struct fft_engine {
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix2_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const half  = n_ / 2;
-		std::size_t const tstep = n_ / (2 * ns);
-		for(std::size_t block = 0; block != half; block += ns) {
-			std::size_t const base = block * 2;
-			for(std::size_t r = 0; r != ns; ++r) {
-				TW const       w  = tw_[r * tstep];
-				T const* const a0 = a + ((block + r) * sa);
-				T const* const a1 = a0 + (half * sa);
-				T* const       b0 = b + ((base + r) * sb);
-				T* const       b1 = b0 + (ns * sb);
-				for(std::size_t j = 0; j != m; ++j) {
-					T const v0 = a0[j * ja];
-					T const v1 = fft_mul_dir<Backward>(w, a1[j * ja]);
-					b0[j * jb] = v0 + v1;
-					b1[j * jb] = v0 - v1;
-				}
-			}
-		}
+		fft_stage_radix2<Batched, Backward>(tw_.data(), n_, a, b, ns, batch, in_elem, out_elem, in_batch, out_batch);
 	}
 
 	// The multiply-by-(-/+ i) is expressed as a multiply by tw_[n/4] so it
 	// stays generic over the element type and carries the correct sign.
 	template<bool Batched, bool Backward, class T>
 	void stage_radix4_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const q     = n_ / 4;
-		std::size_t const tstep = n_ / (4 * ns);
-		TW const          imu   = tw_[q];  // -i for forward, +i for backward (i.e. under conj-on-load for Backward)
-		for(std::size_t block = 0; block != q; block += ns) {
-			std::size_t const base = block * 4;
-			for(std::size_t r = 0; r != ns; ++r) {
-				TW const       w1 = tw_[r * tstep];
-				TW const       w2 = tw_[2 * r * tstep];
-				TW const       w3 = tw_[3 * r * tstep];
-				T const* const a0 = a + ((block + r) * sa);
-				T const* const a1 = a0 + (q * sa);
-				T const* const a2 = a0 + (2 * q * sa);
-				T const* const a3 = a0 + (3 * q * sa);
-				T* const       b0 = b + ((base + r) * sb);
-				T* const       b1 = b0 + (ns * sb);
-				T* const       b2 = b0 + (2 * ns * sb);
-				T* const       b3 = b0 + (3 * ns * sb);
-				for(std::size_t j = 0; j != m; ++j) {
-					T const x0 = a0[j * ja];
-					T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
-					T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
-					T const x3 = fft_mul_dir<Backward>(w3, a3[j * ja]);
-					T const t0 = x0 + x2;
-					T const t1 = x0 - x2;
-					T const t2 = x1 + x3;
-					T const t3 = fft_mul_dir<Backward>(imu, x1 - x3);
-					b0[j * jb] = t0 + t2;
-					b1[j * jb] = t1 + t3;
-					b2[j * jb] = t0 - t2;
-					b3[j * jb] = t1 - t3;
-				}
-			}
-		}
+		fft_stage_radix4<Batched, Backward>(tw_.data(), n_, a, b, ns, batch, in_elem, out_elem, in_batch, out_batch);
 	}
 
 	// One radix-8 stage, decomposed into two radix-4 sub-butterflies plus a
@@ -962,179 +1159,25 @@ struct fft_engine {
 	// twiddle table so the kernel stays sign- and type-generic.
 	template<bool Batched, bool Backward, class T>
 	void stage_radix8_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const q     = n_ / 8;
-		std::size_t const tstep = n_ / (8 * ns);
-		TW const          imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward (i.e. under conj-on-load for Backward)
-		TW const          w81   = tw_[q];
-		TW const          w83   = tw_[3 * q];
-		for(std::size_t block = 0; block != q; block += ns) {
-			std::size_t const base = block * 8;
-			for(std::size_t r = 0; r != ns; ++r) {
-				TW const       w1 = tw_[r * tstep];
-				TW const       w2 = tw_[2 * r * tstep];
-				TW const       w3 = tw_[3 * r * tstep];
-				TW const       w4 = tw_[4 * r * tstep];
-				TW const       w5 = tw_[5 * r * tstep];
-				TW const       w6 = tw_[6 * r * tstep];
-				TW const       w7 = tw_[7 * r * tstep];
-				T const* const a0 = a + ((block + r) * sa);
-				T* const       b0 = b + ((base + r) * sb);
-				for(std::size_t j = 0; j != m; ++j) {
-					T const x0            = a0[j * ja];
-					T const x1            = fft_mul_dir<Backward>(w1, a0[(1 * q * sa) + j * ja]);
-					T const x2            = fft_mul_dir<Backward>(w2, a0[(2 * q * sa) + j * ja]);
-					T const x3            = fft_mul_dir<Backward>(w3, a0[(3 * q * sa) + j * ja]);
-					T const x4            = fft_mul_dir<Backward>(w4, a0[(4 * q * sa) + j * ja]);
-					T const x5            = fft_mul_dir<Backward>(w5, a0[(5 * q * sa) + j * ja]);
-					T const x6            = fft_mul_dir<Backward>(w6, a0[(6 * q * sa) + j * ja]);
-					T const x7            = fft_mul_dir<Backward>(w7, a0[(7 * q * sa) + j * ja]);
-					// radix-4 over the even legs (x0, x2, x4, x6)
-					T const s0            = x0 + x4;
-					T const s1            = x0 - x4;
-					T const s2            = x2 + x6;
-					T const s3            = fft_mul_dir<Backward>(imu, x2 - x6);
-					T const e0            = s0 + s2;
-					T const e1            = s1 + s3;
-					T const e2            = s0 - s2;
-					T const e3            = s1 - s3;
-					// radix-4 over the odd legs (x1, x3, x5, x7), then W8^u twiddles
-					T const u0            = x1 + x5;
-					T const u1            = x1 - x5;
-					T const u2            = x3 + x7;
-					T const u3            = fft_mul_dir<Backward>(imu, x3 - x7);
-					T const o0            = u0 + u2;
-					T const o1            = fft_mul_dir<Backward>(w81, u1 + u3);
-					T const o2            = fft_mul_dir<Backward>(imu, u0 - u2);
-					T const o3            = fft_mul_dir<Backward>(w83, u1 - u3);
-					b0[j * jb]                 = e0 + o0;
-					b0[(1 * ns * sb) + j * jb] = e1 + o1;
-					b0[(2 * ns * sb) + j * jb] = e2 + o2;
-					b0[(3 * ns * sb) + j * jb] = e3 + o3;
-					b0[(4 * ns * sb) + j * jb] = e0 - o0;
-					b0[(5 * ns * sb) + j * jb] = e1 - o1;
-					b0[(6 * ns * sb) + j * jb] = e2 - o2;
-					b0[(7 * ns * sb) + j * jb] = e3 - o3;
-				}
-			}
-		}
+		fft_stage_radix8<Batched, Backward>(tw_.data(), n_, a, b, ns, batch, in_elem, out_elem, in_batch, out_batch);
 	}
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix3_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const n3    = n_ / 3;
-		std::size_t const tstep = n_ / (3 * ns);
-		TW const          w1c   = tw_[n3];      // W_3
-		TW const          w2c   = tw_[2 * n3];  // W_3^2
-		for(std::size_t block = 0; block != n3; block += ns) {
-			std::size_t const base = block * 3;
-			for(std::size_t r = 0; r != ns; ++r) {
-				TW const       w1 = tw_[r * tstep];
-				TW const       w2 = tw_[2 * r * tstep];
-				T const* const a0 = a + ((block + r) * sa);
-				T const* const a1 = a0 + (n3 * sa);
-				T const* const a2 = a0 + (2 * n3 * sa);
-				T* const       b0 = b + ((base + r) * sb);
-				T* const       b1 = b0 + (ns * sb);
-				T* const       b2 = b0 + (2 * ns * sb);
-				for(std::size_t j = 0; j != m; ++j) {
-					T const x0 = a0[j * ja];
-					T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
-					T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
-					b0[j * jb] = x0 + x1 + x2;
-					b1[j * jb] = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2);
-					b2[j * jb] = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w1c, x2);
-				}
-			}
-		}
+		fft_stage_radix3<Batched, Backward>(tw_.data(), n_, a, b, ns, batch, in_elem, out_elem, in_batch, out_batch);
 	}
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix5_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const n5    = n_ / 5;
-		std::size_t const tstep = n_ / (5 * ns);
-		TW const          w1c   = tw_[n5];
-		TW const          w2c   = tw_[2 * n5];
-		TW const          w3c   = tw_[3 * n5];
-		TW const          w4c   = tw_[4 * n5];
-		for(std::size_t block = 0; block != n5; block += ns) {
-			std::size_t const base = block * 5;
-			for(std::size_t r = 0; r != ns; ++r) {
-				TW const       w1 = tw_[r * tstep];
-				TW const       w2 = tw_[2 * r * tstep];
-				TW const       w3 = tw_[3 * r * tstep];
-				TW const       w4 = tw_[4 * r * tstep];
-				T const* const a0 = a + ((block + r) * sa);
-				T const* const a1 = a0 + (n5 * sa);
-				T const* const a2 = a0 + (2 * n5 * sa);
-				T const* const a3 = a0 + (3 * n5 * sa);
-				T const* const a4 = a0 + (4 * n5 * sa);
-				T* const       b0 = b + ((base + r) * sb);
-				T* const       b1 = b0 + (ns * sb);
-				T* const       b2 = b0 + (2 * ns * sb);
-				T* const       b3 = b0 + (3 * ns * sb);
-				T* const       b4 = b0 + (4 * ns * sb);
-				for(std::size_t j = 0; j != m; ++j) {
-					T const x0 = a0[j * ja];
-					T const x1 = fft_mul_dir<Backward>(w1, a1[j * ja]);
-					T const x2 = fft_mul_dir<Backward>(w2, a2[j * ja]);
-					T const x3 = fft_mul_dir<Backward>(w3, a3[j * ja]);
-					T const x4 = fft_mul_dir<Backward>(w4, a4[j * ja]);
-					b0[j * jb] = x0 + x1 + x2 + x3 + x4;
-					b1[j * jb] = x0 + fft_mul_dir<Backward>(w1c, x1) + fft_mul_dir<Backward>(w2c, x2) + fft_mul_dir<Backward>(w3c, x3) + fft_mul_dir<Backward>(w4c, x4);
-					b2[j * jb] = x0 + fft_mul_dir<Backward>(w2c, x1) + fft_mul_dir<Backward>(w4c, x2) + fft_mul_dir<Backward>(w1c, x3) + fft_mul_dir<Backward>(w3c, x4);
-					b3[j * jb] = x0 + fft_mul_dir<Backward>(w3c, x1) + fft_mul_dir<Backward>(w1c, x2) + fft_mul_dir<Backward>(w4c, x3) + fft_mul_dir<Backward>(w2c, x4);
-					b4[j * jb] = x0 + fft_mul_dir<Backward>(w4c, x1) + fft_mul_dir<Backward>(w3c, x2) + fft_mul_dir<Backward>(w2c, x3) + fft_mul_dir<Backward>(w1c, x4);
-				}
-			}
-		}
+		fft_stage_radix5<Batched, Backward>(tw_.data(), n_, a, b, ns, batch, in_elem, out_elem, in_batch, out_batch);
 	}
 
 	// Direct radix-p stage for odd primes p <= fft_max_direct_radix, driven by
 	// the precomputed p x p DFT matrix (no modulo in the inner loops).
 	template<bool Batched, bool Backward, class T>
 	void stage_generic_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, TW const* wmat, std::size_t batch, std::size_t in_elem, std::size_t out_elem, T* arena, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
-		std::size_t const nr    = n_ / rr;
-		std::size_t const tstep = n_ / (rr * ns);
-		T* const          x     = xbuf_ptr(arena);
-		for(std::size_t block = 0; block != nr; block += ns) {
-			std::size_t const base = block * rr;
-			for(std::size_t r = 0; r != ns; ++r) {
-				T const* const asrc = a + ((block + r) * sa);
-				if(ja == 1) {
-					std::copy_n(asrc, m, x);
-				} else {
-					for(std::size_t j = 0; j != m; ++j) { x[j] = asrc[j * ja]; }
-				}  // t == 0, twiddle == 1
-				for(std::size_t t = 1; t != rr; ++t) {
-					TW const       w  = tw_[t * r * tstep];
-					T const* const at = asrc + (t * nr * sa);
-					T* const       xt = x + (t * m);
-					for(std::size_t j = 0; j != m; ++j) {
-						xt[j] = fft_mul_dir<Backward>(w, at[j * ja]);
-					}
-				}
-				for(std::size_t u = 0; u != rr; ++u) {
-					TW const* const wrow = wmat + (u * rr);
-					T* const        dst  = b + ((base + r + (u * ns)) * sb);
-					if(jb == 1) {
-						std::copy_n(x, m, dst);
-					} else {
-						for(std::size_t j = 0; j != m; ++j) { dst[j * jb] = x[j]; }
-					}  // wrow[0] == 1
-					for(std::size_t t = 1; t != rr; ++t) {
-						TW const       wc = wrow[t];
-						T const* const xt = x + (t * m);
-						for(std::size_t j = 0; j != m; ++j) {
-							dst[j * jb] = dst[j * jb] + fft_mul_dir<Backward>(wc, xt[j]);
-						}
-					}
-				}
-			}
-		}
+		T* const scratch = xbuf_ptr(arena);
+		fft_stage_generic<Batched, Backward>(tw_.data(), n_, a, b, ns, rr, wmat, batch, in_elem, out_elem, scratch, in_batch, out_batch);
 	}
 
 	// Stage for a prime factor p > fft_max_direct_radix: after the input
@@ -1145,7 +1188,7 @@ struct fft_engine {
 	// is copied back in one contiguous block.
 	template<bool Batched, bool Backward, class T>
 	void stage_subplan_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, fft_engine const& sub, std::size_t batch, std::size_t in_elem, std::size_t out_elem, T* arena, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fft_fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const nr    = n_ / rr;
 		std::size_t const tstep = n_ / (rr * ns);
 		std::size_t const m2    = ns * m;
