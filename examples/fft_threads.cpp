@@ -22,7 +22,7 @@
 // gives each thread private scratch, which is what makes sharing the plan safe.
 //
 // Build (needs pthreads):
-//   c++ -std=c++17 -O3 -I../include fft_threads.cpp -o fft_threads.x -lpthread
+//   c++ -std=c++20 -O3 -I../include fft_threads.cpp -o fft_threads.x -lpthread
 
 #include <boost/multi/algorithms/fft.hpp>
 #include <boost/multi/array.hpp>
@@ -48,8 +48,9 @@ namespace {
 //
 // The block is RAW, UNINITIALIZED storage, deliberately:
 //
-//   * `new std::byte[n]` default-initializes, which for a trivial type means
-//     no work at all. `std::vector<std::byte>(n)` and
+//   * `std::make_unique_for_overwrite` default-initializes, which for a
+//     trivial type means no work at all -- the name says precisely what is
+//     wanted here. `std::vector<std::byte>(n)` and plain
 //     `std::make_unique<std::byte[]>(n)` both VALUE-initialize instead, i.e.
 //     they memset the whole block -- on a scratch buffer whose every byte is
 //     overwritten before it is read, that is pure waste. fft.hpp's own
@@ -70,12 +71,16 @@ class thread_arena {
 		return (elements + 1) * sizeof(complex);
 	}
 
+	// Private delegate so the size is computed once and the resource is
+	// handed exactly the block the buffer owns.
+	explicit thread_arena(std::size_t bytes)
+	: buffer_{std::make_unique_for_overwrite<std::byte[]>(bytes)}  // no zero-fill
+	, resource_{buffer_.get(), bytes}
+	, allocator_{&resource_} {}
+
  public:
 	template<class Plan>
-	explicit thread_arena(Plan const& plan)
-	: buffer_(new std::byte[bytes_for(plan.scratch_elements())])  // default-init: no zero-fill
-	, resource_(buffer_.get(), bytes_for(plan.scratch_elements()))
-	, allocator_(&resource_) {}
+	explicit thread_arena(Plan const& plan) : thread_arena{bytes_for(plan.scratch_elements())} {}
 
 	auto allocator() -> std::pmr::polymorphic_allocator<complex>& { return allocator_; }
 	void rewind() { resource_.release(); }  // reuse the block; does not free it
@@ -130,7 +135,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			std::vector<std::thread> pool;
 			pool.reserve(threads);
 			for(unsigned t = 0; t != threads; ++t) {
-				pool.emplace_back([&plan, &signals, transform_count, threads, t] {
+				pool.emplace_back([&plan, &signals, threads, t] {
 					thread_arena arena(plan);  // private to this thread
 					for(int i = static_cast<int>(t); i < transform_count; i += static_cast<int>(threads)) {
 						plan.execute(signals[static_cast<std::size_t>(i)].home(), arena.allocator());

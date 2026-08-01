@@ -73,4 +73,5 @@ find_package(Threads REQUIRED)
 add_executable(fft_threads.cpp.x fft_threads.cpp)
 target_link_libraries(fft_threads.cpp.x PUBLIC  multi)
 target_link_libraries(fft_threads.cpp.x PRIVATE Threads::Threads)
+target_compile_features(fft_threads.cpp.x PRIVATE cxx_std_20)  # make_unique_for_overwrite
 add_test(NAME fft_threads.cpp.x COMMAND fft_threads.cpp.x)
