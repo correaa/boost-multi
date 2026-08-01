@@ -67,3 +67,10 @@ target_link_libraries(gil_grayscale.cpp.x     PRIVATE
         PNG::PNG)
 
 add_test(NAME redux.cpp.x COMMAND redux.cpp.x)
+
+# Sharing one fft_plan across threads (one arena per thread).
+find_package(Threads REQUIRED)
+add_executable(fft_threads.cpp.x fft_threads.cpp)
+target_link_libraries(fft_threads.cpp.x PUBLIC  multi)
+target_link_libraries(fft_threads.cpp.x PRIVATE Threads::Threads)
+add_test(NAME fft_threads.cpp.x COMMAND fft_threads.cpp.x)

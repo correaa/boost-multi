@@ -85,6 +85,7 @@
 #include <cstdio>
 #include <memory_resource>
 #include <random>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -774,6 +775,128 @@ void sweep_many4d(std::vector<int> const& sides, int depth, char const* fname, c
 	std::fclose(out);
 }
 
+
+// The suite pins itself to one core (see pin_to_one_cpu) so that single-thread
+// timings are not perturbed by core migration. A threading sweep obviously
+// cannot live with that -- every thread would contend for the same core and
+// measure a flat 1.0x -- so it restores the full mask for its own duration and
+// puts the pin back afterwards, leaving the rest of the suite unaffected.
+class scoped_all_cpus {
+#ifdef __linux__
+	cpu_set_t saved_{};
+	bool      ok_{false};
+
+ public:
+	scoped_all_cpus() {
+		CPU_ZERO(&saved_);
+		ok_ = (sched_getaffinity(0, sizeof(saved_), &saved_) == 0);
+		if(!ok_) { return; }
+		cpu_set_t all;
+		CPU_ZERO(&all);
+		for(int cpu = 0; cpu != static_cast<int>(std::thread::hardware_concurrency()); ++cpu) { CPU_SET(cpu, &all); }
+		(void)sched_setaffinity(0, sizeof(all), &all);
+	}
+	scoped_all_cpus(scoped_all_cpus const&)                    = delete;
+	scoped_all_cpus(scoped_all_cpus&&)                         = delete;
+	auto operator=(scoped_all_cpus const&) -> scoped_all_cpus& = delete;
+	auto operator=(scoped_all_cpus&&) -> scoped_all_cpus&      = delete;
+	~scoped_all_cpus() {
+		if(ok_) { (void)sched_setaffinity(0, sizeof(saved_), &saved_); }
+	}
+#else
+ public:
+	scoped_all_cpus() = default;
+#endif
+};
+
+// Threading: one shared `const` plan, one scratch arena per thread, and the
+// batch of independent transforms split across threads. This is a CALLER-side
+// pattern -- fft.hpp itself is single-threaded and unchanged -- so what it
+// measures is whether the plan's "owns no scratch, hence shareable" design
+// actually delivers parallel speedup. FFTW is given its own native threading
+// (fftw_plan_with_nthreads on one batched call) as the reference, which is
+// how an FFTW user would parallelise the same workload.
+void sweep_parallel(std::vector<int> const& sides, int howmany, char const* fname, char const* label) {
+	scoped_all_cpus const all_cpus;  // undo the suite's single-core pin for this sweep only
+
+	std::FILE* out = std::fopen(fname, "w");
+	std::fprintf(out, "# %s: %d independent 1-D transforms, split across threads\n", label, howmany);
+	std::fprintf(out, "# NOTE: this sweep restores full CPU affinity; the rest of the suite runs pinned to one core\n");
+	std::fprintf(out, "# Multi: ONE shared const fft_plan + one pmr monotonic arena per thread (fft.hpp is not itself threaded)\n");
+	std::fprintf(out, "# FFTW:  fftw_plan_with_nthreads on the equivalent batched fftw_plan_many_dft\n");
+	std::fprintf(out, "# plan build excluded from timing; cache flushed before every timed call\n");
+	std::fprintf(out, "# n  threads  mine_ms  fftw_ms  mine_speedup  fftw_speedup  ratio_mine_over_fftw\n");
+
+	auto const max_threads = std::max(2U, std::thread::hardware_concurrency());
+
+	for(int n : sides) {
+		std::vector<complex>                   base(static_cast<std::size_t>(n) * static_cast<std::size_t>(howmany));
+		std::mt19937                           gen(42);
+		std::uniform_real_distribution<double> dist(-1.0, 1.0);
+		for(auto& e : base) { e = complex{dist(gen), dist(gen)}; }
+
+		std::vector<multi::array<complex, 1>> sigs;
+		sigs.reserve(static_cast<std::size_t>(howmany));
+		for(int i = 0; i != howmany; ++i) {
+			multi::array<complex, 1> s(multi::extents_t<1>{n}, complex{});
+			std::copy(base.begin() + static_cast<std::ptrdiff_t>(i) * n, base.begin() + static_cast<std::ptrdiff_t>(i + 1) * n, s.begin());
+			sigs.push_back(std::move(s));
+		}
+
+		multi::fft_plan<1, complex> const plan{multi::extents_t<1>{n}, multi::fft_forward};
+		long const reps = std::clamp<long>(static_cast<long>(2e8 / (5.0 * n * howmany * std::log2(std::max(n, 2)))), 3, 50);
+
+		auto run_multi = [&](unsigned threads) {
+			std::vector<std::thread> pool;
+			pool.reserve(threads);
+			for(unsigned t = 0; t != threads; ++t) {
+				pool.emplace_back([&, t] {
+					arena_alloc<decltype(plan)> arena(plan);
+					for(int i = static_cast<int>(t); i < howmany; i += static_cast<int>(threads)) {
+						plan.execute(sigs[static_cast<std::size_t>(i)].home(), arena.alloc);
+						arena.reset();
+					}
+				});
+			}
+			for(auto& th : pool) { th.join(); }
+		};
+
+		auto* in = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * base.size()));
+		auto  loadf = [&] {
+			for(std::size_t i = 0; i != base.size(); ++i) { in[i][0] = base[i].real(); in[i][1] = base[i].imag(); }
+		};
+
+		double mine_1 = 0.0;
+		double ffw_1  = 0.0;
+		for(unsigned threads = 1; threads <= max_threads; threads *= 2) {
+			double const mine = time_it(reps, [&] { run_multi(threads); });
+
+			fftw_plan_with_nthreads(static_cast<int>(threads));
+			loadf();
+#ifdef DISABLE_WISDOM
+			fftw_forget_wisdom();
+#endif
+#ifdef USE_ESTIMATE
+			unsigned const fftw_flag = FFTW_ESTIMATE;
+#else
+			unsigned const fftw_flag = FFTW_MEASURE;
+#endif
+			int       nn[] = {n};
+			fftw_plan p    = fftw_plan_many_dft(1, nn, howmany, in, nullptr, 1, n, in, nullptr, 1, n, FFTW_FORWARD, fftw_flag);
+			double const ffw = time_it(reps, [&] { fftw_execute(p); });
+			fftw_destroy_plan(p);
+
+			if(threads == 1) { mine_1 = mine; ffw_1 = ffw; }
+			std::fprintf(out, "%8d %8u %12.5f %12.5f %12.3f %12.3f %8.3f\n",
+			             n, threads, mine * 1e3, ffw * 1e3, mine_1 / mine, ffw_1 / ffw, mine / ffw);
+			std::fflush(out);
+			std::fprintf(stderr, "%s n=%d threads=%u done\n", label, n, threads);
+		}
+		fftw_free(in);
+	}
+	std::fclose(out);
+}
+
 // Multi-only phase timing for the 3-D schedules.  This separates the active
 // axis passes from the combined schedules without introducing a second FFTW
 // guru-plan comparison; the existing sweeps provide that comparison.
@@ -815,6 +938,8 @@ auto main() -> int {
 #ifndef DISABLE_WISDOM
 	fftw_import_wisdom_from_filename(wisdom_filename);  // ignore failure: no prior wisdom is fine
 #endif
+
+	fftw_init_threads();  // sweep_parallel compares against FFTW's own threading
 
 	double const calib_before = calibrate();
 	std::fprintf(stderr, "calibration (before): %.4f ms\n", calib_before * 1e3);
@@ -890,6 +1015,14 @@ auto main() -> int {
 	// Batched 3-D ("many4d"): the 4-D analog of many3d -- one untouched
 	// leading axis, full 3-D transform per block.
 	sweep_many4d({8, 16, 32, 64, 128}, 32, "fft_bench_many4d_h32" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "many4d n x n x n (depth=32)");
+
+	// Threading: caller-side parallelism over a shared plan (see
+	// examples/fft_threads.cpp). Deliberately LAST: it is the only sweep that
+	// saturates every core, and the heat that generates throttles whatever
+	// runs after it -- putting it here kept the suite's calibration drift at
+	// its usual few percent instead of the 19% measured when it ran earlier.
+	sweep_parallel({64, 256, 1024, 4096}, 4096,
+	               "fft_bench_parallel" BOOST_MULTI_FFT_BENCH_SUFFIX BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX ".dat", "parallel n");
 
 #undef BOOST_MULTI_FFT_BENCH_SUFFIX
 #undef BOOST_MULTI_FFT_BENCH_VARIANT_SUFFIX
