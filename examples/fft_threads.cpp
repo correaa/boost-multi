@@ -56,10 +56,17 @@ namespace {
 //     overwritten before it is read, that is pure waste. fft.hpp's own
 //     internal arena avoids exactly this (see fft_scratch_arena), so a caller
 //     arena that zero-filled would undo the effort.
-//   * std::byte, not complex, because this is storage rather than objects:
-//     the resource only ever sees `void*` + size, and an array of `complex`
-//     would run 2*N field initializations we do not want. `operator new[]`
-//     returns memory aligned for any fundamental type, which covers complex.
+//   * std::byte, NOT complex -- and this is required, not stylistic. The
+//     obvious `make_unique_for_overwrite<complex[]>(n)` does NOT avoid the
+//     fill: "for overwrite" means default-initialization, and
+//     std::complex<double> is not trivially default-constructible (it is
+//     trivially COPYABLE, which is a different trait), so default-init still
+//     runs its constructor and zeroes both fields. Compilers emit that as an
+//     inlined vector zero-loop rather than a memset call, so it is easy to
+//     miss. std::byte is trivially default-constructible, which is what makes
+//     the default-init genuinely free. The resource only ever sees
+//     `void*` + size anyway, and `operator new[]` returns memory aligned for
+//     any fundamental type, which covers complex.
 class thread_arena {
 	std::unique_ptr<std::byte[]>             buffer_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) raw storage, see above
 	std::pmr::monotonic_buffer_resource      resource_;
