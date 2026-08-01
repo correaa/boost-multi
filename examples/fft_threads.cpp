@@ -31,6 +31,7 @@
 #include <chrono>
 #include <complex>
 #include <cstdio>
+#include <memory>  // for unique_ptr
 #include <memory_resource>
 #include <thread>
 #include <vector>
@@ -44,16 +45,36 @@ namespace {
 // Scratch for one thread: a monotonic buffer over a block sized to the plan's
 // own requirement, rewound after every transform so the block is reused rather
 // than reallocated.
+//
+// The block is RAW, UNINITIALIZED storage, deliberately:
+//
+//   * `new std::byte[n]` default-initializes, which for a trivial type means
+//     no work at all. `std::vector<std::byte>(n)` and
+//     `std::make_unique<std::byte[]>(n)` both VALUE-initialize instead, i.e.
+//     they memset the whole block -- on a scratch buffer whose every byte is
+//     overwritten before it is read, that is pure waste. fft.hpp's own
+//     internal arena avoids exactly this (see fft_scratch_arena), so a caller
+//     arena that zero-filled would undo the effort.
+//   * std::byte, not complex, because this is storage rather than objects:
+//     the resource only ever sees `void*` + size, and an array of `complex`
+//     would run 2*N field initializations we do not want. `operator new[]`
+//     returns memory aligned for any fundamental type, which covers complex.
 class thread_arena {
-	std::vector<std::byte>                   buffer_;
+	std::unique_ptr<std::byte[]>             buffer_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) raw storage, see above
 	std::pmr::monotonic_buffer_resource      resource_;
 	std::pmr::polymorphic_allocator<complex> allocator_;
+
+	static auto bytes_for(std::size_t elements) -> std::size_t {
+		// One spare element's worth covers any alignment padding the resource
+		// may insert when it carves the first block.
+		return (elements + 1) * sizeof(complex);
+	}
 
  public:
 	template<class Plan>
 	explicit thread_arena(Plan const& plan)
-	: buffer_(plan.scratch_elements() * sizeof(complex) + 4096)  // + slack for the resource's own alignment bookkeeping
-	, resource_(buffer_.data(), buffer_.size())
+	: buffer_(new std::byte[bytes_for(plan.scratch_elements())])  // default-init: no zero-fill
+	, resource_(buffer_.get(), bytes_for(plan.scratch_elements()))
 	, allocator_(&resource_) {}
 
 	auto allocator() -> std::pmr::polymorphic_allocator<complex>& { return allocator_; }
