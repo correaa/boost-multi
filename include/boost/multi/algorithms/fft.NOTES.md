@@ -4567,66 +4567,55 @@ The API shape (`fft_planning` argument, `batch_width()` accessor, cap
 threaded through `fft_engine`) is worth reusing verbatim -- it was the easy
 part and it is right. The measurement is the hard part and remains unsolved.
 
-### 11.47 Stage-level hoist: adopted, and it pays for itself (-1.6% overall, -7% on batched 1-D) (2026-08-01)
+### 11.48 The stage hoist was adopted and then REVERTED: it trades 1-D for batched 1-D, and the harness could not see it (2026-08-01)
 
-§11.45 established that the shareable host/device unit is the STAGE, not the
-butterfly, and verified it on one kernel (-1.5%, vectorization preserved).
-This does all of them.
+§11.47 shipped the six-kernel stage hoist on the strength of -7.0% on
+many(h=32), -5.5% on many(h=256) and -1.6% overall, measured with
+`bench_tune4.cpp`. **That harness contains no `sweep<1>`.** A focused 1-D
+A/B afterwards:
 
-**What moved.** Six of the seven stage kernels (`radix2/3/4/5/8`, `generic`)
-left `fft_engine` for namespace scope, taking what they used to read off
-`this` as explicit parameters:
-
-	template<bool Batched, bool Backward, class T, class TW>
-	void fft_stage_radix4(TW const* BOOST_MULTI_FFT_RESTRICT tw, std::size_t n,
-	                      T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, ...);
-
-The members became one-line forwarders, so every call site is unchanged.
-`stage_generic_` additionally takes its scratch region rather than the arena.
-The stride-folding helper moved out with them.
-
-**`stage_subplan_` stays a member, deliberately.** It calls `sub.run(...)`
-and `sub.buf_ptr(arena)` on a nested engine, so it is coupled to
-`fft_engine` in a way the other six are not. Hoisting it would mean passing
-an engine reference, which defeats the purpose (device code should not have
-to instantiate the engine). It is also the case a first GPU port is least
-likely to support -- it exists for primes above `fft_max_direct_radix`,
-i.e. Bluestein.
-
-**It is faster, which was not the expectation.** The justification was
-"neutral groundwork"; measured back-to-back, two runs each:
-
-| sweep | members | hoisted |
+| | members | hoisted |
 |---|---:|---:|
-| many(h=32) | 1.394 | **1.296 (-7.0%)** |
-| many(h=256) | 1.442 | **1.363 (-5.5%)** |
-| 2-D | 0.914 | 0.890 (-2.6%) |
-| 3-D, gap-3-D | | +0.3%, +0.5% |
-| many-3-D, many-4-D | | +1.3%, +2.4% |
-| **overall** | **1.2802** | **1.2602 (-1.6%)** |
+| 1-D geomean (47 sizes) | **1.1961** | **1.2983 (+8.5%)** |
+| 1-D wins | 13/47, 11/47 | 7/47, 6/47 |
 
-Overall -1.6% is near the noise band (run spreads 0.92% and 0.56%) and
-should not be leaned on; the batched 1-D wins are well outside it and are
-exactly the sweeps the radix kernels dominate.
+Reproducible (member spread 0.1%, hoisted 2.0%), and brutal per size:
+n=512 +73%, n=729 +67%, n=625 +61%, n=243 +56%, n=1024 +56%. Sizes across
+every radix family, so it is not one kernel.
 
-**Why it got faster.** `tw_` is a `std::vector` member reached through
-`this`, so the optimizer had to assume a write through `b` might alias the
-vector's internal buffer. Passing `TW const* BOOST_MULTI_FFT_RESTRICT tw`
-asserts it cannot. The hoist therefore did not merely relocate code, it
-supplied an aliasing guarantee that was previously unavailable -- which is
-what the packed-SIMD count shows: 2498 -> 3138 (+26%), with text +11%.
-Note the instruction count alone would NOT have justified adoption (it has
-been misleading in both directions, §11.45); the wall-clock split by sweep
-is what makes the case.
+So the hoist is not the free groundwork §11.45 predicted -- it **trades**:
+the batched paths gain 5-7%, the single-fiber (m == 1) path loses 8.5%.
+Plausibly the m == 1 path is latency-bound rather than throughput-bound,
+where the extra template parameter's instantiation growth (text +11%) and
+the forwarding layer cost more than the `restrict`-qualified table pointer
+wins. Not diagnosed further.
 
-**Gate:** strict `-Wall -Wextra -Wpedantic -Wshadow -Wconversion
--Wsign-conversion -Werror` and `-fsanitize=address,undefined` on g++ and
-clang++, plus 101/101 ctest.
+**Reverted.** A refactor justified as "neutral, for the GPU port" that
+costs 8.5% on the largest sweep in the suite does not meet its own bar.
 
-**For the GPU port**, the header now presents the exact interface a device
-implementation should mirror: tables plus restrict pointers plus extents
-in, one pass out, no `fft_engine` in sight. §8 step 1 (butterfly-level
-sharing) remains struck; this replaces it.
+**This is the SECOND time this session the same mistake shipped**, and it
+is worth naming as a pattern rather than an incident:
+
+- §11.42: batch budget adopted on a harness omitting `many_strided` -- the
+  one sweep a narrow `mb_` starves. Cost 13% there. Reverted.
+- §11.47/this: stage hoist adopted on a harness omitting `sweep<1>` -- the
+  one sweep the change hurts. Cost 8.5%. Reverted.
+
+Both times the trimmed harness was built for iteration speed, and both
+times trimming silently selected for a favourable answer, because the
+sweeps dropped were the ones least like the change's target. The rule
+§11.42 wrote down ("a tuning harness must include the workloads a change
+is most likely to hurt") was correct and was not followed here, because
+the hoist was framed as a refactor rather than a tuning change and so felt
+exempt. It was not. **Any change touching the stage kernels must be
+measured against the FULL suite, refactor or not.**
+
+**For the GPU port**: the stage-level interface is still the right target
+(§11.45's finding stands -- the butterfly is not shareable, the stage is),
+but it cannot be reached by hoisting the existing kernels wholesale. A
+future attempt has to keep the m == 1 path unaffected -- e.g. hoist only
+the `Batched == true` instantiation, or give the device its own stage
+implementations against the same signature without moving the host ones.
 
 ---
 
