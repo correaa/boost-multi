@@ -1029,12 +1029,26 @@ auto main() -> int {
 
 	double const calib_after = calibrate();
 	std::fprintf(stderr, "calibration (after):  %.4f ms\n", calib_after * 1e3);
-	double const drift = std::abs(calib_after - calib_before) / calib_before;
+	// Signed, because the two directions mean opposite things and only one of
+	// them threatens the results. Slower at the end is throttling or
+	// background load, and does bias the later sweeps. FASTER at the end is
+	// the machine still ramping when the run began -- and, since sweep_parallel
+	// runs last and saturates every core, it also leaves the governor boosted
+	// for the closing calibration. That inflates this number (19% observed)
+	// without the sweeps themselves being degraded, so it is reported
+	// differently rather than as a throttling warning.
+	double const drift = (calib_after - calib_before) / calib_before;
 	if(drift > 0.15) {
 		std::fprintf(stderr,
-		              "WARNING: calibration drifted %.0f%% between start and end of the sweep -- "
-		              "results may be affected by thermal throttling or background load; consider re-running.\n",
+		              "WARNING: machine SLOWED %.0f%% across the sweep -- thermal throttling or background "
+		              "load; later sweeps are biased, consider re-running.\n",
 		              drift * 100.0);
+	} else if(drift < -0.15) {
+		std::fprintf(stderr,
+		              "NOTE: machine SPED UP %.0f%% across the sweep (clocks ramping at the start, and the "
+		              "multi-threaded final sweep leaves the governor boosted). Not throttling; earliest "
+		              "sweeps may read slightly slow. Pre-warming the CPU reduces the first effect.\n",
+		              -drift * 100.0);
 	}
 
 #ifndef DISABLE_WISDOM
