@@ -4690,3 +4690,105 @@ hot path is the butterfly arithmetic; the stage loop is ≤ 30 iterations alread
 L1 cache regardless of storage type.  Moving `stages_` from a heap-pointed vector to
 an in-struct array gives at best a rounding-error cache-locality improvement.  The
 motivation is GPU porting, not CPU performance.
+
+### 11.49 The fused-pair pass silently cancelled §11.37's batch flattening for rank >= 3 -- gating it on slab size is worth 4-10% at small n (2026-08-01)
+
+Two optimizations, adopted a week apart, have been undoing each other ever
+since the second one landed:
+
+- §2.5's **fused-pair pass**: when the last two axes are both active,
+  `apply_()` sends them through `fft_apply_last_pair`, which descends to
+  rank-2 slabs and transforms both axes while the slab is cache-hot.
+  Halves the full-array sweeps. A real, measured win.
+- §11.37's **batch-axis flattening**: `fft_apply_last` merges adjacent
+  untouched leading axes into ONE wide batch before calling
+  `fft_exec_slab`. Gated on `eng.n_ <= 32`, "where per-call overhead
+  dominates". Also a real, measured win.
+
+They are mutually exclusive for rank >= 3. The pair pass's descent hands
+`fft_exec_slab` one slab at a time -- `m == sizes_[D-2]` -- and never
+reaches the flattening code at all. On `32 x 8 x 8 x 8 {none,f,f,f}` that
+is **m == 8 against m == 2048**. Both were benchmarked against a tree
+containing the other, so both looked like wins; the interaction is
+invisible unless the two paths are compared directly at one shape.
+
+Decomposition of `many4d` n=8 (hot loop, 16384 elements) that exposed it:
+
+| pass | ms |
+|---|---:|
+| `{n,f,f,f}` all three axes | 0.171 |
+| `{n,n,f,f}` the fused pair | 0.129 |
+| axis 3 alone (flattens, m == 2048) | 0.044 |
+| axis 2 alone (m == 8 slabs) | 0.072 |
+| axis 1 alone (m == 64) | 0.041 |
+
+The two axes cost **less run separately (0.116) than fused (0.129)**.
+Fusion is a net loss at this size: an 8 x 8 slab is 1 KiB and stays
+resident either way, so the cache saving is nil while the lost batch width
+is pure cost.
+
+**Fix**: `fft_plan::fuse_last_pair_()` -- fuse only when the rank-2 slab is
+at least `fft_fuse_pair_min_slab` (1024) ELEMENTS. Stated in elements, not
+a side length, so a rectangular slab is judged by what actually occupies
+the cache. Rank 2 is exempt: no descent, so no batch width to lose.
+Threshold swept at 1 / 256 / 1024 / 4096 -- 1024 is optimal in BOTH
+directions (4096 also unfuses n=32, costing ~7% there).
+
+**A methodology failure worth recording, because it nearly shipped a
+number.** The first validation was the usual three separate suite runs
+(base, gate, base again). It reported "-3.4% overall" -- and it was
+worthless:
+
+- `many_strided_h32`, a sweep the gate provably cannot reach, moved 21%.
+- Two **identical** binaries disagreed by 18% on `many_h32` (1.689 vs 1.392).
+- Calibration drifted 0.31 ms -> 0.14 ms across the session; the machine
+  got ~2x faster as background load settled.
+
+Separate processes with one sample each cannot resolve a 5% effect under
+that drift, no matter how many sweeps they contain. This is a different
+failure from §11.42/§11.48 (which had the wrong workloads); here the
+workloads were right and the *sampling* was wrong.
+
+Replaced with an interleaved same-process A/B: both variants in one
+binary, alternating A,B,A,B so drift is shared and cancels; 21 samples per
+variant reported as the MEDIAN; the same 64 MiB cache flush before every
+timed call; pinned to one core; and -- the part that makes it checkable --
+**five shapes where the gate must do nothing, measured alongside**.
+
+| shape | delta |
+|---|---:|
+| *control* 2d 32x32 (rank 2, exempt) | -0.0% |
+| *control* 2d 128x128 (rank 2, exempt) | +1.8% |
+| *control* 3d 32^3 (slab == 1024, still fused) | -0.8% |
+| *control* many3d 32x128x128 (still fused) | +0.2% |
+| *control* many4d 32x32^3 (still fused) | +0.1% |
+| gap3d 32x8x8 `{f,n,f}` (pair path never taken) | -0.3% |
+| 3d 16^3 | **-3.5%** |
+| many4d 32x16^3 | **-5.2%** |
+| 3d 8^3 | **-7.4%** |
+| many4d 32x8^3 | **-7.6%** |
+| many3d 32x8x8 | **-9.4%** |
+| many3d 32x16x16 | **-9.8%** |
+
+Noise floor +-2% from the controls; every active shape clears it. The
+`{f,n,f}` row is a free second control -- with axis D-2 `none` the pair
+condition is false, so that shape never fused and must read zero. It does.
+
+**ADOPTED.** Clean under g++/clang++ `-Wall -Wextra -Wpedantic -Wshadow
+-Wconversion -Wsign-conversion -Werror`, C++17 and C++20, and
+address+UB sanitizers.
+
+Scope, stated honestly: this lands at n=8 and n=16, BELOW the 32..128
+range that matters to the maintainer. It fixes the worst absolute ratios
+in the suite (n=8 is 3.8-4.7 against FFTW on every rank >= 3 sweep) but
+does not touch n=128.
+
+**The open lead it exposed.** Even unfused, the middle axis is weak: for
+`32 x 8 x 8 x 8` along axis 2 the walk reaches `m == 8`, against `m == 2048`
+for axis 3 (0.072 ms vs 0.044 ms above). The batch axes are three separate
+axes (strides 1, 64, 512) and only ONE can be the batch, because
+`fft_exec_slab` takes a single batch stride. No permutation fixes this --
+axes 3 and 1 together (offsets 0..7, 64..71, ...) are not a uniform stride.
+The fix would be a rank-3 slab entry point with TWO batch axes, which is
+also the "fuse all the loops" shape the §8/§12 GPU port wants. Not
+attempted here.

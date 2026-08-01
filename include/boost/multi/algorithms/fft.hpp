@@ -240,6 +240,15 @@ inline constexpr std::size_t fft_max_direct_radix = 64;
 // gain 10-25%).
 inline constexpr std::size_t fft_sixstep_min = std::size_t{1} << 13U;
 
+// Smallest rank-2 slab (in ELEMENTS) for which fusing the last two axes of a
+// rank >= 3 transform is worth the batch width it costs -- see
+// fft_plan::fuse_last_pair_() for the mechanism and fft.NOTES.md §11.49 for
+// the measurement.
+#ifndef BOOST_MULTI_FFT_FUSE_PAIR_MIN_SLAB
+#define BOOST_MULTI_FFT_FUSE_PAIR_MIN_SLAB 1024
+#endif
+inline constexpr std::size_t fft_fuse_pair_min_slab = BOOST_MULTI_FFT_FUSE_PAIR_MIN_SLAB;
+
 // Whether skipping element default-construction (and destruction) of a
 // scratch buffer is allowed for `T`. Three ways in:
 //   1. the language already says construction/destruction are trivial;
@@ -1830,6 +1839,33 @@ class fft_plan {
 	auto engine_count() const -> std::size_t { return distinct_count_; }
 
  private:
+	// Is the rank-2 slab big enough for the fused-pair pass to be worth it?
+	//
+	// Fusing buys cache residency: the last two axes are transformed while
+	// their slab is still hot, halving the full-array sweeps. It PAYS for
+	// that with batch width, and only for D >= 3 -- the descent to rank-2
+	// slabs hands fft_exec_slab one slab at a time (m == sizes_[D-2]),
+	// whereas the unfused walk reaches fft_apply_last on the whole view and
+	// flattens the leading untouched axes into one wide batch (§11.37).
+	// On a 32 x 8 x 8 x 8 {none,fwd,fwd,fwd} that is m == 8 against
+	// m == 2048.
+	//
+	// When the slab is small the trade is a bad one in both directions: a
+	// 16 x 16 slab is 4 KiB and stays resident with or without fusion, so
+	// the cache saving is nil and the lost batch width is pure cost. Measured
+	// crossover (fft.NOTES.md §11.49) sits between 16 x 16 and 32 x 32, and
+	// the threshold is stated in ELEMENTS rather than a side length so a
+	// rectangular slab is judged by what actually occupies the cache.
+	// D == 2 is exempt: there is no descent and so no batch width to lose --
+	// fft_apply_last_pair is then literally the two passes, fused for free.
+	auto fuse_last_pair_() const -> bool {
+		if constexpr(D <= 2) {
+			return true;
+		} else {
+			return sizes_[static_cast<std::size_t>(D - 1)] * sizes_[static_cast<std::size_t>(D - 2)] >= detail::fft_fuse_pair_min_slab;
+		}
+	}
+
 	// The axis walk, shared by the cursor and array entry points. `view` is a
 	// strided view of the planned shape; transformed in place. `T` (the
 	// array's element type) is deduced from `arena`, independent of `TW`.
@@ -1845,7 +1881,7 @@ class fft_plan {
 	template<class View, class T>
 	void apply_(View&& view, T* arena) const {  // NOLINT(cppcoreguidelines-missing-std-forward)
 		if constexpr(D >= 2) {
-			if(dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none && dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none) {
+			if(fuse_last_pair_() && dirs_[static_cast<std::size_t>(D - 1)] != fft_direction::none && dirs_[static_cast<std::size_t>(D - 2)] != fft_direction::none) {
 				detail::fft_apply_last_pair(
 				    view,
 				    engine_<D - 1>(), dirs_[static_cast<std::size_t>(D - 1)] == fft_direction::backward,
