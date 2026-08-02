@@ -5194,3 +5194,71 @@ are now uniform across all five power-of-two/small-prime kernels
 (§11.54), which is the same structure expressed in the form the compiler
 handles. If Multi ever grows a restrict-carrying view, this is the first
 place to retry it.
+
+### 11.56 Loop-control is 13% of instructions; unrolling removes 8% of them and does NOT reliably help -- plus a build-flag discrepancy that invalidates comparisons (2026-08-01)
+
+Continuing the §11.54 simplification pass. With radix-8's addressing fixed
+the innermost loop is tight -- 112 instructions of which only 5 are
+scalar/addressing (it was 11 before §11.54) -- so GCC's strength reduction
+is fine and the "16 induction variables" worry in §11.54 was unfounded.
+What remains in that loop is 70 FP ops and **29 vector moves where 16
+would do**: 13 spill reloads, the same register wall as §11.51/§11.52.
+
+Line-level profile of a target workload (3-D 64^3, full forward) put the
+next item in plain sight:
+
+| line | share of all Ir |
+|---|---:|
+| complex `real()` / `operator+=` / `-=` / the `mul` body | ~55% |
+| **`for(std::size_t j = 0; j != m; ++j)`** | **13.4%** |
+| `for(std::size_t r = 0; r != ns; ++r)` | 3.5% |
+
+**~17% of every instruction executed is loop control.** The batch loop is
+short and `m` is a runtime value, so GCC leaves it rolled at -O3.
+
+| build | Ir (3-D 64^3) |
+|---|---:|
+| plain `-O3 -march=native` | 46,031,865 |
+| `-fno-tree-loop-distribution` | 46,031,865 (no effect -- fission was not the cause) |
+| `-funroll-loops` | 43,335,598 (-5.9%) |
+| `BOOST_MULTI_FFT_UNROLL(4)` on the five batch loops | **42,286,699 (-8.1%)** |
+
+A targeted pragma beats the global flag. Factor 8 was 0.15% better than 4
+and not worth the tail; 2 recovered only -5.9%.
+
+**But wall clock does not follow.** Medians of 15 cold-cache samples,
+three alternating rounds:
+
+| shape | current | unroll(4) |
+|---|---:|---:|
+| 2d 32^2 | 0.00392 ms | **-4.8%** |
+| 3d 32^3 | 0.20504 ms | **-3.5%** |
+| 3d 64^3 | 2.1350 ms | **-2.1%** |
+| 2d 128^2 | 0.10601 ms | +2.2% |
+| 3d 128^3 | 23.709 ms | +2.3% |
+
+Cache-resident sizes gain, DRAM-resident sizes lose -- consistent with
+code bloat costing more than loop control once the working set no longer
+fits. Mean -1.2% across five shapes, inside the run-to-run spread.
+
+**NOT ADOPTED.** An 8% instruction cut that splits the target range in two
+directions is not evidence to ship on; §11.42 and §11.48 were both adopted
+on exactly this quality of signal and both had to be reverted. Recorded so
+the next person knows the pragma works and where its crossover is. An
+`m`-dependent gate is impossible (compile-time), so adopting it would mean
+choosing which half of the maintainer's 32..128 range to favour.
+
+**The discrepancy worth acting on.** This file's own documented build line
+is
+
+    g++ -std=c++17 -O3 -march=native -mtune=native -funroll-loops -fno-math-errno -DNDEBUG
+
+`-funroll-loops` is in it. **The CMake build does not pass it, and NONE of
+this session's measurements used it** -- including the binaries that
+produced the `.dat`/`.png` baselines refreshed earlier today. So the
+published numbers come from a build that is ~6% more instructions than the
+documented one, and a user who builds either way gets a different answer.
+Whichever is chosen, the benchmark build and the documented build should
+agree, and the baselines should be regenerated once they do. Not changed
+here because it invalidates the committed baselines and is the
+maintainer's call.
