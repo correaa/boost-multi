@@ -5088,3 +5088,62 @@ Recorded, not attempted. Note also that three consecutive hypotheses in
 §11.50, §11.52 and §11.53 have now been refuted by measurement -- the
 lesson from §11.45/§11.48 (do not ship these kernels' refactors on
 reasoning) is holding up well.
+
+### 11.54 A uniformity fix in `stage_radix8_` that is also the first measured win against the §11.53 target (2026-08-01)
+
+Reading the seven stage kernels side by side for redundancy turned up one
+that did not match the others. Every kernel precomputes a pointer per leg
+and indexes `a1[j * ja]`:
+
+| kernel | leg pointers precomputed |
+|---|---|
+| radix2 | 2 in, 2 out |
+| radix3 | 3 in, 3 out |
+| radix4 | 4 in, 4 out |
+| radix5 | 5 in, 5 out |
+| **radix8** | **1 in, 1 out** |
+
+`stage_radix8_` alone kept the offsets inline -- `a0[(k * q * sa) + j * ja]`
+and `b0[(k * ns * sb) + j * jb]` -- for all 16 accesses. It is also the
+most expensive kernel in the file (15.2 instr/element against radix-4's
+7.1, §11.50) and, per §11.53, addressing is exactly where the instructions
+are. Made uniform with the rest.
+
+**Measured** (n=128, 1 MiB working set):
+
+| | before | after |
+|---|---:|---:|
+| `stage_radix8_` executed Ir | 20,081,600 | **19,756,480 (-1.6%)** |
+| whole transform executed Ir | 37.70 M | **37.37 M (-0.9%)** |
+| n=128, 1 MiB | 9927 MFLOPS | **10170 (+2.4%)** |
+| n=32, 128 KiB | 10515 MFLOPS | 10673 (+1.5%) |
+| n=32, 1 MiB | 9901 MFLOPS | 9932 (+0.3%) |
+| n=128, 128 KiB | 10403 MFLOPS | 10410 (+0.1%) |
+
+Timings are the mean of two interleaved rounds against the pre-change
+binary, using Multi's own throughput rather than the FFTW ratio (FFTW's
+own number moved 3-5% between rounds and would have swamped the signal).
+Correct under g++ `-Wall -Wextra -Werror` and address+UB sanitizers.
+
+Small, but it is the FIRST thing this session to move in the direction
+§11.53 predicted, after three refuted hypotheses aimed at arithmetic
+width. Instruction count, not vector width.
+
+**Methodology note worth keeping.** Executed instruction count from
+callgrind is DETERMINISTIC -- the same binary reports the same number
+every time. On a machine where a 5% timing effect needs interleaved
+sampling and seven control shapes to establish, Ir gives an exact answer
+in one run. It cannot see stalls or misses, so it must not be the only
+evidence (§11.45's butterfly extraction cost 39% of wall clock while
+looking fine on a proxy), but for a change that is purely about how many
+instructions are issued, it is the right primary instrument and the timing
+run is the confirmation.
+
+**Where the remaining instructions are** (n=128, line-level, after this
+change): complex arithmetic ~49% (`real()` 18.1%, `operator+=`/`-=`
+12.5% each), and the rest is loop control, addressing and stores -- the
+inner `for(j...)` line alone is 6.6%. The next candidate in this direction
+is the `j * ja` / `j * jb` indexing: with 8 legs in and 8 out, that is 16
+strength-reduction candidates in one loop, which is more induction
+variables than GCC will maintain. Converting them to pointer increments is
+the obvious next experiment. Not attempted here.

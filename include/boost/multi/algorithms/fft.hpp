@@ -988,16 +988,30 @@ struct fft_engine {
 				TW const       w6 = tw_[6 * r * tstep];
 				TW const       w7 = tw_[7 * r * tstep];
 				T const* const a0 = a + ((block + r) * sa);
+				T const* const a1 = a0 + (q * sa);
+				T const* const a2 = a0 + (2 * q * sa);
+				T const* const a3 = a0 + (3 * q * sa);
+				T const* const a4 = a0 + (4 * q * sa);
+				T const* const a5 = a0 + (5 * q * sa);
+				T const* const a6 = a0 + (6 * q * sa);
+				T const* const a7 = a0 + (7 * q * sa);
 				T* const       b0 = b + ((base + r) * sb);
+				T* const       b1 = b0 + (ns * sb);
+				T* const       b2 = b0 + (2 * ns * sb);
+				T* const       b3 = b0 + (3 * ns * sb);
+				T* const       b4 = b0 + (4 * ns * sb);
+				T* const       b5 = b0 + (5 * ns * sb);
+				T* const       b6 = b0 + (6 * ns * sb);
+				T* const       b7 = b0 + (7 * ns * sb);
 				for(std::size_t j = 0; j != m; ++j) {
 					T const x0            = a0[j * ja];
-					T const x1            = fft_mul_dir<Backward>(w1, a0[(1 * q * sa) + j * ja]);
-					T const x2            = fft_mul_dir<Backward>(w2, a0[(2 * q * sa) + j * ja]);
-					T const x3            = fft_mul_dir<Backward>(w3, a0[(3 * q * sa) + j * ja]);
-					T const x4            = fft_mul_dir<Backward>(w4, a0[(4 * q * sa) + j * ja]);
-					T const x5            = fft_mul_dir<Backward>(w5, a0[(5 * q * sa) + j * ja]);
-					T const x6            = fft_mul_dir<Backward>(w6, a0[(6 * q * sa) + j * ja]);
-					T const x7            = fft_mul_dir<Backward>(w7, a0[(7 * q * sa) + j * ja]);
+					T const x1            = fft_mul_dir<Backward>(w1, a1[j * ja]);
+					T const x2            = fft_mul_dir<Backward>(w2, a2[j * ja]);
+					T const x3            = fft_mul_dir<Backward>(w3, a3[j * ja]);
+					T const x4            = fft_mul_dir<Backward>(w4, a4[j * ja]);
+					T const x5            = fft_mul_dir<Backward>(w5, a5[j * ja]);
+					T const x6            = fft_mul_dir<Backward>(w6, a6[j * ja]);
+					T const x7            = fft_mul_dir<Backward>(w7, a7[j * ja]);
 					// radix-4 over the even legs (x0, x2, x4, x6)
 					T const s0            = x0 + x4;
 					T const s1            = x0 - x4;
@@ -1017,13 +1031,13 @@ struct fft_engine {
 					T const o2            = fft_mul_dir<Backward>(imu, u0 - u2);
 					T const o3            = fft_mul_dir<Backward>(w83, u1 - u3);
 					b0[j * jb]                 = e0 + o0;
-					b0[(1 * ns * sb) + j * jb] = e1 + o1;
-					b0[(2 * ns * sb) + j * jb] = e2 + o2;
-					b0[(3 * ns * sb) + j * jb] = e3 + o3;
-					b0[(4 * ns * sb) + j * jb] = e0 - o0;
-					b0[(5 * ns * sb) + j * jb] = e1 - o1;
-					b0[(6 * ns * sb) + j * jb] = e2 - o2;
-					b0[(7 * ns * sb) + j * jb] = e3 - o3;
+					b1[j * jb] = e1 + o1;
+					b2[j * jb] = e2 + o2;
+					b3[j * jb] = e3 + o3;
+					b4[j * jb] = e0 - o0;
+					b5[j * jb] = e1 - o1;
+					b6[j * jb] = e2 - o2;
+					b7[j * jb] = e3 - o3;
 				}
 			}
 		}
