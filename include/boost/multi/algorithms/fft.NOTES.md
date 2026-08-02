@@ -4792,3 +4792,104 @@ axes 3 and 1 together (offsets 0..7, 64..71, ...) are not a uniform stride.
 The fix would be a rank-3 slab entry point with TWO batch axes, which is
 also the "fuse all the loops" shape the §8/§12 GPU port wants. Not
 attempted here.
+
+### 11.50 §11.30's "memory-bound" diagnosis is REFUTED: the power-of-two gap is instruction count, and it is ~2.5x (2026-08-01)
+
+§11.30 (2026-07-17) closed the power-of-two investigation with "the gap is
+memory-bound (stage count / bytes moved), not compute-bound -- constexpr
+twiddles ruled out, SIMD ruled out", and §11.29 had found explicit AVX2
+"no measurable win -- likely memory-bound". Four batching changes have
+landed since (§11.39 `mb_` budget, §11.41 packing threshold, §11.43 stride
+guard, §11.44 single-stage batching), so the diagnosis was re-tested.
+
+**The experiment.** Fix the transform length, sweep ONLY the working set
+(vary the batch count), no cache flush -- so the small cases genuinely live
+in L1 and the large ones genuinely stream from DRAM. If memory-bound, the
+Multi/FFTW ratio should collapse toward 1 as the working set shrinks into
+cache; if compute-bound, it is flat.
+
+Batched 1-D, in-place, contiguous, FFTW_ESTIMATE, i7-8700 (L1d 32K, L2
+256K, L3 12M):
+
+| n | 16 KiB (L1) | 128 KiB (L2) | 1 MiB (L3) | 8 MiB (L3) | 128 MiB (DRAM) |
+|---|---:|---:|---:|---:|---:|
+| 32 | 2.71 | 3.11 | 2.94 | 2.84 | 2.12 |
+| 64 | 2.58 | 2.84 | 2.75 | 2.47 | 1.94 |
+| 128 | 2.95 | 2.78 | 2.52 | 2.42 | 1.95 |
+
+The ratio does not collapse in cache -- it is WIDEST there and *narrows*
+toward DRAM, because DRAM bandwidth caps FFTW and not us. Multi's own
+throughput is nearly flat (12.5 -> 7.5 GFLOPS across a 8000x working-set
+range) while FFTW's falls 34 -> 15.7. **FFTW is the one that becomes
+memory-bound; we are compute-bound everywhere.** At 34 GFLOPS FFTW is at
+~50% of this machine's AVX2 peak, which is what a tuned FFT achieves;
+Multi at ~12 GFLOPS is at ~18%.
+
+**Confirmed independently by instruction count** (callgrind, n=128,
+1 MiB working set, plan-build and allocator excluded):
+
+| | Ir |
+|---|---:|
+| Multi `stage_radix8_` | 20.08 M |
+| Multi `run_fused_impl_` (two radix-4 stages + gather/scatter) | 17.61 M |
+| **Multi total** | **37.70 M** |
+| **FFTW codelets** | **15.23 M** |
+
+**2.48x more instructions against a 2.5x time ratio -- IPC is the same.**
+Not stalls, not misses: we simply execute 2.5x the instructions per
+butterfly. Note the auto-vectorizer IS working (`-fopt-info-vec` reports
+32-byte AVX2 on all seven batch loops); it is producing correct vector
+code that is nonetheless 2.5x the instruction count of a hand-tuned
+codelet.
+
+**Per-kernel cost** (per element, per stage; 65536 elements x 20 reps):
+
+| kernel | instr/element | share of Ir at n=32 / n=128 |
+|---|---:|---|
+| radix-4 | ~7.1 | -- |
+| radix-8 | **15.2** | 60% / 49% |
+
+Radix-8 costs 2.1x the instructions of radix-4 for 1.5x the work
+(log2 8 vs log2 4) -- **43% less efficient per unit of work** -- and n=64
+(4.4.4, the only one of the three with no radix-8 stage) has the best
+ratio of the three, 2.06.
+
+**A hypothesis this suggested, tested, and REFUTED.** If we are compute-
+bound, the factorization comment's trade ("replacing a 4*2 tail by one 8
+saves a whole memory pass") is backwards, and 2^odd should use a radix-2
+tail instead: n=32 as 4.4.2, n=128 as 4.4.4.2. Implemented behind
+`BOOST_MULTI_FFT_ODD_EXPONENT_TAIL` and measured:
+
+| n | working set | radix-8 tail | radix-2 tail |
+|---|---|---:|---:|
+| 32 | 1 MiB | **10042 MFLOPS** | 7961 (-21%) |
+| 128 | 1 MiB | **9926 MFLOPS** | 7567 (-24%) |
+| 128 | 16 KiB (L1) | 11252 | 11222 (tie) |
+| 64 | any | unchanged (control: no radix-8 either way) |
+
+Reverted. The extra memory pass costs more than the instructions it saves
+-- EXCEPT in L1, where the two tie exactly, which is the same story from
+the other side: with no memory traffic the instruction counts are
+comparable, and out of L1 the extra pass decides it. So the shipped
+radix-8 tail is correct, and stage count still matters for absolute
+speed even though it does not explain the FFTW gap. n=64 unchanged is a
+clean control that the switch did only what it claimed.
+
+**What this changes.** The power-of-two direction was closed four times
+(§11.25, §11.27, §11.28, §11.34 -- size-32 codelets) and finally written
+off by §11.30 for a reason that is now measurably wrong. The available
+headroom is not the ~10% those attempts were chasing: it is ~2.5x, it is
+entirely in instructions-per-butterfly, and it sits in the maintainer's
+stated target range (n=32..128 is where FFTW's codelets are strongest).
+`stage_radix8_` is the single largest line item, at half of all
+instructions for the two sizes that use it.
+
+**What it does NOT license.** Standing policy is compiler
+auto-vectorization only -- no intrinsics or `std::simd` except as a
+localized last resort. The auto-vectorizer is not failing to fire; it is
+firing and losing 2.5x anyway. So closing this gap means either
+hand-written kernels (a policy decision for the maintainer, not one to
+take unilaterally) or finding what makes the generated vector code so much
+denser than FFTW's. NOT attempted here -- §11.45's 39% and §11.48's 8.5%
+are recent reminders of what "obviously neutral" refactors of these
+kernels actually cost.
