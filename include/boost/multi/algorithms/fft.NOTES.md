@@ -4893,3 +4893,90 @@ take unilaterally) or finding what makes the generated vector code so much
 denser than FFTW's. NOT attempted here -- §11.45's 39% and §11.48's 8.5%
 are recent reminders of what "obviously neutral" refactors of these
 kernels actually cost.
+
+### 11.51 Why the generated vector code is 2.5x denser: it is 128-bit, and radix-8 will not go to 256-bit at any price (2026-08-01)
+
+§11.50 established the gap is instruction count, not memory. This is the
+mechanism, and it argues AGAINST the hand-written-kernel conclusion that
+§11.50 seemed to point at.
+
+**The one-line answer.** FFTW's hot codelet at runtime is
+`fftw_codelet_n1fv_64_avx`: **607 ymm against 81 xmm** -- full 256-bit.
+Our `stage_radix8_<true,false,complex<double>>` is **0 ymm against 172
+xmm** -- 128-bit throughout. GCC did vectorize it, but across the complex
+number's own (re,im) pair, not across the batch. Same instruction pattern,
+half the width. That is the 2x, and the rest is loop overhead.
+
+It is not uniform across our kernels: `run_fused_impl_<true,false>`, which
+inlines the radix-4 stages, contains **311 ymm**. Radix-4 gets 256-bit;
+radix-8 does not. That is exactly the 7.1 vs 15.2 instr/element split
+§11.50 measured -- one kernel is running at full width and the other at
+half.
+
+**Four things tried to move it. None did.**
+
+| attempt | result |
+|---|---|
+| `-mprefer-vector-width=256` / `=512` | 0 ymm (identical text) |
+| `-fno-tree-slp-vectorize` (stop SLP taking the complex pair) | 0 ymm |
+| `-fvect-cost-model=unlimited`, `-funroll-loops` | 0 ymm |
+| `#pragma omp simd` on the j loop + `-fopenmp-simd` | 0 ymm (text grew to 420) |
+
+**A hypothesis, tested and refuted.** The batch strides `ja`/`jb` are
+runtime values, so perhaps GCC cannot prove contiguity. Traced, and the
+strides are worth recording:
+
+| layout | `ja` (in) | `jb` (out) |
+|---|---:|---:|
+| element-contiguous user array, n=128 (2-D/3-D/many) | 1 | **128** |
+| element-contiguous user array, n=32 | 1 | **32** |
+| batch-contiguous user array (the `many_strided` shape) | 1 | **1** |
+
+`run_fused_impl_` sets `jb = (i == last) ? jb_ : 1`, so only the FINAL
+stage inherits the user's batch stride. For an element-contiguous array
+that stage's stores are scattered 2048 bytes apart, and AVX2 has no
+scatter instruction at all -- so for that call vectorising across j is not
+merely unprofitable, it is impossible.
+
+That is a real constraint and worth knowing. It is NOT the binding one:
+specialising the radix-8 inner loop on `ja == 1 && jb == 1` (generic
+lambda over `integral_constant`, so the unit case sees literal 1s) still
+produced **0 ymm**, shrank the text 43% (387 -> 222) -- and made things
+WORSE, executed instructions 20.08M -> 23.82M (+19%), time neutral to
+slightly down. Reverted.
+
+**So the remaining explanation is register pressure, now with a
+mechanism.** A 256-bit radix-8 across the batch needs 8 ymm live for
+x0..x7 plus 7 broadcast twiddles = 15 of AVX2's 16 registers before any
+temporary. Radix-4 needs 4 + 3 = 7 and fits, which is why it gets 256-bit
+and radix-8 does not. This is the same wall as the reverted radix-8-over-4,
+radix-16 and split-radix attempts -- but those recorded "register
+pressure" as a conclusion, and this is the first time it has been tied to
+a specific register budget and a measured width.
+
+**Why this argues against writing intrinsics for radix-8.** The register
+budget is a property of AVX2, not of GCC's cost model. Hand-writing the
+same 8-point butterfly at 256-bit hits the same 16 registers and spills
+too -- and the spilling is already visible in the current 128-bit code
+(twiddles reloaded from `0x58(%rsp)`, `0x68(%rsp)`, ... inside the inner
+loop). An intrinsics rewrite would be a large, policy-relaxing change
+aimed at a wall that is not the compiler's.
+
+**What might actually work, in rough order of promise:**
+
+1. Keep radix-8 but cut its live values: the kernel already decomposes into
+   two radix-4 sub-butterflies. Scheduling those so only one is live at a
+   time trades a couple of reloads for a halved register footprint, and
+   would be a source change inside the existing policy.
+2. Make the final stage write batch-contiguous scratch and transpose
+   separately, so no stage ever sees a scattered `jb`. Costs one extra
+   pass, and §11.50's radix-2 experiment is a warning about what an extra
+   pass costs -- but that pass would be a pure blocked copy, not another
+   butterfly.
+3. AVX-512 has 32 registers AND scatter, which removes both walls at once.
+   Not available on this machine (i7-8700).
+
+**Not attempted here.** Every one of these has the shape that §11.45
+(+39%) and §11.48 (+8.5%) punished: a confident restructuring of these
+kernels. Each needs its own interleaved A/B before it goes anywhere near
+a commit.
