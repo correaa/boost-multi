@@ -5147,3 +5147,50 @@ is the `j * ja` / `j * jb` indexing: with 8 legs in and 8 out, that is 16
 strength-reduction candidates in one loop, which is more induction
 variables than GCC will maintain. Converting them to pointer increments is
 the obvious next experiment. Not attempted here.
+
+### 11.55 "Can the legs be a multidimensional array?" -- measured, and §7's raw-kernel boundary now has evidence (2026-08-01)
+
+Maintainer's observation on `a0[(k * q * sa) + j * ja]`: that is a 2-D
+access, `legs[k][j]` with strides `{q*sa, ja}`. Can `a0` just be a
+multidimensional view?
+
+The observation is exactly right, and §11.54 is the half of it that pays:
+precomputing one pointer per leg IS "hoist `A[k]` out of the j loop", and
+it measured -1.6% Ir on the kernel. The question is whether the view
+itself can carry that.
+
+Prototyped both shapes against the raw loop, same TU, same work
+(`multi::subarray<C,2,C*>` built from an explicit `layout_t<2>` over
+`{q*sa, ja}`):
+
+| | instructions | FP ops (128-bit / scalar) |
+|---|---:|---|
+| raw leg pointers (today) | **93** | 2 / 8 |
+| `A[k][j]` indexed in the loop | 380 | 4 / 16 |
+| `A[k]` hoisted, then `Ak[j]` | **208** | 2 / 8 |
+
+Identical floating-point work in the raw and hoisted-view versions -- the
+extra 115 instructions are pure layout and addressing overhead, plus the
+loss of `BOOST_MULTI_FFT_RESTRICT`, which a `subarray` cannot carry and
+which §11.45 identified as what lets the compiler keep values in registers
+instead of reloading across the potentially-aliasing `a`/`b`.
+
+**2.2x the instructions in the hot loop, and §11.53 established that
+instruction count is precisely this kernel's bottleneck.** So: no. §7
+already said the stage kernels stay raw because iterators "would block the
+tight, auto-vectorizable batched loops" -- that was an assertion, and this
+is the first time it has been measured. Worth having, since §11.30 showed
+what happens when an unmeasured claim in this file goes stale.
+
+**Caveat on the numbers, per §11.52's lesson.** These are micro-probes,
+and their absolute codegen is not representative -- adding `mdv2` to the
+TU changed `mdv`'s own count from 170 to 380 through inlining decisions.
+Only the within-build raw-vs-view comparison should be read, and only as
+"about 2x", not as a precise figure.
+
+**What remains valid from the idea.** The access pattern IS 2-D, and
+saying so in the code has value even if the view cannot: the leg pointers
+are now uniform across all five power-of-two/small-prime kernels
+(§11.54), which is the same structure expressed in the form the compiler
+handles. If Multi ever grows a restrict-carrying view, this is the first
+place to retry it.
