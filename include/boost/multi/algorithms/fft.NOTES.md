@@ -5033,3 +5033,58 @@ comparison, and should be treated as unproven.
 untouched, but the ranking should change: the 170 scalar FP ops in
 `run_fused_impl_` are a target nobody had seen, and unlike the radix-8
 widening they do not depend on the unproven register-pressure argument.
+
+### 11.53 Two fibers per iteration: partial 256-bit achieved, and it bought NOTHING -- which undercuts the width theory itself (2026-08-01)
+
+§11.51/§11.52 argued the gap is width: FFTW's codelet is 1412 FP ops all
+at 256-bit, ours are 128-bit. The natural test is to hand the vectorizer
+two independent butterflies in one basic block, so SLP has something to
+widen. With unit batch strides `a[j]` and `a[j+1]` are adjacent, so the
+pair is a single 256-bit load.
+
+Prototyped in `stage_radix4_`: a paired loop stepping j by 2, guarded on
+`ja == 1 && jb == 1`, with the original loop kept as the tail and the
+strided fallback.
+
+**It worked, and it did not matter.**
+
+| | before | after |
+|---|---:|---:|
+| radix-4 FP ops at 256-bit | 0 (in an inlined mix of 132/144/170) | **63** of 169 |
+| executed Ir, whole transform | 37.70 M | 37.43 M (**-0.7%**) |
+| n=128, 1 MiB working set | 9926 MFLOPS | 10177 (+2.5%) |
+| n=32, 1 MiB working set | 10042 MFLOPS | 9748 (**-2.9%**) |
+
+37% of radix-4's arithmetic moved to full width and the transform got
+0.7% fewer instructions and no reliable time change. Correct under
+sanitizers. Reverted.
+
+**This is the most important negative result of the three.** §11.50 proved
+we execute 2.5x FFTW's instructions at identical IPC; §11.51 found our
+arithmetic is 128-bit where FFTW's is 256-bit and concluded width was the
+lever. This says width is NOT the lever, or at least not on its own:
+widening a third of the arithmetic in the kernel that runs 2 of 3 stages
+changed essentially nothing.
+
+The likely reading is that the 2.5x is not in the arithmetic at all. The
+FP operations are a minority of the instruction stream -- the earlier
+static mix of `stage_radix8_` was 107 scalar `mov`, 70 address-arithmetic
+(`shl`/`add`/`lea`/`imul`) and 95 vector moves against 77 arithmetic ops.
+Halving the count of the 20% does little; the loads, stores, address
+computation and (visible in the disassembly) twiddle reloads from stack
+are the other 80%. FFTW's codelets are straight-line with compile-time
+constant offsets, which removes the address arithmetic entirely rather
+than vectorising it.
+
+**So the next attempt should target instruction COUNT, not width** -- and
+specifically the addressing. Everything in these kernels is indexed
+`a0[(k * q * sa) + j * ja]` with runtime `q`, `sa`, `ja`; FFTW's generated
+codelets have all of that folded into constants. That reframes the
+size-32-codelet idea (§11.25/27/28/34, four reverts) as being about
+constant-folded ADDRESSING rather than about unrolled arithmetic, which is
+not what those attempts were testing.
+
+Recorded, not attempted. Note also that three consecutive hypotheses in
+§11.50, §11.52 and §11.53 have now been refuted by measurement -- the
+lesson from §11.45/§11.48 (do not ship these kernels' refactors on
+reasoning) is holding up well.
