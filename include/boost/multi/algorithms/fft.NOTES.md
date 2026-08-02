@@ -4901,17 +4901,28 @@ mechanism, and it argues AGAINST the hand-written-kernel conclusion that
 §11.50 seemed to point at.
 
 **The one-line answer.** FFTW's hot codelet at runtime is
-`fftw_codelet_n1fv_64_avx`: **607 ymm against 81 xmm** -- full 256-bit.
-Our `stage_radix8_<true,false,complex<double>>` is **0 ymm against 172
-xmm** -- 128-bit throughout. GCC did vectorize it, but across the complex
+`fftw_codelet_n1fv_64_avx`: every one of its 1412 FP operations is
+**256-bit packed**. Our `stage_radix8_<true,false,complex<double>>` runs
+all 71 of its FP operations at **128-bit**. GCC did vectorize it, but across the complex
 number's own (re,im) pair, not across the batch. Same instruction pattern,
 half the width. That is the 2x, and the rest is loop overhead.
 
 It is not uniform across our kernels: `run_fused_impl_<true,false>`, which
-inlines the radix-4 stages, contains **311 ymm**. Radix-4 gets 256-bit;
-radix-8 does not. That is exactly the 7.1 vs 15.2 instr/element split
-§11.50 measured -- one kernel is running at full width and the other at
-half.
+inlines the radix-4 stages, is a MIX -- 132 ops at 256-bit, 144 at
+128-bit, and 170 outright SCALAR. So radix-4 reaches full width only
+partly, and radix-8 never. That is the 7.1 vs 15.2 instr/element split
+§11.50 measured, and it also says the headroom is not confined to
+radix-8: 170 scalar FP ops in the fused path are their own target.
+
+(CORRECTION, same day: this section first reported these as raw
+ymm/xmm register counts -- 607/81 for FFTW, 0/172 for radix-8, 311 ymm
+for run_fused_impl_. That metric is WRONG and was overstating our
+position: scalar double arithmetic on x86-64 also uses xmm registers
+(`vmulsd`, `vaddsd`), so an "xmm" count conflates 128-bit SIMD with plain
+scalar code. The numbers above classify by the instruction's actual width
+(`pd` on ymm = 4 doubles, `pd` on xmm = 2, `sd` = 1). The qualitative
+conclusion is unchanged and the scalar ops it exposed are new
+information.)
 
 **Four things tried to move it. None did.**
 
@@ -4980,3 +4991,45 @@ aimed at a wall that is not the compiler's.
 (+39%) and §11.48 (+8.5%) punished: a confident restructuring of these
 kernels. Each needs its own interleaved A/B before it goes anywhere near
 a commit.
+
+### 11.52 §11.51's chosen fix (re-schedule the radix-8 sub-butterflies) -- implemented, no effect, and two measurement lessons (2026-08-01)
+
+§11.51 recommended cutting radix-8's live set by writing the two radix-4
+sub-butterflies so their values never overlap: load the even legs
+(x0,x2,x4,x6), reduce them to e0..e3, and only THEN load the odd legs.
+Peak live drops from 8 legs + 7 twiddles to 4 + 4 and 3/4 of the twiddles,
+which should fit AVX2's 16 registers. Pure reordering -- every output is
+the same expression tree, so bit-identical.
+
+**Implemented. No effect whatsoever:** 387 -> 390 instructions, still 0
+ops at 256-bit, identical 128-bit count. GCC builds its own schedule from
+the data-flow graph and hoists the loads back; source order does not
+constrain it. Reverted.
+
+To actually force the split one would have to break the compiler's freedom
+-- e.g. two passes over `j` with e0..e3 staged through a small L1 buffer --
+which adds a scratch round-trip. Not attempted; on the evidence below it
+is no longer clearly the right target anyway.
+
+**Lesson 1: the xmm/ymm metric §11.51 was built on was wrong.** Scalar
+double arithmetic uses xmm registers too, so counting "xmm" lumps 128-bit
+SIMD together with scalar code. Corrected classification (by the
+instruction's real width) is in §11.51; the headline survived, but it had
+been HIDING something: `run_fused_impl_` contains 170 genuinely SCALAR FP
+operations. A metric that flatters the code in one direction can conceal a
+problem in another.
+
+**Lesson 2: standalone micro-probes of these kernels are not
+representative.** Minimal reproductions of the radix-4 and radix-8 batch
+loops (unit strides, `__restrict__`, in their own TU) compile to FULLY
+SCALAR code -- 0 packed ops of any width. They do not reproduce even the
+128-bit vectorization the real kernels get, so any conclusion drawn from
+them about vector width would have been an artifact. The register-pressure
+story in §11.51 is therefore still only supported by the real kernels
+(radix-8 at 0 x 256-bit vs run_fused_impl_ at 132), not by the micro-probe
+comparison, and should be treated as unproven.
+
+**Where this leaves the direction.** The three candidates §11.51 listed are
+untouched, but the ranking should change: the 170 scalar FP ops in
+`run_fused_impl_` are a target nobody had seen, and unlike the radix-8
+widening they do not depend on the unproven register-pressure argument.
