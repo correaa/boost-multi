@@ -132,20 +132,80 @@ void pin_to_one_cpu() {
 #endif
 }
 
-// Fixed-duration busy loop of real floating-point work, run once before any
-// timed measurement, so the CPU is past its initial turbo-boost ramp-up (and
-// out of any idle/low-power state) before the sweep's first size -- otherwise
-// the earliest sizes tested would be measured from an artificially slow,
-// still-ramping state that later sizes wouldn't see. 0.25s measured
-// insufficient (17% drift); 2s still measured 16-21% drift on the longer
-// (no-wisdom) sweeps, i.e. this machine keeps ramping over tens of seconds,
-// not just the first couple -- 8s is a further attempt at a fully flat start.
-void warm_up_cpu() {
-	watch      w;
-	volatile double x = 1.0;
-	while(w.sec() < 8.0) {
-		for(int i = 0; i != 100000; ++i) { x = std::sin(x) + std::cos(x); }
+// The suite pins itself to one core (see pin_to_one_cpu) so that single-thread
+// timings are not perturbed by core migration. A threading sweep obviously
+// cannot live with that -- every thread would contend for the same core and
+// measure a flat 1.0x -- so it restores the full mask for its own duration and
+// puts the pin back afterwards, leaving the rest of the suite unaffected.
+class scoped_all_cpus {
+#ifdef __linux__
+	cpu_set_t saved_{};
+	bool      ok_{false};
+
+ public:
+	scoped_all_cpus() {
+		CPU_ZERO(&saved_);
+		ok_ = (sched_getaffinity(0, sizeof(saved_), &saved_) == 0);
+		if(!ok_) { return; }
+		cpu_set_t all;
+		CPU_ZERO(&all);
+		for(int cpu = 0; cpu != static_cast<int>(std::thread::hardware_concurrency()); ++cpu) { CPU_SET(cpu, &all); }
+		(void)sched_setaffinity(0, sizeof(all), &all);
 	}
+	scoped_all_cpus(scoped_all_cpus const&)                    = delete;
+	scoped_all_cpus(scoped_all_cpus&&)                         = delete;
+	auto operator=(scoped_all_cpus const&) -> scoped_all_cpus& = delete;
+	auto operator=(scoped_all_cpus&&) -> scoped_all_cpus&      = delete;
+	~scoped_all_cpus() {
+		if(ok_) { (void)sched_setaffinity(0, sizeof(saved_), &saved_); }
+	}
+#else
+ public:
+	scoped_all_cpus() = default;
+#endif
+};
+
+// Busy loop of real floating-point work, run once before any timed
+// measurement, so the CPU is past its initial ramp-up (and out of any
+// idle/low-power state) before the sweep's first size -- otherwise the
+// earliest sizes are measured from an artificially slow, still-ramping state
+// that later sizes never see, and the closing calibration reads the
+// difference back as "drift".
+//
+// TWO things had to be right, and for a long time only the duration was
+// tuned: 0.25s measured 17% drift, 2s measured 16-21%, 8s still measured
+// 31-60% on an *idle* machine. Duration was never the whole problem.
+//
+// The ramp is a PACKAGE-level effect. Under the `powersave` governor idle
+// cores park (800 MHz here) and the package clock follows the activity of ALL
+// of them -- so a warm-up that inherits the suite's one-core pin (main() calls
+// pin_to_one_cpu() FIRST) heats one core while the rest stay parked, and the
+// package never leaves its low-power state. Restoring the full mask and
+// warming every core is what actually flattens the start: 120s on all cores
+// took a run from 31-60% drift to -3.4% on this machine, where 8s on one core
+// had not.
+//
+// The two minutes this costs are deliberate. Three runs in one session were
+// discarded to the un-diagnosed version.
+#ifndef BOOST_MULTI_FFT_BENCH_WARMUP_SECONDS
+#define BOOST_MULTI_FFT_BENCH_WARMUP_SECONDS 120.0
+#endif
+void warm_up_cpu() {
+	scoped_all_cpus const all_cores;  // must outlive `pool`: threads inherit the affinity mask at creation
+
+	unsigned const           cores = std::max(1U, std::thread::hardware_concurrency());
+	std::vector<std::thread> pool;
+	pool.reserve(cores);
+	for(unsigned t = 0; t != cores; ++t) {
+		pool.emplace_back([] {
+			watch           w;
+			volatile double x = 1.0;
+			while(w.sec() < BOOST_MULTI_FFT_BENCH_WARMUP_SECONDS) {
+				for(int i = 0; i != 100000; ++i) { x = std::sin(x) + std::cos(x); }
+			}
+		});
+	}
+	for(auto& th : pool) { th.join(); }
 }
 
 template<class F> auto time_it(long reps, F f) -> double {
@@ -776,38 +836,6 @@ void sweep_many4d(std::vector<int> const& sides, int depth, char const* fname, c
 }
 
 
-// The suite pins itself to one core (see pin_to_one_cpu) so that single-thread
-// timings are not perturbed by core migration. A threading sweep obviously
-// cannot live with that -- every thread would contend for the same core and
-// measure a flat 1.0x -- so it restores the full mask for its own duration and
-// puts the pin back afterwards, leaving the rest of the suite unaffected.
-class scoped_all_cpus {
-#ifdef __linux__
-	cpu_set_t saved_{};
-	bool      ok_{false};
-
- public:
-	scoped_all_cpus() {
-		CPU_ZERO(&saved_);
-		ok_ = (sched_getaffinity(0, sizeof(saved_), &saved_) == 0);
-		if(!ok_) { return; }
-		cpu_set_t all;
-		CPU_ZERO(&all);
-		for(int cpu = 0; cpu != static_cast<int>(std::thread::hardware_concurrency()); ++cpu) { CPU_SET(cpu, &all); }
-		(void)sched_setaffinity(0, sizeof(all), &all);
-	}
-	scoped_all_cpus(scoped_all_cpus const&)                    = delete;
-	scoped_all_cpus(scoped_all_cpus&&)                         = delete;
-	auto operator=(scoped_all_cpus const&) -> scoped_all_cpus& = delete;
-	auto operator=(scoped_all_cpus&&) -> scoped_all_cpus&      = delete;
-	~scoped_all_cpus() {
-		if(ok_) { (void)sched_setaffinity(0, sizeof(saved_), &saved_); }
-	}
-#else
- public:
-	scoped_all_cpus() = default;
-#endif
-};
 
 // Threading: one shared `const` plan, one scratch arena per thread, and the
 // batch of independent transforms split across threads. This is a CALLER-side
