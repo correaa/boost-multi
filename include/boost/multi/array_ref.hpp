@@ -500,14 +500,14 @@ struct subarray_ptr  // : to allow mixin CRTP
 		>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr /*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
-	: layout_{other.layout_}, base_{other.base_} {}
+	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
 		decltype(multi::detail::explicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr  // propagate implicitness of pointer
 		>
 	BOOST_MULTI_HD constexpr explicit subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
-	: layout_{other.layout_}, base_{other.base_} {}
+	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
 
 	template<
 		class ElementPtr2,
