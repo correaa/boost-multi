@@ -1747,11 +1747,11 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		if(this == &other) {  // required by cert-oop54-cpp
 			return *this;
 		}
-		if(array::extents() == other.extents()) {
+		if(this->extents() == other.extents()) {
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
-			dynamic_::operator=(other);
+			if(!this->is_empty()) { dynamic_::operator=(other); }
 		} else {
 			clear();
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
