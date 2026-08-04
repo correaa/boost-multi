@@ -2185,7 +2185,7 @@ BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<L
 	static_assert(static_cast<std::size_t>(LO::rank_v) == rank_dims, "both operands must have the same rank to share one axis permutation");
 
 	std::array<dimensionality_type, rank_dims> perm{};
-	for(std::size_t i = 0; i != rank_dims; ++i) {  // NOLINT(altera-unroll-loops)
+	for(std::size_t i = 0; i != rank_dims; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		perm[i] = static_cast<dimensionality_type>(i);  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) i < rank_dims by construction
 	}
 
@@ -2194,9 +2194,9 @@ BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<L
 		// same sequence of adjacent transposes; rank_dims is an array rank (tiny), so
 		// the quadratic bound is immaterial and the flat loop is clearer than
 		// mirroring the recursion twice over.
-		for(std::size_t pass = 0; pass != rank_dims; ++pass) {
+		for(std::size_t pass = 0; pass != rank_dims; ++pass) {  // NOLINT(altera-id-dependent-backward-branch)
 			bool swapped = false;
-			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(rank_dims) - 1; ++k) {  // NOLINT(altera-unroll-loops)
+			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(rank_dims) - 1; ++k) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 				if(detail::prefers_swap_at(voter, k)) {
 					voter    = detail::transpose_at(voter, k);
 					other    = detail::transpose_at(other, k);

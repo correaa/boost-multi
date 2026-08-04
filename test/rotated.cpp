@@ -449,8 +449,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 3> arr_b({2, 3, 4}, 0);
 
 		int counter = 0;
-		for(auto& elem : arr_a.elements()) { elem = counter++; }
-		for(auto& elem : arr_b.elements()) { elem = counter++; }
+		for(auto& elem : arr_a.elements()) { elem = counter++; }  // NOLINT(altera-unroll-loops)
+		for(auto& elem : arr_b.elements()) { elem = counter++; }  // NOLINT(altera-unroll-loops)
 
 		auto rot_a = arr_a.rotated();
 		auto rot_b = arr_b.rotated();

@@ -79,6 +79,7 @@ auto max_abs_diff(A const& aa, B const& bb) -> double {
 	}
 	return m;
 }
+}  // namespace
 
 // Custom element type: three independent complex channels, not itself a
 // single complex value -- exercises fft.hpp's documented claim that it works
@@ -87,7 +88,14 @@ auto max_abs_diff(A const& aa, B const& bb) -> double {
 // this for custom element types with a faster product"). No .real()/
 // .imag(): vec3 provides only +, -, and multiplication by a complex scalar;
 // the FFT kernels never need anything else from T.
+//
+// Deliberately given external linkage (not in the anonymous namespace above):
+// nvcc requires template arguments reaching device/Thrust code paths to have
+// external linkage, or it silently deletes their implicitly-defined special
+// member functions ("default constructor is a deleted function").
 struct vec3 {
+	using complex = std::complex<double>;
+
 	vec3() noexcept = default;
 	vec3(complex xx, complex yy, complex zz) noexcept : x{xx}, y{yy}, z{zz} {}  // NOLINT(bugprone-easily-swappable-parameters)
 
@@ -97,7 +105,6 @@ struct vec3 {
 	friend auto operator-(vec3 const& a, vec3 const& b) -> vec3 { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
 	friend auto operator*(complex const& w, vec3 const& v) -> vec3 { return {w * v.x, w * v.y, w * v.z}; }
 };
-}  // namespace
 
 // fft_ops specialization (namespace scope, per fft.hpp's customization
 // point): built entirely from vec3's own provided operators -- conj() is
