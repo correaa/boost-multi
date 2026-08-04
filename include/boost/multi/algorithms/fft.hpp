@@ -1601,8 +1601,10 @@ auto fft_layout_from(std::array<std::size_t, static_cast<std::size_t>(D)> const&
 	} else {
 		std::array<std::size_t, static_cast<std::size_t>(D) - 1>    sub_ext{};
 		std::array<std::ptrdiff_t, static_cast<std::size_t>(D) - 1> sub_str{};
-		std::copy(ext.begin() + 1, ext.end(), sub_ext.begin());
-		std::copy(str.begin() + 1, str.end(), sub_str.begin());
+		if constexpr(D > 1) {
+			std::copy(ext.begin() + 1, ext.end(), sub_ext.begin());
+			std::copy(str.begin() + 1, str.end(), sub_str.begin());
+		}
 		return multi::layout_t<D>{
 			fft_layout_from<D - 1>(sub_ext, sub_str),
 			str[0], 0,
