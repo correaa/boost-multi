@@ -55,6 +55,21 @@ add_test(NAME matrix_multiplication.cpp.x COMMAND matrix_multiplication.cpp.x)
 add_executable(algorithms_fft.cpp.x algorithms_fft.cpp)
 target_link_libraries(algorithms_fft.cpp.x fftw3)
 target_include_directories(algorithms_fft.cpp.x PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+# Match the build line documented at the top of algorithms_fft.cpp. These had
+# drifted apart: the documented line carried -funroll-loops and this target did
+# not, so the same source benchmarked ~6% more instructions depending only on
+# how it was built (fft.NOTES.md §11.56). Measured worth: -0.1%..-3.3% wall
+# clock across 2-D/3-D 32..128, consistent in direction on every shape.
+# Guarded because -march=native is not portable and Debug builds must stay -O0
+# (the CI lanes rely on that).
+if(CMAKE_BUILD_TYPE STREQUAL "Release" AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+	include(CheckCXXCompilerFlag)
+	check_cxx_compiler_flag("-march=native" BOOST_MULTI_HAS_MARCH_NATIVE)
+	if(BOOST_MULTI_HAS_MARCH_NATIVE)
+		target_compile_options(algorithms_fft.cpp.x PRIVATE -march=native -mtune=native)
+	endif()
+	target_compile_options(algorithms_fft.cpp.x PRIVATE -funroll-loops -fno-math-errno)
+endif()
 add_test(NAME algorithms_fft.cpp.x COMMAND algorithms_fft.cpp.x)
 
 add_executable(algorithms_gemm.cpp.x algorithms_gemm.cpp)
