@@ -481,7 +481,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) terse syntax and functionality by default
+	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) terse syntax and functionality by default
 
 	subarray_ptr() = default;  // cppcheck-suppress uninitMemberVar ; base_ is not initialized
 
