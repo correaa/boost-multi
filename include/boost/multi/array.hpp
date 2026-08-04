@@ -908,10 +908,11 @@ struct                                                                          
 	auto operator=(dynamic_array const& other) & -> dynamic_array& {
 		if(std::addressof(other) == this) {
 			return *this;
-		}  // cert-oop54-cpp
+		}
 		assert(other.extents() == this->extents());
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
-		assert(this->stride() != 0);
+		if(other.num_elements()) {
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		}
 		return *this;
 	}
 
