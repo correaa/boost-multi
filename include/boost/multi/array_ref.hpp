@@ -487,7 +487,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<reference::dimensionality - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<reference::dimensionality - 1> lyt) : layout_{lyt}, base_{base} {}
 
 	template<bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor ; see below
@@ -4492,10 +4492,10 @@ BOOST_MULTI_HD constexpr auto unordered(A&& arr_a, B&& arr_b) {
 
 	if constexpr(b_votes) {
 		auto const ord = multi::sort_layouts(arr_b.layout(), arr_a.layout());
-		return std::pair{detail::reordered_view(arr_a, ord.other), detail::reordered_view(arr_b, ord.voter)};
+		return std::pair{detail::reordered_view(std::forward<A>(arr_a), ord.other), detail::reordered_view(std::forward<B>(arr_b), ord.voter)};
 	} else {
 		auto const ord = multi::sort_layouts(arr_a.layout(), arr_b.layout());
-		return std::pair{detail::reordered_view(arr_a, ord.voter), detail::reordered_view(arr_b, ord.other)};
+		return std::pair{detail::reordered_view(std::forward<A>(arr_a), ord.voter), detail::reordered_view(std::forward<B>(arr_b), ord.other)};
 	}
 }
 

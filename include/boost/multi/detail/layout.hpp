@@ -2185,7 +2185,7 @@ BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<L
 	static_assert(static_cast<std::size_t>(LO::rank_v) == D, "both operands must have the same rank to share one axis permutation");
 
 	std::array<dimensionality_type, D> perm{};
-	for(std::size_t i = 0; i != D; ++i) {
+	for(std::size_t i = 0; i != D; ++i) {  // NOLINT(altera-unroll-loops)
 		perm[i] = static_cast<dimensionality_type>(i);  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) i < D by construction
 	}
 
@@ -2196,7 +2196,7 @@ BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<L
 		// mirroring the recursion twice over.
 		for(std::size_t pass = 0; pass != D; ++pass) {
 			bool swapped = false;
-			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(D) - 1; ++k) {
+			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(D) - 1; ++k) {  // NOLINT(altera-unroll-loops)
 				if(detail::prefers_swap_at(voter, k)) {
 					voter    = detail::transpose_at(voter, k);
 					other    = detail::transpose_at(other, k);
