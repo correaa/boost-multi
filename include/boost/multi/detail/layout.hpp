@@ -2130,30 +2130,30 @@ namespace detail {
 // the layout around a transposed sub-layout (the same reassembly `sort()`
 // itself does via the 4-argument constructor).
 template<class L>
-BOOST_MULTI_HD constexpr auto transpose_at(L const& lyt, dimensionality_type k) -> L {
+BOOST_MULTI_HD constexpr auto transpose_at(L const& lyt, dimensionality_type axis) -> L {
 	if constexpr(L::rank_v < 2) {
-		(void)k;
+		(void)axis;
 		return lyt;  // nothing to swap
 	} else {
-		if(k == 0) {
+		if(axis == 0) {
 			return lyt.transpose();
 		}
-		return L{transpose_at(lyt.sub(), k - 1), lyt.stride(), lyt.offset(), lyt.nelems()};
+		return L{transpose_at(lyt.sub(), axis - 1), lyt.stride(), lyt.offset(), lyt.nelems()};
 	}
 }
 
 // Does the sub-layout `k` levels in prefer swapping its own outer two axes?
 // (`layout_t::prefers_swap()` asks this at level 0; this reaches deeper.)
 template<class L>
-BOOST_MULTI_HD constexpr auto prefers_swap_at(L const& lyt, dimensionality_type k) -> bool {
+BOOST_MULTI_HD constexpr auto prefers_swap_at(L const& lyt, dimensionality_type axis) -> bool {
 	if constexpr(L::rank_v < 2) {
-		(void)k;
+		(void)axis;
 		return false;
 	} else {
-		if(k == 0) {
+		if(axis == 0) {
 			return lyt.prefers_swap();
 		}
-		return prefers_swap_at(lyt.sub(), k - 1);
+		return prefers_swap_at(lyt.sub(), axis - 1);
 	}
 }
 
@@ -2181,22 +2181,22 @@ struct ordered_pair {
 // writeback), so a copy should let its destination vote.
 template<class LV, class LO>
 BOOST_MULTI_HD constexpr auto sort_layouts(LV voter, LO other) -> ordered_pair<LV, LO> {
-	constexpr auto D = static_cast<std::size_t>(LV::rank_v);
-	static_assert(static_cast<std::size_t>(LO::rank_v) == D, "both operands must have the same rank to share one axis permutation");
+	constexpr auto rank_dims = static_cast<std::size_t>(LV::rank_v);
+	static_assert(static_cast<std::size_t>(LO::rank_v) == rank_dims, "both operands must have the same rank to share one axis permutation");
 
-	std::array<dimensionality_type, D> perm{};
-	for(std::size_t i = 0; i != D; ++i) {  // NOLINT(altera-unroll-loops)
-		perm[i] = static_cast<dimensionality_type>(i);  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) i < D by construction
+	std::array<dimensionality_type, rank_dims> perm{};
+	for(std::size_t i = 0; i != rank_dims; ++i) {  // NOLINT(altera-unroll-loops)
+		perm[i] = static_cast<dimensionality_type>(i);  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index) i < rank_dims by construction
 	}
 
-	if constexpr(D >= 2) {
+	if constexpr(rank_dims >= 2) {
 		// Bubble adjacent swaps to a fixed point. `sort()`'s recursion is the
-		// same sequence of adjacent transposes; D is an array rank (tiny), so
+		// same sequence of adjacent transposes; rank_dims is an array rank (tiny), so
 		// the quadratic bound is immaterial and the flat loop is clearer than
 		// mirroring the recursion twice over.
-		for(std::size_t pass = 0; pass != D; ++pass) {
+		for(std::size_t pass = 0; pass != rank_dims; ++pass) {
 			bool swapped = false;
-			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(D) - 1; ++k) {  // NOLINT(altera-unroll-loops)
+			for(dimensionality_type k = 0; k != static_cast<dimensionality_type>(rank_dims) - 1; ++k) {  // NOLINT(altera-unroll-loops)
 				if(detail::prefers_swap_at(voter, k)) {
 					voter    = detail::transpose_at(voter, k);
 					other    = detail::transpose_at(other, k);

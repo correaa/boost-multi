@@ -93,6 +93,7 @@
 #include <cmath>        // for cos, sin, acos
 #include <complex>      // for the fft_ops<std::complex> fast product
 #include <cstddef>      // for size_t, ptrdiff_t
+#include <cstdint>      // for uint8_t
 #include <functional>   // for greater
 #include <iterator>     // for prev, next, reverse iterators
 #include <limits>       // for numeric_limits
@@ -330,7 +331,7 @@ struct fft_engine {
 	// Which kernel runs a stage. Named because the old integer codes were
 	// actively misleading: 2 meant radix-4 while 4 meant `generic`, so the
 	// values read like radices but were not.
-	enum class stage_kind : int {
+	enum class stage_kind : std::uint8_t {
 		radix2,
 		radix3,
 		radix4,
@@ -878,7 +879,7 @@ struct fft_engine {
 	};
 
 	template<bool Batched>
-	static constexpr auto fold_strides(std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch, std::size_t out_batch) -> stage_strides {
+	static constexpr auto fold_strides_(std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch, std::size_t out_batch) -> stage_strides {
 		if constexpr(Batched) {
 			return {batch, in_elem, out_elem, in_batch, out_batch};
 		} else {
@@ -900,12 +901,12 @@ struct fft_engine {
 	// `ns` is the Stockham block size: how many sub-transforms have already
 	// been combined, so it starts at 1 and multiplies by the radix per stage.
 	// `Batched` selects at compile time between that vector inner loop and the
-	// m == 1 single-fiber path, where fold_strides collapses all of the above
+	// m == 1 single-fiber path, where fold_strides_ collapses all of the above
 	// to 1 and the addressing disappears.
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix2_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const half  = n_ / 2;
 		std::size_t const tstep = n_ / (2 * ns);
 		for(std::size_t block = 0; block != half; block += ns) {
@@ -930,7 +931,7 @@ struct fft_engine {
 	// stays generic over the element type and carries the correct sign.
 	template<bool Batched, bool Backward, class T>
 	void stage_radix4_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const q     = n_ / 4;
 		std::size_t const tstep = n_ / (4 * ns);
 		TW const          imu   = tw_[q];  // -i for forward, +i for backward (i.e. under conj-on-load for Backward)
@@ -971,7 +972,7 @@ struct fft_engine {
 	// twiddle table so the kernel stays sign- and type-generic.
 	template<bool Batched, bool Backward, class T>
 	void stage_radix8_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const q     = n_ / 8;
 		std::size_t const tstep = n_ / (8 * ns);
 		TW const          imu   = tw_[2 * q];  // W8^2: -i for forward, +i for backward (i.e. under conj-on-load for Backward)
@@ -1045,7 +1046,7 @@ struct fft_engine {
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix3_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const n3    = n_ / 3;
 		std::size_t const tstep = n_ / (3 * ns);
 		TW const          w1c   = tw_[n3];      // W_3
@@ -1075,7 +1076,7 @@ struct fft_engine {
 
 	template<bool Batched, bool Backward, class T>
 	void stage_radix5_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t batch, std::size_t in_elem, std::size_t out_elem, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const n5    = n_ / 5;
 		std::size_t const tstep = n_ / (5 * ns);
 		TW const          w1c   = tw_[n5];
@@ -1119,7 +1120,7 @@ struct fft_engine {
 	// the precomputed p x p DFT matrix (no modulo in the inner loops).
 	template<bool Batched, bool Backward, class T>
 	void stage_generic_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, TW const* wmat, std::size_t batch, std::size_t in_elem, std::size_t out_elem, T* arena, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const nr    = n_ / rr;
 		std::size_t const tstep = n_ / (rr * ns);
 		T* const          x     = xbuf_ptr(arena);
@@ -1168,7 +1169,7 @@ struct fft_engine {
 	// is copied back in one contiguous block.
 	template<bool Batched, bool Backward, class T>
 	void stage_subplan_(T const* BOOST_MULTI_FFT_RESTRICT a, T* BOOST_MULTI_FFT_RESTRICT b, std::size_t ns, std::size_t rr, fft_engine const& sub, std::size_t batch, std::size_t in_elem, std::size_t out_elem, T* arena, std::size_t in_batch = 1, std::size_t out_batch = 1) const {
-		auto const [m, sa, sb, ja, jb] = fold_strides<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
+		auto const [m, sa, sb, ja, jb] = fold_strides_<Batched>(batch, in_elem, out_elem, in_batch, out_batch);
 		std::size_t const nr    = n_ / rr;
 		std::size_t const tstep = n_ / (rr * ns);
 		std::size_t const m2    = ns * m;
@@ -1599,12 +1600,20 @@ auto fft_layout_from(std::array<std::size_t, static_cast<std::size_t>(D)> const&
 	if constexpr(D == 0) {
 		return multi::layout_t<0>{};
 	} else {
-		std::array<std::size_t, static_cast<std::size_t>(D) - 1>    sub_ext{};
-		std::array<std::ptrdiff_t, static_cast<std::size_t>(D) - 1> sub_str{};
-		if constexpr(D > 1) {
-			std::copy(ext.begin() + 1, ext.end(), sub_ext.begin());
-			std::copy(str.begin() + 1, str.end(), sub_str.begin());
-		}
+		auto const sub_ext = [&] {
+			std::array<std::size_t, static_cast<std::size_t>(D) - 1> tmp{};
+			if constexpr(D > 1) {
+				std::copy(ext.begin() + 1, ext.end(), tmp.begin());
+			}
+			return tmp;
+		}();
+		auto const sub_str = [&] {
+			std::array<std::ptrdiff_t, static_cast<std::size_t>(D) - 1> tmp{};
+			if constexpr(D > 1) {
+				std::copy(str.begin() + 1, str.end(), tmp.begin());
+			}
+			return tmp;
+		}();
 		return multi::layout_t<D>{
 			fft_layout_from<D - 1>(sub_ext, sub_str),
 			str[0], 0,
@@ -1930,7 +1939,7 @@ class fft_plan {
 	// `std::pmr::monotonic_buffer_resource` the caller owns and reuses
 	// across calls); this class does not implement or ship one itself.
 	template<class Cursor, class Allocator = std::allocator<typename std::decay_t<Cursor>::element>, std::enable_if_t<detail::fft_is_cursor_like<std::decay_t<Cursor>>::value, int> = 0>  // NOLINT(modernize-use-constraints) C++17
-	auto execute(Cursor const& home, Allocator alloc = Allocator{}) const -> Cursor {
+	auto execute(Cursor const& home, Allocator const& alloc = Allocator{}) const -> Cursor {
 		static_assert(detail::fft_cursor_rank<std::decay_t<Cursor>> == D, "cursor rank must match the plan");
 		using T = typename std::decay_t<Cursor>::element;
 		auto                                    view = detail::fft_view_from_cursor<T, D>(home, sizes_);

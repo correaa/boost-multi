@@ -562,7 +562,7 @@ auto main() -> int {  // NOLINT(google-readability-function-size,hicpp-function-
 		std::size_t dealloc_count = 0;
 		std::size_t last_n        = 0;
 
-		counting_allocator<complex> const alloc{&alloc_count, &dealloc_count, &last_n};
+		counting_allocator<complex> const alloc{.alloc_count = &alloc_count, .dealloc_count = &dealloc_count, .last_alloc_n = &last_n};
 
 		multi::array<complex, 1> arr(multi::extents_t<1>{1024}, complex{1.0, 0.0});
 		multi::fft_plan<1> const plan{arr.sizes(), multi::fft_forward};
@@ -660,7 +660,7 @@ auto main() -> int {  // NOLINT(google-readability-function-size,hicpp-function-
 			multi::array<complex, 2> arr({5, 7}, complex{});
 			for(int i = 0; i != 5; ++i) {
 				for(int j = 0; j != 7; ++j) {
-					arr[i][j] = complex{static_cast<double>(i * 2 - j), static_cast<double>(j % 4)};
+					arr[i][j] = complex{static_cast<double>((i * 2) - j), static_cast<double>(j % 4)};
 				}
 			}
 			auto                     looped = arr;
@@ -767,7 +767,7 @@ auto main() -> int {  // NOLINT(google-readability-function-size,hicpp-function-
 			multi::array<complex, 2> arr({nn, nn}, complex{});
 			for(int i = 0; i != nn; ++i) {
 				for(int j = 0; j != nn; ++j) {
-					arr[i][j] = complex{static_cast<double>(i * i - j), static_cast<double>(i - (j * j))};
+					arr[i][j] = complex{static_cast<double>((i * i) - j), static_cast<double>(i - (j * j))};
 				}
 			}
 			auto reference = arr;
