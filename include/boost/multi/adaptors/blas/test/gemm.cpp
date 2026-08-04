@@ -1825,7 +1825,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		static constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) BLAS naming
 
-		auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {  // NOLINT(cert-msc32-c, cert-msc51-cpp, readability-identifier-length) for test purposes
+		auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {  // NOLINT(bugprone-random-generator-seed,cert-msc32-c,cert-msc51-cpp,readability-identifier-length) for test purposes
 			return d(g) + d(g) * I;
 		};
 
