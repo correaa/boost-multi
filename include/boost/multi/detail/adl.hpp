@@ -14,9 +14,9 @@
 	defined(__HIPCC__) ||               /* hipcc generic                                */                                      \
 	defined(__HIP__) ||                 /* clang --offload=hip                         */                                       \
 	defined(THRUST_DEVICE_SYSTEM) ||    /* explicitly configured by CMake (e.g. NVIDIA thrust_create_target propagates this) */ \
-	defined(BOOST_MULTI_HAS_THRUST) ||  /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */ \
-	(defined(__has_include) &&          /* __has_include-based auto-detection:                                              */ \
-	 __has_include(<thrust/version.h>))           /* backed by AMD ROCm                             */
+	defined(BOOST_MULTI_HAS_THRUST)     /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */ \
+	/*|| (defined(__has_include) &&*/          /* __has_include-based auto-detection:                                              */ \
+	/*__has_include(<thrust/version.h>))*/           /* backed by AMD ROCm                             */
 #define BOOST_MULTI_ADL_HAS_THRUST 1
 #endif
 
