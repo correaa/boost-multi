@@ -19,7 +19,7 @@ _© Alfredo A. Correa, 2018–2026_
 ## Why Boost.Multi?
 
 * **Generic element type and dimensionality**
-* **Natural multidimensional access:** write `A[i][j]` and iterate over rows or elements.
+* **Natural multidimensional access:** write `A[i][j]...` or iterate recursively over rows, subarrays or elements.
 * **Composable subarray views:** slice, transpo
 se, rotate indices, and broadcast arrays without copying their elements.
 * **Interoperability:** use standard algorithms (iterators and ranges), allocators, and legacy libraries for strided arrays (BLAS, FFTW, CUDA, HIP, MPI, etc.)
