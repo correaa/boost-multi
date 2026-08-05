@@ -910,7 +910,7 @@ struct                                                                          
 			return *this;
 		}
 		assert(other.extents() == this->extents());
-		if(other.data_elements()) {
+		if(this->data_elements()) {
 			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		}
 		return *this;
