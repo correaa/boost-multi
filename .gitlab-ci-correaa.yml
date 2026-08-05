@@ -199,23 +199,6 @@ g++ cppcheck cpplint memcheck lto:
     - (ctest --test-dir ./build --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/.valgrind-suppressions -T memcheck) || (cat $PWD/build/Testing/Temporary/MemoryChecker.*.log && exit 666)
   needs: ["g++"]
 
-# g++-15 release with debug:
-#   stage: build
-#   image: gcc:15           # official image; or debian:unstable + g++-15
-#   interruptible: true
-#   allow_failure: false    # drop once the new diagnostics are triaged
-#   tags:
-#     - docker
-#     - non-shared
-#   script:
-#     - apt-get -qq update
-#     - apt-get -qq install --no-install-recommends -y --quiet ninja-build cmake libboost-dev libboost-serialization-dev
-#     - g++ --version
-#     - cmake . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
-#     - cmake --build build
-#     - ctest --test-dir build --parallel 2 --output-on-failure
-#   needs: ["g++"]
-
 # g++-16 release with debug:
 #   stage: build
 #   image: gcc:16           # official image; or debian:unstable + g++-15
@@ -232,23 +215,6 @@ g++ cppcheck cpplint memcheck lto:
 #     - cmake --build build
 #     - ctest --test-dir build --parallel 2 --output-on-failure
 #   needs: ["g++"]
-
-g++-17 release with debug:
-  stage: build
-  image: gcc:17           # official image; or debian:unstable + g++-15
-  interruptible: true
-  allow_failure: true    # drop once the new diagnostics are triaged
-  tags:
-    - docker
-    - non-shared
-  script:
-    - apt-get -qq update
-    - apt-get -qq install --no-install-recommends -y --quiet ninja-build cmake libboost-dev libboost-serialization-dev
-    - g++ --version
-    - cmake . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
-    - cmake --build build
-    - ctest --test-dir build --parallel 2 --output-on-failure
-  needs: ["g++"]
 
 g++ thrust:
   stage: build
@@ -308,6 +274,25 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
 g++-unstable c++26:
   stage: build
   image: debian:unstable
+  tags:
+    - non-shared
+    - docker
+  allow_failure: true  # C++26 is a moving target
+  only:
+    refs:
+      - develop
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
+    - mkdir build && cd build
+    - g++ --version
+    - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-std=c++2c" -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["g++-unstable c++23 par"]
+
+g++-stable c++26:
+  stage: build
+  image: debian:stable
   tags:
     - non-shared
     - docker
