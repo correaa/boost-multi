@@ -11,6 +11,8 @@
 
 #include "boost/multi/utility.hpp"
 
+#include <iterator>  // std::contiguous_iterator
+
 namespace boost::multi::blas {
 
 using core::gemv;
@@ -117,10 +119,12 @@ class gemv_iterator {
 	template<class It1DOut>
 	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
 		#ifdef __cpp_lib_start_lifetime_as
-		auto count = last - first;
-		// or use start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), count); since this is always called on contiguos iterators
-		for(; count > 0; ++result, --count) {
-			std::start_lifetime_as<typename It1DOut::value_type>(std::addressof(*result));
+		if constexpr(std::contiguous_iterator<It1DOut>) {  // start_lifetime_as_array needs one contiguous block of (last - first) elements; fall back to per-element otherwise
+			std::start_lifetime_as_array<typename It1DOut::value_type>(std::addressof(*result), last - first);
+		} else {
+			for(auto it = result, count = last - first; count > 0; ++it, --count) {  // NOLINT(altera-unroll-loops) loop over a local copy: `result` itself must stay at its original position for the copy() call below
+				std::start_lifetime_as<typename It1DOut::value_type>(std::addressof(*it));
+			}
 		}
 		#endif
 		return copy(first, last, result);
