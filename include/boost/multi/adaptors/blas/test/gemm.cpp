@@ -11,7 +11,6 @@
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
 #include <boost/multi/array.hpp>                     // for layout_t, array
 
-
 #include <algorithm>    // for generate
 #include <cmath>        // for abs  // IWYU pragma: keep
 #include <complex>      // for complex, operator*
@@ -27,7 +26,8 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape,google-readability-function-size,hicpp-function-size,readability-function-size)
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-exception-escape,google-readability-function-size,hicpp-function-size,readability-function-size)
+auto main() -> int {
 #if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 1)
 	// adaptor_blas_double_100x1_1x1_T_sub
 	{
@@ -965,24 +965,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{8.0}
 		};
 
-#if 0  // TODO(correaa) c is declared {1, 2} (1 row); ~c is then a 2-row view whose leading dimension  // NOLINT(readability-avoid-unconditional-preprocessor-if)
-       // is stuck at the original 1-element row stride. BLAS requires ldc >= max(1, m) = 2 here, so
-       // this throws std::logic_error("failed 'ldc >= max(1, m)' ... ldc = 1 and m = 2") at runtime.
-       // Structurally unsatisfiable from a 1-row base array once m > 1; not circle-specific. Use
-       // c({2, 1}) directly (see below) instead of c({1, 2}) + ~c.
-		{
-			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm(1.0, a, b, 0.0, ~c);  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( std::abs( ((~c)[0][0]) - (82.0) ) < 1e-12 );
-			BOOST_TEST( std::abs( ((~c)[1][0]) - (101.0) ) < 1e-12 );
-		}
-		{
-			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(~c));  // c⸆=ab, c=b⸆a⸆
-			BOOST_TEST( std::abs( ((~c)[0][0]) - (82.0) ) < 1e-12 );
-			BOOST_TEST( std::abs( ((~c)[1][0]) - (101.0) ) < 1e-12 );
-		}
-#endif
 		{
 			multi::array<double, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, b, 0.0, c);  // c⸆=ab, c=b⸆a⸆
@@ -995,24 +977,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( ((~c)[0][1]) - (101.0) ) < 1e-12 );
 			BOOST_TEST( std::abs( (c[1][0]) - (101.0) ) < 1e-12 );
 		}
-#if 0  // TODO(correaa) same ldc>=max(1,m) issue as above: c({1, 2}) + ~c can't represent a 2-row  // NOLINT(readability-avoid-unconditional-preprocessor-if)
-       // output. See TODO above.
-		{
-			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
-			auto                    ar = +~a;
-
-			blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=ab, c⸆=b⸆a⸆
-			BOOST_TEST( std::abs( (c[0][1]) - (101.0) ) < 1e-12 );
-		}
-		{
-			multi::array<double, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
-
-			auto ar = +~a;
-
-			blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=ab, c⸆=b⸆a⸆
-			BOOST_TEST( std::abs( (c[0][1]) - (101.0) ) < 1e-12 );
-		}
-#endif
 	}
 #endif
 
