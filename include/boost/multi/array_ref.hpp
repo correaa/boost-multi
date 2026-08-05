@@ -2383,7 +2383,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		std::enable_if_t<!has_elements<Range>::value, int> = 0>                                                      // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(Range const& rng) & -> subarray& {                                                      // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));                                   // TODO(correaa) or use std::cmp_equal?
-		adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
+		if(adl_size(rng)) { adl_copy_n(adl_begin(rng), adl_size(rng), this->begin()); }
 		return *this;
 	}
 
