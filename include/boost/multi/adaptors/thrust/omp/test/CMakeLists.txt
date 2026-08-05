@@ -54,7 +54,7 @@ else()
         thrust_create_target(ThrustCPP2 DEVICE CPP)
 
         add_executable(omp.cpp.x omp.cpp)
-
+        target_compile_options(omp.cpp.x PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/Zc:preprocessor>")
         target_include_directories(omp.cpp.x SYSTEM PUBLIC
             ${_THRUST_INCLUDE_DIR}  # needs this to include thrust as an -isystem/`/external:I` header
             "${cccl-cmake_SOURCE_DIR}/libcudacxx/include"
