@@ -1286,8 +1286,8 @@ circle-dev:
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang cmake g++-11 gzip  libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar tree wget libpython3-dev
     - mkdir -p build_latest ; cd build_latest
-    - wget https://www.circle-lang.org/linux/circle_x86_64.tgz --no-verbose
-    - tar -zxvf circle_x86_64.tgz
+    - wget https://www.circle-lang.org/linux/circle_linux_x86_64.tgz --no-verbose
+    - tar -zxvf circle_linux_x86_64.tgz
     - tree -L 4
     - cd ..
     - ./build_latest/circle --version
