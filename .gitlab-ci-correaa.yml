@@ -92,6 +92,23 @@ g++-15 release with debug:
     - ctest --test-dir build --parallel 2 --output-on-failure
   needs: ["g++"]
 
+g++-16 release with debug:
+  stage: build
+  image: gcc:16           # official image; or debian:unstable + g++-15
+  interruptible: true
+  allow_failure: false    # drop once the new diagnostics are triaged
+  tags:
+    - docker
+    - non-shared
+  script:
+    - apt-get -qq update
+    - apt-get -qq install --no-install-recommends -y --quiet ninja-build cmake libboost-dev libboost-serialization-dev
+    - g++ --version
+    - cmake . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
+    - cmake --build build
+    - ctest --test-dir build --parallel 2 --output-on-failure
+  needs: ["g++"]
+
 g++-omp-thrust:
   stage: build
   #only:
