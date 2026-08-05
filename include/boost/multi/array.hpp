@@ -939,7 +939,7 @@ struct                                                                          
 	template<class TT, class... As>  // , std::enable_if_t<std::is_assignable_v<T, TT>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
 	auto operator=(dynamic_array<TT, D, As...> const& other) & -> dynamic_array& {
 		assert(extents(other) == dynamic_array::extents());
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
 		return *this;
 	}
 
@@ -1424,11 +1424,11 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	friend constexpr auto unrotated(dynamic_array const& self) -> decltype(auto) { return self.unrotated(); }
 
 	constexpr auto operator=(dynamic_array const& other) -> dynamic_array& {
-		assert(extents(other) == dynamic_array::extents());
+		assert(this->extents() == other.extents());
 		if(this == &other) {
 			return *this;
 		}  // lints (cert-oop54-cpp) : handle self-assignment properly
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
 		return *this;
 	}
 
@@ -1455,8 +1455,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename dynamic_array::element_ref, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator=(dynamic_array<TT, 0, As...> const& other) & -> dynamic_array& {
-		assert(extents(other) == dynamic_array::extents());
-		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		assert(this->extents() == other.extents());
+		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
 		return *this;
 	}
 
@@ -1751,7 +1751,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
-			if(!this->is_empty()) { dynamic_::operator=(other); }
+			dynamic_::operator=(other);
 		} else {
 			clear();
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
@@ -1769,7 +1769,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 
 	template<typename OtherT, typename OtherEP, class OtherLayout>
 	auto operator=(multi::const_subarray<OtherT, D, OtherEP, OtherLayout> const& other) -> array& {
-		if(array::extensions() == other.extensions()) {
+		if(this->extents() == other.extents()) {
 			dynamic_::operator=(other);  // TODO(correaa) : protect for self assigment
 		} else {
 			operator=(array{other});
