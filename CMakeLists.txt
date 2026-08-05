@@ -75,6 +75,14 @@ set_target_properties(
 
 target_include_directories(multi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
+find_package(Thrust CONFIG)
+
+if(Thrust_FOUND)
+  thrust_create_target(ThrustCPP DEVICE CPP)
+  target_link_libraries(multi INTERFACE ThrustCPP)  # SYSTEM has no effect here
+  target_compile_definitions(multi INTERFACE BOOST_MULTI_HAS_THRUST)
+endif()
+
 # Documentation driver for MrDocs — configured but not built by default.
 # Produces a compile_commands.json entry for the public headers when
 # cmake is invoked with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON.
