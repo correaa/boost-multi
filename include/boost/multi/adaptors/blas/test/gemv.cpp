@@ -25,6 +25,7 @@
 #include <type_traits>  // for is_same_v
 #include <utility>      // for move, forward
 // IWYU pragma: no_include <stdlib.h>       // for abs
+#include <iostream>
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -133,7 +134,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1> y = blas::gemv(1.0, a, x);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001);
+			std::cout << "y[1] = " << y[1] << '\n';
+			BOOST_TEST( std::abs(y[1] - 91.3) < 0.00001 );
 		}
 		{
 			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
