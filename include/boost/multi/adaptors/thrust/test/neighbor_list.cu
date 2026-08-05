@@ -9,6 +9,8 @@
 #include <thrust/execution_policy.h>  // Include for execution policies
 #include <thrust/transform_reduce.h>  // for thrust::transform_reduce
 
+#include <thrust/system/cuda/execution_policy.h>  // for thrust::cuda::par
+
 #include <boost/core/lightweight_test.hpp>
 
 // #include <execution>  // for std::execution::par, doesn't work on gcc 13.3 and nvcc 12.0

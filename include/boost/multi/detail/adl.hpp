@@ -721,10 +721,13 @@ class adl_alloc_uninitialized_copy_n_t {
  template<class Alloc, class... As> constexpr auto _(priority<1> /**/, Alloc&& /*alloc*/, As&&... args) const BOOST_MULTI_DECLRET(adl_uninitialized_copy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	 template<class... As>
 	 constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRET(alloc_uninitialized_copy_n(std::forward<As>(args)...))
-	 //  template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... args) const BOOST_MULTI_DECLRET(                xtd::alloc_uninitialized_copy_n(std::forward<As>(args)...))
-	 // #if defined(__NVCC__)
-	 //  there is no thrust alloc uninitialized copy
-	 // #endif
+	 // priority<2>'s unqualified `alloc_uninitialized_copy_n` is not ADL-reachable for e.g. (std::allocator<T>&, thrust::pointer<...>, Size, T*):
+	 // none of the argument types live in namespace `xtd`. Explicitly route to it so the `std::allocator` overload (which forces the
+	 // host-only std::uninitialized_copy_n path) is tried before the allocator-oblivious thrust dispatch at priority<1>. Without this,
+	 // copying a device range into a std::allocator-backed destination either fails to compile (THRUST_DEVICE_SYSTEM_CPP) or silently
+	 // dispatches a device kernel that writes into host memory (THRUST_DEVICE_SYSTEM_CUDA), corrupting memory at runtime.
+	 template<class... As>
+	 constexpr auto _(priority<3> /**/, As&&... args) const BOOST_MULTI_DECLRET(xtd::alloc_uninitialized_copy_n(std::forward<As>(args)...))
 	 template<class T, class... As>
 	 constexpr auto _(priority<5> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::alloc_uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).alloc_uninitialized_copy_n(std::forward<As>(args)...))
 

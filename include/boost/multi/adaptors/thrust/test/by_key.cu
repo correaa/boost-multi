@@ -11,6 +11,8 @@
 #include <thrust/reduce.h>
 #include <thrust/iterator/discard_iterator.h>
 
+#include <thrust/system/cuda/execution_policy.h>  // for thrust::cuda::par
+
 namespace multi = boost::multi;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)

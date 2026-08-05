@@ -8,6 +8,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <thrust/system/cuda/execution_policy.h>  // for thrust::cuda::par
+
 // GCC 12 + nvcc < 12.1 incompatibility: avx512fp16intrin.h uses _Float16 which older nvcc doesn't support
 #if defined(TBB_FOUND) && !defined(__NVCC__)
 #if !defined(__clang__)

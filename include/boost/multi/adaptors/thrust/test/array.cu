@@ -15,6 +15,8 @@
 #include <thrust/uninitialized_copy.h>
 #include <thrust/universal_allocator.h>
 
+#include <thrust/system/cuda/execution_policy.h>  // for thrust::cuda::par
+
 #include <boost/core/lightweight_test.hpp>
 
 // #include <boost/timer/timer.hpp>

@@ -100,6 +100,26 @@ endforeach()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
 
+# `multi` links `ThrustCPP` as its INTERFACE Thrust target, which leaks
+# `-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CPP` into every test here. That
+# default is harmless for tests that only pass a *pointer* to a thrust
+# algorithm (a raw `thrust::device_ptr`/`thrust::pointer` resolves to the CUDA
+# backend via its own tag regardless of the default system), but fill_async.cu
+# runs `thrust::fill` with an explicit `thrust::cuda::par_nosync` policy over
+# `multi`'s own `array_iterator`, and with the default device system set to
+# CPP, dispatch silently falls through to Thrust's generic "unimplemented for
+# this system" stub instead of the real `cuda_cub` implementation. Can't just
+# additionally `target_link_libraries(... ThrustCUDA)`: CMake's
+# COMPATIBLE_INTERFACE_STRING check on THRUST_DEVICE errors out because
+# `multi` already transitively carries ThrustCPP. Override the macro directly
+# instead, undefining before redefining so it isn't flagged as a
+# macro-redefinition warning (fatal under -Werror all-warnings).
+target_compile_options(fill_async.cu.x PRIVATE
+	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
+		-UTHRUST_DEVICE_SYSTEM -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA
+	>
+)
+
 # target_compile_options(array.cu.x PRIVATE       $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > --extended-lambda >)
 # target_compile_options(by_key.cu.x PRIVATE      $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:$<$<CXX_COMPILER_ID:MSVC>:-Xcompiler=/wd4668 -Xcompiler=/wd4664 -Xcompiler=/wd4464 > >)
 # target_compile_options(run_reduce.cu.x PRIVATE  $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:--extended-lambda >)
