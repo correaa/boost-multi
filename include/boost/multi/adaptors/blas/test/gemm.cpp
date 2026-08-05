@@ -28,7 +28,6 @@ namespace blas  = multi::blas;
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-exception-escape,google-readability-function-size,hicpp-function-size,readability-function-size)
 auto main() -> int {
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 1)
 	// adaptor_blas_double_100x1_1x1_T_sub
 	{
 		namespace blas = multi::blas;
@@ -41,9 +40,7 @@ auto main() -> int {
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::T(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 2)
 	// adaptor_blas_double_100x1_1x1_H_sub
 	{
 		multi::array<double, 2> A({100, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -54,9 +51,7 @@ auto main() -> int {
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 3)
 	// adaptor_blas_double_100x1_1x1_H_sub_6
 	{
 		multi::array<double, 2> A({100, 4}, 2.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -67,9 +62,7 @@ auto main() -> int {
 		blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({0, 1}, {0, 1}), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (6.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 4)
 	// adaptor_blas_double_100x1_1x1_H_copy
 	{
 		multi::array<double, 2> A({100, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -78,9 +71,7 @@ auto main() -> int {
 		auto C = +blas::gemm(1.0, A({0, 100}, {1, 2}), blas::H(B)({2, 3}, {2, 3}));  // c=ab, c⸆=b⸆a⸆  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 5)
 	// adaptor_blas_complex_100x1_1x1
 	{
 		using complex = std::complex<double>;
@@ -92,9 +83,7 @@ auto main() -> int {
 		blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 6)
 	// adaptor_blas_complex_100x1_1x1_T
 	{
 		using complex = std::complex<double>;
@@ -106,9 +95,7 @@ auto main() -> int {
 		blas::gemm(complex{1.0, 0.0}, A, blas::T(B), complex{0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 7)
 	// adaptor_blas_complex_100x1_1x1_H
 	{
 		using complex = std::complex<double>;                    // complex const I{0, 1};  // NOLINT(readability-identifier-length) BLAS naming
@@ -120,9 +107,7 @@ auto main() -> int {
 		blas::gemm({1.0, 0.0}, A, blas::H(B), {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 8)
 	// adaptor_blas_double_100x1_1x1
 	{
 		using complex = std::complex<double>;
@@ -134,9 +119,7 @@ auto main() -> int {
 		blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 9)
 	// adaptor_blas_double_100x1_1x1_T
 	{
 		multi::array<double, 2> const A({100, 1}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -147,9 +130,7 @@ auto main() -> int {
 		blas::gemm(1.0, A, blas::T(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 10)
 	// adaptor_blas_double_100x1_1x1_H
 	{
 		multi::array<double, 2> const A({100, 1}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -160,9 +141,7 @@ auto main() -> int {
 		blas::gemm(1.0, A, blas::H(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( std::abs( (C[99][0]) - (1.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 11)
 	// multi_blas_gemm_square_real
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -268,9 +247,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[2][1]) - (100.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 12)
 	// multi_adaptors_blas_gemm_real_square
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -362,9 +339,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (117.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 13)
 	// multi_adaptors_blas_gemm_real_nonsquare
 	{
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -390,9 +365,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( c[1][2] - 17.0 ) < 1e-10 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 14)
 	// multi_adaptors_blas_gemm_real_nonsquare_automatic
 	{
 		namespace blas = multi::blas;
@@ -436,9 +409,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( c[1][2] - 5.3 ) < 0.00001 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 15)
 	// multi_blas_gemm_nh
 	{
 		using complex = std::complex<double>;
@@ -489,9 +460,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (7. + 10.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 16)
 #ifdef CUDA_FOUND
 #include <thrust/complex.h>
 	// multi_blas_gemm_nh_thrust
@@ -537,9 +506,7 @@ auto main() -> int {
 		}
 	}
 #endif
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 17)
 	// multi_blas_gemm_elongated
 	{
 		using complex = std::complex<double>;
@@ -558,9 +525,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (87.0 + 0.0*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 18)
 	// multi_adaptors_blas_gemm_complex_3x1_3x1_bisbis
 	{
 		using complex = std::complex<double>;
@@ -588,9 +553,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (84.0 + 7.0*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 19)
 	// multi_adaptors_blas_gemm_real_empty
 	{
 		multi::array<double, 2> const a({0, 5});  // NOLINT(readability-identifier-length) BLAS naming
@@ -611,9 +574,7 @@ auto main() -> int {
 			blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 20)
 	// multi_adaptors_blas_gemm_real_nonsquare2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -670,9 +631,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 21)
 	// multi_adaptors_blas_gemm_real_2x2_2x2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -700,9 +659,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (61.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 22)
 	// multi_adaptors_blas_gemm_real_2x3_3x2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -732,9 +689,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs(c[0][1] - 101.0) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 23)
 	// multi_adaptors_blas_gemm_real_1x3_3x2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -784,9 +739,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 24)
 	// multi_adaptors_blas_gemm_complexreal_1x3_3x2
 	{
 		using complex                    = std::complex<double>;
@@ -830,9 +783,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( c[1][0] - 184.0 ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 25)
 	// multi_adaptors_blas_gemm_real_1x3_part_3x2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -869,9 +820,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 26)
 	// multi_adaptors_blas_gemm_complexreal_1x3_part_3x2
 	{
 		using complex                    = std::complex<double>;
@@ -909,9 +858,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 27)
 	// multi_adaptors_blas_gemm_real_2x3_3x1
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -950,9 +897,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 28)
 	// multi_adaptors_blas_gemm_real_2x3_3x1_bis
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -978,9 +923,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (101.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 29)
 	// multi_adaptors_blas_gemm_real_1x3_3x1
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -1051,9 +994,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 30)
 	// multi_adaptors_blas_gemm_complex_square
 	{
 		using complex = std::complex<double>;
@@ -1117,7 +1058,6 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (109.+68.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
 #if 0  // TODO(correaa) gemm_n(ctxt, ...) below hits context::operator-> in gemm.hpp (~L55-80), which  // NOLINT(readability-avoid-unconditional-preprocessor-if)
        // doesn't exist -- every other call site in this file uses gemm_n(&ctxt, ...) (pointer) instead.
@@ -1198,7 +1138,6 @@ auto main() -> int {
 	}
 #endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 32)
 	// multi_adaptors_blas_gemm_complex_hermitized_square
 	{
 		using complex = std::complex<double>;
@@ -1282,9 +1221,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (109. - 68.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 33)
 	// multi_adaptors_blas_gemm_complex_3x1_3x1
 	{
 		using complex = std::complex<double>;
@@ -1338,9 +1275,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (80.+53.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 34)
 	// multi_adaptors_blas_gemm_complex_1x3_3x2
 	{
 		using complex = std::complex<double>;
@@ -1376,9 +1311,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 35)
 	// multi_adaptors_blas_gemm_complex_3x1_3x2
 	{
 		using complex = std::complex<double>;
@@ -1404,9 +1337,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (28.+3.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 36)
 	// multi_adaptors_blas_gemm_complex_3x2_3x2
 	{
 		using complex = std::complex<double>;
@@ -1432,9 +1363,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 37)
 	// multi_adaptors_blas_gemm_complex_3x2_3x1
 	{
 		using complex = std::complex<double>;
@@ -1460,9 +1389,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (125.-84.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 38)
 	// multi_adaptors_blas_gemm_complex_3x1_3x1_bis
 	{
 		using complex = std::complex<double>;
@@ -1488,9 +1415,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][0]) - (80. - 53.*I) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 39)
 	// multi_adaptors_blas_gemm_real_square_automatic
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
@@ -1530,9 +1455,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][1]) - (154.) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 40)
 	// multi_adaptors_blas_gemm_complex_square_automatic
 	{
 		using complex = std::complex<double>;
@@ -1567,9 +1490,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (complex(178.0, 75.0)) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 41)
 	// multi_adaptors_blas_gemm_complex_square_automatic_part2
 	{
 		using complex = std::complex<double>;
@@ -1621,9 +1542,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (complex(111, 64)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(158.0, -51.0)) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 42)
 	// multi_adaptors_blas_gemm_complex_square_automatic_part3
 	{
 		using complex = std::complex<double>;
@@ -1687,9 +1606,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][0]) - (complex(116, 25)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(186, 65)) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 43)
 	// multi_adaptors_blas_gemm_complex_nonsquare_automatic
 	{
 		using complex = std::complex<double>;
@@ -1715,9 +1632,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (complex(112, 12)) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 44)
 	// multi_adaptors_blas_gemm_realcomplex_complex_nonsquare_automatic
 	{
 		using complex = std::complex<double>;
@@ -1763,9 +1678,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 45)
 	// submatrix_result_issue_97
 	{
 		using complex = std::complex<double>;
@@ -1780,9 +1693,7 @@ auto main() -> int {
 		auto M2 = +M({0, 3}, {0, 1});
 		BOOST_TEST( M2 == M({0, 3}, {0, 1}) );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 46)
 	// blas_context_gemm
 	{
 		using complex = std::complex<double>;
@@ -1799,9 +1710,7 @@ auto main() -> int {
 		std::generate(A.elements().begin(), A.elements().end(), rand);
 		std::generate(B.elements().begin(), B.elements().end(), rand);
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 47)
 	// multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gemm_range
 	{
 		multi::array<double, 2> const a({2, 3}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
@@ -1816,9 +1725,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (0.0) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 48)
 	// multi_adaptors_blas_gemm_complex_nonsquare_hermitized_second_gemm_range
 	{
 		using complex = std::complex<double>;
@@ -1835,9 +1742,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (0.) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 49)
 	// multi_adaptors_blas_gemm_real_nonsquare_hermitized_second
 	{
 		namespace blas = multi::blas;
@@ -1881,9 +1786,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( c[1][2] - 5.3 ) < 0.00001 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 50)
 	// multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_second
 	{
 		namespace blas = multi::blas;
@@ -1928,9 +1831,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( real(c[1][2]) - 5.3 ) < 0.00001 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 51)
 	// blas_gemm_1xn_complex
 	{
 		using complex = std::complex<double>;
@@ -1941,9 +1842,7 @@ auto main() -> int {
 		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(b)), 0.0, begin(c));
 		BOOST_TEST( std::abs( (c[0][0]) - (100.) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 52)
 	// blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case
 	{
 		using complex = std::complex<double>;
@@ -1958,9 +1857,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (c[1][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 		BOOST_TEST( std::abs( (c[2][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 53)
 	// blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case_no_n_interface
 	{
 		using complex = std::complex<double>;
@@ -1974,9 +1871,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (c[1][0]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 		BOOST_TEST( std::abs( (c[0][1]) - ((2. + 1. * I) * std::conj(3. + 4. * I)) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 54)
 	// blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case_complex_value_hermitized
 	{
 		using complex = std::complex<double>;
@@ -1988,9 +1883,7 @@ auto main() -> int {
 		c = blas::gemm(1.0, a, blas::H(b));
 		BOOST_TEST( std::abs( (c[0][0]) - ((2. + 1.*I)*std::conj(3. + 4.*I)) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 55)
 	// blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case_complex_value
 	{
 		using complex = std::complex<double>;
@@ -2002,9 +1895,7 @@ auto main() -> int {
 		c = blas::gemm(1.0, a, b);
 		BOOST_TEST( std::abs( (c[0][0]) - ((2.0 + 1.0*I)*(3. + 4.0*I)) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 56)
 	// blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case
 	{
 		using complex = std::complex<double>;
@@ -2015,9 +1906,7 @@ auto main() -> int {
 		c = blas::gemm(1.0, a, b);
 		BOOST_TEST( std::abs( (c[0][0]) - (6.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 57)
 	// blas_gemm_inq_case  // https://gitlab.com/correaa/boost-multi/-/issues/97
 	{
 		using complex = std::complex<double>;
@@ -2051,9 +1940,7 @@ auto main() -> int {
 			BOOST_TEST( std::abs( ((+blas::gemm(1.0, blas::H(mat2), vec))[0][0]) - ((+blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec))[0][0]) ) < 1e-12 );
 		}
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 58)
 	// blas_issue_109_part2
 	{
 		multi::array<double, 2> const A({3, 4}, 5.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -2066,9 +1953,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 59)
 	// blas_issue_109
 	{
 		multi::array<double, 2> const A({3, 4}, 5.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -2081,9 +1966,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 60)
 	// blas_issue_109_part2_complex
 	{
 		multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -2096,9 +1979,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 61)
 	// blas_issue_109_complex
 	{
 		multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -2111,9 +1992,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][1]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 62)
 	// blas_issue_109_complex_mx2
 	{
 		multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -2125,9 +2004,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 63)
 	// blas_issue_109_complex_mx1
 	{
 		multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
@@ -2139,9 +2016,7 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
 
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 64)
 	// blas_issue_109_double_mx1
 	{
 		multi::array<double, 2> const A({3, 4}, 5.0);  // NOLINT(readability-identifier-length) BLAS naming
@@ -2153,8 +2028,6 @@ auto main() -> int {
 		BOOST_TEST( std::abs( (C[0][0]) - (105.0) ) < 1e-12 );
 		BOOST_TEST( std::abs( (C[1][0]) - (105.0) ) < 1e-12 );
 	}
-#endif
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 65)
 	{
 		float a_data[6]  = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		float b_data[6]  = {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
@@ -2174,8 +2047,6 @@ auto main() -> int {
 
 		BOOST_TEST( C1 == C2 );
 	}
-#endif
-#if !defined(__circle_build__) || (defined(GEMM_BISECT_N) && GEMM_BISECT_N >= 66)
 	{
 		float a_data[6] = {1, 2, 3, 4, 5, 6};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
 		float b_data[6] = {1, 0, 0, 1, 0, 0};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for testing
@@ -2191,7 +2062,6 @@ auto main() -> int {
 
 		multi::blas::gemm(1.0F, A, B, 0.0F, C);
 	}
-#endif
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
