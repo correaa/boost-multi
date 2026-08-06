@@ -506,8 +506,11 @@ mingw-w64:
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1
         -DCMAKE_SYSTEM_NAME=Windows
         -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH
         -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
     - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
   needs: ["g++"]
 
 visual-studio-windows:
