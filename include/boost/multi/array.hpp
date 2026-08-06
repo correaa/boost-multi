@@ -176,7 +176,7 @@ struct                                                                          
 		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
   private:
-	auto uninitialized_value_construct() {  // NOLINT(remove-protected-alloc-traits) make private name
+	auto uninitialized_value_construct() {  // NOLINT(readability-identifier-naming) make private name
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
