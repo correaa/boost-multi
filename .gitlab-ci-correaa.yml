@@ -513,6 +513,62 @@ mingw-w64:
     - ctest --output-on-failure
   needs: ["g++"]
 
+emscripten:
+  stage: build
+  image: debian:latest
+  allow_failure: true  # new job: first pass
+  # only:
+  #   refs:
+  #     - develop
+  tags:
+    - non-shared
+    - docker
+  cache: []
+  script:
+    - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates python3 cmake ninja-build nodejs xz-utils libboost-dev make
+    - git clone --depth 1 https://github.com/emscripten-core/emsdk.git /opt/emsdk
+    - /opt/emsdk/emsdk install latest
+    - /opt/emsdk/emsdk activate latest
+    - source /opt/emsdk/emsdk_env.sh
+    # git was only needed to fetch emsdk itself. Left in place, it lets the thrust/omp adaptor's CMake
+    # fall back to fetching NVIDIA's CCCL/Thrust from GitHub -- untested under Emscripten and out of
+    # scope here (the BLAS/LAPACK/FFTW/CUDA adaptors need native libraries WASM doesn't have anyway).
+    # Removing it makes that one subdirectory gracefully skip, the same degradation path used elsewhere
+    # in this file when an optional dependency isn't present.
+    - apt-get -qq remove -y git
+    - em++ --version
+    # Debian's libboost-dev puts headers straight into /usr/include; same host-header-isolation
+    # workaround as the mingw-w64/msys2 jobs, needed so find_package(Boost CONFIG) doesn't leak the
+    # rest of /usr/include into Emscripten's own sysroot-based include search.
+    - mkdir -p /opt/boost-only
+    - cp -r /usr/include/boost /opt/boost-only/
+    - |
+      cat > /opt/boost-only/BoostConfig.cmake << 'EOF'
+      set(Boost_FOUND TRUE)
+      set(Boost_VERSION 1.83.0)
+      set(Boost_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}")
+      if(NOT TARGET Boost::headers)
+        add_library(Boost::headers INTERFACE IMPORTED)
+        set_target_properties(Boost::headers PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}")
+      endif()
+      if(NOT TARGET Boost::boost)
+        add_library(Boost::boost ALIAS Boost::headers)
+      endif()
+      EOF
+    - emcmake cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DDISABLE_MPI=1 -DCMAKE_FIND_ROOT_PATH=/opt/boost-only
+    - cmake --build build || cmake --build build --parallel 1 --verbose
+    # Run directly via node rather than `ctest`: CMake's automatic CROSSCOMPILING_EMULATOR wrapping of
+    # add_test(... COMMAND $<TARGET_FILE:tgt>) did not reliably apply for this toolchain in testing, so
+    # drive execution explicitly instead of depending on that.
+    - |
+      fail=0
+      for js in build/test/*.cpp.x.js; do
+        echo "--- $js ---"
+        node "$js" || fail=1
+      done
+      exit $fail
+  needs: ["g++"]
+
 visual-studio-windows:
   stage: build
   only:
