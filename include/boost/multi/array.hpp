@@ -500,10 +500,10 @@ struct                                                                          
 		}
 	}
 
-	template<class... Args>
-	static auto from_extensions(Args... exts) {
-		return dynamic_array(::boost::multi::extents_t<D>(exts...));
-	}
+	// template<class... Args>
+	// static auto from_extents(Args... exts) {
+	// 	return dynamic_array(::boost::multi::extents_t<D>(exts...));
+	// }
 
 	explicit dynamic_array(::boost::multi::extents_t<D> const& exts)
 	: dynamic_array(exts, allocator_type{}) {}

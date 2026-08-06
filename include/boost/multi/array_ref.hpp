@@ -1738,6 +1738,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	/// yields a view of the array where the indices are rotated (to the left) (e.g. `a.rotated()[i][j][k] == a[j][k][i]`)
 	BOOST_MULTI_HD constexpr auto rotated() const& -> const_subarray { return rotated_aux_(); }
+	/// yields a view of the array where the indices are unrotated (to the right, opposite to `.rotated()`) (e.g. `a.unrotated()[i][j][k]== a[k][i][j]`, `a.rotated().unrotated()` is the same as `a`)
 	BOOST_MULTI_HD constexpr auto unrotated() const& -> const_subarray { return unrotated_aux_(); }
 
  private:
@@ -3867,7 +3868,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
-	// using element_type = typename array_ref::element;
+	/// conversion to `std::span` (`D == 1` only)
 	template<class U = typename array_ref::element, std::enable_if_t<std::is_convertible_v<typename array_ref::element_const_ptr, U const*> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	constexpr explicit operator std::span<U const>() const { return std::span<U const>(this->data_elements(), this->size()); }
 
