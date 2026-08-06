@@ -120,7 +120,7 @@ class gemv_iterator {
 	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
 		auto ret = copy(first, last, result);
 		#ifdef __cpp_lib_start_lifetime_as
-		for(auto it = first; it != ret; ++it) {  // NOLINT(altera-unroll-loops) loop over a local copy: `result` itself must stay at its original position for the copy() call below
+		for(auto it = result; it != ret; ++it) {
 			std::start_lifetime_as<typename It1DOut::value_type>(std::addressof(*it));
 		}
 		#endif
