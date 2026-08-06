@@ -514,9 +514,9 @@ emscripten:
   stage: build
   image: debian:latest
   allow_failure: true  # new job: first pass
-  only:
-    refs:
-      - develop
+  # only:
+  #   refs:
+  #     - develop
   tags:
     - non-shared
     - docker
