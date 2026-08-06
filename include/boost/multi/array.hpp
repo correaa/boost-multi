@@ -175,8 +175,10 @@ struct                                                                          
 		T, D,
 		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
-	using alloc_traits = typename multi::allocator_traits<allocator_type>;
+//  private:
+// 	// using alloc_traits = typename multi::allocator_traits<allocator_type>;
 
+//  protected:
 	auto uninitialized_value_construct() {
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
