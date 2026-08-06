@@ -263,7 +263,7 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
     refs:
       - develop
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev libtbb-dev
+    - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev libmpich-dev libtbb-dev
     - mkdir build && cd build
     - g++ --version
     - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr" -DDISABLE_MPI=1
