@@ -297,8 +297,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::indexes;
 
-	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
-	static constexpr auto num_dimensions() { return dimensionality; }
+	// [[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
+	// static constexpr auto num_dimensions() { return dimensionality; }
 
  private:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
