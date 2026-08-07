@@ -13,7 +13,7 @@ endif::[]
 
 :idprefix: intro_
 
-_Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
+_Multi_ is a modern pass:[C++] library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
 
 NOTE: This library is proposed for inclusion in Boost and is currently under Boost review, under the name *Boost.Multi*. It is already usable as a standalone, header-only library (see below for requirements)
 
@@ -35,7 +35,7 @@ Here are 3 examples of arrays of different dimensionalities:
 ----
 Note that the depicted 3D case has two "planes", the first index selects a plane (plane `0` or `1`).
 
-These depicted 1D, 2D, and 3D arrays contain single characters and can be defined as C++ objects in this library:
+These depicted 1D, 2D, and 3D arrays contain single characters and can be defined as pass:[C++] objects in this library:
 [source,cpp]
 ----
 #include <boost/multi/array.hpp>
@@ -71,14 +71,14 @@ The internal data structure layout, when mapped to computer memory, is
 https://en.wikipedia.org/wiki/Stride_of_an_array[stride-based],
 which makes it compatible with low-level C libraries.
 
-The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern C++ design principles.
+The library interface is designed to be compatible with standard algorithms and ranges (STL) and special memory (including GPUs) and follows modern pass:[C++] design principles.
 
 The library offers the following _combination of features_ (some of which are not present in the Standard or generally in xref:appendix.adoc#appendix_comparison[other libraries]):
 
-* Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible (ideally `std::mdarray` will address this partially, post C{plus}{plus}26).
+* Value semantics of multidimensional array containers and well-defined referential semantics of subarrays to avoid unnecessary copies if possible (ideally `std::mdarray` will address this partially, post pass:[C++26]).
 * Availability of different access patterns to the elements in the multidimensional structure, as nested sequences or as a single sequence of elements.
 A _D_-dimensional array can be interpreted either as an (STL-compatible) sequence of (_D_-1)-dimensional subarrays or as a flattened one-dimensional (also STL-compatible) sequence of elements.
-* Interoperability with both legacy C and modern C++ libraries (e.g., STL, ranges, Thrust for CUDA and AMD GPUs, Boost), specifically through iterators and ranges (not present in the Standard library).
+* Interoperability with both legacy C and modern pass:[C++] libraries (e.g., STL, ranges, Thrust for CUDA and AMD GPUs, Boost), specifically through iterators and ranges (not present in the Standard library).
 * Memory management and allocation to exploit modern memory spaces, including GPU memory, mapped memory, and fancy pointers.
 * Lazy arrays and evaluation of array expressions well integrated with the rest of the library.
 
@@ -88,12 +88,12 @@ although they are still good building blocks for implementing mathematical and n
 
 Do not confuse this library with
 https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html[Boost.MultiArray]
-or with the standard link:https://en.cppreference.com/w/cpp/container/mdspan.html[`std::mdspan`] (accepted in C{plus}{plus}23).
+or with the standard link:https://en.cppreference.com/w/cpp/container/mdspan.html[`std::mdspan`] (accepted in pass:[C++23]).
 This library shares some of their goals and is compatible and complementary to them;
 but it is designed at a different level of generality and with other priorities (such as the features listed above).
 The code is entirely independent and has fundamental implementation and semantics differences.
 For example, `std::mdspan` is a non-owning view with no iterators and is not a range, so it does not work directly with STL algorithms or ranges; its assignment rebinds the view rather than copying elements, leaving deep assignment and `const`-propagation through subarrays unsolved.
-The Standard also provides no owning, allocator-aware container for special memory spaces (GPU, managed memory, fancy pointers) nor lazy array-expression evaluation; ownership is delegated to a future `std::mdarray` container adaptor (post C{plus}{plus}26), which adds value semantics.
+The Standard also provides no owning, allocator-aware container for special memory spaces (GPU, managed memory, fancy pointers) nor lazy array-expression evaluation; ownership is delegated to a future `std::mdarray` container adaptor (post pass:[C++26]), which adds value semantics.
 In summary, if you need owning arrays, clear value semantics, and iterators or ranges compatibility, and you only need strided array layouts, use this library instead of `std::mdspan` or xref:appendix.adoc#appendix_comparison[other libraries].
 
 The library does not throw exceptions and provides basic exception guarantees, such as no memory leaks, in their presence.
@@ -143,9 +143,9 @@ Typically, at the lowest level, data is processed in bulk by specially tuned num
 
 :idprefix: reqs_
 
-_Multi_ is a header-only library and C++17 or later is required.
+_Multi_ is a header-only library and pass:[C++17] or later is required.
 
-The code requires any modern https://godbolt.org/z/hxEYGYEWc[C\++ compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard C\++17 support;
+The code requires any modern https://godbolt.org/z/hxEYGYEWc[pass:[C++] compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard pass:[C++17] support;
 for reference, (at least) any of:
 LLVM's          https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (libc\++ and libstdc\++),
 GNU's           https://godbolt.org/z/1nGEbKc5a[g\++ (7.1+)],

@@ -7,7 +7,7 @@
 [#ref_types]
 == Fundamental Types and Concepts
 
-The library interface presents several closely related types (C++ classes) representing arrays.
+The library interface presents several closely related types (pass:[C++] classes) representing arrays.
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `dynamic_array`).
 
@@ -30,7 +30,7 @@ The main array type to reach for is `multi::array`, the other types are for spec
 |===
 
 When using the library, it is simpler to start from `multi::array`, and other types are rarely explicitly used, especially if using the `auto` language feature;
-however, it is convenient for documentation to present the classes in a different order since the classes `multi::array`, `multi::dynamic_array`, `multi::array_ref`, and `subarray` have an *is-a* relationship (from left to right), through C++ public inheritance.
+however, it is convenient for documentation to present the classes in a different order since the classes `multi::array`, `multi::dynamic_array`, `multi::array_ref`, and `subarray` have an *is-a* relationship (from left to right), through pass:[C++] public inheritance.
 For example, `multi::array_ref` has all the methods available to `multi::subarray`, and `multi::array` has all the operations of `multi::array_ref`, etc.
 
 image::types_relations.svg[Type relations diagram,opts=inline]
@@ -127,7 +127,7 @@ For most uses, a `multi::array` should be preferred instead.
 The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
 It can be useful for scoped uses of arrays and multithreaded programming and to ensure that assignments do not incur allocations.
-The C++ core guidelines proposed a similar (albeit one-dimensional) class, called link:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
+The pass:[C++] core guidelines proposed a similar (albeit one-dimensional) class, called link:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
 
 This class has a constructor that allocates memory given the desired sizes: `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>)` constructs the array with elements initialized from a nested list.
 The destructor deallocates memory and destroys the elements
