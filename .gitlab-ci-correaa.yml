@@ -525,16 +525,14 @@ emscripten:
     - docker
   cache: []
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates python3 cmake ninja-build nodejs xz-utils libboost-dev make
-    - git clone --depth 1 https://github.com/emscripten-core/emsdk.git /opt/emsdk
-    - /opt/emsdk/emsdk install latest
-    - /opt/emsdk/emsdk activate latest
-    - source /opt/emsdk/emsdk_env.sh
-    # git was only needed to fetch emsdk itself. Left in place, it lets the thrust/omp adaptor's CMake
-    # fall back to fetching NVIDIA's CCCL/Thrust from GitHub -- untested under Emscripten and out of
-    # scope here (the BLAS/LAPACK/FFTW/CUDA adaptors need native libraries WASM doesn't have anyway).
-    # Removing it makes that one subdirectory gracefully skip, the same degradation path used elsewhere
-    # in this file when an optional dependency isn't present.
+    # emscripten comes straight from Debian's repo (pinned to whatever version Debian packaged,
+    # not upstream "latest"); this is simpler/faster than cloning+building emsdk and is good enough
+    # for a portability check. git is kept so the thrust/omp adaptor's CMake can fall back to fetching
+    # NVIDIA's CCCL/Thrust from GitHub -- untested under Emscripten and out of scope here (the
+    # BLAS/LAPACK/FFTW/CUDA adaptors need native libraries WASM doesn't have anyway); removing git
+    # makes that one subdirectory gracefully skip, the same degradation path used elsewhere in this file
+    # when an optional dependency isn't present.
+    - apt-get -qq install --no-install-recommends -y --quiet git ca-certificates emscripten cmake ninja-build nodejs libboost-dev make
     - apt-get -qq remove -y git
     - em++ --version
     # Debian's libboost-dev puts headers straight into /usr/include; same host-header-isolation
