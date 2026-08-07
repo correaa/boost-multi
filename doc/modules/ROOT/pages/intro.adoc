@@ -155,9 +155,10 @@ and
 Intel's icpx (2022.0.0+) and icc (2021.1.2+, deprecated),
 Baxter's        https://www.circle-lang.org[circle] (https://godbolt.org/z/KeG417fMz[build 202+]),
 https://zig.news/kristoff/compile-a-c-c-project-with-zig-368j[Zig] in https://godbolt.org/z/cKGebsWMG[c++ mode (v0.9.0+)],
-Edison Design's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)]
+Edison Design's https://edg.com/c[EDG] https://godbolt.org/z/693fxPedx[(6.5+)],
+Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]),
 and
-Microsoft's     https://visualstudio.microsoft.com/vs/features/cplusplus[MSVC] (https://godbolt.org/z/Kqrva137M[+14.1]).
+Emscripten's https://emscripten.org/[emcc] 6.
 
 _Multi_ code inside a CUDA kernel can be compiled with `nvcc` or with https://godbolt.org/z/7dTKdPTxc[clang (in CUDA mode)].
 Inside HIP code, it can be compiled with AMD's clang rocm (5.0+).
