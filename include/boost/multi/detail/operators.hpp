@@ -86,7 +86,7 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 
 	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
-	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(me.self() < other.self()) && !(other.self() < me.self()); }
+	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool { return !(self.self() < other.self()) && !(other.self() < self.self()); }
 	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
 	friend BOOST_MULTI_HD constexpr auto operator<=(totally_ordered2 const& me, totally_ordered2 const& other) -> bool { return !(other.self() < me.self()); }
@@ -178,14 +178,14 @@ struct steppable : totally_ordered<Self> {
 	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
 	BOOST_MULTI_HD constexpr auto self() -> self_type& { return static_cast<self_type&>(*this); }
 
-	friend BOOST_MULTI_HD constexpr auto operator++(steppable& me, int) -> Self {
-		Self tmp{me.self()};
-		++me.self();
+	friend BOOST_MULTI_HD constexpr auto operator++(steppable& myself, int) -> Self {
+		Self tmp{myself.self()};
+		++myself.self();
 		return tmp;
 	}
-	friend BOOST_MULTI_HD constexpr auto operator--(steppable& me, int) -> Self {
-		Self tmp{me.self()};
-		--me.self();
+	friend BOOST_MULTI_HD constexpr auto operator--(steppable& myself, int) -> Self {
+		Self tmp{myself.self()};
+		--myself.self();
 		return tmp;
 	}
 };
@@ -280,10 +280,10 @@ class addable2 {
 	using difference_type = D;
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend BOOST_MULTI_HD constexpr auto operator+(TT&& self, difference_type const& diff) -> Self { return Self{std::forward<TT>(self)} += diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(TT&& myself, difference_type const& diff) -> Self { return Self{std::forward<TT>(myself)} += diff; }
 
 	template<class TT, typename = std::enable_if_t<std::is_base_of<Self, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, TT&& self) -> Self { return std::forward<TT>(self) + diff; }
+	friend BOOST_MULTI_HD constexpr auto operator+(difference_type const& diff, TT&& myself) -> Self { return std::forward<TT>(myself) + diff; }
 };
 
 template<class T, class D>

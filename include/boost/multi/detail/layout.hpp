@@ -1136,8 +1136,8 @@ constexpr auto get(::boost::multi::extents_t<D>&& tp)  // NOLINT(cert-dcl58-cpp,
 
 template<typename Fn, boost::multi::dimensionality_type D>
 constexpr auto
-apply(Fn&& fn, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
-	return exts.apply(std::forward<Fn>(fn));
+apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
+	return exts.apply(std::forward<Fn>(fun));
 }
 
 }  // end namespace std
@@ -1604,11 +1604,11 @@ struct layout_t
 	#pragma nv_diagnostic pop
 	#endif
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type std, offset_type off, nelems_type nlms)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{std}, offset_{off}, nelems_{nlms} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type str, offset_type off, nelems_type nlms)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{str}, offset_{off}, nelems_{nlms} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sb, stride_type sd, offset_type off /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sb}, stride_{sd}, offset_{off} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type str, offset_type off /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{str}, offset_{off} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
 
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 
@@ -1768,12 +1768,12 @@ struct layout_t
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
 	BOOST_MULTI_HD constexpr auto sort() const {
-		auto ret = layout_t {
+		auto ret = layout_t(
 			this->sub().sort(),
 			this->stride(),
 			this->offset(),
 			this->nelems()
-		};
+		);
 
 		if constexpr(D > 1) {
 			if(
@@ -1785,12 +1785,12 @@ struct layout_t
 			)
 			{
 				auto ret2 = ret.transpose();
-				ret = layout_t {
+				ret = layout_t(
 					ret2.sub().sort(),
 					ret2.stride(),
 					ret2.offset(),
 					ret2.nelems()
-				};
+				);
 			}
 		}
 
@@ -1835,12 +1835,12 @@ struct layout_t
 		// new_layout.sub().nelems() /= n;
 	}
 
-	template<class TT>
-	constexpr static void ce_swap(TT& t1, TT& t2) {
-		TT tmp = std::move(t1);
-		t1     = std::move(t2);
-		t2     = tmp;
-	}
+	// template<class TT>
+	// constexpr static void ce_swap(TT& left, TT& right) {
+	// 	TT tmp = std::move(left);
+	// 	left   = std::move(right);
+	// 	right  = tmp;
+	// }
 
 	BOOST_MULTI_HD constexpr auto transpose() const {
 		return layout_t(
