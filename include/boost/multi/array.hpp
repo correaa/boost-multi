@@ -1889,12 +1889,20 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 
 			this->layout_mutable() = new_layout;  // typename array::layout_t{extensions};
 
-			this->base_ = this->dynamic_::array_alloc::allocate(
-				static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
-					new_layout.num_elements()
-				),
-				this->data_elements()  // used as hint
-			);
+			if constexpr(std::is_pointer_v<typename array::element_ptr>) {
+				this->base_ = this->dynamic_::array_alloc::allocate(
+					static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
+						new_layout.num_elements()
+					)
+				);  // no hint: base_ is a raw pointer and was just deallocated above
+			} else {
+				this->base_ = this->dynamic_::array_alloc::allocate(
+					static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
+						new_layout.num_elements()
+					),
+					this->data_elements()  // used as hint (mainly for gpus)
+				);
+			}
 
 			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 				static_assert(std::is_nothrow_default_constructible_v<typename array::element>, "element type's default constructor must be noexcept; use reextent(exts, value) to fill with a value instead");  // TODO(correaa) reconsider this (reextent cannot be no except anyway, but exceptions also have a cost)
