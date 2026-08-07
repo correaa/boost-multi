@@ -516,10 +516,10 @@ mingw-w64:
 emscripten:
   stage: build
   image: debian:latest
-  allow_failure: true  # new job: first pass
-  # only:
-  #   refs:
-  #     - develop
+  allow_failure: false
+  only:
+    refs:
+      - develop
   tags:
     - non-shared
     - docker
