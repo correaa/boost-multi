@@ -102,7 +102,7 @@ This issue is specific to libraries that expose pointer-based strided iterators 
 Boost.Multi is unusual in providing both: STL-compatible strided iterators (which are subject to this issue) and index-based access (which is not).
 
 No tested compiler and system yet complains about the illegality of these transiently out-of-bounds pointer values, and the affected code behaves correctly on all tested platforms.
-However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers, but currently the don't.
+However, sanitizers (e.g., AddressSanitizer) can in principle flag the formation of such pointers, but currently they don't.
 (`constexpr` contexts can also reject this situation.)
 
 === Library-level Mitigations

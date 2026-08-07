@@ -450,8 +450,8 @@ struct subarray_ptr  // : to allow mixin CRTP
 #pragma warning(disable : 4820)  //'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>': '7' bytes padding added after data member 'boost::multi::subarray_ptr<double,1,fancy::ptr<double>,boost::multi::layout_t<1,boost::multi::size_type>,true>::base_'
 #endif
 
-	ElementPtr                                                 base_;
-	typename std::iterator_traits<ElementPtr>::difference_type offset_;
+	ElementPtr base_;
+	// typename std::iterator_traits<ElementPtr>::difference_type offset_;  // TODO(correaa) revive under a macro, unused for now
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -481,18 +481,18 @@ struct subarray_ptr  // : to allow mixin CRTP
 	using iterator_category = std::random_access_iterator_tag;
 
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil}, offset_{0} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) terse syntax and functionality by default
+	BOOST_MULTI_HD constexpr subarray_ptr(std::nullptr_t nil) : layout_{}, base_{nil} /*, offset_{0}*/ {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) terse syntax and functionality by default
 
 	subarray_ptr() = default;  // cppcheck-suppress uninitMemberVar ; base_ is not initialized
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<reference::dimensionality - 1> lyt) : layout_{lyt}, base_{base}, offset_{0} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, layout_t<reference::dimensionality - 1> lyt) : layout_{lyt}, base_{base} /*, offset_{0}*/ {}
 
 	template<bool OtherIsConst, std::enable_if_t<!OtherIsConst, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr /*mplct*/ subarray_ptr(subarray_ptr<T, D, ElementPtr, Layout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : propagate implicitness of pointer
-	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
+	: layout_{other.layout_}, base_{other.base_} /*, offset_{other.offset_}*/ {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
@@ -500,20 +500,20 @@ struct subarray_ptr  // : to allow mixin CRTP
 		>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	BOOST_MULTI_HD constexpr /*mplct*/ subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
-	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
+	: layout_{other.layout_}, base_{other.base_} /*, offset_{other.offset_}*/ {}
 
 	template<
 		typename OtherT, multi::dimensionality_type OtherD, typename OtherEPtr, class OtherLayout, bool OtherIsConst,
 		decltype(multi::detail::explicit_cast<typename reference::element_ptr>(std::declval<OtherEPtr>()))* = nullptr  // propagate implicitness of pointer
 		>
 	BOOST_MULTI_HD constexpr explicit subarray_ptr(subarray_ptr<OtherT, OtherD, OtherEPtr, OtherLayout, OtherIsConst> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)  // NOSONAR
-	: layout_{other.layout_}, base_{other.base_}, offset_{other.offset_} {}
+	: layout_{other.layout_}, base_{other.base_} /*, offset_{other.offset_}*/ {}
 
 	template<
 		class ElementPtr2,
 		std::enable_if_t<std::is_same_v<ElementPtr2, ElementPtr> && (D == 0), int> = 0  // NOLINT(modernize-use-constraints) for C++20
 		>
-	BOOST_MULTI_HD constexpr explicit subarray_ptr(ElementPtr2 const& other) : layout_{}, base_{other}, offset_{0} {}
+	BOOST_MULTI_HD constexpr explicit subarray_ptr(ElementPtr2 const& other) : layout_{}, base_{other} /*, offset_{0}*/ {}
 
 	BOOST_MULTI_HD constexpr explicit operator bool() const { return static_cast<bool>(base()); }
 
@@ -539,7 +539,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
 
-	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{std::move(base)}, offset_{0} {}
+	BOOST_MULTI_HD constexpr subarray_ptr(typename reference::element_ptr base, Layout const& lyt) : layout_{lyt}, base_{std::move(base)} /*, offset_{0}*/ {}
 
 	template<typename, multi::dimensionality_type, typename, class> friend class const_subarray;
 
