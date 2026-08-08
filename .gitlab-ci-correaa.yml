@@ -1741,6 +1741,7 @@ mrdocs:
     - mrdocs --version
     - mrdocs --help
     - cmake -B build-mrdocs -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_CXX_STANDARD=23
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
         -DCMAKE_BUILD_TYPE=Release -DMULTI_BUILD_TESTS=OFF -DMULTI_BUILD_PACKAGE=OFF
     - mrdocs mrdocs.yml
