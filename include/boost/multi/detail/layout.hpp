@@ -1379,8 +1379,8 @@ class bistride {
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
 		auto base = static_cast<Ptr>(ptr_);
 		auto dist = ptr - base;
-		auto i = dist / stride1_;
-		auto ret = base + (i * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		auto segment_index = dist / stride1_;
+		auto ret = base + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
