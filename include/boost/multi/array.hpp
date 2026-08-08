@@ -54,10 +54,10 @@ namespace detail {
 
 template<class Allocator>
 struct array_allocator {
-	using allocator_type = Allocator;
 	array_allocator()    = default;
-
+	
  private:
+	using allocator_type = Allocator;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 
 	using allocator_traits = multi::allocator_traits<allocator_type>;
@@ -150,7 +150,7 @@ struct                                                                          
 
  public:
 	/// Allocator type (returned by `get_allocator()`)
-	using allocator_type = typename detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::allocator_type;  // NOLINT(readability-redundant-typename) needed for C++17
+	using allocator_type = typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>;  // NOLINT(readability-redundant-typename) needed for C++17
 	/// Layout type (generally a strided layout `multi::layout_t<D>`)
 	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;  // NOLINT(readability-redundant-typename) needed for C++17
 	/// Associalted array value type (generally itself, `multi::array<element, dimensionality, allocator_type>`)
@@ -1108,13 +1108,15 @@ using static_array [[deprecated("static_array has been renamed to dynamics_array
 template<typename T, class Alloc>
 struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 : protected detail::array_allocator<Alloc>
-, public array_ref<T, 0, typename multi::allocator_traits<typename detail::array_allocator<Alloc>::allocator_type>::pointer> {
+, public array_ref<T, 0, typename multi::allocator_traits<Alloc>::pointer> {
 	static_assert(std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, typename dynamic_array::element>, "allocator value type must match array value type");
 
  private:
 	using array_alloc = detail::array_allocator<Alloc>;
 
  public:
+	using allocator_type = typename multi::allocator_traits<Alloc>::template rebind_alloc<T>;
+
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	/// (r-value address-of operator is deleted)
 	/// @internal
@@ -1127,7 +1129,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using array_alloc::get_allocator;
-	using allocator_type = typename dynamic_array::allocator_type;
+	// using allocator_type = typename dynamic_array::allocator_type;
 	using decay_type     = array<T, 0, Alloc>;
 
 	template<class Ptr>
