@@ -145,8 +145,11 @@ struct                                                                          
 		"allocator value type must match array value type"
 	);
 
- protected:
+// protected:
+ private:
 	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>;
+
+	template<class, dimensionality_type, class> friend struct array;
 
  public:
 	/// Allocator type (returned by `get_allocator()`)
