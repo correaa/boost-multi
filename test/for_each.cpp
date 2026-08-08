@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #endif
 #ifdef __cpp_lib_execution
 #if defined(TBB_FOUND) && !defined(__NVCC__)
-#if !defined(__clang__)
+#ifndef __clang__
 		{
 			auto_timer const _{"std::for_each(std::par)"};
 			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& plane) {
