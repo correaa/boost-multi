@@ -59,6 +59,13 @@ export UBSAN_OPTIONS=print_stacktrace=1
 
  ([ -d .build.g++.c++23 ]      || CXX=g++                           cmake -S . -B .build.g++.c++23      -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON   -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fconcepts-diagnostics-depth=30" && cmake --build .build.g++.c++23      $CMT && (ctest --test-dir .build.g++.c++23            $CTR || ctest --test-dir .build.g++.c++23      --rerun-failed $CTR) ) || exit 666
 
+
+# sudo apt-get install ruby-dev libgraphicsmagick++1-dev ruby-asciidoctor-pdf
+# sudo gem install rouge
+# single-file PDF of the documentation (local check; requires `gem install asciidoctor-pdf`).
+# Cross-page `xref:file.adoc#id[]` links may emit warnings under plain Asciidoctor; the PDF is still produced.
+PATH="/usr/bin:$PATH" asciidoctor-pdf --safe-mode unsafe --failure-level WARN -a pdf-theme=doc/pdf-theme.yml -a localdatetime="$(date)" doc/single.adoc -a allow-uri-read -o multi-documentation.pdf && echo "generated multi-documentation.pdf"
+
 if [[ $(uname -m) != 'aarch64' ]]; then
 (clang-format-21 --version 2>/dev/null && clang-format-21 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp || exit 666) || echo "clang-format-21 not installed" 
 #diff -u include/**/*.hpp test/*.cpp <(clang-format-19 include/**/*.hpp test/*.cpp)
@@ -110,11 +117,5 @@ fi
 fi
 
 ccache -s
-
-# sudo apt-get install ruby-dev libgraphicsmagick++1-dev ruby-asciidoctor-pdf
-# sudo gem install rouge
-# single-file PDF of the documentation (local check; requires `gem install asciidoctor-pdf`).
-# Cross-page `xref:file.adoc#id[]` links may emit warnings under plain Asciidoctor; the PDF is still produced.
-PATH="/usr/bin:$PATH" asciidoctor-pdf --safe-mode unsafe --failure-level WARN -a pdf-theme=doc/pdf-theme.yml -a localdatetime="$(date)" doc/single.adoc -a allow-uri-read -o multi-documentation.pdf && echo "generated multi-documentation.pdf"
 
 # fuser --kill /dev/nvidia-uvm; while fuser --silent /dev/nvidia-uvm; do sleep 1; done; modprobe -r nvidia_uvm && modprobe nvidia_uvm
