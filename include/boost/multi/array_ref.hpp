@@ -1371,11 +1371,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	auto to_mdspan() const& {
-		return std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>(to_mdspan_aux_());
-	}
-
-	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan(); }
+	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan_aux_(); }
 #endif
 
 	/// possibly moves the contents
@@ -2249,6 +2245,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	using const_subarray<T, D, ElementPtr, Layout>::home;
 	BOOST_MULTI_HD constexpr auto home() && { return this->home_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto home() & { return this->home_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()      & { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()     && { return this->to_mdspan_aux_(); }
+#endif
 
 	// /// assigns `.size()` values after an iterator into the array.
 	// template<class It> constexpr auto assign(It first) & -> It {  // cppcheck-suppress duplInheritedMember ; to overwrite
