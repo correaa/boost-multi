@@ -752,10 +752,10 @@ auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 Any parenthesis argument can be either a range (with or without stride) or an index. 
 Range argument can be substituted by `multi::all` to obtain the whole range.
 
-Two conditions must hold,
+Two conditions must hold:
 1) the stride must divide the size of the array,
 2) the stride sign must match the direction of the interval;
-otherwise the result is undefined.
+otherwise, the result is undefined.
 
 [#tutorial_conversions]
 == Conversions
