@@ -1711,13 +1711,13 @@ struct layout_t
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 
-	constexpr auto base_size() const {
-		using std::max;
-		return max(nelems_, sub_.base_size());
-	}
+	// constexpr auto base_size() const {
+	// 	using std::max;
+	// 	return max(nelems_, sub_.base_size());
+	// }
 
-	constexpr auto        is_compact() const& { return base_size() == num_elements(); }
-	friend constexpr auto is_compact(layout_t const& self) { return self.is_compact(); }
+	// constexpr auto        is_compact() const& { return base_size() == num_elements(); }
+	// friend constexpr auto is_compact(layout_t const& self) { return self.is_compact(); }
 
 	constexpr auto        shape() const& -> decltype(auto) { return sizes(); }
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }

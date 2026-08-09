@@ -309,7 +309,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
-	using layout_type::is_compact;
+	// using layout_type::is_compact;
 
 	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
 
