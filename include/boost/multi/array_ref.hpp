@@ -309,15 +309,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
-	// using layout_type::is_compact;
-
-	// friend constexpr auto sizes(array_types const& self) noexcept -> sizes_type { return self.sizes(); }
-
-	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	// friend constexpr auto stride(array_types const& self) noexcept -> stride_type { return self.stride(); }
-
-	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	// friend constexpr auto strides(array_types const& self) noexcept /*-> strides_type*/ { return self.strides(); }
+	[[deprecated]] auto is_compact() const { return this->layout().is_compact(); }
 
  protected:
 	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
