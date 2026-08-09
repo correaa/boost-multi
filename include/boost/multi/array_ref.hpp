@@ -1419,7 +1419,11 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return ret;
 	}
 
-	friend constexpr auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
+	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
+	[[deprecated]] constexpr auto copy() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
+		decay_type ret{*this};
+		return ret;
+	}
 
 	/// Materializes an independent, owning `array` copy of this view with the associated array-value type
 	constexpr auto operator+() const -> decay_type { return decay(); }
@@ -1605,11 +1609,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
-// private:
-	constexpr auto strided_aux_(difference_type diff) const {
-		// auto new_layout = this->layout().do_stride();
-		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
-		// template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
+ private:
+	constexpr auto strided_aux_(difference_type step) const {
+		assert(this->size() % step == 0);
+		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * step, this->layout().offset(), this->layout().nelems()};
 		return subarray<T, D, ElementPtr, typename types::layout_type>(new_layout, types::base_);
 	}
 
@@ -3140,8 +3143,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	/// Returns a const-element view of the subarray, preventing modification of elements
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
 
-	constexpr auto                    decay() const -> decay_type { return decay_type{*this}; }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
+	constexpr auto decay() const -> decay_type { return decay_type{*this}; }
+	constexpr auto copy() const -> decay_type { return decay_type{*this}; }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
 
 	using basic_const_array = const_subarray<
 		T, 1,
@@ -3201,7 +3205,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class It>
 	constexpr void assign(It first, It last) & {
 		BOOST_MULTI_ASSERT(std::distance(first, last) == this->size());
-		(void)last;  // N_O_L_I_N_T(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		(void)last;
 		assign(first);
 	}
 	template<class It>
@@ -3440,10 +3444,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	constexpr auto celements() const -> const_elements_range { return elements_aux_(); }
 
-	// constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
-	// 	return {(std::min)(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};  // paren for MSVC macros
-	// }
-
 	constexpr auto blocked(index first, index last) & -> const_subarray {
 		return sliced(first, last).reindexed(first);
 	}
@@ -3452,13 +3452,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  private:
-	constexpr auto strided_aux_(difference_type diff) const {
-		auto const new_layout = typename types::layout_type{this->layout().sub(), this->layout().stride() * diff, this->layout().offset(), this->layout().nelems()};
+	constexpr auto strided_aux_(difference_type step) const {
+		assert(this->size() % step == 0);
+		auto const new_layout = typename types::layout_type{this->layout().sub(), this->layout().stride() * step, this->layout().offset(), this->layout().nelems()};
 		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
 	}
 
  public:
-	constexpr auto strided(difference_type diff) const& -> const_subarray { return strided_aux_(diff); }
+	constexpr auto strided(difference_type step) const& -> const_subarray { return strided_aux_(step); }
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 
