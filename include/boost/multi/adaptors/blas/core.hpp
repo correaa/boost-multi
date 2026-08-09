@@ -560,7 +560,7 @@ v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alp
 	using std::max;                                                                                                                                                                                           \
 	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, m) );} \
 	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, n) );}                                                                                                                                                 \
-	BOOST_MULTI_ASSERT1( ldb >= max(SSize{1}, m) );                                                                                                                                                                   \
+	BOOST_MULTI_ASSERT1( ldb >= (max)(SSize{1}, m) );                                                                                                                                                                   \
 	BLAS(T##trsm)(side, uplo, transA, diag, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 
