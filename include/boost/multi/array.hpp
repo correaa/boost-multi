@@ -1465,10 +1465,10 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		return *this;
 	}
 
-	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		// cppcheck-suppress duplInheritedMember ; to overwrite
-		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
-	}
+	// constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// 	// cppcheck-suppress duplInheritedMember ; to overwrite
+	// 	return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// }
 
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to overwrite
