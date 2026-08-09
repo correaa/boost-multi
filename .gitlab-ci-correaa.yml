@@ -698,7 +698,7 @@ vs2022-shell clang-cl:
   tags:
     - windows, shell
   needs: ["vs2022-shell"]
-  timeout: 20 minutes
+  timeout: 30 minutes
 
 vs2022-shell cudatk-17:
   stage: build
