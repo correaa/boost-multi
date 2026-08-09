@@ -1723,13 +1723,12 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		assert(this->stride() != 0);
 	}
 
-#ifndef NOEXCEPT_ASSIGNMENT
 	/// Move assignment operator (noexcept when allocator is always-equal or nothrow-move-assignable)
-	template<class Dummy = void, std::enable_if_t<sizeof(Dummy*) && (  // NOLINT(modernize-use-constraints) for C++20
-																		multi::allocator_traits<typename array::allocator_type>::is_always_equal::value || std::is_nothrow_move_assignable_v<typename array::allocator_type>
-																		// POCMA=false with a stateful allocator is unsupported (would require element-wise moves into pre-existing storage, potentially allocating, potentially throwing)
-																	),
-												  int> = 0>
+	template<
+		class Dummy = void,
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			sizeof(Dummy*) && (multi::allocator_traits<typename array::allocator_type>::is_always_equal::value || std::is_nothrow_move_assignable_v<typename array::allocator_type>),
+			int> = 0>
 	auto operator=(array&& other) noexcept -> array& {  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved) this IS the move assignemnt
 		if(this == std::addressof(other)) {
 			return *this;
@@ -1768,9 +1767,8 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		}
 		return *this;
 	}
-#else
-	auto operator=(array o) noexcept -> array& { return swap(o), *this; }
-#endif
+
+	// auto operator=(array o) noexcept -> array& { return swap(o), *this; }  // Alternative implementation of no except assignment
 
 	template<typename OtherT, typename OtherEP, class OtherLayout>
 	auto operator=(multi::const_subarray<OtherT, D, OtherEP, OtherLayout> const& other) -> array& {
