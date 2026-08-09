@@ -1609,7 +1609,6 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return stenciled(iex).rotated().stenciled(iex1, iex2, iex3, iexs...).unrotated().as_const();
 	}
 
- private:
 	constexpr auto strided_aux_(difference_type step) const {
 		assert(this->size() % step == 0);
 		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * step, this->layout().offset(), this->layout().nelems()};
