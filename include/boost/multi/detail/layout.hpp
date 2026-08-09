@@ -1712,8 +1712,7 @@ struct layout_t
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 
 	// constexpr auto base_size() const {
-	// 	using std::max;
-	// 	return max(nelems_, sub_.base_size());
+	// 	return (std::max)(nelems_, sub_.base_size());
 	// }
 
 	// constexpr auto        is_compact() const& { return base_size() == num_elements(); }
