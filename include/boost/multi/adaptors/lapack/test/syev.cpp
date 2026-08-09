@@ -290,44 +290,44 @@ BOOST_AUTO_TEST_CASE(multi_lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( A[0][0] == 1. );
 	BOOST_TEST( W[0]==5. );
 }
-#if 0
-{
-	multi::cuda::array<double, 2> A = {{5.0}};
-	multi::cuda::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	lapack::syev(lapack::filling::upper, A, W);
-	BOOST_TEST( A[0][0] == 1.0 );
-	BOOST_TEST( W[0]==5.0 );
-}
-{
-	multi::cuda::managed::array<double, 2> A = {{5.0}};
-	multi::cuda::managed::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	lapack::syev(lapack::filling::upper, A, W);
-	BOOST_TEST( A[0][0] == 1.0 );
-	BOOST_TEST( W[0]==5.0 );
-}
-#endif
+
+// {
+// 	multi::cuda::array<double, 2> A = {{5.0}};
+// 	multi::cuda::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	lapack::syev(lapack::filling::upper, A, W);
+// 	BOOST_TEST( A[0][0] == 1.0 );
+// 	BOOST_TEST( W[0]==5.0 );
+// }
+// {
+// 	multi::cuda::managed::array<double, 2> A = {{5.0}};
+// 	multi::cuda::managed::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	lapack::syev(lapack::filling::upper, A, W);
+// 	BOOST_TEST( A[0][0] == 1.0 );
+// 	BOOST_TEST( W[0]==5.0 );
+// }
+
 {
 	multi::array<double, 2> A;
 	multi::array<double, 1> W(size(A));
 	namespace lapack = multi::lapack;
 	lapack::syev(lapack::filling::upper, A, W);
 }
-#if 0
-{
-	multi::cuda::array<double, 2> A;
-	multi::cuda::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	lapack::syev(lapack::filling::upper, A, W);
-}
-{
-	multi::cuda::managed::array<double, 2> A;
-	multi::cuda::managed::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	lapack::syev(lapack::filling::upper, A, W);
-}
-#endif
+
+// {
+// 	multi::cuda::array<double, 2> A;
+// 	multi::cuda::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	lapack::syev(lapack::filling::upper, A, W);
+// }
+// {
+// 	multi::cuda::managed::array<double, 2> A;
+// 	multi::cuda::managed::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	lapack::syev(lapack::filling::upper, A, W);
+// }
+
 {
 	multi::array<double, 2> const A = {
 		{167.413, 126.804, 125.114},
@@ -341,34 +341,34 @@ BOOST_AUTO_TEST_CASE(multi_lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( sys.eigenvectors[2][1] == -0.579092 );
 	BOOST_TEST( sys.eigenvalues[1] == 42.2081 );
 }
-#if 0
-{
-	multi::cuda::array<double, 2> const A = {
-		{167.413, 126.804, 125.114},
-		{NAN    , 167.381, 126.746},
-		{NAN    , NAN    , 167.231}
-	};
-	multi::cuda::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	auto sys = lapack::syev(lapack::filling::upper, A);
-	BOOST_TEST( A[1][2] == 126.746 );
-	BOOST_TEST( double(sys.eigenvectors[2][1]) == -0.579092 );
-	BOOST_TEST( double(sys.eigenvalues[1]) == 42.2081 );
-}
-{
-	multi::cuda::managed::array<double, 2> const A = {
-		{167.413, 126.804, 125.114},
-		{NAN    , 167.381, 126.746},
-		{NAN    , NAN    , 167.231}
-	};
-	multi::cuda::managed::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	auto sys = lapack::syev(lapack::filling::upper, A);
-	BOOST_TEST( A[1][2] == 126.746 );
-	BOOST_TEST( double(sys.eigenvectors[2][1]) == -0.579092 );
-	BOOST_TEST( double(sys.eigenvalues[1]) == 42.2081 );
-}
-#endif
+
+// {
+// 	multi::cuda::array<double, 2> const A = {
+// 		{167.413, 126.804, 125.114},
+// 		{NAN    , 167.381, 126.746},
+// 		{NAN    , NAN    , 167.231}
+// 	};
+// 	multi::cuda::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	auto sys = lapack::syev(lapack::filling::upper, A);
+// 	BOOST_TEST( A[1][2] == 126.746 );
+// 	BOOST_TEST( double(sys.eigenvectors[2][1]) == -0.579092 );
+// 	BOOST_TEST( double(sys.eigenvalues[1]) == 42.2081 );
+// }
+// {
+// 	multi::cuda::managed::array<double, 2> const A = {
+// 		{167.413, 126.804, 125.114},
+// 		{NAN    , 167.381, 126.746},
+// 		{NAN    , NAN    , 167.231}
+// 	};
+// 	multi::cuda::managed::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	auto sys = lapack::syev(lapack::filling::upper, A);
+// 	BOOST_TEST( A[1][2] == 126.746 );
+// 	BOOST_TEST( double(sys.eigenvectors[2][1]) == -0.579092 );
+// 	BOOST_TEST( double(sys.eigenvalues[1]) == 42.2081 );
+// }
+
 {
 	multi::array<double, 2> const A = {
 		{167.413, 126.804, 125.114},
@@ -382,32 +382,31 @@ BOOST_AUTO_TEST_CASE(multi_lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
 	BOOST_TEST( eigenvals[1] == 42.2081 );
 }
-#if 0
-{
-	multi::cuda::array<double, 2> const A = {
-		{167.413, 126.804, 125.114},
-		{NAN    , 167.381, 126.746},
-		{NAN    , NAN    , 167.231}
-	};
-	multi::cuda::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	auto [eigenvecs, eigenvals] = lapack::syev(lapack::filling::upper, A);
-	BOOST_TEST( A[1][2] == 126.746 );
-	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
-	BOOST_TEST( eigenvals[1] == 42.2081 );
-}
-{
-	multi::cuda::managed::array<double, 2> const A = {
-		{167.413, 126.804, 125.114},
-		{NAN    , 167.381, 126.746},
-		{NAN    , NAN    , 167.231}
-	};
-	multi::cuda::managed::array<double, 1> W(size(A));
-	namespace lapack = multi::lapack;
-	auto [eigenvecs, eigenvals] = lapack::syev(lapack::filling::upper, A);
-	BOOST_TEST( A[1][2] == 126.746 );
-	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
-	BOOST_TEST( eigenvals[1] == 42.2081 );
-}
-#endif
+
+// {
+// 	multi::cuda::array<double, 2> const A = {
+// 		{167.413, 126.804, 125.114},
+// 		{NAN    , 167.381, 126.746},
+// 		{NAN    , NAN    , 167.231}
+// 	};
+// 	multi::cuda::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	auto [eigenvecs, eigenvals] = lapack::syev(lapack::filling::upper, A);
+// 	BOOST_TEST( A[1][2] == 126.746 );
+// 	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
+// 	BOOST_TEST( eigenvals[1] == 42.2081 );
+// }
+// {
+// 	multi::cuda::managed::array<double, 2> const A = {
+// 		{167.413, 126.804, 125.114},
+// 		{NAN    , 167.381, 126.746},
+// 		{NAN    , NAN    , 167.231}
+// 	};
+// 	multi::cuda::managed::array<double, 1> W(size(A));
+// 	namespace lapack = multi::lapack;
+// 	auto [eigenvecs, eigenvals] = lapack::syev(lapack::filling::upper, A);
+// 	BOOST_TEST( A[1][2] == 126.746 );
+// 	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
+// 	BOOST_TEST( eigenvals[1] == 42.2081 );
+// }
 }
