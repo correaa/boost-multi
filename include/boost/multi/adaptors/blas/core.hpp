@@ -504,7 +504,7 @@ v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP 
 {                                                                                                                                                                                                                                     \
 	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, n) ); } \
 	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, k) ); }                                                                                                                                                \
-	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) ); \
+	BOOST_MULTI_ASSERT1( ldc >= (max)(S{1}, n) ); \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                                                      \
 	BLAS(T##herk)(      uplo, transA,            static_cast<ssize_t>(BC(n)), static_cast<ssize_t>(BC(k)), *reinterpret_cast<Real const*>(alpha), reinterpret_cast<T const*>(aa), static_cast<ssize_t>(BC(lda)),        *reinterpret_cast<Real const*>(beta), reinterpret_cast<T*>(cc), static_cast<ssize_t>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                                            \
 }                                                                                                                                                                                                                                          \
@@ -558,8 +558,8 @@ v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alp
 	assert( diag   == 'U' || diag   == 'N' ); \
 	BOOST_MULTI_ASSERT1( m >= 0 && n >= 0 );                                                                                                                                                                           \
 	using std::max;                                                                                                                                                                                           \
-	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= max(SSize{1}, m) );} \
-	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= max(SSize{1}, n) );}                                                                                                                                                 \
+	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, m) );} \
+	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, n) );}                                                                                                                                                 \
 	BOOST_MULTI_ASSERT1( ldb >= max(SSize{1}, m) );                                                                                                                                                                   \
 	BLAS(T##trsm)(side, uplo, transA, diag, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
