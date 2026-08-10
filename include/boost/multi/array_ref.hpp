@@ -48,7 +48,7 @@ template<class Element>
 inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
 
 /// Opt-in specializations for `std::complex<T>`, enabled by defining
-/// `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` at compile time treats std::complex
+/// `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` at compile time, which treats std::complex
 /// types as trivially constructible/destructible.
 #ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
 template<class T>
@@ -233,7 +233,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::index_extension;
 
-	/// Type that represents a range of indicies
+	/// Type that represents a range of indices
 	using index_range = typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
 
 	using typename layout_type::strides_type;
@@ -1488,7 +1488,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using typename types::index;
 
-	/// yeilds an equivalent subarray with a specific starting index
+	/// yields an equivalent subarray with a specific starting index
 	constexpr auto reindexed(index first) const& {  // NOLINT(readability-identifier-naming) TODO(correaa) decide if making it public
 		return const_subarray(this->layout().reindex(first), types::base_);
 	}
@@ -1686,7 +1686,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	/// produces a subarray of higher dimension by chunking in the leading dimension (if `count` doesn't divide `size`, so elements are are left out at the end)
+	/// produces a subarray of higher dimension by chunking in the leading dimension (if `count` doesn't divide `size`, so elements are left out at the end)
 	BOOST_MULTI_HD constexpr auto chunked(size_type count) const& -> const_subarray<T, D + 1, element_ptr> { return chunked_aux_(count); }
 
 	// constexpr auto tiled(size_type count) const& {
@@ -1820,14 +1820,14 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
  public:
-	/// For `D == 1` it the pointer type to the elements, otherwise it is void
+	/// For `D == 1` it is the pointer type to the elements, otherwise it is void
 	using pointer =
 		typename std::conditional_t<
 			(D > 1),
 			void,
 			typename std::iterator_traits<ElementPtr>::pointer>;
 
-	/// For `D == 1` it the pointer type to the elements (as immutables), otherwise it is void
+	/// For `D == 1` it is the pointer type to the elements (as immutables), otherwise it is void
 	using const_pointer =
 		typename std::conditional_t<
 			(D > 1),
@@ -1877,10 +1877,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	/// returns an const-iterator to the end
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
 
-	/// Indexable cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home()`)
+	/// Indexable cursor, pointer-like objects that multidimensionally indexable (type usually returned by `.home()`)
 	using cursor = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 
-	/// Indexable const-cursor, pointer-like objects that mutidimensioally indexable (type usually returned by `.home() const`)
+	/// Indexable const-cursor, pointer-like objects that multidimensionally indexable (type usually returned by `.home() const`)
 	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
 
  private:
@@ -2645,7 +2645,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	/// A an array view in which elementes references are r-values
+	/// An array view in which element references are r-values
 	constexpr auto element_moved() & { return subarray<T, D, typename subarray::element_move_ptr, Layout>(this->layout(), element_move_ptr{this->base_}); }
 	constexpr auto element_moved() && { return element_moved(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
@@ -3477,7 +3477,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
 #endif
 
-	/// yields a ubarray that is one dimension lower at index `idx`
+	/// yields a subarray that is one dimension lower at index `idx`
 	BOOST_MULTI_HD constexpr auto operator()(index idx) const -> decltype(auto) { return operator[](idx); }
 
 	/// Subarray spanning the given index range `rng` along the outermost dimension
