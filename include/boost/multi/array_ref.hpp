@@ -1845,15 +1845,16 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const&& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 	// NOLINTEND(readability-identifier-naming)
 
  public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	// [[deprecated("controversial")]]
+	constexpr auto operator&() const&& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+
 	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// NOLINTEND(google-runtime-operator)
 
@@ -2250,8 +2251,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return this->to_mdspan_aux_(); }
-	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()      & { return this->to_mdspan_aux_(); }
-	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()     && { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() & { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() && { return this->to_mdspan_aux_(); }
 #endif
 
 	// /// assigns `.size()` values after an iterator into the array.
@@ -2481,7 +2482,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// NOLINTNEXTLINE(readability-identifier-naming)
 	BOOST_MULTI_HD constexpr auto range(index_range irng) && -> decltype(auto) { return std::move(*this).sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 	// NOLINTNEXTLINE(readability-identifier-naming)
-	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }                    // cppcheck-suppress duplInheritedMember;
+	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
 	using const_subarray<T, D, ElementPtr, Layout>::paren_aux_;
 
@@ -3741,7 +3742,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
 		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-		auto*  ptr1 = &ref1;
+		auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
 		P2 ptr2 = reinterpret_cast<P2&>(ptr1);  // NOSONAR

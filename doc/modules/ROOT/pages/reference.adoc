@@ -8,7 +8,7 @@ The library interface presents several closely related types (pass:[C++] classes
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `dynamic_array`).
 
-This section is an conceptual overview of the system of types, if you want to read the API interface as coded, please visit the xref:reference:index.adoc[API documentation page].
+This section is a conceptual overview of the system of types; if you want to read the API interface as coded, please visit the xref:reference:index.adoc[API documentation page].
 
 == Summary (Cheat Sheet)
 
@@ -105,7 +105,7 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 In addition, it can be constructed from a raw pointer to access memory that is external to the library: `array_ref::array_ref({e1, e2, ...}, p)`.
 Destructor is trivial since elements are not owned or managed.
 
-The interface is almost the same as for `subarray`, which allows to generically program for both `subarray` and `array_ref`.
+The interface is almost the same as for `subarray`, which allows generic programming for both `subarray` and `array_ref`.
 
 `array_ref` contains some optimizations; for example, `elements` provides a flattened random-access and contiguous view of all the elements in the array in canonical order.
 
@@ -147,11 +147,11 @@ It inherits the behavior interface (including constructors) of `dynamic_array`, 
 New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`.
 The first argument is of `extents_type`, and the second is optional for element types with a default constructor.
 
-Finally `multi::inplace_array` is a special kind of `multi::array` that uses a internal stack-based allocator; this guarantees total interface compatibility with `multi::array` (it owns the elements, it is resizable, has iterators, etc.)
+Finally `multi::inplace_array` is a special kind of `multi::array` that uses an internal stack-based allocator; this guarantees total interface compatibility with `multi::array` (it owns the elements, it is resizable, has iterators, etc.)
 The third template argument of `multi::inplace_array<T, D, MaxCapacity>` is the maximum capacity of the array (not an allocator.).
 The number of elements of the array is dynamic as long as the number of elements is less or equal than `MaxCapacity` (the behavior is undefined otherwise.)
-Because it stack allocated it doesn't have O(1) moves (move falls back to copy), although copies are fast because memore is in the stack.
-It is very efficient to small arrays of known maximum size.
+Because it is stack allocated it doesn't have O(1) moves (move falls back to copy), although copies are fast because memory is in the stack.
+It is very efficient for small arrays of known maximum size.
 
 [#ref_restriction]
 === Restrictions

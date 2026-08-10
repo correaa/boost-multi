@@ -124,7 +124,7 @@ They differ conceptually in their resizing operations: `multi::array<T, 1>` does
 The difference is that the library doesn't implement *amortized* allocations; therefore, these operations would be of a higher complexity cost than the `std::vector`.
 For this reason, `resize(new_size)` is replaced with `reextent(+{new_size}+)` in `multi::array`, whose primary utility is for element preservation when necessary.
 
-In a departure from standard containers, elements are left initialized if they have trivial constructor.
+In a departure from standard containers, elements are left uninitialized if they have a trivial constructor.
 So, while `multi::array<T, 1> A(+{N}+, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
 RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
 
@@ -169,7 +169,7 @@ and nesting parallelization policies usually don't help either.
 
 Flattening the n-dimensional structure for certain algorithms might help, but such techniques are beyond the scope of this documentation.
 
-Some member functions internally perform algorithms and that can benefit from execution policies;
+Some member functions internally perform algorithms that can benefit from execution policies;
 in turn, some of these functions have the option to pass a policy.
 For example, this copy construction can initialize elements in parallel from the source:
 
@@ -270,7 +270,7 @@ The user can choose one or the other, or none, if serialization is not needed.
 The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have a single code for both.
 Serialization can be binary (efficient) or text-based (human-readable).
 
-Here, it is a small implementation of save and load functions for an array to JSON format with the Cereal library.
+Here is a small implementation of save and load functions for an array to JSON format with the Cereal library.
 The example can be adapted to other formats or libraries.
 An alternative for XML with Boost.Serialization is commented on the right.
 
@@ -357,7 +357,7 @@ The output JSON file created by Cereal in the previous example looks like this.
 The link:https://godbolt.org/z/de814Ycar[Cereal XML] and Boost XML output are different but they would have a similar structure.
 
 Large datasets tend to be serialized slowly for archives with heavy formatting.
-Here it is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array with random `double` elements.
+Here is a comparison of speeds when serializing and deserializing a 134 MB 4-dimensional array with random `double` elements.
 
 |===
 | Archive format (Library)     | file size     | speed (read - write)           | time (read - write)
@@ -382,8 +382,8 @@ Using Interprocess allows for shared memory and for persistent mapped memory.
 [source,cpp]
 ----
 #include <boost/interprocess/managed_mapped_file.hpp>
-#include "multi/array.hpp"
-#include<cassert>
+#include <multi/array.hpp>
+#include <cassert>
 
 namespace bip = boost::interprocess;
 using manager = bip::managed_mapped_file;
@@ -404,7 +404,7 @@ int main(){
 	manager m{bip::open_only, "bip_mapped_file.bin"};
 	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
 	assert( arr2d[4][5] == 45.001 );
-	m.destroy<marray<double, 2>>("arr2d");//    eliminate<marray<double, 2>>(m, "arr2d");}
+	m.destroy<marray<double, 2>>("arr2d");
 }
 }
 ----
@@ -516,10 +516,10 @@ reduce_by_row(hankel, sums_out.begin());
 ----
 link:https://godbolt.org/z/v86bxKnK8[(open with Compiler Explorer)]
 
-Lambdas which are expected to be executed in the GPU need to be declared `__host__ __device__`.
+Lambdas which are expected to be executed in the GPU need to be declared `pass:c[__host__ __device__]`.
 Take into account that lambdas executed in the device cannot take captures by reference.
-Library's restrictions do not work on `__device__`-only functions due to limitations of the CUDA language.
-In addition, `__host__ __device__` cannot take initializing captures (e.g. `[var = ...]`),
+Library's restrictions do not work on `pass:c[__device__]`-only functions due to limitations of the CUDA language.
+In addition, `pass:c[__host__ __device__]` cannot take initializing captures (e.g. `[var = ...]`),
 or `auto` arguments.
 As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parenthesis).
 
@@ -530,7 +530,7 @@ As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (n
 		^ multi::extensions_t<2>({N, M})
 ```
 
-(Alternatively the functions can be defined as separate class with a `__host__ __device__ operator()`).
+(Alternatively the functions can be defined as separate class with a `pass:c[__host__ __device__ operator()]`).
 
 [#interop_openmp]
 === OpenMP via Thrust
@@ -589,7 +589,7 @@ multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000, 1000
 
 The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
 
-As a quick way to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool that can replace the default Thrust allocator.
+As a quick way to improve performance in many cases, here is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool that can replace the default Thrust allocator.
 The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
 
 [source,cpp]
@@ -623,7 +623,7 @@ More targeted usage patterns may require locally (non-globally) defined memory r
 link:https://developer.nvidia.com/cuda/toolkit[CUDA] is a dialect of pass:[C++] that allows writing pieces of code for GPU execution, known as "CUDA kernels".
 CUDA code is generally "low level" (less abstracted), but it can be used in combination with CUDA Thrust or the CUDA runtime library, especially to implement custom algorithms.
 Although code inside kernels has certain restrictions, most Multi features can be used. 
-(Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
+(Most functions in Multi, except those involving memory allocations, are marked `pass:c[__device__]` to allow this.)
 
 Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not trivial).
 Since arrays are usually passed by reference (e.g. `multi::array<double, 2>&` or `Array&&`), a different idiom needs to be used.
@@ -635,7 +635,7 @@ They are cheaply copied (like iterators) and they allow indexing.
 Also, they have no associated `.size()` or `.extents()`, but this is generally fine for kernels.
 (Since `cursors` have minimal information for indexing, they can save stack/register space in individual kernels.)
 
-Here it is an example implementation for matrix multiplication, in combination with Thrust and Multi,
+Here is an example implementation for matrix multiplication, in combination with Thrust and Multi:
 
 [source,cpp]
 ----
@@ -791,7 +791,7 @@ The header `multi/io.hpp` can be used to output arrays and subarrays, but it is 
 The library works out-of-the-box via the automatic `cppyy` bindings, providing a syntax similar to that of pass:[C++].
 Additionally, the memory layouts are compatible with Numpy which makes it possible to interoperate pass:[C++] and python code without memory copies.
 
-Here it is a complete
+Here is a complete
 link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing#scrollTo=T80_fu0660xP[Python session]:
 
 [source,python]

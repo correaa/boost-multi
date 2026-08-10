@@ -14,6 +14,7 @@
 ** xref:tutorial.adoc#tutorial_conversions[Conversions]
 ** xref:tutorial.adoc#tutorial_uninit_v_init[Uninitialized vs. Initialized Elements]
 ** xref:tutorial.adoc#tutorial_const_correctness[Const-correctness]
+** xref:tutorial.adoc#tutorial_addressing_subarrays[Addressing Subarrays]
 ** xref:tutorial.adoc#tutorial_constexpr[Compile-time Evaluation]
 ** xref:tutorial.adoc#tutorial_restrictions[Restrictions]
 ** xref:tutorial.adoc#tutorial_elementwise[Elementwise Expressions]

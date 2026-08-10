@@ -134,30 +134,30 @@ auto main() -> int {
 		fun(arr({1, 3}, {1, 3}));
 #endif
 	}
-// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
-// 	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr_const = arr;
-// 	BOOST_TEST(( &mdspan_arr_const[0, 0] == &arr[0][0] ));
-// 	BOOST_TEST( &fun(arr) == &arr[0][0] );
+	// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+	// 	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr_const = arr;
+	// 	BOOST_TEST(( &mdspan_arr_const[0, 0] == &arr[0][0] ));
+	// 	BOOST_TEST( &fun(arr) == &arr[0][0] );
 
-// 	// std::mdspan<int const, std::dextents<std::size_t, 1>, std::layout_stride> mds1D = center[0];
-// 	// BOOST_TEST(( &mds1D[0] == &center[0][0] ));
+	// 	// std::mdspan<int const, std::dextents<std::size_t, 1>, std::layout_stride> mds1D = center[0];
+	// 	// BOOST_TEST(( &mds1D[0] == &center[0][0] ));
 
-// 	std::mdspan<int, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr = arr;
-// 	BOOST_TEST(( &mdspan_arr[0, 0] == &arr[0][0] ));
-// #endif
+	// 	std::mdspan<int, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr = arr;
+	// 	BOOST_TEST(( &mdspan_arr[0, 0] == &arr[0][0] ));
+	// #endif
 
-// 	auto const& center = arr({1, 3}, {1, 3});
-// 	BOOST_TEST( &center[0][0] == &arr[1][1] );
+	// 	auto const& center = arr({1, 3}, {1, 3});
+	// 	BOOST_TEST( &center[0][0] == &arr[1][1] );
 
-// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
-// 	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mds = center;
-// 	BOOST_TEST(( &mds[0, 0] == &center[0][0] ));
+	// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+	// 	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mds = center;
+	// 	BOOST_TEST(( &mds[0, 0] == &center[0][0] ));
 
-// 	BOOST_TEST( &fun_const(center) == &center[0][0] );
+	// 	BOOST_TEST( &fun_const(center) == &center[0][0] );
 
-// 	std::mdspan<int const, std::dextents<std::size_t, 1>, std::layout_stride> mds1D = center[0];
-// 	BOOST_TEST(( &mds1D[0] == &center[0][0] ));
-// #endif
+	// 	std::mdspan<int const, std::dextents<std::size_t, 1>, std::layout_stride> mds1D = center[0];
+	// 	BOOST_TEST(( &mds1D[0] == &center[0][0] ));
+	// #endif
 
 	return boost::report_errors();
 }
