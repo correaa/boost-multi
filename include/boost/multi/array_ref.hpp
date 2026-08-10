@@ -323,6 +323,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
 
  public:
+	/// Array value after evaluation through the first index, an object of lower dimension, `multi::array<T, D ‐ 1, P>` or, for `D == 1`, `std::pointer_traits<P>::element_type` (usually `T`)
 	using value_type = typename std::conditional_t<
 		(D > 1),
 		array<element, D - 1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
@@ -3828,7 +3829,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
  public:
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
+	/// Type to describe the layout of an array, that results from `.layout()` member.
 	using layout_type = typename subarray_base::layout_type;
+
+	/// Type for random-access iteration in the leading dimension, that results from `.begin()`/`.end()` members
 	using iterator    = typename subarray_base::iterator;
 
 	using typename subarray_base::size_type;
