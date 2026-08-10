@@ -62,8 +62,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference)
+auto main() -> int {      // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 #ifndef __circle_build__  // circle rejects casting the std::conj overload set (even with explicit <double>) to a function reference: "overload set conj provided where expression expected"
 	{
 		using complex = std::complex<double>;
@@ -89,11 +88,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::weakly_incrementable<decltype(conjd_arr_beg)>);  // NOLINT(misc-include-cleaner)
 		BOOST_TEST( conjd_arr.begin() == std::ranges::begin(conjd_arr) );
 #endif
-
-		// BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
-		// BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
-
-		// BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
 	}
 #endif
 

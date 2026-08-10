@@ -177,12 +177,12 @@ struct                                                                          
 		T, D,
 		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
-  private:
+ private:
 	auto uninitialized_value_construct() {  // NOLINT(readability-identifier-naming) make private name
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
-  protected:
+ protected:
 	constexpr void uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
