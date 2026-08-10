@@ -269,11 +269,9 @@ class range {
 	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto count(Value const& value) const -> size_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
-		using std::max;
-		using std::min;
-		auto new_first = max(self.first(), other.first());
-		auto new_last  = min(self.last(), other.last());
-		new_first      = min(new_first, new_last);
+		auto new_first = (std::max)(self.first(), other.first());
+		auto new_last  = (std::min)(self.last(), other.last());
+		new_first      = (std::min)(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
 };
@@ -373,13 +371,10 @@ struct extent_t : public range<IndexType, IndexTypeLast> {
 	constexpr extent_t() = default;
 
 	friend constexpr auto intersection(extent_t const& ex1, extent_t const& ex2) -> extent_t {
-		using std::max;
-		using std::min;
+		auto       first = (std::max)(ex1.first(), ex2.first());
+		auto const last  = (std::min)(ex1.last(), ex2.last());
 
-		auto       first = max(ex1.first(), ex2.first());
-		auto const last  = min(ex1.last(), ex2.last());
-
-		first = min(first, last);
+		first = (std::min)(first, last);
 
 		return extent_t{first, last};
 	}
