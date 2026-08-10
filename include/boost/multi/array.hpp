@@ -1131,8 +1131,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using array_alloc::get_allocator;
-	// using allocator_type = typename dynamic_array::allocator_type;
-	using decay_type     = array<T, 0, Alloc>;
+
+	using decay_type = array<T, 0, Alloc>;
 
 	template<class Ptr>
 	void assign(Ptr data) & {
@@ -1460,12 +1460,13 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename dynamic_array::element_ref, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator=(dynamic_array<TT, 0, As...> const& other) & -> dynamic_array& {
 		assert(this->extents() == other.extents());
-		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
+		if(!this->is_empty()) {
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		}
 		return *this;
 	}
 
 	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		// cppcheck-suppress duplInheritedMember ; to overwrite
 		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
 	}
 
