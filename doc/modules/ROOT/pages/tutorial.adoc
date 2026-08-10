@@ -262,8 +262,10 @@ or equivalently,
 ----
 auto C2 = + A2( {0, 2}, {0, 2} );
 ----
-Note the use of the prefix `\+` (plus) as an indicator that a copy must be created (it has no arithmetic implications).
+Note the use of the prefix pass:c:[+] (plus) as an indicator that a copy must be created (it has no arithmetic implications).
 Due to a language limitation, omitting the plus symbol will create another non-independent reference view of the left-hand side, which is generally undesired.
+
+The notation `A2( {0, 2}, {0, 2} )` takes a 2x2 subarray of the original array, with indices between 0 and 2 (non-inclusive) on both axes; it is thoroughly explained in the section xref:tutorial.adoc#tutorial_slices_and_strides[Slices and Strides].
 
 Subarray-references can also be assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
@@ -485,7 +487,7 @@ flat_print(A);
 > [1.2, 1.1, 2.4, 1, 11.2, 3, 34.4, 4, 15.2, 99, 32.4, 2]
 > ```
 
-This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
+This feature allows viewing the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
 
 Using the `.elements()` method, one can achieve an effective way to fuse nested loops.
 
@@ -579,33 +581,12 @@ In summary, to make a copy (enforce value semantics), use prefix `operator+`, to
 
 This is just a recommendation that the library cannot enforce, feel free to try alternative idioms.
 
-// == "Pointer" to subarray
-
-// The library strongly relies on value-semantics, and it doesn't entertain the concept of "shallow" copy;
-// however, it supports reference- and pointer-semantics.
-
-// Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely.
-// These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
-
-// ```cpp
-// auto A = multi::array<double, 2>({4, 4});
-
-// auto row2_ptr = &A[2];  // A[2] is a row of A (not an element)
-// assert( row2_ptr == &*(A.begin() + 2) );
-// ```
-
-// The expression `A[2]` above is technically a C++ temporary object, and therefore it doesn't have a C++ address (taking `std::addressof` gives a compilation error).
-// However, in the library's abstraction, `A[2]` references an existing part of the original array, i.e. it is a "library reference", whose "library address" can be obtained with the `&` operator.
-// The case is an illustration that, in the library, operator `&` is, for subarrays, different than the `std::addressof` operator; the latter may not be defined and even not compile for some expressions.
-
-// Comparing these markers/pointers with different provenance, i.e., originating from different arrays, is generally undefined.
-
 [#tutorial_indexing]
 == Indexing
 
 Arrays provide random access to elements or subviews.
 Many algorithms on arrays are oriented to linear algebra,
-which are ubiquitously implemented in terms of multidimensional index access.
+and are ubiquitously implemented in terms of multidimensional index access.
 
 Iterator access and index access are two alternatives for accessing elements.
 For example `*(begin(A) + n)` and `A[n]` are equivalent
@@ -615,7 +596,7 @@ The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equi
 [#tutorial_element_access]
 == Element Access and Partial Access
 
-Index access mimics that of C-fixed sizes arrays. 
+Index access mimics that of C-style fixed-size arrays.
 For example, a 2-dimensional array accesses an element by specifying two indices `A[1][2]`,
 which can be used for direct write and read operations;
 while _partial_ index arguments `A[1]` generate a 1-dimensional view object (a reference).
@@ -789,7 +770,7 @@ multi::array<std::complex<float>, 2>  C2{Z};  // explicit conversion is allowed
 // multi::array<std::complex<float>, 2>  C3 = Z;  // implicit conversion is disallowed (compilation error)
 ----
 
-Implicit conversions are generally considered harmful, but inconsistent conversions are worst; therefore, the library allows them when appropriate.
+Implicit conversions are generally considered harmful, but inconsistent conversions are worse; therefore, the library allows implicit conversions when they preserve consistency.
 The main drawback of implicit conversions in this context is that they might incur unexpected (e.g. costly) data conversions when passing arguments to functions.
 
 [source,cpp]
@@ -860,7 +841,7 @@ auto A2 = multi::array<int, 2>({2, 3}, 0);  // generically multi::array<T, 2>({2
 This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values, or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization.
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround built-in in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+A built-in workaround in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 
 [source,cpp]
 ----
@@ -874,8 +855,8 @@ With this line, `std::complex<double>` elements inside arrays will be left unini
 The rule will only apply to this library's containers (`multi::array`, etc), and not to other containers (such as `std::vector`) or individual `std::complex` variables.
 
 Finally, the library offers a tag to explicitly state the intention of having uninitialized elements: `multi::array<int, 2> A2({2, 3}, multi::uninitialized_elements)`.
-This syntax will compile only if elements are trivially-default constructible; 
-therefore and as an example `multi::array<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
+This syntax will compile only if elements are trivially-default constructible;
+for example, `multi::array<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
 [#tutorial_const_correctness]
 == Const-correctness
@@ -936,6 +917,74 @@ int main() {
 //  fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const
 }
 ----
+
+[#tutorial_addressing_subarrays]
+== Addressing subarrays
+
+A fundamental design decision of this library is that subarray references are not copyable.
+This is done to clearly distinguish the value and reference categories of objects,
+and it is a departure from the design of `std::span` and `std::mdspan` (and other related objects like `std::string_view`).
+This avoids inconsistencies in the meaning of assignability, copyability, and constness of these reference-like types, as discussed in link:https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1085r2.md[P1085R2] and many subsequent works.
+
+In the design of `std::span`, an object plays two roles at once: it refers to a range of elements, and it can itself be reseated or copied around like an ordinary value (its assignment operator simply rebinds the pointer and size it holds; it does not touch the elements it points to).
+This dual role is convenient in simple cases, but it defeats some generic-programming patterns that rely on cleanly separating "the reference" from "the data being referred to".
+
+In Multi, an object of type `multi::subarray` does refer to a subarray of a larger object, but we cannot say it "addresses" it the way a pointer or a `std::span` does.
+The reason is that assignment through a `subarray` is "deep": `a = b` copies elements from `b` into `a`, rather than rebinding `a` to refer to whatever `b` refers to.
+Because a `subarray` cannot be reseated this way, it also cannot be reassigned or copied like a pointer.
+This raises a natural question: if a `subarray` cannot be reseated or copied, how do you hold on to "where" it is, e.g., to store it for later use?
+The library's answer is to overload `operator&` for `multi::subarray` (defined on r-values, since that is generally how subarrays arise, e.g., as the result of an indexing expression).
+
+A related consequence is that `multi::subarray` objects cannot be stored directly in a container, since a `subarray` is itself a reference.
+This would be as nonsensical as trying to store `int&` inside a `std::vector`;
+an experienced programmer would instead directly reach for `std::vector<int*>` and handle the indirection explicitly.
+
+For this reason, the library introduces the concept of the "address" of a subarray, which can be stored in a container.
+On reflection, such an address cannot be an ordinary language pointer: a subarray is more than a single memory location; it also carries its shape, strides, and offset (its "layout"), none of which a plain `T*` can represent.
+So `&subarray` yields a dedicated pointer-like handle type that bundles the base address together with this layout information, and that can be dereferenced, compared, stored, and moved around like an ordinary pointer.
+
+The concept is demonstrated as follows: suppose we have a large array, and the user "selects" rectangular regions over it (this could equally be the result of some algorithm).
+
+[source,cpp]
+----
+multi::array<int, 2> A({4, 6}, 1);
+std::vector blocks = { &A({0, 2}, {0, 2}), &A({1, 4}, {1, 4}), &A({0, 2}, {4, 6}) };  // using CTAD for convenience
+// ...             = {  A({0, 2}, {0, 2}),  A({1, 4}, {1, 4}),  A({0, 2}, {4, 6}) };  // this would be an error
+----
+
+Note this relies on the overloaded (r-value) `operator&`.
+
+We can then process the `blocks` container in more complex ways (such as sorting them), or go through all "selected" blocks and perform an operation on each, for example setting their values to zero.
+
+[source,cpp]
+----
+std::ranges::sort(blocks, [](auto const& p1, auto const& p2) { return p1->num_elements() < p2->num_elements(); });
+for(auto block : blocks) {
+	std::ranges::fill(block->elements(), 0);
+}
+----
+link:https://godbolt.org/z/h6jxGraEz[(open with Compiler Explorer)]
+
+// == "Pointer" to subarray
+
+// The library strongly relies on value-semantics, and it doesn't entertain the concept of "shallow" copy;
+// however, it supports reference- and pointer-semantics.
+
+// Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely.
+// These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
+
+// ```cpp
+// auto A = multi::array<double, 2>({4, 4});
+
+// auto row2_ptr = &A[2];  // A[2] is a row of A (not an element)
+// assert( row2_ptr == &*(A.begin() + 2) );
+// ```
+
+// The expression `A[2]` above is technically a C++ temporary object, and therefore it doesn't have a C++ address (taking `std::addressof` gives a compilation error).
+// However, in the library's abstraction, `A[2]` references an existing part of the original array, i.e. it is a "library reference", whose "library address" can be obtained with the `&` operator.
+// The case is an illustration that, in the library, operator `&` is, for subarrays, different than the `std::addressof` operator; the latter may not be defined and even not compile for some expressions.
+
+// Comparing these markers/pointers with different provenance, i.e., originating from different arrays, is generally undefined.
 
 [#tutorial_constexpr]
 == Compile-time Evaluation

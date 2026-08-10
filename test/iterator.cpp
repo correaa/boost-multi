@@ -220,8 +220,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& arrc2 = arr();
 
-		// BOOST_TEST( arrc.addressof() == arrc2.addressof() );  // BOOST_TEST( &arrc == &arrc2 );
-		BOOST_TEST( &arrc == &arrc2 );  // BOOST_TEST( &arrc == &arrc2 );
+		// BOOST_TEST( arrc.addressof() == arrc2.addressof() );
+		BOOST_TEST( &arrc == &arrc2 );
 
 		multi::array<double, 3>::iterator const it2 = begin(arr);
 		BOOST_TEST(it == it2);

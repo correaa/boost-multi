@@ -11,14 +11,14 @@ The pass:[C++23] standard provides `std::mdspan`, a non-owning _multidimensional
 So here is an appropriate point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach.
 
-The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
-While `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
+The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries,
+while `mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
 Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
 Therefore, its compatibility with the rest of the STL is lacking.
 link:https://godbolt.org/z/aWW3vzfPj[Preliminarily], Multi array can be converted (viewed as) `mdspan`.
 
 link:https://www.boost.org/doc/libs/1_82_0/libs/multi_array/doc/user.html[Boost.MultiArray] is the original multidimensional array library shipped with Boost.
-This library can replace Boost.MultiArray in most contexts, it even fulfills the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
+This library can replace Boost.MultiArray in most contexts; it even fulfills the concepts of `boost::multi_array_concepts::ConstMultiArrayConcept` and `...::MutableMultiArrayConcept`.
 Boost.MultiArray has technical and semantic limitations that are overcome in this library, regarding layouts and references;
 it doesn't support value-semantics, iterator support is limited, and it has other technical problems.
 
@@ -108,7 +108,7 @@ internal representation (memory ordering) can still be different, affecting oper
 
 Range notation such as `1:2` is replaced by `{0, 2}`, which considers both the difference in the start index and the half-open interval notation in the pass:[C++] conventions.
 Stride notation such as `1:10:2` (i.e., from first to tenth included, every two elements) is replaced by `{0, 10, 2}`.
-Complete range interval (single `:` notation) is replaced by `multi::_`, (or by `_` after the declaration `using multi::_;`).
+Complete range interval (single `:` notation) is replaced by `multi::_`, (or by `pass:c[_]` after the declaration `using multi::_;`).
 These rules extend to higher dimensionality.
 
 Multi provides algebraic operators that are expanded elementwise.
