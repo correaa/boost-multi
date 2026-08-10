@@ -3741,7 +3741,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
 		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-		auto*  ptr1 = &ref1;
+		auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
 		P2 ptr2 = reinterpret_cast<P2&>(ptr1);  // NOSONAR
