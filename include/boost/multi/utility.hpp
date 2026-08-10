@@ -263,9 +263,9 @@ class value_wrapper : Fun {
 	~value_wrapper() = default;
 
 	template<class... As>
-	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
-		-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
-		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+	BOOST_MULTI_HD constexpr auto operator()(As&&... args) const
+		-> decltype(std::declval<Fun&>()(std::forward<As>(args)...)) {
+		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(args)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
 	}
 
 	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
@@ -738,27 +738,27 @@ template<class T> struct element_t_impl<std::initializer_list<std::initializer_l
 template<class T> using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
-auto base(std::initializer_list<T> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<T> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return il.begin();
+	return ilist.begin();
 }
 
 template<class T>
-auto base(std::initializer_list<std::initializer_list<T>> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<std::initializer_list<T>> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return base(*il.begin());
+	return base(*ilist.begin());
 }
 
 template<class T>
-auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return base(*il.begin());
+	return base(*ilist.begin());
 }
 
 #ifdef __clang__
@@ -768,52 +768,52 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 #endif
 
 template<class T>
-constexpr auto extents(std::initializer_list<T> const& il) {
-	return multi::extents_t<1>{static_cast<multi::ssize_t>(il.size())};
+constexpr auto extents(std::initializer_list<T> const& ilist) {
+	return multi::extents_t<1>{static_cast<multi::ssize_t>(ilist.size())};
 }
 
 template<class T>
-constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il) {
-	if(il.size() == 0) {
+constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& ilist) {
+	if(ilist.size() == 0) {
 		return multi::extents_t<2>{0, 0};
 	}
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
-	// for(std::size_t i = 1; i != il.size(); ++i) {
-	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	assert(std::all_of(ilist.begin() + 1, ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
+	// for(std::size_t i = 1; i != ilist.size(); ++i) {
+	// 	assert( ilist.begin()[i].size() == ilist.begin()[0].size() );
 	// }
-	return multi::extents_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
+	return multi::extents_t<2>{static_cast<multi::ssize_t>(ilist.size()), static_cast<multi::ssize_t>(ilist.begin()->size())};
 }
 
 template<class T>
-constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	if(il.size() == 0) {
+constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& ilist) {
+	if(ilist.size() == 0) {
 		return multi::extents_t<3>{0, 0, 0};
 	}
 
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
-	// for(std::size_t i = 1; i != il.size(); ++i) {
-	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
+	assert(std::all_of(ilist.begin() + 1, ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
+	// for(std::size_t i = 1; i != ilist.size(); ++i) {
+	// 	assert( ilist.begin()[i].size() == ilist.begin()[0].size() );
 	// }
 
-	// if(il.begin()->size() == 0) {
-	// 	return multi::extents_t<3>{il.size(), 0, 0};
+	// if(ilist.begin()->size() == 0) {
+	// 	return multi::extents_t<3>{ilist.size(), 0, 0};
 	// }
 
-	return static_cast<multi::ssize_t>(il.size()) * extents(*il.begin());
+	return static_cast<multi::ssize_t>(ilist.size()) * extents(*ilist.begin());
 	// return multi::extents_t<3>{
-	// 	static_cast<multi::size_t>(il.size()),
-	// 	static_cast<multi::size_t>(il.begin()->size()),
-	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
+	// 	static_cast<multi::size_t>(ilist.size()),
+	// 	static_cast<multi::size_t>(ilist.begin()->size()),
+	// 	static_cast<multi::size_t>(ilist.begin()->begin()->size())
 	// };
 }
 
 template<class T>
-constexpr auto layout(std::initializer_list<T> const& il) {
+constexpr auto layout(std::initializer_list<T> const& ilist) {
 	return multi::layout_t<1>{
 		multi::layout_t<0>(multi::extents_t<0>{}),
 		1,
 		0,
-		static_cast<multi::ssize_t>(il.size())
+		static_cast<multi::ssize_t>(ilist.size())
 	};
 }
 
