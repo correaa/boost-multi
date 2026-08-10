@@ -1843,15 +1843,16 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
 	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof() const&& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 	// NOLINTEND(readability-identifier-naming)
 
  public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 	// operator& is not defined for r-values anyway
 	constexpr auto operator&() && { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	// [[deprecated("controversial")]]
+	constexpr auto operator&() const&& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+
 	constexpr auto operator&() & { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	// [[deprecated("controversial")]]
 	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// NOLINTEND(google-runtime-operator)
 
