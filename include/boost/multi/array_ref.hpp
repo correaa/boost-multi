@@ -2250,8 +2250,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return this->to_mdspan_aux_(); }
-	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()      & { return this->to_mdspan_aux_(); }
-	operator std::mdspan<T      , std::dextents<std::size_t, D>, std::layout_stride>()     && { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() & { return this->to_mdspan_aux_(); }
+	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() && { return this->to_mdspan_aux_(); }
 #endif
 
 	// /// assigns `.size()` values after an iterator into the array.
@@ -2481,7 +2481,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// NOLINTNEXTLINE(readability-identifier-naming)
 	BOOST_MULTI_HD constexpr auto range(index_range irng) && -> decltype(auto) { return std::move(*this).sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 	// NOLINTNEXTLINE(readability-identifier-naming)
-	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }                    // cppcheck-suppress duplInheritedMember;
+	BOOST_MULTI_HD constexpr auto range(index_range irng) & -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
 	using const_subarray<T, D, ElementPtr, Layout>::paren_aux_;
 

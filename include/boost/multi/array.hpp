@@ -54,8 +54,8 @@ namespace detail {
 
 template<class Allocator>
 struct array_allocator {
-	array_allocator()    = default;
-	
+	array_allocator() = default;
+
  private:
 	using allocator_type = Allocator;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
@@ -145,7 +145,6 @@ struct                                                                          
 		"allocator value type must match array value type"
 	);
 
-// protected:
  private:
 	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>;
 
@@ -178,12 +177,12 @@ struct                                                                          
 		T, D,
 		typename multi::allocator_traits<typename multi::allocator_traits<allocator_type>::template rebind_alloc<T>>::pointer>;
 
-  private:
+ private:
 	auto uninitialized_value_construct() {  // NOLINT(readability-identifier-naming) make private name
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
-  protected:
+ protected:
 	constexpr void uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
@@ -1132,8 +1131,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using array_alloc::get_allocator;
-	// using allocator_type = typename dynamic_array::allocator_type;
-	using decay_type     = array<T, 0, Alloc>;
+
+	using decay_type = array<T, 0, Alloc>;
 
 	template<class Ptr>
 	void assign(Ptr data) & {
@@ -1461,14 +1460,15 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename dynamic_array::element_ref, TT>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	auto operator=(dynamic_array<TT, 0, As...> const& other) & -> dynamic_array& {
 		assert(this->extents() == other.extents());
-		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
+		if(!this->is_empty()) {
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		}
 		return *this;
 	}
 
-	// constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
-	// 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	// 	return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
-	// }
+	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
+		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
+	}
 
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ; to overwrite
