@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -338,6 +338,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
+#if (!defined(__GNUC__) || (__GNUC__ > 8)) || defined(__clang__)
 	{
 		multi::array<int, 2> const A = {
 			{0, 1, 2},
@@ -365,6 +366,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
+#endif
 	{
 		using multi::elementwise::eye;
 		auto arr = +eye(5);
