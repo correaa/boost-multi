@@ -938,10 +938,12 @@ struct                                                                          
 #endif
 
 	/// Copy assignment from @p other array of a related typed
-	template<class TT, class... As>  // , std::enable_if_t<std::is_assignable_v<T, TT>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
+	template<class TT, class... As>
 	auto operator=(dynamic_array<TT, D, As...> const& other) & -> dynamic_array& {
 		assert(extents(other) == dynamic_array::extents());
-		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
+		if(!this->is_empty()) {
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		}
 		return *this;
 	}
 
@@ -1432,7 +1434,9 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		if(this == &other) {
 			return *this;
 		}  // lints (cert-oop54-cpp) : handle self-assignment properly
-		if(!this->is_empty()) { adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()); }
+		if(!this->is_empty()) {
+			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		}
 		return *this;
 	}
 
@@ -1467,7 +1471,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	}
 
 	constexpr explicit operator subarray<value_type, 0, typename dynamic_array::element_const_ptr, typename dynamic_array::layout_type>() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();  // cppcheck-suppress duplInheritedMember ; to overwrite
+		return this->template dynamic_array_cast<value_type, typename dynamic_array::element_const_ptr>();                                     // cppcheck-suppress duplInheritedMember ; to overwrite
 	}
 
 	template<class Archive>
