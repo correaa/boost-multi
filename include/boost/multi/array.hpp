@@ -797,6 +797,7 @@ struct                                                                          
 	/// Inherited indexed access
 	using ref_::operator[];
 
+	/// Subscript operators (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		return multi::move(ref_::operator[](idx));
 	}

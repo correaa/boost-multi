@@ -1741,7 +1741,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// yields a view in which indices are unordered (generally to optimize access)
+	/// yields a view in which index access is unordered (an arbitrary transposition of indices generally to optimize access)
 	BOOST_MULTI_HD constexpr auto unordered() const {
 		return unordered_aux_().as_const();
 	}
@@ -2422,6 +2422,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
+
+	/// Assignment operators (right-hand side must be of the same dimensionality)
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) const&& -> subarray&;  // for std::indirectly_writable
 
@@ -2433,6 +2435,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = other.elements();
 		return *this;
 	}
+
 	constexpr auto operator=(subarray&& other) & noexcept(false) -> subarray& {  // NOLINT(bugprone-unsafe-to-allow-exceptions) TODO(correaa) make conditionally noexcept
 		// if(this == std::addressof(other)) { return *this; }
 		BOOST_MULTI_ASSERT(this->extent() == other.extent());
