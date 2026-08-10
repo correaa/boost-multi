@@ -54,8 +54,8 @@ namespace detail {
 
 template<class Allocator>
 struct array_allocator {
-	array_allocator()    = default;
-	
+	array_allocator() = default;
+
  private:
 	using allocator_type = Allocator;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
@@ -145,7 +145,6 @@ struct                                                                          
 		"allocator value type must match array value type"
 	);
 
-// protected:
  private:
 	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>;
 
