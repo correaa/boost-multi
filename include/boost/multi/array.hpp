@@ -171,7 +171,7 @@ struct                                                                          
 	/// @internal
 	void operator delete(void* ptr) noexcept { ::operator delete(ptr); }  // overrides the deleted delete operator in reference (base) class subarray
 
- protected:  // TODO(correaa) make private
+ private:  // TODO(correaa) make private
 	/// Associated array reference type, also its base class  (generally `multi::array_ref<element, dimensionality, allocator_type>`)
 	using ref_ = array_ref<
 		T, D,
