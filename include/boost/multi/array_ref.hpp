@@ -343,17 +343,13 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	// BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
 
-	/// Returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
+	/// returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
 
-	// /// returns the base move-pointer of the array (arithmetic base of the layout, generally the first element).
-	// BOOST_MULTI_HD constexpr auto mbase() const& -> element_ptr& { return base_; }
-
+	/// returns the layout of the array
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
-	// friend constexpr auto         layout(array_types const& self) -> layout_type const& { return self.layout(); }
 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
-	// [[clang::unsafe_buffer_usage]]
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	[[deprecated("for compatibility with BMA, use .base()")]]
 	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -372,7 +368,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
 
-	using derived = subarray<T, D, ElementPtr, Layout>;
+	// using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
 
  public:
