@@ -134,7 +134,7 @@ struct plus {
 }  // end namespace detail
 
 /// creates a array with the `+` operation applied lazily elementwise to two arrays
-template<class A, class B>
+template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
@@ -152,7 +152,7 @@ struct minus {
 };
 }  // end namespace detail
 
-template<class A, class B>
+template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator-(A&& alpha, B&& omega) noexcept {
 	return elementwise::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
@@ -168,11 +168,11 @@ template<class A>
 constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
 
 /// creates a array with the `*` operation applied lazily elementwise to two arrays
-template<class A, class B>
+template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 /// creates a array with the `/` operation applied lazily elementwise to two arrays
-template<class A, class B>
+template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }

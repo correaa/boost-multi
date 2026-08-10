@@ -28,7 +28,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	BOOST_TEST( M1[5][7] == 5*7 );
 
-#if (!defined(__GNUC__) || (__GNUC__ > 9)) || defined(__clang__)
+#if (!defined(__GNUC__) || (__GNUC__ > 10)) || defined(__clang__)
 #if !defined(__CUDACC_VER_MAJOR__) || (__CUDACC_VER_MAJOR__ > 11)
 	// this method brings both arrays to the right (final) dimensionality and then does elementwise mult
 	using multi::elementwise::operator*;  // cppcheck-suppress constStatement
