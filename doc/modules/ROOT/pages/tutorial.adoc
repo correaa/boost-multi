@@ -262,8 +262,10 @@ or equivalently,
 ----
 auto C2 = + A2( {0, 2}, {0, 2} );
 ----
-Note the use of the prefix `\+` (plus) as an indicator that a copy must be created (it has no arithmetic implications).
+Note the use of the prefix pass:c:[+] (plus) as an indicator that a copy must be created (it has no arithmetic implications).
 Due to a language limitation, omitting the plus symbol will create another non-independent reference view of the left-hand side, which is generally undesired.
+
+The notation `A2( {0, 2}, {0, 2} )` takes a 2x2 subarray of the original array, with indices between 0 and 2 (non-inclusive) on both axes; it is thoroughly explained in the section xref:tutorial.adoc#tutorial_slices_and_strides[Slices and Strides].
 
 Subarray-references can also be assigned, but only if the shapes of the left-hand side (LHS) and right-hand side (RHS) match.
 Otherwise, the behavior is undefined (in debug mode, the program will fail an assertion).
@@ -485,7 +487,7 @@ flat_print(A);
 > [1.2, 1.1, 2.4, 1, 11.2, 3, 34.4, 4, 15.2, 99, 32.4, 2]
 > ```
 
-This feature allows to view the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
+This feature allows viewing the array as a flat sequence using the `.elements()` range, which also has `.begin()`/`.end()` and indexing.
 
 Using the `.elements()` method, one can achieve an effective way to fuse nested loops.
 
@@ -834,7 +836,7 @@ auto A2 = multi::array<int, 2>({2, 3}, 0);  // generically multi::array<T, 2>({2
 This design is particularly advantageous for *numeric* types for which external low-level libraries can fill values, or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization.
 
 Unfortunately, regarding the numeric types, STL's `std::complex<double>` was standardized as not-trivially constructible.
-A workaround built-in in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
+A built-in workaround in this library is available by forcing a particular flag on the client code in global scope, for example, immediately after including the library:
 
 [source,cpp]
 ----
@@ -919,7 +921,7 @@ This is done to clearly distinguish the value and reference categories of object
 and it is a departure from the design of `std::span` and `std::mdspan` (and other related objects like `std::string_view`).
 This avoids inconsistencies in the meaning of assignability, copyability, and constness of these reference-like types, as discussed in link:https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1085r2.md[P1085R2] and many subsequent works.
 
-In the design of `std::span`, an object plays two roles at once: it refers to a range of elements, and it can itself be reseated or copied around like an ordinary value (its assignment operator simply rebinds the pointer and size it holds, it does not touch the elements it points to).
+In the design of `std::span`, an object plays two roles at once: it refers to a range of elements, and it can itself be reseated or copied around like an ordinary value (its assignment operator simply rebinds the pointer and size it holds; it does not touch the elements it points to).
 This dual role is convenient in simple cases, but it defeats some generic-programming patterns that rely on cleanly separating "the reference" from "the data being referred to".
 
 In Multi, an object of type `multi::subarray` does refer to a subarray of a larger object, but we cannot say it "addresses" it the way a pointer or a `std::span` does.
@@ -933,7 +935,7 @@ This would be as nonsensical as trying to store `int&` inside a `std::vector`;
 an experienced programmer would instead directly reach for `std::vector<int*>` and handle the indirection explicitly.
 
 For this reason, the library introduces the concept of the "address" of a subarray, which can be stored in a container.
-On reflection, such an address cannot be an ordinary language pointer: a subarray is more than a single memory location, it also carries its shape, strides, and offset (its "layout"), none of which a plain `T*` can represent.
+On reflection, such an address cannot be an ordinary language pointer: a subarray is more than a single memory location; it also carries its shape, strides, and offset (its "layout"), none of which a plain `T*` can represent.
 So `&subarray` yields a dedicated pointer-like handle type that bundles the base address together with this layout information, and that can be dereferenced, compared, stored, and moved around like an ordinary pointer.
 
 The concept is demonstrated as follows: suppose we have a large array, and the user "selects" rectangular regions over it (this could equally be the result of some algorithm).
