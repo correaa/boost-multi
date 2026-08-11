@@ -875,7 +875,7 @@ oneapi:
     - apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - icpx --version
-    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DISABLE_THRUST_OMP=ON -DDISABLE_MPI=ON  # Thrust 3.6 doesn't work with intel, Intel MPI doesn't work on CI
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DDISABLE_THRUST_OMP=ON -DDISABLE_MPI=ON  # Thrust 3.6 doesn't work with intel, Intel MPI doesn't work on CI
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --parallel 1 || ctest --verbose --rerun-failed --output-on-failure
 
