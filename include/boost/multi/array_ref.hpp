@@ -1708,8 +1708,15 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"  // TODO(correaa) for latex documentation in MrDocs
+#endif
 	/// A transpose view $A^\mathrm{T}$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
