@@ -21,7 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
 
-find_package(Boost)  #  COMPONENTS boost unit_test_framework)  # tests require Boost.Core LightweightTest
+find_package(Boost CONFIG)  # tests require Boost.Core LightweightTest
 
 include(CTest)
 enable_testing()
@@ -91,6 +91,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Xcompiler=/wd4464
 				-Xcompiler=/wd4664
 				-Xcompiler=/wd4668
+				-Xcompiler=/wd4296  # '<': expression is always false (from CUDA Toolkit's own cuda/std/__type_traits/is_signed.h)
 			>
 		>
 	>

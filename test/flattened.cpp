@@ -314,6 +314,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.elements()[2] == 2 );
 		// BOOST_TEST( arr.elements()[3] = 22 );  // doesn't compile, good
 	}
+	{
+		multi::array<double, 3> arr = {
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}
+		};
+
+		auto [ni, nj, nk] = arr.sizes();
+		BOOST_TEST( ni == 4 );
+		BOOST_TEST( nj == 2 );
+		BOOST_TEST( nk == 3 );
+
+		BOOST_TEST( arr({0, 3}).flattened().size() == 6 );
+		BOOST_TEST( (*arr({0, 3}).flattened().begin()).size() == 3 );
+		BOOST_TEST( arr({0, 3}).flattened()[0].size() == 3 );
+	}
 
 	return boost::report_errors();
 }

@@ -143,15 +143,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> const arr = {1, 2, 3, 4};
 		auto const&                As  = arr.strided(2);
+		BOOST_TEST( As.size() == 2 );
 		BOOST_TEST( As.begin() < As.end() );
 
-		auto const& Arev = arr.sliced(3, 0, -1);
+		auto const& Arev = arr.sliced(3, -1, -1);
 
-		BOOST_TEST(Arev.size() == 3 );
+		BOOST_TEST(Arev.size() == 4 );
 
 		BOOST_TEST(Arev[0] == 4 );
 		BOOST_TEST(Arev[1] == 3 );
 		BOOST_TEST(Arev[2] == 2 );
+		BOOST_TEST(Arev[3] == 1 );
 
 		BOOST_TEST( Arev.begin() < Arev.end() );
 		BOOST_TEST( Arev.begin() <= Arev.end() );

@@ -34,8 +34,11 @@ jobs:
 
       - name: Install MrDocs
         run: |
-          wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
-          tar xzf MrDocs-0.8.0-Linux.tar.gz
+          wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-develop-Linux.tar.gz  # https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+          tar zxf MrDocs-develop-Linux.tar.gz
+          # wget --no-verbose https://github.com/cppalliance/mrdocs/releases/download/v0.8.0/MrDocs-0.8.0-Linux.tar.gz
+          # tar xzf MrDocs-0.8.0-Linux.tar.gz
+          ls -all
           echo "$PWD/MrDocs-0.8.0-Linux/bin" >> $GITHUB_PATH
 
       - name: Generate compile_commands.json for MrDocs

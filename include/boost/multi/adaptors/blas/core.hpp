@@ -15,6 +15,11 @@
 // #include<iostream>     // for debug
 #include<limits>       // numeric_limits
 #include<type_traits>  // is_convertible
+#include<version>      // feature-test macros (__cpp_lib_bit_cast)
+
+#if defined(__cpp_lib_bit_cast) && __cpp_lib_bit_cast >= 201806L
+#include<bit>          // std::bit_cast
+#endif
 
 #include "boost/multi/adaptors/blas/traits.hpp"  // IWYU pragma: export
 
@@ -300,7 +305,19 @@ template<class XP, class X = typename std::pointer_traits<XP*>::element_type, cl
 	BLAS(sgemv)('N', 1, n, 1.0F, reinterpret_cast<s const*>(static_cast<X*>(xp)), incx, reinterpret_cast<s const*>(static_cast<Y*>(yp)), incy, 0.0F, reinterpret_cast<s*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument,cppcoreguidelines-pro-type-reinterpret-cast) 
 #endif
 }
-template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_d<X>{} && is_d<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{})+(X{}*Y{}))>{}, int> =0> void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {auto const rr = BLAS(ddot )(n, reinterpret_cast<d const*>(static_cast<X*>(xp)), incx, reinterpret_cast<d const*>(static_cast<Y*>(yp)), incy); std::memcpy(reinterpret_cast<double *    >(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)  // NOSONAR
+
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_d<X>{} && is_d<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{})+(X{}*Y{}))>{}, int> =0>
+void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {
+	auto const rr = BLAS(ddot )(n, reinterpret_cast<d const*>(static_cast<X*>(xp)), incx, reinterpret_cast<d const*>(static_cast<Y*>(yp)), incy);
+	static_assert(sizeof(rr)==sizeof(*r));
+#if defined(__cpp_lib_bit_cast) && __cpp_lib_bit_cast >= 201806L
+	*static_cast<R*>(r) = std::bit_cast<R>(rr);
+#else
+	std::memcpy(reinterpret_cast<double*>(static_cast<R*>(r)), &rr, sizeof(rr));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)  // NOSONAR
+#endif
+}
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #ifdef BLAS_DOT_RETURNS_VOID
@@ -486,9 +503,9 @@ enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                 
 v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/      \
 /*=delete;*/                                                                                                                                                                                      \
 {                                                                                                                                                                                                 \
-	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) ); }                                                                                                                     \
-	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) ); }                                                                                                                     \
-	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) );                                                                                                                                                           \
+	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, n) ); }                                                                                                                     \
+	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, k) ); }                                                                                                                     \
+	BOOST_MULTI_ASSERT1( ldc >= (max)(S{1}, n) );                                                                                                                                                           \
 	BLAS(T##syrk)(      uplo, transA,            static_cast<INT>(BC(n)), static_cast<INT>(BC(k)), *reinterpret_cast<T const*>(alpha), aa, static_cast<INT>(BC(lda)),        *reinterpret_cast<T const*>(beta), cc, static_cast<INT>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)*/                                                               \
 }                                                                                                                                                                                                 \
 
@@ -502,9 +519,9 @@ template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename
 v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/               \
 /*=delete;*/                                                                                                                                                                                                                          \
 {                                                                                                                                                                                                                                     \
-	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, n) ); } \
-	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= max(S{1}, k) ); }                                                                                                                                                \
-	BOOST_MULTI_ASSERT1( ldc >= max(S{1}, n) ); \
+	if(transA == 'N' || transA == 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, n) ); } \
+	if(transA != 'N' && transA != 'n') { BOOST_MULTI_ASSERT1( lda >= (max)(S{1}, k) ); }                                                                                                                                                \
+	BOOST_MULTI_ASSERT1( ldc >= (max)(S{1}, n) ); \
 	/*BOOST_MULTI_MARK_SCOPE("cpu_herk");*/                                                                                                                                                                                                      \
 	BLAS(T##herk)(      uplo, transA,            static_cast<ssize_t>(BC(n)), static_cast<ssize_t>(BC(k)), *reinterpret_cast<Real const*>(alpha), reinterpret_cast<T const*>(aa), static_cast<ssize_t>(BC(lda)),        *reinterpret_cast<Real const*>(beta), reinterpret_cast<T*>(cc), static_cast<ssize_t>(BC(ldc)));  /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                                            \
 }                                                                                                                                                                                                                                          \
@@ -523,15 +540,15 @@ enable_if_t<  /* NOLINT(modernize-use-constraints) for C++20 */                 
 , int> =0>                                                                                                                                                                                                                              \
 v gemm(char transA, char transB, SSize m, SSize n, SSize k, ALPHA const* alpha, AAP aa, SSize lda, BBP bb, SSize ldb, BETA const* beta, CCP cc, SSize ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
 	using std::max;                                                                                                                                                                                                                     \
-	BOOST_MULTI_ASSERT1((transA != 'N') || (lda >= max(SSize{1}, m)));                                                                                                                                                                               \
-	BOOST_MULTI_ASSERT1((transA == 'N') || (lda >= max(SSize{1}, k)));                                                                                                                                                                               \
-	BOOST_MULTI_ASSERT1((transB != 'N') || (ldb >= max(SSize{1}, k)));                                                                                                                                                                               \
-	BOOST_MULTI_ASSERT1((transB == 'N') || (ldb >= max(SSize{1}, n)));                                                                                                                                                                               \
+	BOOST_MULTI_ASSERT1((transA != 'N') || (lda >= (max)(SSize{1}, m)));                                                                                                                                                                               \
+	BOOST_MULTI_ASSERT1((transA == 'N') || (lda >= (max)(SSize{1}, k)));                                                                                                                                                                               \
+	BOOST_MULTI_ASSERT1((transB != 'N') || (ldb >= (max)(SSize{1}, k)));                                                                                                                                                                               \
+	BOOST_MULTI_ASSERT1((transB == 'N') || (ldb >= (max)(SSize{1}, n)));                                                                                                                                                                               \
 \
 	BOOST_MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
 	BOOST_MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
 \
-	if(!( ldc >= max(SSize{1}, m) )) { throw std::logic_error("failed 'ldc >= max(1, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m)); }                                                                               \
+	if(!( ldc >= (max)(SSize{1}, m) )) { throw std::logic_error("failed 'ldc >= max(1, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m)); }                                                                               \
 	using std::norm; \
 	if(norm(*beta) > norm(static_cast<BETA>(0.0))) { BOOST_MULTI_ASSERT1((is_assignable<CC&, decltype((std::declval<ALPHA>()*std::declval<AA>()*std::declval<BB>()) + (std::declval<BETA>()*std::declval<CC>()))> {})); }                                                          \
 	BLAS(T##gemm)(transA, transB, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), static_cast<ssize_t>(BC(k)), *reinterpret_cast<T const*>(alpha), reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T const*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)), *reinterpret_cast<T const*>(beta), reinterpret_cast<T*>(static_cast<CC*>(cc)) /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/ /*TODO(correaa) check constness*/, static_cast<ssize_t>(BC(ldc))); \
@@ -558,9 +575,9 @@ v trsm(char side, char uplo, char transA, char diag, SSize m, SSize n, ALPHA alp
 	assert( diag   == 'U' || diag   == 'N' ); \
 	BOOST_MULTI_ASSERT1( m >= 0 && n >= 0 );                                                                                                                                                                           \
 	using std::max;                                                                                                                                                                                           \
-	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= max(SSize{1}, m) );} \
-	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= max(SSize{1}, n) );}                                                                                                                                                 \
-	BOOST_MULTI_ASSERT1( ldb >= max(SSize{1}, m) );                                                                                                                                                                   \
+	if(side == 'L') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, m) );} \
+	if(side == 'R') {BOOST_MULTI_ASSERT1( lda >= (max)(SSize{1}, n) );}                                                                                                                                                 \
+	BOOST_MULTI_ASSERT1( ldb >= (max)(SSize{1}, m) );                                                                                                                                                                   \
 	BLAS(T##trsm)(side, uplo, transA, diag, static_cast<ssize_t>(BC(m)), static_cast<ssize_t>(BC(n)), alpha, reinterpret_cast<T const*>(static_cast<AA*>(aa)), static_cast<ssize_t>(BC(lda)), reinterpret_cast<T*>(static_cast<BB*>(bb)), static_cast<ssize_t>(BC(ldb)));   /*NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-macro-parentheses)*/                                                                  \
 }                                                                                                                                                                                                                 \
 

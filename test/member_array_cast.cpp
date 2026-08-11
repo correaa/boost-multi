@@ -180,12 +180,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 1427  // offsetof applied to a type other than a standard layout (this happens with NVCC+MSVC)
 #endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"   // nv_diagnostic/nv_diag_suppress above are unknown to clang when not compiling under NVCC
+#pragma clang diagnostic ignored "-Winvalid-offsetof"  // offsetof applied to a type other than a standard layout (this happens with clang-cl+MSVC STL)
+#endif
 		// clang-format off
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		char padding_[
 			((((offsetof(employee_dummy, age) + sizeof(age)) / sizeof(std::string)) + 1) * sizeof(std::string)) - (offsetof(employee_dummy, age) + sizeof(age))
 		] = {};
 		// clang-format on
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 #ifdef __NVCC__
 #pragma nv_diagnostic pop
 #endif

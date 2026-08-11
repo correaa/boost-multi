@@ -14,9 +14,9 @@
 	defined(__HIPCC__) ||               /* hipcc generic                                */                                      \
 	defined(__HIP__) ||                 /* clang --offload=hip                         */                                       \
 	defined(THRUST_DEVICE_SYSTEM) ||    /* explicitly configured by CMake (e.g. NVIDIA thrust_create_target propagates this) */ \
-	defined(BOOST_MULTI_HAS_THRUST) ||  /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */ \
-	(defined(__has_include) &&          /* __has_include-based auto-detection:                                              */ \
-	 __has_include(<thrust/version.h>))           /* backed by AMD ROCm                             */
+	defined(BOOST_MULTI_HAS_THRUST)     /* explicit opt-in, e.g. set by Multi's CMake when find_package(Thrust) succeeds    */ \
+	/*|| (defined(__has_include) &&*/          /* __has_include-based auto-detection:                                              */ \
+	/*__has_include(<thrust/version.h>))*/           /* backed by AMD ROCm                             */
 #define BOOST_MULTI_ADL_HAS_THRUST 1
 #endif
 
@@ -44,8 +44,6 @@
 #include <thrust/equal.h>
 #include <thrust/swap.h>
 #include <thrust/uninitialized_copy.h>
-
-#include <exception>  // for std::terminate, fixes a bug un Thrust 2
 
 namespace thrust {
 template<class... Ts> void thrust_involved(Ts const&... /*unused*/) {}
@@ -416,7 +414,11 @@ class adl_uninitialized_copy_n_t {
 	template<
 		class It, class Size, class ItFwd,
 		class ValueType = typename std::iterator_traits<ItFwd>::value_type,
-		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >  // NOLINT(modernize-use-constraints) for C++20
+		class = std::enable_if_t<! std::is_rvalue_reference_v<typename std::iterator_traits<It>::reference> >,  // NOLINT(modernize-use-constraints) for C++20
+		class = std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<It   >>::type, thrust::system::cpp::tag> ||
+			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<ItFwd>>::type, thrust::system::cpp::tag>
+		>
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {

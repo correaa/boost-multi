@@ -30,8 +30,6 @@ include(CTest)
 
 # include_directories(${CMAKE_BINARY_DIR})
 
-find_package(Boost COMPONENTS unit_test_framework)
-
 add_executable(hipfft.cpp.x hipfft.cpp)
 set_source_files_properties(hipfft.cpp PROPERTIES LANGUAGE HIP)
 

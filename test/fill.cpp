@@ -71,7 +71,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( d1D[1] == 1 );
 		BOOST_TEST( d1D[9] == 9 );
 
-		d1D.assign(d1D.extent());
+		d1D = d1D.extent();
+		// d1D.assign(d1D.extent());
 		BOOST_TEST( d1D[0] == 0 );
 		BOOST_TEST( d1D[1] == 1 );
 		BOOST_TEST( d1D[9] == 9 );
@@ -95,7 +96,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<multi::index, 1> d1D(multi::extents_t<1>{multi::iextension{10}});
 		BOOST_TEST( size(d1D) == 10 );
 
-		d1D.assign(d1D.extent().begin(), d1D.extent().end());
+		// d1D.assign(d1D.extent().begin(), d1D.extent().end());
+		d1D = d1D.extent();
 		BOOST_TEST( d1D[0] == 0 );
 		BOOST_TEST( d1D[1] == 1 );
 		BOOST_TEST( d1D[9] == 9 );
@@ -106,7 +108,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		namespace multi = boost::multi;
 
 		multi::array<multi::index, 1> d1D(multi::extents_t<1>{multi::iextension{10}});
-		d1D.assign(d1D.extent());
+		// d1D.assign(d1D.extent());
+		d1D = d1D.extent();
 		BOOST_TEST( d1D[0] == 0 );
 		BOOST_TEST( d1D[1] == 1 );
 		BOOST_TEST( d1D[9] == 9 );
@@ -117,7 +120,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		namespace multi = boost::multi;
 
 		multi::array<int, 1> d1D = {10, 20, 30, 40};
-		d1D.fill(420);
+		std::fill(d1D.begin(), d1D.end(), 420);  // NOLINT(modernize-use-ranges) for C++20
 
 		multi::array<int, 2> d2D = {
 			{1500, 160, 170, 180, 190},

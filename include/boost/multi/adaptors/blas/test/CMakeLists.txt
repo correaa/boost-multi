@@ -104,6 +104,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	if(TBB_FOUND)
 		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
+		target_compile_definitions(${TEST_EXE} PRIVATE MULTI_HAVE_TBB)  # gate parallel-execution code paths on TBB availability (libstdc++ std::execution::par needs TBB at link time)
 	endif()
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
@@ -157,6 +158,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wno-pass-failed
 					-Wno-exit-time-destructors  # bug in cmake 4, boost,
 					-Wno-poison-system-directories  # bug in cmake 4, boost,
+					-Wno-documentation-unknown-command  # array_ref.hpp uses \mathrm{} etc. in doc comments, not a recognized Doxygen/clang command
 					# -Wno-float-equal  # BLWT uses equality between float and double
 					-Wno-error=\#warnings
 					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy

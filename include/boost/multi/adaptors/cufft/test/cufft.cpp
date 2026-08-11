@@ -36,8 +36,18 @@ template<>
 constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
 
 template<class T>
-__attribute__((always_inline)) inline void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
-	asm volatile("" : "+m"(const_cast<T&>(value)));                         // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
+inline
+#if defined(_MSC_VER) && !defined(__clang__)
+__forceinline
+#else
+__attribute__((always_inline))
+#endif
+void DoNotOptimize(T const& value) {  // NOLINT(readability-identifier-naming) consistency with Google benchmark
+#if defined(_MSC_VER) && !defined(__clang__)
+	_ReadWriteBarrier(); (void)value;
+#else
+	asm volatile("" : "+m"(const_cast<T&>(value)));  // NOLINT(hicpp-no-assembler,cppcoreguidelines-pro-type-const-cast) hack
+#endif
 }
 
 class watch : std::chrono::high_resolution_clock {

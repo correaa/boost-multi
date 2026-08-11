@@ -212,19 +212,77 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		class... Exts,
 		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
 			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
-			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+			&& !std::conjunction_v<std::is_integral<Exts>...>,  // NOLINT(modernize-type-traits) for C++20
 			int> = 0
 	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
 	: base_{index_extension(exts)...} {}
 
-	template<class OtherExtensions,
-		decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extent()) )* = nullptr,
-		decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extents_type>(OtherExtensions{}.sub()) )* = nullptr
+	template<
+		class... Exts,
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+			&& std::conjunction_v<std::is_integral<Exts>...>
+			&& std::conjunction_v<std::is_unsigned<Exts>...>,
+			int> = 0
 	>
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: extents_t(other.extent(), other.sub()) {}
+	BOOST_MULTI_HD explicit constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	: base_{index_extension(static_cast<index_extension::size_type>(exts))...} {}
+
+	template<
+		class... Exts,
+		std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+			(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+			&& std::conjunction_v<std::is_integral<Exts>...>
+			&& std::conjunction_v<std::is_signed<Exts>...>,  // NOLINT(modernize-type-traits) for C++20
+			int> = 0
+	>
+	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	: base_{index_extension(exts)...} {}
+
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension::size_type>...>
+	// 		&& std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension::size_type>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD /*implicit*/ constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{static_cast<index_extension>(static_cast<index_extension::size_type>(exts))...} {}
+
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>
+	// 		&& std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD /*implicit*/ constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{static_cast<index_extension>(static_cast<typename index_extension::index>(exts))...} {}
+
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>
+	// 		&& !std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD explicit constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{index_extension(exts)...} {}
+
+	// template<class OtherExtensions,
+	// 	decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extent()) )* = nullptr,
+	// 	decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extents_type>(OtherExtensions{}.sub()) )* = nullptr
+	// >
+	// // cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	// BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	// : extents_t(other.extent(), other.sub()) {}
 
 	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
@@ -581,7 +639,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	template<class Archive, std::size_t... I>
 	void serialize_impl_(Archive& arxiv, std::index_sequence<I...> /*unused012*/) {
 		using boost::multi::detail::get;
-		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extension", get<I>(this->base())), 0U)...};
+		(void)std::initializer_list<unsigned>{(arxiv & multi::archive_traits<Archive>::make_nvp("extent", get<I>(this->base())), 0U)...};
 	}
 
  public:
@@ -975,7 +1033,7 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using boost::multi::detail::get;
 		auto&  extension_ = get<0>(this->base());
-		arxiv& multi::archive_traits<Archive>::make_nvp("extension", extension_);
+		arxiv& multi::archive_traits<Archive>::make_nvp("extent", extension_);
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -1078,8 +1136,8 @@ constexpr auto get(::boost::multi::extents_t<D>&& tp)  // NOLINT(cert-dcl58-cpp,
 
 template<typename Fn, boost::multi::dimensionality_type D>
 constexpr auto
-apply(Fn&& fn, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
-	return exts.apply(std::forward<Fn>(fn));
+apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
+	return exts.apply(std::forward<Fn>(fun));
 }
 
 }  // end namespace std
@@ -1316,18 +1374,18 @@ class bistride {
 
 		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
-	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
-	#pragma clang diagnostic pop
-	#endif
 
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
 		auto base = static_cast<Ptr>(ptr_);
 		auto dist = ptr - base;
-		auto i = dist / stride1_;
-		auto ret = base + (i * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		auto segment_index = dist / stride1_;
+		auto ret = base + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
+	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
+	#pragma clang diagnostic pop
+	#endif
 };
 
 template<dimensionality_type D>
@@ -1397,7 +1455,7 @@ struct bilayout {
 
 	constexpr auto nelems() const { return nelems1_ - stride1_ + nelems2_; }  // span to one-past-end: (nsegs-1) outer strides + the last segment (NOT just nelems2_, which is one segment short)
 	[[deprecated("use extent")]] void extension() const  = delete;
-	void extent() const     = delete;
+	constexpr auto extent() const { return multi::extent_t{0, size()}; }
 
 	[[deprecated("use extents")]] auto extensions() const = delete;
 	auto extents() const = delete;
@@ -1546,11 +1604,11 @@ struct layout_t
 	#pragma nv_diagnostic pop
 	#endif
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type std, offset_type off, nelems_type nlms)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{std}, offset_{off}, nelems_{nlms} {}
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type str, offset_type off, nelems_type nlms)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{str}, offset_{off}, nelems_{nlms} {}
 
-	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sb, stride_type sd, offset_type off /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sb}, stride_{sd}, offset_{off} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
+	BOOST_MULTI_HD constexpr explicit layout_t(sub_type const& sub, stride_type str, offset_type off /*, nelems_type nelems*/)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{str}, offset_{off} /*, nelems_{nelems}*/ {}                                                            // this leaves nelems_ uninitialized
 
 	constexpr auto origin() const { return sub_.origin() - offset_; }
 
@@ -1653,16 +1711,16 @@ struct layout_t
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 
-	constexpr auto base_size() const {
-		using std::max;
-		return max(nelems_, sub_.base_size());
+ private:
+	constexpr auto base_size_() const {
+		return (std::max)(nelems_, sub_.base_size_());
 	}
 
-	constexpr auto        is_compact() const& { return base_size() == num_elements(); }
-	friend constexpr auto is_compact(layout_t const& self) { return self.is_compact(); }
+ public:
+	constexpr auto is_compact() const& { return base_size_() == num_elements(); }
 
 	constexpr auto        shape() const& -> decltype(auto) { return sizes(); }
-	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
+//	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
@@ -1700,14 +1758,44 @@ struct layout_t
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
 	extension(dimensionality_type dim) const {
-		return std::apply([](auto... extensions) -> auto { return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...}; }, extensions().base()).at(static_cast<std::size_t>(dim));
+		return std::apply([](auto... extensions) -> auto { return std::array<index_extension, static_cast<std::size_t>(D)>{{extensions...}}; }, extensions().base()).at(static_cast<std::size_t>(dim));
 	}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14
 	   //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	constexpr auto stride(dimensionality_type dim) const {
-		return std::apply([](auto... strides) -> auto { return std::array<stride_type, static_cast<std::size_t>(D)>{strides...}; }, strides()).at(static_cast<std::size_t>(dim));
-	}
+	// constexpr auto stride(dimensionality_type dim) const {
+	// 	return std::apply([](auto... strides) -> auto { return std::array<stride_type, static_cast<std::size_t>(D)>{{strides...}}; }, strides()).at(static_cast<std::size_t>(dim));
+	// }
 	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
+
+	BOOST_MULTI_HD constexpr auto sort() const {
+		auto ret = layout_t(
+			this->sub().sort(),
+			this->stride(),
+			this->offset(),
+			this->nelems()
+		);
+
+		if constexpr(D > 1) {
+			if(
+				    ret.stride() < ret.sub().stride()  // if strides are equal, one of the sizes is 1  // mull-ignore: cxx_lt_to_le
+				|| (
+					   ret.stride() == ret.sub().stride()
+					&& ret.sub().size() < ret.size()  // mull-ignore: cxx_lt_to_le
+				)
+			)
+			{
+				auto ret2 = ret.transpose();
+				ret = layout_t(
+					ret2.sub().sort(),
+					ret2.stride(),
+					ret2.offset(),
+					ret2.nelems()
+				);
+			}
+		}
+
+		return ret;
+	}
 
 	BOOST_MULTI_HD constexpr auto drop(difference_type count) const {
 		assert(count <= this->size());
@@ -1747,12 +1835,12 @@ struct layout_t
 		// new_layout.sub().nelems() /= n;
 	}
 
-	template<class TT>
-	constexpr static void ce_swap(TT& t1, TT& t2) {
-		TT tmp = std::move(t1);
-		t1     = std::move(t2);
-		t2     = tmp;
-	}
+	// template<class TT>
+	// constexpr static void ce_swap(TT& left, TT& right) {
+	// 	TT tmp = std::move(left);
+	// 	left   = std::move(right);
+	// 	right  = tmp;
+	// }
 
 	BOOST_MULTI_HD constexpr auto transpose() const {
 		return layout_t(
@@ -1944,6 +2032,8 @@ struct layout_t<0, SSize>
 	constexpr auto nelems() const noexcept -> nelems_type { return nelems_; }
 	constexpr auto sub() const -> sub_type = delete;
 
+	constexpr auto sort() const noexcept { return *this; }
+
 	constexpr auto size() const -> size_type           = delete;
 
 	[[deprecated]] constexpr auto extension() const -> extent_type = delete;
@@ -1959,7 +2049,10 @@ struct layout_t<0, SSize>
 	[[deprecated("is going to be removed")]]
 	constexpr auto is_compact() const -> bool = delete;
 
-	static constexpr auto base_size() -> size_type { return 0; }
+ private:
+	static constexpr auto base_size_() -> size_type { return 0; }
+
+ public:
 	static constexpr auto origin() -> offset_type { return 0; }
 
 	constexpr auto reverse() const { return *this; }

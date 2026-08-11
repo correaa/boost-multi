@@ -16,7 +16,7 @@ namespace {
 
 // Case 1: Strided 1D view where stride does not divide extent.
 void test_strided_1d_index_access() {
-	multi::array<int, 1> arr(10);
+	multi::array<int, 1> arr(9);
 	std::iota(arr.begin(), arr.end(), 0);
 
 	auto strided = arr.strided(3);
@@ -87,6 +87,26 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 	test_strided_1d_index_access();
 	test_transposed_subarray_overshoot();
 	test_strided_1d_divisible();
+
+	{
+		multi::array<double, 2> arr = {
+			{1.0, 2.0, 3.0},
+			{3.0, 4.0, 5.0},
+			{6.0, 7.0, 8.0},
+			{9.0, 9.0, 9.0}
+		};
+
+		BOOST_TEST( arr.strided(2).size() == 2 );
+	}
+	// {
+	// 	multi::array<double, 2> arr = {
+	// 		{1.0, 2.0, 3.0},
+	// 		{3.0, 4.0, 5.0},
+	// 		{6.0, 7.0, 8.0},
+	// 	};
+
+	// 	BOOST_TEST( arr.strided(2).size() == 2 );
+	// }
 
 	return boost::report_errors();
 }

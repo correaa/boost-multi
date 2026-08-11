@@ -61,7 +61,7 @@ namespace {
 // `std::for_each`. Threading by reference (via std::ref at the leaf) lets a stateful, possibly
 // move-only / non-assignable functor (e.g. a capturing lambda) accumulate across all segments.
 template<class It, class UnaryFunction>
-constexpr void for_each_segmented_apply(It first, It last, UnaryFunction& fun) {
+[[maybe_unused]] constexpr void for_each_segmented_apply(It first, It last, UnaryFunction& fun) {
 	if constexpr(segmented_iterator_traits<It>::is_segmented_iterator::value) {
 		using traits = segmented_iterator_traits<It>;
 
@@ -95,7 +95,7 @@ namespace {
 // std::for_each: applies `fun` to every element exactly once (segment-by-segment), and returns
 // the (moved-through) function object.
 template<class SegmentedIterator, class UnaryFunction>
-constexpr auto for_each_segmented(SegmentedIterator first, SegmentedIterator last, UnaryFunction fun) -> UnaryFunction {
+[[maybe_unused]] constexpr auto for_each_segmented(SegmentedIterator first, SegmentedIterator last, UnaryFunction fun) -> UnaryFunction {
 	static_assert(
 		segmented_iterator_traits<SegmentedIterator>::is_segmented_iterator::value,
 		"for_each_segmented requires a segmented iterator (specialize boost::multi::segmented_iterator_traits<It>)"

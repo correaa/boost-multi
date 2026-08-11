@@ -17,3 +17,7 @@ antora:
   extensions:
     - require: '@cppalliance/antora-downloads-extension'
     - require: '@antora/lunr-extension'
+
+asciidoc:
+  extensions:
+    - '@djencks/asciidoctor-mathjax'

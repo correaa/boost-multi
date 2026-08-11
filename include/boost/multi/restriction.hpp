@@ -40,18 +40,18 @@ template<class Fun> struct function_system {
 #endif
 
 template<class T>
-constexpr auto make_restriction(std::initializer_list<T> const& il) {
-	return [il](multi::index i0) -> decltype(auto) { return il.begin()[i0]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+constexpr auto make_restriction(std::initializer_list<T> const& ilist) {
+	return [ilist](multi::index idx0) -> decltype(auto) { return ilist.begin()[idx0]; } ^ multi::extents(ilist);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 template<class T>
-constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& il) {
-	return [il](multi::index i0, multi::index i1) -> decltype(auto) { return il.begin()[i0].begin()[i1]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+constexpr auto make_restriction(std::initializer_list<std::initializer_list<T>> const& ilist) {
+	return [ilist](multi::index idx0, multi::index idx1) -> decltype(auto) { return ilist.begin()[idx0].begin()[idx1]; } ^ multi::extents(ilist);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 template<class T>
-constexpr auto make_restriction(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	return [il](multi::index i0, multi::index i1, multi::index i2) -> decltype(auto) { return il.begin()[i0].begin()[i1].begin()[i2]; } ^ multi::extents(il);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+constexpr auto make_restriction(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& ilist) {
+	return [ilist](multi::index idx0, multi::index idx1, multi::index idx2) -> decltype(auto) { return ilist.begin()[idx0].begin()[idx1].begin()[idx2]; } ^ multi::extents(ilist);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 #ifdef __clang__
@@ -98,7 +98,7 @@ struct bind_transposed_t {
 	Proj proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 	template<class T1, class T2, class... Ts>
-	BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> decltype(auto) /*element*/ { return proj_(jj, ii, rest...); }
+	BOOST_MULTI_HD constexpr auto operator()(T1 row, T2 col, Ts... rest) const noexcept -> decltype(auto) /*element*/ { return proj_(col, row, rest...); }
 };
 
 template<class Proj>
@@ -108,7 +108,13 @@ struct bind_front_t {
 
 	// bind_front_t(multi::index idx, Proj& proj) : idx_{idx}, proj_{proj} {}
 	template<class... Args>
-	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const noexcept { return proj_(idx_, std::forward<Args>(rest)...); }
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) const& noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
+
+	template<class... Args>
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) & noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
+
+	template<class... Args>
+	BOOST_MULTI_HD constexpr auto operator()(Args&&... rest) && noexcept -> decltype(auto) { return proj_(idx_, std::forward<Args>(rest)...); }
 };
 
 template<dimensionality_type D, class Proj>
@@ -134,7 +140,7 @@ class restriction_iterator {
 	typename extents_t<D>::iterator it_;
 	Proj const*                     Pproj_;
 
-	restriction_iterator(typename extents_t<D>::iterator it, Proj const* Pproj) : it_{it}, Pproj_{Pproj} {}
+	restriction_iterator(typename extents_t<D>::iterator iter, Proj const* Pproj) : it_{iter}, Pproj_{Pproj} {}
 
 	template<dimensionality_type, class>
 	friend class restriction;
@@ -171,12 +177,12 @@ class restriction_iterator {
 		return *this;
 	}
 
-	constexpr auto operator+=(difference_type dd) -> auto& {
-		it_ += dd;
+	constexpr auto operator+=(difference_type diff) -> auto& {
+		it_ += diff;
 		return *this;
 	}
-	constexpr auto operator-=(difference_type dd) -> auto& {
-		it_ -= dd;
+	constexpr auto operator-=(difference_type diff) -> auto& {
+		it_ -= diff;
 		return *this;
 	}
 
@@ -223,7 +229,7 @@ class restriction_iterator {
 		}
 	}
 
-	BOOST_MULTI_HD auto operator[](difference_type dd) const { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	BOOST_MULTI_HD auto operator[](difference_type diff) const { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
 template<dimensionality_type D, class Proj>
@@ -233,7 +239,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 
  public:
 	restriction_elements_iterator() = default;
-	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
 
 	auto operator++() -> auto& {
 		++this->it_;
@@ -244,12 +250,12 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 		return *this;
 	}
 
-	constexpr auto operator+=(difference_type dd) -> auto& {
-		this->it_ += dd;
+	constexpr auto operator+=(difference_type diff) -> auto& {
+		this->it_ += diff;
 		return *this;
 	}
-	constexpr auto operator-=(difference_type dd) -> auto& {
-		this->it_ -= dd;
+	constexpr auto operator-=(difference_type diff) -> auto& {
+		this->it_ -= diff;
 		return *this;
 	}
 
@@ -274,7 +280,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 		return apply(proj_, *this->it_);
 	}
 
-	BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
 template<dimensionality_type D, class Proj>
@@ -303,7 +309,7 @@ class restriction_elements_t {
 	 public:
 		iterator() = default;
 
-		iterator(typename extents_t<D>::elements_t::iterator it, Proj proj) : it_{it}, proj_{std::move(proj)} {}
+		iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
 
 		auto operator++() -> auto& {
 			++this->it_;
@@ -314,12 +320,12 @@ class restriction_elements_t {
 			return *this;
 		}
 
-		constexpr auto operator+=(difference_type dd) -> auto& {
-			this->it_ += dd;
+		constexpr auto operator+=(difference_type diff) -> auto& {
+			this->it_ += diff;
 			return *this;
 		}
-		constexpr auto operator-=(difference_type dd) -> auto& {
-			this->it_ -= dd;
+		constexpr auto operator-=(difference_type diff) -> auto& {
+			this->it_ -= diff;
 			return *this;
 		}
 
@@ -344,7 +350,7 @@ class restriction_elements_t {
 		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
 		friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> decltype(auto) { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 	};
 
 	auto begin() const { return iterator{elems_.begin(), proj_}; }
@@ -378,7 +384,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	using indices = typename extents_t<D>::element;
 
-	BOOST_MULTI_HD constexpr restriction(extents_t<D> xs, Proj proj) : xs_{xs}, proj_{std::move(proj)} {}
+	BOOST_MULTI_HD constexpr restriction(extents_t<D> exts, Proj proj) : xs_{exts}, proj_{std::move(proj)} {}
 
  private:
 	using element_ref_  = typename invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
@@ -419,6 +425,18 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		}
 	}
 
+	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> decltype(auto) {
+		// assert( extent().contains(idx) );
+		if constexpr(D != 1) {
+			// auto ll = [idx, proj = proj_](auto... rest) { return proj(idx, rest...); };
+			// return restriction<D - 1, decltype(ll)>(extents_t<D - 1>(xs_.base().tail()), ll);
+			// return [idx, proj = proj_](auto... rest) noexcept { return proj(idx, rest...); } ^ extents_t<D - 1>(xs_.base().tail());
+			return bind_front_t<Proj>{idx, proj_} ^ extents_t<D - 1>(xs_.base().tail());
+		} else {
+			return proj_(idx);
+		}
+	}
+
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> decltype(auto) {
 		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
@@ -452,7 +470,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	struct bind_diagonal_t {
 		Proj proj_;
 		template<class T1, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ij, Ts... rest) const noexcept -> element { return proj_(ij, ij, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept -> element { return proj_(row, row, rest...); }
 	};
 
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
@@ -477,20 +495,20 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	struct bind_partitioned_t {
 		Proj      proj_;
-		size_type nn_;
+		size_type block_size_;
 		template<class T1, class T2, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(ii * nn_ + jj, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 row, T2 col, Ts... rest) const noexcept -> element { return proj_(row * block_size_ + col, rest...); }
 	};
 
-	BOOST_MULTI_HD constexpr auto partitioned(size_type nn) const noexcept -> restriction<D + 1, bind_partitioned_t> {
-		return bind_partitioned_t{proj_, size() / nn} ^ layout_t<D>(extents()).partition(nn).extents();
+	BOOST_MULTI_HD constexpr auto partitioned(size_type block_size) const noexcept -> restriction<D + 1, bind_partitioned_t> {
+		return bind_partitioned_t{proj_, size() / block_size} ^ layout_t<D>(extents()).partition(block_size).extents();
 	}
 
 	struct bind_reversed_t {
 		Proj      proj_;
 		size_type size_m1;
 		template<class T1, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept -> element { return proj_(size_m1 - ii, rest...); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept -> element { return proj_(size_m1 - row, rest...); }
 	};
 
 	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extents(); }
@@ -499,7 +517,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		Proj      proj_;
 		size_type size_;
 		template<class T1, class T2, class... Ts>
-		BOOST_MULTI_HD constexpr auto operator()(T1 ii, Ts... rest) const noexcept { return proj_(rest..., ii); }
+		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept { return proj_(rest..., row); }
 	};
 
 	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
@@ -565,7 +583,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		function_ptr                    Pproj_;
 		// Proj const* Pproj_;
 
-		iterator(typename extents_t<D>::iterator it, function_ptr Pproj) : it_{it}, Pproj_{Pproj} {}
+		iterator(typename extents_t<D>::iterator iter, function_ptr Pproj) : it_{iter}, Pproj_{Pproj} {}
 
 		friend restriction;
 
@@ -606,12 +624,12 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			return *this;
 		}
 
-		constexpr auto operator+=(difference_type dd) -> auto& {
-			it_ += dd;
+		constexpr auto operator+=(difference_type diff) -> auto& {
+			it_ += diff;
 			return *this;
 		}
-		constexpr auto operator-=(difference_type dd) -> auto& {
-			it_ -= dd;
+		constexpr auto operator-=(difference_type diff) -> auto& {
+			it_ -= diff;
 			return *this;
 		}
 
@@ -662,7 +680,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			}
 		}
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type dd) const -> reference { return *((*this) + dd); }  // TODO(correaa) use ra_iterator_facade
+		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> reference { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 	};
 
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
@@ -706,13 +724,13 @@ auto restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' res
 }
 
 template<class F, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator^(F fun, extents_t<D> const& xs) {
-	return restriction<D, F>(xs, std::move(fun));
+BOOST_MULTI_HD constexpr auto operator^(F fun, extents_t<D> const& exts) {
+	return restriction<D, F>(exts, std::move(fun));
 }
 
 template<class F, dimensionality_type D>
-BOOST_MULTI_HD constexpr auto operator->*(extents_t<D> const& xs, F fun) {
-	return restriction<D, F>(xs, std::move(fun));
+BOOST_MULTI_HD constexpr auto operator->*(extents_t<D> const& exts, F fun) {
+	return restriction<D, F>(exts, std::move(fun));
 }
 
 }  // namespace boost::multi

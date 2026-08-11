@@ -853,22 +853,20 @@ int main() {
 
 		{
 // TODO(correaa) MKL gives an error here
-#if 0
-		multi::array<complex, 1, Alloc> yy = { 1.1 + I* 0.0, 2.1 +I* 0.0, 3.1 + I* 0.0, 6.7 + I*0.0 };  // NOLINT(readability-identifier-length) BLAS naming
-		std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), [&x] (auto const& Ac) {
-			using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
-			return blas::dot(*Ac, x);}
-		);
+		// multi::array<complex, 1, Alloc> yy = { 1.1 + I* 0.0, 2.1 +I* 0.0, 3.1 + I* 0.0, 6.7 + I*0.0 };  // NOLINT(readability-identifier-length) BLAS naming
+		// std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), [&x] (auto const& Ac) {
+		// 	using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
+		// 	return blas::dot(*Ac, x);}
+		// );
 
-		BOOST_TEST( std::abs(static_cast<complex>(yy[0]).real() -  61.7) < 1.e-7  );
-		BOOST_TEST( std::abs(static_cast<complex>(yy[1]).real() -  97.0) < 1.e-7  );
-		BOOST_TEST( std::abs(static_cast<complex>(yy[2]).real() - 169.8) < 1.e-7  );
-		BOOST_TEST( std::abs(static_cast<complex>(yy[3]).real() -  27.7) < 1.e-7  );
+		// BOOST_TEST( std::abs(static_cast<complex>(yy[0]).real() -  61.7) < 1.e-7  );
+		// BOOST_TEST( std::abs(static_cast<complex>(yy[1]).real() -  97.0) < 1.e-7  );
+		// BOOST_TEST( std::abs(static_cast<complex>(yy[2]).real() - 169.8) < 1.e-7  );
+		// BOOST_TEST( std::abs(static_cast<complex>(yy[3]).real() -  27.7) < 1.e-7  );
 
-		using blas::operators::operator*;
-		BOOST_TEST( std::abs( static_cast<complex>(yy[0]).real() - (+blas::dot(*(~A)[0], x)).real()) < 1.e-7  );
-		BOOST_TEST( std::abs( static_cast<complex>(yy[1]).real() - (+blas::dot(*(~A)[1], x)).real()) < 1.e-7  );
-#endif
+		// using blas::operators::operator*;
+		// BOOST_TEST( std::abs( static_cast<complex>(yy[0]).real() - (+blas::dot(*(~A)[0], x)).real()) < 1.e-7  );
+		// BOOST_TEST( std::abs( static_cast<complex>(yy[1]).real() - (+blas::dot(*(~A)[1], x)).real()) < 1.e-7  );
 		}
 	}
 
@@ -1264,25 +1262,23 @@ int main() {
 			}
 // TODO(correaa) MKL gives an error here
 // unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
-#if 0
-		{
-			std::transform(A.begin(), A.end(), CC.begin(), CC.begin(), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
-				return std::transform(
-					BT.begin(), BT.end(), Cr.begin(), Cr.begin(), [&Ar](auto const& Bc, auto&& Ce) {
-						return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;
-					}
-				), std::move(Cr);
-			});
-		}
-		BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+		// {
+		// 	std::transform(A.begin(), A.end(), CC.begin(), CC.begin(), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+		// 		return std::transform(
+		// 			BT.begin(), BT.end(), Cr.begin(), Cr.begin(), [&Ar](auto const& Bc, auto&& Ce) {
+		// 				return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;
+		// 			}
+		// 		), std::move(Cr);
+		// 	});
+		// }
+		// BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+		// BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+		// BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+		// BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 
-		BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
-		BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
-#endif
+		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
+		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 		}
 	}
 

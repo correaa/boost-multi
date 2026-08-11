@@ -7,8 +7,9 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <array>    // for array
-#include <numeric>  // for iota
+#include <algorithm>  // for for_each
+#include <array>      // for array
+#include <numeric>    // for iota
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
@@ -21,11 +22,6 @@ namespace multi = boost::multi;
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
 #if defined(__cpp_lib_ranges_repeat) && (__cpp_lib_ranges_repeat >= 202207L)
-
-// template<class X1D, class Y1D>
-// auto meshgrid(X1D const& x, Y1D const& y) {
-// 	return std::pair{x.broadcasted().rotated(), y.broadcasted()};
-// }
 
 template<class X1D, class Y1D>
 auto meshgrid_copy(X1D const& x, Y1D const& y) {
@@ -43,7 +39,7 @@ auto meshgrid_copy(X1D const& x, Y1D const& y) {
 #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end)
+	// constexpr_carray_rotated_end
 	{
 		constexpr auto test = [] {
 			std::array<int,
@@ -62,7 +58,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-	// BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_interval)
+	// constexpr_carray_rotated_end_interval
 	{
 		constexpr auto test = [] {
 			std::array<int,
@@ -80,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-	// BOOST_AUTO_TEST_CASE(constexpr_carray_diagonal_end_2D)
+	// constexpr_carray_diagonal_end_2D
 	{
 		constexpr auto test = [] {
 			std::array<int,
@@ -95,7 +91,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-	// BOOST_AUTO_TEST_CASE(constexpr_carray_rotated_end_3D)
+	// constexpr_carray_rotated_end_3D
 	{
 		constexpr auto test = [] {
 			std::array<int,
@@ -110,20 +106,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(test);
 	}
 
-	// #if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
-	// #if !defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER) && !defined(__NVCC__)
-	// 	// BOOST_AUTO_TEST_CASE(constexpr_dynamic_array_rotated_end)
-	// 	{
-	// 		constexpr auto test = [] {
-	// 			multi::array<int, 2> arr({3, 3}, 99);
-	// 			return arr.rotated()[1].end() != arr.rotated()[1].begin();
-	// 		}();
-	// 		BOOST_TEST(test);
-	// 	}
-	// #endif
-	// #endif
-
-	// BOOST_AUTO_TEST_CASE(multi_2d_const)
+	// multi_2d_const
 	{
 		multi::array<int, 2> const arr = {
 			{10, 20},
@@ -134,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(!std::is_assignable_v<decltype(arr.rotated()[1][1]), decltype(50)>);
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_2d)
+	// multi_2d
 	{
 		multi::array<int, 2> arr = {
 			{10, 20},
@@ -150,7 +133,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// arr.rotated()[1][1] = 50;
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_rotate_3d)
+	// multi_rotate_3d
 	{
 		multi::array<double, 3> arr({3, 4, 5});
 
@@ -173,7 +156,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &arr[0][1][2] == &RRA[2][0][1] );
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_rotate_4d)
+	// multi_rotate_4d
 	{
 		using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
@@ -193,7 +176,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_rotate_4d_op)
+	// multi_rotate_4d_op
 	{
 		multi::array<double, 4> original({14, 14, 7, 4});
 
@@ -206,7 +189,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_rotate_part1)
+	// multi_rotate_part1
 	{
 		// clang-format off
 		std::array<std::array<int, 5>, 4> stdarr = {{
@@ -232,7 +215,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2.rotated()[2][1] == 7             );
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_rotate)
+	// multi_rotate
 	{
 		multi::array<int, 2> arr = {
 			{00, 01},
@@ -247,7 +230,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( (~arr)[0][1] == 10 );
 		BOOST_TEST( &arr[1][0] == &arr.transposed()[0][1] );
 
-		(arr.rotated())[0][1] = 100;
+		arr.rotated()[0][1] = 100;
 		BOOST_TEST( arr[1][0] == 100 );
 	}
 	{
@@ -262,7 +245,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( &  (arr.rotated().rotated().rotated() )     == & arr       );  // TODO(correaa) make it work
 		BOOST_TEST( &   arr()          == & (arr.rotated().rotated().rotated() ) );
 		// BOOST_TEST( &  (arr.rotated() )     != & arr      );  // TODO(correaa) make it work
-		BOOST_TEST( &  (arr.unrotated().rotated()) == & arr()      );
+		BOOST_TEST( &  arr.unrotated().rotated() == & arr()      );
 		// BOOST_TEST( &  (arr.unrotated().rotated()) == & arr      );  // TODO(correaa) make it work
 
 		BOOST_TEST( & arr[3][5] == & (~arr)[5][3] );
@@ -293,10 +276,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr1 == arr2 );
 	}
 
-	// BOOST_AUTO_TEST_CASE(miguel)
+	// miguel
 	{
 		multi::array<double, 2> G2D({41, 35});
-		auto const&             G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
+
+		auto const& G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
 
 		BOOST_TEST( &G3D[0][0][0] == &G2D[0][0] );
 	}
@@ -353,6 +337,70 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 #endif
 #endif
+
+	// unordered
+	{
+		multi::array<int, 2> arr = {
+			{1, 2},
+			{3, 4},
+		};
+
+		BOOST_TEST((
+			arr.transposed().unordered() == 
+			multi::array<int, 2>({
+				{ 1, 2},
+				{ 3, 4},
+			})
+		));
+
+		for(auto&& elem : arr.transposed().unordered().elements()) {  // NOLINT(altera-unroll-loops)
+			elem += 2;
+		}
+
+		std::for_each(
+			arr.transposed().unordered().elements().begin(),
+			arr.transposed().unordered().elements().end(),
+			[](auto&& elem) { elem += 1; }
+		);
+
+		BOOST_TEST( arr[1][1] == 7 );
+	}
+	{
+		multi::array<int, 2> arr = {
+			{1},
+			{3},
+			{5},
+		};
+
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[0].size() == 1 );
+
+		BOOST_TEST( arr.unordered().extents() != arr.extents() );
+
+		BOOST_TEST((
+			arr.unordered() == multi::array<int, 2>({{1, 3, 5}})
+		));
+	}
+	{
+		multi::array<int, 2> arr = {
+			{1, 3, 5},
+		};
+
+		BOOST_TEST( arr.size() == 1 );
+		BOOST_TEST( arr[0].size() == 3 );
+
+		BOOST_TEST( arr.unordered().extents() == arr.extents() );
+	}
+	{
+		multi::array<int, 2> arr = {
+			{1},
+		};
+
+		BOOST_TEST( arr.size() == 1 );
+		BOOST_TEST( arr[0].size() == 1 );
+
+		BOOST_TEST( arr.unordered().extents() == arr.extents() );
+	}
 
 	return boost::report_errors();
 }

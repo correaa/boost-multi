@@ -11,8 +11,8 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-// IWYU pragma: no_include <algorithm>                        // for copy  // for GNU stdlib
-// IWYU pragma: no_include <type_traits>                      // for declval  // for GNU stdlib
+#include <algorithm>  // for std::fill
+// IWYU pragma: no_include <type_traits>   // for declval  // for GNU stdlib
 #include <complex>   // IWYU pragma: keep  // for complex, operator*, operator+
 #include <iterator>  // IWYU pragma: keep  // for weakly_incrementable
 #include <utility>   // IWYU pragma: keep  // for declval, forward
@@ -62,8 +62,8 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 
 namespace multi = boost::multi;
 
-auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference)
+auto main() -> int {      // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
+#ifndef __circle_build__  // circle rejects casting the std::conj overload set (even with explicit <double>) to a function reference: "overload set conj provided where expression expected"
 	{
 		using complex = std::complex<double>;
 		auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) I imaginary unit
@@ -88,12 +88,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::weakly_incrementable<decltype(conjd_arr_beg)>);  // NOLINT(misc-include-cleaner)
 		BOOST_TEST( conjd_arr.begin() == std::ranges::begin(conjd_arr) );
 #endif
-
-		// BOOST_REQUIRE_CLOSE(real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), std::norm(arr[0]) + std::norm(arr[1]), 1E-6);
-		// BOOST_REQUIRE_CLOSE(imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{ 0.0, 0.0 })), 0.0, 1E-6);
-
-		// BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
 	}
+#endif
 
 	// BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda)
 	{
@@ -267,7 +263,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
 
 #ifndef _MSC_VER
-		indirect_v.fill(880);
+		std::fill(indirect_v.begin(), indirect_v.end(), 880);  // NOLINT(modernize-use-ranges) for C++20
+		// indirect_v.fill(880);
 		BOOST_TEST(  vec[3] ==  880 );
 
 		auto const& const_indirect_v = indirect_v;

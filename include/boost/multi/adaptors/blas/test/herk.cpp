@@ -25,6 +25,15 @@
 
 namespace multi = boost::multi;
 
+// TODO(correaa) circle_dev segfaults (ICE, not a diagnostic) compiling this file.
+// Each case below is independently gated so the failing construct can be bisected from CI:
+// pass -DHERK_BISECT_N=<k> (via the HERK_BISECT_N pipeline variable on the circle-dev job) to
+// compile only cases 1..k under circle; k=0 (the default when unset) compiles none, matching the
+// previous blanket disablement. Non-circle builds always compile every case regardless of
+// HERK_BISECT_N. Not using a `defined()`-inside-a-macro helper here on purpose: that expansion is
+// unspecified behavior per the standard, and unspecified corners are exactly what we're trying to
+// rule out while chasing a circle-specific crash, so each guard below is spelled out in full.
+
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_blas_herk)
 	{

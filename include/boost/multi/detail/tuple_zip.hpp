@@ -114,7 +114,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... es) -> auto {return tuple(es...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... elems) -> auto {return tuple(elems...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
@@ -454,33 +454,33 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 #pragma nv_exec_check_disable
 #endif
 template<class F, class Tuple, std::size_t... I>
-BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fun, Tuple&& tp, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
-	(void)tp;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
-	return std::forward<F>(fun)(boost::multi::detail::get<I>(std::forward<Tuple>(tp))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
+BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fun, Tuple&& tup, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	(void)tup;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
+	return std::forward<F>(fun)(boost::multi::detail::get<I>(std::forward<Tuple>(tup))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
 
 namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured bindings
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...> const& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...> const& tup) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
-		std::forward<F>(fun), tp,
+		std::forward<F>(fun), tup,
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...>& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
+BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...>& tup) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple get
 	return std_apply_timpl(
-		std::forward<F>(fun), tp,
+		std::forward<F>(fun), tup,
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }
 
 template<class F, class... Ts>
-BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...>&& tp) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
-	return std_apply_timpl(	
-		std::forward<F>(fun), std::move(tp),
+BOOST_MULTI_HD constexpr auto apply(F&& fun, boost::multi::detail::tuple<Ts...>&& tup) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal idiom to defined tuple get
+	return std_apply_timpl(
+		std::forward<F>(fun), std::move(tup),
 		std::make_index_sequence<sizeof...(Ts)>{}
 	);
 }

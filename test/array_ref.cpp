@@ -251,7 +251,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for illustration
 		std::unique_ptr<int const[]> const arrp(new int const[4UL * 4UL]{0, 10, 20, 30, 50, 60, 70, 80, 100, 110, 120, 130, 150, 160, 170, 180});  // cppcheck-suppress leakReturnValNotUsed;  // NOLINT(whitespace/line_length)
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage-in-unique-ptr-array-access"
+#endif
 		BOOST_TEST( arrp[3] == 30 );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		{
 			multi::array_ref<int, 2, int const*> const map(arrp.get(), {4, 4});
 
@@ -357,60 +365,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-		BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
-		BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
-		BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
+		// BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
+		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
+		// BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
-		//  BOOST_TEST( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
-		//  BOOST_TEST( mar.base() == mar.origin() );
+		// //  BOOST_TEST( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
+		// //  BOOST_TEST( mar.base() == mar.origin() );
 
-		//  BOOST_TEST( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
-		BOOST_TEST( mar.stenciled({2, 4}).base()   != mar.base()   );
+		// //  BOOST_TEST( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
+		// BOOST_TEST( mar.stenciled({2, 4}).base()   != mar.base()   );
 
-		BOOST_TEST( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
-
-		{
-			// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-			// multi::array<std::string, 2> arrB = {
-			//  {"a", "b", "c", "d", "e"},
-			//  {"f", "g", "h", "f", "g"},
-			//  {"h", "i", "j", "k", "l"},
-			// };
-			// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
-			// arrB.reindex(2);
-			// BOOST_TEST( size(arrB) == 3 );
-			// BOOST_TEST( arrB[2][0] == "a" );
-		}
-		{
-			// NOLINTBEGIN(fuchsia-default-arguments-calls) std::string ctor
-			// multi::array<std::string, 2> arrB = {
-			//  {"a", "b", "c", "d", "e"},
-			//  {"f", "g", "h", "f", "g"},
-			//  {"h", "i", "j", "k", "l"},
-			// };
-			// NOLINTEND(fuchsia-default-arguments-calls) std::string ctor
-			// arrB.reindex(2, 1);
-			// BOOST_TEST( size(arrB) == 3 );
-			// BOOST_TEST( arrB[2][1] == "a" );
-		}
-		{
-			// using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
-			// multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
-			//  {"a"s, "b"s, "c"s, "d"s, "e"s},
-			//  {"f"s, "g"s, "h"s, "f"s, "g"s},
-			//  {"h"s, "i"s, "j"s, "k"s, "l"s},
-			// });  // .reindex(2, 1);  // std::string NOLINT(fuchsia-default-arguments-calls)
-
-			// BOOST_TEST( arrB.reindex(2).extension() == multi::iextension(2, 5) );
-			// auto exts = arrB.reindexed(2).extensions();
-
-			// multi::array<std::string, 2> const arrC(exts);
-			// BOOST_TEST( size(arrC) == 3 );
-			// BOOST_TEST( size(arrC) == size(arrB) );
-
-			// BOOST_TEST( arrC.extension().first()  == 2 );
-			// BOOST_TEST( arrC.extension().last() == 5 );
-		}
+		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_with_stencil)

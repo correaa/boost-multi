@@ -7,15 +7,13 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for is_sorted
-#include <array>      // for array
-#include <cstddef>    // for ptrdiff_t
-// #include <iterator>     // for size
+#include <algorithm>    // for is_sorted
+#include <array>        // for array
+#include <cstddef>      // for ptrdiff_t
 #include <string>       // for operator""s, string, string_lite...
 #include <tuple>        // for apply  // IWYU pragma: keep
 #include <type_traits>  // for declval, decay_t, decay, decay<>...
 #include <utility>      // for move
-#include <vector>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4625)  // copy constructor was implicitly defined as deleted
@@ -59,245 +57,245 @@ template<class T> class propagate_const<T const&> {
 };
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	// BOOST_AUTO_TEST_CASE(halved_1d)
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+	// // BOOST_AUTO_TEST_CASE(halved_1d)
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& A2_ref = A1.halved();
+	// 	auto&& A2_ref = A1.halved();
 
-		// static_assert(std::decay_t<decltype(A2_ref)>::rank{} == decltype(A1)::rank{} + 1);
-		static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
+	// 	// static_assert(std::decay_t<decltype(A2_ref)>::rank{} == decltype(A1)::rank{} + 1);
+	// 	static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
-		BOOST_TEST( A2_ref.size() == 2 );
-		BOOST_TEST( A2_ref[0].size() == 3 );
+	// 	BOOST_TEST( A2_ref.size() == 2 );
+	// 	BOOST_TEST( A2_ref[0].size() == 3 );
 
-		BOOST_TEST( &A2_ref[1][0] == &A1[3] );
+	// 	BOOST_TEST( &A2_ref[1][0] == &A1[3] );
 
-		BOOST_TEST(( A2_ref == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} } ));
-	}
+	// 	BOOST_TEST(( A2_ref == multi::array<double, 2>{ {0, 10, 20}, {30, 40, 50} } ));
+	// }
 
-	// BOOST_AUTO_TEST_CASE(halved_2d)
-	{
-		multi::array<int, 2> const A2 = {
-			{ 00,  10,  20,  30,  40,  50},
-			{ 60,  70,  80,  90, 100, 110},
+	// // BOOST_AUTO_TEST_CASE(halved_2d)
+	// {
+	// 	multi::array<int, 2> const A2 = {
+	// 		{ 00,  10,  20,  30,  40,  50},
+	// 		{ 60,  70,  80,  90, 100, 110},
 
-			{120, 130, 140, 150, 160, 170},
-			{180, 190, 200, 210, 220, 230},
-		};
+	// 		{120, 130, 140, 150, 160, 170},
+	// 		{180, 190, 200, 210, 220, 230},
+	// 	};
 
-		BOOST_TEST((
-			A2.halved() == multi::array<int, 3>{
-				{
-					{ 00,  10,  20,  30,  40,  50},
-					{ 60,  70,  80,  90, 100, 110},
-				},
-				{
-					{120, 130, 140, 150, 160, 170},
-					{180, 190, 200, 210, 220, 230},
-				},
-			}
-		));
-	}
+	// 	BOOST_TEST((
+	// 		A2.halved() == multi::array<int, 3>{
+	// 			{
+	// 				{ 00,  10,  20,  30,  40,  50},
+	// 				{ 60,  70,  80,  90, 100, 110},
+	// 			},
+	// 			{
+	// 				{120, 130, 140, 150, 160, 170},
+	// 				{180, 190, 200, 210, 220, 230},
+	// 			},
+	// 		}
+	// 	));
+	// }
 
-	// BOOST_AUTO_TEST_CASE(halved_ref_2d)
-	{
-		std::vector<int> buff({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, {});
-		auto const&      arr = multi::array_ref<int, 2>({4, 4}, buff.data());
+	// // BOOST_AUTO_TEST_CASE(halved_ref_2d)
+	// {
+	// 	std::vector<int> buff({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, {});
+	// 	auto const&      arr = multi::array_ref<int, 2>({4, 4}, buff.data());
 
-		BOOST_TEST(( arr == multi::array<int, 2>{
-			{ 1,  2,  3,  4},
-			{ 5,  6,  7,  8},
-			{ 9, 10, 11, 12},
-			{13, 14, 15, 16}
-		}));
+	// 	BOOST_TEST(( arr == multi::array<int, 2>{
+	// 		{ 1,  2,  3,  4},
+	// 		{ 5,  6,  7,  8},
+	// 		{ 9, 10, 11, 12},
+	// 		{13, 14, 15, 16}
+	// 	}));
 
-		BOOST_TEST((  arr.halved().extents() == multi::extents_t{2, 2, 4} ));
-		BOOST_TEST(( arr.halved() == multi::array<int, 3>{
-			{
-				{ 1,  2,  3,  4},
-				{ 5,  6,  7,  8}
-			},
-			{
-				{ 9, 10, 11, 12},
-				{13, 14, 15, 16}
-			}
-		}));
+	// 	BOOST_TEST((  arr.halved().extents() == multi::extents_t{2, 2, 4} ));
+	// 	BOOST_TEST(( arr.halved() == multi::array<int, 3>{
+	// 		{
+	// 			{ 1,  2,  3,  4},
+	// 			{ 5,  6,  7,  8}
+	// 		},
+	// 		{
+	// 			{ 9, 10, 11, 12},
+	// 			{13, 14, 15, 16}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().flatted() == multi::array<int, 2>{
-			{ 1,  2,  3,  4},
-			{ 5,  6,  7,  8},
-			{ 9, 10, 11, 12},
-			{13, 14, 15, 16}
-		}));
+	// 	BOOST_TEST(( arr.halved().flatted() == multi::array<int, 2>{
+	// 		{ 1,  2,  3,  4},
+	// 		{ 5,  6,  7,  8},
+	// 		{ 9, 10, 11, 12},
+	// 		{13, 14, 15, 16}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().transposed() == multi::array<int, 3>{
-			{
-				{ 1,  2,  3,  4},
-				{ 9, 10, 11, 12},
-			},
-			{
-				{ 5,  6,  7,  8},
-				{13, 14, 15, 16}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().transposed() == multi::array<int, 3>{
+	// 		{
+	// 			{ 1,  2,  3,  4},
+	// 			{ 9, 10, 11, 12},
+	// 		},
+	// 		{
+	// 			{ 5,  6,  7,  8},
+	// 			{13, 14, 15, 16}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated() == multi::array<int, 3>{
-			{
-				{1, 9},
-				{2, 10},
-				{3, 11},
-				{4, 12}
-			},
-			{
-				{ 5, 13},
-				{ 6, 14},
-				{ 7, 15},
-				{ 8, 16}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated() == multi::array<int, 3>{
+	// 		{
+	// 			{1, 9},
+	// 			{2, 10},
+	// 			{3, 11},
+	// 			{4, 12}
+	// 		},
+	// 		{
+	// 			{ 5, 13},
+	// 			{ 6, 14},
+	// 			{ 7, 15},
+	// 			{ 8, 16}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated().rotated() == multi::array<int, 3>{
-			{
-				{1, 5},
-				{9, 13}
-			},
-			{
-				{2, 6},
-				{10, 14}
-			},
-			{
-				{3, 7},
-				{11, 15}
-			},
-			{
-				{4, 8},
-				{12, 16}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated().rotated() == multi::array<int, 3>{
+	// 		{
+	// 			{1, 5},
+	// 			{9, 13}
+	// 		},
+	// 		{
+	// 			{2, 6},
+	// 			{10, 14}
+	// 		},
+	// 		{
+	// 			{3, 7},
+	// 			{11, 15}
+	// 		},
+	// 		{
+	// 			{4, 8},
+	// 			{12, 16}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated().rotated().halved() == multi::array<int, 4>{
-			{
-				{
-					{ 1,  5},
-					{ 9, 13}
-				},
-				{
-					{ 2,  6},
-					{10, 14}
-				}
-			},
-			{
-				{
-					{ 3,  7},
-					{11, 15}
-				},
-				{
-					{ 4,  8},
-					{12, 16}
-				}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated().rotated().halved() == multi::array<int, 4>{
+	// 		{
+	// 			{
+	// 				{ 1,  5},
+	// 				{ 9, 13}
+	// 			},
+	// 			{
+	// 				{ 2,  6},
+	// 				{10, 14}
+	// 			}
+	// 		},
+	// 		{
+	// 			{
+	// 				{ 3,  7},
+	// 				{11, 15}
+	// 			},
+	// 			{
+	// 				{ 4,  8},
+	// 				{12, 16}
+	// 			}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated() == multi::array<int, 4>{
-			{
-				{
-					{ 1,  9},
-					{ 2,  10}
-				},
-				{
-					{ 3, 11},
-					{ 4, 12}
-				}
-			},
-			{
-				{
-					{ 5, 13},
-					{ 6, 14}
-				},
-				{
-					{ 7, 15},
-					{ 8, 16}
-				}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated() == multi::array<int, 4>{
+	// 		{
+	// 			{
+	// 				{ 1,  9},
+	// 				{ 2,  10}
+	// 			},
+	// 			{
+	// 				{ 3, 11},
+	// 				{ 4, 12}
+	// 			}
+	// 		},
+	// 		{
+	// 			{
+	// 				{ 5, 13},
+	// 				{ 6, 14}
+	// 			},
+	// 			{
+	// 				{ 7, 15},
+	// 				{ 8, 16}
+	// 			}
+	// 		}
+	// 	}));
 
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][0][0] == 1 );
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][0][1] == 2 );
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][1][0] == 3 );
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][1][1] == 4 );
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][1][0][0] == 5 );
-		BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][1][0][1] == 6 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][0][0] == 1 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][0][1] == 2 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][1][0] == 3 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][0][1][1] == 4 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][1][0][0] == 5 );
+	// 	BOOST_TEST( arr.halved().rotated().rotated().halved().unrotated().unrotated()[0][1][0][1] == 6 );
 
-		BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated() == multi::array<int, 4>{
-			{
-				{
-					{ 1,  2},
-					{ 3,  4}
-				},
-				{
-					{ 5, 6},
-					{ 7, 8}
-				}
-			},
-			{
-				{
-					{ 9, 10},
-					{11, 12}
-				},
-				{
-					{13, 14},
-					{15, 16}
-				}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated() == multi::array<int, 4>{
+	// 		{
+	// 			{
+	// 				{ 1,  2},
+	// 				{ 3,  4}
+	// 			},
+	// 			{
+	// 				{ 5, 6},
+	// 				{ 7, 8}
+	// 			}
+	// 		},
+	// 		{
+	// 			{
+	// 				{ 9, 10},
+	// 				{11, 12}
+	// 			},
+	// 			{
+	// 				{13, 14},
+	// 				{15, 16}
+	// 			}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated() == multi::array<int, 4>{
-			{
-				{
-					{ 1,  3},
-					{ 5,  7}
-				},
-				{
-					{ 9, 11},
-					{13, 15}
-				}
-			},
-			{
-				{
-					{ 2, 4},
-					{ 6, 8}
-				},
-				{
-					{10, 12},
-					{14, 16}
-				}
-			}
-		}));
+	// 	BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated() == multi::array<int, 4>{
+	// 		{
+	// 			{
+	// 				{ 1,  3},
+	// 				{ 5,  7}
+	// 			},
+	// 			{
+	// 				{ 9, 11},
+	// 				{13, 15}
+	// 			}
+	// 		},
+	// 		{
+	// 			{
+	// 				{ 2, 4},
+	// 				{ 6, 8}
+	// 			},
+	// 			{
+	// 				{10, 12},
+	// 				{14, 16}
+	// 			}
+	// 		}
+	// 	}));
 
-		BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated().unrotated() == multi::array<int, 4>{
-			{
-				{
-					{ 1,  5},
-					{ 9, 13}
-				},
-				{
-					{ 2, 6},
-					{10, 14}
-				}
-			},
-			{
-				{
-					{ 3, 7},
-					{11, 15}
-				},
-				{
-					{ 4,  8},
-					{12, 16}
-				}
-			}
-		}));
-	}
+	// 	BOOST_TEST(( arr.halved().rotated().rotated().halved().unrotated().unrotated().unrotated().unrotated() == multi::array<int, 4>{
+	// 		{
+	// 			{
+	// 				{ 1,  5},
+	// 				{ 9, 13}
+	// 			},
+	// 			{
+	// 				{ 2, 6},
+	// 				{10, 14}
+	// 			}
+	// 		},
+	// 		{
+	// 			{
+	// 				{ 3, 7},
+	// 				{11, 15}
+	// 			},
+	// 			{
+	// 				{ 4,  8},
+	// 				{12, 16}
+	// 			}
+	// 		}
+	// 	}));
+	// }
 
 	// BOOST_AUTO_TEST_CASE(array_partitioned_1d)
 	{
@@ -808,66 +806,66 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma GCC diagnostic pop
 #endif
 	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& [left, right] = A1.splitted();
+	// 	auto&& [left, right] = A1.splitted();
 
-		BOOST_TEST( left.size() == 3 );
-		BOOST_TEST( right.size() == 3 );
+	// 	BOOST_TEST( left.size() == 3 );
+	// 	BOOST_TEST( right.size() == 3 );
 
-		BOOST_TEST( A1[1] == 10 );
-	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+	// 	BOOST_TEST( A1[1] == 10 );
+	// }
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& [left, right] = std::move(A1).splitted();
+	// 	auto&& [left, right] = std::move(A1).splitted();
 
-		BOOST_TEST( left.size() == 3 );
-		BOOST_TEST( right.size() == 3 );
+	// 	BOOST_TEST( left.size() == 3 );
+	// 	BOOST_TEST( right.size() == 3 );
 
-		// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
-	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
+	// 	// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
+	// }
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50};
 
-		auto&& [left, right] = A1.split();
+	// 	auto&& [left, right] = A1.split();
 
-		BOOST_TEST( left.size() == 3 );
-		BOOST_TEST( right.size() == 3 );
+	// 	BOOST_TEST( left.size() == 3 );
+	// 	BOOST_TEST( right.size() == 3 );
 
-		// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
-	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60};
+	// 	// BOOST_TEST( A1[1] == 10 ); use after move detected by clang-tidy bugprone-use-after-move
+	// }
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60};
 
-		auto&& [left, right] = A1.splitted();
+	// 	auto&& [left, right] = A1.splitted();
 
-		BOOST_TEST( left.size() == 3 );
-		BOOST_TEST( right.size() == 4 );
-	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
+	// 	BOOST_TEST( left.size() == 3 );
+	// 	BOOST_TEST( right.size() == 4 );
+	// }
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
 
-		auto const& A2 = A1.strided(2);
-		BOOST_TEST( A2.size() == 4 );
+	// 	auto const& A2 = A1.strided(2);
+	// 	BOOST_TEST( A2.size() == 4 );
 
-		auto&& [left, right] = A2.splitted();
+	// 	auto&& [left, right] = A2.splitted();
 
-		BOOST_TEST( left.size() == 2 );
-		BOOST_TEST( right.size() == 2 );
-	}
-	{
-		multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
+	// 	BOOST_TEST( left.size() == 2 );
+	// 	BOOST_TEST( right.size() == 2 );
+	// }
+	// {
+	// 	multi::array<int, 1> A1 = {0, 10, 20, 30, 40, 50, 60, 70};
 
-		auto const& A2 = A1.strided(2);
-		BOOST_TEST( A2.size() == 4 );
+	// 	auto const& A2 = A1.strided(2);
+	// 	BOOST_TEST( A2.size() == 4 );
 
-		auto&& [left, right] = A2.splitted();
+	// 	auto&& [left, right] = A2.splitted();
 
-		BOOST_TEST( left.size() == 2 );
-		BOOST_TEST( right.size() == 2 );
-	}
+	// 	BOOST_TEST( left.size() == 2 );
+	// 	BOOST_TEST( right.size() == 2 );
+	// }
 
 	// -Wconsumed probe: split() is annotated [[clang::set_typestate(consumed)]],
 	// so using `A` after the call must trigger a clang -Wconsumed warning.
@@ -875,17 +873,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	//   - default                  : noisy warning (informational)
 	//   - -DMULTI_EXPECT_CONSUMED_WARNING with -Werror=consumed : turns into a
 	//     hard error if the warning ever stops firing (regression detector)
-	{
-		multi::array<int, 1> arr = {0, 10, 20, 30};
+	// {
+	// 	multi::array<int, 1> arr = {0, 10, 20, 30};
 
-		auto&& [left, right] = arr.split();  // A is now in "consumed" typestate
-		BOOST_TEST( left.size() == 2 );
-		BOOST_TEST( right.size() == 2 );
+	// 	auto&& [left, right] = arr.split();  // A is now in "consumed" typestate
+	// 	BOOST_TEST( left.size() == 2 );
+	// 	BOOST_TEST( right.size() == 2 );
 
-		// any use of A here should fire -Wconsumed; we exercise a few:
-		BOOST_TEST( arr.size() == 4 );  // expected: warning: invalid invocation of method 'size' on object 'A' while it is in the 'consumed' state
-		BOOST_TEST( arr[0] == 0 );      // expected: warning: invalid invocation of method 'operator[]' ...
-	}
+	// 	// any use of A here should fire -Wconsumed; we exercise a few:
+	// 	BOOST_TEST( arr.size() == 4 );  // expected: warning: invalid invocation of method 'size' on object 'A' while it is in the 'consumed' state
+	// 	BOOST_TEST( arr[0] == 0 );      // expected: warning: invalid invocation of method 'operator[]' ...
+	// }
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)

@@ -1,4 +1,4 @@
-= Boost.Multi -- combined documentation
+= Boost.Multi -- Documentation
 Alfredo A. Correa
 :doctype: book
 :toc: left

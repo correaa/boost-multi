@@ -2,114 +2,110 @@
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 
-> **⚠️ ALERT** 
-> This library is under active Boost review until **March 15, 2026**.  
+<!--
+> **⚠️ ALERT**
+> This library is under active Boost review until **March 15, 2026**.
 > If you are interested in reviewing the library, please send an email to the review manager, **Matt Borland** (matt AT mattborland DOT com).
+-->
 
-Quick start: 
+# Boost.Multi
+
+Boost.Multi provides owning multidimensional arrays containers and non-owning multidimensional views for C++17. It supports slicing, layout transformations, and CPU/GPU memory.
+
+> **Project status:** Boost.Multi is not an official or accepted Boost library. It is being proposed for inclusion in [Boost](https://www.boost.org/) and has no Boost-library dependencies.
+
+_© Alfredo A. Correa, 2018–2026_
+
+## Why Boost.Multi?
+
+* **Generic element type and dimensionality**
+* **Natural multidimensional access:** write `A[i][j]...` or iterate recursively over rows, subarrays or elements.
+* **Composable subarray views:** slice, transpo
+se, rotate indices, and broadcast arrays without copying their elements.
+* **Interoperability:** use standard algorithms (iterators and ranges), allocators, and legacy libraries for strided arrays (BLAS, FFTW, CUDA, HIP, MPI, etc.)
+
+## Quick start
+
+```bash
+git clone https://github.com/correaa/boost-multi.git  # or gitlab.com/correaa/boost-multi.git
+cd boost-multi
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
-git clone https://gitlab.com/correaa/boost-multi && cd boost-multi
-cmake . -B ./build && camke --build ./build && ctest -C ./build
-```
-read the [documentation](https://correaa.gitlab.io/boost-multi/) or explore `./test`.
 
-**[Boost.] Multi**
+Read the [documentation](https://correaa.github.io/boost-multi/multi/intro.html) or explore `test/`.
 
-> **Disclosure: This is not an official or accepted Boost library and is unrelated to the std::mdspan proposal. It is in the process of being proposed for inclusion in [Boost](https://www.boost.org/) and it doesn't depend on Boost libraries.**
-
-_© Alfredo A. Correa, 2018-2026_
-
-_Multi_ is a modern C++ library that provides manipulation and access of data in multidimensional arrays for both CPU and GPU memory.
+## First array and view
 
 ```cpp
-#include <cassert>          // for assert
-#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi or https://gitlab.com/correaa/boost-multi
+#include <cassert>
+#include <multi/array.hpp>
 
 namespace multi = boost::multi;
 
 int main() {
-    multi::array<int, 2> A = {  // 2D array of integers
+    multi::array<int, 2> A = {
         {1, 2, 3},
         {4, 5, 6}
     };
 
-    assert(A.size() == 2);                    // the array has 2 rows
-    assert(A.size() == A.end() - A.begin());  // iterators to rows
+    assert(A[1][1] == 5);  // ordinary multidimensional indexing
 
-    assert(A[1][1] == 5);  // element access through indexing
-    A[1][1] = 55;          // element modified
-
-    assert(A.elements().size() == 2 * 3);  // array has 6 elements
-    assert(A.elements()[4] == 55);          // elements gives "flat" sequences
-
-    using multi::_;  // wildcard
-
-    auto&& col1 = A(_, 1);  // second column
-    assert( col1.size() == 2 );
-
-    auto&& row1 = A(1, _);  // second row
-    assert( row1.size() == 3 );
-
-    auto&& block = A({0, 2}, {0, 2});  // a 2x2 block
-    assert( block.elements().size() == 4 );  
+    using multi::_;
+    auto&& second_column = A(_, 1);  // a non-owning view
+    second_column[0] = 20;           // changes A[0][1]
+    assert(A[0][1] == 20);
 }
 ```
-[(online)](https://godbolt.org/z/KxGoP5Kq9)
 
 ## Learn about Multi
 
 * [Online documentation](https://correaa.github.io/boost-multi/multi/intro.html)
 
-## Try Multi
+## Use Boost.Multi
 
-Before installing the library, you can try it [online](https://godbolt.org/z/occ7Yz78d) through the Godbolt's Compiler Explorer.
+Try the library [online](https://godbolt.org/z/occ7Yz78d) with Godbolt's Compiler Explorer.
 
-Alternatively, the core of the library can be downloaded from https://correaa.gitlab.io/boost-multi/boost-multi.hpp as a single (amalgamated) header, and used locally with `#include <DIR/boost-multi.hpp>`,
+### Header-only
 
-## Install Multi
+Add the repository's `include/` directory to your compiler's include path and include the headers you need:
 
-_Multi_ has no external dependencies and can be used immediately after downloading.
-```bash
-git clone https://gitlab.com/correaa/boost-multi.git
+```cpp
+#include <multi/array.hpp>
 ```
 
-_Multi_ doesn't require installation since it is a header-only library, and including the main header brings the code library:
-```c++
-// c++ -I multi_root_dir/include main.cpp
-#include <boost/multi.hpp>
+Alternatively, download the [single amalgamated header](https://correaa.gitlab.io/boost-multi/boost-multi.hpp) and include it as `#include <boost-multi.hpp>`.
 
-int main() { ... }
-```
+### CMake: in-tree source
 
-The library can be also installed with CMake.
-The header (and CMake) files will be installed in the chosen prefix location (by default, `/usr/local/include/multi` and `/usr/local/share/multi`).
-```bash
-cd boost-multi
-mkdir build
-cmake . -B ./build  # --install-prefix=$HOME/.local
-cmake --install ./build  # or sudo ...
-```
+Add Multi from an in-tree source directory and link its interface target:
 
-_Testing_ the library requires Boost.Core (headers), installed for example, via `sudo apt install cmake git g++ libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++ git`.
-A CMake build system is provided to compile and run basic tests.
-```bash
-ctest -C ./build
-```
-
-Once installed, other CMake projects (targets) can depend on Multi by adding `add_subdirectory(my_multi_path)` or by `find_package`:
 ```cmake
-find_package(multi)  # see https://gitlab.com/correaa/boost-multi
+add_subdirectory(path/to/boost-multi)
+target_link_libraries(my_target PRIVATE multi)
 ```
 
-Alternatively, the library can be fetched on demand:
+### CMake: FetchContent
+
+Fetch Multi on demand:
+
 ```cmake
 include(FetchContent)
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
 FetchContent_MakeAvailable(multi)
-...
-target_link_libraries(my_target PUBLIC multi)
+target_link_libraries(my_target PRIVATE multi)
 ```
 
+### Testing
+
+Testing requires Boost.Test. For example, install `libboost-test-dev` on Debian/Ubuntu or `boost-devel` on Fedora.
+
+```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
 ## Support
 
