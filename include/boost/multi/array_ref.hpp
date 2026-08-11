@@ -315,6 +315,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
 
  public:
+	/// Array value after evaluation through the first index, an object of lower dimension, `multi::array<T, D ‐ 1, P>` or, for `D == 1`, `std::pointer_traits<P>::element_type` (usually `T`)
 	using value_type = typename std::conditional_t<
 		(D > 1),
 		array<element, D - 1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
@@ -330,10 +331,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		const_subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference>;
 
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }
-
-	// BOOST_MULTI_HD constexpr auto mutable_base() const -> element_ptr { return base_; }
+	/// returns the base pointer of the array (arithmetic base of the layout, generally the first element)
+	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }	// cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
@@ -1535,7 +1534,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 #endif
 
  public:
-	constexpr auto dropped(difference_type n) const& { return dropped_aux_(n).as_const(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	/// yields a subarray of the same dimensionally in which the first `count` elements are dropped.
+	constexpr auto dropped(difference_type count) const& { return dropped_aux_(count).as_const(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
@@ -1861,7 +1861,10 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 #endif
 
  public:
+	/// returns an iterator to the beginning (in the leading dimension)
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the beginning
+
+	/// returns an iterator to the end (in the leading dimension)
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }      // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the end
 
 	/// returns an const-iterator to the beginning
@@ -2334,14 +2337,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
+	/// swaps every corresponding element of the array references, extents must match. O(N) operation
 	constexpr void swap(subarray& other) & noexcept {
-		BOOST_MULTI_ASSERT(this->extent() == other.extent());
+		BOOST_MULTI_ASSERT(this->extents() == other.extents());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
 	}
+
 	constexpr void swap(subarray&& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
+
 	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
 	constexpr void swap(subarray& other) && noexcept { return swap(other); }
 
@@ -3826,8 +3832,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
  public:
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
+	/// Type to describe the layout of an array, that results from `.layout()` member.
 	using layout_type = typename subarray_base::layout_type;
-	using iterator    = typename subarray_base::iterator;
+
+	/// Type for random-access iteration in the leading dimension, that results from `.begin()`/`.end()` members
+	using iterator = typename subarray_base::iterator;
 
 	using typename subarray_base::size_type;
 
@@ -3964,6 +3973,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// pointer to a contiguous range of `.num_elements()` that contains the elements of the array
 	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(array_ref::base_); }
 
 	template<class TT, class... As, std::enable_if_t<!std::is_base_of_v<array_ref, array_ref<TT, D, As...>>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
