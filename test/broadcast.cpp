@@ -362,9 +362,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
-		auto trace_D = std::reduce(r.begin(), r.end(), 0);
+		auto trace_D = std::accumulate(r.begin(), r.end(), 0);  // NOLINT(misc-include-cleaner) std::reduce unavailable in libstdc++ < 9 (e.g. clang-8 CI)
 
-		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
+		BOOST_TEST(trace_D == std::accumulate(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
 #endif
 	{
