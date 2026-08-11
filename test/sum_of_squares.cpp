@@ -51,7 +51,7 @@ auto sos(int N) {  // NOLINT(readability-identifier-length)  // N is the number 
 		std::plus<>{},
 		[](auto const& e) noexcept { return e * e; }
 	);
-#else  // manual fallback: gcc 7/8's libstdc++ lacks std::reduce/std::transform_reduce entirely (added in libstdc++ 9)
+#else                                                 // manual fallback: gcc 7/8's libstdc++ lacks std::reduce/std::transform_reduce entirely (added in libstdc++ 9)
 	return std::accumulate(
 		range(0, N).begin(), range(0, N).end(),
 		0,
