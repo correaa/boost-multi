@@ -305,16 +305,19 @@ template<class XP, class X = typename std::pointer_traits<XP*>::element_type, cl
 	BLAS(sgemv)('N', 1, n, 1.0F, reinterpret_cast<s const*>(static_cast<X*>(xp)), incx, reinterpret_cast<s const*>(static_cast<Y*>(yp)), incy, 0.0F, reinterpret_cast<s*>(static_cast<R*>(rp)), 1);  // NOLINT(readability-suspicious-call-argument,cppcoreguidelines-pro-type-reinterpret-cast) 
 #endif
 }
+
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 template<class XP, class X = typename std::pointer_traits<XP*>::element_type, class YP, class Y = typename std::pointer_traits<YP*>::element_type, class RP, class R = typename std::pointer_traits<RP*>::element_type, enable_if_t<is_d<X>{} && is_d<Y>{} && is_assignable<R&, decltype(0.0 +(X{}*Y{})+(X{}*Y{}))>{}, int> =0>
-void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)  // NOSONAR
+void dot (ssize_t n, XP* xp, ptrdiff_t incx, YP* yp, ptrdiff_t incy, RP* r) {
 	auto const rr = BLAS(ddot )(n, reinterpret_cast<d const*>(static_cast<X*>(xp)), incx, reinterpret_cast<d const*>(static_cast<Y*>(yp)), incy);
 	static_assert(sizeof(rr)==sizeof(*r));
 #if defined(__cpp_lib_bit_cast) && __cpp_lib_bit_cast >= 201806L
-	*static_cast<R*>(r) = std::bit_cast<R>(rr);  // bit-copy, not a raw buffer op: avoids UB on non-trivially-copyable R and -Wunsafe-buffer-usage-in-libc-call
+	*static_cast<R*>(r) = std::bit_cast<R>(rr);
 #else
-	std::memcpy(reinterpret_cast<double*>(static_cast<R*>(r)), &rr, sizeof(rr));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	std::memcpy(reinterpret_cast<double*>(static_cast<R*>(r)), &rr, sizeof(rr));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)  // NOSONAR
 #endif
 }
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #ifdef BLAS_DOT_RETURNS_VOID
