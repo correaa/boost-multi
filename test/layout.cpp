@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		multi::array<double, 2> d2D = {
+		multi::array<double, 2> const d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
 			{ 30.0,  1.0,  2.0,  3.0,  4.0},
 			{100.0, 11.0, 12.0, 13.0, 14.0},
@@ -190,9 +190,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #endif
 
 		BOOST_TEST( d2D.layout().is_compact() );
-		// BOOST_TEST( d2D.rotated().is_compact() );
-		// BOOST_TEST( d2D[3].is_compact() );
-		// BOOST_TEST( !(d2D.rotated()[2].is_compact()) );
+		BOOST_TEST( d2D.rotated().layout().is_compact() );
+		BOOST_TEST( d2D[3].layout().is_compact() );
+		BOOST_TEST( !(d2D.rotated()[2].layout().is_compact()) );
 	}
 	{
 		multi::array<int, 2> d2D({5, 3});
