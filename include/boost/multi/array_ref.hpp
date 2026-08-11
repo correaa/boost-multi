@@ -2393,9 +2393,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		if(adl_size(rng)) {
 			adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
 		}
-		if(adl_size(rng)) {
-			adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
-		}
 		return *this;
 	}
 
