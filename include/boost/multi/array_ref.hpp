@@ -1705,7 +1705,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
 
  public:
- 	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
+	/// yields a view of the array with the leading dimension in the reverse order (e.g. `a.reversed()[i][j] == a[a.size() - 1 - i][j]`)
 	constexpr auto reversed() const& { return reversed_aux_().as_const(); }
 	constexpr auto reversed() & -> const_subarray { return reversed_aux_(); }
 	constexpr auto reversed() && -> const_subarray { return reversed_aux_(); }
@@ -1838,20 +1838,21 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	constexpr auto addressof_aux_() const { return ptr(this->base_, this->layout()); }
 
 	// NOLINTBEGIN(readability-identifier-naming)  // TODO(correaa) rename as private or remove
-	constexpr auto addressof() && -> ptr { return addressof_aux_(); }            // cppcheck-suppress duplInheritedMember;
-	constexpr auto addressof() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
-	constexpr auto addressof() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
-	constexpr auto addressof() const&& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() && -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() const&& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
+
+	constexpr auto addressof_() & -> ptr { return addressof_aux_(); }             // cppcheck-suppress duplInheritedMember;
+	constexpr auto addressof_() const& -> const_ptr { return addressof_aux_(); }  // cppcheck-suppress duplInheritedMember;
 	// NOLINTEND(readability-identifier-naming)
 
  public:
 	// NOLINTBEGIN(google-runtime-operator) //NOSONAR
 	// operator& is not defined for r-values anyway
-	constexpr auto operator&() && { return addressof(); }       // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	constexpr auto operator&() const&& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() && { return addressof_(); }       // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() const&& { return addressof_(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 
-	constexpr auto operator&() & { return addressof(); }       // cppcheck-suppress duplInheritedMember;  //NOSONAR
-	constexpr auto operator&() const& { return addressof(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() & { return addressof_(); }       // cppcheck-suppress duplInheritedMember;  //NOSONAR
+	constexpr auto operator&() const& { return addressof_(); }  // cppcheck-suppress duplInheritedMember;  //NOSONAR
 	// NOLINTEND(google-runtime-operator)
 
  private:
@@ -2389,6 +2390,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		std::enable_if_t<!has_elements<Range>::value, int> = 0>                                                      // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(Range const& rng) & -> subarray& {                                                      // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		BOOST_MULTI_ASSERT(this->size() == static_cast<size_type>(adl_size(rng)));                                   // TODO(correaa) or use std::cmp_equal?
+		if(adl_size(rng)) {
+			adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
+		}
 		if(adl_size(rng)) {
 			adl_copy_n(adl_begin(rng), adl_size(rng), this->begin());
 		}
