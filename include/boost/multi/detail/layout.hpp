@@ -1711,16 +1711,16 @@ struct layout_t
 	constexpr BOOST_MULTI_HD auto        offsets() const { return boost::multi::detail::tuple{offset(), sub_.offsets()}; }
 	constexpr BOOST_MULTI_HD auto        nelemss() const { return boost::multi::detail::tuple{nelems(), sub_.nelemss()}; }
 
-	constexpr auto base_size() const {
-		using std::max;
-		return max(nelems_, sub_.base_size());
+ private:
+	constexpr auto base_size_() const {
+		return (std::max)(nelems_, sub_.base_size_());
 	}
 
-	constexpr auto        is_compact() const& { return base_size() == num_elements(); }
-	friend constexpr auto is_compact(layout_t const& self) { return self.is_compact(); }
+ public:
+	constexpr auto is_compact() const& { return base_size_() == num_elements(); }
 
 	constexpr auto        shape() const& -> decltype(auto) { return sizes(); }
-	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
+//	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
@@ -2049,7 +2049,10 @@ struct layout_t<0, SSize>
 	[[deprecated("is going to be removed")]]
 	constexpr auto is_compact() const -> bool = delete;
 
-	static constexpr auto base_size() -> size_type { return 0; }
+ private:
+	static constexpr auto base_size_() -> size_type { return 0; }
+
+ public:
 	static constexpr auto origin() -> offset_type { return 0; }
 
 	constexpr auto reverse() const { return *this; }
