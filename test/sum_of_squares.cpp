@@ -10,7 +10,10 @@
 #include <numeric>      // for std::transform_reduce, std::accumulate (fallback for libstdc++ < 9)
 #include <type_traits>  // for std::is_same_v, std::decay_t
 #include <utility>      // for std::forward
+
+#if __has_include(<version>)
 #include <version>      // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
+#endif
 
 #ifdef __cpp_lib_ranges_fold
 #include <algorithm>  // for std::ranges::fold_left  (C++23)
