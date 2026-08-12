@@ -19,6 +19,7 @@ generator: adoc
 multipage: true
 
 extract-private: false
+extract-friends: false
 
 # inherit-base-members: "copy-dependencies"  # "reference" "copy-all"
 

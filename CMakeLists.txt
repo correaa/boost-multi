@@ -107,6 +107,7 @@ if(NOT ENABLE_CIRCLE)
       -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
       -Wno-padded
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-nrvo>
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-unsafe-buffer-usage-in-libc-call>
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
     >
     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
