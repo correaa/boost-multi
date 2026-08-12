@@ -22,7 +22,7 @@
 #include <vector>
 
 #if __has_include(<version>)
-#include <version>  // for _GLIBCXX_RELEASE, __GLIBC...
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
 #endif
 
 namespace multi = boost::multi;
