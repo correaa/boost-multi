@@ -320,15 +320,20 @@ template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extent_t(std
 
 }  // end namespace boost::multi
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // some std libs declare tuple_size as a class
+#endif
 template<class... Exts>
-class std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
- public:
+struct std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	static constexpr std::size_t value = sizeof...(Exts);
 };
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template<std::size_t I, class... Exts>
-class std::tuple_element<I, ::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
- public:
+struct std::tuple_element<I, ::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
 	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
 };
 
