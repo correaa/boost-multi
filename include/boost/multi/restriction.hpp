@@ -644,53 +644,23 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			return ret;
 		}
 
-#if defined(__clang__) && (__clang_major__ <= 15)
-		constexpr auto operator-(iterator const& other) { return it_ - other.it_; }
-#else
 		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
-#endif
-
-#if defined(__clang__) && (__clang_major__ <= 15)
-		BOOST_MULTI_HD constexpr auto operator+(difference_type n) {
-			iterator ret{*this};  // mull-ignore: cxx_init_const
-			return ret += n;
-		}
-#else
 		template<class = void>
 		friend BOOST_MULTI_HD constexpr auto operator+(iterator const& self, difference_type n) {
 			iterator ret{self};  // mull-ignore: cxx_init_const
 			return ret += n;
 		}
-#endif
-
-#if defined(__clang__) && (__clang_major__ <= 15)
-		constexpr auto operator-(difference_type n) const {
-			iterator ret{*this};
-			return ret -= n;
-		}
-#else
 		friend constexpr auto operator-(iterator const& self, difference_type n) {
 			iterator ret{self};
 			return ret -= n;
 		}
-#endif
 
 		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
 
-#if defined(__clang__) && (__clang_major__ <= 15)
-		constexpr auto operator==(iterator const& other) const noexcept -> bool { return it_ == other.it_; }
-#else
 		friend constexpr auto operator==(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ == other.it_; }
-#endif
-
 		friend constexpr auto operator!=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ != other.it_; }
 
-#if defined(__clang__) && (__clang_major__ <= 15)
-		auto operator<=(iterator const& other) const noexcept -> bool { return it_ <= other.it_; }
-#else
 		friend auto operator<=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ <= other.it_; }
-#endif
-
 		friend auto operator<(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ < other.it_; }
 		friend auto operator>(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 		friend auto operator>=(iterator const& self, iterator const& other) noexcept -> bool { return self.it_ >= other.it_; }

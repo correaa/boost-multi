@@ -321,12 +321,14 @@ template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extent_t(std
 }  // end namespace boost::multi
 
 template<class... Exts>
-struct std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+class std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+ public:
 	static constexpr std::size_t value = sizeof...(Exts);
 };
 
 template<std::size_t I, class... Exts>
-struct std::tuple_element<I, ::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+class std::tuple_element<I, ::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
+ public:
 	using type = std::tuple_element_t<I, std::tuple<Exts...>>;
 };
 

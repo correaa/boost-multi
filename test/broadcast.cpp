@@ -18,6 +18,10 @@
 // IWYU pragma: no_include <tuple>    // for apply
 #include <utility>  // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace multi = boost::multi;
 
 // NOLINTBEGIN(readability-identifier-length)
