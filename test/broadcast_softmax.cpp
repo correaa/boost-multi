@@ -27,6 +27,10 @@
 #include <string>  // for basic_string, operator<<
 #include <utility>
 
+#if __has_include(<version>)
+#include <version>  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
