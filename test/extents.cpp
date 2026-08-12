@@ -21,6 +21,10 @@
 // IWYU pragma: no_include <variant>  // for get, iwyu bug
 #include <vector>
 
+#if __has_include(<version>)
+#include <version>  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace multi = boost::multi;
 
 // Observed failure: clang-15 (as its own toolchain, not later clang versions) paired with
