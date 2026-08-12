@@ -664,7 +664,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 #endif
 
 #if defined(__clang__) && (__clang_major__ <= 15)
-		friend constexpr auto operator-(difference_type n) const {
+		constexpr auto operator-(difference_type n) const {
 			iterator ret{*this};
 			return ret -= n;
 		}
