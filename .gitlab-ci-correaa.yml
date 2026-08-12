@@ -867,9 +867,9 @@ oneapi:
     - non-shared
     - large-disk-space
     - x86_64
-  only:
-    refs:
-      - develop
+  # only:
+  #   refs:
+  #     - develop
   # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
     - apt-get install --no-install-recommends -y --quiet ninja-build ca-certificates cmake curl libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
