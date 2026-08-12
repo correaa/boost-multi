@@ -12,7 +12,7 @@
 #include <utility>      // for std::forward
 
 #if __has_include(<version>)
-#include <version>      // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
+#include <version>  // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
 #endif
 
 #ifdef __cpp_lib_ranges_fold
