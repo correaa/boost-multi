@@ -322,7 +322,7 @@ template<class... Exts> outer_t(Exts...) -> outer_t<decltype(multi::extent_t(std
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // some std libs declare tuple_size as a class
+#pragma clang diagnostic ignored "-Wmismatched-tags"  // some std libs declare tuple_size as a class
 #endif
 template<class... Exts>
 struct std::tuple_size<::boost::multi::detail::outer_t<Exts...>> {  // NOLINT(cert-dcl58-cpp) structured binding
