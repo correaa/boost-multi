@@ -4,7 +4,11 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for __cpp_lib_ranges_fold
+#endif
+
+#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)) && defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 
