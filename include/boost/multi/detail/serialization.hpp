@@ -25,10 +25,12 @@ namespace boost::archive::detail { template <class Ar> class common_oarchive; } 
 namespace boost::serialization { struct binary_object; }
 namespace boost::serialization { template <class T> class array_wrapper; }
 namespace boost::serialization { template <class T> class nvp; }
+namespace boost::serialization { class access; }  // NOLINT(bugprone-forward-declaration-namespace)
 
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct InputArchive; }
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct OutputArchive; }
 namespace cereal { template <class T> class NameValuePair; }  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // IWYU pragma: keep  // bug in iwyu 0.18
+namespace cereal { class access; }  // NOLINT(bugprone-forward-declaration-namespace)
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {

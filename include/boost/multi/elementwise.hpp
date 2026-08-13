@@ -19,6 +19,7 @@
 
 namespace boost::multi {
 
+namespace detail {  // TODO(correaa) remove
 // TODO(correaa) put this in ::elementwise
 template<class A> struct bind_category {
 	using type = A;
@@ -53,6 +54,7 @@ template<class T, dimensionality_type D, class... Ts>
 struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 	using type = ::boost::multi::subarray<T, D, Ts...> const&;
 };
+}  // end namespace detail
 
 /// Namespace for elementwise operators (+, -, *, and other convenience functions)
 namespace elementwise {
