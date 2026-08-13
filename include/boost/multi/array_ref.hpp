@@ -1751,20 +1751,12 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
  public:
-	/// Returns a subarray of the same dimension
+	/// Subarray returning operator (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
 	BOOST_MULTI_HD constexpr auto operator()() const& -> const_subarray { return paren_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	BOOST_MULTI_HD constexpr auto operator[]() const& -> const_subarray { return paren_aux_(); }
 #endif
-
-	// template<template<class...> class Container = std::vector, template<class...> class ContainerSub = std::vector, class... As>
-	// constexpr auto to(As&&... args) const& {
-	// 	using inner_value_type = typename const_subarray::value_type::value_type;
-	// 	using container_type   = Container<ContainerSub<inner_value_type>>;
-
-	// 	return container_type(this->begin(), this->end(), std::forward<As>(args)...);
-	// }
 
  private:
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
