@@ -40,8 +40,10 @@ else()
             include(FetchContent)
             FetchContent_Declare(
                 cccl-cmake
-                GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
-                GIT_TAG main  # v3.1.0
+                GIT_REPOSITORY https://github.com/davebayer/cccl.git
+                GIT_TAG fix_intel_llvm
+                # GIT_REPOSITORY https://github.com/NVIDIA/cccl.git
+                # GIT_TAG main  # or v3.1.0
                 GIT_SHALLOW ON
             )
             FetchContent_MakeAvailable(cccl-cmake)
