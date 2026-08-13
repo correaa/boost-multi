@@ -251,7 +251,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> arr({10, 10}, 990);
 
-		arr.clear();
+		arr = {};  // arr.clear();
 
 		BOOST_TEST(arr.is_empty());
 
@@ -278,9 +278,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<multi::array<int, 2>> Bv;
 		Bv.reserve(Av.size());  // NOLINT(fuchsia-default-arguments-calls)
 
-		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
+		std::move(Av.begin(), Av.end(), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
-		BOOST_TEST( size(Bv) == size(Av) );
+		BOOST_TEST( Bv.size() == Av.size() );
 		BOOST_TEST( Av[4].is_empty() );
 		BOOST_TEST( size(Bv[5]) == 4 );
 		BOOST_TEST( Bv[5][1][2] == 990 );
@@ -293,11 +293,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		Bv.reserve(Av.size());
 
 		//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<int>{});  // segfaults nvcc 11.0 but not nvcc 11.1
-		std::move(begin(Av), end(Av), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
+		std::move(Av.begin(), Av.end(), std::back_inserter(Bv));  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( size(Bv) == size(Av) );
 		BOOST_TEST( Av[4].is_empty() );
-		BOOST_TEST( size(Bv[5]) == 4 );
+		BOOST_TEST( Bv[5].size() == 4 );
 		BOOST_TEST( Bv[5][1][2] == 990 );
 	}
 
@@ -306,17 +306,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<multi::array<int, 2>> Av(10, multi::array<int, 2>({4, 5}, 990));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		std::vector<multi::array<int, 2>> Bv = std::move(Av);
 
-		Av.clear();
+		Av = {};  // Av.clear();
 
-		BOOST_TEST( size(Av) == 0 );
-		BOOST_TEST( size(Bv) == 10 );
-		BOOST_TEST( size(Bv[5]) == 4 );
+		BOOST_TEST( Av.size() == 0 );  // NOLINT(readability-container-size-empty)
+		BOOST_TEST( Bv.size() == 10 );
+		BOOST_TEST( Bv[5].size() == 4 );
 		BOOST_TEST( Bv[5][1][2] == 990 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_array_move_array)
 	{
 		multi::array<std::vector<int>, 2> arr({10, 10}, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
+
 		auto                              arr2 = std::move(arr);
 
 		// NOLINTNEXTLINE(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
@@ -372,7 +373,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr2[1].size() == 5 );
 		BOOST_TEST( arr2[1][4] == 990 );
 
-		BOOST_TEST(     arr[1].empty() );
+		BOOST_TEST(  arr[1].empty() );
 		BOOST_TEST( !arr[5].empty() );
 
 		BOOST_TEST( arr2[1].data() == ptr1 );

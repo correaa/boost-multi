@@ -1620,7 +1620,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 
 		arxiv& ArTraits::make_nvp("extents", extents_);  // don't try `using ArTraits::make_nvp`, make_nvp is a static member
 		if(this->extents() != extents_) {
-			clear();
+			dynamic_::clear();
 			this->reextent(extents_);
 		}
 		dynamic_::serialize(arxiv, version);
@@ -1692,7 +1692,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	~array() noexcept = default;
 
 	/// Clear the values of array, making it empty (doesn't throw)
-	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
+	[[deprecated]] auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
@@ -1737,7 +1737,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		if(this == std::addressof(other)) {
 			return *this;
 		}
-		clear();
+		dynamic_::clear();
 		if constexpr(!multi::allocator_traits<typename array::allocator_type>::is_always_equal::value) {
 			static_assert(
 				sizeof(Dummy*) && multi::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value,
@@ -1761,7 +1761,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 			}
 			dynamic_::operator=(other);
 		} else {
-			clear();
+			dynamic_::clear();
 			if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
 				this->alloc() = other.alloc();
 			}
