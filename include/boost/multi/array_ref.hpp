@@ -2095,7 +2095,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	/// serializes the subarray elements to an Boost.Serialization-compatible archive
-	template<class Archive>
+	template<class Archive>                                     // NOLINTNEXTLINE(readability-identifier-naming)
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using AT = multi::archive_traits<Archive>;
 		// if(version == 0) {
