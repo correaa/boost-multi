@@ -201,6 +201,7 @@ struct array_iterator;
 template<class Element, dimensionality_type D, typename ElementPtr, bool IsConst = false, bool IsMove = false, typename Stride = typename std::iterator_traits<ElementPtr>::difference_type, class SubLayout = layout_t<D - 1>>
 using array_iterator [[deprecated]] = typename detail::array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride, SubLayout>;
 
+namespace detail {
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D, std::make_signed_t<typename std::pointer_traits<ElementPtr>::size_type>>>
 struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element                                      = T;
@@ -332,7 +333,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference>;
 
 	/// returns the base pointer of the array (arithmetic base of the layout, generally the first element)
-	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }	// cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
 	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
@@ -394,6 +395,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<class T2, ::boost::multi::dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
+}  // end namespace detail
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1235,36 +1237,38 @@ template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct 
 #endif
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-class const_subarray : public array_types<T, D, ElementPtr, Layout> {
-	using types = array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
+class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
+	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
 	// using ref_ = const_subarray;
 
-	using array_types<T, D, ElementPtr, Layout>::rank_v;
+	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
 	// using typename types::element_type;
 	using types::layout;
 
+	/// type that holds the layout of the subarray or array
 	using layout_type = Layout;
 
 	/// A tuple type to hold all the indices necessary to get to the element of the array
 	// using indices_type = typename extents_t<D>::indices_type;
 
 	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
-	using size_type = typename array_types<T, D, ElementPtr, Layout>::size_type;
+	using size_type = typename detail::array_types<T, D, ElementPtr, Layout>::size_type;
 
 	/// returns the internal layout information of the array
-	BOOST_MULTI_HD constexpr auto layout() const -> typename const_subarray::layout_type { return array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember ; TODO(correaa) eliminate array_types base
+	BOOST_MULTI_HD constexpr auto layout() const -> layout_type {return detail::array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember
 
-	const_subarray()                                         = default;
+	/// Assingment operators (disabled because the const-subarray is immutable)
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
 	auto operator=(const_subarray&&) -> const_subarray&      = delete;
 
+	const_subarray() = default;
 	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& base)
-	: array_types<T, D, ElementPtr, Layout>{layout, base} {}
+	: detail::array_types<T, D, ElementPtr, Layout>{layout, base} {}
 
  protected:
 	// using types::types;
@@ -1408,14 +1412,16 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		return ret;
 	}
 
-	/// Materializes an independent, owning `array` copy of this view with the associated array-value type
+	/// materializes an independent, owning `array` copy of this view with the associated array-value type
 	constexpr auto operator+() const -> decay_type { return decay(); }
 
+	/// reference to a subarray of lower dimension (or to an element for `D == 1`)
 	using reference = typename std::conditional_t<
 		(D > 1),
 		const_subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_ptr>::reference>;
 
+	/// const-reference to a subarray of lower dimension (or to an element for `D == 1`)
 	using const_reference = typename std::conditional_t<
 		(D > 1),
 		const_subarray<element, D - 1, element_ptr>,
@@ -1464,13 +1470,13 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	#endif
 	// clang-format on
 
-	/// Returns an immutable reference to the front element.
+	/// yields the front subarray of lower dimension (or element for `D == 1`) of a non-empty array.
 	/// \pre `!is_empty()`
 	constexpr auto front() const& -> const_reference {
 		assert(!this->is_empty());
 		return *begin();
 	}
-	/// Returns an immutable reference to the back element.
+	/// yields the back subarray of lower dimension (or element for `D == 1`) of a non-empty array.
 	/// \pre `!is_empty()`
 	constexpr auto back() const& -> const_reference {
 		assert(!this->is_empty());
@@ -1617,7 +1623,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
  public:
 	// [[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {
-		return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
+		return layout().is_flattable();
+		// return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
 	}
 
  private:
@@ -1796,7 +1803,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 
 	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access iterator across the leading dimension (e.g. returned by `begin`/`end`)
 	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access const-iterator across the leading dimension
-	using move_iterator  = detail::array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access move-iterator across the leading dimension
+
+	// /// Iterator in the leading dimension that mark elements as movable
+	// using move_iterator  = detail::array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access move-iterator across the leading dimension
 
 	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first) * first->size()), first.base()) {
@@ -1864,7 +1873,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the beginning
 
 	/// returns an iterator to the end (in the leading dimension)
-	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }      // cppcheck-suppress duplInheritedMember ; to overwrite  ///< returns a iterator to the end
+	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// returns an const-iterator to the beginning
 	BOOST_MULTI_HD constexpr auto cbegin() const& { return begin(); }
@@ -2034,7 +2043,7 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		}
 	}
 
-	/// Returns a const-element view of the subarray, preventing modification of elements.
+	/// yields a const-element view of the subarray, preventing modification of elements.
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
 	// return rebind<element, element_const_ptr>{this->layout(), this->base()};
 
@@ -2084,6 +2093,8 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		}
 	}
 
+ private:
+	/// serializes the subarray elements to an Boost.Serialization-compatible archive
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int /*version*/) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using AT = multi::archive_traits<Archive>;
@@ -2095,6 +2106,9 @@ class const_subarray : public array_types<T, D, ElementPtr, Layout> {
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
 		//  std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
+
+	friend class boost::serialization::access;
+	friend class cereal::access;
 };
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -2421,7 +2435,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		this->elements() = std::move(other).elements();
 		return *this;
 	}
-
 
 	/// Assignment operators (right-hand side must be of the same dimensionality)
 	// cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2933,9 +2946,9 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 /// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
-: public array_types<T, 0, ElementPtr, Layout> {
+: public detail::array_types<T, 0, ElementPtr, Layout> {
  public:
-	using types = array_types<T, 0, ElementPtr, Layout>;
+	using types = detail::array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
 	using element_type [[deprecated("use ::element")]] = typename types::element;
@@ -2944,7 +2957,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using element_cref                                 = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
 	using iterator                                     = detail::array_iterator<T, 0, ElementPtr>;
 
-	using size_type = typename array_types<T, 0, ElementPtr, Layout>::size_type;
+	using size_type = typename detail::array_types<T, 0, ElementPtr, Layout>::size_type;
 
 	using layout_type = Layout;
 
@@ -3091,13 +3104,13 @@ class const_subarray<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inheritance) to define operators via CRTP
 : public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, public array_types<T, 1, ElementPtr, Layout> {
+, public detail::array_types<T, 1, ElementPtr, Layout> {
  public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>      // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT> const& il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this constructs a reference to the init list
-	: array_types<T, 1, ElementPtr, Layout>(
+	: detail::array_types<T, 1, ElementPtr, Layout>(
 		  layout_type(multi::extents_t<1>({0, static_cast<size_type>(std::size(il_1d))})),
 		  std::data(il_1d)
 	  ) {
@@ -3109,7 +3122,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	static constexpr dimensionality_type rank_v = 1;
 
-	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
+	using types = detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 
 	using rank        = std::integral_constant<dimensionality_type, rank_v>;
@@ -3128,12 +3141,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using const_pointer   = element_const_ptr;
 	/// `std::allocator_traits<Allocator>::pointer` for 1D arrays
 	using pointer         = element_ptr;
-	using const_reference = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
-	using reference       = typename array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
+	using const_reference = typename detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>::const_reference;
+	using reference       = typename detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type;
 
-	using typename array_types<T, 1, ElementPtr, Layout>::size_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::size_type;
 
 	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type { return default_allocator_of(const_subarray::base()); }
 	BOOST_MULTI_FRIEND_CONSTEXPR
@@ -3290,8 +3303,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
-	/// Returns a const reference to the first element.
-	/// \pre `!is_empty()`
 	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
 	BOOST_MULTI_HD constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
 
@@ -3588,7 +3599,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	using iterator       = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
 	using const_iterator = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
-	using move_iterator  = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, true>;
+
+	// /// Iterator in the leading dimension that mark elements as movable
+	// using move_iterator  = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, true>;
 
 	using reverse_iterator [[deprecated]]       = std::reverse_iterator<iterator>;
 	using const_reverse_iterator [[deprecated]] = std::reverse_iterator<const_iterator>;

@@ -337,6 +337,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[0][0] == 5 );
 		BOOST_TEST( *(arr.begin()->begin()) == 5 );
 	}
+	{
+		multi::array<std::vector<int>, 1> arr1 = {std::vector<int>(10), std::vector<int>(20), std::vector<int>(30)};
+		multi::array<std::vector<int>, 1> arr2(3);
+
+		std::copy(arr1.mbegin(), arr1.mend(), arr2.begin());
+
+		BOOST_TEST( arr1[1].empty() );
+		BOOST_TEST( arr2[1].size() == 20 );
+	}
 
 	return boost::report_errors();
 }

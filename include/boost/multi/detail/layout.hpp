@@ -1717,10 +1717,13 @@ struct layout_t
 	}
 
  public:
-	constexpr auto is_compact() const& { return base_size_() == num_elements(); }
+	constexpr auto is_compact() const { return base_size_() == num_elements(); }
 
-	constexpr auto        shape() const& -> decltype(auto) { return sizes(); }
-//	friend constexpr auto shape(layout_t const& self) -> decltype(auto) { return self.shape(); }
+	constexpr auto is_flattable() const & {
+		return (this->size() <= 1) || (this->stride() == this->sub().nelems());
+	}
+
+	constexpr auto shape() const& -> decltype(auto) { return sizes(); }
 
 	BOOST_MULTI_HD constexpr auto sizes() const noexcept { return multi::detail::ht_tuple(size(), sub_.sizes()); }
 
