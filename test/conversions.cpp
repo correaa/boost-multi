@@ -20,7 +20,7 @@ namespace multi = boost::multi;
 
 namespace {
 void fun(multi::array<std::complex<float>, 2> arr);
-void fun(multi::array<std::complex<float>, 2> arr) { arr.clear(); }
+void fun(multi::array<std::complex<float>, 2> arr) { arr = {}; }
 
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/);
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {

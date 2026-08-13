@@ -7,9 +7,12 @@
 #include <boost/multi/adaptors/blas/gemm.hpp>  // for gemm, gemm_range
 
 #include <boost/core/lightweight_test.hpp>
+
 // IWYU pragma: no_include "boost/multi/adaptors/blas/numeric.hpp"     // for involuter, conju...
+#include <boost/multi/adaptors/blas/numeric.hpp>     // for H, T, (anonymous)
 #include <boost/multi/adaptors/blas/operations.hpp>  // for H, T, (anonymous)
-#include <boost/multi/array.hpp>                     // for layout_t, array
+
+#include <boost/multi/array.hpp>  // for layout_t, array
 
 #include <algorithm>    // for generate
 #include <cmath>        // for abs  // IWYU pragma: keep
@@ -1668,7 +1671,8 @@ auto main() -> int {
 				{9., 7., 1.},
 			};
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::real_doubled(c) = blas::gemm(1.0, a_real, blas::real_doubled(b));  // NOLINT(misc-include-cleaner) real_doubled is provided via operations.hpp, not numeric.hpp directly
+			// N_O_LINT(misc-include-cleaner) real_doubled is provided via operations.hpp, not numeric.hpp directly
+			blas::real_doubled(c) = blas::gemm(1.0, a_real, blas::real_doubled(b));
 
 			BOOST_TEST( std::abs( (c[1][2]) - (complex(53, 24)) ) < 1e-12 );
 		}
@@ -1695,7 +1699,8 @@ auto main() -> int {
 
 		static constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) BLAS naming
 
-		auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {  // NOLINT(bugprone-random-generator-seed,cert-msc32-c,cert-msc51-cpp,readability-identifier-length) for test purposes
+		// NOLINTNEXTLINE(bugprone-random-generator-seed,cert-msc32-c,cert-msc51-cpp,readability-identifier-length) for test purposes
+		auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {
 			return d(g) + d(g) * I;
 		};
 

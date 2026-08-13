@@ -3864,7 +3864,6 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
-	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
 	constexpr auto flatted() const& {
 		assert(this->layout().is_flattable());
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
