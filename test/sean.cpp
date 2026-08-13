@@ -19,7 +19,20 @@
 #include <type_traits>  // for is_constructible_v
 #endif
 
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace multi = boost::multi;
+
+// Observed failure: clang-15 (as its own toolchain, not later clang versions) paired with
+// GCC-11's libstdc++ (_GLIBCXX_RELEASE 11) fails to instantiate std::ranges::ref_view<T> for
+// *any* range T (confirmed even for std::vector/std::list, not specific to boost::multi) when
+// piped through std::views::reverse and similar adaptors. See test/broadcast_softmax.cpp for
+// the same guard.
+#if defined(__clang__) && (__clang_major__ == 15) && defined(__GLIBCXX__) && defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE < 12)
+#define BOOST_MULTI_STDRANGES_PIPE_BROKEN 1
+#endif
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 #ifdef __NVCC__
@@ -34,6 +47,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( AA.extents() == rst.extents() );
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 	multi::array<int, 2> const BB(rst | std::ranges::views::reverse);
 
 	BOOST_TEST( AA[0] == BB[4] );  // as A[0][0] == B[4][0] && A[0][1] == B[4][1] ...
@@ -41,6 +55,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( AA[2] == BB[2] );  // ...
 	BOOST_TEST( AA[3] == BB[1] );
 	BOOST_TEST( AA[4] == BB[0] );
+#endif
 #endif
 
 	auto rstT = rst.transposed();

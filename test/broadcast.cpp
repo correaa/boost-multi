@@ -1,4 +1,4 @@
-// Copyright 2025 Alfredo A. Correa
+// Copyright 2025-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -17,6 +17,10 @@
 #include <numeric>
 // IWYU pragma: no_include <tuple>    // for apply
 #include <utility>  // for forward  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
+
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
 
 namespace multi = boost::multi;
 
@@ -338,6 +342,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
 		BOOST_TEST(( a + 1 == multi::array<int, 1>{2, 3, 4} ));
 	}
+#if (!defined(__GNUC__) || (__GNUC__ > 8)) || defined(__clang__)
 	{
 		multi::array<int, 2> const A = {
 			{0, 1, 2},
@@ -361,10 +366,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
-		auto trace_D = std::reduce(r.begin(), r.end(), 0);
+		auto trace_D = std::accumulate(r.begin(), r.end(), 0);  // NOLINT(misc-include-cleaner) std::reduce unavailable in libstdc++ < 9 (e.g. clang-8 CI)
 
-		BOOST_TEST(trace_D == std::reduce(D.diagonal().begin(), D.diagonal().end(), 0) );
+		BOOST_TEST(trace_D == std::accumulate(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
+#endif
 	{
 		using multi::elementwise::eye;
 		auto arr = +eye(5);

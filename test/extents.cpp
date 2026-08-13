@@ -21,7 +21,21 @@
 // IWYU pragma: no_include <variant>  // for get, iwyu bug
 #include <vector>
 
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace multi = boost::multi;
+
+// Observed failure: clang-15 (as its own toolchain, not later clang versions) paired with
+// GCC-11's libstdc++ (_GLIBCXX_RELEASE 11) fails to see boost::multi's iterators as satisfying
+// `range`/`input_or_output_iterator` when instantiated through std::ranges::ref_view (as
+// happens with std::views::reverse and other pipe adaptors), even though the iterator is
+// well-formed and works with std::ranges::begin/end directly. See test/broadcast_softmax.cpp
+// for the same guard.
+#if defined(__clang__) && (__clang_major__ == 15) && defined(__GLIBCXX__) && defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE < 12)
+#define BOOST_MULTI_STDRANGES_PIPE_BROKEN 1
+#endif
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	auto const A2D = multi::array<int, 2>({5, 7}, 1);
@@ -488,6 +502,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto xs1Dr = xs1D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs1Dr.begin() == 9 );
@@ -495,6 +510,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
 		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
+#endif
 
 		// auto xs1D_elements = xs1D.elements();
 		BOOST_TEST( xs1D.elements().begin() == std::ranges::begin(xs1D.elements()) );
@@ -507,9 +523,11 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::totally_ordered<decltype(v1D)::iterator>);
 		static_assert(std::random_access_iterator<decltype(v1D)::iterator>);
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto v1Dr = v1D | std::views::reverse;
 		BOOST_TEST( v1Dr[0] == v1D[9] );
 		BOOST_TEST( v1Dr[9] == v1D[0] );
+#endif
 #endif
 	}
 	{
@@ -564,6 +582,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
 		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto xs2Dr = xs2D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs2Dr.begin() == *(xs2D.end() - 1) );
@@ -571,6 +590,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs2Dr[xs2D.size() - 1] == xs2D[0] );
 		BOOST_TEST( xs2Dr[0] == xs2D[xs2D.size() - 1] );
+#endif
 #endif
 	}
 	{
@@ -582,6 +602,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
 		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto v2Dr = v2D | std::ranges::views::reverse;
 
 		BOOST_TEST( (*v2Dr.begin())[4] == (*(v2D.end() - 1))[4] );
@@ -589,6 +610,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
 		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
+#endif
 
 		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );

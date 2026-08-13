@@ -346,7 +346,7 @@ struct extent_t : public range<IndexType, IndexTypeLast> {
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extent_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax
-	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
+	: range<IndexType, IndexTypeLast>(IndexType{}, static_cast<IndexTypeLast>(IndexType{} + last)) {}
 
 	template<
 		class OtherExtension,

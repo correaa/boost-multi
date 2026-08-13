@@ -199,7 +199,11 @@ struct transform_ptr {  //-V::690
 
 	~transform_ptr() = default;
 
-	auto operator=(transform_ptr&&) -> transform_ptr& = default;
+	// auto operator=(transform_ptr&&) -> transform_ptr& = default;  // ill-formed/deleted when UF is a reference type (e.g. a captured lambda&)
+	constexpr auto operator=(transform_ptr&& other) noexcept -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
+		p_ = other.p_;
+		return *this;
+	}
 
 	// auto operator=(transform_ptr const& other) -> transform_ptr& = default;
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok

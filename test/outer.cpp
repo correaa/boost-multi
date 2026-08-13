@@ -39,7 +39,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto it = x2d.begin();
 		++it;
 
-#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L) && (!defined(__clang__) || __clang_major__ > 10)
 		static_assert(std::incrementable<decltype(it)>);
 #endif
 		*it;
