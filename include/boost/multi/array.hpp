@@ -1713,7 +1713,7 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 		assert(this->stride() != 0);
 	}
 
-	/// Swaps the contents of this array with @p other (doesn't throw)
+	/// swaps the contents of this array with @p other (doesn't allocate, O(1) operation)
 	void swap(array& other) noexcept {
 		using std::swap;
 		if constexpr(multi::allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
