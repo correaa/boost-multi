@@ -1260,7 +1260,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using size_type = typename detail::array_types<T, D, ElementPtr, Layout>::size_type;
 
 	/// returns the internal layout information of the array
-	BOOST_MULTI_HD constexpr auto layout() const -> layout_type {return detail::array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember
+	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return detail::array_types<T, D, ElementPtr, Layout>::layout(); }  // cppcheck-suppress duplInheritedMember
 
 	/// Assingment operators (disabled because the const-subarray is immutable)
 	auto operator=(const_subarray const&) -> const_subarray& = delete;
