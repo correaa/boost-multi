@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>  // for copy, equal, fill_n, move
+#include <initializer_list>  // for initializer_list
 #include <iterator>   // for size, back_insert_iterator, back...
 #include <memory>     // for unique_ptr, make_unique, allocat...
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
@@ -16,7 +17,6 @@
 // IWYU pragma: no_include <stack>
 #include <utility>           // for move, swap
 #include <vector>            // for vector, operator==, vector<>::va...
-#include <initializer_list>  // for initializer_list
 
 // IWYU pragma: no_include <pstl/glue_algorithm_defs.h>       // for move
 
