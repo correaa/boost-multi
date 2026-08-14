@@ -1621,10 +1621,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto range(index_range irng) const& -> decltype(auto) { return sliced(irng.front(), irng.front() + irng.size()); }  // cppcheck-suppress duplInheritedMember;
 
  public:
-	// [[deprecated("is_flattable will be a property of the layout soon")]]
+	[[deprecated("is_flattable is a property of the layout")]]
 	constexpr auto is_flattable() const -> bool {
 		return layout().is_flattable();
-		// return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
 	}
 
  private:
