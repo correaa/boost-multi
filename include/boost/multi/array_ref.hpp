@@ -1624,7 +1624,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	[[deprecated("is_flattable will be a property of the layout soon")]]
 	constexpr auto is_flattable() const -> bool {
 		return layout().is_flattable();
-		// return (this->size() <= 1) || (this->stride() == this->layout().sub().nelems());
 	}
 
  private:
@@ -1637,7 +1636,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	auto flattened() const& { return flattened_aux_().as_const(); }
 
 	constexpr auto flatted() const& {
-		assert(layout().is_flattable());
+		assert(this->layout().is_flattable());
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
@@ -2578,7 +2577,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
 	constexpr auto flatted() const& {
-		assert(this->is_flattable());
+		assert(this->layout().is_flattable());
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
@@ -2586,8 +2585,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
-		// assert(this->is_flattable());
-		// assert(is_flattable() && "flatted doesn't work for all layouts!");
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
@@ -3877,7 +3874,6 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
 		assert(this->layout().is_flattable());
-		// assert(is_flattable() && "flatted doesn't work for all layouts!");
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
