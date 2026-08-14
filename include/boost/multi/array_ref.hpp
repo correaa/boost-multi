@@ -931,11 +931,15 @@ struct elements_iterator_t
  public:
 	elements_iterator_t() = default;
 
-	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }
-	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }
+ private:
+	/// Arithmetic base pointer of the iterator, typically the base of the original array
+	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }              // NOLINT(readability-identifier-naming) TODO(correaa) rename
+	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
-	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return l_; }
+	/// Layout used to calculate the position of an iterator, typically the layout of the original array
+	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return l_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
+ public:
 	template<class Other, decltype(multi::detail::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr /*impl*/ elements_iterator_t(Other const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
