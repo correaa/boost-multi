@@ -332,7 +332,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
 		it->layout(),
-		DatatypeT<typename ArrayIterator::value_type>{}
+		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 
 	template<class ArrayIterator, std::enable_if_t<ArrayIterator::rank_v == 1, int> =0>  // NOLINT(modernize-use-constraints) for C++20
