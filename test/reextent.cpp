@@ -240,7 +240,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr = multi::array<int, 2>(extents(arr), 1230);
 		BOOST_TEST( arr[1][2] == 1230 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
@@ -299,7 +300,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
@@ -326,7 +328,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 	}
