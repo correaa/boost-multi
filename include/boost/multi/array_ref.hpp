@@ -899,21 +899,31 @@ struct cursor_t {
 };
 
 template<typename Pointer, class LayoutType>
+struct elements_range_t;
+
+namespace detail {
+template<typename Pointer, class LayoutType>
 // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 struct elements_iterator_t
 // : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
+	/// Signed integer type for iterator arithmetic
 	using difference_type   = typename std::iterator_traits<Pointer>::difference_type;
+	/// Value type obtained from iterator (e.g. `T`)
 	using value_type        = typename std::iterator_traits<Pointer>::value_type;
+	/// Pointer type of the element of the sequence (e.g. `T*`)
 	using pointer           = Pointer;
+	/// Reference type (e.g. `T&`)
 	using reference         = std::remove_const_t<typename std::iterator_traits<Pointer>::reference>;  // TODO(correaa) investigate why top-level const reaches here
+	/// Category of iterator (generally random access)
 	using iterator_category = std::random_access_iterator_tag;
-
+	/// Const pointer type of the element of the sequence (e.g. `T const*`)
 	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
 
+ private:
+	/// Layout type of the iterator
 	using layout_type = LayoutType;
 
- private:
 	pointer                                base_;
 	layout_type                            l_;
 	difference_type                        n_ = 0;
@@ -923,7 +933,7 @@ struct elements_iterator_t
 	indices_type ns_   = {};
 
 	template<typename, class> friend struct elements_iterator_t;
-	template<typename, class> friend struct elements_range_t;
+	template<typename, class> friend struct multi::elements_range_t;
 
 	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
 	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extents()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
@@ -1014,15 +1024,16 @@ struct elements_iterator_t
 
 	// BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
 
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
-		return base_[apply(l_, ns_)];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	/// Dereference operator, gets a reference to the element pointed by this iterator
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {	// cppcheck-suppress duplInheritedMember ; to overwrite
+		return base_[apply(l_, ns_)];                               // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
+	/// Subscript operator, refers to the `n`th element after or before this iterator position of positive or negative `n` respectively (same as `*(it + n)`)
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const linear_n = apply(xs_, ns_);
 		return base_[apply(l_, xs_.from_linear(linear_n + n))];
-	}  // explicit here is necessary for nvcc/thrust
+	}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1055,6 +1066,7 @@ struct elements_iterator_t
 
 	~elements_iterator_t() = default;
 };
+}  // end namespace detail
 
 template<typename Pointer, class LayoutType>
 struct elements_range_t {
@@ -1070,8 +1082,8 @@ struct elements_range_t {
 	using size_type       = typename std::iterator_traits<pointer>::difference_type;
 	using difference_type = typename std::iterator_traits<pointer>::difference_type;
 
-	using iterator       = elements_iterator_t<pointer, layout_type>;
-	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
+	using iterator       = detail::elements_iterator_t<pointer, layout_type>;
+	using const_iterator = detail::elements_iterator_t<const_pointer, layout_type>;
 
 	using element                                      = value_type;
 	using element_type [[deprecated("use ::element")]] = value_type;
@@ -1307,8 +1319,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using extent_range [[deprecated("here to fulfill backward-compatible MultiArray concept")]] = void;
 
 	// private:
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+	using elements_iterator  = detail::elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = detail::elements_iterator_t<element_const_ptr, layout_type>;
 
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
@@ -3448,8 +3460,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #endif
 
  private:
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+	using elements_iterator  = detail::elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = detail::elements_iterator_t<element_const_ptr, layout_type>;
 
 	using elements_range       = elements_range_t<element_ptr, layout_type>;
 	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
