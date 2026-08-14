@@ -1636,7 +1636,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	auto flattened() const& { return flattened_aux_().as_const(); }
 
 	constexpr auto flatted() const& {
-		assert(is_flattable());
+		assert(this->layout().is_flattable());
 		multi::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
 		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
