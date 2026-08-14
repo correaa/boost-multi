@@ -413,7 +413,7 @@ struct iterator_system<::boost::multi::detail::array_iterator<T, D, Pointer, IsC
 
 template<typename Pointer, class LayoutType>
 struct iterator_system<::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
-	using type = typename ::thrust::iterator_system<typename ::boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
+	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
 
 template<class T, class UF, class Ptr, class Ref>

@@ -1165,6 +1165,7 @@ struct elements_range_t {
 		return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
 	}
 
+	/// swaps with `other` range, element by element (it doesn't rebind, O(N) operation)
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>& other) & noexcept {
 		BOOST_MULTI_ASSERT(size() == other.size());
 		adl_swap_ranges(begin(), end(), other.begin());
@@ -1189,7 +1190,9 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{base_, l_, l_.num_elements()}; }
 
  public:
+ 	/// returns an iterator to the beginning of the range
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
+	/// returns an iterator to the end of the range
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
 
 	BOOST_MULTI_HD constexpr auto begin() && -> iterator { return begin_aux_(); }
@@ -1290,8 +1293,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
-	// using ref_ = const_subarray;
-
 	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
