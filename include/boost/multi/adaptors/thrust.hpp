@@ -412,7 +412,7 @@ struct iterator_system<::boost::multi::detail::array_iterator<T, D, Pointer, IsC
 };
 
 template<typename Pointer, class LayoutType>
-struct iterator_system<::boost::multi::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
+struct iterator_system<::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
 
@@ -425,55 +425,6 @@ template<::boost::multi::dimensionality_type D, typename Proj>
 struct iterator_system<::boost::multi::thrust::device_restriction_iterator<D, Proj>> {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<::thrust::device_ptr<void>>::type;
 };
-
-// namespace detail {
-// template<class T1, class T2, class LO>
-// struct pointer_traits<
-//  boost::multi::basic_array_ptr<
-//      boost::multi::subarray<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>,
-//      LO
-//  >
-// >
-// {
-//  using Ptr = boost::multi::basic_array_ptr<
-//      boost::multi::subarray<T1, 1L, thrust::pointer<T2, thrust::cuda_cub::tag, thrust::tagged_reference<T2, thrust::cuda_cub::tag>, thrust::use_default>, LO>,
-//      LO
-//  >;
-//  using pointer = Ptr;
-//  using reference = thrust::tagged_reference<T2, thrust::cuda_cub::tag>;
-//   typedef typename pointer_element<Ptr>::type    element_type;
-//   typedef typename pointer_difference<Ptr>::type difference_type;
-
-//   template<typename U>
-//     struct rebind
-//   {
-//     typedef typename rebind_pointer<Ptr,U>::type other;
-//   };
-
-// //  __host__ __device__
-// //   inline static pointer pointer_to(typename pointer_traits_detail::pointer_to_param<element_type>::type r)
-// //   {
-// //     // XXX this is supposed to be pointer::pointer_to(&r); (i.e., call a static member function of pointer called pointer_to)
-// //     //     assume that pointer has a constructor from raw pointer instead
-
-// //     return pointer(&r);
-// //   }
-
-//   // thrust additions follow
-//   //typedef typename pointer_raw_pointer<Ptr>::type raw_pointer;
-//  using raw_pointer = boost::multi::basic_array_ptr<
-//      boost::multi::subarray<T1, 1L, T2*, LO>,
-//      LO
-//  >;
-
-//   __host__ __device__
-//   inline static raw_pointer get(pointer ptr)
-//   {
-//  return reinterpret_cast<raw_pointer&>(ptr); //     return ptr.get();
-//   }
-// };
-// }
-
 }  // end namespace thrust
 
 #if THRUST_VERSION >= 300200  // CCCL 3 (CUDA 13+)
