@@ -14,8 +14,9 @@
 // IWYU pragma: no_include <map>
 // IWYU pragma: no_include <set>
 // IWYU pragma: no_include <stack>
-#include <utility>  // for move, swap
-#include <vector>   // for vector, operator==, vector<>::va...
+#include <utility>           // for move, swap
+#include <vector>            // for vector, operator==, vector<>::va...
+#include <initializer_list>  // for initializer_list
 
 // IWYU pragma: no_include <pstl/glue_algorithm_defs.h>       // for move
 
