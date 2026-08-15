@@ -359,7 +359,7 @@ class restriction_elements_t {
 	auto size() const noexcept { return elems_.size(); }
 };
 
-/// An array interface for function restricted to an extents (cartesian) grid where elements are generated lazily)
+/// An array interface for a function of `D` integer arguments restricted to an certain Cartesian grid (extents), elements are generated lazily
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
 	extents_t<D> xs_;
@@ -477,12 +477,14 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto operator~() && { return std::move(*this).transposed(); }
 	BOOST_MULTI_HD constexpr auto operator~() const& { return transposed(); }
 
+ private:
 	struct bind_repeat_t {
 		Proj proj_;
 		template<class... Ts>
 		BOOST_MULTI_HD constexpr auto operator()(multi::index /*unused*/, Ts... rest) const noexcept -> element { return proj_(rest...); }
 	};
 
+ public:
 	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
 		return bind_repeat_t{proj_} ^ n * extents();
 	}
@@ -500,6 +502,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		return bind_partitioned_t{proj_, size() / block_size} ^ layout_t<D>(extents()).partition(block_size).extents();
 	}
 
+ private:
 	struct bind_reversed_t {
 		Proj      proj_;
 		size_type size_m1;
@@ -507,8 +510,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept -> element { return proj_(size_m1 - row, rest...); }
 	};
 
+ public:
 	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extents(); }
 
+ private:
 	struct bind_rotated_t {
 		Proj      proj_;
 		size_type size_;
@@ -516,6 +521,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept { return proj_(rest..., row); }
 	};
 
+ public:
 	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
 
  private:
@@ -533,6 +539,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extents();
 	}
 
+ private:
 	template<class Proj2>
 	class bind_transform_t {
 		restriction proj_;
@@ -544,6 +551,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(restriction::index idx) const noexcept { return proj2_(proj_[idx]); }
 	};
 
+ public:
 	template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
 		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
