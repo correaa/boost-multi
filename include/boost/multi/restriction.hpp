@@ -359,6 +359,7 @@ class restriction_elements_t {
 	auto size() const noexcept { return elems_.size(); }
 };
 
+/// An array interface for function restricted to an extents (cartesian) grid where elements are generated lazily)
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
 	extents_t<D> xs_;

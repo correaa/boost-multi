@@ -160,7 +160,8 @@ A restriction is an array that generates its elements lazily on the fly.
 It is defined by combining a D-dimensional function with a D-dimensional extents object.
 The function is therefore restricted to this Cartesian grid.
 The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
-This includes the iteration and element-access interface, although pointer access and layout access are not, since there is no actual memory as its elements are not stored.
+This includes the iteration and element-access interface.
+Pointer access and layout access are not part of the interface, since there is no actual memory representation as its elements are not stored.
 
 A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate a restriction object.
 
