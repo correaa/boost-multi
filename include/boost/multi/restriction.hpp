@@ -459,12 +459,14 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
 	}
 
+ private:
 	struct bind_diagonal_t {
 		Proj proj_;
 		template<class T1, class... Ts>
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept -> element { return proj_(row, row, rest...); }
 	};
 
+ public:
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
@@ -485,6 +487,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		return bind_repeat_t{proj_} ^ n * extents();
 	}
 
+ private:
 	struct bind_partitioned_t {
 		Proj      proj_;
 		size_type block_size_;
@@ -492,6 +495,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, T2 col, Ts... rest) const noexcept -> element { return proj_(row * block_size_ + col, rest...); }
 	};
 
+ public:
 	BOOST_MULTI_HD constexpr auto partitioned(size_type block_size) const noexcept -> restriction<D + 1, bind_partitioned_t> {
 		return bind_partitioned_t{proj_, size() / block_size} ^ layout_t<D>(extents()).partition(block_size).extents();
 	}
@@ -514,6 +518,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
 
+ private:
 	template<class Proj2>
 	struct bind_element_transformed_t {
 		Proj  proj_;
@@ -522,6 +527,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(Ts... rest) const noexcept -> element { return proj2_(proj_(rest...)); }
 	};
 
+ public:
 	template<class Proj2>
 	BOOST_MULTI_HD auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2>> {
 		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extents();
