@@ -898,22 +898,34 @@ struct cursor_t {
 	}
 };
 
+namespace detail {
+template<typename Pointer, class LayoutType>
+struct elements_range_t;
+}  // end namespace detail
+
+namespace detail {
 template<typename Pointer, class LayoutType>
 // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 struct elements_iterator_t
 // : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
+	/// Signed integer type for iterator arithmetic
 	using difference_type   = typename std::iterator_traits<Pointer>::difference_type;
+	/// Value type obtained from iterator (e.g. `T`)
 	using value_type        = typename std::iterator_traits<Pointer>::value_type;
+	/// Pointer type of the element of the sequence (e.g. `T*`)
 	using pointer           = Pointer;
+	/// Reference type (e.g. `T&`)
 	using reference         = std::remove_const_t<typename std::iterator_traits<Pointer>::reference>;  // TODO(correaa) investigate why top-level const reaches here
+	/// Category of iterator (generally random access)
 	using iterator_category = std::random_access_iterator_tag;
-
+	/// Const pointer type of the element of the sequence (e.g. `T const*`)
 	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
 
+ private:
+	/// Layout type of the iterator
 	using layout_type = LayoutType;
 
- private:
 	pointer                                base_;
 	layout_type                            l_;
 	difference_type                        n_ = 0;
@@ -923,7 +935,7 @@ struct elements_iterator_t
 	indices_type ns_   = {};
 
 	template<typename, class> friend struct elements_iterator_t;
-	template<typename, class> friend struct elements_range_t;
+	template<typename, class> friend struct multi::detail::elements_range_t;
 
 	BOOST_MULTI_HD constexpr elements_iterator_t(pointer base, layout_type const& lyt, difference_type n)
 	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extents()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
@@ -931,11 +943,15 @@ struct elements_iterator_t
  public:
 	elements_iterator_t() = default;
 
-	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }
-	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }
+ private:
+	/// Arithmetic base pointer of the iterator, typically the base of the original array
+	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }              // NOLINT(readability-identifier-naming) TODO(correaa) rename
+	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
-	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return l_; }
+	/// Layout used to calculate the position of an iterator, typically the layout of the original array
+	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return l_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
+ public:
 	template<class Other, decltype(multi::detail::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	BOOST_MULTI_HD constexpr /*impl*/ elements_iterator_t(Other const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
@@ -1010,15 +1026,16 @@ struct elements_iterator_t
 
 	// BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
 
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference /*decltype(base_[0])*/ {
-		return base_[apply(l_, ns_)];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	/// Dereference operator, gets a reference to the element pointed by this iterator
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {	// cppcheck-suppress duplInheritedMember ; to overwrite
+		return base_[apply(l_, ns_)];                               // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
+	/// Subscript operator, refers to the `n`th element after or before this iterator position of positive or negative `n` respectively (same as `*(it + n)`)
 	BOOST_MULTI_HD constexpr auto operator[](difference_type const& n) const -> reference {
 		auto const linear_n = apply(xs_, ns_);
 		return base_[apply(l_, xs_.from_linear(linear_n + n))];
-	}  // explicit here is necessary for nvcc/thrust
+	}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -1051,28 +1068,42 @@ struct elements_iterator_t
 
 	~elements_iterator_t() = default;
 };
+}  // end namespace detail
 
+namespace detail {
 template<typename Pointer, class LayoutType>
 struct elements_range_t {
+	/// Pointer type to element (e.g. `T*`)
 	using pointer     = Pointer;
-	using layout_type = LayoutType;
 
+	/// Element type (e.g. `T`)
 	using value_type    = typename std::iterator_traits<pointer>::value_type;
+	/// Const-pointer type to element (e.g. `T const*`)
 	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
 
+	/// Reference type to element (e.g. `T&`)
 	using reference       = typename std::iterator_traits<pointer>::reference;
+	/// Const-eference type to element (e.g. `T const&`)
 	using const_reference = typename std::iterator_traits<const_pointer>::reference;
 
+	/// Integer type that holds the size of the range
 	using size_type       = typename std::iterator_traits<pointer>::difference_type;
+	/// Signed integer type for index arithmetic
 	using difference_type = typename std::iterator_traits<pointer>::difference_type;
 
-	using iterator       = elements_iterator_t<pointer, layout_type>;
-	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
+	/// Random access iterator type to access each element
+	using iterator       = detail::elements_iterator_t<pointer, LayoutType>;
+	/// Random access const-iterator type to access each element
+	using const_iterator = detail::elements_iterator_t<const_pointer, LayoutType>;
 
+ private:
+	/// Element type (e.g. `T`)
 	using element                                      = value_type;
 	using element_type [[deprecated("use ::element")]] = value_type;
 
- private:
+	/// Layout of the range (e.g. `T*`)
+	using layout_type = LayoutType;
+
 	pointer     base_;
 	layout_type l_;
 
@@ -1120,6 +1151,7 @@ struct elements_range_t {
 
 	[[nodiscard]]
 	constexpr auto empty() const -> bool { return l_.empty(); }
+	/// Checks if the container has no elements
 	constexpr auto is_empty() const -> bool { return l_.is_empty(); }
 
 	elements_range_t(elements_range_t const&) = delete;
@@ -1133,6 +1165,7 @@ struct elements_range_t {
 		return size() != other.size() || !adl_equal(other.begin(), other.end(), begin());
 	}
 
+	/// swaps with `other` range, element by element (it doesn't rebind, O(N) operation)
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>& other) & noexcept {
 		BOOST_MULTI_ASSERT(size() == other.size());
 		adl_swap_ranges(begin(), end(), other.begin());
@@ -1157,7 +1190,9 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{base_, l_, l_.num_elements()}; }
 
  public:
+ 	/// returns an iterator to the beginning of the range
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
+	/// returns an iterator to the end of the range
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
 
 	BOOST_MULTI_HD constexpr auto begin() && -> iterator { return begin_aux_(); }
@@ -1166,7 +1201,12 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto begin() & -> iterator { return begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto end() & -> iterator { return end_aux_(); }
 
+	/// yields the front element of a non-empty range.
+	/// \pre `!is_empty()`
 	BOOST_MULTI_HD constexpr auto front() const& -> const_reference { return *begin(); }
+
+	/// yields the back element of a non-empty range.
+	/// \pre `!is_empty()`
 	BOOST_MULTI_HD constexpr auto back() const& -> const_reference { return *std::prev(end(), 1); }
 
 	BOOST_MULTI_HD constexpr auto front() && -> reference { return *begin(); }
@@ -1175,12 +1215,22 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto front() & -> reference { return *begin(); }
 	BOOST_MULTI_HD constexpr auto back() & -> reference { return *std::prev(end(), 1); }
 
-	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
+	/// Assignment operator, copies each element, sizes must match
+	auto operator=(elements_range_t const& other) -> elements_range_t& {
+		if(this == std::addressof(other)) { return *this; }
+		assert(other.size() == this->size());
+		if(!is_empty()) {
+			adl_copy(other.begin(), other.end(), this->begin());
+		}
+		return *this;
+	}
 
+	/// Assignment operator, copies each element, sizes must match (O(N) operation)
 	constexpr auto operator=(elements_range_t&& other) noexcept(false) -> elements_range_t& {  // cannot be =delete in NVCC?  // NOLINT(bugprone-unsafe-to-allow-exceptions)
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
 		}
+		(void)std::move(other);
 		return *this;
 	}
 
@@ -1195,10 +1245,11 @@ struct elements_range_t {
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::begin(std::declval<OtherElementRange&&>()), std::end(std::declval<OtherElementRange&&>()), std::declval<iterator>()))>
 	constexpr auto operator=(OtherElementRange&& other) && -> elements_range_t& {  // NOLINT(cppcoreguidelines-missing-std-forward) std::forward<OtherElementRange>(other) creates a problem with move-only elements
-		BOOST_MULTI_ASSERT(size() == other.size());
-		if(!is_empty()) {
-			adl_copy(std::begin(other), std::end(other), begin());
-		}
+		operator=(std::forward<OtherElementRange>(other));
+		// BOOST_MULTI_ASSERT(size() == other.size());
+		// if(!is_empty()) {
+		// 	adl_copy(std::begin(other), std::end(other), begin());
+		// }
 		return *this;
 	}
 
@@ -1212,6 +1263,7 @@ struct elements_range_t {
 		return *this;
 	}
 };
+}  // end namespace detail
 
 template<class It>
 [[deprecated("remove")]] BOOST_MULTI_HD constexpr auto ref(It begin, It end)
@@ -1241,8 +1293,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
-	// using ref_ = const_subarray;
-
 	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
@@ -1303,11 +1353,11 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using extent_range [[deprecated("here to fulfill backward-compatible MultiArray concept")]] = void;
 
 	// private:
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+	using elements_iterator  = detail::elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = detail::elements_iterator_t<element_const_ptr, layout_type>;
 
-	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
-	using elements_range       = elements_range_t<element_ptr, layout_type>;
+	using const_elements_range = detail::elements_range_t<element_const_ptr, layout_type>;
+	using elements_range       = detail::elements_range_t<element_ptr, layout_type>;
 
 	constexpr auto elements_aux_() const { return elements_range(this->base_, this->layout()); }
 
@@ -1470,13 +1520,13 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	#endif
 	// clang-format on
 
-	/// yields the front subarray of lower dimension (or element for `D == 1`) of a non-empty array.
+	/// yields the front subarray of leading dimension (or element for `D == 1`) of a non-empty array.
 	/// \pre `!is_empty()`
 	constexpr auto front() const& -> const_reference {
 		assert(!this->is_empty());
 		return *begin();
 	}
-	/// yields the back subarray of lower dimension (or element for `D == 1`) of a non-empty array.
+	/// yields the back subarray of leading dimension (or element for `D == 1`) of a non-empty array.
 	/// \pre `!is_empty()`
 	constexpr auto back() const& -> const_reference {
 		assert(!this->is_empty());
@@ -3442,11 +3492,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #endif
 
  private:
-	using elements_iterator  = elements_iterator_t<element_ptr, layout_type>;
-	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+	using elements_iterator  = detail::elements_iterator_t<element_ptr, layout_type>;
+	using celements_iterator = detail::elements_iterator_t<element_const_ptr, layout_type>;
 
-	using elements_range       = elements_range_t<element_ptr, layout_type>;
-	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+	using elements_range       = detail::elements_range_t<element_ptr, layout_type>;
+	using const_elements_range = detail::elements_range_t<element_const_ptr, layout_type>;
 
 	constexpr auto elements_aux_() const { return elements_range{this->base_, this->layout()}; }
 
@@ -4487,7 +4537,7 @@ template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
 [[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Ptr, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::detail::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 

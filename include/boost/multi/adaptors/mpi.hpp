@@ -287,7 +287,7 @@ class message : skeleton<void, DatatypeT, Size> {
 	: message{
 		const_cast<void*>(static_cast<void const*>(arrelems.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		arrelems.layout(),
-		DatatypeT<typename ArrayElements::element>{}  // value_type>
+		DatatypeT<typename ArrayElements::value_type>{}  // value_type>
 	} {}
 
 	message(message const& other) = delete;
