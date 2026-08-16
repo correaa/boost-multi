@@ -4106,10 +4106,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	/// returns a random-access range with all the elements of the array
-	constexpr auto elements() const& -> celements_type { return elements_aux_(); }
-	constexpr auto elements() & -> elements_type { return elements_aux_(); }
-	constexpr auto elements() && -> elements_type { return elements_aux_(); }
+	/// yields a random-access range with all the elements of the array (no copies or allocations are made, O(1) operation)
+	constexpr auto elements() const& noexcept -> celements_type { return elements_aux_(); }
+	constexpr auto elements() & noexcept -> elements_type { return elements_aux_(); }
+	constexpr auto elements() && noexcept -> elements_type { return elements_aux_(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	// friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }

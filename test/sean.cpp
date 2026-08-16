@@ -61,8 +61,8 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	auto rstT = rst.transposed();
 
 	using std::get;
-	BOOST_TEST( get<0>(rstT.extensions()) == get<1>(rst.extensions()) );
-	BOOST_TEST( get<1>(rstT.extensions()) == get<0>(rst.extensions()) );
+	BOOST_TEST( get<0>(rstT.extents()) == get<1>(rst.extents()) );
+	BOOST_TEST( get<1>(rstT.extents()) == get<0>(rst.extents()) );
 
 	BOOST_TEST( rstT[1][2] == rst[2][1] );
 

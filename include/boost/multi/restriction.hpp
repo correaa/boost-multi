@@ -547,9 +547,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
-	template<class Proj2>
-	BOOST_MULTI_HD auto element_transformed(Proj2 proj2) const -> restriction<D, bind_element_transformed_t<Proj2>> {
-		return bind_element_transformed_t<Proj2>{proj_, proj2} ^ extents();
+ 	/// An array interface with of the same dimensionality to which each element is applied a projection function (unary function) (i.e. each element is obtained by the composition of the restricted function and the projection)
+	template<class ElementProj>
+	BOOST_MULTI_HD auto element_transformed(ElementProj element_proj) const -> restriction<D, bind_element_transformed_t<ElementProj>> {
+		return bind_element_transformed_t<ElementProj>{proj_, element_proj} ^ extents();
 	}
 
  private:
@@ -592,6 +593,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
+	/// returns a cursor pointing to the top corner element of the array (a cursors is a lightweight representation of the array that drops the extents with pointer semantics)
 	auto home() const {
 		auto cur = extents().home();
 		return cursor_t<decltype(cur), D>{&proj_, cur};
@@ -725,8 +727,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
 	[[nodiscard]] constexpr auto                extent() const { return xs_.extent(); }
 
-	constexpr auto               extensions() const { return xs_; }
+	/// returns the index extensions (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
+	[[deprecated("use extents")]]
+	constexpr auto               extensions() const { return xs_; }
 
 	/// Front subarray restriction in the leading dimensions or, in `D == 1`, the front element
 	constexpr auto front() const { return *begin(); }
@@ -737,7 +741,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	using elements_t = restriction_elements_t<D, Proj>;
 
  public:
+	/// yields a random‐access output range with all the elements of the array
 	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
+
+	/// returns the total number of elements in the array
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
