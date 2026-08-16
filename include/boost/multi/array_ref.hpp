@@ -1850,14 +1850,11 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	/// When evaluated on a tuple object this is equivalent to `.operator()(get<0>(tup), get<1>(tup), ...)`. (The argument type typical has `tuple_size<Tuple> == D`)
 	template<typename Tuple = typename const_subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
-	/// Iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
+	/// Random-access iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
 	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access iterator across the leading dimension (e.g. returned by `begin`/`end`)
 
-	/// Const-iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
+	/// Random-access const-iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
 	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access const-iterator across the leading dimension
-
-	// /// Iterator in the leading dimension that mark elements as movable
-	// using move_iterator  = detail::array_iterator<element, D, element_ptr, false, true, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access move-iterator across the leading dimension
 
 	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first) * first->size()), first.base()) {

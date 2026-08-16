@@ -379,12 +379,17 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v         = D;
 
+	/// Signed integer type for index arithmetic
 	using difference_type = typename extents_t<D>::difference_type;
+	/// Integer type to store an index in the leading dimension
 	using index           = typename extents_t<D>::index;
+	/// Integer type to store the size in the leading dimension
 	using size_type       = typename extents_t<D>::size_type;
 
-	using indices_type = typename extents_t<D>::indices_type;
+	/// Tuple to store a set of `D` integer indices to obtain an element
+	using indices_type [[deprecated("use indices")]] = typename extents_t<D>::indices_type;
 
+	/// Tuple to store a set of `D` integer indices to obtain an element
 	using indices = typename extents_t<D>::element;
 
 	BOOST_MULTI_HD constexpr restriction(extents_t<D> exts, Proj proj) : xs_{exts}, proj_{std::move(proj)} {}
