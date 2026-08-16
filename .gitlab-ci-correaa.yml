@@ -743,6 +743,29 @@ clang++-oldstable-cmake4:
     - ctest --output-on-failure
   needs: ["clang++"]
 
+clang++-oldoldstable-cmake4:
+  stage: build
+  image: debian:oldoldstable  # clang 7.0.1 as of Jan 2025
+  tags:
+    - non-shared
+    - docker
+  only:
+    refs:
+      - develop
+  script:
+    - arch
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - cmake --version
+    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    - sh cmake-install.sh --skip-license --prefix=/usr
+    - cmake --version
+    - mkdir build && cd build
+    - clang++ --version
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - ctest --output-on-failure
+  needs: ["clang++"]
+
 oneapi:
   stage: build
   image: intel/oneapi-hpckit:2023.0.0-devel-ubuntu22.04  # Intel(R) oneAPI DPC++/C++ Compiler 2023.0.0 (2023.0.0.20221201)
