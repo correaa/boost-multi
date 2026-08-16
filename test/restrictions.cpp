@@ -73,19 +73,19 @@ namespace lazy {
 
 template<class A>
 auto operator*(typename A::element scalar, A const& a) {
-	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
+	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extents();
 }
 
 namespace elementwise {
 
 template<class A, class B>
 auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
+	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extents();
 }
 
 template<class A, class B>
 auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
+	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extents();
 }
 
 }  // namespace elementwise
@@ -168,7 +168,7 @@ auto main() -> int {
 		using multi::elementwise::exp;
 		auto subtract_exp = exp(subtract);
 
-		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
+		BOOST_TEST( subtract_exp.extents() == subtract.extents() );
 
 		printR2("partial", exp(~(~mat - mat.transformed(maxR1))));
 
@@ -267,7 +267,7 @@ auto main() -> int {
 
 		multi::array<multi::index, 2> v2D_copy = v2D;
 
-		multi::array<multi::index, 2> v2D_copy2(v2D.extensions());
+		multi::array<multi::index, 2> v2D_copy2(v2D.extents());
 
 		v2D_copy2() = v2D;
 		BOOST_TEST( v2D_copy2 == v2D_copy );
