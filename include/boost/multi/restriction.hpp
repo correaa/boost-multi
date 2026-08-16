@@ -392,7 +392,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	/// Tuple to store a set of `D` integer indices to obtain an element
 	using indices = typename extents_t<D>::element;
 
-	BOOST_MULTI_HD constexpr restriction(extents_t<D> exts, Proj proj) : xs_{exts}, proj_{std::move(proj)} {}
+	/// constructs a `D`-dimensional restriction array from an extensions argument and a function of `D` arguments
+	BOOST_MULTI_HD constexpr restriction(extents_t<D> const& exts, Proj proj) : xs_{exts}, proj_{std::move(proj)} {}
 
  private:
 	using element_ref_  = typename detail::invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
@@ -628,12 +629,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		/// A signed integer type for index arithmetic
 		using difference_type = std::ptrdiff_t;
-		/// An array of lower dimension or element type (e.g. `T`) 
+		/// An array of lower dimension or element type (e.g. `T`)
 		using value_type      = std::conditional_t<
-			(D != 1), 
-			restriction<D - 1, detail::bind_front_t<Proj>>,  // TODO(correaa) or multi::array
-			element_type_
-		>;
+				 (D != 1),
+				 restriction<D - 1, detail::bind_front_t<Proj>>,  // TODO(correaa) or multi::array
+				 element_type_>;
 
 		/// `void` (no pointer behind since it generates output)
 		using pointer = void;
@@ -712,7 +712,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> reference { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 	};
 
+	/// returns an iterator to the beginning in the leading dimension
 	constexpr auto begin() const { return iterator{xs_.begin(), &proj_}; }
+	/// returns an iterator to the end in the leading dimension
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
 	constexpr auto size() const noexcept { return xs_.size(); }
@@ -725,11 +727,15 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto               extensions() const { return xs_; }
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
 
+	/// Front subarray restriction in the leading dimensions or, in `D == 1`, the front element
 	constexpr auto front() const { return *begin(); }
+	/// Back subarray restriction in the leading dimensions or, in `D == 1`, the back element
 	constexpr auto back() const { return *(begin() + (size() - 1)); }
 
+ private:
 	using elements_t = restriction_elements_t<D, Proj>;
 
+ public:
 	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };

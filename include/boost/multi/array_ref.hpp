@@ -1072,7 +1072,7 @@ namespace detail {
 template<typename Pointer, class LayoutType>
 struct elements_range_t {
 	/// Pointer type to element (e.g. `T*`)
-	using pointer     = Pointer;
+	using pointer = Pointer;
 
 	/// Element type (e.g. `T`)
 	using value_type    = typename std::iterator_traits<pointer>::value_type;
@@ -1215,7 +1215,9 @@ struct elements_range_t {
 
 	/// Assignment operator, copies each element, sizes must match
 	auto operator=(elements_range_t const& other) -> elements_range_t& {
-		if(this == std::addressof(other)) { return *this; }
+		if(this == std::addressof(other)) {
+			return *this;
+		}
 		assert(other.size() == this->size());
 		if(!is_empty()) {
 			adl_copy(other.begin(), other.end(), this->begin());
@@ -1849,10 +1851,10 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<typename Tuple = typename const_subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
 	/// Random-access iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
-	using iterator       = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access iterator across the leading dimension (e.g. returned by `begin`/`end`)
+	using iterator = detail::array_iterator<element, D, element_ptr, false, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access iterator across the leading dimension (e.g. returned by `begin`/`end`)
 
 	/// Random-access const-iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
-	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;   ///< Random access const-iterator across the leading dimension
+	using const_iterator = detail::array_iterator<element, D, element_ptr, true, false, typename layout_type::stride_type, typename layout_type::sub_type>;  ///< Random access const-iterator across the leading dimension
 
 	const_subarray(const_iterator first, const_iterator last)
 	: const_subarray(layout_type(first->layout(), first.stride(), 0, (last - first) * first->size()), first.base()) {
