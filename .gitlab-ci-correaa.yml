@@ -733,9 +733,9 @@ clang++-oldstable-cmake4:
     - arch
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
-    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
-    - sh cmake-install.sh --skip-license --prefix=/usr
-    - cmake --version
+    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    # - sh cmake-install.sh --skip-license --prefix=/usr
+    # - cmake --version
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -756,9 +756,9 @@ clang++-oldoldstable-cmake4:
     - arch
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
-    - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
-    - sh cmake-install.sh --skip-license --prefix=/usr
-    - cmake --version
+    # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
+    # - sh cmake-install.sh --skip-license --prefix=/usr
+    # - cmake --version
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
