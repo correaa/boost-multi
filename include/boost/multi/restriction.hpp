@@ -564,6 +564,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
 	}
 
+ private:
 	template<class Cursor, dimensionality_type DD = D>
 	class cursor_t {
 		Proj const* Pproj_;
@@ -584,11 +585,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		}
 	};
 
+ public:
 	auto home() const {
 		auto cur = extents().home();
 		return cursor_t<decltype(cur), D>{&proj_, cur};
 	}
 
+	/// Random-access iterator in the leading dimension, in general they dereference to a restriction array of lower dimension or, for `D == 1`, to an element value (`T`) lazily generated.
 	class iterator {
 		using function_ptr = std::decay_t<decltype(&std::declval<Proj const&>())>;
 
@@ -619,13 +622,22 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	 public:
 		using system = typename multi::detail::function_system<Proj>::type;
 
+		/// A signed integer type for index arithmetic
 		using difference_type = std::ptrdiff_t;
-		using value_type      = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, element_type_>;
+		/// An array of lower dimension or element type (e.g. `T`) 
+		using value_type      = std::conditional_t<
+			(D != 1), 
+			restriction<D - 1, detail::bind_front_t<Proj>>,  // TODO(correaa) or multi::array
+			element_type_
+		>;
 
+		/// `void` (no pointer behind since it generates output)
 		using pointer = void;
 
+		/// `void` (the iterator generates output)
 		using reference = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, element_type_>;
 
+		/// Iterator category (random access output)
 		using iterator_category = std::random_access_iterator_tag;
 
 		constexpr auto operator++() -> auto& {
