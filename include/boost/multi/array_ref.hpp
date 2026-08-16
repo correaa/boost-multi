@@ -920,7 +920,7 @@ struct elements_iterator_t
 	/// Category of iterator (generally random access)
 	using iterator_category = std::random_access_iterator_tag;
 	/// Const pointer type of the element of the sequence (e.g. `T const*`)
-	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
+	using const_pointer     = typename std::pointer_traits<pointer>::template rebind<value_type const>;
 
  private:
 	/// Layout type of the iterator
@@ -1024,10 +1024,8 @@ struct elements_iterator_t
 
 	BOOST_MULTI_HD constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
-	// BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
-
 	/// Dereference operator, gets a reference to the element pointed by this iterator
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference {	// cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		return base_[apply(l_, ns_)];                               // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 

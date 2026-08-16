@@ -7,16 +7,16 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>  // for copy, equal, fill_n, move
+#include <algorithm>         // for copy, equal, fill_n, move
 #include <initializer_list>  // for initializer_list
-#include <iterator>   // for size, back_insert_iterator, back...
-#include <memory>     // for unique_ptr, make_unique, allocat...
+#include <iterator>          // for size, back_insert_iterator, back...
+#include <memory>            // for unique_ptr, make_unique, allocat...
 // IWYU pragma: no_include <type_traits>  // for remove_reference<>::type
 // IWYU pragma: no_include <map>
 // IWYU pragma: no_include <set>
 // IWYU pragma: no_include <stack>
-#include <utility>           // for move, swap
-#include <vector>            // for vector, operator==, vector<>::va...
+#include <utility>  // for move, swap
+#include <vector>   // for vector, operator==, vector<>::va...
 
 // IWYU pragma: no_include <pstl/glue_algorithm_defs.h>       // for move
 
@@ -319,7 +319,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<std::vector<int>, 2> arr({10, 10}, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		auto                              arr2 = std::move(arr);
+		auto arr2 = std::move(arr);
 
 		// NOLINTNEXTLINE(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
 		BOOST_TEST( arr .   empty() );
