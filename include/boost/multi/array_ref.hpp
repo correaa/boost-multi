@@ -246,8 +246,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using typename layout_type::difference_type;
 
+	/// Type to hold the size of the array in the leading dimension
 	using size_type = typename layout_type::size_type;
 	// using layout_type::size;
+	/// returns the size of the array in the leading dimension
 	BOOST_MULTI_HD constexpr auto size() const noexcept -> size_type { return layout_type::size(); }
 
 	using layout_type::nelems;
