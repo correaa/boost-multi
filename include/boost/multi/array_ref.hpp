@@ -1189,7 +1189,7 @@ struct elements_range_t {
 	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator{base_, l_, l_.num_elements()}; }
 
  public:
- 	/// returns an iterator to the beginning of the range
+	/// returns an iterator to the beginning of the range
 	BOOST_MULTI_HD constexpr auto begin() const& -> const_iterator { return begin_aux_(); }
 	/// returns an iterator to the end of the range
 	BOOST_MULTI_HD constexpr auto end() const& -> const_iterator { return end_aux_(); }
