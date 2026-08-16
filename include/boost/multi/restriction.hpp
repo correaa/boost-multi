@@ -122,6 +122,7 @@ struct bind_front_t {
 template<dimensionality_type D, class Proj>
 class restriction;
 
+namespace detail {
 template<class F, class TupleLike>
 struct invoke_result_from_tuple;
 
@@ -130,6 +131,7 @@ struct invoke_result_from_tuple<F, TupleLike<Args...>> {
 	using type =
 		std::invoke_result_t<F, std::decay_t<Args>...>;
 };
+}  // end namespace detail
 
 template<class Fun, class... Args>
 BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
@@ -388,7 +390,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr restriction(extents_t<D> exts, Proj proj) : xs_{exts}, proj_{std::move(proj)} {}
 
  private:
-	using element_ref_  = typename invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
+	using element_ref_  = typename detail::invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
 	using element_type_ = std::decay_t<element_ref_>;
 
  public:
@@ -606,7 +608,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		~iterator() = default;
 
 	 private:
-		using element_ref_  = typename invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
+		using element_ref_  = typename detail::invoke_result_from_tuple<Proj, typename extents_t<D>::element>::type;
 		using element_type_ = std::decay_t<element_ref_>;
 
 	 public:
