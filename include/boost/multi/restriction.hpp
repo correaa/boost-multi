@@ -479,6 +479,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
+	/// An array interface with lower dimensionality that holds the diagonal (in the first two dimensions), array must be square (first two sizes equal). (Only for `D >= 2`).
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
