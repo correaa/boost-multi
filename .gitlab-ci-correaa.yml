@@ -199,23 +199,6 @@ g++ cppcheck cpplint memcheck lto:
     - (ctest --test-dir ./build --output-on-failure --overwrite MemoryCheckCommandOptions=" --trace-children=yes --leak-check=full --track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all --gen-suppressions=all --error-exitcode=1" --overwrite MemoryCheckSuppressionFile=$PWD/.valgrind-suppressions -T memcheck) || (cat $PWD/build/Testing/Temporary/MemoryChecker.*.log && exit 666)
   needs: ["g++"]
 
-# g++-16 release with debug:
-#   stage: build
-#   image: gcc:16           # official image; or debian:unstable + g++-15
-#   interruptible: true
-#   allow_failure: false    # drop once the new diagnostics are triaged
-#   tags:
-#     - docker
-#     - non-shared
-#   script:
-#     - apt-get -qq update
-#     - apt-get -qq install --no-install-recommends -y --quiet ninja-build cmake libboost-dev libboost-serialization-dev
-#     - g++ --version
-#     - cmake . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_GLIBCXX_ASSERTIONS"
-#     - cmake --build build
-#     - ctest --test-dir build --parallel 2 --output-on-failure
-#   needs: ["g++"]
-
 g++ thrust:
   stage: build
   allow_failure: false
@@ -379,7 +362,7 @@ clang++-16 c++20:
     refs:
       - develop
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-16 cmake ninja-build make  libboost-serialization-dev libblas-dev libc++-dev libc++abi-dev libfftw3-dev liblapack-dev pkg-config tar wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-16 cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config tar wget
     - mkdir build && cd build
     - clang-16 --version
     - clang++-16 --version
@@ -748,14 +731,14 @@ clang++-oldstable-cmake4:
       - develop
   script:
     - arch
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-13 cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang-12 cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
     - sh cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
     - mkdir build && cd build
-    - clang++-13 --version
-    - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Release
+    - clang++-12 --version
+    - CXX=clang++-12 cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
   needs: ["clang++"]
@@ -881,26 +864,6 @@ nvhpc-26.3 cuda-13.1:  # CUDA device compilation through nvhpc (nvhpc's nvcc dri
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ -DCMAKE_CUDA_FLAGS="--extended-lambda --threads 2" -DCMAKE_CUDA_ARCHITECTURES=75
     - cmake --build . || cmake --build . --parallel 1 --verbose
   needs: ["cuda-13.3.0", "nvhpc-26.3"]
-
-# nvhpc-26.3:
-#   stage: build
-#   image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
-#   tags:
-#     - non-shared
-#     - large-disk-space
-#     - x86_64
-#   allow_failure: true
-#   only:
-#     refs:
-#       - develop
-#   script:
-#     - apt-get install --no-install-recommends -y cmake ninja-build make libboost-serialization-dev libfftw3-dev pkg-config
-#     - /opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ --version
-#     - mkdir build && cd build
-#     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++23 -D_GLIBCXX_ASSERTIONS=0"
-#     - cmake --build . || cmake --build . --parallel 1 --verbose
-#     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
-#   needs: ["nvhpc"]
 
 cuda:
   stage: build
