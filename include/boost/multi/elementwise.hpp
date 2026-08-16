@@ -288,7 +288,7 @@ template<class A> log_bind_t(A) -> log_bind_t<A>;
 /// creates a array with the function `log` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto log(A&& alpha) {
-	auto xs = alpha.extensions();  // shouldn't get to this point for scalars
+	auto xs = alpha.extents();  // shouldn't get to this point for scalars
 	return detail::log_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 
