@@ -1024,10 +1024,8 @@ struct elements_iterator_t
 
 	BOOST_MULTI_HD constexpr auto current() const -> pointer { return base_ + std::apply(l_, ns_); }
 
-	// BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_ + std::apply(l_, ns_); }
-
 	/// Dereference operator, gets a reference to the element pointed by this iterator
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference {	// cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto operator*() const -> reference {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		return base_[apply(l_, ns_)];                               // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
