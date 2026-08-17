@@ -726,17 +726,20 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	/// returns an iterator to the end in the leading dimension
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
+	/// returns the size of the restriction array in the leading dimension.
 	constexpr auto size() const noexcept { return xs_.size(); }
 
+	/// returns a tuple decribing sizes across all the dimensions of the restriction array.
 	constexpr auto sizes() const { return xs_.sizes(); }
 
-	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
-	[[nodiscard]] constexpr auto                extent() const { return xs_.extent(); }
+	/// returns the extent of valid indices in the leading dimension.
+	[[nodiscard]] constexpr auto extent() const { return xs_.extent(); }
 
-	/// returns the index extensions (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
+	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
+
+	/// returns the index extents (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
-	[[deprecated("use extents")]]
-	constexpr auto               extensions() const { return xs_; }
+	// [[deprecated("use extents")]] constexpr auto extensions() const { return xs_; }
 
 	/// Front subarray restriction in the leading dimensions or, in `D == 1`, the front element
 	constexpr auto front() const { return *begin(); }
