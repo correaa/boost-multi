@@ -525,12 +525,22 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	struct bind_rotated_t {
 		Proj      proj_;
 		size_type size_;
-		template<class T1, class T2, class... Ts>
+		template<class T1, class... Ts>
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept { return proj_(rest..., row); }
 	};
 
+	struct bind_unrotated_t {
+		Proj      proj_;
+		size_type size_;
+		template<class... Ts, class TN>
+		BOOST_MULTI_HD constexpr auto operator()(Ts... rest, TN col) const noexcept { return proj_(col, rest...); }
+	};
+
  public:
-	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
+	/// yields a restruction that has its indices rotated (to the left)
+	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents().rotate(); }
+	/// yields a restruction that has its indices unrotated (rotated to the right)
+	BOOST_MULTI_HD constexpr auto unrotated() const { return bind_unrotated_t{proj_, size()} ^ extents().unrotate(); }
 
  private:
 	template<class Proj2>

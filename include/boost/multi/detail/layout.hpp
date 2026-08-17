@@ -624,6 +624,13 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		return this->apply([](auto const&... exts) -> auto { return multi::detail::mk_tuple(exts.size()...); });
 	}
 
+	constexpr auto rotate() const {
+		this->apply([](auto const& head, auto const&... rest) { return extents_t(rest..., head); }, *this);
+	}
+	constexpr auto unrotate() const {
+		this->apply([](auto const&... rest, auto const& tail) { return extents_t(tail, rest...); }, *this);
+	}
+
 	[[deprecated]] BOOST_MULTI_HD constexpr auto extensions() const {
 		using std::apply;
 		return apply([](auto... sizes) -> auto { return extents_t(sizes...); }, sizes());
