@@ -74,12 +74,16 @@ struct array_allocator {
  protected:
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
-	constexpr auto allocate(size_type_ n) -> pointer_ {
+	[[nodiscard]] constexpr auto allocate(size_type_ n) -> pointer_ {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 		return n ? allocator_traits::allocate(alloc_, n) : pointer_{nullptr};
 	}
-	constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {  // NOLINT(readability-redundant-typename) typename needed in C++17
+
+	[[nodiscard]] constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {  // NOLINT(readability-identifier-naming,readability-redundant-typename) typename needed in C++17
 		return n ? allocator_traits::allocate(alloc_, n, hint) : pointer_{nullptr};
 	}
+
+ protected:
+	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(readability-redundant-typename) typename needed in C++17
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
