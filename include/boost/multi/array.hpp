@@ -71,9 +71,6 @@ struct array_allocator {
 	template<typename, dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
 	template<typename, dimensionality_type, class> friend struct ::boost::multi::array;
 
- protected:
-	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
-
 	[[nodiscard]] constexpr auto allocate(size_type_ n) -> pointer_ {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 		return n ? allocator_traits::allocate(alloc_, n) : pointer_{nullptr};
 	}
@@ -82,15 +79,12 @@ struct array_allocator {
 		return n ? allocator_traits::allocate(alloc_, n, hint) : pointer_{nullptr};
 	}
 
- protected:
-	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
-
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(readability-redundant-typename) typename needed in C++17
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
 
 	template<typename It, typename Size>
-	constexpr auto uninitialized_copy_n(It first, Size n, pointer_ d_first) {
+	constexpr auto uninitialized_copy_n(It first, Size n, pointer_ d_first) {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, n);
@@ -102,7 +96,7 @@ struct array_allocator {
 	}
 
 	template<typename It>
-	auto uninitialized_move_n(It first, size_type_ count, pointer_ d_first) {
+	auto uninitialized_move_n(It first, size_type_ count, pointer_ d_first) {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 #if defined(__clang__) && defined(__CUDACC__)
 		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
@@ -114,12 +108,16 @@ struct array_allocator {
 	}
 
 	template<class ExecutionPolicy, typename It, typename Size>
-	auto uninitialized_copy_n(ExecutionPolicy&& policy, It first, Size count, pointer_ d_first) {
+	auto uninitialized_copy_n(ExecutionPolicy&& policy, It first, Size count, pointer_ d_first) {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 		return adl_uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, count, d_first);
 	}
 
 	template<typename It, typename Size>
-	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	// NOLINTNEXTLINE(readability-identifier-naming) TODO(correaa) rename
+	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // COMMENTTHIScppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+
+ protected:
+	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
  public:
 #ifdef __NVCC__
