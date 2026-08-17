@@ -571,6 +571,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
+	/// yields a restriction transformed in the leading dimension
 	template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
 	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
 		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
