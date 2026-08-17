@@ -38,10 +38,6 @@ else()
 #  export LDFLAGS="-L/opt/homebrew/opt/libomp/lib"
 #  export CPPFLAGS="-I/opt/homebrew/opt/libomp/include"
 
-	if(NOT Boost_FOUND)
-		message(WARNING "preliminary: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
-	endif()
-
 	if(ENABLE_CUDA)
 		enable_language(CUDA)
 		set(CMAKE_CUDA_EXTENSIONS OFF)
@@ -66,16 +62,9 @@ else()
 		message(WARNING "preliminary: Cannot find TBB, some parallel algorithm tests will be skipped. If you want to test these, please run:\n    sudo apt install libtbb-dev\n    sudo dnf install tbb-devel\n    brew install tbb\n    C:/vcpkg/vcpkg install tbb  # Windows")
 	endif()
 
-	enable_testing()
 	include(CTest)
 
-	if (CMAKE_CUDA_HOST_COMPILER_ID STREQUAL "MSVC")
-		message(STATUS "NVCC's host compiler is MSVC.")
-		# Add specific actions or configurations for MSVC host compiler
-	else()
-		message(STATUS "NVCC's host compiler is not MSVC (ID: ${CMAKE_CUDA_HOST_COMPILER_ID}).")
-		# Add specific actions or configurations for other host compilers
-	endif()
+	message(STATUS "NVCC's host compiler ID: ${CMAKE_CUDA_HOST_COMPILER_ID}")
 
 	set(WARNS
 	$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
@@ -389,8 +378,16 @@ else()
 		*.cpp
 	)
 
+	function(multi_target_warnings TARGET_NAME)
+		if(NOT DEFINED ENABLE_CIRCLE)
+			target_compile_options(${TARGET_NAME} PRIVATE ${WARNS})
+		else()
+			target_compile_options(${TARGET_NAME} PRIVATE -Wall)  # -Werror
+		endif()
+	endfunction()
+
 	if(NOT Boost_FOUND)
-		message(WARNING "post: Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Core (for Boost.LightweightTest), for example please run:\n    sudo apt install libboost-dev\n    sudo dnf install boost-devel")
+		message(WARNING "Cannot find Boost, Multi library will have a very minimal test. If you want to test the library install Boost.Test (or at least Boost.Core, for Boost.LightweightTest), for example please run:\n    sudo apt install libboost-test-dev\n    sudo dnf install boost-devel")
 
 		add_executable(main main.cpp)
 
@@ -398,11 +395,7 @@ else()
 		target_compile_features   (main PUBLIC cxx_std_17)
 		target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-		if(NOT DEFINED ENABLE_CIRCLE)
-			target_compile_options(main PRIVATE ${WARNS})
-		else()
-			target_compile_options    (main PRIVATE -Wall)  # -Werror
-		endif()
+		multi_target_warnings(main)
 		add_test(NAME main COMMAND $<TARGET_FILE:main>)
 
 	else()
@@ -425,11 +418,7 @@ else()
 
 			# set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
-			if(NOT DEFINED ENABLE_CIRCLE)
-				target_compile_options(${TEST_EXE} PRIVATE ${WARNS})
-			else()
-				target_compile_options(${TEST_EXE} PRIVATE -Wall)  # -Werror
-			endif()
+			multi_target_warnings(${TEST_EXE})
 
 			set_target_properties(${TEST_EXE} PROPERTIES CXX_EXTENSIONS OFF)
 
