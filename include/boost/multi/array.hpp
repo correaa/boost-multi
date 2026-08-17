@@ -79,7 +79,7 @@ struct array_allocator {
 		return n ? allocator_traits::allocate(alloc_, n, hint) : pointer_{nullptr};
 	}
 
-	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(eadability-identifier-naming,readability-redundant-typename) typename needed in C++17
+	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(readability-identifier-naming,readability-redundant-typename) typename needed in C++17
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);
 	}
 
