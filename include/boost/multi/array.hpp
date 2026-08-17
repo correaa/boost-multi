@@ -65,10 +65,13 @@ struct array_allocator {
 	using size_type_ = typename allocator_traits::size_type;  // NOLINT(readability-redundant-typename) typename needed in C++17
 	using pointer_   = typename allocator_traits::pointer;    // NOLINT(readability-redundant-typename) typename needed in C++17
 
- protected:
 	constexpr auto alloc() & -> auto& { return alloc_; }
 	constexpr auto alloc() const& -> allocator_type const& { return alloc_; }
 
+	template<typename, dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
+	template<typename, dimensionality_type, class> friend struct ::boost::multi::array;
+
+ protected:
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
 	constexpr auto allocate(size_type_ n) -> pointer_ {
