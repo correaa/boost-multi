@@ -166,7 +166,7 @@ Pointer access and layout access are not part of the interface, since there is n
 A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate a restriction object.
 
 `fun` must be a function that returns deterministically (e.g. doesn't depend on the order of evaluation);
-this is guaranteed if `F` fulfills the "regular invocable" concept (`std::regular_invocable<F, Args…​>` is `true` and `sizeof…​(Args)` is the number of dimensions `D`.)
+this is guaranteed if `F` fulfills the "regular invocable" concept (`std::regular_invocable<F, Args...>` is `true` and `sizeof...(Args)` is the number of dimensions `D`.)
 
 It has almost all properties of `array` (or `subarray`) except that there is no memory backing up the elements.
 So for example, it has `value_type`, `reference`, `const_reference`, `size_type`, `extents_type`, `difference_type`, `operator[]`, `iterator`, `const_iterator`, `elements`, `begin`, and `end`.
@@ -220,7 +220,7 @@ auto& elem = c[i][j][k];  // equivalent to A[i][j][k]
 Cursor objects are cheap (and trivial) to copy.
 Cursors are particularly useful in GPU and SIMD contexts where direct pointer arithmetic over strided memory is more natural than iterator-based traversal.
 
-In some loose sense, cursors are like array-references that "forgot" their sizes, they are a way to pass arrays to interfaces that are restricted to take object by value (such as CUDA kernels or C functions)
+In some loose sense, cursors are like array-references that "forgot" their sizes, they are a way to pass arrays to interfaces that are restricted to take objects by value (such as CUDA kernels or C functions)
 
 Both concrete arrays (and subarrays) and restrictions have cursors (`.home()` member function).
 
@@ -253,7 +253,7 @@ Since `array_ref` does not manage the memory associated with it, the reference c
 
 `array` 's manage their memory behind the scenes through allocators, which can be specified at construction.
 It can handle special memory, as long as the underlying types behave coherently, these include link:https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] (and fancy references).
-Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+Associated fancy pointers and fancy references (if any) are deduced from the allocator types.
 
 ==== Allocators and Fancy Pointers
 

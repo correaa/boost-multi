@@ -122,7 +122,7 @@ multi::array C = A + B;
 C = C + A;  // assigning to itself is ok for elementwise operations
 ----
 
-For one-dimensional arrays, this is equivalent to :
+For one-dimensional arrays, this is equivalent to:
 
 [source,cpp]
 ----
