@@ -65,18 +65,22 @@ struct array_allocator {
 	using size_type_ = typename allocator_traits::size_type;  // NOLINT(readability-redundant-typename) typename needed in C++17
 	using pointer_   = typename allocator_traits::pointer;    // NOLINT(readability-redundant-typename) typename needed in C++17
 
- protected:
-	constexpr auto alloc() & -> auto& { return alloc_; }
-	constexpr auto alloc() const& -> allocator_type const& { return alloc_; }
+	constexpr auto alloc() & -> auto& { return alloc_; }                       // NOLINT(readability-identifier-naming) TODO(correaa) rename
+	constexpr auto alloc() const& -> allocator_type const& { return alloc_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
-	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
+	template<typename, dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
+	template<typename, dimensionality_type, class> friend struct ::boost::multi::array;
 
-	constexpr auto allocate(size_type_ n) -> pointer_ {
+	[[nodiscard]] constexpr auto allocate(size_type_ n) -> pointer_ {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 		return n ? allocator_traits::allocate(alloc_, n) : pointer_{nullptr};
 	}
-	constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {  // NOLINT(readability-redundant-typename) typename needed in C++17
+
+	[[nodiscard]] constexpr auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {  // NOLINT(readability-identifier-naming,readability-redundant-typename) typename needed in C++17
 		return n ? allocator_traits::allocate(alloc_, n, hint) : pointer_{nullptr};
 	}
+
+ protected:
+	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
 	constexpr auto uninitialized_fill_n(pointer_ first, size_type_ count, typename allocator_traits::value_type const& value) {  // NOLINT(readability-redundant-typename) typename needed in C++17
 		return adl_alloc_uninitialized_fill_n(alloc_, first, count, value);

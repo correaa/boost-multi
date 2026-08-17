@@ -23,7 +23,7 @@
 #define BOOST_MULTI_DEV
 #endif
 
-// namespace boost::multi 
+// namespace boost::multi
 // {}
 // #ifdef __NVCC__
 // template<class F>
@@ -58,7 +58,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 	auto operator=(tuple const&) -> tuple& = default;
 
 	BOOST_MULTI_HD constexpr auto operator==(tuple const& /*other*/) const { return true; }
-	BOOST_MULTI_HD constexpr auto operator!=(tuple const& /*other*/) const  { return false; }
+	BOOST_MULTI_HD constexpr auto operator!=(tuple const& /*other*/) const { return false; }
 
 	BOOST_MULTI_HD constexpr auto operator<(tuple const& /*other*/) const { return false; }
 	BOOST_MULTI_HD constexpr auto operator>(tuple const& /*other*/) const { return false; }
@@ -70,7 +70,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 };
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	T0 head_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
+	T0 head_;                                                            // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) can be a reference
 	using head_type = T0;
 	using tail_type = tuple<Ts...>;
 
@@ -106,15 +106,14 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	BOOST_MULTI_HD constexpr tuple(T0 head, Ts... tail) : tail_type{tail...}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	template<class TT0 = T0,
-		std::enable_if_t<!std::is_same_v<TT0, tuple>, int> =0,  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
-		std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> =0  // NOLINT(modernize-use-constraints) for C++20
-	>
+	template<class TT0 = T0, std::enable_if_t<!std::is_same_v<TT0, tuple>, int> = 0,  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
+			 std::enable_if_t<sizeof(TT0*) && (sizeof...(Ts) == 0), int> = 0          // NOLINT(modernize-use-constraints) for C++20
+			 >
 	// cppcheck-suppress noExplicitConstructor ; see below
 	BOOST_MULTI_HD constexpr tuple(TT0 head) : tail_type{}, head_{head} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) to allow bracket function calls
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... elems) -> auto {return tuple(elems...);}, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	BOOST_MULTI_HD constexpr explicit tuple(::std::tuple<T0, Ts...> other) : tuple(::std::apply([](auto... elems) -> auto { return tuple(elems...); }, other)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
@@ -126,11 +125,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	BOOST_MULTI_HD constexpr auto operator==(tuple const& other) const -> bool {
-		return
-			head_ == other.head_
-			&& 
-			tail() == other.tail()
-		;
+		return head_ == other.head_ &&
+			   tail() == other.tail();
 	}
 	BOOST_MULTI_HD constexpr auto operator!=(tuple const& other) const -> bool { return head_ != other.head_ || tail() != other.tail(); }
 
@@ -154,7 +150,6 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
  private:
-
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif
@@ -176,7 +171,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 #endif
 	template<class F, std::size_t... I>
 	BOOST_MULTI_HD  // BOOST_MULTI_DEV
-	constexpr auto apply_impl_(F&& fun, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+		constexpr auto
+		apply_impl_(F&& fun, std::index_sequence<I...> /*012*/) && -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::forward<F>(fun)(std::move(*this).template get<I>()...);
 	}
 
@@ -200,12 +196,12 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
 	template<class F>
-	friend BOOST_MULTI_HD constexpr auto apply(F&& fun, tuple<T0, Ts...> & self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fun, tuple<T0, Ts...>& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return self.apply(std::forward<F>(fun));
 	}
 
 	template<class F>
-	friend BOOST_MULTI_HD constexpr auto apply(F&& fun, tuple<T0, Ts...> && self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
+	friend BOOST_MULTI_HD constexpr auto apply(F&& fun, tuple<T0, Ts...>&& self) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
 		return std::move(self).apply(std::forward<F>(fun));
 	}
 
@@ -231,26 +227,25 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		return this->at_aux_(priority<1>{}, idx);
 	}
 
-	template<std::size_t N, std::enable_if_t<(N==0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD constexpr auto get() const& -> T0 const& {  // NOLINT(readability-identifier-length) std naming
+	template<std::size_t N, std::enable_if_t<(N == 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr auto get() const& -> T0 const& {     // N_O_LINT(readability-identifier-length) std naming
 		return head();
 	}
 
-	template<std::size_t N, std::enable_if_t<(N!=0), int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	BOOST_MULTI_HD constexpr auto get() const& -> auto const& {  // NOLINT(readability-identifier-length) std naming
-		return this->tail().template get<N - 1>();  // this-> for msvc 19.14 compilation
+	template<std::size_t N, std::enable_if_t<(N != 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr auto get() const& -> auto const& {   // N_O_LINT(readability-identifier-length) std naming
+		return this->tail().template get<N - 1>();                // msvc 19.14 needs this->
 	}
 
-
 #ifdef __NVCC__
-	#pragma nv_diagnostic push
-	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
-	#pragma diagnostic push
-	#pragma diag_suppress = implicit_return_from_non_void_function
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#elif defined(__NVCOMPILER)                                        // NOLINT(readability-use-concise-preprocessor-directives) for C++23
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
 #elif (defined(__GNUC__) && !defined(__EDG__))
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wreturn-type"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 	template<std::size_t N>
@@ -316,7 +311,7 @@ template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member
 };
 #endif
 
-#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L) 
+#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201703L)
 template<class T0, class... Ts> tuple(T0, tuple<Ts...>) -> tuple<T0, Ts...>;
 #endif
 
@@ -329,7 +324,7 @@ template<class T0, class... Ts> constexpr auto tie(T0& head, Ts&... tail) {
 }
 
 template<class T0, class... Ts> BOOST_MULTI_HD constexpr auto ht_tuple(T0 head, tuple<Ts...> tail)
--> tuple<T0, Ts...> {
+	-> tuple<T0, Ts...> {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail));
 }
 
@@ -368,14 +363,14 @@ template<class T0, class... Ts>
 BOOST_MULTI_HD constexpr auto tail(tuple<T0, Ts...>& t) -> decltype(t.tail()) { return t.tail(); }  // NOLINT(readability-identifier-length) std naming
 
 #ifdef __NVCC__
-	#pragma nv_diagnostic push
-	#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
-#elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
-	#pragma diagnostic push
-	#pragma diag_suppress = implicit_return_from_non_void_function
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function  // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
+#elif defined(__NVCOMPILER)                                        // NOLINT(readability-use-concise-preprocessor-directives) for C++23
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
 #elif defined(__GNUC__) && !defined(__EDG__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wreturn-type"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 #endif
 
 template<std::size_t N, class T0, class... Ts>
@@ -407,11 +402,11 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  //-V::659
 }
 
 #ifdef __NVCC__
-	#pragma nv_diagnostic pop
+#pragma nv_diagnostic pop
 #elif defined(__NVCOMPILER)  // NOLINT(readability-use-concise-preprocessor-directives) for C++23
-	#pragma diagnostic pop
+#pragma diagnostic pop
 #elif defined(__GNUC__) && !defined(__EDG__)
-	#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 }  // end namespace detail
@@ -420,14 +415,14 @@ BOOST_MULTI_HD constexpr auto get(tuple<T0, Ts...>&& tup) -> auto&& {  //-V::659
 // Some versions of Clang throw warnings that stl uses class std::tuple_size instead
 // of struct std::tuple_size like it should be
 #ifdef __clang__
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wmismatched-tags"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmismatched-tags"
 #endif
 
 template<class... Ts>
 struct std::tuple_size<boost::multi::detail::tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) for structured bindings
-	// // cppcheck-suppress unusedStructMember
-	// static constexpr std::size_t value = sizeof...(Ts);
+																												   // // cppcheck-suppress unusedStructMember
+																												   // static constexpr std::size_t value = sizeof...(Ts);
 };
 
 template<>
@@ -455,8 +450,8 @@ struct std::tuple_element<N, boost::multi::detail::tuple<T0, Ts...>> {  // NOLIN
 #endif
 template<class F, class Tuple, std::size_t... I>
 BOOST_MULTI_HD constexpr auto std_apply_timpl(F&& fun, Tuple&& tup, std::index_sequence<I...> /*012*/) -> decltype(auto) {  // NOLINT(cert-dcl58-cpp) normal idiom to defined tuple get
-	(void)tup;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
-	return std::forward<F>(fun)(boost::multi::detail::get<I>(std::forward<Tuple>(tup))...);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
+	(void)tup;                                                                                                              // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
+	return std::forward<F>(fun)(boost::multi::detail::get<I>(std::forward<Tuple>(tup))...);                                 // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) use forward_as?
 }
 
 namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured bindings

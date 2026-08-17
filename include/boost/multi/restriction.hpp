@@ -453,13 +453,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		}
 	}
 
+	/// returns a materialized owning array of the restriction (allocates, O(N) operation)
 	constexpr auto operator+() const { return multi::array<element, D>(*this); }
-
-	// struct bind_transposed_t {
-	// 	Proj proj_;
-	// 	template<class T1, class T2, class... Ts>
-	// 	BOOST_MULTI_HD constexpr auto operator()(T1 ii, T2 jj, Ts... rest) const noexcept -> element { return proj_(jj, ii, rest...); }
-	// };
 
 	BOOST_MULTI_HD constexpr auto transposed() && {
 		return detail::bind_transposed_t<Proj>{std::move(proj_)} ^ layout_t<D>(extents()).transpose().extents();
@@ -498,8 +493,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
-	BOOST_MULTI_HD auto repeated(size_type n) const -> restriction<D + 1, bind_repeat_t> {
-		return bind_repeat_t{proj_} ^ n * extents();
+ 	/// yields a new restriction of higher dimension by repeating `count` times the restriction as a new leading dimension
+	BOOST_MULTI_HD auto repeated(size_type count) const -> restriction<D + 1, bind_repeat_t> {
+		return bind_repeat_t{proj_} ^ count * extents();
 	}
 
  private:
@@ -511,8 +507,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
-	BOOST_MULTI_HD constexpr auto partitioned(size_type block_size) const noexcept -> restriction<D + 1, bind_partitioned_t> {
-		return bind_partitioned_t{proj_, size() / block_size} ^ layout_t<D>(extents()).partition(block_size).extents();
+	/// yields a restriction of higher dimension by splitting the leading dimension into equal‐sized partitions of size `count` (`count` must divide `size()`)
+	BOOST_MULTI_HD constexpr auto partitioned(size_type count) const noexcept -> restriction<D + 1, bind_partitioned_t> {
+		return bind_partitioned_t{proj_, size() / count} ^ layout_t<D>(extents()).partition(count).extents();
 	}
 
  private:
@@ -523,19 +520,27 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept -> element { return proj_(size_m1 - row, rest...); }
 	};
 
- public:
-	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extents(); }
+	BOOST_MULTI_HD constexpr auto reversed() const { return bind_reversed_t{proj_, size() - 1} ^ extents(); }  // NOLINT(readability-identifier-naming)
 
- private:
 	struct bind_rotated_t {
 		Proj      proj_;
 		size_type size_;
-		template<class T1, class T2, class... Ts>
+		template<class T1, class... Ts>
 		BOOST_MULTI_HD constexpr auto operator()(T1 row, Ts... rest) const noexcept { return proj_(rest..., row); }
 	};
 
+	struct bind_unrotated_t {
+		Proj      proj_;
+		size_type size_;
+		template<class... Ts, class TN>
+		BOOST_MULTI_HD constexpr auto operator()(Ts... rest, TN col) const noexcept { return proj_(col, rest...); }
+	};
+
  public:
-	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents(); }
+	/// yields a restruction that has its indices rotated (to the left)
+	BOOST_MULTI_HD constexpr auto rotated() const { return bind_rotated_t{proj_, size()} ^ extents().rotate(); }
+	/// yields a restruction that has its indices unrotated (rotated to the right)
+	BOOST_MULTI_HD constexpr auto unrotated() const { return bind_unrotated_t{proj_, size()} ^ extents().unrotate(); }
 
  private:
 	template<class Proj2>
