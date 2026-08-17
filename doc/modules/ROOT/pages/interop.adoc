@@ -53,7 +53,7 @@ link:https://godbolt.org/z/M84arKMnT[(open with Compiler Explorer)]
 
 
 The "pipe" (`|`) notation of standard ranges allows one-line expressions.
-In this example, the expression will yield the maximum value of the rows sums:
+In this example, the expression will yield the maximum value of the row sums:
 link:https://godbolt.org/z/hvqnsf4xb[`std::ranges::max(arr | std::views::transform(accumulate))`]
 
 Like in classic STL, standard range algorithms acting on sequences operate in the first dimension by default,
@@ -185,7 +185,7 @@ For example, this copy construction can initialize elements in parallel from the
 Execution policies are not limited to STL;
 Thrust and oneAPI also offer execution policies that can be used with the corresponding algorithms.
 
-Execution policies and ranges can be mixed (`x` and `y` can be 1D dimensional arrays, of any arithmetic element type)
+Execution policies and ranges can be mixed (`x` and `y` can be 1-dimensional arrays, of any arithmetic element type)
 
 [source,cpp]
 ----
@@ -524,7 +524,7 @@ Take into account that lambdas executed in the device cannot take captures by re
 Library's restrictions do not work on `pass:c[__device__]`-only functions due to limitations of the CUDA language.
 In addition, `pass:c[__host__ __device__]` cannot take initializing captures (e.g. `[var = ...]`),
 or `auto` arguments.
-As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parenthesis).
+As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parentheses).
 
 ```
 	int base = 4;
@@ -792,7 +792,7 @@ The header `multi/io.hpp` can be used to output arrays and subarrays, but it is 
 == Python (cppyy)
 
 The library works out-of-the-box via the automatic `cppyy` bindings, providing a syntax similar to that of pass:[C++].
-Additionally, the memory layouts are compatible with Numpy which makes it possible to interoperate pass:[C++] and python code without memory copies.
+Additionally, the memory layouts are compatible with NumPy which makes it possible to interoperate pass:[C++] and Python code without memory copies.
 
 Here is a complete
 link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing#scrollTo=T80_fu0660xP[Python session]:
@@ -892,7 +892,7 @@ a2d.assign([[1.0, 2.0],[3.0, 4.0]])
 ----
 
 Pointers from arrays can be extracted normally and reused in other libraries, to access the elements through other Python libraries;
-for example, an array that uses contiguous memory can be converted into a Numpy array, without making copies
+for example, an array that uses contiguous memory can be converted into a NumPy array, without making copies
 
 [source,python]
 ----
