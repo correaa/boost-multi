@@ -558,23 +558,23 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		return bind_element_transformed_t<ElementProj>{proj_, element_proj} ^ extents();
 	}
 
- private:
-	template<class Proj2>
-	class bind_transform_t {
-		restriction proj_;
-		Proj2       proj2_;
-		friend restriction;
-		bind_transform_t(restriction proj, Proj2 proj2) : proj_{std::move(proj)}, proj2_{std::move(proj2)} {}
+//  private:
+	// template<class Proj2>
+	// class bind_transform_t {
+	// 	restriction proj_;
+	// 	Proj2       proj2_;
+	// 	friend restriction;
+	// 	bind_transform_t(restriction proj, Proj2 proj2) : proj_{std::move(proj)}, proj2_{std::move(proj2)} {}
 
-	 public:
-		BOOST_MULTI_HD constexpr auto operator()(restriction::index idx) const noexcept { return proj2_(proj_[idx]); }
-	};
+	//  public:
+	// 	BOOST_MULTI_HD constexpr auto operator()(restriction::index idx) const noexcept { return proj2_(proj_[idx]); }
+	// };
 
- public:
-	template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
-	BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
-		return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
-	}
+//  public:
+	// template<class Proj2, dimensionality_type One = 1 /*workaround for MSVC*/>
+	// BOOST_MULTI_HD auto transformed(Proj2 proj2) const -> restriction<1, bind_transform_t<Proj2>> {
+	// 	return bind_transform_t<Proj2>{*this, proj2} ^ multi::extents_t<One>({extent()});
+	// }
 
  private:
 	template<class Cursor, dimensionality_type DD = D>
@@ -725,17 +725,20 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	/// returns an iterator to the end in the leading dimension
 	constexpr auto end() const { return iterator{xs_.end(), &proj_}; }
 
+	/// returns the size of the restriction array in the leading dimension.
 	constexpr auto size() const noexcept { return xs_.size(); }
 
+	/// returns a tuple of sizes across all the dimensions of the restriction array in the leading dimension.
 	constexpr auto sizes() const { return xs_.sizes(); }
 
-	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
+	/// returns the extent of valid indices in the leading dimension.
 	[[nodiscard]] constexpr auto                extent() const { return xs_.extent(); }
+	// [[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
 
-	/// returns the index extensions (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
+	/// returns the index extents (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
-	[[deprecated("use extents")]]
-	constexpr auto               extensions() const { return xs_; }
+	// [[deprecated("use extents")]]
+	// constexpr auto               extensions() const { return xs_; }
 
 	/// Front subarray restriction in the leading dimensions or, in `D == 1`, the front element
 	constexpr auto front() const { return *begin(); }
