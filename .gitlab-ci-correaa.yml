@@ -511,7 +511,7 @@ vs2022-shell:
     - windows
     - shell
   # needs: ["clang++", "g++"]
-  timeout: 20 minutes
+  timeout: 30 minutes
 
 vs2022-shell c++17:
   stage: build
