@@ -660,15 +660,20 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		auto exts = multi::extents_t<2>(3, 4);
 
-		auto [ext1, ext2] = exts;
+		{
+			auto [ext1, ext2] = exts;
 	
-		BOOST_TEST( ext1.size() == 3 );
-		BOOST_TEST( ext2.size() == 4 );
+			BOOST_TEST( ext1.size() == 3 );
+			BOOST_TEST( ext2.size() == 4 );
+		}
+		{
+			auto [ext1, ext2] = exts.transpose();
 
-		auto [is, js] = exts.transpose();
+			BOOST_TEST( ext1.size() == 4 );
+			BOOST_TEST( ext2.size() == 3 );
+		}
 
-		BOOST_TEST( is.size() == 4 );
-		BOOST_TEST( js.size() == 3 );
+		BOOST_TEST( exts == exts.transpose().transpose() );
 	}
 	{
 		auto exts = multi::extents_t<1>(10);
