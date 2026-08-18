@@ -243,32 +243,45 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	restriction_elements_iterator() = default;
 	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
 
+	/// Increment operator
 	auto operator++() -> auto& {
 		++this->it_;
 		return *this;
 	}
+
+	/// Decrement operator
 	auto operator--() -> auto& {
 		--this->it_;
 		return *this;
 	}
 
+	/// Addition assignment operator
 	constexpr auto operator+=(difference_type diff) -> auto& {
 		this->it_ += diff;
 		return *this;
 	}
+
+	/// Subtraction assignment operator
 	constexpr auto operator-=(difference_type diff) -> auto& {
 		this->it_ -= diff;
 		return *this;
 	}
 
+	/// Difference operator
 	friend constexpr auto operator-(restriction_elements_iterator const& self, restriction_elements_iterator const& other) { return self.it_ - other.it_; }
 
+	/// Tag to deduce system of the function (compute space), for compatibility with CUDA
 	using system = typename detail::function_system<std::decay_t<Proj>>::type;
 
+	/// Signed integer type for iterator arithmetic
 	using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
+	/// Value (element) type, e.g. `T`
 	using value_type        = difference_type;
+	/// Pointer type, `void` because there is no memory behind
 	using pointer           = void;
+	/// Referece type, also `T` (not `T&` because there is no memory behind)
 	using reference         = value_type;
+	/// Iterator category is Random-Access
 	using iterator_category = std::random_access_iterator_tag;
 
 	friend auto operator==(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ == other.it_; }
@@ -277,11 +290,13 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	friend auto operator<=(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ <= other.it_; }
 	friend auto operator<(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ < other.it_; }
 
+	// Dereference operator
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		using std::apply;
 		return apply(proj_, *this->it_);
 	}
 
+	// Subscript operator, same as `*(*this + diff)`
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
