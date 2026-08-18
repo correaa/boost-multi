@@ -186,6 +186,10 @@ struct                                                                          
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
+	void allocate() {  // NOLINT(readability-identifier-naming) make private name
+		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
+	}
+
  protected:
 	constexpr void uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
@@ -205,10 +209,6 @@ struct                                                                          
 		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
-	}
-
-	void allocate() {
-		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
 	}
 
  public:
@@ -821,6 +821,7 @@ struct                                                                          
 		}
 	}
 
+ private:
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
