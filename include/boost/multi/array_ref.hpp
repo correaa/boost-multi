@@ -796,20 +796,28 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 };
 }  // end namespace detail
 
-/// @internal
+/// A cursor is a lightweigh type for multidimensional indexing
 template<typename ElementPtr, dimensionality_type D, class StridesType>
 struct cursor_t {
+	/// Signed integer for index arithmetic in the leading dimension
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
+	/// Tuple type to describe the strides of the array defined by the cursor
 	using strides_type    = StridesType;
 
+	/// Element pointer type (e.g. `T*`)
 	using element_ptr                                  = ElementPtr;
+	/// Element reference type (e.g. `T&`)
 	using element_ref                                  = typename std::iterator_traits<element_ptr>::reference;
+	/// Element reference type (e.g. `T`)
 	using element                                      = typename std::iterator_traits<element_ptr>::value_type;
-	using element_type [[deprecated("use ::element")]] = typename std::iterator_traits<element_ptr>::value_type;
+	using element_type [[deprecated("use element")]] = typename std::iterator_traits<element_ptr>::value_type;
 
+	/// Pointer type (`void`, for compatibility)
 	using pointer   = element_ptr;
+	/// Reference type (`void`, for compatibility)
 	using reference = element_ref;
 
+	/// Tuple type of indices
 	using indices_type = typename extents_t<D>::indices_type;
 
 	cursor_t() = default;
