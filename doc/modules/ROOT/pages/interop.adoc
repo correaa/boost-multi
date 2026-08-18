@@ -526,12 +526,13 @@ In addition, `pass:c[__host__ __device__]` cannot take initializing captures (e.
 or `auto` arguments.
 As a partial workaround, the library provides a macro `BOOST_MULTI_HD_LAMBDA` (note the parentheses).
 
-```
-	int base = 4;
-	auto const& hankel2 =  // a restriction object of a lambda with captures
-		[initval = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return initval + i + j; } )
-		^ multi::extensions_t<2>({N, M})
-```
+[source,cpp]
+----
+int base = 4;
+auto const& hankel2 =  // a restriction object of a lambda with captures
+	[initval = base + 1] BOOST_MULTI_HD_LAMBDA( (index i, index j) { return initval + i + j; } )
+	^ multi::extensions_t<2>({N, M});
+----
 
 (Alternatively the functions can be defined as separate class with a `pass:c[__host__ __device__ operator()]`).
 
