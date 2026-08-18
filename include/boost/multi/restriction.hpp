@@ -761,9 +761,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 };
 
 #ifdef __cpp_deduction_guides
+/// deduces the dimensionality of the restriction from the extents and the restricted function
 template<dimensionality_type D, typename Fun>
 restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
+/// specializations for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
 template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
 template<typename Fun> restriction(extents_t<2>, Fun) -> restriction<2, Fun>;
