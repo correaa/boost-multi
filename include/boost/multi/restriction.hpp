@@ -301,12 +301,11 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
+/// A range of all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
 	typename extents_t<D>::elements_t elems_;
 	Proj                              proj_;
-
-	// friend class restriction;
 
  public:
 	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
@@ -316,65 +315,72 @@ class restriction_elements_t {
 		return apply(proj_, elems_[idx]);
 	}
 
-	using difference_type = std::ptrdiff_t;  // restriction::difference_type;
+	/// Signed integer type to do iterator arithmetic
+	using difference_type = std::ptrdiff_t;
 
-	// using iterator = restriction_elements_iterator<D, Proj>;
+	/// A random-access iterator to access the elements of the restriction
+	using iterator = restriction_elements_iterator<D, Proj>;
+	/// Integer type to store the size of the range
+	using size_type = typename extents_t<D>::size_type;
 
-	class iterator : ra_iterable<iterator> {
-		typename extents_t<D>::elements_t::iterator it_;
-		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
+	// class iterator : ra_iterable<iterator> {
+	// 	typename extents_t<D>::elements_t::iterator it_;
+	// 	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
-	 public:
-		iterator() = default;
+	//  public:
+	// 	iterator() = default;
 
-		iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
+	// 	iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
 
-		auto operator++() -> auto& {
-			++this->it_;
-			return *this;
-		}
-		auto operator--() -> auto& {
-			--this->it_;
-			return *this;
-		}
+	// 	auto operator++() -> auto& {
+	// 		++this->it_;
+	// 		return *this;
+	// 	}
+	// 	auto operator--() -> auto& {
+	// 		--this->it_;
+	// 		return *this;
+	// 	}
 
-		constexpr auto operator+=(difference_type diff) -> auto& {
-			this->it_ += diff;
-			return *this;
-		}
-		constexpr auto operator-=(difference_type diff) -> auto& {
-			this->it_ -= diff;
-			return *this;
-		}
+	// 	constexpr auto operator+=(difference_type diff) -> auto& {
+	// 		this->it_ += diff;
+	// 		return *this;
+	// 	}
+	// 	constexpr auto operator-=(difference_type diff) -> auto& {
+	// 		this->it_ -= diff;
+	// 		return *this;
+	// 	}
 
-		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+	// 	friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
-		constexpr auto operator*() const -> decltype(auto) {
-			using std::apply;
-			return apply(proj_, *this->it_);
-		}
+	// 	constexpr auto operator*() const -> decltype(auto) {
+	// 		using std::apply;
+	// 		return apply(proj_, *this->it_);
+	// 	}
 
-		using system = typename detail::function_system<std::decay_t<Proj>>::type;
+	// 	using system = typename detail::function_system<std::decay_t<Proj>>::type;
 
-		using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
-		using value_type        = difference_type;
-		using pointer           = void;
-		using reference         = value_type;
-		using iterator_category = std::random_access_iterator_tag;
+	// 	using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
+	// 	using value_type        = difference_type;
+	// 	using pointer           = void;
+	// 	using reference         = value_type;
+	// 	using iterator_category = std::random_access_iterator_tag;
 
-		friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-		friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+	// 	friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
+	// 	friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
 
-		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-		friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
+	// 	friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
+	// 	friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
 
-		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
-	};
+	// 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
+	// };
 
-	auto begin() const { return iterator{elems_.begin(), proj_}; }
-	auto end() const { return iterator{elems_.end(), proj_}; }
+	/// returns an output random-iterator to the beggining of the elements range
+	auto begin() const -> iterator { return {elems_.begin(), proj_}; }
+	/// returns an output random-iterator to the end of the elements range
+	auto end() const -> iterator { return {elems_.end(), proj_}; }
 
-	auto size() const noexcept { return elems_.size(); }
+	/// returns the size of the elements range
+	auto size() const noexcept -> size_type { return elems_.size(); }
 };
 
 /// An array interface for a function of `D` integer arguments restricted to an certain Cartesian grid (extents), elements are generated lazily
@@ -781,9 +787,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 template<dimensionality_type D, typename Fun>
 restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
-/// specializations for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
 template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
+/// Specialization for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<2>, Fun) -> restriction<2, Fun>;
 template<typename Fun> restriction(extents_t<3>, Fun) -> restriction<3, Fun>;
 template<typename Fun> restriction(extents_t<4>, Fun) -> restriction<4, Fun>;

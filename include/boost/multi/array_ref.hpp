@@ -2176,7 +2176,7 @@ BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
 	}
 }
 
-/// Movable D‐dimensional view into part or all of an array (elements can be moved when references)
+/// Movable D‐dimensional view into part or all of an array (elements can be moved when dereferenced and assigned)
 template<typename T, multi::dimensionality_type D, typename ElementPtr, class Layout>
 class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress noExplicitConstructor ; see below
