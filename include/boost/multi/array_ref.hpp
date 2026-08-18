@@ -805,11 +805,11 @@ struct cursor_t {
 	using strides_type    = StridesType;
 
 	/// Element pointer type (e.g. `T*`)
-	using element_ptr                                  = ElementPtr;
+	using element_ptr                                = ElementPtr;
 	/// Element reference type (e.g. `T&`)
-	using element_ref                                  = typename std::iterator_traits<element_ptr>::reference;
+	using element_ref                                = typename std::iterator_traits<element_ptr>::reference;
 	/// Element reference type (e.g. `T`)
-	using element                                      = typename std::iterator_traits<element_ptr>::value_type;
+	using element                                    = typename std::iterator_traits<element_ptr>::value_type;
 	using element_type [[deprecated("use element")]] = typename std::iterator_traits<element_ptr>::value_type;
 
 	/// Pointer type (`void`, for compatibility)
