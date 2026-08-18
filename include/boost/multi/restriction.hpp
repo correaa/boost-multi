@@ -163,13 +163,15 @@ class restriction_iterator {
 
 	using system = typename multi::detail::function_system<Proj>::type;
 
+	/// Signed integer type for iterator arithmetic
 	using difference_type = std::ptrdiff_t;
+	/// Value type resulting from binding the leading index, or, for `D == 1` the element type
 	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
-
+	/// Pointer type (`void` because there is no memory behind)
 	using pointer = void;
-
+	/// Reference type resulting from binding the leading index, or, for `D == 1` the element type
 	using reference = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
-
+	/// Iterator category is random-access
 	using iterator_category = std::random_access_iterator_tag;
 
 	constexpr auto operator++() -> auto& {
@@ -181,10 +183,13 @@ class restriction_iterator {
 		return *this;
 	}
 
+	/// Addition assignment operators
 	constexpr auto operator+=(difference_type diff) -> auto& {
 		it_ += diff;
 		return *this;
 	}
+
+	/// Substract assignment operators
 	constexpr auto operator-=(difference_type diff) -> auto& {
 		it_ -= diff;
 		return *this;

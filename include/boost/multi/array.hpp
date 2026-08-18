@@ -1582,6 +1582,7 @@ struct
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+/// A D‐dimensional array that is move only (cannot be copied into another `unique_array`)
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
 class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_ = dynamic_array<T, D, Alloc>;
