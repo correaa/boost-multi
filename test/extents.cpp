@@ -658,6 +658,24 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == exts.elements().begin() + 2 );
 	}
 	{
+		auto exts = multi::extents_t<2>(3, 4);
+
+		{
+			auto [ext1, ext2] = exts;
+	
+			BOOST_TEST( ext1.size() == 3 );
+			BOOST_TEST( ext2.size() == 4 );
+		}
+		{
+			auto [ext1, ext2] = exts.transpose();
+
+			BOOST_TEST( ext1.size() == 4 );
+			BOOST_TEST( ext2.size() == 3 );
+		}
+
+		BOOST_TEST( exts == exts.transpose().transpose() );
+	}
+	{
 		auto exts = multi::extents_t<1>(10);
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );

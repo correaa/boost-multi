@@ -376,8 +376,10 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	}
 
  public:
+	/// Integer constant describing the dimensionality of the restriction array
 	static constexpr dimensionality_type dimensionality = D;
-	constexpr static dimensionality_type rank_v         = D;
+	/// Integer constant describing the dimensionality of the restriction array
+	static constexpr dimensionality_type rank_v         = D;
 
 	/// Signed integer type for index arithmetic
 	using difference_type = typename extents_t<D>::difference_type;
@@ -456,6 +458,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	/// returns a materialized owning array of the restriction (allocates, O(N) operation)
 	constexpr auto operator+() const { return multi::array<element, D>(*this); }
 
+	/// yields a transposed view of the restriction array (first two indices exchanged). (Only for `D >= 2`)
 	BOOST_MULTI_HD constexpr auto transposed() && {
 		return detail::bind_transposed_t<Proj>{std::move(proj_)} ^ layout_t<D>(extents()).transpose().extents();
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
@@ -474,7 +477,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
-	/// An array interface with lower dimensionality that holds the diagonal (in the first two dimensions), array must be square (first two sizes equal). (Only for `D >= 2`).
+	/// yields an array restriction of lower dimensionality that holds the diagonal (in the first two dimensions), array must be square (first two sizes equal). (Only for `D >= 2`).
 	BOOST_MULTI_HD constexpr auto diagonal() const -> restriction<D - 1, bind_diagonal_t> {
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
@@ -758,9 +761,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 };
 
 #ifdef __cpp_deduction_guides
+/// deduces the dimensionality of the restriction from the extents and the restricted function
 template<dimensionality_type D, typename Fun>
 restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
+/// specializations for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
 template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
 template<typename Fun> restriction(extents_t<2>, Fun) -> restriction<2, Fun>;
