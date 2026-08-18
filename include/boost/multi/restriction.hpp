@@ -163,13 +163,15 @@ class restriction_iterator {
 
 	using system = typename multi::detail::function_system<Proj>::type;
 
+	/// Signed integer type for iterator arithmetic
 	using difference_type = std::ptrdiff_t;
+	/// Value type resulting from binding the leading index, or, for `D == 1` the element type
 	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
-
+	/// Pointer type (`void` because there is no memory behind)
 	using pointer = void;
-
+	/// Reference type resulting from binding the leading index, or, for `D == 1` the element type
 	using reference = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
-
+	/// Iterator category is random-access
 	using iterator_category = std::random_access_iterator_tag;
 
 	constexpr auto operator++() -> auto& {
@@ -181,10 +183,13 @@ class restriction_iterator {
 		return *this;
 	}
 
+	/// Addition assignment operators
 	constexpr auto operator+=(difference_type diff) -> auto& {
 		it_ += diff;
 		return *this;
 	}
+
+	/// Substract assignment operators
 	constexpr auto operator-=(difference_type diff) -> auto& {
 		it_ -= diff;
 		return *this;
@@ -221,6 +226,7 @@ class restriction_iterator {
 	friend auto operator>(restriction_iterator const& self, restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 	friend auto operator>=(restriction_iterator const& self, restriction_iterator const& other) noexcept -> bool { return self.it_ > other.it_; }
 
+	/// Dereference operator
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		if constexpr(D != 1) {
 			using std::get;
@@ -231,6 +237,7 @@ class restriction_iterator {
 		}
 	}
 
+	/// Subscript operator
 	BOOST_MULTI_HD auto operator[](difference_type diff) const { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
@@ -291,17 +298,17 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	friend auto operator<=(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ <= other.it_; }
 	friend auto operator<(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ < other.it_; }
 
-	// Dereference operator
+	/// Dereference operator
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		using std::apply;
 		return apply(proj_, *this->it_);
 	}
 
-	// Subscript operator, same as `*(*this + diff)`
+	/// Subscript operator, same as `*(*this + diff)`
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
-/// A range of all the elements of a restriction
+/// A random-access range for all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
 	typename extents_t<D>::elements_t elems_;
@@ -310,6 +317,7 @@ class restriction_elements_t {
  public:
 	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
 
+	/// Subscript operator
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) {
 		using std::apply;
 		return apply(proj_, elems_[idx]);
@@ -644,7 +652,6 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	 public:
 		constexpr iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
-		// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		iterator(iterator const& other) = default;
 		iterator(iterator&&) noexcept   = default;
@@ -659,6 +666,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		using element_type_ = std::decay_t<element_ref_>;
 
 	 public:
+		/// Tag indicating the execution space (for compatibility with Thrust)
 		using system = typename multi::detail::function_system<Proj>::type;
 
 		/// A signed integer type for index arithmetic
@@ -687,10 +695,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			return *this;
 		}
 
+		/// Addition assignment operator
 		constexpr auto operator+=(difference_type diff) -> auto& {
 			it_ += diff;
 			return *this;
 		}
+
+		/// Substraction assignment operator
 		constexpr auto operator-=(difference_type diff) -> auto& {
 			it_ -= diff;
 			return *this;
