@@ -822,7 +822,7 @@ struct                                                                          
 	}
 
  private:
-	void clear() noexcept {
+	void clear() noexcept {  // NOLINT(readability-identifier-naming)
 		this->destroy();
 		deallocate();
 		this->layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});
