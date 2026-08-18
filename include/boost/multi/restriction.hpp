@@ -657,7 +657,6 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	 public:
 		constexpr iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
-		// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 		iterator(iterator const& other) = default;
 		iterator(iterator&&) noexcept   = default;
@@ -672,6 +671,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		using element_type_ = std::decay_t<element_ref_>;
 
 	 public:
+		/// Tag indicating the execution space (for compatibility with Thrust)
 		using system = typename multi::detail::function_system<Proj>::type;
 
 		/// A signed integer type for index arithmetic
@@ -700,10 +700,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 			return *this;
 		}
 
+		/// Addition assignment operator
 		constexpr auto operator+=(difference_type diff) -> auto& {
 			it_ += diff;
 			return *this;
 		}
+
+		/// Substraction assignment operator
 		constexpr auto operator-=(difference_type diff) -> auto& {
 			it_ -= diff;
 			return *this;
@@ -800,9 +803,9 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 template<dimensionality_type D, typename Fun>
 restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
-/// specializations for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
 template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
+/// Specialization for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
 template<typename Fun> restriction(extents_t<2>, Fun) -> restriction<2, Fun>;
 template<typename Fun> restriction(extents_t<3>, Fun) -> restriction<3, Fun>;
 template<typename Fun> restriction(extents_t<4>, Fun) -> restriction<4, Fun>;
