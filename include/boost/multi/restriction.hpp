@@ -234,6 +234,7 @@ class restriction_iterator {
 	BOOST_MULTI_HD auto operator[](difference_type diff) const { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
+/// A random-access iterator to go through all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
 	typename extents_t<D>::elements_t::iterator it_;
