@@ -291,22 +291,21 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	friend auto operator<=(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ <= other.it_; }
 	friend auto operator<(restriction_elements_iterator const& self, restriction_elements_iterator const& other) -> bool { return self.it_ < other.it_; }
 
-	// Dereference operator
+	/// Dereference operator
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		using std::apply;
 		return apply(proj_, *this->it_);
 	}
 
-	// Subscript operator, same as `*(*this + diff)`
+	/// Subscript operator, same as `*(*this + diff)`
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
+/// A random-access range for all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
 	typename extents_t<D>::elements_t elems_;
 	Proj                              proj_;
-
-	// friend class restriction;
 
  public:
 	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
@@ -316,10 +315,10 @@ class restriction_elements_t {
 		return apply(proj_, elems_[idx]);
 	}
 
+	/// Signed integer type for index arithmetic
 	using difference_type = std::ptrdiff_t;  // restriction::difference_type;
 
-	// using iterator = restriction_elements_iterator<D, Proj>;
-
+	/// A random-access iterator to all the elements
 	class iterator : ra_iterable<iterator> {
 		typename extents_t<D>::elements_t::iterator it_;
 		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
@@ -371,9 +370,12 @@ class restriction_elements_t {
 		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 	};
 
+	/// returns an iterator to the beginning of the range
 	auto begin() const { return iterator{elems_.begin(), proj_}; }
+	/// returns an iterator to the beginning of the range
 	auto end() const { return iterator{elems_.end(), proj_}; }
 
+	/// returns the size of the range
 	auto size() const noexcept { return elems_.size(); }
 };
 
