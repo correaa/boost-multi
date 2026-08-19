@@ -134,7 +134,7 @@ struct array_allocator {
 #endif
 
 template<class T, dimensionality_type D, class DummyAlloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct                                                                          // NOLINT(misc-multiple-inheritance) : used for composition
+struct                                                                              // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -191,22 +191,22 @@ struct                                                                          
 		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
 	}
 
- protected:
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
+		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
+	}
+
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	template<class ExecutionPolicy, typename It> auto uninitialized_copy_elements(ExecutionPolicy&& policy, It first) {
+		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
+	}
+
 	constexpr void uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 		}
 	}
 
-	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
-		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
-	}
-
-	template<class ExecutionPolicy, typename It> auto uninitialized_copy_elements(ExecutionPolicy&& policy, It first) {
-		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
-	}
-
- private:
 	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void destroy() {
 		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {

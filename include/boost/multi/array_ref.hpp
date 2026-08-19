@@ -316,7 +316,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	[[deprecated]] auto is_compact() const { return this->layout().is_compact(); }
 
  private:
-	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
+	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }  // NOLINT(readability-identifier-naming)
 
 	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::array;
 	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
