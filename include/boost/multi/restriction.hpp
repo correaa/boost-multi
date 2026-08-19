@@ -308,6 +308,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
+namespace detail {
 /// A random-access range for all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
@@ -400,6 +401,7 @@ class restriction_elements_t {
 	/// returns the size of the range
 	auto size() const noexcept { return elems_.size(); }
 };
+}  // end namespace detail
 
 /// An array interface for a function of `D` integer arguments restricted to an certain Cartesian grid (extents), elements are generated lazily
 template<dimensionality_type D, class Proj>
@@ -792,7 +794,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto back() const { return *(begin() + (size() - 1)); }
 
  private:
-	using elements_t = restriction_elements_t<D, Proj>;
+	using elements_t = detail::restriction_elements_t<D, Proj>;
 
  public:
 	/// yields a random‐access output range with all the elements of the array
