@@ -324,82 +324,72 @@ class restriction_elements_t {
 		return apply(proj_, elems_[idx]);
 	}
 
-	/// Signed integer type for index arithmetic
-	using difference_type = std::ptrdiff_t;  // restriction::difference_type;
+	/// Signed integer type to do iterator arithmetic
+	using difference_type = std::ptrdiff_t;
 
-	/// A random-access iterator to all the elements
-	class iterator : ra_iterable<iterator> {
-		typename extents_t<D>::elements_t::iterator it_;
-		BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
+	/// A random-access iterator to access the elements of the restriction
+	using iterator = restriction_elements_iterator<D, Proj>;
+	/// Integer type to store the size of the range
+	using size_type = typename extents_t<D>::size_type;
 
-	 public:
-		iterator() = default;
+	// class iterator : ra_iterable<iterator> {
+	// 	typename extents_t<D>::elements_t::iterator it_;
+	// 	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
 
-		iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
+	//  public:
+	// 	iterator() = default;
 
-		/// Increment operator
-		auto operator++() -> auto& {
-			++this->it_;
-			return *this;
-		}
+	// 	iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
 
-		/// Decrement operator
-		auto operator--() -> auto& {
-			--this->it_;
-			return *this;
-		}
+	// 	auto operator++() -> auto& {
+	// 		++this->it_;
+	// 		return *this;
+	// 	}
+	// 	auto operator--() -> auto& {
+	// 		--this->it_;
+	// 		return *this;
+	// 	}
 
-		/// Addition assignment operator
-		constexpr auto operator+=(difference_type diff) -> auto& {
-			this->it_ += diff;
-			return *this;
-		}
+	// 	constexpr auto operator+=(difference_type diff) -> auto& {
+	// 		this->it_ += diff;
+	// 		return *this;
+	// 	}
+	// 	constexpr auto operator-=(difference_type diff) -> auto& {
+	// 		this->it_ -= diff;
+	// 		return *this;
+	// 	}
 
-		/// Subtract assignment operator
-		constexpr auto operator-=(difference_type diff) -> auto& {
-			this->it_ -= diff;
-			return *this;
-		}
+	// 	friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
 
-		friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
+	// 	constexpr auto operator*() const -> decltype(auto) {
+	// 		using std::apply;
+	// 		return apply(proj_, *this->it_);
+	// 	}
 
-		/// Dereference operator
-		constexpr auto operator*() const -> decltype(auto) {
-			using std::apply;
-			return apply(proj_, *this->it_);
-		}
+	// 	using system = typename detail::function_system<std::decay_t<Proj>>::type;
 
-		/// Tag for execution system (for compatibility with Thrust)
-		using system = typename detail::function_system<std::decay_t<Proj>>::type;
+	// 	using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
+	// 	using value_type        = difference_type;
+	// 	using pointer           = void;
+	// 	using reference         = value_type;
+	// 	using iterator_category = std::random_access_iterator_tag;
 
-		/// Signed integer for iterator arithmetic
-		using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
-		/// Value type
-		using value_type        = difference_type;
-		/// Pointer type (`void` because there no memory behind)
-		using pointer           = void;
-		/// Reference type
-		using reference         = value_type;
-		/// Tag category random-access
-		using iterator_category = std::random_access_iterator_tag;
+	// 	friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
+	// 	friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
 
-		friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-		friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
+	// 	friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
+	// 	friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
 
-		friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-		friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
+	// 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
+	// };
 
-		/// Subscript operator
-		BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
-	};
+	/// returns an output random-iterator to the beggining of the elements range
+	auto begin() const -> iterator { return {elems_.begin(), proj_}; }
+	/// returns an output random-iterator to the end of the elements range
+	auto end() const -> iterator { return {elems_.end(), proj_}; }
 
-	/// returns an iterator to the beginning of the range
-	auto begin() const { return iterator{elems_.begin(), proj_}; }
-	/// returns an iterator to the beginning of the range
-	auto end() const { return iterator{elems_.end(), proj_}; }
-
-	/// returns the size of the range
-	auto size() const noexcept { return elems_.size(); }
+	/// returns the size of the elements range
+	auto size() const noexcept -> size_type { return elems_.size(); }
 };
 }  // end namespace detail
 
