@@ -783,9 +783,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	[[deprecated("use extent")]] constexpr auto extension() const { return xs_.extent(); }
 
-	/// returns the index extents (structured cartesian product of half‐open ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
+	/// returns the index extents (structured cartesian product of index ranges) for all dimensions as an extents_type (`extents_t<D>`), a tuple of `D` index_extension values each encoding the extent in each dimension. The result can be passed directly to array constructors or compared for shape equality.
 	[[nodiscard]] constexpr auto extents() const { return xs_; }
-	// [[deprecated("use extents")]] constexpr auto extensions() const { return xs_; }
 
 	/// Front subarray restriction in the leading dimensions or, in `D == 1`, the front element
 	constexpr auto front() const { return *begin(); }
