@@ -315,8 +315,11 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	[[deprecated]] auto is_compact() const { return this->layout().is_compact(); }
 
- protected:
+ private:
 	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }
+
+	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::array;
+	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
 
  public:
 	/// Array value after evaluation through the first index, an object of lower dimension, `multi::array<T, D ‐ 1, P>` or, for `D == 1`, `std::pointer_traits<P>::element_type` (usually `T`)
@@ -4250,7 +4253,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #endif
 	}
 
-	template<class, ::boost::multi::dimensionality_type, class> friend struct array;
+	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::array;
 
 	template<class TTN>
 	constexpr auto to_carray_() & -> TTN& {

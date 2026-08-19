@@ -133,7 +133,7 @@ struct array_allocator {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
+template<class T, dimensionality_type D, class DummyAlloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct                                                                          // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
@@ -186,7 +186,8 @@ struct                                                                          
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
-	void allocate() {  // NOLINT(readability-identifier-naming) make private name
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	void allocate() {
 		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
 	}
 
@@ -205,6 +206,8 @@ struct                                                                          
 		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
 	}
 
+ private:
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void destroy() {
 		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());

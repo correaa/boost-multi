@@ -164,13 +164,13 @@ class restriction_iterator {
 	using system = typename multi::detail::function_system<Proj>::type;
 
 	/// Signed integer type for iterator arithmetic
-	using difference_type = std::ptrdiff_t;
+	using difference_type   = std::ptrdiff_t;
 	/// Value type resulting from binding the leading index, or, for `D == 1` the element type
-	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
+	using value_type        = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
 	/// Pointer type (`void` because there is no memory behind)
-	using pointer = void;
+	using pointer           = void;
 	/// Reference type resulting from binding the leading index, or, for `D == 1` the element type
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
+	using reference         = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
 	/// Iterator category is random-access
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -328,7 +328,7 @@ class restriction_elements_t {
 	using difference_type = std::ptrdiff_t;
 
 	/// A random-access iterator to access the elements of the restriction
-	using iterator = restriction_elements_iterator<D, Proj>;
+	using iterator  = restriction_elements_iterator<D, Proj>;
 	/// Integer type to store the size of the range
 	using size_type = typename extents_t<D>::size_type;
 
@@ -528,7 +528,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
- 	/// yields a new restriction of higher dimension by repeating `count` times the restriction as a new leading dimension
+	/// yields a new restriction of higher dimension by repeating `count` times the restriction as a new leading dimension
 	BOOST_MULTI_HD auto repeated(size_type count) const -> restriction<D + 1, bind_repeat_t> {
 		return bind_repeat_t{proj_} ^ count * extents();
 	}
@@ -587,7 +587,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
- 	/// An array interface with of the same dimensionality to which each element is applied a projection function (unary function) (i.e. each element is obtained by the composition of the restricted function and the projection)
+	/// An array interface with of the same dimensionality to which each element is applied a projection function (unary function) (i.e. each element is obtained by the composition of the restricted function and the projection)
 	template<class ElementProj>
 	BOOST_MULTI_HD auto element_transformed(ElementProj element_proj) const -> restriction<D, bind_element_transformed_t<ElementProj>> {
 		return bind_element_transformed_t<ElementProj>{proj_, element_proj} ^ extents();
