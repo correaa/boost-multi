@@ -814,14 +814,14 @@ struct                                                                          
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // implicit __host__ __device__ ~dynamic_array [subobject] calls __host__ ~dynamic_array(); error attributed to deallocate() body
 #endif
-	constexpr void deallocate() {
+	constexpr void deallocate() {  // NOLINT(readability-identifier-naming) TODO(correaa)
 		assert(this->stride() != 0);
 		if(this->num_elements()) {
 			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
 	}
 
-	void clear() noexcept {  // NOLINT(readability-identifier-naming)
+	void clear() noexcept {  // NOLINT(readability-identifier-naming) TODO(correaa)
 		this->destroy();
 		deallocate();
 		this->layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});
