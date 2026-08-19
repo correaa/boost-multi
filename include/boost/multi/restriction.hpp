@@ -164,13 +164,13 @@ class restriction_iterator {
 	using system = typename multi::detail::function_system<Proj>::type;
 
 	/// Signed integer type for iterator arithmetic
-	using difference_type = std::ptrdiff_t;
+	using difference_type   = std::ptrdiff_t;
 	/// Value type resulting from binding the leading index, or, for `D == 1` the element type
-	using value_type      = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
+	using value_type        = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj>(), std::declval<typename extents_t<D>::element>()))>;
 	/// Pointer type (`void` because there is no memory behind)
-	using pointer = void;
+	using pointer           = void;
 	/// Reference type resulting from binding the leading index, or, for `D == 1` the element type
-	using reference = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
+	using reference         = std::conditional_t<(D != 1), restriction<D - 1, detail::bind_front_t<Proj>>, decltype(apply_(std::declval<Proj&>(), std::declval<typename extents_t<D>::element>()))>;
 	/// Iterator category is random-access
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -328,7 +328,7 @@ class restriction_elements_t {
 	using difference_type = std::ptrdiff_t;
 
 	/// A random-access iterator to access the elements of the restriction
-	using iterator = restriction_elements_iterator<D, Proj>;
+	using iterator  = restriction_elements_iterator<D, Proj>;
 	/// Integer type to store the size of the range
 	using size_type = typename extents_t<D>::size_type;
 
