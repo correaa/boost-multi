@@ -124,7 +124,13 @@ using sizes_t = typename extents_t<D>::sizes_type;
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam Alloc Allocator type
-template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;
+template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;  // TODO(correaa) why the declaration is in this header
+
+/// A multidimensional array value
+/// @tparam T Element type
+/// @tparam D Dimensionality (non-negative)
+/// @tparam Alloc Allocator type
+template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct dynamic_array;  // TODO(correaa) why the declaration is in this header
 
 namespace detail {
 struct non_copyable_base {
