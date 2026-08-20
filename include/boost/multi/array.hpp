@@ -186,7 +186,7 @@ struct                                                                          
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
-	void allocate() {  // NOLINT(readability-identifier-naming) make private name
+	void allocate() {                                                                                                                                                                // NOLINT(readability-identifier-naming) make private name
 		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
 	}
 
@@ -809,20 +809,19 @@ struct                                                                          
 	/// returns the maximum number of elements that the vector can hold.
 	constexpr auto max_size() const noexcept { return static_cast<typename dynamic_array::size_type>(multi::allocator_traits<allocator_type>::max_size(this->alloc())); }  // TODO(correaa)  divide by nelements in under-dimensions?
 
- protected:
+ private:
 #ifdef __NVCC__
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress = 20011  // implicit __host__ __device__ ~dynamic_array [subobject] calls __host__ ~dynamic_array(); error attributed to deallocate() body
 #endif
-	constexpr void deallocate() {
+	constexpr void deallocate() {  // NOLINT(readability-identifier-naming) TODO(correaa)
 		assert(this->stride() != 0);
 		if(this->num_elements()) {
 			multi::allocator_traits<allocator_type>::deallocate(this->alloc(), this->base_, static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()));
 		}
 	}
 
- private:
-	void clear() noexcept {  // NOLINT(readability-identifier-naming)
+	void clear() noexcept {  // NOLINT(readability-identifier-naming) TODO(correaa)
 		this->destroy();
 		deallocate();
 		this->layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});
