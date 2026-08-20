@@ -133,8 +133,8 @@ struct array_allocator {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, dimensionality_type D, class DummyAlloc = std::allocator<T>>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
-struct                                                                          // NOLINT(misc-multiple-inheritance) : used for composition
+template<class T, dimensionality_type D, class DummyAlloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
+struct                                                                              // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
 : protected detail::array_allocator<
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
@@ -186,25 +186,29 @@ struct                                                                          
 		return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 	}
 
-	void allocate() {                                                                                                                                                                // NOLINT(readability-identifier-naming) make private name
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	void allocate() {
 		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()));  // NOLINT(readability-redundant-typename) needed for C++17
 	}
 
- protected:
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
+		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
+	}
+
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	template<class ExecutionPolicy, typename It> auto uninitialized_copy_elements(ExecutionPolicy&& policy, It first) {
+		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
+	}
+
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void uninitialized_default_construct() {
 		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 		}
 	}
 
-	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
-		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
-	}
-
-	template<class ExecutionPolicy, typename It> auto uninitialized_copy_elements(ExecutionPolicy&& policy, It first) {
-		return array_alloc::uninitialized_copy_n(std::forward<ExecutionPolicy>(policy), first, this->num_elements(), this->data_elements());
-	}
-
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void destroy() {
 		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
@@ -1576,6 +1580,7 @@ struct
 	constexpr auto operator&() && -> array* = delete;  // NOLINT(google-runtime-operator) //NOSONAR delete operator&& defined in base class to avoid taking address of temporary
 };
 
+namespace detail {
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
@@ -1600,12 +1605,13 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 #endif
 	~unique_array() noexcept = default;  // pins execution space to match dynamic_array (host-only)
 };
+}  // end namespace detail
 
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
-struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) array does defined a move constructor but it has requirements on the allocator
+struct array : detail::unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) array does defined a move constructor but it has requirements on the allocator
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
-	using unique_  = unique_array<T, D, Alloc>;
+	using unique_  = detail::unique_array<T, D, Alloc>;
 
 	static_assert(
 		std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T> || std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,
@@ -1660,8 +1666,8 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17-20 ?
-	using unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
-	using typename unique_array<T, D, Alloc>::value_type;
+	using detail::unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	using typename detail::unique_array<T, D, Alloc>::value_type;
 
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
@@ -1713,9 +1719,9 @@ struct array : unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
-	: unique_array<T, D, Alloc>{std::move(other), alloc} {}
+	: detail::unique_array<T, D, Alloc>{std::move(other), alloc} {}
 
-	BOOST_MULTI_HD constexpr array(array&& other) noexcept : unique_array<T, D, Alloc>{std::move(other)} {
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : detail::unique_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
 

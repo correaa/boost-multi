@@ -662,7 +662,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		{
 			auto [ext1, ext2] = exts;
-	
+
 			BOOST_TEST( ext1.size() == 3 );
 			BOOST_TEST( ext2.size() == 4 );
 		}

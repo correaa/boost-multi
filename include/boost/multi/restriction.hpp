@@ -528,7 +528,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
- 	/// yields a new restriction of higher dimension by repeating `count` times the restriction as a new leading dimension
+	/// yields a new restriction of higher dimension by repeating `count` times the restriction as a new leading dimension
 	BOOST_MULTI_HD auto repeated(size_type count) const -> restriction<D + 1, bind_repeat_t> {
 		return bind_repeat_t{proj_} ^ count * extents();
 	}
@@ -587,7 +587,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	};
 
  public:
- 	/// An array interface with of the same dimensionality to which each element is applied a projection function (unary function) (i.e. each element is obtained by the composition of the restricted function and the projection)
+	/// An array interface with of the same dimensionality to which each element is applied a projection function (unary function) (i.e. each element is obtained by the composition of the restricted function and the projection)
 	template<class ElementProj>
 	BOOST_MULTI_HD auto element_transformed(ElementProj element_proj) const -> restriction<D, bind_element_transformed_t<ElementProj>> {
 		return bind_element_transformed_t<ElementProj>{proj_, element_proj} ^ extents();
