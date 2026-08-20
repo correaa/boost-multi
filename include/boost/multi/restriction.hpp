@@ -139,6 +139,7 @@ BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(rea
 	return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
 }
 
+/// Iterator for a restriction array in the leading dimension
 template<dimensionality_type D, class Proj>
 class restriction_iterator {
 	typename extents_t<D>::iterator it_;
@@ -151,7 +152,6 @@ class restriction_iterator {
 
  public:
 	constexpr restriction_iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
-	// constexpr iterator() {}  // = default;  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default) TODO(correaa) investigate workaround
 
 	restriction_iterator(restriction_iterator const& other) = default;
 	restriction_iterator(restriction_iterator&&) noexcept   = default;
@@ -161,6 +161,7 @@ class restriction_iterator {
 
 	~restriction_iterator() = default;
 
+	/// Tag the execution system
 	using system = typename multi::detail::function_system<Proj>::type;
 
 	/// Signed integer type for iterator arithmetic
