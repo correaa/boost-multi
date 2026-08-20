@@ -114,9 +114,11 @@ An `array_ref` can be invalidated if the original buffer is deallocated.
 [#ref_dynamic_array]
 == Dynamic Arrays
 
-A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
-This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
-Memory is requested by an allocator of type Alloc, the standard allocator by default.
+A "dynamic" array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
+This class owns the elements it contains and never reliquishes the memory it own before destruction;
+it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
+There is no `resize` or `reextents` operation.
+Memory is requested by an allocator of type `Alloc`, the standard allocator by default.
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::dynamic_array`.
 
 For most uses, a `multi::array` should be preferred instead.
@@ -125,12 +127,30 @@ The main feature of this class is that its iterators, subarrays, and pointers do
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
 It can be useful for scoped uses of arrays and multithreaded programming and to ensure that assignments do not incur allocations.
 The pass:[C++] core guidelines proposed a similar (albeit one-dimensional) class, called link:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
+The reason it is called "dynamic" is because it uses dynamic memory (heap memory).
 
 This class has a constructor that allocates memory given the desired sizes: `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>)` constructs the array with elements initialized from a nested list.
 The destructor deallocates memory and destroys the elements
 `operator=` assigns the elements from the source (sizes must match).
 
 In matters that are not related to memory ownership or allocation, `dynamic_array` has the same interface as `multi::array_ref`.
+
+== Unique Arrays
+
+A "unique" array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::unique_array<T, D, Alloc = std::allocator<T>>`.
+It is similar to "dynamic" array, except that this class owns the elements it contains but can transfer the memory to another `unique_array`.
+
+Use `unique_array` only when fine grained restrictions over allocations needs to be enforced at compile time.
+For most uses, a `multi::array` should be preferred instead.
+
+It is a "move-only" object;
+it semantics and use cases is similar to `std::unique_ptr<T[]>`, but in the multidimensional context.
+
+Iterators, subarrays, and pointers are transfered with move.
+
+The destructor deallocates memory and destroys the elements
+`operator=` assigns the elements from the source (sizes must match);
+but it also supports move semantic in other cases.
 
 [#ref_array]
 == Arrays
