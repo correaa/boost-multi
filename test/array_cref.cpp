@@ -61,7 +61,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		//  #endif
 
 		multi::array_ref const G2D(cvec.data(), {10, 10});
-		multi::array_ref       H2D(static_cast<complex const*>(vec.data()), {10, 10});
+		multi::array_ref const H2D(static_cast<complex const*>(vec.data()), {10, 10});
 
 		BOOST_TEST( G2D.data_elements() == D2D.data_elements() );
 	}
