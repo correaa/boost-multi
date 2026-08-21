@@ -4517,11 +4517,11 @@ template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) 
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-template<class T, dimensionality_type D, class TPtr = T const*>
-using array_const_view = array_ref<T, D, TPtr> const&;
+// template<class T, dimensionality_type D, class TPtr = T const*>
+// using array_const_view = array_ref<T, D, TPtr> const&;
 
-template<class T, dimensionality_type D, class TPtr = T*>
-using array_view = array_ref<T, D, TPtr>&;
+// template<class T, dimensionality_type D, class TPtr = T*>
+// using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
 
