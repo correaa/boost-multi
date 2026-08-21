@@ -4525,8 +4525,8 @@ using array_view = array_ref<T, D, TPtr>&;
 
 }  // end namespace boost::multi
 
-#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
-#define BOOST_MULTI_SERIALIZATION_DEFAULT_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) reserved for future use to select default format for serialization version //NOSONAR
+#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_DEFAULT_VERSION
+#define BOOST_MULTI_SERIALIZATION_ARRAY_DEFAULT_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) reserved for future use to select default format for serialization version //NOSONAR
 #endif
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
