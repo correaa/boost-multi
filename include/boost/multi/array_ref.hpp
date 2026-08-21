@@ -4318,6 +4318,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
+/// Convenience alias for a D‐dimensional view of a contiguous, pre‐existing memory contant memory buffer
 template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const>>
 using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
@@ -4426,29 +4427,34 @@ template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<2>) -> array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>) -> array_ptr<V, 3, It>;
+#endif
 
+#ifdef __cpp_deduction_guides
 template<
 	class T,
 	std::size_t N,
 	typename V = std::remove_all_extents_t<T[N]>, std::size_t D = std::rank_v<T[N]>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	>
 array_ptr(T (*)[N]) -> array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+#endif
 }  // end namespace detail
 
-template<class Ptr> array_ref(Ptr, index_extensions<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<2>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
+#ifdef __cpp_deduction_guides
+// template<typename It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size_v<Tuple>, It>;
 
-template<class It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size_v<Tuple>, It>;
+template<typename Ptr> array_ref(Ptr, extents_t<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
+template<typename Ptr> array_ref(Ptr, extents_t<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
+template<typename Ptr> array_ref(Ptr, extents_t<2>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
+template<typename Ptr> array_ref(Ptr, extents_t<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
+template<typename Ptr> array_ref(Ptr, extents_t<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
+template<typename Ptr> array_ref(Ptr, extents_t<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
+#endif
 
+#ifdef __cpp_deduction_guides
 template<class It> const_subarray(It, It) -> const_subarray<typename It::element, It::dimensionality + 1, typename It::element_ptr, layout_t<It::dimensionality + 1>>;
 
 template<class T> const_subarray(std::initializer_list<T>) -> const_subarray<T, 1>;
 template<class T> const_subarray(std::initializer_list<std::initializer_list<T>>) -> const_subarray<T, 2>;
-
 #endif
 
 // TODO(correaa) move to utility

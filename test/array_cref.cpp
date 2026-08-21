@@ -55,10 +55,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(  F2D[7][8] == 3.0 );
 		BOOST_TEST( &A2D[7][8] == &F2D[7][8] );
 
-		//  #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+		//  #if defined(__cpp_deduction_guides) and !defined(__NVCC__)
 		//  multi::array_ref G2D(dc.data(), {10, 10});  // TODO(correaa)
 		//  BOOST_TEST( G2D == D2D );
 		//  #endif
+
+		multi::array_ref const G2D(cvec.data(), {10, 10});
+		multi::array_ref const H2D(static_cast<complex const*>(vec.data()), {10, 10});
+
+		BOOST_TEST( G2D.data_elements() == D2D.data_elements() );
 	}
 
 #ifndef _MSC_VER  // TODO(correaa) doesn't work on MSVC 14.3 in c++17 mode
