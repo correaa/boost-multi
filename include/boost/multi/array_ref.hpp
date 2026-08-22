@@ -4508,20 +4508,23 @@ template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
+/// return the iterator to beginning of the array object (this is for compatibility with `using std::begin; begin(...);` idiom on r-value subarray objects)
 template<class T> constexpr auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (generic free function, usually return .begin())
+/// return the iterator end of the array object (this is for compatibility with `using std::begin; begin(...);` idiom on r-value subarray objects)
 template<class T> constexpr auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (generic free function, usually return .begin())
 
-// this has to take argument by forward reference to avoid collison with std::cbegin/std::cend
-template<class T> constexpr auto cbegin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (for constant access, generic free function, usually return .begin())
-template<class T> constexpr auto cend(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (for constant access, generic free function, usually return .begin())
+/// return the iterator to beginning of the array object (this is for compatibility with `using std::begin; begin(...);` idiom on r-value subarray objects)
+template<class T> constexpr auto cbegin(T const&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }  ///< Returns the beginning of the range (for constant access, generic free function, usually return .begin())
+/// return the iterator end of the array object (this is for compatibility with `using std::begin; begin(...);` idiom on r-value subarray objects)
+template<class T> constexpr auto cend(T const&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }        ///< Returns the end of the range (for constant access, generic free function, usually return .begin())
 
-template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
-template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
+// template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
+// template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 
-template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
+// template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 
-template<class T, std::size_t N, std::size_t M>
-auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+// template<class T, std::size_t N, std::size_t M>
+// auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 // template<class T, dimensionality_type D, class TPtr = T const*>
 // using array_const_view = array_ref<T, D, TPtr> const&;

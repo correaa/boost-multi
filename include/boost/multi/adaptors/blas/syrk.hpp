@@ -19,7 +19,7 @@ auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2
 	using std::get;
 	assert( cc.size() == get<1>(cc.sizes()) );
 	// cppcheck-suppress knownConditionTrueFalse ; bug in cppcheck 2.18?
-	if(stride(a) == 1) {
+	if(a.stride() == 1) {
 		if(cc.stride() == 1) {
 			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', cc.size(), size(a), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.rotated().size());
 		} else {
@@ -27,7 +27,7 @@ auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2
 		}
 	} else {
 		if(cc.stride() == 1) {
-			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'T', cc.size(), a.rotated().size(), &alpha, a.base(), stride(a), &beta, cc.base(), cc.rotated().stride());
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'T', cc.size(), a.rotated().size(), &alpha, a.base(), a.stride(), &beta, cc.base(), cc.rotated().stride());
 		} else {
 			syrk(c_side == filling::upper ? 'L' : 'U', 'T', cc.size(), a.rotated().size(), &alpha, a.base(), a.stride(), &beta, cc.base(), cc.stride());
 		}
