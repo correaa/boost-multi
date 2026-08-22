@@ -1285,7 +1285,7 @@ inq cuda:
     - nvidia-gpu
     - arch75
   script:
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libmpich-dev mpich libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
     - nvidia-smi
     - __nvcc_device_query
@@ -1299,16 +1299,12 @@ inq cuda:
     - rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70  # native doesn't work in this version of cmake # =75  # =80
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich  # native doesn't work in this version of cmake # =75  # =80
     - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
-    - export OMPI_ALLOW_RUN_AS_ROOT=1
-    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
-    - export OMPI_MCA_rmaps_base_oversubscribe=1
     - export CUDA_VISIBLE_DEVICES=0,1
-    - INQ_EXEC_ENV="mpirun --oversubscribe -n 2 $GPUBIND" ctest --parallel 2 --output-on-failure --timeout 4800
+    - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --parallel 2 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
   needs: ["inq"]  # , "cuda"]
 
