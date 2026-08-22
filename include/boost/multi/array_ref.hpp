@@ -4531,15 +4531,8 @@ auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T
 
 }  // end namespace boost::multi
 
-#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_VERSION
-#define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version //NOSONAR
-// #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
-// #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
-// #define BOOST_MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
-
-namespace boost::multi {
-constexpr inline int serialization_array_version = BOOST_MULTI_SERIALIZATION_ARRAY_VERSION;
-}  // end namespace boost::multi
+#ifndef BOOST_MULTI_SERIALIZATION_ARRAY_DEFAULT_VERSION
+#define BOOST_MULTI_SERIALIZATION_ARRAY_DEFAULT_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) reserved for future use to select default format for serialization version //NOSONAR
 #endif
 
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
