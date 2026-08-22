@@ -242,6 +242,7 @@ class restriction_iterator {
 	BOOST_MULTI_HD auto operator[](difference_type diff) const { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
 
+namespace detail {
 /// A random-access iterator to go through all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
@@ -308,6 +309,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	/// Subscript operator, same as `*(*this + diff)`
 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
+}  // end namespace detail
 
 namespace detail {
 /// A random-access range for all the elements of a restriction
@@ -329,60 +331,9 @@ class restriction_elements_t {
 	using difference_type = std::ptrdiff_t;
 
 	/// A random-access iterator to access the elements of the restriction
-	using iterator  = restriction_elements_iterator<D, Proj>;
+	using iterator  = detail::restriction_elements_iterator<D, Proj>;
 	/// Integer type to store the size of the range
 	using size_type = typename extents_t<D>::size_type;
-
-	// class iterator : ra_iterable<iterator> {
-	// 	typename extents_t<D>::elements_t::iterator it_;
-	// 	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
-
-	//  public:
-	// 	iterator() = default;
-
-	// 	iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
-
-	// 	auto operator++() -> auto& {
-	// 		++this->it_;
-	// 		return *this;
-	// 	}
-	// 	auto operator--() -> auto& {
-	// 		--this->it_;
-	// 		return *this;
-	// 	}
-
-	// 	constexpr auto operator+=(difference_type diff) -> auto& {
-	// 		this->it_ += diff;
-	// 		return *this;
-	// 	}
-	// 	constexpr auto operator-=(difference_type diff) -> auto& {
-	// 		this->it_ -= diff;
-	// 		return *this;
-	// 	}
-
-	// 	friend constexpr auto operator-(iterator const& self, iterator const& other) { return self.it_ - other.it_; }
-
-	// 	constexpr auto operator*() const -> decltype(auto) {
-	// 		using std::apply;
-	// 		return apply(proj_, *this->it_);
-	// 	}
-
-	// 	using system = typename detail::function_system<std::decay_t<Proj>>::type;
-
-	// 	using difference_type   = std::ptrdiff_t;  // elements_t::difference_type;
-	// 	using value_type        = difference_type;
-	// 	using pointer           = void;
-	// 	using reference         = value_type;
-	// 	using iterator_category = std::random_access_iterator_tag;
-
-	// 	friend auto operator==(iterator const& self, iterator const& other) -> bool { return self.it_ == other.it_; }
-	// 	friend auto operator!=(iterator const& self, iterator const& other) -> bool { return self.it_ != other.it_; }
-
-	// 	friend auto operator<=(iterator const& self, iterator const& other) -> bool { return self.it_ <= other.it_; }
-	// 	friend auto operator<(iterator const& self, iterator const& other) -> bool { return self.it_ < other.it_; }
-
-	// 	BOOST_MULTI_HD constexpr auto operator[](difference_type diff) const -> decltype(auto) { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
-	// };
 
 	/// returns an output random-iterator to the beggining of the elements range
 	auto begin() const -> iterator { return {elems_.begin(), proj_}; }
