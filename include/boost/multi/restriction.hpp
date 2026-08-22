@@ -133,11 +133,11 @@ struct invoke_result_from_tuple<F, TupleLike<Args...>> {
 };
 }  // end namespace detail
 
-template<class Fun, class... Args>
-BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
-	using std::apply;
-	return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
-}
+// template<class Fun, class... Args>
+// BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
+// 	using std::apply;
+// 	return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
+// }
 
 /// Iterator for a restriction array in the leading dimension
 template<dimensionality_type D, class Proj>
