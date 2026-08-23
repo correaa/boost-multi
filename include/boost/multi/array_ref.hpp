@@ -4538,16 +4538,16 @@ template<class T> constexpr auto cend(T&& rng) -> decltype(std::forward<T>(rng).
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Ptr, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::detail::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::detail::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
