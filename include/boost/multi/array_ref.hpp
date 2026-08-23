@@ -2745,10 +2745,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 };
 
-template<class Subarray> auto diagonal(Subarray&& sarr)
-	-> decltype(std::forward<Subarray>(sarr).diagonal()) {
-	return std::forward<Subarray>(sarr).diagonal();
-}
+// template<class Subarray> auto diagonal(Subarray&& sarr)
+// 	-> decltype(std::forward<Subarray>(sarr).diagonal()) {
+// 	return std::forward<Subarray>(sarr).diagonal();
+// }
 
 namespace detail {
 
