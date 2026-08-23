@@ -799,6 +799,7 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 };
 }  // end namespace detail
 
+namespace detail {
 /// A cursor is a lightweigh type for multidimensional indexing
 template<typename ElementPtr, dimensionality_type D, class StridesType>
 struct cursor_t {
@@ -847,8 +848,8 @@ struct cursor_t {
 #pragma warning(pop)
 #endif
 
-	template<class, dimensionality_type, class, class> friend class const_subarray;
-	template<class, dimensionality_type, class> friend struct cursor_t;
+	template<class, dimensionality_type, class, class> friend class multi::const_subarray;
+	template<class, dimensionality_type, class> friend struct detail::cursor_t;
 
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
 
@@ -911,6 +912,7 @@ struct cursor_t {
 		return get<DD>(strides_);
 	}
 };
+}  // end namespace detail
 
 namespace detail {
 template<typename Pointer, class LayoutType>
@@ -1945,10 +1947,10 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto cend() const& { return end(); }
 
 	/// Indexable cursor, pointer-like objects that multidimensionally indexable (type usually returned by `.home()`)
-	using cursor = cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
+	using cursor = detail::cursor_t<typename const_subarray::element_ptr, D, typename const_subarray::strides_type>;
 
 	/// Indexable const-cursor, pointer-like objects that multidimensionally indexable (type usually returned by `.home() const`)
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
+	using const_cursor = detail::cursor_t<typename const_subarray::element_const_ptr, D, typename const_subarray::strides_type>;
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
@@ -3107,8 +3109,10 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	auto flatted() const&                 = delete;
 	auto range() const& -> const_subarray = delete;
 
-	using cursor       = cursor_t<typename const_subarray::element_ptr, 0, typename const_subarray::strides_type>;
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 0, typename const_subarray::strides_type>;
+	// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information
+	using cursor       = detail::cursor_t<typename const_subarray::element_ptr, 0, typename const_subarray::strides_type>;
+	// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
+	using const_cursor = detail::cursor_t<typename const_subarray::element_const_ptr, 0, typename const_subarray::strides_type>;
 
  private:
 	BOOST_MULTI_HD constexpr auto home_aux_() const { return cursor(this->base_, this->strides()); }
@@ -3301,15 +3305,13 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		return *this;
 	}  // required by https://en.cppreference.com/w/cpp/iterator/indirectly_writable for std::ranges::copy_n
 
-	using cursor       = cursor_t<typename const_subarray::element_ptr, 1, typename const_subarray::strides_type>;
-	using const_cursor = cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
+	// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information	
+	using cursor       = detail::cursor_t<typename const_subarray::element_ptr, 1, typename const_subarray::strides_type>;
+	// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
+	using const_cursor = detail::cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
 
 	auto diagonal() const = delete;
 
-	//  private:
-	// 	void flattened_aux_() const = delete;
-
-	//  public:
 	auto flattened() const& = delete;  // { return flattened_aux_().as_const(); }
 
  private:
