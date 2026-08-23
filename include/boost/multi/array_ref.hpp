@@ -800,7 +800,7 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
 }  // end namespace detail
 
 namespace detail {
-/// A cursor is a lightweigh type for multidimensional indexing
+/// A cursor is a lightweigh type for multidimensional indexing, it is similar to an array object without the size (extents) information
 template<typename ElementPtr, dimensionality_type D, class StridesType>
 struct cursor_t {
 	/// Signed integer for index arithmetic in the leading dimension
@@ -865,6 +865,7 @@ struct cursor_t {
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
+	/// Indexing operator, it returns a cursors of lower dimensionality; recursively obtaining an element at the corresponding relative index
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
@@ -879,7 +880,7 @@ struct cursor_t {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-
+	/// Function call operators, to obtain indexing, on one or more multiple indexing arguments
 	BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
 		return operator[](n);
 	}
