@@ -133,12 +133,6 @@ struct invoke_result_from_tuple<F, TupleLike<Args...>> {
 };
 }  // end namespace detail
 
-template<class Fun, class... Args>
-BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
-	using std::apply;
-	return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
-}
-
 /// Iterator for a restriction array in the leading dimension
 template<dimensionality_type D, class Proj>
 class restriction_iterator {
@@ -149,6 +143,12 @@ class restriction_iterator {
 
 	template<dimensionality_type, class>
 	friend class restriction;
+
+	template<class Fun, class... Args>
+	static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
+		using std::apply;
+		return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
+	}
 
  public:
 	constexpr restriction_iterator() = default;  // cppcheck-suppress uninitMemberVar ; partially formed
@@ -565,6 +565,12 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	}
 
  private:
+	template<class Fun, class... Args>
+	static BOOST_MULTI_HD constexpr auto apply_(Fun&& fun, Args&&... args) {  // NOLINT(readability-identifier-naming) TODO(correaa) move this to ::detail
+		using std::apply;
+		return apply(std::forward<Fun>(fun), std::forward<Args>(args)...);
+	}
+
 	template<class Cursor, dimensionality_type DD = D>
 	class cursor_t {
 		Proj const* Pproj_;
