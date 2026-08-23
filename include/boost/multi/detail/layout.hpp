@@ -2189,7 +2189,7 @@ template<class Array> struct std::tuple_size<boost::multi::detail::decaying_arra
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::extents_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::extents_t<1>::elements_t> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
