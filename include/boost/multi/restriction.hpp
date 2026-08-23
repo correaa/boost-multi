@@ -133,6 +133,7 @@ struct invoke_result_from_tuple<F, TupleLike<Args...>> {
 };
 }  // end namespace detail
 
+namespace detail {
 /// Iterator for a restriction array in the leading dimension
 template<dimensionality_type D, class Proj>
 class restriction_iterator {
@@ -241,6 +242,7 @@ class restriction_iterator {
 	/// Subscript operator
 	BOOST_MULTI_HD auto operator[](difference_type diff) const { return *((*this) + diff); }  // TODO(correaa) use ra_iterator_facade
 };
+}  // end namespace detail
 
 namespace detail {
 /// A random-access iterator to go through all the elements of a restriction
