@@ -381,6 +381,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			([](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4)).elements().begin()
 		));
 
+		using multi::experimental::operator->*;
 		BOOST_TEST(std::equal(
 			arr2df.elements().begin(), arr2df.elements().end(),
 			(multi::extents_t<2>(3, 4)->*[](auto x, auto y) { return x + y; }).elements().begin()

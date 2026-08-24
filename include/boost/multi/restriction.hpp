@@ -779,9 +779,13 @@ BOOST_MULTI_HD constexpr auto operator^(F fun, extents_t<D> const& exts) {
 	return restriction<D, F>(exts, std::move(fun));
 }
 
+/// Experimental namespace for the library
+namespace experimental {
+/// Binary operators that combines a D-dimensional extents object with a D-ary regularly invocable function object (generally a lambda)
 template<class F, dimensionality_type D>
 BOOST_MULTI_HD constexpr auto operator->*(extents_t<D> const& exts, F fun) {
 	return restriction<D, F>(exts, std::move(fun));
+}
 }
 
 }  // namespace boost::multi
