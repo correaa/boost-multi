@@ -4406,17 +4406,17 @@ constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-
 template<class T, dimensionality_type D, typename Ptr = T*>
 using array_ptr [[deprecated]] = detail::array_ptr<T, D, Ptr>;
 
-template<dimensionality_type D, class P>
-constexpr auto make_array_ref(P data, multi::extents_t<D> extensions) {
-	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(data, extensions);
-}
+// template<dimensionality_type D, class P>
+// constexpr auto make_array_ref(P data, multi::extents_t<D> extensions) {
+// 	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(data, extensions);
+// }
 
-template<class P> auto make_array_ref(P data, extents_t<0> exts) { return make_array_ref<0>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<1> exts) { return make_array_ref<1>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<2> exts) { return make_array_ref<2>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<3> exts) { return make_array_ref<3>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<4> exts) { return make_array_ref<4>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<5> exts) { return make_array_ref<5>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<0> exts) { return make_array_ref<0>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<1> exts) { return make_array_ref<1>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<2> exts) { return make_array_ref<2>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<3> exts) { return make_array_ref<3>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<4> exts) { return make_array_ref<4>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<5> exts) { return make_array_ref<5>(data, exts); }
 
 #ifdef __cpp_deduction_guides
 namespace detail {
