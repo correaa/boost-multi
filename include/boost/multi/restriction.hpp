@@ -787,7 +787,7 @@ template<class F, dimensionality_type D>
 BOOST_MULTI_HD constexpr auto operator->*(extents_t<D> const& exts, F fun) {
 	return restriction<D, F>(exts, std::move(fun));
 }
-}
+}  // end namespace experimental
 
 }  // end namespace boost::multi
 
