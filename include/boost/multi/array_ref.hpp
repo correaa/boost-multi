@@ -4493,7 +4493,8 @@ namespace detail {
 
 // adl_uninitialized_copy's priority<3> overload finds it via unqualified lookup/ADL, the same path a user-provided uninitialized_copy override would take;
 // this is what recurses into the N-1 dimension instead of letting std::uninitialized_copy placement-new a subarray proxy
-template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
+// TODO(correaa) put this in adl.hpp with its own priority
+template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*std::declval<In&>()), adl_end(*std::declval<In&>()))>
 constexpr auto uninitialized_copy
 	// require N>1 (this is important because it forces calling placement new on the pointer
 	(In first, In last, multi::detail::array_iterator<T, N, TP> dest) {  // NOLINT(performance-unnecessary-value-param) TODO(correaa) inverstigate why I can't make this In const& last
