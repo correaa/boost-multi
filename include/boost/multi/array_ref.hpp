@@ -4321,7 +4321,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-/// Convenience alias for a D‐dimensional view of a contiguous, pre‐existing memory contant memory buffer
+/// Convenience alias for a D‐dimensional view of a contiguous, pre‐existing memory constant memory buffer
 template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const>>
 using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
