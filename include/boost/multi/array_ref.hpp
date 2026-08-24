@@ -422,8 +422,8 @@ template<typename T, multi::dimensionality_type D, typename ElementPtr, class La
 struct subarray_ptr;
 }  // end namespace detail
 
-template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>>
-using const_subarray_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
+// template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>>
+// using const_subarray_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
 
 namespace detail {
 template<typename T, multi::dimensionality_type D, typename ElementPtr = T*, class Layout = multi::layout_t<D>, bool IsConst = false>
@@ -1882,7 +1882,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<class It>
 	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
 
-	using const_ptr = const_subarray_ptr<T, D, ElementPtr, Layout>;  // TODO(correaa) add const_subarray_ptr
+	using const_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
 
  public:
@@ -3226,7 +3226,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	constexpr auto decay() const -> decay_type { return decay_type{*this}; }
 	constexpr auto copy() const -> decay_type { return decay_type{*this}; }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto decay(const_subarray const& self) -> decay_type { return self.decay(); }
+
+	constexpr auto operator+() const { return decay(); }
 
 	using basic_const_array = const_subarray<
 		T, 1,
@@ -3255,19 +3256,20 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
 
-	constexpr auto operator+() const { return decay(); }
-
 	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this was necessary to return array references from functions
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
- protected:
+ private:
+ 	using const_ptr = detail::subarray_ptr<T, 1, ElementPtr, Layout, true>;
+	using ptr       = detail::subarray_ptr<T, 1, ElementPtr, Layout, false>;
+
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
 	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
 
-	BOOST_MULTI_HD constexpr auto operator&() const& { return const_subarray_ptr<T, 1, ElementPtr, Layout>{this->base_, this->layout()}; }  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
+	BOOST_MULTI_HD constexpr auto operator&() const& { return const_ptr{this->base_, this->layout()}; }  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {
 		BOOST_MULTI_ASSERT(values.size() == static_cast<std::size_t>(this->size()));
