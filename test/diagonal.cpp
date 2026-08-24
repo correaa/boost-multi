@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		multi::array<int, 2> arr({3, 3}, 0);
-		std::fill(multi::diagonal(arr).begin(), multi::diagonal(arr).end(), 1);
+		std::fill(arr.diagonal().begin(), arr.diagonal().end(), 1);
 
 		BOOST_TEST( arr[1][1] == 1 );
 	}
