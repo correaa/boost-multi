@@ -275,13 +275,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 
 		// clang-format off
-	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};  // NOLINT(misc-include-cleaner) bug in clang-tidy 18.1.3
+		std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};  // NOLINT(misc-include-cleaner) bug in clang-tidy 18.1.3
 		// clang-format on
 
 		multi::array_ref<std::string, 1> mar = *&multi::array_ref<std::string, 1>(stdarr);  // *multi::array_ptr<std::string, 1>(&stdarr);
 
 		BOOST_TEST( &mar[1] == &stdarr[1] );
-		BOOST_TEST( sizes(mar.reindexed(1)) == sizes(mar) );
+		BOOST_TEST( mar.reindexed(1).sizes() == mar.sizes() );
 
 		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 		BOOST_TEST( diff == 0 );
