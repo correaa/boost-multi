@@ -774,6 +774,7 @@ auto restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' res
 	return restriction<D, std::decay_t<F>>(ext, std::forward<F>(fun));
 }
 
+/// creates a restriction of `D` dimensions of a function that takes `D` arguments given an extents of Cartesian indices.
 template<class F, dimensionality_type D>
 BOOST_MULTI_HD constexpr auto operator^(F fun, extents_t<D> const& exts) {
 	return restriction<D, F>(exts, std::move(fun));

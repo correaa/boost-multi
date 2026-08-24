@@ -4321,7 +4321,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-/// Convenience alias for a D‐dimensional view of a contiguous, pre‐existing memory contant memory buffer
+/// Convenience alias for a D‐dimensional view of a contiguous, pre‐existing memory constant memory buffer
 template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const>>
 using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
@@ -4406,17 +4406,17 @@ constexpr auto addressof(TT (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-
 template<class T, dimensionality_type D, typename Ptr = T*>
 using array_ptr [[deprecated]] = detail::array_ptr<T, D, Ptr>;
 
-template<dimensionality_type D, class P>
-constexpr auto make_array_ref(P data, multi::extents_t<D> extensions) {
-	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(data, extensions);
-}
+// template<dimensionality_type D, class P>
+// constexpr auto make_array_ref(P data, multi::extents_t<D> extensions) {
+// 	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(data, extensions);
+// }
 
-template<class P> auto make_array_ref(P data, extents_t<0> exts) { return make_array_ref<0>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<1> exts) { return make_array_ref<1>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<2> exts) { return make_array_ref<2>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<3> exts) { return make_array_ref<3>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<4> exts) { return make_array_ref<4>(data, exts); }
-template<class P> auto make_array_ref(P data, extents_t<5> exts) { return make_array_ref<5>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<0> exts) { return make_array_ref<0>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<1> exts) { return make_array_ref<1>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<2> exts) { return make_array_ref<2>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<3> exts) { return make_array_ref<3>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<4> exts) { return make_array_ref<4>(data, exts); }
+// template<class P> auto make_array_ref(P data, extents_t<5> exts) { return make_array_ref<5>(data, exts); }
 
 #ifdef __cpp_deduction_guides
 namespace detail {
@@ -4526,12 +4526,6 @@ template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) 
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-// template<class T, dimensionality_type D, class TPtr = T const*>
-// using array_const_view = array_ref<T, D, TPtr> const&;
-
-// template<class T, dimensionality_type D, class TPtr = T*>
-// using array_view = array_ref<T, D, TPtr>&;
-
 }  // end namespace boost::multi
 
 #ifndef BOOST_MULTI_SERIALIZATION_ARRAY_DEFAULT_VERSION
@@ -4541,16 +4535,16 @@ auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T
 #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::const_subarray<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Element, ::boost::multi::dimensionality_type D, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::array_ref<Element, D, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 
 template<typename Ptr, class... Rest>
-[[maybe_unused]] constexpr bool enable_borrowed_range<::boost::multi::detail::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
+[[maybe_unused]] inline constexpr bool enable_borrowed_range<::boost::multi::detail::elements_range_t<Ptr, Rest...>> = true;  // NOLINT(misc-definitions-in-headers)
 }  // end namespace std::ranges
 #endif
 
