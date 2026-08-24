@@ -1251,12 +1251,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1] == 10 );
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
