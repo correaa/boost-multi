@@ -290,7 +290,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				{10.0, 11.0, 12.0, 13.0, 14.0},
 				{15.0, 16.0, 17.0, 18.0, 19.0},
 			};
-			auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
+			auto&& d2DC = multi::array_ref(
+				test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]},
+				{4, 5}
+			);
 
 			d2DC[1][1] = -66.0;
 
