@@ -526,10 +526,6 @@ struct subarray_ptr  // : to allow mixin CRTP
 		return proxy{operator*()};
 	}
 
-	using raw_pointer = reference*;  ///< Type aliases for Thrust introspection
-
-	BOOST_MULTI_HD constexpr auto get() const { return reinterpret_cast<reference* const&>(*this); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> reference { return *(*this + n); }
 
 	BOOST_MULTI_HD constexpr auto operator<(subarray_ptr const& other) const -> bool { return distance_to(other) > 0; }
