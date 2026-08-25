@@ -4224,11 +4224,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) for C++20
 	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) for C++20
 
-	// // TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
-	// friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr { return self.data_elements(); }
-	// friend constexpr auto data(array_ref& self) -> typename array_ref::element_ptr { return self.data_elements(); }
-	// friend constexpr auto data(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
-
+	/// Associated value type that can store the elements (typically `multi::array<T, D>`)
 	using decay_type = typename array_ref::decay_type;
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
