@@ -4323,10 +4323,10 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 template<class T, dimensionality_type D, class Ptr = typename std::pointer_traits<T*>::template rebind<T const>>
 using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 
-template<class T, dimensionality_type D, class Ptr = T*>
-using array_mref = array_ref<
-	std::decay_t<T>, D,
-	std::move_iterator<Ptr>>;
+// template<class T, dimensionality_type D, class Ptr = T*>
+// using array_mref = array_ref<
+// 	std::decay_t<T>, D,
+// 	std::move_iterator<Ptr>>;
 
 template<class TT, std::size_t N>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
