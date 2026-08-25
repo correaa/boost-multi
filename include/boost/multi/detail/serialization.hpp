@@ -1,6 +1,14 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+// @file detail/serialization.hpp
+// @brief Provides compatibility with Boost.Serialization and Cereal
+//
+// The goal of this detail header is to serve as glue code
+// between the current library and both Boost.Serialization and Cereal
+// and at the same time avoid a hard dependency on these libraries
+// effectively maintaining generic serialization
 
 #ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP
 #define BOOST_MULTI_DETAIL_SERIALIZATION_HPP
