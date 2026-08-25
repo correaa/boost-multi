@@ -4224,7 +4224,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() && { return data_elements(); }      // NOLINT(modernize-use-constraints) for C++20
 	template<class Dummy = void, std::enable_if_t<(D == 1) && sizeof(Dummy*), int> = 0> constexpr auto data() & { return data_elements(); }       // NOLINT(modernize-use-constraints) for C++20
 
-	/// Associated value type that can store the elements (typically `multi::array<T, D>`)
+	/// Associated value type that can store the elements with the same multidimensional structure (typically `multi::array<T, D>`)
 	using decay_type = typename array_ref::decay_type;
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
