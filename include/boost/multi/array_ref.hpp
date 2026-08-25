@@ -4514,14 +4514,14 @@ template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
-/// returns an iterator to the beginning of the given range (including r-value subarrays, this is to be compatible with idioms like `using std::begin; ...begin(A2D[1])...`) 
+/// returns an iterator to the beginning of the given range (including r-value subarrays).
 template<class T> constexpr auto begin(T&& rng) -> decltype(std::forward<T>(rng).begin()) { return std::forward<T>(rng).begin(); }
-/// returns an iterator to the end of the given range (including r-value subarrays, this is for compatible with idioms like `using std::end; ...end(A2D[1])...`) 
+/// returns an iterator to the end of the given range (including r-value subarrays).
 template<class T> constexpr auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }
 
-/// returns an const-iterator to the beginning of the given range (including r-value subarrays, this is to be compatible with idioms like `using std::cbegin; ...cbegin(A2D[1])...`) 
+/// returns an const-iterator to the beginning of the given range (including r-value subarrays). 
 template<class T> constexpr auto cbegin(T&& rng) -> decltype(boost::multi::begin(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::begin(static_cast<T const&>(std::forward<T>(rng))); }
-/// returns an const-iterator to the end of the given range (including r-value subarrays, this is for compatible with idioms like `using std::cend; ...cend(A2D[1])...`) 
+/// returns an const-iterator to the end of the given range (including r-value subarrays).
 template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::end(static_cast<T const&>(std::forward<T>(rng))); }
 
 template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
