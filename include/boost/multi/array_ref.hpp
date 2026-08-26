@@ -4472,11 +4472,11 @@ constexpr auto rotated(T (&array)[N]) noexcept {                                
 		.rotated();
 }
 
-template<class RandomAccessIterator, dimensionality_type D>
-constexpr auto operator/(RandomAccessIterator data, multi::extents_t<D> extensions)
-	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
-	return {data, extensions};
-}
+// template<class RandomAccessIterator, dimensionality_type D>
+// constexpr auto operator/(RandomAccessIterator data, multi::extents_t<D> extensions)
+// 	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
+// 	return {data, extensions};
+// }
 
 namespace detail {
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
