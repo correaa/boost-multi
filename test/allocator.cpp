@@ -611,7 +611,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 #endif
 
 	{
-		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::inplace_array<int, 1> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto ptr = arr.base();
 
@@ -686,7 +686,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	// offset_ptr::operator-= — kills mutants like cxx_sub_assign_to_add_assign
 	// and the implicit -= -> += -n delegation path
 	{
-		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::inplace_array<int, 1, 3> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto ptr = arr.base();
 		ptr += 2;

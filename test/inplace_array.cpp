@@ -23,7 +23,7 @@ auto gun(multi::subarray<int, 2> arr2d) -> int {
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	multi::inplace_array<int[4][4]> a2d = {
+	multi::inplace_array<int, 2, 16> a2d = {
 		{1, 2},
 		{3, 4}
 	};
@@ -34,7 +34,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// UB probe: form a pointer that is *past* one-past-end of a transposed
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-		multi::inplace_array<int[2][2]> b2d = {
+		multi::inplace_array<int, 2, 4> b2d = {
 			{1, 2},
 			{3, 4}
 		};

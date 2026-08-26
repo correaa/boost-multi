@@ -1527,11 +1527,19 @@ struct inplace_array_impl<T***> {
 
 }  // namespace detail
 
-/// Stack-allocated multidimensional array whose maximum size is encoded in the element type `T`
+// /// Stack-allocated multidimensional array whose maximum size is encoded in the element type `T` (no efficient moves, assignments and constructions are all O(N))
+// ///
+// /// @tparam T C array type encoding the shape, e.g. `double[4][4]`
+// template<class T>
+// using inplace_array = typename detail::inplace_array_impl<T>::type;
+
+/// Stack-allocated multidimensional array whose maximum size is encoded in the element type `T` (no efficient moves, assignments and constructions are all O(N))
 ///
-/// @tparam T C array type encoding the shape, e.g. `double[4][4]`
-template<class T>
-using inplace_array = typename detail::inplace_array_impl<T>::type;
+/// @tparam T Element type
+/// @tparam D Dimensionality
+/// @tparam MaxNumElements Maximum number of elements (default 64)
+template<class T, multi::dimensionality_type D, std::size_t MaxNumElements = 64>
+using inplace_array = multi::dynamic_array<T, D, multi::detail::static_allocator<T, MaxNumElements>>;
 
 /// A specialized multidimensional array value with zero dimensions
 ///
