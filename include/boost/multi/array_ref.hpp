@@ -4525,7 +4525,7 @@ template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(sta
 // template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 // template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 
-template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
+// template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 
 // template<class T, std::size_t N, std::size_t M>
 // auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)

@@ -698,8 +698,8 @@ auto main() -> int {
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.0, 9.0, 1.0}
 		};
-		BOOST_TEST( stride(~a) == 1 );
-		BOOST_TEST( stride( a) == 3 );
+		BOOST_TEST( (~a).stride() == 1 );
+		BOOST_TEST( a   .stride() == 3 );
 
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
@@ -750,8 +750,8 @@ auto main() -> int {
 			{1.0, 9.0, 1.0}
 		};
 
-		BOOST_TEST( stride(~a) == 1 );
-		BOOST_TEST( stride( a) == 3 );
+		BOOST_TEST( (~a).stride() == 1 );
+		BOOST_TEST(   a .stride() == 3 );
 
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
@@ -793,8 +793,8 @@ auto main() -> int {
 			{1.0, 9.0, 1.0},
 			{3.0, 3.0, 3.0},
 		};
-		BOOST_TEST( stride(~a) == 1 );
-		BOOST_TEST( stride( a) == 3 );
+		BOOST_TEST( (~a).stride() == 1 );
+		BOOST_TEST(   a .stride() == 3 );
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
 			{ 7.0, 19.0},
@@ -831,8 +831,8 @@ auto main() -> int {
 			{1.0, 9.0, 1.0},
 			{3.0, 3.0, 3.0},
 		};
-		BOOST_TEST( stride(~a) == 1 );
-		BOOST_TEST( stride( a) == 3 );
+		BOOST_TEST( (~a).stride() == 1 );
+		BOOST_TEST(   a .stride() == 3 );
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
 			{ 7.0, 19.0},
@@ -868,8 +868,10 @@ auto main() -> int {
 			{1.0, 9.0, 1.0},
 			{3.0, 3.0, 3.0},
 		};
-		BOOST_TEST( stride(~a) == 1 );
-		BOOST_TEST( stride( a) == 3 );
+
+		BOOST_TEST( (~a).stride() == 1 );
+		BOOST_TEST(   a .stride() == 3 );
+
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0},
 			{7.0},
