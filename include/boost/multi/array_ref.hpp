@@ -1279,11 +1279,11 @@ struct elements_range_t {
 }  // end namespace detail
 
 /// creates a subarray reference of dimension `D` from a pair of begin-end iterators of dimension `D - 1`.
-template<class It>
-[[deprecated("remove")]] BOOST_MULTI_HD constexpr auto ref(It first, It last)
-	-> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr> {
-	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{first, last};
-}
+// template<class It>
+// [[deprecated("remove")]] BOOST_MULTI_HD constexpr auto ref(It first, It last)
+// 	-> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr> {
+// 	return multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>{first, last};
+// }
 
 /// A `D`-dimensional array whose size is bound at construction and never changes.
 ///
