@@ -132,32 +132,6 @@ template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > st
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct dynamic_array;  // TODO(correaa) why the declaration is in this header
 
-namespace detail {
-struct non_copyable_base {
-	non_copyable_base(non_copyable_base const&) = delete;
-	non_copyable_base(non_copyable_base&&) = default;
-
-	non_copyable_base() = default;
-
-	auto operator=(non_copyable_base const&) -> non_copyable_base& = default;
-	auto operator=(non_copyable_base&&) -> non_copyable_base& = default;
-
-	~non_copyable_base() = default;
-};
-
-struct copyable_base {
-	copyable_base(copyable_base const&) = default;
-	copyable_base(copyable_base&&) = default;
-
-	copyable_base() = default;
-
-	auto operator=(copyable_base const&) -> copyable_base& = default;
-	auto operator=(copyable_base&&) -> copyable_base& = default;
-
-	~copyable_base() = default;
-};
-}  // end namespace detail
-
 template<dimensionality_type D>
 struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
