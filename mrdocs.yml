@@ -39,5 +39,5 @@ warn-no-paramdoc: false
 
 verbose: true
 
-addons-supplemental:
-  - doc/mrdocs-addons
+# addons-supplemental:
+#   - doc/mrdocs-addons
