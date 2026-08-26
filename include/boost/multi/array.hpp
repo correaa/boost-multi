@@ -886,8 +886,8 @@ struct                                                                          
 	using const_iterator = multi::detail::array_iterator<T, D, typename dynamic_array::element_ptr, true>;
 
 	/// gets a pointer to a contigous range of size `.num_elements()` containing the data of the array
-	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
-	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }  // cppcheck-suppress duplInheritedMember ; to override
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename dynamic_array::element_ptr { return this->base_; }                                                  // cppcheck-suppress duplInheritedMember ; to override
+	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }                                                               // cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // cppcheck-suppress duplInheritedMember ; to override
 
 	/// Returns the base const-pointer of the array (the base of the layout, generally a pointer to the element with lowest indices)
@@ -1610,10 +1610,10 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 // }  // end namespace detail
 
 template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
-struct array : /*detail::*/unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) array does defined a move constructor but it has requirements on the allocator
+struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions) array does defined a move constructor but it has requirements on the allocator
  private:
 	using dynamic_ = dynamic_array<T, D, Alloc>;
-	using unique_  = /*detail::*/unique_array<T, D, Alloc>;
+	using unique_  = /*detail::*/ unique_array<T, D, Alloc>;
 
 	static_assert(
 		std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, T> || std::is_same_v<typename multi::allocator_traits<Alloc>::value_type, void>,
@@ -1668,8 +1668,8 @@ struct array : /*detail::*/unique_array<T, D, Alloc> {  // NOLINT(cppcoreguideli
 	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17-20 ?
-	using /*detail::*/unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
-	using typename /*detail::*/unique_array<T, D, Alloc>::value_type;
+	using /*detail::*/ unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+	using typename /*detail::*/ unique_array<T, D, Alloc>::value_type;
 
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
@@ -1721,9 +1721,9 @@ struct array : /*detail::*/unique_array<T, D, Alloc> {  // NOLINT(cppcoreguideli
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
-	: /*detail::*/unique_array<T, D, Alloc>{std::move(other), alloc} {}
+	: /*detail::*/ unique_array<T, D, Alloc>{std::move(other), alloc} {}
 
-	BOOST_MULTI_HD constexpr array(array&& other) noexcept : /*detail::*/unique_array<T, D, Alloc>{std::move(other)} {
+	BOOST_MULTI_HD constexpr array(array&& other) noexcept : /*detail::*/ unique_array<T, D, Alloc>{std::move(other)} {
 		assert(this->stride() != 0);
 	}
 

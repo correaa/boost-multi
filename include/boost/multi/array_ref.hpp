@@ -3258,7 +3258,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  private:
- 	using const_ptr = detail::subarray_ptr<T, 1, ElementPtr, Layout, true>;
+	using const_ptr = detail::subarray_ptr<T, 1, ElementPtr, Layout, true>;
 	using ptr       = detail::subarray_ptr<T, 1, ElementPtr, Layout, false>;
 
 	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
@@ -3306,9 +3306,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		return *this;
 	}  // required by https://en.cppreference.com/w/cpp/iterator/indirectly_writable for std::ranges::copy_n
 
-	// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information	
+	/// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information
 	using cursor       = detail::cursor_t<typename const_subarray::element_ptr, 1, typename const_subarray::strides_type>;
-	// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
+	/// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
 	using const_cursor = detail::cursor_t<typename const_subarray::element_const_ptr, 1, typename const_subarray::strides_type>;
 
 	auto diagonal() const = delete;
