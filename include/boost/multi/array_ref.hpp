@@ -4517,7 +4517,7 @@ template<class T> constexpr auto begin(T&& rng) -> decltype(std::forward<T>(rng)
 /// returns an iterator to the end of the given range (including r-value subarrays).
 template<class T> constexpr auto end(T&& rng) -> decltype(std::forward<T>(rng).end()) { return std::forward<T>(rng).end(); }
 
-/// returns an const-iterator to the beginning of the given range (including r-value subarrays). 
+/// returns an const-iterator to the beginning of the given range (including r-value subarrays).
 template<class T> constexpr auto cbegin(T&& rng) -> decltype(boost::multi::begin(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::begin(static_cast<T const&>(std::forward<T>(rng))); }
 /// returns an const-iterator to the end of the given range (including r-value subarrays).
 template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::end(static_cast<T const&>(std::forward<T>(rng))); }
