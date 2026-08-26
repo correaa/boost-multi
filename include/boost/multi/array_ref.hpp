@@ -2178,7 +2178,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
 template<class T>
 BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
 	if constexpr(has_member_move<T>::value) {
