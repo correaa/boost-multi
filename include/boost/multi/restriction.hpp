@@ -134,6 +134,32 @@ struct invoke_result_from_tuple<F, TupleLike<Args...>> {
 }  // end namespace detail
 
 namespace detail {
+struct non_copyable_base {
+	non_copyable_base(non_copyable_base const&) = delete;
+	non_copyable_base(non_copyable_base&&) = default;
+
+	non_copyable_base() = default;
+
+	auto operator=(non_copyable_base const&) -> non_copyable_base& = default;
+	auto operator=(non_copyable_base&&) -> non_copyable_base& = default;
+
+	~non_copyable_base() = default;
+};
+
+struct copyable_base {
+	copyable_base(copyable_base const&) = default;
+	copyable_base(copyable_base&&) = default;
+
+	copyable_base() = default;
+
+	auto operator=(copyable_base const&) -> copyable_base& = default;
+	auto operator=(copyable_base&&) -> copyable_base& = default;
+
+	~copyable_base() = default;
+};
+}  // end namespace detail
+
+namespace detail {
 /// Iterator for a restriction array in the leading dimension
 template<dimensionality_type D, class Proj>
 class restriction_iterator {
