@@ -4326,12 +4326,13 @@ using array_cref = array_ref<std::decay_t<T>, D, Ptr>;
 // 	std::decay_t<T>, D,
 // 	std::move_iterator<Ptr>>;
 
-template<class TT, std::size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
-constexpr auto ref(TT (&arr)[N]) {
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
-	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);
-}
+// /// creates an array reference from a c-array
+// template<class TT, std::size_t N>
+// // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy  // NOSONAR
+// constexpr auto ref(TT (&arr)[N]) {
+// 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+// 	return array_ref<std::remove_all_extents_t<TT[N]>, std::rank_v<TT[N]>>(arr);
+// }
 
 namespace detail {
 template<class T, dimensionality_type D, typename Ptr /*= T* */>
@@ -4473,11 +4474,11 @@ constexpr auto rotated(T (&array)[N]) noexcept {                                
 		.rotated();
 }
 
-// template<class RandomAccessIterator, dimensionality_type D>
-// constexpr auto operator/(RandomAccessIterator data, multi::extents_t<D> extensions)
-// 	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
-// 	return {data, extensions};
-// }
+template<class RandomAccessIterator, dimensionality_type D>
+constexpr auto operator/(RandomAccessIterator data, multi::extents_t<D> extensions)
+	-> detail::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator> {
+	return {data, extensions};
+}
 
 namespace detail {
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -4525,7 +4526,7 @@ template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(sta
 // template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 // template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
 
-// template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
+template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 
 // template<class T, std::size_t N, std::size_t M>
 // auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
