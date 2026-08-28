@@ -614,13 +614,15 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(extents_t const& self) -> typename std::tuple_element_t<Index, base_> {
+	// friend constexpr auto get(extents_t const& self) -> typename std::tuple_element_t<Index, base_> {
+	friend constexpr auto get(extents_t const& self) -> multi::index_extension {  // by value (== tuple_element_t<Index, base_>), spelled without a library-trait alias so the signature has no built-in trait (g++-15 / nvcc)
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	constexpr auto get() const -> std::tuple_element_t<Index, base_> {
+	// constexpr auto get() const -> std::tuple_element_t<Index, base_> {
+	constexpr auto get() const -> multi::index_extension {  // by value (== tuple_element_t<Index, base_>), spelled without a library-trait alias so the signature has no built-in trait (g++-15 / nvcc)
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
