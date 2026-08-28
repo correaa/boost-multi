@@ -55,7 +55,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 		{
 			auto const ext = ret.extent();
 			std::for_each(ext.begin(), ext.end(), [&ret](auto idx) {
-				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
+				std::fill_n(ret[idx].begin(), std::min(idx, (~ret).size()), 0.0);
 			});
 		}
 		break;
@@ -63,7 +63,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 		{
 			auto extt = (~ret).extent();
 			std::for_each(extt.begin(), extt.end(), [&ret](auto jdx) {
-				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
+				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, ret.size()), 0.0);
 			});
 		}
 		break;
@@ -80,32 +80,32 @@ using core::trsm;
 template<class Context, class A2D, class B2D>
 auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element alpha, A2D const& a, B2D&& b) // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) cognitive load 115, BLAS naming
 -> B2D&& {
-	if(a_side == blas::side::left ) {assert(size(~a) >= size( b));}
-	if(a_side == blas::side::right) {assert(size( a) >= size(~b));}
+	if(a_side == blas::side::left ) {assert((~a).size() >= ( b).size());}
+	if(a_side == blas::side::right) {assert(( a).size() >= (~b).size());}
 
 	assert( a.stride() == 1 || (~a).stride() == 1 );
 	assert( b.stride() == 1 || (~b).stride() == 1 );
 
 	// cppcheck-suppress-begin knownConditionTrueFalse ; bug in cppcheck 2.18?
-	if(size(b) != 0) {
+	if(b.size() != 0) {
 		#define CTXT std::forward<Context>(ctxt)
 		if       constexpr(! is_conjugated<A2D>{} && ! is_conjugated<B2D>{}) {
-			if     (  a .stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(-a_fill), 'N', static_cast<char>(a_diag), size( b), size(~b),      alpha ,            a.base() , (~a).stride(),            b.base() , (~b).stride());}
-			else if((~a).stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(+a_fill), 'N', static_cast<char>(a_diag), size(~b), size( b),      alpha ,            a.base() , a   .stride(),            b.base() ,   b .stride());}
-			else if(  a .stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), size(~b), size( b),      alpha ,            a.base() , (~a).stride(),            b.base() ,   b .stride());}
-			else if((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), size( b), size(~b),      alpha ,            a.base() , a   .stride(),            b.base() , (~b).stride());}
+			if     (  a .stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(-a_fill), 'N', static_cast<char>(a_diag), ( b).size(), (~b).size(),      alpha ,            a.base() , (~a).stride(),            b.base() , (~b).stride());}
+			else if((~a).stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(+a_fill), 'N', static_cast<char>(a_diag), (~b).size(), ( b).size(),      alpha ,            a.base() , a   .stride(),            b.base() ,   b .stride());}
+			else if(  a .stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), (~b).size(), ( b).size(),      alpha ,            a.base() , (~a).stride(),            b.base() ,   b .stride());}
+			else if((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), ( b).size(), (~b).size(),      alpha ,            a.base() , a   .stride(),            b.base() , (~b).stride());}
 			else                                    {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		} else if constexpr(   is_conjugated<A2D>{} && ! is_conjugated<B2D>{}) {
-			if     (  a .stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'C', static_cast<char>(a_diag), size(~b), size( b),      alpha , underlying(a.base()), (~a).stride(),            b.base() ,   b .stride());}
-			else if((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), size( b), size(~b),      alpha , underlying(a.base()),   a .stride(),            b.base() , (~b).stride());}
+			if     (  a .stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'C', static_cast<char>(a_diag), (~b).size(), ( b).size(),      alpha , underlying(a.base()), (~a).stride(),            b.base() ,   b .stride());}
+			else if((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), ( b).size(), (~b).size(),      alpha , underlying(a.base()),   a .stride(),            b.base() , (~b).stride());}
 			else                                    {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		} else if constexpr(! is_conjugated<A2D>{} &&    is_conjugated<B2D>{}) {
-			if     ((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), size( b), size(~b), conj(alpha),            a.base() , a.stride(), underlying(b.base()), (~b).stride());}
+			if     ((~a).stride()==1 &&   b .stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'C', static_cast<char>(a_diag), ( b).size(), (~b).size(), conj(alpha),            a.base() , a.stride(), underlying(b.base()), (~b).stride());}
 		//  else if(  a .stride()==1 && (~b).stride()==1) {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 			else                                    {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		} else if constexpr(   is_conjugated<A2D>{} &&     is_conjugated<B2D>{}) {
-			if     (a.stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), size(~b), size( b), conj(alpha), underlying(a.base()), (~a).stride(), underlying(b.base()), stride( b));}
-			else if((~a).stride()==1 && b.stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), size( b), size(~b), conj(alpha), underlying(a.base()),   a .stride(), underlying(bbase(b)), stride(~b));}
+			if     (a.stride()==1 && (~b).stride()==1) {CTXT->trsm(static_cast<char>(swap(a_side)), static_cast<char>(-a_fill), 'T', static_cast<char>(a_diag), (~b).size(), ( b).size(), conj(alpha), underlying(a.base()), (~a).stride(), underlying(b.base()), stride( b));}
+			else if((~a).stride()==1 && b.stride()==1) {CTXT->trsm(static_cast<char>(iden(a_side)), static_cast<char>(+a_fill), 'T', static_cast<char>(a_diag), ( b).size(), (~b).size(), conj(alpha), underlying(a.base()),   a .stride(), underlying(bbase(b)), stride(~b));}
 			else                                    {assert(0 && "not implemented in blas");}  // LCOV_EXCL_LINE
 		}
 		#undef CTXT

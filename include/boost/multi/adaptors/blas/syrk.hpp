@@ -21,7 +21,7 @@ auto syrk(filling c_side, typename A2D::element alpha, A2D const& a, typename A2
 	// cppcheck-suppress knownConditionTrueFalse ; bug in cppcheck 2.18?
 	if(a.stride() == 1) {
 		if(cc.stride() == 1) {
-			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', cc.size(), size(a), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.rotated().size());
+			syrk(flip(c_side) == filling::upper ? 'L' : 'U', 'N', cc.size(), a.size(), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.rotated().size());
 		} else {
 			syrk(c_side == filling::upper ? 'L' : 'U', 'N', cc.size(), a.rotated().size(), &alpha, a.base(), a.rotated().stride(), &beta, cc.base(), cc.stride());
 		}

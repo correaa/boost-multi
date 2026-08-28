@@ -52,17 +52,17 @@ auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // N
 
 template<class Ctxt, class M, class V, class W>
 auto gemv(Ctxt ctxt, typename M::element const& a, M const& m, V const& v, typename M::element const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
-	assert(size( m) == size(w) );
-	assert(size(~m) == size(v) );
+	assert(( m).size() == w.size() );
+	assert((~m).size() == v.size() );
 
-	gemv_n(ctxt, a, begin(m), size(m), begin(v), b, begin(w));
+	gemv_n(ctxt, a, begin(m), m.size(), begin(v), b, begin(w));
 
 	return std::forward<W>(w);
 }
 
 template<class M, class V, class W>
 auto gemv(typename M::element a, M const& m, V const& v, typename M::element b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
-	assert(size( m) == size(w) );
+	assert(m.size() == w.size() );
 
 	if constexpr(is_conjugated<M>{}) {
 		auto ctxtp = blas::default_context_of(underlying(m.base()));
@@ -186,7 +186,7 @@ class gemv_range {
 
 template<class Context, class Scalar, class M, class V>
 auto gemv(Context ctxt, Scalar s, M const& m, V const& v) {  // NOLINT(readability-identifier-length) BLAS naming
-	assert(size(~m) == size(v));
+	assert((~m).size() == v.size());
 	return gemv_range<Scalar, typename M::const_iterator, typename V::const_iterator, typename V::decay_type, Context>(ctxt, s, m.begin(), m.end(), v.begin());
 }
 

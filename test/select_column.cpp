@@ -34,10 +34,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::U;
 
-		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(      multi::_       , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(     *multi::_       , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(      multi::U       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(      multi::_       , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(     *multi::_       , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(      multi::U       , 2) ) == arr.size() );
 
 		BOOST_TEST( size( arr(      multi::ALL     , 2) ) == 4 );
 		BOOST_TEST( size( arr(      multi::ALL < 2 , 2) ) == 2 );
@@ -76,8 +76,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( dimensionality(col2) == 1 );
 
-		BOOST_TEST( col2.size() == size(arr) );
-		BOOST_TEST( size(col2) == size(arr) );
+		BOOST_TEST( col2.size() == arr.size() );
+		BOOST_TEST( size(col2) == arr.size() );
 
 		BOOST_TEST( col2.stride() == 3 );
 		BOOST_TEST( col2.stride() == 3 );  // cppcheck-suppress knownConditionTrueFalse; bug in cppcheck 2.20
@@ -101,22 +101,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		using multi::_;
-		BOOST_TEST( size( arr(       _       , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(      *_       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(       _       , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(      *_       , 2) ) == arr.size() );
 
-		BOOST_TEST( size( arr(      (_)      , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(      (_)      , 2) ) == arr.size() );
 
 		using multi::U;
-		BOOST_TEST( size( arr(       U       , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(       U       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(       U       , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(       U       , 2) ) == arr.size() );
 
-		BOOST_TEST( size( arr(       U       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(       U       , 2) ) == arr.size() );
 
 		using multi::V;
-		BOOST_TEST( size( arr(       V       , 2) ) == size(arr) );
-		BOOST_TEST( size( arr(       V       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(       V       , 2) ) == arr.size() );
+		BOOST_TEST( size( arr(       V       , 2) ) == arr.size() );
 
-		BOOST_TEST( size( arr(       V       , 2) ) == size(arr) );
+		BOOST_TEST( size( arr(       V       , 2) ) == arr.size() );
 
 		BOOST_TEST( size( arr(       _  < 2  , 2) ) == 2 );
 		BOOST_TEST( size( arr(      *_  < 2  , 2) ) == 2 );

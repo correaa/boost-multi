@@ -180,7 +180,7 @@ template<class AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("when argument is read-only")
 auto
 herk(AA alpha, A2D const& a) {                       // NOLINT(readability-identifier-length) BLAS naming
-	return herk(alpha, a, Ret({size(a), size(a)}));  // Ret({size(a), size(a)}));//, get_allocator(a)));
+	return herk(alpha, a, Ret({a.size(), a.size()}));  // Ret({a.size(), a.size()}));//, get_allocator(a)));
 }
 
 template<class T> struct numeric_limits : std::numeric_limits<T> {};
@@ -199,8 +199,8 @@ herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-lengt
 	return herk_range<AA, typename A2D::const_cursor, typename A2D::size_type, Ret>(cs, alpha, a.home(), std::get<0>(a.sizes()), std::get<1>(a.sizes()));
 }
 // ->std::decay_t<
-// decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0.0, get_allocator(a))))> {
-//  return herk(cs, alpha, a, Ret({size(a), size(a)},
+// decltype(  herk(cs, alpha, a, Ret({a.size(), a.size()}, 0.0, get_allocator(a))))> {
+//  return herk(cs, alpha, a, Ret({a.size(), a.size()},
 // #ifdef NDEBUG
 //      numeric_limits<typename Ret::element_type>::quiet_NaN(),
 // #endif

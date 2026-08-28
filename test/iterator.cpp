@@ -155,8 +155,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ {12, 11},  {24, 10}}
 		};
 
+		BOOST_TEST( std::size(arr) == 3 );
+		BOOST_TEST( std::size(arr[0]) == 2 );
+
+		using std::size;
+
 		BOOST_TEST( size(arr) == 3 );
 		BOOST_TEST( size(arr[0]) == 2 );
+
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[0].size() == 2 );
+
 		BOOST_TEST( arr[0][0].size() == 2 );
 		BOOST_TEST( arr[0][0][1] == 11 );
 
