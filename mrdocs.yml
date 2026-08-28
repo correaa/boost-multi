@@ -11,6 +11,7 @@ input:
   - include/boost/multi/restriction.hpp
   - include/boost/multi/elementwise.hpp
   - include/boost/multi/io.hpp
+  - include/boost/detail/extents.hpp
 
 output: doc/modules/reference/pages
 
