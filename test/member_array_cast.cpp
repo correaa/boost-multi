@@ -13,7 +13,6 @@
 #include <cstddef>     // for offsetof, size_t
 #include <functional>  // for mem_fn  // IWYU pragma: keep
 // #include <iterator>    // for size
-#include <iterator>  // for size
 #include <memory>    // for addressof  // IWYU pragma: keep
 #include <string>    // for operator""s, allocator, char_traits
 #include <tuple>     // for tie, operator==, tuple
