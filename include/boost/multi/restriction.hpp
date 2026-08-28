@@ -795,9 +795,10 @@ template<typename Fun> restriction(extents_t<5>, Fun) -> restriction<5, Fun>;
 template<typename Fun> restriction(extents_t<6>, Fun) -> restriction<6, Fun>;
 #endif
 
+/// creates a restriction of D dimensions of a function that takes D arguments given an extents of Cartesian indices.
 template<dimensionality_type D, typename F>
-auto restricted(F&& fun, extents_t<D> const& ext) {  // nvc++ has 'restrict' reserved
-	return restriction<D, std::decay_t<F>>(ext, std::forward<F>(fun));
+auto restricted(F&& fun, extents_t<D> const& exts) -> restriction<D, std::decay_t<F>> {  // nvc++ has 'restrict' reserved
+	return restriction<D, std::decay_t<F>>(exts, std::forward<F>(fun));
 }
 
 /// creates a restriction of `D` dimensions of a function that takes `D` arguments given an extents of Cartesian indices.
