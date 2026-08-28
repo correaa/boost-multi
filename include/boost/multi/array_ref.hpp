@@ -4505,8 +4505,8 @@ constexpr auto uninitialized_copy
 #endif
 }  // end namespace detail
 
-// // this multi::size has lower priority than std::size because of the T&&
-// template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
+/// returns the size of a given range (including r-value subarrays).
+template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
 
 // begin and end for forwarding reference are needed in this namespace
 // to overwrite the behavior of std::begin and std::end
