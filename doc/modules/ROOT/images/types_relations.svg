@@ -265,14 +265,21 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.6692475"
-     inkscape:cx="247.71641"
-     inkscape:cy="330.38839"
+     inkscape:cx="229.4447"
+     inkscape:cy="186.61103"
      inkscape:current-layer="g1" />
   <g
      id="g1"
      inkscape:groupmode="layer"
      inkscape:label="31"
      transform="translate(-45.53759,-39.763858)">
+    <rect
+       style="fill:#ffffff;fill-opacity:0.78701717;stroke-width:0.378667"
+       id="rect1"
+       width="620.63898"
+       height="308.52225"
+       x="41.344082"
+       y="37.367569" />
     <text
        id="text36"
        xml:space="preserve"
