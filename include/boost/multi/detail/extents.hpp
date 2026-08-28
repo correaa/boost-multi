@@ -969,13 +969,15 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto get() const -> std::tuple_element_t<Index, base_> {  // by value, to match the other extents_t<D> specializations (structured bindings)
+	// constexpr auto get() const -> std::tuple_element_t<Index, base_> {  // by value, to match the other extents_t<D> specializations (structured bindings)
+	constexpr auto get() const -> multi::index_extension {  // by value (== tuple_element_t<Index, base_>), spelled without a library-trait alias so the signature has no built-in trait (g++-15 / nvcc)
 		using boost::multi::detail::get;
 		return get<Index>(this->base());
 	}
 
 	template<std::size_t Index, std::enable_if_t<(Index < 1), int> = 0>                       // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(extents_t const& self) -> std::tuple_element_t<Index, base_> {  // by value, to match the other extents_t<D> specializations (structured bindings)
+	// friend constexpr auto get(extents_t const& self) -> std::tuple_element_t<Index, base_> {  // by value, to match the other extents_t<D> specializations (structured bindings)
+	friend constexpr auto get(extents_t const& self) -> multi::index_extension {  // by value (== tuple_element_t<Index, base_>), spelled without a library-trait alias so the signature has no built-in trait (g++-15 / nvcc)
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
