@@ -4506,9 +4506,6 @@ constexpr auto uninitialized_copy
 #endif
 }  // end namespace detail
 
-// this multi::size has lower priority than std::size because of the T&&
-template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
-
 // begin and end for forwarding reference are needed in this namespace
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
@@ -4523,13 +4520,11 @@ template<class T> constexpr auto cbegin(T&& rng) -> decltype(boost::multi::begin
 /// returns an const-iterator to the end of the given range (including r-value subarrays).
 template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::end(static_cast<T const&>(std::forward<T>(rng))); }
 
-// template<class T> constexpr auto                    extent(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
-// template<class T> [[deprecated("use extent")]] auto extension(T const& rng) -> decltype(rng.extent()) { return rng.extent(); }
+// multi::size is here for symmetry with multi::begin, multi::end
+/// returns an iterator to the beginning of the given range (same as `std::size`), in the leading dimension.
+template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
 
 template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
-
-// template<class T, std::size_t N, std::size_t M>
-// auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 }  // end namespace boost::multi
 
