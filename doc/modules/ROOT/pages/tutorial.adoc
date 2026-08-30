@@ -751,11 +751,11 @@ Here we use numerical types to illustrate conversion rules, but the rules apply 
 [source,cpp]
 ----
 // implicit conversions from real to complex is allowed ...
-             double     d = 5.0;                  std::complex<double>     z = d;
-// ... therefore it is also allowed from array of reals to arrays of complex
-multi::array<double, 2> D({10, 10}); multi::array<std::complex<double>, 2> Z = D;
-// implicit (or explicit) conversions from the other way (real to complex) are disallowed (compilation error)
-// multi::array<double, 2> D = Z;  // or D{Z};
+             double     d =         5.0 ;              std::complex<double>     z = d;
+// ... by analogy, implict conversion is also allowed from array of reals to arrays of complex
+multi::array<double, 2> D({10, 10}, 5.0); multi::array<std::complex<double>, 2> Z = D;
+// implicit (or explicit) conversions from the other way (real to complex) are disallowed
+// multi::array<double, 2> D = Z;  // not allowed (compilation error)
 ----
 
 Another case is illustrated by `std::complex<float>` and `std::complex<double>`; 
