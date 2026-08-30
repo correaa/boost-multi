@@ -3968,7 +3968,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: subarray_base(typename subarray_base::layout_type(exts), dat) {}
 
 	/// constructs a D-dimensional view of the contiguous range starting at p and ending at least after the size of the multidimensional array (product of sizes).
-	explicit constexpr array_ref(::boost::multi::extents_t<D> exts, ElementPtr dat) noexcept
+	/*TODO(correaa) [[deprecated("use array_ref(data, extents) constructor")]]*/ explicit constexpr array_ref(::boost::multi::extents_t<D> exts, ElementPtr dat) noexcept
 	: subarray_base{typename array_ref::layout_type(exts), dat} {}
 
 #if defined(BOOST_MULTI_HAS_SPAN) && !defined(__NVCC__)
@@ -4007,7 +4007,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	template<class TT, std::size_t N>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
-	constexpr array_ref(std::array<TT, N>& arr) : array_ref(::boost::multi::extents(arr), ::boost::multi::data_elements(arr)) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) array_ptr is more general than pointer c-array support legacy c-arrays  // NOSONAR
+	constexpr array_ref(std::array<TT, N>& arr)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	: array_ref(::boost::multi::extents(arr), ::boost::multi::data_elements(arr)) {}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
