@@ -795,6 +795,7 @@ The header `multi/io.hpp` can be used to output arrays and subarrays, but it is 
 
 The library works out-of-the-box via the automatic `cppyy` bindings, providing a syntax similar to that of pass:[C++].
 Additionally, the memory layouts are compatible with NumPy which makes it possible to interoperate pass:[C++] and Python code without memory copies.
+The examples in this section were verified with cppyy 3.5.0 and NumPy 2.5.
 
 Here is a complete
 link:https://colab.research.google.com/drive/1moutbEoKiUi00p-n57MWNLuF4qZQoTGM?usp=sharing#scrollTo=T80_fu0660xP[Python session]:
@@ -830,16 +831,19 @@ print(a1d)
 
 [source,python]
 ----
-# We can also create a 2x2 array, or directly from a bidimensional list:
+# We can also create a 2x2 array from its extensions, and assign its elements:
 a2d = multi.array['double', 2](multi.extensions_t[2](2, 2), 0.0)
-a2d = multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])
+a2d[0][0] = 1.0; a2d[0][1] = 2.0
+a2d[1][0] = 3.0; a2d[1][1] = 4.0
 
-# We can retrieve information from an individual element, or from a row
-print(a2d.transposed()[0])
+# We can retrieve information from an individual element
+print(a2d[0][1])
 ----
 > ```
-> { 1.0000000, 3.0000000 }
+> 2.0
 > ```
+
+NOTE: As of cppyy 3.5.0, converting a nested Python list directly into a bidimensional array (e.g. `multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])`) crashes the interpreter; construct from extensions and assign the elements instead.
 
 [source,python]
 ----
@@ -886,11 +890,12 @@ print(type(a2d))
 > ```
 
 The last line reassigns the variable into a Python list, changing its type.
-To reassign the elements without changing the type, use `.assign` instead:
+To replace the contents without rebinding the name, use the pass:[C++] assignment operator, which cppyy exposes as `__assign__`:
 
 [source,python]
 ----
-a2d.assign([[1.0, 2.0],[3.0, 4.0]])
+a2d = multi.array['double', 2]()  # empty 2D array again
+a2d.__assign__(multi.array['double', 2](multi.extensions_t[2](2, 2), 1.0))  # a2d keeps its C++ type
 ----
 
 Pointers from arrays can be extracted normally and reused in other libraries, to access the elements through other Python libraries;
@@ -898,26 +903,31 @@ for example, an array that uses contiguous memory can be converted into a NumPy 
 
 [source,python]
 ----
-npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.sizes().get[0](), a2d.sizes().get[1]())
+import numpy as np
+
+a2d = multi.array['double', 2](multi.extensions_t[2](2, 2), 0.0)
+a2d[0][0] = 1.0; a2d[0][1] = 2.0
+a2d[1][0] = 3.0; a2d[1][1] = 4.0
+
+npa2d = np.frombuffer(a2d.data_elements(), dtype=np.float64, count=a2d.num_elements()).reshape(a2d.shape().to_array())
 print(npa2d)
 ----
 > ```
 > [[1. 2.]
->  [4. 5.]]
+>  [3. 4.]]
 > ```
 
-The other way around,
+The other way around, a Multi reference can be constructed over the NumPy array's memory; modifications through either object are visible in the other:
 
 [source,python]
 ----
+npa2d[1][1] = 999.9
+
 a2d_ref = multi.array_ref['double', 2](multi.extensions_t[2](*npa2d.shape), npa2d)
-print(a2d_ref)
+print(a2d_ref[1])
 ----
 > ```
-> {
->         {1, 2},
->         {4, 999.9},
-> }
+> { 3.0000000, 999.90000 }
 > ```
 
 Note that the elements for these Python objects (`a2d`, `npa2d` and `a2d_ref`) all refer to the same memory; so modifying one also modifies the rest.
