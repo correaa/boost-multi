@@ -702,7 +702,7 @@ clang++-latest tidy iwyu everything:
     - ctest --test-dir build --output-on-failure
     - FMT=$(git ls-files -- 'include/*.hpp' 'test/*.cpp')
     - clang-format-21 -i $FMT
-    - git diff --color=always --exit-code -- $FMT || printf '\n>>> clang-format-21 suggests the changes shown above (informational, does not fail the job).\n>>> Apply locally with:  clang-format-21 -i $(git ls-files -- "include/*.hpp" "test/*.cpp")\n\n'
+    - git diff --color=always --exit-code -- $FMT || printf '\n>>> clang-format-21 suggests the changes shown above (informational, does not fail the job).\n>>> apply them locally with   clang-format-21 -i $(git ls-files -- "include/*.hpp" "test/*.cpp")\n\n'
   needs: ["clang++"]
 
 g++-testing c++20:
