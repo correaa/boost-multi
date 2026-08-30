@@ -6,11 +6,27 @@
 #include <hipfft/hipfft.h>
 #include <hipfft/hipfftXt.h>
 
-using cudaError_t = hipError_t;
+using cudaError_t  = hipError_t;
+using cudaStream_t = hipStream_t;
+using cudaEvent_t  = hipEvent_t;
 
 constexpr static auto const& cudaDeviceReset  = hipDeviceReset;
 constexpr static auto const& cudaDeviceSynchronize  = hipDeviceSynchronize;
 constexpr static auto const& cudaSuccess = hipSuccess;
+
+constexpr static auto const& cudaGetLastError = hipGetLastError;
+constexpr static auto const& cudaFree         = hipFree;
+constexpr static auto const  cudaMallocAsync  = static_cast<hipError_t (*)(void**, std::size_t, hipStream_t)>(hipMallocAsync);  // ROCm >= 5.2; cast selects the C overload
+constexpr static auto const& cudaFreeAsync    = hipFreeAsync;
+
+constexpr static auto const& cudaStreamCreate    = hipStreamCreate;
+constexpr static auto const& cudaStreamDestroy   = hipStreamDestroy;
+constexpr static auto const& cudaStreamWaitEvent = hipStreamWaitEvent;
+
+constexpr static auto const& cudaEventCreateWithFlags = hipEventCreateWithFlags;
+constexpr static auto const& cudaEventDestroy         = hipEventDestroy;
+constexpr static auto const& cudaEventRecord          = hipEventRecord;
+constexpr static auto        cudaEventDisableTiming   = hipEventDisableTiming;  // flag constant, by value
 
 #define cu2hip_fft(TypeleafnamE) using cufft ## TypeleafnamE = hipfft ## TypeleafnamE
     cu2hip_fft(Handle);
@@ -26,6 +42,8 @@ constexpr static auto const& cudaSuccess = hipSuccess;
     cu2hip_fft(SetAutoAllocation);
     cu2hip_fft(SetWorkArea);
     cu2hip_fft(PlanMany);
+    cu2hip_fft(MakePlanMany);
+    cu2hip_fft(SetStream);
 #undef cu2hip_fft
 
 #define CU2HIPFFT_(NamE) constexpr static auto const& CUFFT_ ## NamE  = HIPFFT_ ## NamE
