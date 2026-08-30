@@ -1293,16 +1293,17 @@ inq cuda:
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - export GPUBIND=`pwd`/scripts/gpubind
-    - echo $GPUBIND
-    #- rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich  # native doesn't work in this version of cmake # =75  # =80
     - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
-    - export CUDA_VISIBLE_DEVICES=0,1
+    - export GPUBIND=`pwd`/scripts/gpubind
+    - echo $GPUBIND
+    - NGPU=$(nvidia-smi --list-gpus 2>/dev/null | wc -l); [ "${NGPU:-0}" -ge 1 ] || NGPU=1
+    - GPU=$((NGPU - 1)); [ "$GPU" -le 2 ] || GPU=2
+    - export CUDA_VISIBLE_DEVICES=$GPU; echo "using GPU $GPU of $NGPU"
     - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --parallel 3 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
   needs: ["inq"]  # , "cuda"]
