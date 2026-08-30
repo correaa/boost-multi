@@ -7,6 +7,7 @@
 
 #include "boost/multi/adaptors/blas/filling.hpp"
 #include "boost/multi/adaptors/lapack/core.hpp"
+#include "boost/multi/array.hpp"
 
 #include <cassert>
 
@@ -14,27 +15,30 @@ namespace boost {
 namespace multi {
 namespace lapack {
 
-using blas::filling;
+// no `using blas::filling;` here: it would conflict with lapack::filling (lapack/filling.hpp)
+// when this header is included together with lapack/potrf.hpp; blas::filling is used qualified
 
 using ::core::syev;
 
+// member calls (a.base() etc.) instead of the free functions: free base(...) no longer resolves
+// for arrays (the blas adaptor made the same move), and they also cover subarrays uniformly
 template<class Array2D, class Array1D, class Array1DW>
 auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
-	-> decltype(syev('V', uplo == blas::filling::upper ? 'L' : 'U', size(a), base(a), stride(a), base(w), base(work), size(work), std::declval<int&>()), a({0L, 1L}, {0L, 1L})) {
-	assert(size(work) >= std::max(1L, 3 * size(a) - 1L));
-	assert(size(a) == size(w));
-	assert(stride(w) == 1);
-	assert(stride(work) == 1);
+	-> decltype(syev('V', uplo == blas::filling::upper ? 'L' : 'U', a.size(), a.base(), a.stride(), w.base(), work.base(), work.size(), std::declval<int&>()), a({0L, 1L}, {0L, 1L})) {
+	assert(work.size() >= std::max(1L, 3 * a.size() - 1L));
+	assert(a.size() == w.size());
+	assert(w.stride() == 1);
+	assert(work.stride() == 1);
 
-	if(size(a) == 0)
+	if(a.size() == 0)
 		return std::forward<Array2D>(a)();
 
 	int info = -1;
 
-	if(stride(rotated(a)) == 1) {
-		syev('V', uplo == blas::filling::upper ? 'L' : 'U', size(a), base(a), stride(a), base(w), base(work), size(work), info);
-	} else if(stride(a) == 1) {
-		syev('V', uplo == blas::filling::upper ? 'U' : 'L', size(a), base(a), stride(rotated(a)), base(w), base(work), size(work), info);
+	if(a.rotated().stride() == 1) {
+		syev('V', uplo == blas::filling::upper ? 'L' : 'U', a.size(), a.base(), a.stride(), w.base(), work.base(), work.size(), info);
+	} else if(a.stride() == 1) {
+		syev('V', uplo == blas::filling::upper ? 'U' : 'L', a.size(), a.base(), a.rotated().stride(), w.base(), work.base(), work.size(), info);
 	} else {
 		assert(0);
 	}  // case not contemplated by lapack

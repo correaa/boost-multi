@@ -46,16 +46,16 @@ auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conv
 {
 	using lapack::flip;
 
+	// iterator subtraction instead of unqualified distance(...): for thrust-based arrays
+	// ADL would find both std::distance and thrust::distance, making the call ambiguous
 	if(stride(A) == 1) {
-		auto last = potrf(flip(uplo), A.rotated().begin(), A.rotated().end());
-		using std::distance;
-		return A({0, distance(A.rotated().begin(), last)}, {0, distance(A.rotated().begin(), last)});
+		auto const count = potrf(flip(uplo), A.rotated().begin(), A.rotated().end()) - A.rotated().begin();
+		return A({0, count}, {0, count});
 	}
 
-	auto last = potrf(uplo, begin(A), end(A));
+	auto const count = potrf(uplo, begin(A), end(A)) - begin(A);
 
-	using std::distance;
-	return std::forward<A2D>(A)({0, distance(begin(A), last)});  // , {0, distance(begin(A), last-1)});
+	return std::forward<A2D>(A)({0, count});
 }
 
 template<class A>
