@@ -44,7 +44,21 @@
 #include <hip/hip_runtime.h>  // VkFFT HIP backend (uses HIPRTC)
 #endif
 
+// VkFFT is third-party and header-only, and it is not warning-clean under nvcc's
+// `-Werror all-warnings` (which CMake's CMAKE_COMPILE_WARNING_AS_ERROR enables):
+// e.g. `uint64_t initPageSize = -1;` in vkFFT_UpdateBuffers.h raises diagnostic
+// #68-D ("integer conversion resulted in a change of sign").  Silence VkFFT's own
+// diagnostics across its include only; our code keeps the full warning set.
+#if defined(__NVCC__)
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress integer_sign_change  // #68-D, from `uint64_t initPageSize = -1;`
+#endif
+
 #include <vkFFT.h>  // external VkFFT library (header-only, multi-header since v1.3)
+
+#if defined(__NVCC__)
+#pragma nv_diagnostic pop
+#endif
 
 namespace boost::multi::vkfft {
 
