@@ -2123,6 +2123,9 @@ struct convertible_tuple : Tuple {
 	/*explicit*/ operator array_type() const& noexcept { return to_array(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	/*explicit*/ operator array_type() && noexcept { return to_array(); }      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 
+	// with the inherited homogeneous `operator[]` this enables the sequence protocol in language bindings (e.g. cppyy)
+	constexpr auto size() const noexcept -> std::size_t { return std::tuple_size_v<Tuple>; }  // NOLINT(readability-convert-member-functions-to-static) uniform call syntax
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreturn-stack-address"

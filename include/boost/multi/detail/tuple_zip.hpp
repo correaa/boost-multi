@@ -208,23 +208,34 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
  private:
 	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N - 1>> {};
 
+	// runtime element access, for homogeneous tuples only (e.g. sizes); with `size()` it enables the sequence protocol in language bindings (e.g. cppyy)
+	template<class Index, class TT0 = T0, std::enable_if_t<std::conjunction_v<std::is_same<TT0, Ts>...>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	constexpr auto at_aux_(priority<0> /*prio*/, Index idx) const -> TT0 const& {
+		if constexpr(sizeof...(Ts) != 0) {
+			if(idx != 0) { return this->tail()[idx - 1]; }
+		}
+		return this->head();
+	}
+
 	template<class Index>
-	constexpr auto at_aux_(priority<0> /*prio*/, Index idx) const
+	constexpr auto at_aux_(priority<1> /*prio*/, Index idx) const
 		-> decltype(ht_tuple(std::declval<head_type const&>(), std::declval<tail_type const&>()[idx])) {
 		return ht_tuple(head(), tail()[idx]);
 	}
 
 	template<class Index>
-	constexpr auto at_aux_(priority<1> /*prio*/, Index idx) const
+	constexpr auto at_aux_(priority<2> /*prio*/, Index idx) const
 		-> decltype(ht_tuple(std::declval<head_type const&>()[idx], std::declval<tail_type const&>())) {
 		return ht_tuple(head()[idx], tail());
 	}
 
  public:
+	// no `size()` member here: `multi::has_size` must stay false for `tuple` (e.g. for the tuple-like `dynamic_array` constructor)
+
 	template<class Index>
 	constexpr auto operator[](Index idx) const
-		-> decltype(std::declval<tuple<T0, Ts...> const&>().at_aux_(priority<1>{}, idx)) {
-		return this->at_aux_(priority<1>{}, idx);
+		-> decltype(std::declval<tuple<T0, Ts...> const&>().at_aux_(priority<2>{}, idx)) {
+		return this->at_aux_(priority<2>{}, idx);
 	}
 
 	template<std::size_t N, std::enable_if_t<(N == 0), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
