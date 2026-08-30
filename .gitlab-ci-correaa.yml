@@ -1093,7 +1093,7 @@ rocm:
     - x86_64  # for rocm image
   # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
-    - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y ninja-build git cmake wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
     # - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev rocm-device-libs
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
@@ -1124,7 +1124,7 @@ rocm-release:
     - x86_64  # for rocm image
   # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
   script:
-    - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y git ninja-build cmake wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
     - /opt/rocm/bin/hipconfig --full
     - rocm-smi
@@ -1154,7 +1154,7 @@ rocm-latest:
     - high-bandwidth  # for download rocm extras
     - x86_64  # for rocm image
   script:
-    - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
+    - apt-get install --no-install-recommends -y cmake git ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
     - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version

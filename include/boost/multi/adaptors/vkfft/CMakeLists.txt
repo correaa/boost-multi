@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.22)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -64,6 +64,4 @@ elseif(ENABLE_HIP)
 	target_compile_definitions(multi_vkfft INTERFACE VKFFT_BACKEND=2)
 endif()
 
-if(ENABLE_CUDA OR ENABLE_HIP OR DEFINED CXXCUDA)
-	add_subdirectory(test)
-endif()
+add_subdirectory(test)  # the test CMakeLists returns early when no GPU toolchain is enabled
