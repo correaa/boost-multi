@@ -897,7 +897,7 @@ cuda:
     - nvidia-gpu
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y git cmake ninja-build g++-12 wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - g++-12 --version
     - /usr/local/cuda/bin/nvcc --version
@@ -920,7 +920,7 @@ cuda-11.6.1:
   script:
     - nvidia-smi
     # - export CUDA_VISIBLE_DEVICES=2
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y git cmake ninja-build wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
     - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh
     - sh ./cmake-install.sh --skip-license --prefix=/usr
     - cmake --version
@@ -942,7 +942,7 @@ culang++-16 cuda-11.4.3:
       - develop
   script:
     - nvidia-smi
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y git cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
