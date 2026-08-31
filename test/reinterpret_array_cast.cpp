@@ -91,9 +91,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> A2D{arr.reinterpret_array_cast<double>(3)};
 
 		BOOST_TEST( decltype(A2D)::dimensionality == decltype(arr)::dimensionality + 1 );
-		BOOST_TEST( dimensionality(A2D) == dimensionality(arr) + 1 );
+		BOOST_TEST( A2D.dimensionality == arr.dimensionality + 1 );
+		// BOOST_TEST( dimensionality(A2D) == dimensionality(arr) + 1 );
 
-		BOOST_TEST( size(A2D) == size(arr) );
+		BOOST_TEST( A2D.size() == arr.size() );
 		BOOST_TEST( std::abs( A2D[8][1] - arr[8].y ) < 1E-6);
 		BOOST_TEST( &A2D[8][1] != &arr[8].y );
 
@@ -262,7 +263,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
 			BOOST_TEST( decltype(arr.reinterpret_array_cast<double>(3))::dimensionality == 3 );
-			BOOST_TEST( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
+			BOOST_TEST( arr.reinterpret_array_cast<double>(3).dimensionality == 3 );
+			// BOOST_TEST( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
 
 			BOOST_TEST(  arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
 			BOOST_TEST(  arr.reinterpret_array_cast<double>(3).size() == 4 );

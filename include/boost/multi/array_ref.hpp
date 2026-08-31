@@ -1441,13 +1441,12 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
  public:
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
-#if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || \
-	(defined(__NVCOMPILER) /*&& (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11))*/)
-	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
-#endif
+	// 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
+	// #if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || (defined(__NVCOMPILER) /*&& (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11))*/)
+	// 	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
+	// #endif
 
-	friend constexpr auto dimensionality(const_subarray const& /*self*/) { return D; }
+	//	friend constexpr auto dimensionality(const_subarray const& /*self*/) { return D; }
 
  private:
 	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
@@ -2180,12 +2179,18 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 /// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
 template<class T>
-BOOST_MULTI_HD constexpr auto move(T&& val) noexcept -> decltype(auto) {
+BOOST_MULTI_HD constexpr auto move(T&& ref) noexcept -> decltype(auto) {
 	if constexpr(has_member_move<T>::value) {
-		return std::forward<T>(val).move();
+		return std::forward<T>(ref).move();
 	} else {
-		return std::move(std::forward<T>(val));
+		return std::move(std::forward<T>(ref));
 	}
+}
+
+/// swaps two array references; for subarrays (including r-value subarrays), the elements are swap, for array values this has the same effect as `std::swap`.
+template<class T1, class T2>
+BOOST_MULTI_HD constexpr auto swap(T1&& ref1, T2&& ref2) noexcept -> decltype(std::forward<T1>(ref1).swap(std::forward<T2>(ref2))) {
+	return std::forward<T1>(ref1).swap(std::forward<T2>(ref2));
 }
 
 /// Movable D‐dimensional view into part or all of an array (elements can be moved when dereferenced and assigned)
