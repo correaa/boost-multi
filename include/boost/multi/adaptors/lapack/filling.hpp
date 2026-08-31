@@ -6,6 +6,8 @@
 #define BOOST_MULTI_ADAPTORS_LAPACK_FILLING_HPP
 #pragma once
 
+#include "boost/multi/detail/config/UNREACHABLE.hpp"  // for BOOST_MULTI_UNREACHABLE
+
 // TODO(correaa)  #include "multi/blas/filling.hpp"
 
 namespace boost::multi::lapack {
@@ -20,7 +22,7 @@ inline auto flip(filling side) -> filling {
 	case filling::lower: return filling::upper;
 	case filling::upper: return filling::lower;
 	}
-	__builtin_unreachable();  // LCOV_EXCL_LINE
+	BOOST_MULTI_UNREACHABLE();  // LCOV_EXCL_LINE
 }
 
 inline auto operator-(filling side) -> filling { return flip(side); }

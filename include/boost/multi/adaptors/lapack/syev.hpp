@@ -93,7 +93,7 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w)
 /// @note The result must be used (the input is `const`, so discarding it discards the whole computation)
 template<class Array2D, class Array1D>
 [[nodiscard]]  // "because input array is const, output gives eigenvectors"
-typename Array2D::decay_type syev(blas::filling uplo, Array2D const& a, Array1D&& w) {
+auto syev(blas::filling uplo, Array2D const& a, Array1D&& w) -> typename Array2D::decay_type {
 	auto ret = a.decay();
 	auto l   = syev(uplo, ret, std::forward<Array1D>(w));
 	if(size(l) != size(a))
