@@ -62,7 +62,7 @@ inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::
 
 template<class T>
 inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
-}  // end namespace
+}  // end namespace detail
 
 template<> inline constexpr bool force_element_trivial<std::complex<double>>                      = true;
 namespace detail {
