@@ -47,7 +47,7 @@ inline constexpr bool force_element_trivial_destruction = force_element_trivial<
 /// When specialized to `true`, skip the per-element default-construction loop on array allocation.
 template<class Element>
 inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
-}
+}  // end namespace detail
 
 /// Opt-in specializations for `std::complex<T>`, enabled by defining
 /// `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` at compile time, which treats std::complex

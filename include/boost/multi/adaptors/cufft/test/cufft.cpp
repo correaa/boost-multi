@@ -33,7 +33,7 @@ namespace multi = boost::multi;
 using complex   = thrust::complex<double>;
 
 template<>
-constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
+constexpr bool multi::force_element_trivial<thrust::complex<double>> = true;
 
 template<class T>
 inline

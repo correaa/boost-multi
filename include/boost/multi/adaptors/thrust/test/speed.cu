@@ -14,10 +14,10 @@
 namespace multi = boost::multi;
 
 template<>
-inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
+inline constexpr bool multi::force_element_trivial<thrust::complex<double>> = true;
 
 template<>
-inline constexpr bool multi::force_element_trivial_default_construction<thrust::complex<float>> = true;
+inline constexpr bool multi::force_element_trivial<thrust::complex<float>> = true;
 
 auto universal_memory_supported() -> bool {
 	std::cout << "testing for universal memory supported" << std::endl;
