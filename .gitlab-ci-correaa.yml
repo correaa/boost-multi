@@ -695,11 +695,16 @@ clang++-latest tidy iwyu everything:
     - non-shared
     - docker
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet git clang-format-21 clang clang-tidy cmake ninja-build iwyu libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
+    - apt-get -qq install --no-install-recommends -y --quiet git clang clang-tidy cmake ninja-build iwyu libboost-serialization-dev libblas-dev libfftw3-dev liblapack-dev pkg-config
     - clang++ --version && clang-tidy --version && iwyu --version
     - CXX=clang++ CXXFLAGS="-Weverything" cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_LINK_WHAT_YOU_USE=ON -DCMAKE_EXE_LINKER_FLAGS="-Wl,--as-needed" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
     - cmake --build build || cmake --build build --parallel 1 --verbose
     - ctest --test-dir build --output-on-failure
+    - apt-get -qq install --no-install-recommends -y --quiet wget lsb-release software-properties-common gnupg
+    - wget https://apt.llvm.org/llvm.sh
+    - chmod u+x llvm.sh
+    - ./llvm.sh 21
+    - apt-get -qq install --no-install-recommends -y --quiet clang-format-21
     - FMT=$(git ls-files -- 'include/*.hpp' 'test/*.cpp')
     - clang-format-21 -i $FMT
     - git diff --color=always --exit-code -- $FMT || printf '\n>>> clang-format-21 suggests the changes shown above (informational, does not fail the job).\n>>> apply them locally with   clang-format-21 -i $(git ls-files -- "include/*.hpp" "test/*.cpp")\n\n'
