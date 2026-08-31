@@ -40,7 +40,7 @@ class rando {  // NOLINT(misc-use-internal-linkage)
 	explicit operator int() { return val_++; }
 };
 
-template<> inline constexpr bool boost::multi::force_element_trivial_default_construction<ncnm> = true;
+template<> inline constexpr bool boost::multi::force_element_trivial<ncnm> = true;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{

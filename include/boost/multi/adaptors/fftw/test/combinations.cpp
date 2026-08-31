@@ -21,7 +21,7 @@
 namespace multi = boost::multi;
 
 template<>
-inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+inline constexpr bool multi::force_element_trivial<std::complex<double>> = true;
 
 // NOLINTNEXTLINE(misc-use-internal-linkage)
 class watch : private std::chrono::high_resolution_clock {  // NOSONAR(cpp:S4963) this class will report timing on destruction

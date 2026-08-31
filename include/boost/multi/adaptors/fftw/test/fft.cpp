@@ -23,7 +23,7 @@ using complex   = std::complex<double>;
 #pragma clang diagnostic ignored "-Wmissing-variable-declarations"
 #endif
 template<>
-constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
+constexpr bool multi::force_element_trivial<std::complex<double>> = true;
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

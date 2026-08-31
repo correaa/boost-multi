@@ -376,7 +376,7 @@ class adl_uninitialized_copy_t {
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L) && !defined(__CUDA_ARCH__))
 		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
 		if(
-			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
+			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::detail::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::copy(std::move(first), std::move(last), std::move(d_first));
 		} else  // NOLINT(llvm-else-after-return,readability-else-after-return,-warnings-as-errors)
@@ -389,7 +389,7 @@ class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
 	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
 	{
-		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
+		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::detail::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy(first, last, d_first);
 		} else {
 			return ::thrust::uninitialized_copy(first, last, d_first);
@@ -421,7 +421,7 @@ class adl_uninitialized_copy_n_t {
 		>
 	>
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
-		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
+		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::detail::force_element_trivial_default_construction<ValueType>) {
 			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
 		} else {
 			return ::thrust::uninitialized_copy_n(first, count, d_first);
