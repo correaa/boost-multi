@@ -2181,7 +2181,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 template<class T>
 BOOST_MULTI_HD constexpr auto move(T&& ref) noexcept -> decltype(auto) {
 	if constexpr(has_member_move<T>::value) {
-		return std::forward<T>(ref).move();
+		return std::forward<T>(ref).move();  // TODO(correaa) use this for SFINAE
 	} else {
 		return std::move(std::forward<T>(ref));
 	}
