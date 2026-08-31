@@ -124,6 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 
 		std::cout << "A2D = " << arr << "; no more, no less\n";
+		std::cout << "A2D elements = " << arr.elements() << "; no more, no less\n";
 	}
 	{
 		// clang-format off

@@ -64,6 +64,20 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 
 }  // namespace detail
 
+/// writes an array or subarray reference to and output stream in an unspecified multiline format.
+///
+/// Individual elements must support writting to an output stream too.
+/// For example, every dimension is enclosed in brackets and sibling elements are separated.
+/// For example a 2D 2x3 arrays is written as
+/// {
+///   {1, 2, 3},
+///   {4, 5, 6},
+/// }
+/// To write elements in a single line use `os << arr.elements();`.
+///
+/// @param os  The output stream to write to.
+/// @param arr The array (of any dimensionality) to format.
+/// @returns A reference to `os`, to allow chaining of stream insertions.
 template<class Array, std::enable_if_t<Array::dimensionality >= 0, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 auto operator<<(std::ostream& os, Array const& arr) -> std::ostream& {
 	multi::detail::print(os, arr, "{", ",", "}", "\t", 0);

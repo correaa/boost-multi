@@ -743,8 +743,8 @@ As with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundament
 [#interop_fmt]
 == Formatting (pass:[{fmt}] Pretty Printing)
 
-The library doesn't have a "pretty" printing facility to display arrays.
-Although it is not ideal, arrays can be printed and formatted by looping over elements and dimension, as shown in other examples (using standard streams).
+The library doesn't have a "pretty" printing facility to display arrays, beyond basic debug-type output.
+Although it is not ideal, for more control, arrays can be printed and formatted by looping over elements and dimension, as shown in other examples (using standard streams).
 
 Fortunately, the library automatically works with the external library link:https://fmt.dev/latest/index.html[pass:[{fmt}]], both for arrays and subarrays.
 The fmt library is not a dependency of the Multi library;
