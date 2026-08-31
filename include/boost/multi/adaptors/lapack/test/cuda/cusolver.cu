@@ -92,7 +92,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		device_array<double, 2> A = A_host;
 		device_array<double, 1> W(A.size());  // NOLINT(readability-identifier-length) conventional lapack name
 
-		multi::lapack::syev(multi::blas::filling::upper, A, W);
+		auto const& res = multi::lapack::syev(multi::blas::filling::upper, A, W);
+		BOOST_TEST( res.size() == A.size() );  // the returned view spans the block that converged
 
 		multi::array<double, 2> const A_back = A;
 		multi::array<double, 1> const W_back = W;
