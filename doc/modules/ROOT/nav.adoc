@@ -37,7 +37,7 @@
 // ** xref:reference.adoc#ref_static_array[Static Arrays]
 ** xref:reference.adoc#ref_dynamic_array[Dynamic Arrays]
 ** xref:reference.adoc#ref_array[Arrays]
-** xref:reference.adoc#ref_restriction[Restriction]
+** xref:reference.adoc#ref_restriction[Restrictions]
 ** xref:reference.adoc#ref_iterators[Iterators]
 ** xref:reference.adoc#ref_cursors[Cursors]
 * xref:reference:index.adoc[API Reference (auto-generated)]

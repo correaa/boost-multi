@@ -796,7 +796,7 @@ template<typename Fun> restriction(extents_t<6>, Fun) -> restriction<6, Fun>;
 #endif
 
 /// creates a restriction of D dimensions of a function that takes D arguments given an extents of Cartesian indices.
-template<dimensionality_type D, typename F>    // nvc++ has 'restrict' reserved
+template<dimensionality_type D, typename F>  // nvc++ has 'restrict' reserved
 auto restricted(F&& fun, extents_t<D> const& exts) -> restriction<D, std::decay_t<F>> { return {exts, std::forward<F>(fun)}; }
 
 /// creates a restriction of `D` dimensions of a function that takes `D` arguments given an extents of Cartesian indices.
