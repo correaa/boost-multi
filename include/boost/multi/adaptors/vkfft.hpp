@@ -52,6 +52,8 @@
 #if defined(__NVCC__)
 #pragma nv_diagnostic push
 #pragma nv_diag_suppress integer_sign_change  // #68-D, from `uint64_t initPageSize = -1;`
+#pragma nv_diag_suppress set_but_not_used     // #550-D, e.g. `temp_int` in vkFFT_CodeGen/.../vkFFT_Zeropad.h
+#pragma nv_diag_suppress declared_but_not_referenced  // #177-D, e.g. `raderFFTKernel` in vkFFT_CodeGen/.../vkFFT_Constants.h
 #endif
 
 #include <vkFFT.h>  // external VkFFT library (header-only, multi-header since v1.3)
