@@ -28,13 +28,13 @@ namespace multi = boost::multi;
 
 #ifdef __NVCC__
 template<>
-inline constexpr bool multi::force_element_trivial<std::complex<double>> = true;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<double>> = true;
 template<>
-inline constexpr bool multi::force_element_trivial<std::complex<float>> = true;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<float>> = true;
 #else
 // vvv nvcc (12.1?) doesn't tolerate this kind of customization: "error: expected initializer before ‘<’"
 template<class T>
-inline constexpr bool multi::force_element_trivial<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
+inline constexpr bool multi::force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 #endif
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::pmr::array<std::complex<double>, 2> Aarr({2, 2}, &pool);
 
-		if constexpr(multi::force_element_trivial<std::complex<double>>) {
+		if constexpr(multi::force_element_trivial_default_construction<std::complex<double>>) {
 			BOOST_TEST( std::abs( buffer[0] - 4.0 ) < 1E-6 );
 			BOOST_TEST( std::abs( buffer[1] - 5.0 ) < 1E-6 );
 
