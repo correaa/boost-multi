@@ -376,7 +376,7 @@ class adl_uninitialized_copy_t {
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L) && !defined(__CUDA_ARCH__))
 		using ValueType = typename std::iterator_traits<FwdIt>::value_type;
 		if(
-			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::detail::force_element_trivial_default_construction<ValueType>)
+			std::is_constant_evaluated() && (std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>)
 		) {
 			return std::copy(std::move(first), std::move(last), std::move(d_first));
 		} else  // NOLINT(llvm-else-after-return,readability-else-after-return,-warnings-as-errors)
