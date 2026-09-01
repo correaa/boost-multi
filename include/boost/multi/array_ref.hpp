@@ -4458,22 +4458,23 @@ template<class T> const_subarray(std::initializer_list<T>) -> const_subarray<T, 
 template<class T> const_subarray(std::initializer_list<std::initializer_list<T>>) -> const_subarray<T, 2>;
 #endif
 
-// TODO(correaa) move to utility
-template<class T, std::size_t N>
-constexpr auto rotated(T const (&array)[N]) noexcept {                                                 // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-			   base(array), extensions(array)
-	)
-		.rotated();
-}
+// // TODO(correaa) move to utility
+// /// yield a rotated-index view
+// template<class T, std::size_t N>
+// constexpr auto rotated(T const (&array)[N]) noexcept {                                                 // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+// 	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+// 			   base(array), extensions(array)
+// 	)
+// 		.rotated();
+// }
 
-template<class T, std::size_t N>
-constexpr auto rotated(T (&array)[N]) noexcept {                                                       // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-			   base(array), extensions(array)
-	)
-		.rotated();
-}
+// template<class T, std::size_t N>
+// constexpr auto rotated(T (&array)[N]) noexcept {                                                       // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+// 	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+// 			   base(array), extensions(array)
+// 	)
+// 		.rotated();
+// }
 
 // template<class RandomAccessIterator, dimensionality_type D>
 // constexpr auto operator/(RandomAccessIterator data, multi::extents_t<D> extensions)
