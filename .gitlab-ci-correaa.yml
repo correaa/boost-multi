@@ -1245,6 +1245,7 @@ inq:
     - ctest --output-on-failure --timeout 3600
     - INQ_EXEC_ENV="timeout --kill-after=30s 3540 mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 3600
   needs: ["g++"]
+  timeout: 3 hours
 
 inq-debug:
   stage: test
