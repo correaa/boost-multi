@@ -26,18 +26,18 @@ namespace multi = boost::multi;
 
 #ifdef __NVCC__
 template<>
-inline constexpr bool ::boost::multi::force_element_trivial<::std::complex<double>> = true;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
 template<>
-inline constexpr bool ::boost::multi::force_element_trivial<::std::complex<float>> = true;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
 template<>
-inline constexpr bool ::boost::multi::force_element_trivial<::thrust::complex<double>> = true;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
 template<>
-inline constexpr bool ::boost::multi::force_element_trivial<::thrust::complex<float>> = true;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
 #else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
 template<class T>
-inline constexpr bool ::boost::multi::force_element_trivial<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
 template<class T>
-inline constexpr bool ::boost::multi::force_element_trivial<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
+inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
 #endif
 
 namespace {
