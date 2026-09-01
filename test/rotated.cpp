@@ -144,15 +144,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<2>(arr.sizes()) == 5 );
 
 		auto&& RA = arr.rotated();
-		BOOST_TEST(( sizes(RA) == decltype(RA.sizes()){4, 5, 3} ));
+		BOOST_TEST(( RA.sizes() == decltype(RA.sizes()){4, 5, 3} ));
 		BOOST_TEST(  &arr[0][1][2] == &RA[1][2][0] );
 
 		auto&& UA = arr.unrotated();
-		BOOST_TEST(( sizes(UA) == decltype(sizes(UA)){5, 3, 4} ));
+		BOOST_TEST(( UA.sizes() == decltype(UA.sizes()){5, 3, 4} ));
 		BOOST_TEST( &arr[0][1][2] == &UA[2][0][1] );
 
 		auto&& RRA = RA.rotated();
-		BOOST_TEST(( sizes(RRA) == decltype(sizes(RRA)){5, 3, 4} ));
+		BOOST_TEST(( RRA.sizes() == decltype(RRA.sizes()){5, 3, 4} ));
 		BOOST_TEST( &arr[0][1][2] == &RRA[2][0][1] );
 	}
 
@@ -172,7 +172,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
 		auto&& unrotd2 = original.unrotated().unrotated();
-		BOOST_TEST(( sizes(unrotd2) == decltype(sizes(unrotd2)){7, 4, 14, 14} ));
+		BOOST_TEST(( unrotd2.sizes() == decltype(unrotd2.sizes()){7, 4, 14, 14} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 	}
 
@@ -181,11 +181,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 4> original({14, 14, 7, 4});
 
 		auto&& unrotd = (original.unrotated());
-		BOOST_TEST(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
+		BOOST_TEST(( unrotd.sizes() == decltype(unrotd.sizes()){4, 14, 14, 7} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
 		auto&& unrotd2 = (original.unrotated().unrotated());
-		BOOST_TEST(( sizes(unrotd2) == decltype(sizes(unrotd2)){7, 4, 14, 14} ));
+		BOOST_TEST(( unrotd2.sizes() == decltype(unrotd2.sizes()){7, 4, 14, 14} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 	}
 

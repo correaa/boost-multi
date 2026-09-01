@@ -281,7 +281,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<std::string, 1> mar = *&multi::array_ref<std::string, 1>(stdarr);  // *multi::array_ptr<std::string, 1>(&stdarr);
 
 		BOOST_TEST( &mar[1] == &stdarr[1] );
-		BOOST_TEST( sizes(mar.reindexed(1)) == sizes(mar) );
+		BOOST_TEST( mar.reindexed(1).sizes() == mar.sizes() );
 
 		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 		BOOST_TEST( diff == 0 );
@@ -365,7 +365,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-		// BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
+		// BOOST_TEST(( mar.stenciled({2, 4}).sizes() == decltype(mar.stenciled({2, 4}).sizes()){2, 5} ));
 		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 		// BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
@@ -1264,7 +1264,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1] == 10 );
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
