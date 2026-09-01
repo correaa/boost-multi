@@ -111,7 +111,7 @@ class identity_bind {
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
-}
+}  // end namespace detail
 
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
