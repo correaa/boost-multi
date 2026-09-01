@@ -34,6 +34,9 @@ if(NOT VkFFT_FOUND)
 endif()
 target_link_libraries(multi_vkfft INTERFACE VkFFT::VkFFT)
 
+# set_property(TARGET multi_vkfft APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+# 	$<TARGET_PROPERTY:VkFFT::VkFFT,INTERFACE_INCLUDE_DIRECTORIES>)
+
 # Backend selection.  VKFFT_BACKEND is a compile-time choice; set it (and pull the
 # runtime compiler) from whichever GPU toolchain is enabled.  The header also
 # auto-detects from __CUDACC__ / __HIPCC__, so a plain nvcc/hipcc build still works
