@@ -86,7 +86,7 @@ struct array_allocator {
 	template<typename It, typename Size>
 	constexpr auto uninitialized_copy_n(It first, Size n, pointer_ d_first) {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::detail::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, n);
 		}
 		return adl_copy_n(first, n, d_first);
@@ -98,7 +98,7 @@ struct array_allocator {
 	template<typename It>
 	auto uninitialized_move_n(It first, size_type_ count, pointer_ d_first) {  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::detail::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename std::pointer_traits<pointer_>::element_type> && !multi::force_element_trivial_default_construction<typename std::pointer_traits<pointer_>::element_type>) {
 			adl_alloc_uninitialized_default_construct_n(alloc_, d_first, count);
 		}
 		return adl_copy_n(std::make_move_iterator(first), count, d_first);
@@ -203,7 +203,7 @@ struct                                                                          
 
 	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void uninitialized_default_construct() {
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 		}
 	}
@@ -280,7 +280,7 @@ struct                                                                          
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), ref_::data_elements(), ref_::num_elements());
 		}
 		adl_copy_n(first, last - first, ref_::begin());
@@ -298,7 +298,7 @@ struct                                                                          
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), ref_::data_elements(), ref_::num_elements());
 		}
 		adl_copy_n(first, last - first, ref_::begin());
@@ -409,7 +409,7 @@ struct                                                                          
 	  ) {
 		try {
 #if defined(__clang__) && defined(__CUDACC__)
-			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 				adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
 			}
 			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
@@ -492,7 +492,7 @@ struct                                                                          
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                            // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                        // fill constructor
 	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(extension * value.extents()).num_elements())), extension * value.extents()) {  // NOLINT(readability-redundant-typename)
-		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>);                                                 // TODO(correaa) not implemented for non-trivial types,
+		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>);                                                 // TODO(correaa) not implemented for non-trivial types,
 		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                          // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
 	}
 
@@ -524,22 +524,22 @@ struct                                                                          
 	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extents_type{sizes...}; }, exts)) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
-			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& alloc)
 	: dynamic_array(extensions, alloc) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
-			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
 	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unusued*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]*/;
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                            // NOLINT(modernize-use-constraints) for C++20
-			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
 	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& /*alloc*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****"]]*/;
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                          // NOLINT(modernize-use-constraints) for C++20
-			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unusued*/) : dynamic_array(extensions) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref_::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename dynamic_array::iterator>()))>
@@ -1160,14 +1160,14 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	using ref_         = array_ref<T, 0, typename multi::allocator_traits<typename multi::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;  // TODO(correaa) make private
 
 	auto uninitialized_value_construct() {
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			return adl_alloc_uninitialized_value_construct_n(dynamic_array::alloc(), this->base_, this->num_elements());
 		}
 	}
 
 	template<typename It> auto uninitialized_copy(It first) {
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(this->alloc(), this->data_elements(), this->num_elements());
 		}
 		return adl_copy(first, this->num_elements(), this->data_elements());
@@ -1220,7 +1220,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		assert(other.num_elements() <= 1);
 		if(other.num_elements()) {
 #if defined(__clang__) && defined(__CUDACC__)
-			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+			if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 				adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
 			}
 			adl_copy(other.base(), other.base() + other.num_elements(), this->base());
@@ -1234,7 +1234,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	explicit dynamic_array(multi::dynamic_array<TT, 0, Args...> const& other, allocator_type const& alloc)  // TODO(correaa) : call other constructor (above)
 	: array_alloc{alloc}, ref_(dynamic_array::allocate(static_cast<typename std::allocator_traits<Alloc>::size_type>(other.num_elements())), extents(other)) {
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
@@ -1281,7 +1281,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	/*implict*/ dynamic_array(Singleton const& single)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) this is used by the
 	: ref_(dynamic_array::allocate(1), typename dynamic_array::extents_type{}) {
 #if defined(__clang__) && defined(__CUDACC__)
-		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::detail::force_element_trivial_default_construction<typename dynamic_array::element>) {
+		if constexpr(!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>) {
 			adl_alloc_uninitialized_default_construct_n(dynamic_array::alloc(), this->data_elements(), this->num_elements());
 		}
 		adl_copy_n(&single, typename multi::allocator_traits<Alloc>::size_type{1}, this->data_elements());
@@ -1925,7 +1925,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 				);
 			}
 
-			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::detail::force_element_trivial_default_construction<typename array::element>)) {
+			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 				static_assert(std::is_nothrow_default_constructible_v<typename array::element>, "element type's default constructor must be noexcept; use reextent(exts, value) to fill with a value instead");  // TODO(correaa) reconsider this (reextent cannot be no except anyway, but exceptions also have a cost)
 				adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 			}
@@ -1949,7 +1949,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 			),
 			extensions
 		);
-		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::detail::force_element_trivial_default_construction<typename array::element>)) {
+		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 			try {
 				adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 			} catch(...) {  // basic guarantee: value_construct_n already rolled back its elements, release the raw buffer
@@ -1963,7 +1963,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 		try {
 			tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?
 		} catch(...) {                                      // basic guarantee: all of tmp's elements are constructed here, destroy them and release the buffer
-			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::detail::force_element_trivial_default_construction<typename array::element>)) {
+			if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 				adl_alloc_destroy_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 			}
 			multi::allocator_traits<typename array::allocator_type>::deallocate(this->alloc(), tmp.base(), static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()));

@@ -39,41 +39,38 @@ namespace boost::multi {
 template<class Element>
 inline constexpr bool force_element_trivial = false;
 
+/// When specialized to `true`, skip the per-element default-construction loop on array allocation.
+template<class Element>
+inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
+
 namespace detail {
 /// When specialized to `true`, skip the per-element destructor loop on array teardown.
 template<class Element>
 inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
-
-/// When specialized to `true`, skip the per-element default-construction loop on array allocation.
-template<class Element>
-inline constexpr bool force_element_trivial_default_construction = force_element_trivial<Element>;
 }  // end namespace detail
 
 /// Opt-in specializations for `std::complex<T>`, enabled by defining
 /// `_BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX` at compile time, which treats std::complex
 /// types as trivially constructible/destructible.
 #ifdef _BOOST_MULTI_FORCE_TRIVIAL_STD_COMPLEX
-template<class T>
-inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;  // std::is_trivial_v deprecated in C++26
+template<class T> inline constexpr bool force_element_trivial<std::complex<T>> = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;  // std::is_trivial_v deprecated in C++26
+template<class T> inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
 
 namespace detail {
-template<class T>
-inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
-
-template<class T>
-inline constexpr bool force_element_trivial_default_construction<std::complex<T>> = std::is_trivially_destructible_v<T>;
+template<class T> inline constexpr bool force_element_trivial_destruction<std::complex<T>> = std::is_trivially_default_constructible_v<T>;
 }  // end namespace detail
 
 template<> inline constexpr bool force_element_trivial<std::complex<double>>                      = true;
-namespace detail {
 template<> inline constexpr bool force_element_trivial_default_construction<std::complex<double>> = true;
+
+namespace detail {
 template<> inline constexpr bool force_element_trivial_destruction<std::complex<double>>          = true;
 }  // end namespace detail
 
-template<> inline constexpr bool force_element_trivial<std::complex<float>>                      = true;
+template<> inline constexpr bool force_element_trivial<std::complex<float>>                       = true;
+template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float>> = true;
 
 namespace detail {
-template<> inline constexpr bool force_element_trivial_default_construction<std::complex<float>> = true;
 template<> inline constexpr bool force_element_trivial_destruction<std::complex<float>>          = true;
 }  // end namespace detail
 #endif
