@@ -1246,17 +1246,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( deduce_element_sub(asub) == 3 );
 	}
 #endif
-
-	// BOOST_AUTO_TEST_CASE(function_passing_4) {
-	//  multi::array<int, 2> arr({3, 3}, 10);
-
-	//  BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
-	//  BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
-
-	//  BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
-	//  BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
-	// }
-
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor)
 	{
 		multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
@@ -1276,11 +1265,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
 		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
@@ -1290,15 +1274,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({3, 4}, 10);
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
-		BOOST_TEST( get<1>(sizes(arr())) ==  4 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	return boost::report_errors();
