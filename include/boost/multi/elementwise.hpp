@@ -92,8 +92,9 @@ struct apply_bind_t<F, A, B> {
 	}
 };
 
+/// applies a function of n-argument to n array expressions, elementwise, extents must match
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
-constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {
+constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {  // TODO(correaa) change name, elementwise::transform, elementwise::transformed?
 	auto const xs = arr.extents();  // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extents()) && ...));
 	return multi::restricted(apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
