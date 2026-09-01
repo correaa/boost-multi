@@ -186,7 +186,7 @@ struct default_zero_f {
 	template<class TT = T>
 	constexpr auto operator()(TT const& /*unused*/) const { return TT{}; }
 };
-}
+}  // end namespace detail
 
 template<class T, class ZF>
 constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
