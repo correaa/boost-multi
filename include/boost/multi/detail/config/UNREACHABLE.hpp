@@ -20,6 +20,8 @@
 #  define BOOST_MULTI_UNREACHABLE() ::std::unreachable()
 #elif defined(__GNUC__) || defined(__clang__)  // includes nvcc/clang-cuda host paths
 #  define BOOST_MULTI_UNREACHABLE() __builtin_unreachable()
+#elif defined(__EDG__)  // e.g. nvcc's front end in MSVC-host mode
+#  define BOOST_MULTI_UNREACHABLE() __builtin_unreachable()
 #elif defined(_MSC_VER)
 #  define BOOST_MULTI_UNREACHABLE() __assume(false)
 #else
