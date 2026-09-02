@@ -17,6 +17,15 @@ enum class filling : char {
 	upper = 'L',
 };
 
+#ifdef __NVCC__  // in place of global -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function  // nvcc EDG front end doesn't see BOOST_MULTI_UNREACHABLE as noreturn in MSVC-host mode
+#endif
+#ifdef __NVCOMPILER
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+
 inline auto flip(filling side) -> filling {
 	switch(side) {
 	case filling::lower: return filling::upper;
@@ -24,6 +33,13 @@ inline auto flip(filling side) -> filling {
 	}
 	BOOST_MULTI_UNREACHABLE();  // LCOV_EXCL_LINE
 }
+
+#ifdef __NVCOMPILER
+#pragma diagnostic pop
+#endif
+#ifdef __NVCC__
+#pragma nv_diagnostic pop
+#endif
 
 inline auto operator-(filling side) -> filling { return flip(side); }
 inline auto operator+(filling side) -> filling { return side; }
