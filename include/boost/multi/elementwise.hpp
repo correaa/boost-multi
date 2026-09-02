@@ -180,20 +180,22 @@ constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
+namespace detail {
 template<class T = void>
 struct default_zero_f {
 	template<class TT = T>
-	auto operator()(TT const& /*unused*/) const { return TT{}; }
+	constexpr auto operator()(TT const& /*unused*/) const { return TT{}; }
 };
+}  // end namespace detail
 
 template<class T, class ZF>
 constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
 	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extents_t<2>({size, size}));
 }
 
-template<class T, class ZF = default_zero_f<T>>
+template<class T, class ZF = detail::default_zero_f<T>>
 constexpr auto eye(multi::ssize_t size, T unit) {
-	return eye(size, unit, default_zero_f<T>{});
+	return eye(size, unit, detail::default_zero_f<T>{});
 }
 
 template<class T = int>
@@ -207,7 +209,7 @@ constexpr auto zeros(Array&& arr, DefaultZero df) {
 	return restricted([arr_ = std::forward<Array>(arr), df](auto... ijk) { return df(arr_(ijk...)); }, exts);
 }
 
-template<typename Element = int, class Array, class DefaultZero = default_zero_f<Element>>
+template<typename Element = int, class Array, class DefaultZero = detail::default_zero_f<Element>>
 constexpr auto zeros(Array&& arr) {
 	return zeros(std::forward<Array>(arr), DefaultZero{});
 }
