@@ -210,7 +210,7 @@ struct                                                                          
 
 	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	constexpr void destroy() {
-		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {
+		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::detail::force_element_trivial_destruction<typename dynamic_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
@@ -1182,7 +1182,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	}
 
 	constexpr void destroy() {
-		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::force_element_trivial_destruction<typename dynamic_array::element>)) {
+		if constexpr(!(std::is_trivially_destructible_v<typename dynamic_array::element> || multi::detail::force_element_trivial_destruction<typename dynamic_array::element>)) {
 			array_alloc::destroy_n(this->data_elements(), this->num_elements());
 		}
 	}
