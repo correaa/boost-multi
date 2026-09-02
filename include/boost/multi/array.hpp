@@ -1602,6 +1602,9 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	auto operator=(unique_array const&) -> unique_array& = default;
 	auto operator=(unique_array&&) -> unique_array&      = default;
 
+	using dynamic_::decay;
+	constexpr auto decay() && -> typename dynamic_::decay_type { return typename dynamic_::decay_type{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to override
+
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif

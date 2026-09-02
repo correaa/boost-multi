@@ -4231,7 +4231,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	using decay_type = typename array_ref::decay_type;
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
-	constexpr auto decay() const& -> decay_type const& { return static_cast<decay_type const&>(*this); }  // cppcheck-suppress duplInheritedMember ; to override
+	constexpr auto decay() const& -> decay_type { return decay_type{*this}; }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	template<class TTN, std::size_t DD = 0>
