@@ -1476,7 +1476,7 @@ pages-presentation:
     - docker
     - x86_64  #to avoid armatoste
   script:
-    - apt-get update > /dev/null && apt-get install -y inkscape > /dev/null
+    - apt-get update > /dev/null && apt-get install -y inkscape fonts-dejavu-core fontconfig > /dev/null
     - mkdir public
     - cd talk
     - ls -all
