@@ -108,7 +108,7 @@ auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
 	// auto ret = ret_t<decltype(mat)>{FWD(mat)} ^ multi::extents_t<1>{2};
 
 	return
-		[ret_ = std::move(ret)](auto irow) {
+		[ret_ = std::move(ret)](multi::index irow) {
 			auto reti = ret_[irow];
 			return std::move(reti) / sumR1(reti);
 		} ^
