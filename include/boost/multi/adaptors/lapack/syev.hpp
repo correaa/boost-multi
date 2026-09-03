@@ -84,22 +84,22 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w)
 	return syev(uplo, std::forward<Array2D>(a), std::forward<Array1D>(w), Array1DW(std::max(1L, 3 * size(a) - 1L), get_allocator(w)));
 }  // TODO(correaa) obtain automatic size from lapack info routine
 
-/// Computes eigenvalues and eigenvectors of a real symmetric 2D array, without modifying it.
-///
-/// @param uplo triangle of `a` that is referenced, in the C++ (row-major) view
-/// @param a square symmetric matrix; not modified
-/// @param w destination for the eigenvalues, in ascending order
-/// @return a newly allocated array holding the eigenvectors as rows
-/// @note The result must be used (the input is `const`, so discarding it discards the whole computation)
-template<class Array2D, class Array1D>
-[[nodiscard]]  // "because input array is const, output gives eigenvectors"
-auto syev(blas::filling uplo, Array2D const& a, Array1D&& w) -> typename Array2D::decay_type {
-	auto ret = a.decay();
-	auto l   = syev(uplo, ret, std::forward<Array1D>(w));
-	if(size(l) != size(a))
-		assert(0);  // failed
-	return ret;
-}
+// /// Computes eigenvalues and eigenvectors of a real symmetric 2D array, without modifying it.
+// ///
+// /// @param uplo triangle of `a` that is referenced, in the C++ (row-major) view
+// /// @param a square symmetric matrix; not modified
+// /// @param w destination for the eigenvalues, in ascending order
+// /// @return a newly allocated array holding the eigenvectors as rows
+// /// @note The result must be used (the input is `const`, so discarding it discards the whole computation)
+// template<class Array2D, class Array1D>
+// [[nodiscard]]  // "because input array is const, output gives eigenvectors"
+// auto syev(blas::filling uplo, Array2D const& a, Array1D&& w) -> typename Array2D::decay_type {
+// 	auto ret = a.decay();
+// 	auto l   = syev(uplo, ret, std::forward<Array1D>(w));
+// 	if(size(l) != size(a))
+// 		assert(0);  // failed
+// 	return ret;
+// }
 
 /// Computes eigenvalues and eigenvectors of a real symmetric 2D array in place, returning the eigenvalues.
 ///
