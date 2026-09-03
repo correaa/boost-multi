@@ -64,21 +64,22 @@ constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
 	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extents_t<1>({arr.extent()});
 }
 
-template<class F, class... A> struct apply_bind_t;
+namespace detail {
+template<class F, class... A> struct invoke_bind_t;
 
 template<class F, class A>
-struct apply_bind_t<F, A> {
+struct invoke_bind_t<F, A> {
 	F fun_;
 	A a_;
 
 	template<class... Is>
 	constexpr auto operator()(Is... is) const {
-		return fun_(detail::invoke_square(a_, is...));  // a_[is...] in. C++23
+		return fun_(multi::detail::invoke_square(a_, is...));  // a_[is...] in. C++23
 	}
 };
 
 template<class F, class A, class B>
-struct apply_bind_t<F, A, B> {
+struct invoke_bind_t<F, A, B> {
 	F fun_;
 	A a_;
 	B b_;
@@ -91,15 +92,17 @@ struct apply_bind_t<F, A, B> {
 		);
 	}
 };
+}  // end namespace detail
 
 /// applies a function of n-argument to n array expressions, elementwise, extents must match
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
-constexpr auto apply(F&& fun, A&& arr, As&&... arrs) {  // TODO(correaa) change name, elementwise::transform, elementwise::transformed?
-	auto const xs = arr.extents();                      // TODO(correaa) consider storing home() cursor only
+constexpr auto invoke(F&& fun, A&& arr, As&&... arrs) {  // TODO(correaa) change name, elementwise::transform, elementwise::transformed?
+	auto const xs = arr.extents();                       // TODO(correaa) consider storing home() cursor only
 	assert(((xs == arrs.extents()) && ...));
-	return multi::restricted(apply_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
+	return multi::restricted(detail::invoke_bind_t<F, std::decay_t<A>, std::decay_t<As>...>{std::forward<F>(fun), std::forward<A>(arr), std::forward<As>(arrs)...}, xs);
 }
 
+namespace detail {
 template<class T>
 class identity_bind {
 	T val_;
@@ -110,13 +113,14 @@ class identity_bind {
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
+}  // end namespace detail
 
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
-		return map(std::forward<F>(fun), identity_bind<A>{std::forward<A>(alpha)} ^ multi::extents_t<0>{}, std::forward<B>(omega));
+		return map(std::forward<F>(fun), detail::identity_bind<A>{std::forward<A>(alpha)} ^ multi::extents_t<0>{}, std::forward<B>(omega));
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
-		return map(std::forward<F>(fun), std::forward<A>(alpha), identity_bind<B>{std::forward<B>(omega)} ^ multi::extents_t<0>{});
+		return map(std::forward<F>(fun), std::forward<A>(alpha), detail::identity_bind<B>{std::forward<B>(omega)} ^ multi::extents_t<0>{});
 	} else {
 		using std::get;
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {
@@ -124,7 +128,7 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 		} else if constexpr(std::decay_t<B>::dimensionality < std::decay_t<A>::dimensionality) {
 			return map(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega).repeated(get<std::decay_t<A>::dimensionality - std::decay_t<B>::dimensionality - 1>(alpha.sizes())));
 		} else {
-			return apply(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
+			return elementwise::invoke(std::forward<F>(fun), std::forward<A>(alpha), std::forward<B>(omega));
 		}
 	}
 }
@@ -168,7 +172,7 @@ constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
 
 /// creates a array with the `-` operation applied lazily elementwise to two arrays
 template<class A>
-constexpr auto operator-(A&& alpha) { return elementwise::apply(std::negate<>{}, std::forward<A>(alpha)); }
+constexpr auto operator-(A&& alpha) { return elementwise::invoke(std::negate<>{}, std::forward<A>(alpha)); }
 
 /// creates a array with the `*` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -180,20 +184,22 @@ constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
+namespace detail {
 template<class T = void>
 struct default_zero_f {
 	template<class TT = T>
-	auto operator()(TT const& /*unused*/) const { return TT{}; }
+	constexpr auto operator()(TT const& /*unused*/) const { return TT{}; }
 };
+}  // end namespace detail
 
 template<class T, class ZF>
 constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
 	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extents_t<2>({size, size}));
 }
 
-template<class T, class ZF = default_zero_f<T>>
+template<class T, class ZF = detail::default_zero_f<T>>
 constexpr auto eye(multi::ssize_t size, T unit) {
-	return eye(size, unit, default_zero_f<T>{});
+	return eye(size, unit, detail::default_zero_f<T>{});
 }
 
 template<class T = int>
@@ -207,7 +213,7 @@ constexpr auto zeros(Array&& arr, DefaultZero df) {
 	return restricted([arr_ = std::forward<Array>(arr), df](auto... ijk) { return df(arr_(ijk...)); }, exts);
 }
 
-template<typename Element = int, class Array, class DefaultZero = default_zero_f<Element>>
+template<typename Element = int, class Array, class DefaultZero = detail::default_zero_f<Element>>
 constexpr auto zeros(Array&& arr) {
 	return zeros(std::forward<Array>(arr), DefaultZero{});
 }

@@ -514,7 +514,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		);
 
 		using boost::multi::detail::get;
-		BOOST_TEST( std::abs(power(in) - power(out)/get<1>(sizes(out))/get<2>(sizes(out))) < 1e-10 );
+		BOOST_TEST( std::abs(power(in) - power(out)/get<1>(out.sizes())/get<2>(out.sizes())) < 1e-10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(fftw_1D_power_c_interface)

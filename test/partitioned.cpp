@@ -388,11 +388,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// static_assert(decltype(A2.partitioned(3))::rank::value == 3);
 		// static_assert(decltype(A2.partitioned(3))::rank_v == 3);
 
-		BOOST_TEST(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
+		BOOST_TEST(( A2.partitioned(3).sizes() == decltype(A2.partitioned(3).sizes()){3, 2, 2} ));
 
-		BOOST_TEST( get<0>(sizes(A2.partitioned(3))) == 3 );
-		BOOST_TEST( get<1>(sizes(A2.partitioned(3))) == 2 );
-		BOOST_TEST( get<2>(sizes(A2.partitioned(3))) == 2 );
+		BOOST_TEST( get<0>(A2.partitioned(3).sizes()) == 3 );
+		BOOST_TEST( get<1>(A2.partitioned(3).sizes()) == 2 );
+		BOOST_TEST( get<2>(A2.partitioned(3).sizes()) == 2 );
 
 		BOOST_TEST( A2.partitioned(1).size() == 1 );
 
@@ -427,7 +427,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<2>(arrRPU.sizes()) == 2 );
 
 		BOOST_TEST(( arrRPU.sizes() == decltype(arrRPU.sizes()){7, 3, 2} ));
-		BOOST_TEST(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
 		BOOST_TEST( arrRPU[4].num_elements() == 3*2L );
 
 		BOOST_TEST( &arrRPU[4][1][0] == &arr[4][4] );

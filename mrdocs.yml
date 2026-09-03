@@ -11,7 +11,7 @@ input:
   - include/boost/multi/restriction.hpp
   - include/boost/multi/elementwise.hpp
   - include/boost/multi/io.hpp
-  - include/boost/detail/extents.hpp
+  - include/boost/multi/detail/extents.hpp
 
 output: doc/modules/reference/pages
 
@@ -24,7 +24,8 @@ extract-friends: false
 
 # inherit-base-members: "copy-dependencies"  # "reference" "copy-all"
 
-base-url: https://gitlab.com/correaa/boost-multi/-/blob/develop/include/
+# base-url: https://gitlab.com/correaa/boost-multi/-/blob/develop/include/
+base-url: https://github.com/correaa/boost-multi/blob/develop/include/
 
 include-symbols:
   - "boost::multi"
