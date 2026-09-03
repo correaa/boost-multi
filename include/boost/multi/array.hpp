@@ -133,6 +133,8 @@ struct array_allocator {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc> class unique_array;
+
 template<class T, dimensionality_type D, class DummyAlloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct                                                                              // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
@@ -265,10 +267,15 @@ struct                                                                          
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
-	explicit constexpr dynamic_array(decay_type&& other) noexcept
+	explicit constexpr dynamic_array(unique_array<T, D, DummyAlloc>&& other) noexcept
 	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
 		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
+
+	// explicit constexpr dynamic_array(decay_type&& other) noexcept
+	// : array_alloc{std::move(other.alloc())}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
+	// 	std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+	// }
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
 	template<class It, std::sentinel_for<It> Sentinel = It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // NOLINT(readability-redundant-typename) needed for C++17
@@ -1589,7 +1596,7 @@ struct
 #endif
 
 /// A D‐dimensional array that is move only (cannot be copied into another `unique_array`)
-template<typename T, ::boost::multi::dimensionality_type D, class Alloc>
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc = std::allocator<T>>
 class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_ = dynamic_array<T, D, Alloc>;
 
@@ -1597,7 +1604,8 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_array<T, D, Alloc>::dynamic_array;  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) false positive on inherited &&-taking constructor
 
 	unique_array(unique_array const&) = default;
-	unique_array(unique_array&&)      = default;
+	// unique_array(unique_array&&) = default;
+	BOOST_MULTI_HD unique_array(unique_array&& other) noexcept : dynamic_(std::move(other)) {}
 
 	auto operator=(unique_array const&) -> unique_array& = default;
 	auto operator=(unique_array&&) -> unique_array&      = default;
@@ -1720,7 +1728,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
 	// friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
-	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
+	// friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
