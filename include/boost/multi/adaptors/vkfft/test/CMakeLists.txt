@@ -23,7 +23,7 @@ enable_language(${_vkfft_lang})
 find_package(Boost CONFIG REQUIRED)                    # <boost/core/lightweight_test.hpp>
 
 # FFTW is the CPU cross-check reference for the tests.
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig REQUIRED)  # install with `winget install pkgconf.pkgconf`
 pkg_search_module(FFTW REQUIRED IMPORTED_TARGET fftw3)  # sudo apt install libfftw3-dev
 
 add_executable(vkfft.cpp.x vkfft.cpp)
