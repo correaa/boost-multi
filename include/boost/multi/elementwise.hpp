@@ -110,6 +110,7 @@ class identity_bind {
 };
 }  // end namespace detail
 
+/// yields a array with function applied to the elements of the array(s) arguments
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
@@ -135,7 +136,7 @@ struct plus {
 };
 }  // end namespace detail
 
-/// creates a array with the `+` operation applied lazily elementwise to two arrays
+/// yields a array with the `+` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
