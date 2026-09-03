@@ -1287,7 +1287,7 @@ inq cuda:
     - arch75
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libmpich-dev mpich libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
-    - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
+    - export CMAKE_GENERATOR="Ninja"  # "Unix Makefiles"
     - nvidia-smi
     - __nvcc_device_query
     - export PREFIX=`mktemp -d`
