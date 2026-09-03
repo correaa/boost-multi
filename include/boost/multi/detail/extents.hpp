@@ -71,6 +71,7 @@ template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > st
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct dynamic_array;  // TODO(correaa) why the declaration is in this header
 
+/// A structured cartesian product of extensions, it can be decomposed as a tuple-like into its cartesian factors. Used to determine the extents of array.
 template<dimensionality_type D>
 struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
@@ -255,6 +256,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto operator()(index idx, Indices... rest) const { return to_linear(idx, rest...); }
 
+ private:
 	template<class Before, dimensionality_type DD>
 	class cursor_t {
 		Before bef_;
@@ -280,9 +282,14 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		}
 	};
 
-	/// Returns a cursor to the home (e.g. top-left) element
-	static auto home() { return cursor_t<tuple<>, D>{}; }
+ public:
+	/// Indexable cursor, pointer‐like objects that multidimensionally indexable (type usually returned by `.home()`)
+	using cursor = cursor_t<tuple<>, D>;
 
+	/// Returns a cursor to the home (e.g. top-left) element
+	static auto home() -> cursor { return {}; }
+
+	/// Random-access iterator in the leading dimension of the extents object, in general they dereference an extents of lower dimension, for D == 1 to an index value
 	class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) constructor does not initialize these fields: idx_
 		index idx_;
 		extents_t<D - 1> rest_;
@@ -530,6 +537,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		BOOST_MULTI_HD constexpr auto usize() const noexcept { return static_cast<std::size_t>(xs_.num_elements()); }
 	};
 
+	/// yields a random‐access range with all the elements of the extents cartesian product object
 	constexpr auto elements() const { return elements_t{*this}; }
 
 	template<class Func>
