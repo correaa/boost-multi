@@ -197,11 +197,13 @@ constexpr auto eye(multi::ssize_t size, T unit) {
 	return eye(size, unit, detail::default_zero_f<T>{});
 }
 
+/// yields an array expression (square, with size `n`) with the (lazy) identity element in the diagonal, and zero elsewhere.
 template<class T = int>
-constexpr auto eye(multi::ssize_t size) {
-	return eye(size, T{1});
+constexpr auto eye(multi::ssize_t n) {
+	return eye(n, T{1});
 }
 
+/// yields an array expression with (lazy) zero elements.
 template<class Array, class DefaultZero>
 constexpr auto zeros(Array&& arr, DefaultZero df) {
 	auto exts = arr.extents();  // mull-ignore: cxx_init_const
@@ -260,7 +262,7 @@ class exp_bind_t {
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 }  // namespace detail
 
-/// creates a array with the function `exp` applied lazily elementwise.
+/// yields a array expression with the function `exp` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	// shouldn't get to this point for scalars
@@ -307,7 +309,7 @@ struct abs_bind_t {
 };
 }  // namespace detail
 
-/// creates a array with the function `abs` applied lazily elementwise.
+/// yields an array expression with the function `abs` applied lazily elementwise.
 template<class A>
 constexpr auto abs(A const& a) { return detail::abs_bind_t<decltype(a.home())>{a.home()} ^ a.extents(); }
 
