@@ -1852,49 +1852,6 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 
 	friend void swap(array& self, array& other) noexcept { self.swap(other); }
 
-	// void assign(typename array::extents_type extensions, typename array::element const& elem) {
-	// 	if(array::extents() == extensions) {
-	// 		adl_fill_n(this->base_, this->num_elements(), elem);
-	// 	} else {
-	// 		this->clear();
-	// 		(*this).array::layout_t::operator=(layout_t<D>{extensions});
-	// 		this->base_ = this->dynamic_::array_alloc::allocate(this->num_elements(), nullptr);
-	// 		adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);
-	// 	}
-	// }
-
-	// /// Assigns elements from an iterator range [`first`, `last`), resizing if necessary. complexity: O(n)
-	// template<class It>
-	// void assign(It first, It last) {  // cppcheck-suppress duplInheritedMember ; to overwrite
-	// 	using std::all_of;
-	// 	using std::next;
-	// 	if(adl_distance(first, last) == this->size()) {
-	// 		dynamic_::ref_::assign(first);
-	// 	} else {
-	// 		this->operator=(array(first, last));
-	// 	}
-	// }
-
-	// void assign(std::initializer_list<value_type> values) {
-	// 	if(values.size() != 0) {
-	// 		assign(values.begin(), values.end());
-	// 	}
-	// }
-
-	// template<class Range> auto assign(Range&& other) & -> decltype(assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)))) {
-	// 	return assign(adl_begin(std::forward<Range>(other)), adl_end(std::forward<Range>(other)));  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
-	// }
-
-	// // Assignment from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (Allocates unless extents match)
-	// auto operator=(std::initializer_list<value_type> values) -> array& {
-	// 	if(values.size() == 0) {
-	// 		this->clear();
-	// 	} else {
-	// 		assign(values.begin(), values.end());
-	// 	}
-	// 	return *this;
-	// }
-
 	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
 	// at the moment requires nothrow default constructible
 	auto reextent(typename array::extents_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)

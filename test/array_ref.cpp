@@ -281,7 +281,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<std::string, 1> mar = *&multi::array_ref<std::string, 1>(stdarr);  // *multi::array_ptr<std::string, 1>(&stdarr);
 
 		BOOST_TEST( &mar[1] == &stdarr[1] );
-		BOOST_TEST( sizes(mar.reindexed(1)) == sizes(mar) );
+		BOOST_TEST( mar.reindexed(1).sizes() == mar.sizes() );
 
 		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 		BOOST_TEST( diff == 0 );
@@ -365,7 +365,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-		// BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
+		// BOOST_TEST(( mar.stenciled({2, 4}).sizes() == decltype(mar.stenciled({2, 4}).sizes()){2, 5} ));
 		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 		// BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
@@ -754,10 +754,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::decay_t<decltype(A2)>::dimensionality == 2 && A2.num_elements() == 6 );
 		// BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && A2.num_elements() == 6 );
 
-		BOOST_TEST( get<0>(sizes(A2)) == 3 && get<1>(sizes(A2)) == 2 );
+		BOOST_TEST( get<0>(A2.sizes()) == 3 && get<1>(A2.sizes()) == 2 );
 
 		auto const& A3 = cref({0, 3}, 1, {0, 2});
 		BOOST_TEST( std::decay_t<decltype(A3)>::dimensionality == 2 && A3.num_elements() == 6 );
+		BOOST_TEST( A3.dimensionality == 2 && A3.num_elements() == 6 );
 
 		BOOST_TEST( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 		BOOST_TEST( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
@@ -1245,17 +1246,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( deduce_element_sub(asub) == 3 );
 	}
 #endif
-
-	// BOOST_AUTO_TEST_CASE(function_passing_4) {
-	//  multi::array<int, 2> arr({3, 3}, 10);
-
-	//  BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
-	//  BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
-
-	//  BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
-	//  BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
-	// }
-
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor)
 	{
 		multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
@@ -1274,12 +1264,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1] == 10 );
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
@@ -1289,15 +1273,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({3, 4}, 10);
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
-		BOOST_TEST( get<1>(sizes(arr())) ==  4 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	return boost::report_errors();
