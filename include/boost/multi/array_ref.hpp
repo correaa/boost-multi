@@ -40,12 +40,12 @@ namespace detail {
 template<class Element>
 inline constexpr bool force_element_trivial = false;
 
-/// When specialized to `true`, skip the per-element destructor loop on array teardown.
+/// When specialized to `true`, the library skips the per-element destructor loop on array teardown.
 template<class Element>
 inline constexpr bool force_element_trivial_destruction = force_element_trivial<Element>;
 }  // end namespace detail
 
-/// When specialized to `true`, skip the per-element default-construction loop on array allocation.
+/// When specialized to `true`, the library skips the per-element default-construction loop on array allocation.
 template<class Element>
 inline constexpr bool force_element_trivial_default_construction = detail::force_element_trivial<Element>;
 
