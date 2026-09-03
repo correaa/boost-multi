@@ -44,7 +44,7 @@ using ::core::syev;
 template<class Array2D, class Array1D, class Array1DW>
 auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
 	-> decltype(syev('V', uplo == blas::filling::upper ? 'L' : 'U', a.size(), a.base(), a.stride(), w.base(), work.base(), work.size(), std::declval<int&>()), a({0L, 1L}, {0L, 1L})) {
-	assert(work.size() >= std::max(1L, 3 * a.size() - 1L));
+	assert(work.size() >= std::max<decltype(a.size())>(1, 3 * a.size() - 1));
 	assert(a.size() == w.size());
 	assert(w.stride() == 1);
 	assert(work.stride() == 1);
@@ -80,8 +80,8 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
 /// @return a view of `a` spanning the leading block that converged (full size on success)
 template<class Array2D, class Array1D, class Array1DW = typename std::decay_t<Array1D>::decay_type>
 auto syev(blas::filling uplo, Array2D&& a, Array1D&& w)
-	-> decltype(syev(uplo, std::forward<Array2D>(a), std::forward<Array1D>(w), Array1DW(std::max(1L, 3 * size(a) - 1L), get_allocator(w)))) {
-	return syev(uplo, std::forward<Array2D>(a), std::forward<Array1D>(w), Array1DW(std::max(1L, 3 * size(a) - 1L), get_allocator(w)));
+	-> decltype(syev(uplo, std::forward<Array2D>(a), std::forward<Array1D>(w), Array1DW(std::max<decltype(size(a))>(1, 3 * size(a) - 1), w.get_allocator()))) {
+	return syev(uplo, std::forward<Array2D>(a), std::forward<Array1D>(w), Array1DW(std::max<decltype(size(a))>(1, 3 * size(a) - 1), w.get_allocator()));
 }  // TODO(correaa) obtain automatic size from lapack info routine
 
 // /// Computes eigenvalues and eigenvectors of a real symmetric 2D array, without modifying it.
@@ -109,7 +109,7 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w)
 template<class Array2D>
 [[nodiscard]]  // "because input array is const, output gives eigenvalues"
 auto syev(blas::filling uplo, Array2D&& a) {
-	multi::array<typename std::decay_t<Array2D>::element, 1, decltype(get_allocator(a))> eigenvalues(size(a), get_allocator(a));
+	multi::array<typename std::decay_t<Array2D>::element, 1, decltype(get_allocator(a))> eigenvalues(a.size(), a.get_allocator());
 	syev(uplo, std::forward<Array2D>(a), eigenvalues);
 	return eigenvalues;
 }
