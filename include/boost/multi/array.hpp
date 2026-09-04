@@ -1886,12 +1886,12 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 					reinterpret_cast<unsigned char*>(base),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 					static_cast<std::size_t>(count) * sizeof(T)
 				);
-				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {  // NOLINT(altera-unroll-loops)
+				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 					buffer[i] = DEAD[i % DEAD.size()];                                     // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #else
 				auto* const buffer = reinterpret_cast<unsigned char*>(base);                     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {  // NOLINT(altera-unroll-loops)
+				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 					buffer[i] = DEAD[i % sizeof(DEAD)];                                          // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #endif
