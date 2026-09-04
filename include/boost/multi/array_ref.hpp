@@ -2102,8 +2102,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		std::enable_if_t<    // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 			std::is_same_v<  // check that pointer family is not changed
 				typename std::pointer_traits<P2>::template rebind<T2>,
-				typename std::pointer_traits<element_ptr>::template rebind<T2>> &&
-				std::is_same_v<  // check that only constness is changed
+				typename std::pointer_traits<element_ptr>::template rebind<T2>>
+				&& std::is_same_v<  // check that only constness is changed
 					std::remove_const_t<typename std::pointer_traits<P2>::element_type>, std::remove_const_t<typename const_subarray::element>>,
 			int> = 0>
 	constexpr auto const_array_cast() const {
