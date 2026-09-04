@@ -1866,7 +1866,8 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
  private:
 	template<typename Ptr, typename Size>
 	static void debug_poison_([[maybe_unused]] Ptr base, [[maybe_unused]] Size count) {
-#ifndef NDEBUG
+// GCC 7 ICEs (reshape_init_r, cp/decl.c:6072) on the local `static constexpr std::array` below; it is debug-only scaffolding, so skip it there
+#if !defined(NDEBUG) && !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 8))
 		if constexpr(std::is_floating_point_v<T>) {
 			adl_fill_n(base, count, std::numeric_limits<T>::signaling_NaN());
 		} else if constexpr(std::is_same_v<T, bool>) {
