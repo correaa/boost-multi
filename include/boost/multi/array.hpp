@@ -438,7 +438,7 @@ struct                                                                          
 	template<class Element, std::enable_if_t<std::is_convertible_v<Element, typename dynamic_array::element> && (D == 0), int> /*unused*/ = 0>
 	// for classic sfinae, needed by MSVC?
 	explicit dynamic_array(Element const& elem, allocator_type const& alloc)  // if you get a compilation error here, you might be trying to initialize an array with a list of incorrect dimensionality
-	: dynamic_array(typename dynamic_array::extents_type{}, elem, alloc) {}                                                                                                                     // NOLINT(readability-redundant-typename) for C++23
+	: dynamic_array(typename dynamic_array::extents_type{}, elem, alloc) {}   // NOLINT(readability-redundant-typename) for C++23
 
 	template<
 		class It,
