@@ -15,16 +15,17 @@ AlignConsecutiveDeclarations:
   AcrossEmptyLines: false
   AcrossComments: false
 AlignConsecutiveMacros: None
-AlignOperands: AlignAfterOperator
+AlignOperands: DontAlign  # AlignAfterOperator
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: All
 AllowShortCaseLabelsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: No
+BreakBeforeBinaryOperators: NonAssignment   # or: All
 # BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BraceWrapping:
   BeforeLambdaBody: false
-ColumnLimit: 0
+ColumnLimit: 160
 QualifierAlignment: Right
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 4

@@ -1717,18 +1717,18 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	~array() noexcept = default;
 
 	/// Clear the values of array, making it empty (doesn't throw)
-	[[deprecated]] auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
+	[[deprecated("use arr = {}; or arr.reset(exts, ...) for immediate reextents with out element preservation")]] auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
 	}
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
 
 	// friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
-	friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
+	// friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.
@@ -1871,20 +1871,20 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 #endif
 
 	template<typename Ptr, typename Size>
-	static void debug_poison_(Ptr p, Size n) {
+	static void debug_poison_([[maybe_unused]] Ptr p, [[maybe_unused]] Size n) {
 #if !defined(NDEBUG)
 		if constexpr(std::is_pointer_v<Ptr>) {
 			if constexpr(std::is_floating_point_v<T>) {
 				adl_fill_n(p, n, std::numeric_limits<T>::signaling_NaN());
-			} else if constexpr(std::is_same_v<std::remove_cv_t<T>, bool>) {
-				adl_fill_n(p, n, true);
+			} else if constexpr(std::is_same_v<T, bool>) {
+				adl_fill_n(p, n, true);  // compatible with llvm's init-patterns
 			} else if constexpr(std::is_trivially_copyable_v<T>) {
 				if constexpr(std::is_pointer_v<Ptr>) {
-					static constexpr unsigned char pat[] = {0xDE, 0xAD, 0xF5, 0x7F};  // 0x7FF5ADDE: quiet NaN as float and as double
+					static constexpr std::array<unsigned char, 4> pattern{{0xDE, 0xAD, 0xF5, 0x7F}};  // 0x7FF5ADDE: quiet NaN as float and as double
 
 					auto* b = reinterpret_cast<unsigned char*>(p);
 					for(std::size_t i = 0; i < static_cast<std::size_t>(n) * sizeof(T); ++i) {
-						b[i] = pat[i % sizeof(pat)];
+						b[i] = pattern[i % sizeof(pattern)];
 					}
 				}
 			}

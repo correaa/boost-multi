@@ -40,51 +40,42 @@ constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& ro
 	return stdr::fold_left(row, low, stdr::max);
 };
 
-constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) {
-	return stdr::fold_left(rng, zero, std::plus<>{});
-};
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) { return stdr::fold_left(rng, zero, std::plus<>{}); };
 
 #define FWD(var) std::forward<decltype(var)>(var)
 
 auto softmax(auto&& matrix) noexcept {
 	return           //
 		FWD(matrix)  //
-		|
-		stdv::transform([](auto&& row) {
-			auto max = maxR1(row);
-			return        //
-				FWD(row)  //
-				|
-				stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
-		})  //
-		|
-		stdv::transform([](auto&& nums) {
-			auto den = sumR1(nums);
-			return         //
-				FWD(nums)  //
-				|
-				stdv::transform([=](auto num) noexcept { return num / den; });
-		});
+		| stdv::transform([](auto&& row) {
+			  auto max = maxR1(row);
+			  return        //
+				  FWD(row)  //
+				  | stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+		  })  //
+		| stdv::transform([](auto&& nums) {
+			  auto den = sumR1(nums);
+			  return         //
+				  FWD(nums)  //
+				  | stdv::transform([=](auto num) noexcept { return num / den; });
+		  });
 }
 
 namespace multi = boost::multi;
 
 namespace lazy {
 
-template<class A>
-auto operator*(typename A::element scalar, A const& a) {
+template<class A> auto operator*(typename A::element scalar, A const& a) {
 	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extents();
 }
 
 namespace elementwise {
 
-template<class A, class B>
-auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+template<class A, class B> auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
 	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extents();
 }
 
-template<class A, class B>
-auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+template<class A, class B> auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
 	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extents();
 }
 
@@ -296,9 +287,10 @@ auto main() -> int {
 		multi::iextension k(64);
 		multi::iextension n(96);
 
-		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
-			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>{m, h, k, n}
-		);
+		multi::array<float, 4> A =
+			+(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
+				[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>{m, h, k, n}
+			);
 	}
 	{
 		multi::array<double, 3> arr;
@@ -307,7 +299,8 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
+		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)]; }
+			^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
 		arr[1] = 99;
 
@@ -316,7 +309,8 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i, auto /*j*/) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<2>(static_cast<multi::extents_t<1>::size_type>(vec.size()), static_cast<multi::extents_t<1>::size_type>(vec.size()));
+		auto&& arr = [&vec](auto i, auto /*j*/) -> int& { return vec[static_cast<std::size_t>(i)]; }
+			^ multi::extents_t<2>(static_cast<multi::extents_t<1>::size_type>(vec.size()), static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
 		arr[1][1] = 99;
 
@@ -329,7 +323,8 @@ auto main() -> int {
 			{4, 5, 6}
 		};
 
-		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]; } ^ multi::extents_t<2>(static_cast<multi::ssize_t>(vvec.size()), static_cast<multi::ssize_t>(vvec.front().size()));
+		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]; }
+			^ multi::extents_t<2>(static_cast<multi::ssize_t>(vvec.size()), static_cast<multi::ssize_t>(vvec.front().size()));
 
 		arr[1][1] = 99;
 
@@ -339,7 +334,5 @@ auto main() -> int {
 	return boost::report_errors();
 }
 #else
-auto main() -> int {
-	return boost::report_errors();
-}
+auto main() -> int { return boost::report_errors(); }
 #endif
