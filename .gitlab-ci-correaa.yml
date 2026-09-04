@@ -166,7 +166,7 @@ coverage:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ gcovr git make lcov  libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DDISABLE_THRUST_OMP=1 -DCMAKE_CXX_FLAGS="--coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-    - cmake --build . --parallel 2 || cmake --build . --verbose
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --verbose
     - ctest -j 1 --output-on-failure -T Test
     - ctest -j 1 --output-on-failure -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
@@ -345,7 +345,7 @@ clang++-19 mull-19 deb:  # installs mull from the GitHub releases .deb instead o
     - file `which mull-runner-19`
     - mull-runner-19 --version
     - CXX=clang++-19 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -DMULL=1 -fpass-plugin=/usr/lib/mull-ir-frontend-19 -g -grecord-command-line"
-    - cmake --build . --parallel 4
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 ))
     - ctest
     - cd test
     - ls *.x | xargs -n 1 sh -c 'echo $0 && ((mull-runner-19 --timeout 300000 --ld-search-path=/usr/lib/x86_64-linux-gnu $0 -test-program=ctest -- -j2 --timeout 120 --stop-on-failure) || exit 255)'
@@ -1235,7 +1235,7 @@ inq:
     - cd inq
     - mkdir build && cd build
     - CXXFLAGS="-ffast-math" cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1 --verbose
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1 --verbose
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -1266,7 +1266,7 @@ inq-debug:
     - cd inq
     - mkdir build && cd build
     - cmake .. --install-prefix=$PREFIX -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . --parallel 4 || cmake --build . --parallel 1
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
@@ -1301,7 +1301,7 @@ inq cuda:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich  # native doesn't work in this version of cmake # =75  # =80
-    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
+    - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
     - export CUDA_VISIBLE_DEVICES=0,1
@@ -1337,7 +1337,7 @@ inq rocm:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
-    - time (cmake --build . --parallel 4 || cmake --build . --parallel 1)
+    - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -1364,7 +1364,7 @@ qmcpack:
     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_SHA || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
     - cd build
     - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
-    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - VERBOSE=1 make -j $(( ($(nproc) + 1) / 2 )) ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
   needs: ["g++"]
@@ -1393,7 +1393,7 @@ qmcpack cuda:
     - nvcc --version
     - __nvcc_device_query
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DQMC_GPU=cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" -DCMAKE_CUDA_ARCHITECTURES=native  # =80
-    - VERBOSE=1 make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - VERBOSE=1 make -j $(( ($(nproc) + 1) / 2 )) ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
   needs: ["qmcpack","cuda"]
