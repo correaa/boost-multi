@@ -59,11 +59,6 @@ struct bind_category<::boost::multi::subarray<T, D, Ts...> const&> {
 /// Namespace for elementwise operators (+, -, *, and other convenience functions)
 namespace elementwise {
 
-template<class F, class A, class... Arrays, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::reference>(), std::declval<typename std::decay_t<Arrays>::reference>()...))>
-constexpr auto apply_front(F&& fun, A&& arr, Arrays&&... arrs) {
-	return [fun_ = std::forward<F>(fun), &arr, &arrs...](auto is) -> decltype(auto) { return fun_(arr[is], arrs[is]...); } ^ multi::extents_t<1>({arr.extent()});
-}
-
 namespace detail {
 template<class F, class... A> struct invoke_bind_t;
 
@@ -115,6 +110,7 @@ class identity_bind {
 };
 }  // end namespace detail
 
+/// yields a array with function applied to the elements of the array(s) arguments
 template<class F, class A, class B>
 constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
@@ -140,7 +136,7 @@ struct plus {
 };
 }  // end namespace detail
 
-/// creates a array with the `+` operation applied lazily elementwise to two arrays
+/// yields a array with the `+` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
 	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
@@ -202,11 +198,13 @@ constexpr auto eye(multi::ssize_t size, T unit) {
 	return eye(size, unit, detail::default_zero_f<T>{});
 }
 
+/// yields an array expression (square, with size `n`) with the (lazy) identity element in the diagonal, and zero elsewhere.
 template<class T = int>
-constexpr auto eye(multi::ssize_t size) {
-	return eye(size, T{1});
+constexpr auto eye(multi::ssize_t n) {
+	return eye(n, T{1});
 }
 
+/// yields an array expression with (lazy) zero elements.
 template<class Array, class DefaultZero>
 constexpr auto zeros(Array&& arr, DefaultZero df) {
 	auto exts = arr.extents();  // mull-ignore: cxx_init_const
@@ -265,7 +263,7 @@ class exp_bind_t {
 template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 }  // namespace detail
 
-/// creates a array with the function `exp` applied lazily elementwise.
+/// yields a array expression with the function `exp` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	// shouldn't get to this point for scalars
@@ -312,7 +310,7 @@ struct abs_bind_t {
 };
 }  // namespace detail
 
-/// creates a array with the function `abs` applied lazily elementwise.
+/// yields an array expression with the function `abs` applied lazily elementwise.
 template<class A>
 constexpr auto abs(A const& a) { return detail::abs_bind_t<decltype(a.home())>{a.home()} ^ a.extents(); }
 
