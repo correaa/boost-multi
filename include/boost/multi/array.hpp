@@ -1872,7 +1872,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 
 	template<typename Ptr, typename Size>
 	static void debug_poison_([[maybe_unused]] Ptr p, [[maybe_unused]] Size n) {
-#if !defined(NDEBUG)
+#ifndef NDEBUG
 		if constexpr(std::is_pointer_v<Ptr>) {
 			if constexpr(std::is_floating_point_v<T>) {
 				adl_fill_n(p, n, std::numeric_limits<T>::signaling_NaN());
