@@ -42,13 +42,13 @@ auto potrf(filling uplo, Iterator first, Iterator last)
 template<class A2D>
 BOOST_MULTI_NODISCARD("result has information of order of minor through .size() member")
 auto potrf(filling uplo, A2D&& A)  // NOLINT(readability-identifier-length) conventional lapack name
-->decltype(potrf(uplo, begin(A), end(A)), A({0, 1}))
+->decltype(potrf(uplo, A.begin(), A.end()), A({0, 1}))
 {
 	using lapack::flip;
 
 	// iterator subtraction instead of unqualified distance(...): for thrust-based arrays
 	// ADL would find both std::distance and thrust::distance, making the call ambiguous
-	if(stride(A) == 1) {
+	if(A.stride() == 1) {
 		auto const count = potrf(flip(uplo), A.rotated().begin(), A.rotated().end()) - A.rotated().begin();
 		return A({0, count}, {0, count});
 	}
