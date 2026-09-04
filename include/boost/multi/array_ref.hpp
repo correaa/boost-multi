@@ -3874,10 +3874,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #pragma clang diagnostic pop
 #endif
 
-template<class T2, class P2, class Array, class... Args>
-constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
-	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
-}
+// template<class T2, class P2, class Array, class... Args>
+// constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
+// 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
+// }
 
 namespace detail {
 template<class T, dimensionality_type D, typename Ptr = T*>
@@ -4537,7 +4537,7 @@ template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(sta
 /// returns an iterator to the beginning of the given range (same as `std::size`), in the leading dimension.
 template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
 
-template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
+// template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
 
 }  // end namespace boost::multi
 
