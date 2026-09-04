@@ -997,9 +997,9 @@ template<dimensionality_type D> using iextensions = extents_t<D>;
 
 template<dimensionality_type D> using extensions_t = extents_t<D>;  // backward-compatibility alias for the former name of extents_t
 
-template<boost::multi::dimensionality_type D>
-constexpr auto array_size_impl(boost::multi::extents_t<D> const&)
-	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
+// template<boost::multi::dimensionality_type D>
+// constexpr auto array_size_impl(boost::multi::extents_t<D> const&)
+// 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
 extents_t(multi::ssize_t) -> extents_t<1>;
 extents_t(multi::ssize_t, multi::ssize_t) -> extents_t<2>;
