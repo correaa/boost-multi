@@ -606,7 +606,7 @@ struct subarray_ptr  // : to allow mixin CRTP
 
 namespace detail {
 template<class Element, ::boost::multi::dimensionality_type D, typename ElementPtr, bool IsConst, bool IsMove, typename Stride, class SubLayout>
-struct array_iterator  // NOLINT(misc-multiple-inheritance) for facades
+struct array_iterator  // NOLINT(misc-multiple-inheritance,fuchsia-multiple-inheritance) for facades
 : boost::multi::iterator_facade<
 	  array_iterator<Element, D, ElementPtr, IsConst, IsMove, Stride>, void, std::random_access_iterator_tag,
 	  subarray<Element, D - 1, ElementPtr> const&, typename layout_t<D - 1>::difference_type>
