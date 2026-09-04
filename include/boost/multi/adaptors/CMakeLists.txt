@@ -14,5 +14,7 @@ else()
   endif()
 endif()
 
+add_subdirectory(./cppyy)
+
 # add_subdirectory(./cufft)
 
