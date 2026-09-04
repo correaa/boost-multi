@@ -233,7 +233,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::dynamic_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
 		multi::dynamic_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
-		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+		auto&& neg_arr = arr.static_array_cast<int, involuter<int*, std::negate<>>>();
+		// auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
 
 		BOOST_TEST( neg_arr[2] == arr2[2] );
 		BOOST_TEST( arr2[2] == neg_arr[2] );

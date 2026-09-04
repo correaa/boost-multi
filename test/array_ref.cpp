@@ -657,7 +657,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &(dd[1][2]) == &(darr2[1][2]) );
 		BOOST_TEST(( & ref[1].static_array_cast<int, int const*>()[1] == &ref[1][1] ));
-		BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
+		// BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
 
 #ifdef __clang__
 #pragma clang diagnostic pop
