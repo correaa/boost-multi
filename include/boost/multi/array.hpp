@@ -1882,14 +1882,17 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // needed for the span construct or the raw index access
 #endif
 #if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
-				auto const buffer = std::span(reinterpret_cast<unsigned char*>(base), static_cast<std::size_t>(count) * sizeof(T));
-				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {
-					buffer[i] = DEAD[i % DEAD.size()];
+				auto const buffer = std::span(
+					reinterpret_cast<unsigned char*>(base),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+					static_cast<std::size_t>(count) * sizeof(T)
+				);
+				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {  // NOLINT(altera-unroll-loops)
+					buffer[i] = DEAD[i % DEAD.size()];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #else
-				auto* const buffer = reinterpret_cast<unsigned char*>(base);
-				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {
-					buffer[i] = DEAD[i % sizeof(DEAD)];
+				auto* const buffer = reinterpret_cast<unsigned char*>(base);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {  // NOLINT(altera-unroll-loops)
+					buffer[i] = DEAD[i % sizeof(DEAD)];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #endif
 #ifdef __clang__
