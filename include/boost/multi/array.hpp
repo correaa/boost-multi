@@ -1864,39 +1864,43 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	friend void swap(array& self, array& other) noexcept { self.swap(other); }
 
  private:
+	template<typename Ptr, typename Size>
+	static void debug_poison_([[maybe_unused]] Ptr base, [[maybe_unused]] Size count) {
+#ifndef NDEBUG
+		if constexpr(std::is_floating_point_v<T>) {
+			adl_fill_n(base, count, std::numeric_limits<T>::signaling_NaN());
+		} else if constexpr(std::is_same_v<T, bool>) {
+			adl_fill_n(base, count, true);  // compatible with llvm's init-patterns
+		} else if constexpr(std::is_trivially_copyable_v<T>) {
+			if constexpr(std::is_pointer_v<Ptr>) {
+				static constexpr auto DEAD = std::array<unsigned char, 4>{
+					{0xDE, 0xAD, 0xF5, 0x7F}  // quiet NaN f/d
+				};
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // needed for the span construct or the raw index access
 #endif
-
-	template<typename Ptr, typename Size>
-	static void debug_poison_([[maybe_unused]] Ptr p, [[maybe_unused]] Size n) {
-#ifndef NDEBUG
-		if constexpr(std::is_pointer_v<Ptr>) {
-			if constexpr(std::is_floating_point_v<T>) {
-				adl_fill_n(p, n, std::numeric_limits<T>::signaling_NaN());
-			} else if constexpr(std::is_same_v<T, bool>) {
-				adl_fill_n(p, n, true);  // compatible with llvm's init-patterns
-			} else if constexpr(std::is_trivially_copyable_v<T>) {
-				if constexpr(std::is_pointer_v<Ptr>) {
-					static constexpr std::array<unsigned char, 4> pattern{{0xDE, 0xAD, 0xF5, 0x7F}};  // 0x7FF5ADDE: quiet NaN as float and as double
-
-					auto* b = reinterpret_cast<unsigned char*>(p);
-					for(std::size_t i = 0; i < static_cast<std::size_t>(n) * sizeof(T); ++i) {
-						b[i] = pattern[i % sizeof(pattern)];
-					}
+#if defined(__cpp_lib_span) && (__cpp_lib_span >= 202002L)
+				auto const buffer = std::span(reinterpret_cast<unsigned char*>(base), static_cast<std::size_t>(count) * sizeof(T));
+				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {
+					buffer[i] = DEAD[i % DEAD.size()];
 				}
+#else
+				auto* const buffer = reinterpret_cast<unsigned char*>(base);
+				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {
+					buffer[i] = DEAD[i % sizeof(DEAD)];
+				}
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 			}
 		}
 // non-trivial T: do nothing — you can't fabricate a poison T without
 // constructing one, and there's no generic "weird valid value".
 #endif
 	}
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
  public:
 	using unique_::reset;

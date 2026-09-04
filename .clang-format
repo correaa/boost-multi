@@ -19,7 +19,7 @@ AlignOperands: DontAlign  # AlignAfterOperator
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: All
 AllowShortCaseLabelsOnASingleLine: true
-AlwaysBreakTemplateDeclarations: No
+AlwaysBreakTemplateDeclarations: Leave
 BreakBeforeBinaryOperators: NonAssignment   # or: All
 # BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
