@@ -25,7 +25,7 @@ BreakBeforeBinaryOperators: NonAssignment   # or: All
 BreakInheritanceList: BeforeComma
 BraceWrapping:
   BeforeLambdaBody: false
-ColumnLimit: 160
+ColumnLimit: 0  # 0 means leave linebreaks alone
 QualifierAlignment: Right
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 4

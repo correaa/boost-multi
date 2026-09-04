@@ -23,7 +23,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 
-		static_assert(std::is_same<typename multi::detail::array_traits<decltype(arr)>::element, double>{});  // NOLINT(readability-redundant-typename) for C++20
+		static_assert(std::is_same<typename multi::detail::array_traits<decltype(arr)>::element, double>{});  // NOLINT(readability-redundant-typename) C++20
 
 		BOOST_TEST( multi::dimensionality(arr) == 3 );
 

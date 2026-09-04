@@ -144,8 +144,8 @@ struct                                                                          
 	static_assert(
 		std::is_same_v<
 			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
-			typename dynamic_array::element> ||
-			std::is_same_v<
+			typename dynamic_array::element>
+			|| std::is_same_v<
 				std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
 				void>,  // allocator template can be redundant or void (which can be a default for the allocator)
 		"allocator value type must match array value type"
@@ -1887,12 +1887,12 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 					static_cast<std::size_t>(count) * sizeof(T)
 				);
 				for(std::span<unsigned char>::size_type i = 0; i != buffer.size(); ++i) {  // NOLINT(altera-unroll-loops)
-					buffer[i] = DEAD[i % DEAD.size()];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+					buffer[i] = DEAD[i % DEAD.size()];                                     // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #else
-				auto* const buffer = reinterpret_cast<unsigned char*>(base);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+				auto* const buffer = reinterpret_cast<unsigned char*>(base);                     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 				for(std::size_t i = 0; i != static_cast<std::size_t>(count) * sizeof(T); ++i) {  // NOLINT(altera-unroll-loops)
-					buffer[i] = DEAD[i % sizeof(DEAD)];  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+					buffer[i] = DEAD[i % sizeof(DEAD)];                                          // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 				}
 #endif
 #ifdef __clang__
