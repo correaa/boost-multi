@@ -133,8 +133,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
-		BOOST_TEST(size(arr3) == 2);
-		BOOST_TEST(size(arr3[0]) == 3);
+		BOOST_TEST(arr3.size() == 2);
+		BOOST_TEST(arr3[0].size() == 3);
 
 		auto* const A_base = arr.base();
 		arr.reextent({2, 3}, 990);
@@ -397,5 +397,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		arr.reextent({static_cast<multi::array<int, 2>::size_type>(varr.size()), static_cast<multi::array<int, 2>::size_type>(varr[0].size())});
 	}
+	{
+		multi::array<int, 2> arr({99, 99}, 10);
+		arr.reset();
+
+		BOOST_TEST( arr.is_empty() );
+	}
+	{
+		multi::array<int, 2> arr({99, 99}, 10);
+		arr.reset({9, 9});
+
+		// BOOST_TEST( arr[1][1] == 10 );  // not, it is impossible to know the value after a reset with extensions only
+
+		BOOST_TEST( arr.size() == 9 );
+	}
+
 	return boost::report_errors();
 }
