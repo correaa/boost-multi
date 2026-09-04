@@ -617,9 +617,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
 		{
 			auto matrix =
-				([](auto ii) noexcept { return static_cast<float>(ii); } ^
-				 multi::extents_t(6))
-					.partitioned(2);
+				([](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extents_t(6)).partitioned(2);
 
 			auto [matrix_is, matrix_js] = matrix.extents();
 			BOOST_TEST( matrix_is.size() == 2 );

@@ -1717,7 +1717,8 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	~array() noexcept = default;
 
 	/// Clear the values of array, making it empty (doesn't throw)
-	[[deprecated("use arr = {}; or arr.reset(exts, ...) for immediate reextents with out element preservation")]] auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
+	// [[deprecated("use arr = {}; or arr.reset(exts, ...) for immediate reextents with out element preservation")]]
+	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
