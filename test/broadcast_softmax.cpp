@@ -111,23 +111,21 @@ auto softmax2(auto&& mat) noexcept {  // -> decltype(auto) {
 		[ret_ = std::move(ret)](multi::index irow) {
 			auto reti = ret_[irow];
 			return std::move(reti) / sumR1(reti);
-		} ^
-		multi::extents_t<1>{2};
+		}
+	^ multi::extents_t<1>{2};
 }
 
 auto softmax(auto&& matrix) noexcept {
 	return FWD(matrix)  //
-		 |              //
-		   stdv::transform([](auto&& row) {
+		|               //
+		stdv::transform([](auto&& row) {
 			   auto max = maxR1(row);
-			   return FWD(row) |
-					  stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+			   return FWD(row) | stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
 		   })  //
-		 |     //
-		   stdv::transform([](auto&& nums) {
+		|      //
+		stdv::transform([](auto&& nums) {
 			   auto den = sumR1(nums);
-			   return FWD(nums) |
-					  stdv::transform([=](auto elem) noexcept { return elem / den; });
+			   return FWD(nums) | stdv::transform([=](auto elem) noexcept { return elem / den; });
 		   });
 }
 }  // namespace

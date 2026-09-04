@@ -46,40 +46,31 @@ constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& ro
 	return stdr::fold_left(row, low, stdr::max);
 };
 
-constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) {
-	return stdr::fold_left(rng, zero, std::plus<>{});
-};
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) { return stdr::fold_left(rng, zero, std::plus<>{}); };
 
 #define FWD(var) std::forward<decltype(var)>(var)
 
 auto softmax(auto&& matrix) noexcept {
 	return           //
 		FWD(matrix)  //
-		|
-		stdv::transform([](auto&& row) {
-			auto max = maxR1(row);
-			return        //
-				FWD(row)  //
-				|
-				stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
-		})  //
-		|
-		stdv::transform([](auto&& nums) {
-			auto den = sumR1(nums);
-			return         //
-				FWD(nums)  //
-				|
-				stdv::transform([=](auto num) noexcept { return num / den; });
-		});
+		| stdv::transform([](auto&& row) {
+			  auto max = maxR1(row);
+			  return        //
+				  FWD(row)  //
+				  | stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+		  })  //
+		| stdv::transform([](auto&& nums) {
+			  auto den = sumR1(nums);
+			  return         //
+				  FWD(nums)  //
+				  | stdv::transform([=](auto num) noexcept { return num / den; });
+		  });
 }
 
 namespace multi = boost::multi;
 
 auto main() -> int {
-	auto const matrix =
-		([](auto ii) noexcept { return static_cast<float>(ii); } ^
-		 multi::extents_t(6))
-			.partitioned(2);
+	auto const matrix = ([](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extents_t(6)).partitioned(2);
 
 	printR2("matrix", matrix);
 
@@ -101,7 +92,5 @@ auto main() -> int {
 	return boost::report_errors();
 }
 #else
-auto main() -> int {
-	return boost::report_errors();
-}
+auto main() -> int { return boost::report_errors(); }
 #endif

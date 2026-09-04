@@ -32,6 +32,8 @@
 
 namespace boost::multi {
 
+template<typename T, ::boost::multi::dimensionality_type D, class Alloc> class unique_array;
+
 namespace detail {
 /// When specialized to `true` for an element type, the library
 /// treats that type as if it were trivially default-constructible *and* trivially
@@ -326,6 +328,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::array;
 	template<typename, ::boost::multi::dimensionality_type, class> friend struct ::boost::multi::dynamic_array;
+	template<typename, ::boost::multi::dimensionality_type, class> friend class ::boost::multi::unique_array;
 
  public:
 	/// Array value after evaluation through the first index, an object of lower dimension, `multi::array<T, D ‐ 1, P>` or, for `D == 1`, `std::pointer_traits<P>::element_type` (usually `T`)
@@ -2099,8 +2102,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		std::enable_if_t<    // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 			std::is_same_v<  // check that pointer family is not changed
 				typename std::pointer_traits<P2>::template rebind<T2>,
-				typename std::pointer_traits<element_ptr>::template rebind<T2>> &&
-				std::is_same_v<  // check that only constness is changed
+				typename std::pointer_traits<element_ptr>::template rebind<T2>>
+				&& std::is_same_v<  // check that only constness is changed
 					std::remove_const_t<typename std::pointer_traits<P2>::element_type>, std::remove_const_t<typename const_subarray::element>>,
 			int> = 0>
 	constexpr auto const_array_cast() const {

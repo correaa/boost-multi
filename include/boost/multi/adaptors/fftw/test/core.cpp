@@ -257,9 +257,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{
 				{true, true, true}
         },
-			multi::array_ref<complex, 3>(data_elements(io), extents(io)),
-			multi::array_ref<complex, 3>(data_elements(io), extents(io))
+			multi::array_ref<complex, 3>(io.data_elements(), io.extents()),
+			multi::array_ref<complex, 3>(io.data_elements(), io.extents())
 		);
+
 		BOOST_TEST( powerin - (power(io)/static_cast<double>(io.num_elements())) < 1e-10 );
 	}
 
