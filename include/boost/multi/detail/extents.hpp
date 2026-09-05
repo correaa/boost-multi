@@ -369,6 +369,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		return false;
 	}
 
+	/// Range with the elements of an extents (Cartesian product of extent integer ranges)
 	class elements_t {
 		extents_t xs_;
 		explicit constexpr elements_t(extents_t const& exts) : xs_{exts} {}
@@ -378,6 +379,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	 public:
 		using difference_type = extents_t::difference_type;
 
+		/// Random-access iterator in the leading dimension, resulting from `begin()/end()`
 		class iterator {  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) TODO(correaa) investigate
 			index_extension::iterator curr_;
 
@@ -406,6 +408,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 
 			iterator() = default;
 
+		 private:
 			template<class CUT>
 			class mk_tup {
 				CUT cu_;
@@ -416,6 +419,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 				constexpr auto operator()(Ts... idxs) const { return detail::mk_tuple(cu_, idxs...); }
 			};
 
+		 public:
 			BOOST_MULTI_HD constexpr auto operator*() const {
 				// printf("op* %ld ...\n", *curr_);
 				using std::apply;
