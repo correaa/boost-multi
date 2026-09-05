@@ -12,42 +12,60 @@ namespace multi = boost::multi;
 
 auto main() -> int {
 	{
-		multi::array<int, 2> A({0, 0}, 0);
+		multi::array<int, 2> const A({0, 0}, 0);
 		BOOST_TEST( A.size() == 0 );
 
-		multi::array<int, 2> B({6, 0}, 0);
+		multi::array<int, 2> const B({6, 0}, 0);
 		BOOST_TEST( B.size() == 0 );
 
 		BOOST_TEST( A == B );
 	}
 	{
-		multi::extents_t<2> e1(6, 0);
+		multi::extents_t<2> const e1(6, 0);
 		BOOST_TEST( e1.size() == 6 );
 
-		multi::extents_t<2> e2(0, 0);
+		multi::extents_t<2> const e2(0, 0);
 		BOOST_TEST( e2.size() == 0 );
 
 		BOOST_TEST( e1 != e2 );
 
-		multi::layout_t<2> l1(e1);
-		multi::layout_t<2> l2(e2);
+		multi::layout_t<2> const l1(e1);
+		multi::layout_t<2> const l2(e2);
 
 		BOOST_TEST( l1 == l2 );
 
-		multi::extents_t<2> a1 = l1.extents();
-		multi::extents_t<2> a2 = l2.extents();
+		multi::extents_t<2> const a1 = l1.extents();
+		multi::extents_t<2> const a2 = l2.extents();
 
 		BOOST_TEST( a1.size() == 0 );
 		BOOST_TEST( a2.size() == 0 );
 	}
 	{
+		using std::get;
+
+		multi::extents_t<2> const e1(0, 6);
+		BOOST_TEST( e1.size() == 0 );
+		BOOST_TEST( get<1>(e1).size() == 6 );
+
+		multi::extents_t<2> const e2(0, 0);
+		BOOST_TEST( e2.size() == 0 );
+		BOOST_TEST( get<1>(e2).size() == 0 );
+
+		BOOST_TEST( e1 != e2 );
+
+		multi::layout_t<2> const l1(e1);
+		multi::layout_t<2> const l2(e2);
+
+		// BOOST_TEST( l1 == l2 );
+
+		multi::extents_t<2> const a1 = l1.extents();
+		multi::extents_t<2> const a2 = l2.extents();
+
+		BOOST_TEST( a1.size() == 0 );
+		BOOST_TEST( get<1>(a1).size() == 6 );
+		BOOST_TEST( a2.size() == 0 );
+		BOOST_TEST( get<1>(a2).size() == 0 );
 	}
-	// auto C = A[1];
-
-	// using std::get;
-
-	// std::cout << get<0>(A.sizes()) << '\t' << get<1>(A.sizes()) << std::endl;
-	// std::cout << get<0>(B.sizes()) << std::endl;
 
 	return boost::report_errors();
 }

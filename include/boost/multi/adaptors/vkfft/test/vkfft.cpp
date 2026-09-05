@@ -244,9 +244,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST(max_err < 1.0e-7);
 		};
 
-		sweep(multi::extensions_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, true, true, true});
-		sweep(multi::extensions_t<3>({4, 5, 6}), std::array<bool, 3>{true, false, true});
-		sweep(multi::extensions_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, false, false, true});
+		sweep(multi::extents_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, true, true, true});
+		sweep(multi::extents_t<3>({4, 5, 6}), std::array<bool, 3>{true, false, true});
+		sweep(multi::extents_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, false, false, true});
 	}
 
 	// The ONE `which` VkFFT (and this adaptor) refuses: the all-false mask.

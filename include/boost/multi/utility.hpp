@@ -784,10 +784,7 @@ constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il
 	if(ilist.size() == 0) {
 		return multi::extents_t<2>{0, 0};
 	}
-	assert(std::all_of(ilist.begin() + 1, ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
-	// for(std::size_t i = 1; i != ilist.size(); ++i) {
-	// 	assert( ilist.begin()[i].size() == ilist.begin()[0].size() );
-	// }
+	assert(std::all_of(std::next(ilist.begin()), ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
 	return multi::extents_t<2>{static_cast<multi::ssize_t>(ilist.size()), static_cast<multi::ssize_t>(ilist.begin()->size())};
 }
 
@@ -797,14 +794,7 @@ constexpr auto extents(std::initializer_list<std::initializer_list<std::initiali
 		return multi::extents_t<3>{0, 0, 0};
 	}
 
-	assert(std::all_of(ilist.begin() + 1, ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
-	// for(std::size_t i = 1; i != ilist.size(); ++i) {
-	// 	assert( ilist.begin()[i].size() == ilist.begin()[0].size() );
-	// }
-
-	// if(ilist.begin()->size() == 0) {
-	// 	return multi::extents_t<3>{ilist.size(), 0, 0};
-	// }
+	assert(std::all_of(std::next(ilist.begin()), ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
 
 	return static_cast<multi::ssize_t>(ilist.size()) * extents(*ilist.begin());
 	// return multi::extents_t<3>{
