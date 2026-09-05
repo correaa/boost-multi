@@ -12,13 +12,13 @@ namespace multi = boost::multi;
 
 auto main() -> int {
 	{
-		multi::array<int, 2> const A({0, 0}, 0);
-		BOOST_TEST( A.size() == 0 );
+		multi::array<int, 2> const a1({0, 0}, 0);
+		BOOST_TEST( a1.size() == 0 );
 
-		multi::array<int, 2> const B({6, 0}, 0);
-		BOOST_TEST( B.size() == 0 );
+		multi::array<int, 2> const a2({6, 0}, 0);
+		BOOST_TEST( a2.size() == 0 );
 
-		BOOST_TEST( A == B );
+		BOOST_TEST( a1 == a2 );
 	}
 	{
 		multi::extents_t<2> const e1(6, 0);
@@ -49,7 +49,7 @@ auto main() -> int {
 
 		multi::extents_t<2> const e2(0, 0);
 		BOOST_TEST( e2.size() == 0 );
-		BOOST_TEST( get<1>(e2).size() == 0 );
+		BOOST_TEST( get<1>(e2).size() == 0 );  // NOLINT(readability-container-size-empty)
 
 		BOOST_TEST( e1 != e2 );
 
@@ -64,7 +64,8 @@ auto main() -> int {
 		BOOST_TEST( a1.size() == 0 );
 		BOOST_TEST( get<1>(a1).size() == 6 );
 		BOOST_TEST( a2.size() == 0 );
-		BOOST_TEST( get<1>(a2).size() == 0 );
+		BOOST_TEST( get<1>(a2).size() == 0 );  // NOLINT(readability-container-size-empty)
+		BOOST_TEST( get<1>(a2).empty() );
 	}
 
 	return boost::report_errors();
