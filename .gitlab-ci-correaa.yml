@@ -564,6 +564,40 @@ vs2022-shell c++23:
   needs: ["vs2022-shell"]
   timeout: 30 minutes
 
+vs2022-shell EDG:
+  stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job
+  allow_failure: true
+  cache: []
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
+  only:
+    refs:
+      - develop
+  script:
+    - pwd
+    # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop
+    # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
+    # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
+    # - winget install Ninja-build.Ninja
+    # - winget install Microsoft.msmpi Microsoft.msmpisdk
+    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git C:\
+    # - C:\vcpkg\bootstrap-vcpkg.bat
+    # - C:\vcpkg\vcpkg install blas fftw3
+    - C:\vcpkg\vcpkg install boost-core
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
+    - $Env:Path -split ';'
+    - cmake --version
+    - cmake -S . -B build --fresh -G "Visual Studio 17 2022" -DCMAKE_CXX_FLAGS="/EB /MP /wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
+    - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
+    - Start-Sleep -Seconds 10  # try adding this if getting BAD_COMMAND errors
+    - ctest -j 2 --test-dir build --output-on-failure -C Debug  # low j to avoid windows' BAD_COMMAND problems
+  tags:
+    - windows
+    - shell
+  needs: ["vs2022-shell"]
+  timeout: 30 minutes
+
 vs2022-shell clang-cl:
   stage: build
   variables:
