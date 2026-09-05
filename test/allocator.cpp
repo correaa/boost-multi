@@ -57,7 +57,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// 4D array
 	{
-		multi::array<std::complex<double>, 4> ma(multi::extensions_t<4>({6, 12, 24, 12}));
+		multi::array<std::complex<double>, 4> ma(multi::extents_t<4>({6, 12, 24, 12}));
 		BOOST_TEST( ma.size() == 6);
 
 		ma[1][2][3][4] = std::complex<double>{1.0, 2.0};
