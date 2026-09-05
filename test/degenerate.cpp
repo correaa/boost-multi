@@ -6,6 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#include <tuple>  // for get
 // IWYU pragma: no_include <utility>  // for forward, declval, move
 
 namespace multi = boost::multi;
