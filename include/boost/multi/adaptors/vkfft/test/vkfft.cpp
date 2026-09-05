@@ -1,4 +1,4 @@
-// Copyright 2024-2026 Alfredo A. Correa
+// Copyright 2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -21,7 +21,7 @@ template<>
 constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
 
 namespace {
-auto random_array(multi::extensions_t<2> exts) {
+auto random_array(multi::extents_t<2> exts) {
 	multi::array<complex, 2>               ret(exts);
 	std::mt19937                           gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) reproducible
 	std::uniform_real_distribution<double> dist(-1.0, 1.0);
