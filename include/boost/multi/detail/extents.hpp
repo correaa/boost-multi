@@ -74,7 +74,11 @@ template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > st
 /// A structured cartesian product of extensions, it can be decomposed as a tuple-like into its cartesian factors. Used to determine the extents of array.
 template<dimensionality_type D>
 struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_> {
+ private:
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
+
+	template<dimensionality_type> friend struct extents_t;
+	template<std::size_t, class> friend struct std::tuple_element;  // TODO(correaa) implement this internally
 
  public:
 	static constexpr dimensionality_type dimensionality = D;
