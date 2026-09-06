@@ -588,6 +588,11 @@ vs2022-shell c++20:
     - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
     - $Env:Path -split ';'
     - cmake --version
+    # /BE switches cl.exe to the EDG front end, which it launches as 'cpfe'. A previous run died with
+    # "command line error D8027: cannot execute 'cpfe'", so locate that binary before configuring.
+    - Write-Host "--- cpfe on PATH ---"; Get-Command cpfe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+    - Write-Host "--- cpfe anywhere under Visual Studio ---"; Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio","C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Filter "cpfe*" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+    - Write-Host "--- EDG IntelliSense binaries (Feacp) for comparison ---"; Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio","C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Filter "Feacp*" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
     - cmake -S . -B build --fresh -G "Visual Studio 17 2022" -DCMAKE_CXX_FLAGS="/BE /MP /wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
     - cmake --build build --config Debug --parallel 4 2>&1 | Tee-Object -FilePath build.log ; if ($LASTEXITCODE -ne 0) { cmake --build build --config Debug --parallel 1 --verbose 2>&1 | Tee-Object -FilePath build.log }
     # D9002 is a driver warning that /WX does not promote, so a misspelled or unsupported flag would otherwise pass silently
