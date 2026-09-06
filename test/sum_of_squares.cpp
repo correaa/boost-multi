@@ -32,6 +32,11 @@
 	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14))             /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
+
+// IWYU pragma: no_include <oneapi/tbb/parallel_reduce.h>  // for parallel_reduce
+// IWYU pragma: no_include <oneapi/tbb/task_arena.h>       // for isolate
+// IWYU pragma: no_include <pstl/parallel_backend_tbb.h>   // for __parallel_transform_reduce
+
 #endif
 
 namespace multi = boost::multi;

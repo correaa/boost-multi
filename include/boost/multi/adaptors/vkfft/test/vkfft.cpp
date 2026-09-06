@@ -1,4 +1,4 @@
-// Copyright 2024-2026 Alfredo A. Correa
+// Copyright 2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -21,7 +21,7 @@ template<>
 constexpr bool multi::force_element_trivial_default_construction<thrust::complex<double>> = true;
 
 namespace {
-auto random_array(multi::extensions_t<2> exts) {
+auto random_array(multi::extents_t<2> exts) {
 	multi::array<complex, 2>               ret(exts);
 	std::mt19937                           gen(42);  // NOLINT(cert-msc32-c,cert-msc51-cpp) reproducible
 	std::uniform_real_distribution<double> dist(-1.0, 1.0);
@@ -244,9 +244,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST(max_err < 1.0e-7);
 		};
 
-		sweep(multi::extensions_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, true, true, true});
-		sweep(multi::extensions_t<3>({4, 5, 6}), std::array<bool, 3>{true, false, true});
-		sweep(multi::extensions_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, false, false, true});
+		sweep(multi::extents_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, true, true, true});
+		sweep(multi::extents_t<3>({4, 5, 6}), std::array<bool, 3>{true, false, true});
+		sweep(multi::extents_t<4>({3, 4, 5, 6}), std::array<bool, 4>{true, false, false, true});
 	}
 
 	// The ONE `which` VkFFT (and this adaptor) refuses: the all-false mask.

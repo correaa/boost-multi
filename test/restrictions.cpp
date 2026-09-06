@@ -282,15 +282,7 @@ auto main() -> int {
 		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
 	}
 	{
-		multi::iextension m(96);
-		multi::iextension h(64);
-		multi::iextension k(64);
-		multi::iextension n(96);
-
-		multi::array<float, 4> A =
-			+(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
-				[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>{m, h, k, n}
-			);
+		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>(9, 6, 7, 8));
 	}
 	{
 		multi::array<double, 3> arr;
