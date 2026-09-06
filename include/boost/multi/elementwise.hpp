@@ -166,15 +166,15 @@ constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
 	return std::forward<T1>(a) - std::forward<T2>(b);
 }
 
-/// creates a array with the `-` operation applied lazily elementwise to two arrays
+/// yields an array expression with the `-` operation applied lazily elementwise to two arrays
 template<class A>
 constexpr auto operator-(A&& alpha) { return elementwise::invoke(std::negate<>{}, std::forward<A>(alpha)); }
 
-/// creates a array with the `*` operation applied lazily elementwise to two arrays
+/// yields an array expression with the `*` operation applied lazily elementwise to two arrays.
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
-/// creates a array with the `/` operation applied lazily elementwise to two arrays
+/// yields an array expression with the `/` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator/(A&& alpha, B&& omega) {
 	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
@@ -228,9 +228,11 @@ constexpr auto zeros(multi::extents_t<D> const& exts) {
 
 // constrained to multi expressions (operands with dimensionality) so this does not become a
 // greedy ADL `operator&&` candidate for unrelated types whose template args pull in namespace multi
+/// creates a array with the `&&` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
+/// yields an array expression with the `||` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
@@ -290,7 +292,7 @@ class log_bind_t {
 template<class A> log_bind_t(A) -> log_bind_t<A>;
 }  // namespace detail
 
-/// creates a array with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `log` applied lazily elementwise.
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto log(A&& alpha) {
 	auto xs = alpha.extents();  // shouldn't get to this point for scalars
