@@ -95,7 +95,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::accumulate( begin(iex), end(iex), static_cast<multi::index_extension::value_type>(0U)) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 		{
-			multi::iextensions<3> const ies({
+			multi::extents_t<3> const ies({
 				{0, 3},
 				{0, 4},
 				{0, 5},

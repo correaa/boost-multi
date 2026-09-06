@@ -997,7 +997,7 @@ template<> struct extents_t<1> : tuple<multi::index_extension> {
 	}
 };
 
-template<dimensionality_type D> using iextensions = extents_t<D>;
+// template<dimensionality_type D> using iextensions = extents_t<D>;
 
 template<dimensionality_type D> using extensions_t [[deprecated("use extents_t")]] = extents_t<D>;
 

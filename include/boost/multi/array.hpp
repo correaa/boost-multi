@@ -1272,10 +1272,10 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		uninitialized_fill(elem);
 	}
 
-	dynamic_array() : dynamic_array(multi::iextensions<0>{}) {}  // TODO(correaa) a noexcept will force a partially formed state for zero dimensional arrays
+	dynamic_array() : dynamic_array(multi::extents_t<0>{}) {}  // TODO(correaa) a noexcept will force a partially formed state for zero dimensional arrays
 
 	explicit dynamic_array(typename dynamic_array::element const& elem)
-	: dynamic_array(multi::iextensions<0>{}, elem) {}
+	: dynamic_array(multi::extents_t<0>{}, elem) {}
 
 	template<
 		class Singleton, std::enable_if_t<!std::is_base_of_v<dynamic_array, Singleton> && !std::is_same_v<Singleton, typename dynamic_array::element>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
@@ -2141,17 +2141,17 @@ template<class T> array(T[]) -> array<T, static_cast<dimensionality_type>(1U)>; 
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
 /// Deduction guide: builds a 0-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, static_cast<dimensionality_type>(0U)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<0>, T) -> array<T, static_cast<dimensionality_type>(0U)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
 /// Deduction guide: builds a 1-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, static_cast<dimensionality_type>(1U)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<1>, T) -> array<T, static_cast<dimensionality_type>(1U)>;
 /// Deduction guide: builds a 2-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, static_cast<dimensionality_type>(2U)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<2>, T) -> array<T, static_cast<dimensionality_type>(2U)>;
 /// Deduction guide: builds a 3-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, static_cast<dimensionality_type>(3U)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<3>, T) -> array<T, static_cast<dimensionality_type>(3U)>;
 /// Deduction guide: builds a 4-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, static_cast<dimensionality_type>(4U)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<4>, T) -> array<T, static_cast<dimensionality_type>(4U)>;
 /// Deduction guide: builds a 5-dimensional `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3, n4}` extents notation.
-template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, static_cast<dimensionality_type>(5U)>;
+template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<5>, T) -> array<T, static_cast<dimensionality_type>(5U)>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
 // template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>>>
