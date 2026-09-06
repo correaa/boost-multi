@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <tuple>  // for get
+// IWYU pragma: no_include <tuple>    // for get
 // IWYU pragma: no_include <utility>  // for forward, declval, move
 
 namespace multi = boost::multi;
@@ -67,6 +67,16 @@ auto main() -> int {
 		BOOST_TEST( a2.size() == 0 );
 		BOOST_TEST( get<1>(a2).size() == 0 );  // NOLINT(readability-container-size-empty)
 		BOOST_TEST( get<1>(a2).empty() );
+	}
+	{
+		multi::array<int, 2> const a1({6, 0}, 0);
+
+		BOOST_TEST( a1.begin() == a1.end() );
+		auto const& b1 = a1.begin()[1];
+		// auto const& b1 = a1[1];
+
+		BOOST_TEST( b1.size() == 0 );
+		// BOOST_TEST( a1.size() == 6 );
 	}
 
 	return boost::report_errors();
