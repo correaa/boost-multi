@@ -1529,7 +1529,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	// clang-format on
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT((this->num_elements() == 0 || ((this->stride() == 0) || this->extent().contains(idx))) && ("out of bounds"));
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

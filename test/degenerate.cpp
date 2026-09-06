@@ -72,10 +72,13 @@ auto main() -> int {
 		multi::array<int, 2> const a1({6, 0}, 0);
 
 		BOOST_TEST( a1.begin() == a1.end() );
+		BOOST_TEST( a1.stride() != 0 );
 		auto const& b1 = a1.begin()[1];
-		// auto const& b1 = a1[1];
-
 		BOOST_TEST( b1.size() == 0 );
+
+		auto const& b2 = a1[1];
+		BOOST_TEST( b2.size() == 0 );
+
 		// BOOST_TEST( a1.size() == 6 );
 	}
 
