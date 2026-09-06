@@ -3877,11 +3877,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #pragma clang diagnostic pop
 #endif
 
-template<class T2, class P2, class Array, class... Args>
-[[deprecated("use member static_array_cast")]]
-constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
-	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
-}
+// template<class T2, class P2, class Array, class... Args>
+// [[deprecated("use member static_array_cast")]]
+// constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
+// 	return std::forward<Array>(self).template static_array_cast<T2, P2>(std::forward<Args>(args)...);
+// }
 
 namespace detail {
 template<class T, dimensionality_type D, typename Ptr = T*>
