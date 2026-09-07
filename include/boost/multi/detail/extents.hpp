@@ -80,10 +80,13 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v = D;
 
+	/// Signed integer type to represent difference between indices (usually std::ptrdiff_t)
 	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
+	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
 
+	/// Element type of the Cartesian product (a `D`-tuple of indices)
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extents_t<D - 1>::element>;
 
 	extents_t() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) intentionally trivial; default-init by design
@@ -218,7 +221,9 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 	friend BOOST_MULTI_HD auto operator==(extents_t const& self, extents_t const& other) { return self.base() == other.base(); }
 	friend BOOST_MULTI_HD auto operator!=(extents_t const& self, extents_t const& other) { return self.base() != other.base(); }
 
+	/// Type to store an index in the leading dimension
 	using index        = multi::index;
+	/// A tuple type that allows storing `D` indices to locate an element in the structured Cartesian product
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extents_t<D - 1>::indices_type>;
 
 	// template<class Func>
@@ -575,7 +580,7 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		using std::apply;
 		return apply([](auto... sizes) -> extents_t { return extents_t(sizes...); }, sizes());
 	}
-
+	/// A `D`-tuple to hold the sizes of the structured Cartesian product
 	using sizes_type = boost::multi::detail::tuple_prepend_t<ssize_t, typename extents_t<D - 1>::sizes_type>;
 
  private:
