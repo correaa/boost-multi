@@ -1350,6 +1350,7 @@ inq cuda:
     - cmake --install .
     # - export CUDA_VISIBLE_DEVICES=0,1
     - 'export NP=$(( NGPU >= 2 ? NGPU : 2 ))'
+    - echo ${NP} 
     - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel 3 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
   needs: ["inq"]  # , "cuda"]

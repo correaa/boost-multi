@@ -91,10 +91,13 @@ struct extents_t {
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v = D;
 
+	/// Signed integer type to represent difference between indices (usually std::ptrdiff_t)
 	using difference_type = index_extension::difference_type;
 	using nelems_type = multi::index;
+	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
 
+	/// Element type of the Cartesian product (a `D`-tuple of indices)
 	using element = boost::multi::detail::tuple_prepend_t<index_extension::value_type, typename extents_t<D - 1>::element>;
 
 	extents_t() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init) intentionally trivial; default-init by design
@@ -169,7 +172,7 @@ struct extents_t {
 			&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
 			&& std::conjunction_v<std::is_integral<Exts>...>
 			&& std::conjunction_v<std::is_signed<Exts>...>,  // NOLINT(modernize-type-traits) for C++20
-			int> = 0
+			int> = 0	
 	>
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
 	: impl_{index_extension(exts)...} {}
@@ -229,7 +232,9 @@ struct extents_t {
 	friend BOOST_MULTI_HD auto operator==(extents_t const& self, extents_t const& other) { return self.base() == other.base(); }
 	friend BOOST_MULTI_HD auto operator!=(extents_t const& self, extents_t const& other) { return self.base() != other.base(); }
 
+	/// Type to store an index in the leading dimension
 	using index        = multi::index;
+	/// A tuple type that allows storing `D` indices to locate an element in the structured Cartesian product
 	using indices_type = multi::detail::tuple_prepend_t<index, typename extents_t<D - 1>::indices_type>;
 
 	// template<class Func>
@@ -586,7 +591,7 @@ struct extents_t {
 		using std::apply;
 		return apply([](auto... sizes) -> extents_t { return extents_t(sizes...); }, sizes());
 	}
-
+	/// A `D`-tuple to hold the sizes of the structured Cartesian product
 	using sizes_type = boost::multi::detail::tuple_prepend_t<ssize_t, typename extents_t<D - 1>::sizes_type>;
 
  private:
