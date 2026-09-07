@@ -71,10 +71,17 @@ template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > st
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct dynamic_array;  // TODO(correaa) why the declaration is in this header
 
+template<dimensionality_type D> struct extents_t;
+
 /// A structured cartesian product of extensions, it can be decomposed as a tuple-like into its cartesian factors. Used to determine the extents of array.
 template<dimensionality_type D>
 struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_> {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
+
+	template<::boost::multi::dimensionality_type DD>
+	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
+
+	template<dimensionality_type> friend struct extents_t;
 
  public:
 	static constexpr dimensionality_type dimensionality = D;
@@ -648,6 +655,11 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 template<> struct extents_t<0> : tuple<> {
 	using base_ = tuple<>;
 
+	template<::boost::multi::dimensionality_type DD>
+	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
+
+	template<dimensionality_type> friend struct extents_t;
+
  private:
 	// base_ impl_;
 
@@ -714,6 +726,12 @@ template<> struct extents_t<0> : tuple<> {
 
 template<> struct extents_t<1> : tuple<multi::index_extension> {
 	using base_ = tuple<multi::index_extension>;
+
+	template<::boost::multi::dimensionality_type DD>
+	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
+
+	template<dimensionality_type> friend struct extents_t;
+
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
@@ -1028,12 +1046,13 @@ struct std::tuple_size<boost::multi::extents_t<D>>  // NOLINT(cert-dcl58-cpp,bug
 
 template<>
 struct std::tuple_element<0, boost::multi::extents_t<0>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured binding
-	using type = void;
+	using type = void;  // TODO(correaa) should be undefined!
 };
 
 template<std::size_t Index, boost::multi::dimensionality_type D>
 struct std::tuple_element<Index, boost::multi::extents_t<D>> {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) to implement structured binding
-	using type = typename std::tuple_element_t<Index, typename boost::multi::extents_t<D>::base_>;
+	// using type = typename std::tuple_element_t<Index, typename boost::multi::extents_t<D>::base_>;
+	using type = typename ::boost::multi::extents_t<D>::template projection_type<Index>;
 };
 
 namespace std {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification)
