@@ -1331,6 +1331,9 @@ inq cuda:
     - export CMAKE_GENERATOR="Ninja"  # "Unix Makefiles"
     - nvidia-smi
     - __nvcc_device_query
+    - export NGPU=$(nvidia-smi --list-gpus | wc -l)
+    - echo "runner has ${NGPU} GPU(s)"
+    - unset CUDA_VISIBLE_DEVICES          # was: export CUDA_VISIBLE_DEVICES=0,1
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
@@ -1345,8 +1348,9 @@ inq cuda:
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
-    - export CUDA_VISIBLE_DEVICES=0,1
-    - INQ_EXEC_ENV="mpirun.mpich -np 2 $GPUBIND" ctest --parallel 3 --output-on-failure --timeout 4800
+    # - export CUDA_VISIBLE_DEVICES=0,1
+    - 'export NP=$(( NGPU >= 2 ? NGPU : 2 ))'
+    - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel 3 --output-on-failure --timeout 4800
   timeout: 4 hours 00 minutes
   needs: ["inq"]  # , "cuda"]
 
