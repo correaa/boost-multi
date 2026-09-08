@@ -236,6 +236,7 @@ constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::l
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
+namespace experimental {
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
 constexpr auto operator|(A&& alpha, F fun) {
 	return std::forward<A>(alpha).element_transformed(fun);
@@ -245,6 +246,7 @@ template<class F, class A, std::enable_if_t<true, decltype(std::declval<F>()(std
 constexpr auto operator|(A&& a, F fun) {
 	return std::forward<A>(a).transformed(fun);
 }
+}  // end namespace experimental
 
 namespace detail {
 template<class A>
