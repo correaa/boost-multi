@@ -93,7 +93,11 @@ struct extents_t {
 
 	/// Signed integer type to represent difference between indices (usually std::ptrdiff_t)
 	using difference_type = index_extension::difference_type;
+
+ private:
 	using nelems_type = multi::index;
+
+ public:
 	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
 
