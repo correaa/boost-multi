@@ -567,17 +567,26 @@ struct extents_t : boost::multi::detail::tuple_prepend_t<index_extension, typena
 		return this->apply([](auto const&... exts) -> auto { return multi::detail::mk_tuple(exts.size()...); });
 	}
 
-	constexpr auto rotate() const {
-		this->apply([](auto const& head, auto const&... rest) -> extents_t { return extents_t(rest..., head); });
-	}
+	// this implementation is incorrect, use restriction
+	// /// creates an extents object with the indices rotated to the left
+	// constexpr auto rotate() const {
+	// 	this->apply([](auto const& head, auto const&... rest) -> extents_t { return extents_t(rest..., head); });
+	// }
 
-	constexpr auto unrotate() const {
-		this->apply([](auto const&... rest, auto const& tail) -> extents_t { return extents_t(tail, rest...); });
-	}
+	// this implementation is incorrect, use restriction
+	// /// creates an extents object with the indices rotated to the right
+	// constexpr auto unrotate() const {
+	// 	this->apply([](auto const&... rest, auto const& tail) -> extents_t { return extents_t(tail, rest...); });
+	// }
 
-	constexpr auto transpose() const {
-		return this->apply([](auto const& head1, auto const& head2, auto const&... rest) -> extents_t { return extents_t(head2, head1, rest...); });
-	}
+	// this implementation is incorrect, use restriction
+	// /// creates an extents object with the first two dimensions transposed
+	// constexpr auto transpose() const {
+	// 	return this->apply([](auto const& head1, auto const& head2, auto const&... rest) -> extents_t { return extents_t(head2, head1, rest...); });
+	// }
+
+	// /// creates an extents object with the first two dimensions transposed
+	// constexpr auto transposed() const { return transpose(); }
 
 	[[deprecated]] BOOST_MULTI_HD constexpr auto extensions() const {
 		using std::apply;
