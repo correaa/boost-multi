@@ -845,6 +845,32 @@ print(a2d[0][1])
 
 NOTE: As of cppyy 3.5.0, converting a nested Python list directly into a bidimensional array (e.g. `multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])`) crashes the interpreter; construct from extensions and assign the elements instead.
 
+WARNING: For the same reason, passing the shape as a bare Python sequence, `multi.array['double', 2]((2, 2), 0.0)`, sends cppyy/Cling into an unbounded constructor-overload resolution and hangs the interpreter. Spell the shape with `multi.extensions_t[D](...)` as above, or import the optional pythonization module described next.
+
+=== Passing the shape as a Python sequence
+
+The header `boost/multi/adaptors/cppyy/boost_multi.py` is an optional pythonization module.
+Once imported, an array (or `array_ref`) accepts a plain tuple/list as its shape, as long as a further argument (the fill value or the target buffer) follows:
+
+[source,python]
+----
+import cppyy
+cppyy.add_include_path('path-to/boost-multi/include')
+cppyy.include("boost/multi/array.hpp")
+
+import sys
+sys.path.insert(0, 'path-to/boost-multi/include/boost/multi/adaptors/cppyy')
+import boost_multi  # registers the pythonizations on import
+
+multi = cppyy.gbl.boost.multi
+
+a2d = multi.array['double', 2]((2, 2), 0.0)   # (2, 2) is the shape
+a1d = multi.array['double', 1]((4,), 1.5)
+ref = multi.array_ref['double', 2]((2, 3), npa2d)
+----
+
+A lone sequence is left untouched, so `multi.array['double', 1]([1.0, 2.0, 3.0])` still builds a 1D array from those three elements.
+
 [source,python]
 ----
 arow = a2d[0]
