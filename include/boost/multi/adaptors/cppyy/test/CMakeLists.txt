@@ -34,3 +34,8 @@ add_test(
   NAME cppyy_test.py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/cppyy_test.py ${_multi_include_dir}
 )
+
+add_test(
+  NAME cppyy_pythonize_test.py
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/pythonize_test.py ${_multi_include_dir}
+)
