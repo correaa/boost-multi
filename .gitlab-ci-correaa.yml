@@ -1513,6 +1513,7 @@ sonar:
 pages-presentation:
   stage: build
   allow_failure: false
+  interruptible: false
   # only:
   #   refs:
   #     - develop
@@ -1650,6 +1651,7 @@ antora:
 pages:
   stage: build
   allow_failure: false
+  interruptible: false
   needs:
     - job: antora                # provides built HTML site (public/multi/*, etc.)
       artifacts: true

@@ -342,7 +342,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( comp_equal(arr.size(), vec.size()) );
 		}
 		{
-			multi::array<double, 1> const arr(multi::iextensions<1>(static_cast<multi::ssize_t>(vec.size())));  // warning: sign-conversion
+			multi::array<double, 1> const arr(multi::extents_t<1>(static_cast<multi::ssize_t>(vec.size())));  // warning: sign-conversion
 			BOOST_TEST( comp_equal(arr.size(), vec.size()) );
 		}
 	}
