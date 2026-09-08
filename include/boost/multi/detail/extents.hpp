@@ -1029,6 +1029,7 @@ template<dimensionality_type D> using extensions_t [[deprecated("use extents_t")
 // 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
 extents_t(multi::ssize_t) -> extents_t<1>;
+/// deduces an extents dimension from the number of size arguments
 extents_t(multi::ssize_t, multi::ssize_t) -> extents_t<2>;
 extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t) -> extents_t<3>;
 extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t) -> extents_t<4>;
