@@ -54,7 +54,7 @@ namespace boost::multi {
 // template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
 template<dimensionality_type D>
-struct extents_t;
+class extents_t;
 
 /// `D`-tuple to store sizes of arrays
 template<dimensionality_type D>
@@ -72,14 +72,11 @@ template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > st
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct dynamic_array;  // TODO(correaa) why the declaration is in this header
 
-template<dimensionality_type D> struct extents_t;
+template<dimensionality_type D> class extents_t;
 
 /// A structured cartesian product of extensions, it can be decomposed as a tuple-like into its cartesian factors. Used to determine the extents of array.
 template<dimensionality_type D>
-struct extents_t {
-	// boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>
-
- private:
+class extents_t {
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
 
 	base_ impl_;  // NOLINT(misc-non-private-member-variables-in-classes) make private
@@ -88,9 +85,8 @@ struct extents_t {
 	template<::boost::multi::dimensionality_type DD>
 	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
 
-	template<dimensionality_type> friend struct extents_t;
+	template<dimensionality_type> friend class extents_t;
 
- public:
 	static constexpr dimensionality_type dimensionality = D;
 	constexpr static dimensionality_type rank_v = D;
 
@@ -397,7 +393,7 @@ struct extents_t {
 		extents_t xs_;
 		explicit constexpr elements_t(extents_t const& exts) : xs_{exts} {}
 
-		friend struct extents_t;
+		friend class extents_t;
 
 	 public:
 		using difference_type = extents_t::difference_type;
@@ -706,14 +702,15 @@ struct extents_t {
 	}
 };
 
-template<> struct extents_t<0> {
+template<> class extents_t<0> {
 	tuple<> impl_;  // NOLINT(misc-non-private-member-variables-in-classes) make private
 	using base_ = tuple<>;
 
+ public:
 	template<::boost::multi::dimensionality_type DD>
 	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
 
-	template<dimensionality_type> friend struct extents_t;
+	template<dimensionality_type> friend class extents_t;
 
  private:
 	// base_ impl_;
@@ -779,14 +776,15 @@ template<> struct extents_t<0> {
 	}
 };
 
-template<> struct extents_t<1> {
+template<> class extents_t<1> {
 	tuple<multi::index_extension> impl_;  // NOLINT(misc-non-private-member-variables-in-classes) make private
 	using base_ = tuple<multi::index_extension>;
 
+ public:
 	template<::boost::multi::dimensionality_type DD>
 	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
 
-	template<dimensionality_type> friend struct extents_t;
+	template<dimensionality_type> friend class extents_t;
 
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
