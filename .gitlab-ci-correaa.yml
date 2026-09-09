@@ -1333,7 +1333,10 @@ inq cuda:
     - __nvcc_device_query
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - echo "runner has ${NGPU} GPU(s)"
-    - unset CUDA_VISIBLE_DEVICES          # was: export CUDA_VISIBLE_DEVICES=0,1
+    - unset CUDA_VISIBLE_DEVICES
+    # restrict to datacenter GPUs (e.g. A30), dropping slow workstation cards (e.g. RTX A2000) when faster ones remain;
+    # this runner is 2x A30 + 1x RTX A2000 and any MPI rank landing on the A2000 gates every SCF iteration (electron_gas.sh timed out at 4800s vs ~900s upstream)
+    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | grep -v RTX | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
@@ -1348,12 +1351,14 @@ inq cuda:
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
-    # - export CUDA_VISIBLE_DEVICES=0,1
-    - 'export NP=$(( NGPU >= 2 ? NGPU : 2 ))'
-    - echo ${NP} 
-    - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel 3 --output-on-failure --timeout 4800
+    # 2 MPI ranks per test (matches the passing upstream npneq/inq job); ranks share a GPU fine, inq supports multi-rank-per-GPU
+    - export NP=2
+    # run 3 tests concurrently only when >=2 GPUs are visible, otherwise 1 to avoid piling 6 processes onto a single GPU (OOM risk)
+    - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$(nvidia-smi --list-gpus | wc -l); fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
+    - echo "NP=${NP} JOBS=${JOBS}"
+    - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
-  needs: ["inq"]  # , "cuda"]
+  needs: ["inq", "cuda"]
 
 inq rocm:
   stage: test
