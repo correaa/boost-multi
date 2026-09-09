@@ -1140,6 +1140,7 @@ apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(aut
 
 }  // end namespace std
 
+#if defined(__NVCC__) || (defined(__NVCOMPILER) && (__NVCOMPILER_MAJOR__ <= 23))
 namespace boost::multi {
 
 // namespace-scope `get` for extents_t: the ADL target that the `detail::tuple` base used to
@@ -1169,6 +1170,7 @@ constexpr auto get(::boost::multi::extents_t<D>&& tp)
 }
 
 }  // end namespace boost::multi
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic push
