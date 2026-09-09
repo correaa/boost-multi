@@ -275,7 +275,7 @@ class plan {
 
 template<dimensionality_type D>
 class cached_plan {
-	typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D>>::iterator it_;
+	typename std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D>>::iterator it_;
 
  public:
 	cached_plan(cached_plan const&) = delete;
@@ -284,11 +284,11 @@ class cached_plan {
 	auto operator=(cached_plan&&) -> cached_plan&      = delete;
 	~cached_plan()                                     = default;
 
-	cached_plan(std::array<bool, D> which, multi::layout_t<D, multi::ssize_t> in, multi::layout_t<D, multi::ssize_t> out) {
-		thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D>>& LEAKY_cache =
-			*new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D>>;  // NOLINT(cppcoreguidelines-owning-memory) intentional leak, mirrors cufft::cached_plan
+	cached_plan(std::array<bool, D> which, multi::detail::layout_t<D, multi::ssize_t> in, multi::detail::layout_t<D, multi::ssize_t> out) {
+		thread_local std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D>>& LEAKY_cache =
+			*new std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D>>;  // NOLINT(cppcoreguidelines-owning-memory) intentional leak, mirrors cufft::cached_plan
 
-		auto const key = std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out};
+		auto const key = std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>{which, in, out};
 		it_            = LEAKY_cache.find(key);
 		if(it_ == LEAKY_cache.end()) {
 			it_ = LEAKY_cache.try_emplace(key, which, in, out).first;  // constructs plan<D> in place (it is non-movable)
