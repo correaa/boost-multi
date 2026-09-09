@@ -34,7 +34,10 @@ before_script:
   - echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/02-unsafe-io  # skip dpkg fsync(); safe in throwaway CI containers, speeds up apt-get install on I/O-bound runners
   - mkdir -p $APT_CACHE_DIR/partial
   - echo "Dir::Cache::Archives \"$APT_CACHE_DIR\";" > $APT_CONFIG
-  - apt-get -qq update  # factored update; macOS and Windows jobs override with `before_script: []`
+  # factored update; macOS and Windows jobs override with `before_script: []`.
+  # retry once wiping apt state + the (possibly truncated) cached .debs: "at least one invalid signature was
+  # encountered" on every repo at once means corrupt/truncated InRelease files, not a real key problem.
+  - apt-get -o Acquire::Retries=3 -qq update || { rm -rf /var/lib/apt/lists/* /var/lib/apt/lists/partial/* "$APT_CACHE_DIR"/*.deb "$APT_CACHE_DIR"/partial/*; apt-get clean; apt-get -o Acquire::Retries=3 -qq update; }
 
 default:
   interruptible: true  # jobs may override with `interruptible: false`
@@ -1370,7 +1373,6 @@ inq rocm:
     - x86_64  # for image
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get update
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
