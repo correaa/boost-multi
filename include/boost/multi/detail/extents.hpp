@@ -79,10 +79,12 @@ template<dimensionality_type D>
 struct extents_t {
 	// boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>
 
+ private:
 	using base_ = boost::multi::detail::tuple_prepend_t<index_extension, typename extents_t<D - 1>::base_>;
 
 	base_ impl_;  // NOLINT(misc-non-private-member-variables-in-classes) make private
 
+ public:
 	template<::boost::multi::dimensionality_type DD>
 	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
 
