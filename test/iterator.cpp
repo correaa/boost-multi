@@ -21,13 +21,13 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// iterator_1d
 	{
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<0>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<0>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<0>>));
 
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<1>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<1>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<1>>));
 
 		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
 		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
@@ -85,9 +85,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// iterator_2d
 	{
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<2>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<2>>));
 
 		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
 		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));

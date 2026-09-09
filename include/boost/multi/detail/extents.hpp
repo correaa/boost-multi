@@ -39,7 +39,11 @@
 #endif
 
 // clang-format off
-namespace boost::multi { template <boost::multi::dimensionality_type D, typename SSize = multi::ssize_t> struct layout_t; }
+namespace boost::multi::detail {
+	/// Layout for strided arrays
+	template <boost::multi::dimensionality_type D, typename SSize = multi::ssize_t>
+	struct layout_t; 
+}
 namespace boost::multi::detail { template <class ...Ts> class tuple; }
 // clang-format on
 
@@ -221,7 +225,7 @@ class extents_t {
 	// BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	// : extents_t(other.extent(), other.sub()) {}
 
-	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
+	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename detail::layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
@@ -264,7 +268,7 @@ class extents_t {
 
 	friend constexpr auto operator%(nelems_type idx, extents_t const& exts) { return exts.from_linear(idx); }
 
-	constexpr explicit operator bool() const { return !layout_t<D>{*this}.empty(); }
+	constexpr explicit operator bool() const { return !detail::layout_t<D>{*this}.empty(); }  // TODO(correaa) simplifty algorithm
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto to_linear(index const& idx, Indices const&... rest) const {
@@ -292,7 +296,7 @@ class extents_t {
 		constexpr auto operator[](difference_type n) const {
 			using std::apply;
 			if constexpr(DD != 1) {
-				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
+				return cursor_t<typename multi::detail::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
 					apply([n] (auto... idxs) -> auto {return detail::mk_tuple(idxs..., n);}, bef_)
 				);
 			} else {

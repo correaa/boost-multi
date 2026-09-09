@@ -6,15 +6,15 @@
 #define BOOST_MULTI_DETAIL_LAYOUT_HPP
 // #pragma once
 
-#include <boost/multi/detail/config/NODISCARD.hpp>
-#include <boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp>
+#include "boost/multi/detail/config/NODISCARD.hpp"
+#include "boost/multi/detail/config/NO_UNIQUE_ADDRESS.hpp"
 
-#include <boost/multi/detail/extents.hpp>        // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
-#include <boost/multi/detail/index_range.hpp>    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
-#include <boost/multi/detail/operators.hpp>      // IWYU pragma: export  // for equality_comparable
-#include <boost/multi/detail/serialization.hpp>  // IWYU pragma: export  // for archive_traits
-#include <boost/multi/detail/tuple_zip.hpp>      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
-#include <boost/multi/detail/types.hpp>          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
+#include "boost/multi/detail/extents.hpp"        // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include "boost/multi/detail/index_range.hpp"    // IWYU pragma: export  // for index_extension, extension_t, tuple, intersection, range, operator!=, operator==
+#include "boost/multi/detail/operators.hpp"      // IWYU pragma: export  // for equality_comparable
+#include "boost/multi/detail/serialization.hpp"  // IWYU pragma: export  // for archive_traits
+#include "boost/multi/detail/tuple_zip.hpp"      // IWYU pragma: export  // for get, tuple, tuple_prepend, tail, tuple_prepend_t, ht_tuple
+#include "boost/multi/detail/types.hpp"          // IWYU pragma: export  // for dimensionality_type, index, size_type, difference_type, size_t
 
 #include <algorithm>  // for max
 #include <array>      // for array
@@ -185,7 +185,7 @@ class contiguous_layout {
 
 	using nelems_type = SSize;
 
-	using sub_type = layout_t<0, SSize>;
+	using sub_type = detail::layout_t<0, SSize>;
 
  private:
 	// BOOST_MULTI_NO_UNIQUE_ADDRESS sub_type sub_;
@@ -244,7 +244,7 @@ class contiguous_layout {
 	BOOST_MULTI_NODISCARD("empty checks for emptyness, it performs no action. Use `is_empty()` instead")
 	BOOST_MULTI_HD constexpr auto empty() const { return is_empty(); }
 
-	static constexpr auto sub() { return layout_t<0, SSize>{}; }
+	static constexpr auto sub() { return detail::layout_t<0, SSize>{}; }
 
 	static constexpr auto is_compact() { return std::true_type{}; }
 
@@ -370,7 +370,7 @@ struct bilayout {
 	using stride1_type = difference_type;
 	using stride2_type = difference_type;
 	// using bistride_type = std::pair<index, index>;
-	using sub_type = layout_t<D - 1>;
+	using sub_type = detail::layout_t<D - 1>;
 
 	using dimensionality_type    = typename sub_type::dimensionality_type;
 	using rank                   = std::integral_constant<dimensionality_type, sub_type::rank::value + 1>;
@@ -473,6 +473,7 @@ class segmented_ptr {
 	}
 };
 
+namespace detail {
 template<dimensionality_type D, typename SSize>
 struct layout_t
 	: multi::equality_comparable<layout_t<D, SSize>> {
@@ -797,8 +798,8 @@ struct layout_t
 		assert(n != 0);
 		// vvv TODO(correaa) should be size() here?
 		assert((this->nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
-		return multi::layout_t<D + 1>{
-			multi::layout_t<D>{
+		return multi::detail::layout_t<D + 1>{
+			multi::detail::layout_t<D>{
 				this->sub(),
 				this->stride(),
 				this->offset(),
@@ -897,7 +898,7 @@ struct layout_t
 
 	BOOST_MULTI_HD constexpr auto halve() const {
 		assert(this->size() % 2 == 0);
-		return layout_t<D + 1>(
+		return detail::layout_t<D + 1>(
 			this->take(this->size() / 2),
 			this->nelems() / 2,
 			0,
@@ -1070,10 +1071,12 @@ struct layout_t<0, SSize>
 	constexpr auto hull_size() const -> size_type { return num_elements(); }  // not in bytes
 };
 
+}  // end namespace detail
+
 BOOST_MULTI_HD constexpr auto
-operator*(layout_t<0>::index_extension const& extensions_0d, layout_t<0>::extents_type const& /*zero*/)
-	-> layout_t<1>::extents_type {
-	return layout_t<1>::extents_type{tuple<layout_t<0>::index_extension>{extensions_0d}};
+operator*(detail::layout_t<0>::index_extension const& extensions_0d, detail::layout_t<0>::extents_type const& /*zero*/)
+	-> detail::layout_t<1>::extents_type {
+	return detail::layout_t<1>::extents_type{tuple<detail::layout_t<0>::index_extension>{extensions_0d}};
 }
 
 BOOST_MULTI_HD constexpr auto operator*(extents_t<1> const& extensions_1d, extents_t<1> const& self) {
@@ -1081,65 +1084,28 @@ BOOST_MULTI_HD constexpr auto operator*(extents_t<1> const& extensions_1d, exten
 	return extents_t<2>({get<0>(extensions_1d.base()), get<0>(self.base())});
 }
 
+namespace detail {
+
+// template<class Array>
+// struct decaying_array : Array {
+// 	using Array::Array;
+// 	explicit decaying_array(Array const& other)
+// 	: Array(other) {}
+
+// 	[[deprecated("possible dangling conversion, use `std::array<T, D> p` instead of `auto* p`")]]
+// 	constexpr operator std::ptrdiff_t const*() const { return Array::data(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+
+// 	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
+// 	friend constexpr auto get(decaying_array const& self) -> std::tuple_element_t<Index, Array> {
+// 		using std::get;
+// 		return get<Index>(static_cast<Array const&>(self));
+// 	}
+// };
+}  // end namespace detail
 }  // end namespace boost::multi
 
-namespace boost::multi::detail {
-
-template<class Tuple>
-struct convertible_tuple : Tuple {
-	using Tuple::Tuple;
-	BOOST_MULTI_HD explicit convertible_tuple(Tuple const& other)
-	: Tuple(other) {}
-
- public:
-	using array_type = std::array<std::ptrdiff_t, std::tuple_size_v<Tuple>>;
-	auto to_array() const noexcept {
-		return std::apply([](auto... elems) noexcept -> auto {
-			return std::array<std::common_type_t<decltype(elems)...>, sizeof...(elems)>{{static_cast<multi::ssize_t>(elems)...}};
-		},
-						  static_cast<Tuple const&>(*this));
-	}
-
-	/*explicit*/ operator array_type() const& noexcept { return to_array(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	/*explicit*/ operator array_type() && noexcept { return to_array(); }      // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreturn-stack-address"
-#endif
-	[[deprecated("This is here for nominal compatiblity with Boost.MultiArray, this would be a dangling conversion")]]
-	operator std::ptrdiff_t const*() const&&;  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-											   /*{ return to_array().data(); }*/
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Tuple>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend BOOST_MULTI_HD constexpr auto get(convertible_tuple const& self) -> std::tuple_element_t<Index, Tuple> {
-		using std::get;
-		return get<Index>(static_cast<Tuple const&>(self));
-	}
-};
-
-template<class Array>
-struct decaying_array : Array {
-	using Array::Array;
-	explicit decaying_array(Array const& other)
-	: Array(other) {}
-
-	[[deprecated("possible dangling conversion, use `std::array<T, D> p` instead of `auto* p`")]]
-	constexpr operator std::ptrdiff_t const*() const { return Array::data(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-
-	template<std::size_t Index, std::enable_if_t<(Index < std::tuple_size_v<Array>), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-	friend constexpr auto get(decaying_array const& self) -> std::tuple_element_t<Index, Array> {
-		using std::get;
-		return get<Index>(static_cast<Array const&>(self));
-	}
-};
-}  // end namespace boost::multi::detail
-
-template<class Tuple> struct std::tuple_size<boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
-template<class Array> struct std::tuple_size<boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
+// template<class Tuple> struct std::tuple_size<::boost::multi::detail::convertible_tuple<Tuple>> : std::integral_constant<std::size_t, std::tuple_size_v<Tuple>> {};  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
+// template<class Array> struct std::tuple_size<::boost::multi::detail::decaying_array<Array>> : std::integral_constant<std::size_t, std::tuple_size_v<Array>> {};     // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) normal to define tuple size
 
 // #if defined(__cpp_lib_ranges) && (__cpp_lib_ranges >= 201911L) && !defined(_MSC_VER)
 // namespace std::ranges {  // NOLINT(cert-dcl58-cpp) to enable borrowed, nvcc needs namespace

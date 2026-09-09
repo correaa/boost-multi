@@ -1351,7 +1351,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
-		layout_t<0>::operator=({});
+		detail::layout_t<0>::operator=({});
 	}
 
  public:

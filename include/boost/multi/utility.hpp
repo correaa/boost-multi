@@ -490,7 +490,7 @@ constexpr auto dimensionality(Container const& /*container*/)
 }
 
 template<class T>
-auto        has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<boost::multi::dimensionality_type>(T::rank_v)), std::true_type{});
+auto        has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<::boost::multi::dimensionality_type>(T::rank_v)), std::true_type{});
 inline auto has_dimensionaliy_member_aux(...) -> decltype(std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
@@ -582,8 +582,8 @@ t<decltype(array.extents())> {
 
 template<class BoostMultiArray, std::size_t... I>
 constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
-	return boost::multi::extents_t<BoostMultiArray::dimensionality>(
-		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return ::boost::multi::extents_t<BoostMultiArray::dimensionality>(
+		::boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	);
 }
 
@@ -594,7 +594,7 @@ auto transposed(Arr2D&& arr)
 }
 
 template<class T, std::enable_if_t<!has_extents<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extents_type { return {}; }
+constexpr auto extents(T const& /*unused*/) -> multi::detail::layout_t<0>::extents_type { return {}; }
 
 template<class T, std::size_t N>
 constexpr auto extents(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
@@ -633,10 +633,10 @@ auto layout(T const& array)
 }
 
 template<class T, typename = std::enable_if_t<!has_layout_member<T const&>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-auto layout(T const& /*unused*/) -> layout_t<0> { return {}; }
+auto layout(T const& /*unused*/) -> detail::layout_t<0> { return {}; }
 
 template<class T, std::size_t N>
-constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>{multi::extents(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
+constexpr auto layout(T (&array)[N]) { return multi::detail::layout_t<std::rank_v<T[N]>>{multi::extents(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
 template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
@@ -689,10 +689,10 @@ constexpr auto num_elements(std::array<std::array<T, M>, N> const& arr)
 	-> std::ptrdiff_t { return static_cast<std::ptrdiff_t>(N) * num_elements(arr[0]); }
 
 template<class T, std::size_t N>
-constexpr auto dimensionality(std::array<T, N> const& /*unused*/) -> boost::multi::dimensionality_type { return 1; }
+constexpr auto dimensionality(std::array<T, N> const& /*unused*/) -> ::boost::multi::dimensionality_type { return 1; }
 
 template<class T, std::size_t M, std::size_t N>
-constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boost::multi::dimensionality_type {
+constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> ::boost::multi::dimensionality_type {
 	return 1 + dimensionality(arr[0]);
 }
 
@@ -732,7 +732,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
-	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extents(arr)};
+	return multi::detail::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extents(arr)};
 }
 
 #ifdef __clang__
@@ -820,8 +820,8 @@ constexpr auto extents(std::initializer_list<std::initializer_list<std::initiali
 
 template<class T>
 constexpr auto layout(std::initializer_list<T> const& ilist) {
-	return multi::layout_t<1>{
-		multi::layout_t<0>(multi::extents_t<0>{}),
+	return multi::detail::layout_t<1>{
+		multi::detail::layout_t<0>(multi::extents_t<0>{}),
 		1,
 		0,
 		static_cast<multi::ssize_t>(ilist.size())

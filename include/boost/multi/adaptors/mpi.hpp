@@ -340,7 +340,7 @@ class iterator : skeleton<void, DatatypeT, Size> {
 	: iterator{
 		const_cast<void*>(static_cast<void const*>(it.base())),  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		it.stride(),
-		multi::layout_t<0>{},
+		multi::detail::layout_t<0>{},
 		DatatypeT<typename ArrayIterator::element>{}
 	} {}
 

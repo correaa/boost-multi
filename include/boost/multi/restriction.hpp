@@ -472,13 +472,13 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 	/// yields a transposed view of the restriction array (first two indices exchanged). (Only for `D >= 2`)
 	BOOST_MULTI_HD constexpr auto transposed() && {
-		return detail::bind_transposed_t<Proj>{std::move(proj_)} ^ layout_t<D>(extents()).transpose().extents();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
+		return detail::bind_transposed_t<Proj>{std::move(proj_)} ^ detail::layout_t<D>(extents()).transpose().extents();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ detail::layout_t<D>(extents()).transpose().extents();
 	}
 
 	BOOST_MULTI_HD constexpr auto transposed() const& -> restriction<D, detail::bind_transposed_t<Proj const&>> {
-		return detail::bind_transposed_t<Proj const&>{proj_} ^ layout_t<D>(extents()).transpose().extents();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
+		return detail::bind_transposed_t<Proj const&>{proj_} ^ detail::layout_t<D>(extents()).transpose().extents();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ detail::layout_t<D>(extents()).transpose().extents();
 	}
 
  private:
@@ -494,7 +494,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		static_assert(D > 1);
 		using std::get;  // needed for C++17
 		return bind_diagonal_t{proj_} ^ std::min(get<0>(sizes()), get<1>(sizes())) * extents().sub().sub();
-		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ layout_t<D>(extents()).transpose().extents();
+		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ detail::layout_t<D>(extents()).transpose().extents();
 	}
 
 	BOOST_MULTI_HD constexpr auto operator~() && { return std::move(*this).transposed(); }
@@ -524,7 +524,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
  public:
 	/// yields a restriction of higher dimension by splitting the leading dimension into equal‐sized partitions of size `count` (`count` must divide `size()`)
 	BOOST_MULTI_HD constexpr auto partitioned(size_type count) const noexcept -> restriction<D + 1, bind_partitioned_t> {
-		return bind_partitioned_t{proj_, size() / count} ^ layout_t<D>(extents()).partition(count).extents();
+		return bind_partitioned_t{proj_, size() / count} ^ detail::layout_t<D>(extents()).partition(count).extents();
 	}
 
  private:

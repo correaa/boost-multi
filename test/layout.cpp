@@ -28,11 +28,11 @@ namespace multi = boost::multi;
 // construction is free and the types remain cheap/memcpy-able/device-friendly.
 // (std::is_trivial is deprecated in C++26, hence the two-trait spelling it recommends)
 template<class T> constexpr bool is_trivial_v = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
-static_assert(is_trivial_v<multi::layout_t<0>>);
-static_assert(is_trivial_v<multi::layout_t<1>>);
-static_assert(is_trivial_v<multi::layout_t<2>>);
-static_assert(is_trivial_v<multi::layout_t<3>>);
-static_assert(is_trivial_v<multi::layout_t<4>>);
+static_assert(is_trivial_v<multi::detail::layout_t<0>>);
+static_assert(is_trivial_v<multi::detail::layout_t<1>>);
+static_assert(is_trivial_v<multi::detail::layout_t<2>>);
+static_assert(is_trivial_v<multi::detail::layout_t<3>>);
+static_assert(is_trivial_v<multi::detail::layout_t<4>>);
 
 namespace {
 auto second_finish(multi::extents_t<3> exts) {
@@ -1205,7 +1205,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrp2.size() == 2 );
 	}
 	{
-		multi::layout_t<2> const lyt(multi::extents_t<2>{
+		multi::detail::layout_t<2> const lyt(multi::extents_t<2>{
 			{3,  9},
 			{0, 15}
 		});

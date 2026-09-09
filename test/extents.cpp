@@ -633,7 +633,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extents_t<2> const x2D(6, 5);
-		multi::extents_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extents();
+		multi::extents_t<3> const p3D = multi::detail::layout_t<2>(x2D).partition(2).extents();
 
 		using std::get;
 		BOOST_TEST( get<0>(p3D).size() == 2 );
