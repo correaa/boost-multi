@@ -43,7 +43,8 @@ namespace boost::multi::detail {
 	/// Layout for strided arrays
 	template <boost::multi::dimensionality_type D, typename SSize = multi::ssize_t>
 	struct layout_t; 
-}
+}  // end namespace boost::multi::detail
+
 namespace boost::multi::detail { template <class ...Ts> class tuple; }
 // clang-format on
 
