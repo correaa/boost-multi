@@ -56,6 +56,7 @@ namespace boost::multi {
 template<dimensionality_type D>
 struct extents_t;
 
+/// `D`-tuple to store sizes of arrays
 template<dimensionality_type D>
 using sizes_t = typename extents_t<D>::sizes_type;
 
