@@ -1339,7 +1339,8 @@ inq cuda:
     - unset CUDA_VISIBLE_DEVICES
     # restrict to datacenter GPUs (e.g. A30), dropping slow workstation cards (e.g. RTX A2000) when faster ones remain;
     # this runner is 2x A30 + 1x RTX A2000 and any MPI rank landing on the A2000 gates every SCF iteration (electron_gas.sh timed out at 4800s vs ~900s upstream)
-    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | grep -v RTX | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
+    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
+    # - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | grep -v RTX | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
