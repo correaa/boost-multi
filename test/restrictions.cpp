@@ -169,7 +169,7 @@ auto main() -> int {
 		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
 		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
 		using multi::elementwise::operator/;
-		using multi::elementwise::operator|;
+		using multi::elementwise::experimental::operator|;
 
 		auto x = exp(~mat - (mat | maxR1));
 
