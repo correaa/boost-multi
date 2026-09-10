@@ -1717,20 +1717,13 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 #endif
 	~array() noexcept = default;
 
-	/// Clear the values of array, making it empty (doesn't throw)
-	// [[deprecated("use arr = {}; or arr.reset(exts, ...) for immediate reextents with out element preservation")]]
+	// [[deprecated("use arr = {}; or arr.reset(exts, ...) for immediate reextents")]]
+	/// clears the values of array, making it empty (and freeing memory).
 	auto clear() noexcept -> array& {  // cppcheck-suppress duplInheritedMember ; to override
 		dynamic_::clear();
 		assert(this->stride() != 0);
 		return *this;
 	}
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array const& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array& self) { return self.data_elements(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto data_elements(array&& self) { return std::move(self).data_elements(); }
-
-	// friend BOOST_MULTI_HD constexpr auto move(array& self) -> decltype(auto) { return std::move(self); }
-	// friend BOOST_MULTI_HD constexpr auto move(array&& self) -> decltype(auto) { return std::move(self); }
 
 	/// Move constructor from @p other array that also sets the allocator @p alloc (may allocate)
 	BOOST_MULTI_HD constexpr array(array&& other, Alloc const& alloc) noexcept  ///< Same as the move constructor, except that alloc is used as the allocator.

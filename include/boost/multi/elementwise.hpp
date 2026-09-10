@@ -89,7 +89,7 @@ struct invoke_bind_t<F, A, B> {
 };
 }  // end namespace detail
 
-/// applies a function of n-argument to n array expressions, elementwise, extents must match
+/// yield an array expression that results from invoking a function of n arguments to n array expressions, elementwise, all extents must match
 template<class F, class A, class... As, typename = decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>(), std::declval<typename std::decay_t<As>::element>()...))>
 constexpr auto invoke(F&& fun, A&& arr, As&&... arrs) {  // TODO(correaa) change name, elementwise::transform, elementwise::transformed?
 	auto const xs = arr.extents();                       // TODO(correaa) consider storing home() cursor only
