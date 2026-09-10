@@ -1608,6 +1608,7 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	using dynamic_::decay;
 	constexpr auto decay() && -> typename dynamic_::decay_type { return typename dynamic_::decay_type{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to override
 
+	/// resets the array to a new size (or empty) and reclaims the memory.
 	void reset() & {
 		this->destroy();
 		this->deallocate();
