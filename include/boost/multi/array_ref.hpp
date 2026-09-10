@@ -2698,11 +2698,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  private:
 	template<typename P2>
-	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& ptr) -> decltype(auto) {
+	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> decltype(auto) {
 		if constexpr(std::is_pointer_v<ElementPtr>) {
-			return static_cast<P2>(static_cast<void*>(ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
-			return reinterpret_cast<P2 const&>(ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
+			return reinterpret_cast<P2 const&>(base_ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		}
 	}
 
