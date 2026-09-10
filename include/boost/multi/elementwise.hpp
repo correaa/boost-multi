@@ -228,7 +228,7 @@ constexpr auto zeros(multi::extents_t<D> const& exts) {
 
 // constrained to multi expressions (operands with dimensionality) so this does not become a
 // greedy ADL `operator&&` candidate for unrelated types whose template args pull in namespace multi
-/// creates a array with the `&&` operation applied lazily elementwise to two arrays
+/// yields an array expression with the `&&` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
