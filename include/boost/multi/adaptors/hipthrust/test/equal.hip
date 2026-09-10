@@ -22,8 +22,8 @@ auto main() -> int {
 
 	int host[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-	hipMemcpy(r1, host, sizeof(host), hipMemcpyHostToDevice);
-	hipMemcpy(r2, host, sizeof(host), hipMemcpyHostToDevice);
+	hipMemcpy(r1, host, sizeof(host), hipMemcpyHostToDevice)?:throw;
+	hipMemcpy(r2, host, sizeof(host), hipMemcpyHostToDevice)?:throw;
 
 	boost::multi::array_ref<int const, 1, dev_ptr> a(dev_ptr(r1), {10});
 	boost::multi::array_ref<int const, 1, dev_ptr> b(dev_ptr(r2), {10});
