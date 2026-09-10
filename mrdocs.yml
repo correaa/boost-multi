@@ -33,6 +33,7 @@ exclude-symbols:
   - "boost::multi::detail"
   - "boost::multi::elementwise::detail"
   - "boost::multi::experimental"
+  - "boost::multi::elementwise::experimental"
 
 # sort-members-by: location
 # sort-namespace-members-by: location
