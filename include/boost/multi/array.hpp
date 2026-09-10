@@ -240,6 +240,7 @@ struct                                                                          
 	/// yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
 	constexpr auto taked(difference_type count) && -> decltype(auto) { return ref_::taked(count).element_moved(); }
 
+	/// yields an array of the same dimensionality with the first n dropped in the leading dimension. 
 	using ref_::dropped;
 
 	/// Gives a subarray dropping the first `n` indices in the leading dimension
@@ -1605,6 +1606,7 @@ class unique_array : public dynamic_array<T, D, Alloc> {
 	auto operator=(unique_array const&) -> unique_array& = default;
 	auto operator=(unique_array&&) -> unique_array&      = default;
 
+	/// copies the array into a new independent array (allocates).
 	using dynamic_::decay;
 	constexpr auto decay() && -> typename dynamic_::decay_type { return typename dynamic_::decay_type{std::move(*this)}; }  // cppcheck-suppress duplInheritedMember ; to override
 

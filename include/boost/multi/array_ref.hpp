@@ -2556,6 +2556,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> typename subarray::reference { return this->at_aux_(idx); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> typename subarray::reference { return this->at_aux_(idx); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// yield a array reference of lower dimension with the diagonal elements
 	using const_subarray<T, D, ElementPtr, Layout>::diagonal;
 
 	// template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
