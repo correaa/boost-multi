@@ -229,6 +229,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	/// Integer type to store dimensionality information (e.g. 1D, 2D, 3D)
 	using dimensionality_type = typename layout_type::dimensionality_type;
+
+	/// Dimensionality value of the array (generally `D`)
 	using layout_type::dimensionality;
 
 	using layout_type::stride;
