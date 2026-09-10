@@ -15,10 +15,12 @@
 auto main() -> int {
 	int *r1 = nullptr, *r2 = nullptr;
 
-	hipMalloc(&r1, 10 * sizeof(int));
-	hipMalloc(&r2, 10 * sizeof(int));
+	using dev_ptr = thrust::pointer<int const, thrust::hip_rocprim::tag, int const&, thrust::use_default>;
 
-	int host[10] = {1,2,3,4,5,6,7,8,9,10};
+	hipMalloc(&r1, 10 * sizeof(int))?:throw;
+	hipMalloc(&r2, 10 * sizeof(int))?:throw;
+
+	int host[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 	hipMemcpy(r1, host, sizeof(host), hipMemcpyHostToDevice);
 	hipMemcpy(r2, host, sizeof(host), hipMemcpyHostToDevice);
