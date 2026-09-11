@@ -4267,7 +4267,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #if defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L)
 		return std::launder(base_ptr);
 #else
-		return pointer;
+		return base_ptr;
 #endif
 	}
 
