@@ -16,6 +16,10 @@ enable_testing()
 
 include(CTest)
 
+add_executable(equal.hip.amd.x equal.hip)
+target_link_libraries(equal.hip.amd.x PRIVATE multi roc::rocthrust)
+add_test(NAME equal.hip.amd.x COMMAND  $<TARGET_FILE:equal.hip.amd.x>)
+
 add_executable(vector.hip.amd.x vector.hip)
 #set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
 target_link_libraries(vector.hip.amd.x PRIVATE multi roc::rocthrust)
@@ -35,4 +39,3 @@ target_link_libraries(speed.hip.amd.x PRIVATE multi roc::rocthrust)
 add_test(NAME speed.hip.amd.x COMMAND $<TARGET_FILE:speed.hip.amd.x>)
 
 set_tests_properties(speed.hip.amd.x PROPERTIES RUN_SERIAL TRUE)
-

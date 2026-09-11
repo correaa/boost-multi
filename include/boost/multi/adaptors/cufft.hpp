@@ -18,7 +18,7 @@
 #include <tuple>
 #include <type_traits>
 
-#if !defined(__HIP_ROCclr__)
+#if !defined(__HIP_ROCclr__) && !defined(MULTI_USE_HIP) && !defined(__HIPCC__)  // `__HIP_ROCclr__` alone isn't reliably defined by a plain `amdclang++ -x hip` invocation (only by `hipcc`/explicit `-D`); `MULTI_USE_HIP` is this project's own always-set HIP switch, and `__HIPCC__` is genuinely compiler-intrinsic for `-x hip` mode
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
@@ -332,12 +332,12 @@ class plan {
 			// std::cout << "doing an inefficient loop of " << which_iodims_[first_howmany_].second.n << std::endl;
 
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-				cufftExecZ2Z(
+				cufftSafeCall(cufftExecZ2Z(
 					h_,
 					const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					direction
-				);
+				));
 			}
 			return;
 		}
@@ -353,12 +353,12 @@ class plan {
 
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {          // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
-					cufftExecZ2Z(
+					cufftSafeCall(cufftExecZ2Z(
 						h_,
 						const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is + jdx * which_iodims_[first_howmany_ + 1].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os + jdx * which_iodims_[first_howmany_ + 1].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						direction
-					);
+					));
 				}
 			}
 			return;

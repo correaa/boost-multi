@@ -1476,7 +1476,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		decay_type ret{*this};
+		decay_type ret(*this);
 		return ret;
 	}
 
@@ -2699,11 +2699,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  private:
 	template<typename P2>
-	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& ptr) -> decltype(auto) {
+	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> decltype(auto) {
 		if constexpr(std::is_pointer_v<ElementPtr>) {
-			return static_cast<P2>(static_cast<void*>(ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
-			return reinterpret_cast<P2 const&>(ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
+			return reinterpret_cast<P2 const&>(base_ptr);     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		}
 	}
 
@@ -3239,8 +3240,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	/// Returns a const-element view of the subarray, preventing modification of elements
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
 
-	constexpr auto decay() const -> decay_type { return decay_type{*this}; }
-	constexpr auto copy() const -> decay_type { return decay_type{*this}; }
+	constexpr auto decay() const -> decay_type { return decay_type(*this); }
+	constexpr auto copy() const -> decay_type { return decay_type(*this); }
 
 	constexpr auto operator+() const { return decay(); }
 
@@ -4249,7 +4250,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	using decay_type = typename array_ref::decay_type;
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
-	constexpr auto decay() const& -> decay_type { return decay_type{*this}; }  // cppcheck-suppress duplInheritedMember ; to override
+	constexpr auto decay() const& -> decay_type { return decay_type(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	template<class TTN, std::size_t DD = 0>
@@ -4263,11 +4264,11 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		}
 	}
 
-	template<class TT> static auto launder_(TT* pointer) -> TT* {
+	template<class TT> static auto launder_(TT* base_ptr) -> TT* {
 #if defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L)
-		return std::launder(pointer);
+		return std::launder(base_ptr);
 #else
-		return pointer;
+		return base_ptr;
 #endif
 	}
 

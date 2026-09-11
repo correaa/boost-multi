@@ -776,6 +776,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> numbers(3);
 		numbers = {1, 2, 3};
 	}
+	{
+		struct only_from_whole_array {
+			int size_                                         = 0;        // NOLINT(misc-non-private-member-variables-in-classes) trivial test-local aggregate-ish helper
+			[[maybe_unused]] only_from_whole_array() noexcept = default;  // some backends (e.g. thrust/CUDA) default-construct-then-fill array elements; unused on others
+			// [[maybe_unused]]: only ever named inside is_constructible_v/is_convertible_v below, never called (that's the point)
+			[[maybe_unused]] explicit only_from_whole_array(multi::array<int, 1> const& arr) : size_{static_cast<int>(arr.size())} {}  // the "wrong" ctor that made `Sub` = a whole array look constructible
+			only_from_whole_array(int val) noexcept : size_{val} {}                                                                    // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) the legitimate, per-element ctor
+		};
+
+		static_assert(std::is_constructible_v<only_from_whole_array, multi::array<int, 1>>);
+		static_assert(!std::is_convertible_v<multi::array<int, 1>, only_from_whole_array>);
+
+		multi::array<int, 1> const src({10, 20, 30});
+
+		multi::array<only_from_whole_array, 1> const arr{src};  // this constructor expression was hijacked by init list constructor
+
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[0].size_ == 10 );
+		BOOST_TEST( arr[1].size_ == 20 );
+		BOOST_TEST( arr[2].size_ == 30 );
+	}
 
 	return boost::report_errors();
 }

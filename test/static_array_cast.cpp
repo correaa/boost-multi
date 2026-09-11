@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,7 +8,6 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
-#include <array>        // for array
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
@@ -285,12 +284,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr1 == arr2  );
 	}
-	{
-		multi::array<int, 2> const arr(std::array<multi::ssize_t, 2>{
-			{3, 4}
-		});
-		BOOST_TEST( arr.size() == 3 );
-	}
+	// {
+	// 	multi::array<int, 2> const arr(std::array<multi::ssize_t, 2>{
+	// 		{3, 4}
+	// 	});
+	// 	BOOST_TEST( arr.size() == 3 );
+	// }
 	{
 		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
 		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"

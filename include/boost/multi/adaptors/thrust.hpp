@@ -39,6 +39,10 @@ __host__ __device__
 
 #include <exception>
 
+#if !defined(MULTI_USE_HIP) && (defined(__HIP__) || defined(__HIPCC__) || defined(__HIP_PLATFORM_AMD__))
+#define MULTI_USE_HIP  // this TU is compiled as HIP: use the hip thrust/cublas/... backends
+#endif
+
 #if !defined(MULTI_USE_HIP)
 #include <thrust/system/cuda/memory.h>  // for ::thrust::cuda::allocator
 #else

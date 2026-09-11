@@ -522,10 +522,11 @@ struct                                                                          
 	explicit dynamic_array(::boost::multi::extents_t<D> const& exts)
 	: dynamic_array(exts, allocator_type{}) {}
 
-	// to make cling cppyy overload resolution easier
-	template<class = void>  // gives low priority
-	explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
-	: dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extents_type{sizes...}; }, exts)) {}
+	// // TODO(correaa) remove (this to use in place of extents_t{...})
+	// template<class = void>  // gives low priority
+	// // [[deprecated("use {...} or extents_t{...} constructor")]]
+	// explicit dynamic_array(std::array<typename dynamic_array::size_type, static_cast<typename dynamic_array::dimensionality_type>(D)> const& exts)
+	// : dynamic_array(std::apply([](auto... sizes) -> auto { return typename dynamic_array::extents_type{sizes...}; }, exts)) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
@@ -1689,9 +1690,9 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
 	template<
 		class Sub,
-		std::enable_if_t<                                                                                                                                                           // NOLINT(modernize-use-constraints) for C++20
-			std::is_constructible_v<typename dynamic_array<T, D>::value_type, Sub> && !std::is_convertible_v<Sub, typename dynamic_array<T, D>::value_type> && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20
-	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                     // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
+		std::enable_if_t<                                                                                                                                                                                       // NOLINT(modernize-use-constraints) for C++20
+			std::is_constructible_v<typename dynamic_array<T, D>::value_type, Sub> && !std::is_convertible_v<Sub, typename dynamic_array<T, D>::value_type> && !has_extents<Sub>::value && (D == 1), int> = 0>  // NOLINT(modernize-use-constraints,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) TODO(correaa) for C++20 : `Sub` must be a per-element value, not itself a (sub)array/view (see `operator Range()` above for the same guard); otherwise a single-argument `decay_type{subarray_view}` can get hijacked by this constructor instead of a copy/decay conversion, routing a `move_ptr` into `element_transformed`'s `transform_ptr` and hard-erroring there
+	constexpr explicit array(std::initializer_list<Sub> values)                                                                                                                                                 // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) inherit explicitness of conversion from the elements
 	: unique_(
 		  (values.size() == 0) ? array<T, D>()()
 							   : array<T, D>(values.begin(), values.end()).element_transformed([](auto const& elem) noexcept -> auto { return static_cast<T>(elem); })

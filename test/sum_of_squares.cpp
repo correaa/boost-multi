@@ -28,7 +28,9 @@
 // the libstdc++ version (_GLIBCXX_RELEASE), not the compiler: libstdc++ <= 13 breaks
 // for every front end (gcc 13, clang 16..20, icpx, clang-cuda; confirmed in CI).
 // nvcc is excluded too (cudafe++ mis-deduces the same helpers).  // && !defined(_MSC_VER)
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && /* NOLINTNEXTLINE(misc-include-cleaner) */ \
+// circle (as of build 56) also fails: its libstdc++ integration can't parse the PSTL/TBB glue headers
+// pulled in by <execution> (reports a bogus "undeclared identifier terminate" from deep inside <tuple>).
+#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && !defined(__circle_build__) && /* NOLINTNEXTLINE(misc-include-cleaner) */ \
 	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14))             /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
