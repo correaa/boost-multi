@@ -17,13 +17,13 @@ auto main() -> int {
 
 	using dev_ptr = thrust::pointer<int const, thrust::hip_rocprim::tag, int const&, thrust::use_default>;
 
-	hipMalloc(&r1, 10 * sizeof(int))?:throw;
-	hipMalloc(&r2, 10 * sizeof(int))?:throw;
+	hipMalloc(&r1, 10 * sizeof(int))==hipSuccess?:throw;
+	hipMalloc(&r2, 10 * sizeof(int))==hipSuccess?:throw;
 
 	int host[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-	hipMemcpy(r1, host, sizeof(host), hipMemcpyHostToDevice)?:throw;
-	hipMemcpy(r2, host, sizeof(host), hipMemcpyHostToDevice)?:throw;
+	hipMemcpy(r1, host, sizeof(host), hipMemcpyHostToDevice)==hipSuccess?:throw;
+	hipMemcpy(r2, host, sizeof(host), hipMemcpyHostToDevice)==hipSuccess?:throw;
 
 	boost::multi::array_ref<int const, 1, dev_ptr> a(dev_ptr(r1), {10});
 	boost::multi::array_ref<int const, 1, dev_ptr> b(dev_ptr(r2), {10});
