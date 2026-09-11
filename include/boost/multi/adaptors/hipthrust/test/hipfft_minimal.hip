@@ -47,8 +47,13 @@ auto main() -> int {
 	std::printf("in_gpu  base=%p  extents={%td,%td}\n", static_cast<void const*>(::thrust::raw_pointer_cast(in_gpu.base())), static_cast<std::ptrdiff_t>(in_gpu.size()), static_cast<std::ptrdiff_t>(in_gpu[0].size()));
 	std::printf("fw_gpu  base=%p  extents={%td,%td}\n", static_cast<void const*>(::thrust::raw_pointer_cast(fw_gpu.base())), static_cast<std::ptrdiff_t>(fw_gpu.size()), static_cast<std::ptrdiff_t>(fw_gpu[0].size()));
 
-	multi::cufft::plan<2>({true, true}, in_gpu.layout(), fw_gpu.layout())
-		.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
+	// NOTE: a NAMED plan, kept alive past the sync below -- the original code used
+	// `plan<2>{...}.execute(...);`, an unnamed TEMPORARY destroyed at that semicolon
+	// (calling ~plan() -> cufftDestroy(h_)) before any synchronization ever happens,
+	// which could tear down the plan/workspace while the async FFT kernel is still
+	// in flight.
+	auto my_plan = multi::cufft::plan<2>({true, true}, in_gpu.layout(), fw_gpu.layout());
+	my_plan.execute(in_gpu.base(), fw_gpu.base(), multi::cufft::forward);
 
 	// (a) did the FFT itself leave the context poisoned?
 	hipError_t const last = hipGetLastError();
