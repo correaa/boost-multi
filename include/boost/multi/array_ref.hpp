@@ -1476,7 +1476,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
 	constexpr auto decay() const& -> decay_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		decay_type ret{*this};
+		decay_type ret(*this);
 		return ret;
 	}
 
@@ -3239,8 +3239,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	/// Returns a const-element view of the subarray, preventing modification of elements
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
 
-	constexpr auto decay() const -> decay_type { return decay_type{*this}; }
-	constexpr auto copy() const -> decay_type { return decay_type{*this}; }
+	constexpr auto decay() const -> decay_type { return decay_type(*this); }
+	constexpr auto copy() const -> decay_type { return decay_type(*this); }
 
 	constexpr auto operator+() const { return decay(); }
 
@@ -4249,7 +4249,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	using decay_type = typename array_ref::decay_type;
 
 	/// materializes an independent, owning `array` copy of this view with the associated array-value type (use unary prefix `+` as a shortcut)
-	constexpr auto decay() const& -> decay_type { return decay_type{*this}; }  // cppcheck-suppress duplInheritedMember ; to override
+	constexpr auto decay() const& -> decay_type { return decay_type(*this); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
 	template<class TTN, std::size_t DD = 0>
