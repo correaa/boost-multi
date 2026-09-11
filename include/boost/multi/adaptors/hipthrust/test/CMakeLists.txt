@@ -39,4 +39,3 @@ target_link_libraries(speed.hip.amd.x PRIVATE multi roc::rocthrust)
 add_test(NAME speed.hip.amd.x COMMAND $<TARGET_FILE:speed.hip.amd.x>)
 
 set_tests_properties(speed.hip.amd.x PROPERTIES RUN_SERIAL TRUE)
-
