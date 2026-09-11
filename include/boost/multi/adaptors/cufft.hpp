@@ -18,7 +18,7 @@
 #include <tuple>
 #include <type_traits>
 
-#if !defined(__HIP_ROCclr__)
+#if !defined(__HIP_ROCclr__) && !defined(MULTI_USE_HIP) && !defined(__HIPCC__)  // `__HIP_ROCclr__` alone isn't reliably defined by a plain `amdclang++ -x hip` invocation (only by `hipcc`/explicit `-D`); `MULTI_USE_HIP` is this project's own always-set HIP switch, and `__HIPCC__` is genuinely compiler-intrinsic for `-x hip` mode
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
