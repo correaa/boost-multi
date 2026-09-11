@@ -15,7 +15,12 @@
 // #include<iostream>     // for debug
 #include<limits>       // numeric_limits
 #include<type_traits>  // is_convertible
-#include<version>      // feature-test macros (__cpp_lib_bit_cast)
+
+#if defined(__has_include)          // <version> (feature-test macros, e.g. __cpp_lib_bit_cast) is C++20, absent in libstdc++ before GCC 9
+#  if __has_include(<version>)
+#    include<version>
+#  endif
+#endif
 
 #if defined(__cpp_lib_bit_cast) && __cpp_lib_bit_cast >= 201806L
 #include<bit>          // std::bit_cast
