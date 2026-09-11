@@ -175,21 +175,29 @@ class adl_fill_t {
 };
 inline constexpr adl_fill_t adl_fill;
 
+// clang-format off
 class adl_equal_t {
- template<class... As> constexpr auto _(priority<1> /**/, As&&... args) const BOOST_MULTI_DECLRET(std::equal(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const BOOST_MULTI_DECLRET(std::equal(std::forward<As>(args)...))
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
-	 template<class... As>
-	 constexpr auto _(priority<2> /**/, As&&... args) const BOOST_MULTI_DECLRET(::thrust::equal(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const BOOST_MULTI_DECLRET(::thrust::equal(std::forward<As>(args)...))
 #endif
-		 template<class... As>
-		 constexpr auto _(priority<3> /**/, As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<4> /**/, As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)..., std::equal_to<>{}))  // WORKAROUND makes syntax compatible with boost::ranges::equal if, for some reason, it is included.
-	 template<class T, class... As>
-	 constexpr auto _(priority<5> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::equal(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).equal(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<3>/**/,          As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<4>/**/,          As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)..., std::equal_to<>{}))  // WORKAROUND makes syntax compatible with boost::ranges::equal if, for some reason, it is included.
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::    equal(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).equal(                      std::forward<As>(args)...))
+#ifdef BOOST_MULTI_ADL_HAS_THRUST
+	 // Qualified thrust::equal must outrank the unqualified priority<4> overload: that one adds a
+	 // std::equal_to<> argument, which pulls namespace std into ADL and makes the call resolve differently
+	 // in the host and the device pass of a HIP compilation (host binds thrust::equal, device does not),
+	 // so the backend kernels are registered on the host but never emitted into the device image.
+	 template<class... As>         constexpr auto _(priority<7> /**/,         As&&... args) const BOOST_MULTI_DECLRET(::thrust::equal(std::forward<As>(args)...))
+#endif
 
-		 public : template<class... As>
-				  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
+ public:
+	template<class... As> constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<7>(), std::forward<As>(args)...))
 };
 inline constexpr adl_equal_t adl_equal;
+// clang-format on
 
 #ifndef _MSC_VER
 template<class... As, class = std::enable_if_t<sizeof...(As) == 0>> void copy(As...) = delete;  // NOLINT(modernize-use-constraints) TODO(correaa)
