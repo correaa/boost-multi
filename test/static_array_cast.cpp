@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
-#include <array>        // for array
+// #include <array>        // for array
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
