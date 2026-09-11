@@ -117,26 +117,38 @@ The library also supports memory resources from other libraries, including those
 
 === Substitutability with Standard Vector and Span
 
-The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
-Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
-For example, both can be constructed from a list of elements (`C c = {x0, x2, ...};`) or from a size `C c(size);`, where `C` is either type.
-
+The one-dimensional case `multi::array<T, 1>` is special and partially overlaps the functionality with other dynamic array implementations, such as `std::vector`.
+The analogies are obvious, both are contiguous memory, provide random access, use allocated dynamic memory, and sizes can be selected at runtime, 
+so it is to be expected to be equivalent to a certain degree.
+For example, both can be constructed from a list of elements (`C c = {x0, x2, ...};`) or from a size `C c(size);` (where `C` is either type).
 Both values are assignable, have the same element access patterns and iterator interface, and implement all (lexical) comparisons.
+
+At the same time, we should know about the differences in the design goals of `std::vector` and `multi::array`, to understand their diverging interface, rather than forcing an equivalance.
+`multi::array<T, 1>` is the one-dimensional special case of general multidimensional arrays oriented toward high performance data access and manipulation;
+`std::vector` was conceived specifically as a _growable_ allocated array, with optimizations tailored to that role, such as amortized-cost push-backs.
+While `std::vector` can be used in high-performance contexts, some points of friction stem from this original design.
+These notoriously include link:https://lemire.me/blog/2012/06/20/do-not-waste-time-with-stl-vectors/[enforced initialization], and awkward fine-grained control over excess memory capacity (`shrink_to_fit` or the "swap trick" idiom in Item 14 of the link:https://www.informit.com/store/effective-stl-50-specific-ways-to-improve-your-use-9780201749625[Effective STL book]).
 
 They differ conceptually in their resizing operations: `multi::array<T, 1>` doesn't insert or push elements and resizing works differently.
 The difference is that the library doesn't implement *amortized* allocations; therefore, these operations would be of a higher complexity cost than the `std::vector`.
 For this reason, `resize(new_size)` is replaced with `reextent(+{new_size}+)` in `multi::array`, whose primary utility is for element preservation when necessary.
+In the same way, the `clear()` operation is replaced by an operation called `reset()`;
+the reason is that for `std::vector`, `clear()` doesn't frees the memory but sets the size to zero.
+Regarding memory fine control, a second overload `reset(new_size)` reallocates if neededed without necessary preserving the elements.
 
 In a departure from standard containers, elements are left uninitialized if they have a trivial constructor.
 So, while `multi::array<T, 1> A(+{N}+, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
 RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
 
-With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
+Another difference is in scope, with the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`, such as GPU memory or other fancy memory (mapped memory, see example.)
 
 Finally, an array `A1D` can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or vice versa.
 Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
 (See examples link:https://godbolt.org/z/n4TY998o4[here].)
 
+Despite these divergences, an immutable `std::vector<T>` can be completely replaced by `multi::array<T, 1>`.
+
+A closedly related type is `std::span`.
 The `std::span` (pass:[C++20]) does not have a well-defined reference- or pointer-semantics; it doesn't respect `const` correctness in generic code.
 This behavior is contrary to the goals of this library;
 and for this reason, there is no single substitute for `std::span` for all cases.
