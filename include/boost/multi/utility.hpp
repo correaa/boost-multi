@@ -146,12 +146,12 @@ struct transform_ptr {  //-V::690
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr
 #ifndef __circle_build__
-	         ,
-	         class = decltype(std::declval<Other const&>().f_)  // `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer`
+			 ,
+			 class = decltype(std::declval<Other const&>().f_)  // `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer`
 #endif
-	         >
-	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709)
+			 >
+	// NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
+	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // cppcheck-suppress noExplicitConstructor; NOSONAR(cpp:S1709)
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr
 #ifndef __circle_build__
