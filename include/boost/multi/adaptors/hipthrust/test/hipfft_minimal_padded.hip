@@ -42,7 +42,7 @@ auto main() -> int {
 	constexpr multi::ssize_t cols = 3;
 	constexpr multi::ssize_t pad  = 256;  // extra elements of slack after the "real" 15
 
-	multi::thrust::cuda::array<complex, 1> fw_flat({rows * cols + pad});  // one padded, flat allocation
+	multi::thrust::cuda::array<complex, 1> fw_flat(rows * cols + pad);  // one padded, flat allocation (NOTE: no inner braces -- `({N})` would be a 1-element initializer_list, not an N-element extent)
 	multi::array_ref<complex, 2, decltype(fw_flat.base())> fw_gpu(fw_flat.base(), {rows, cols});  // view over just the first 15 elements
 
 	std::printf("in_gpu   base=%p  extents={%td,%td}\n", static_cast<void const*>(::thrust::raw_pointer_cast(in_gpu.base())), static_cast<std::ptrdiff_t>(in_gpu.size()), static_cast<std::ptrdiff_t>(in_gpu[0].size()));
