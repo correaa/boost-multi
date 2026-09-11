@@ -17,10 +17,12 @@
 #endif
 
 #include <thrust/complex.h>
+#include <thrust/copy.h>
 
 #include <hip/hip_runtime.h>
 
 #include <cstdio>
+#include <vector>
 
 namespace multi = boost::multi;
 using complex   = thrust::complex<double>;
@@ -57,7 +59,16 @@ auto main() -> int {
 	hipError_t const sync = hipDeviceSynchronize();
 	std::printf("hipDeviceSynchronize() after execute() = %d (%s)\n", static_cast<int>(sync), hipGetErrorString(sync));
 
-	std::printf("about to read fw_gpu[3][2] (padded allocation) ...\n");
+	std::printf("about to bulk-copy fw_gpu (5x3) device->host via thrust::copy ...\n");
+	std::fflush(stdout);
+
+	std::vector<complex> fw_host(static_cast<std::size_t>(rows * cols));
+	::thrust::copy(fw_gpu.elements().begin(), fw_gpu.elements().end(), fw_host.begin());
+
+	std::printf("bulk copy ok, fw_host[3*3+2] = %f %f\n", fw_host[3 * cols + 2].real(), fw_host[3 * cols + 2].imag());
+	std::fflush(stdout);
+
+	std::printf("about to read fw_gpu[3][2] (single-element proxy read, padded allocation) ...\n");
 	std::fflush(stdout);
 
 	complex const val = fw_gpu[3][2];
