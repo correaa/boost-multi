@@ -1,4 +1,4 @@
-// Copyright 2020-2025 Alfredo A. Correa
+// Copyright 2020-2026 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_ADAPTORS_LAPACK_GETRF_HPP
 #define BOOST_MULTI_ADAPTORS_LAPACK_GETRF_HPP
@@ -29,20 +29,18 @@ auto getrf(Context&& ctxt, A&& arr, IPIV&& ipiv){
 
 template<class Context, class LU, class IPIV, class B>
 void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& barr){
-	assert( size(lu) == size(~lu) );
-	assert( stride(lu) == 1 );
-	assert( size(ipiv) >= size(lu) );
-//  assert( stride(ipiv) == 1 );
-	assert( stride(barr) == 1 );
+	assert( lu.size() == (~lu).size() );
+	assert( lu.stride() == 1 );
+	assert( ipiv.size() >= lu.size() );
+	assert( barr.stride() == 1 );
 	std::forward<Context>(ctxt).getrs('N', size(lu), size(~barr), lu.base(), stride(~lu), ipiv.data(), std::forward<B>(barr).base(), stride(~barr));
 }
 
 template<class Context, class LU, class IPIV, class V>
 void getrs_one(Context&& ctxt, LU const& lu, IPIV const& ipiv, V&& barr){
-	assert( size(lu) == size(~lu) );
-	assert( stride(lu) == 1 );
-//  assert( stride(ipiv) == 1 );
-	assert( stride(barr) == 1 );
+	assert( lu.size() == (~lu).size() );
+	assert( lu.stride() == 1 );
+	assert( barr.stride() == 1 );
 	std::forward<Context>(ctxt).getrs('N', size(lu), 1, lu.base(), stride(~lu), ipiv.data(), std::forward<V>(barr).base(), size(lu));
 }
 
@@ -55,7 +53,6 @@ void getrs(LU const& lu, IPIV const& ipiv, B&& barr){return getrs(::lapack::cont
 
 template<class LU, class IPIV, class B>
 void getrs_one(LU const& lu, IPIV const& ipiv, B&& barr){return getrs_one(::lapack::context{}, lu, ipiv, std::forward<B>(barr));}
-
 
 }  // namespace boost::multi::lapack
 
