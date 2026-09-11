@@ -47,6 +47,13 @@ auto main() -> int {
 	std::printf("in_gpu  base=%p  extents={%td,%td}\n", static_cast<void const*>(::thrust::raw_pointer_cast(in_gpu.base())), static_cast<std::ptrdiff_t>(in_gpu.size()), static_cast<std::ptrdiff_t>(in_gpu[0].size()));
 	std::printf("fw_gpu  base=%p  extents={%td,%td}\n", static_cast<void const*>(::thrust::raw_pointer_cast(fw_gpu.base())), static_cast<std::ptrdiff_t>(fw_gpu.size()), static_cast<std::ptrdiff_t>(fw_gpu[0].size()));
 
+	// sanity check the INPUT before the FFT ever runs: did in_cpu's data actually land on the device?
+	std::printf("in_cpu[3][2]           = %f %f  (source value on host)\n", in_cpu[3][2].real(), in_cpu[3][2].imag());
+	std::vector<complex> in_host(static_cast<std::size_t>(in_gpu.num_elements()));
+	::thrust::copy(in_gpu.elements().begin(), in_gpu.elements().end(), in_host.begin());
+	std::printf("in_gpu[3][2] (bulk D->H) = %f %f  (expect same as in_cpu[3][2] above)\n", in_host[3 * 3 + 2].real(), in_host[3 * 3 + 2].imag());
+	std::fflush(stdout);
+
 	// NOTE: a NAMED plan, kept alive past the sync below -- the original code used
 	// `plan<2>{...}.execute(...);`, an unnamed TEMPORARY destroyed at that semicolon
 	// (calling ~plan() -> cufftDestroy(h_)) before any synchronization ever happens,
