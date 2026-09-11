@@ -144,11 +144,25 @@ struct transform_ptr {  //-V::690
 	template<class UFF>
 	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}
 
-	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr, class = decltype(std::declval<Other const&>().f_)>
+	// circle (as of build 56) rejects the `f_`-access SFINAE check below through the `friend struct transform_ptr` grant
+	// (a compiler bug: gcc/clang both accept it), so it is skipped there; `implicit_cast<pointer>`/`explicit_cast<pointer>`
+	// still narrow `Other` to pointer-compatible types, just not specifically to `transform_ptr` instantiations (e.g. `move_ptr`
+	// would also pass on circle).
+	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr
+#ifndef __circle_build__
+	         ,
+	         class = decltype(std::declval<Other const&>().f_)  // `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer`
+#endif
+	         >
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) : `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer` (e.g. `move_ptr`)
+	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709)
 
-	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr, class = decltype(std::declval<Other const&>().f_)>
+	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr
+#ifndef __circle_build__
+	         ,
+	         class = decltype(std::declval<Other const&>().f_)
+#endif
+	         >
 	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
 
 	// constexpr auto functor() const -> UF {return f_;}
