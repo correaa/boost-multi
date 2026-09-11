@@ -150,16 +150,20 @@ struct transform_ptr {  //-V::690
 			 class = decltype(std::declval<Other const&>().f_)  // `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer`
 #endif
 			 >
-	// NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
-	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // cppcheck-suppress noExplicitConstructor; NOSONAR(cpp:S1709)
+	// NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions) NOSONAR(cpp:S1709)
+	constexpr transform_ptr(Other const& other)  // cppcheck-suppress noExplicitConstructor
+	: p_{other.p_}, f_{other.f_} {
+	}
 
 	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr
 #ifndef __circle_build__
-	         ,
-	         class = decltype(std::declval<Other const&>().f_)
+			 ,
+			 class = decltype(std::declval<Other const&>().f_)
 #endif
-	         >
-	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
+			 >
+	constexpr explicit transform_ptr(Other const& other)
+	: p_{other.p_}, f_{other.f_} {
+	}
 
 	// constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& { return p_; }
