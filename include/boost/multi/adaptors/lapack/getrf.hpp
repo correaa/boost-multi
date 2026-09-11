@@ -19,8 +19,7 @@ using blas::filling;
 template<class Context, class A, class IPIV>
 auto getrf(Context&& ctxt, A&& arr, IPIV&& ipiv){
 	assert( ipiv.size() == std::min(size(arr), size(~arr)) );
-	assert( stride(arr) == 1 );
-//  assert( stride(ipiv) == 1 );
+	assert( arr.stride() == 1 );
 	multi::index const i = std::forward<Context>(ctxt).getrf(size(~arr), size(arr), arr.base(), stride(~arr), std::forward<IPIV>(ipiv).data() );
 	// if(i == 0) { return arr(); }
 	// else       { return arr({0, i - 1}, {0, i - 1}); }
