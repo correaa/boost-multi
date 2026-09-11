@@ -4263,9 +4263,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		}
 	}
 
-	template<class TT> static auto launder_(TT* pointer) -> TT* {
+	template<class TT> static auto launder_(TT* base_ptr) -> TT* {
 #if defined(__cpp_lib_launder) && (__cpp_lib_launder >= 201606L)
-		return std::launder(pointer);
+		return std::launder(base_ptr);
 #else
 		return pointer;
 #endif

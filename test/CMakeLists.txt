@@ -179,7 +179,7 @@ else()
 	# -Wmismatched-tags # (gcc 11, not in 9)
 	# -Wmissing-attributes # (gcc 8, not in 8)
 	-Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
-	$<$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9>:-Wno-missing-braces>  # false positive in GCC 8
+	# $<$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9>:-Wno-missing-braces>  # false positive in GCC 8
 	#-Wmissing-profile # (gcc 11, not in gcc 8)
 	# -Wmissing-requires -Wmissing-template-keyword # (gcc 12, not in 11)
 	-Wmultichar
