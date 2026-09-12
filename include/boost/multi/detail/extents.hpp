@@ -698,6 +698,12 @@ class extents_t {
 	}
 
 	template<class F>
+	friend constexpr auto apply(F&& fun, extents_t const& self) -> decltype(auto) {
+		return std::apply(std::forward<F>(fun), self.base());
+	}
+
+ private:
+	template<class F>
 	constexpr auto apply(F&& fun) const -> decltype(auto) {
 		return std::apply(std::forward<F>(fun), this->base());
 	}
@@ -1133,11 +1139,11 @@ template<> class tuple_size<boost::multi::extents_t<5>> : public std::integral_c
 #pragma clang diagnostic pop
 #endif
 
-template<typename Fn, boost::multi::dimensionality_type D>
-constexpr auto
-apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
-	return exts.apply(std::forward<Fn>(fun));
-}
+// template<typename Fn, boost::multi::dimensionality_type D>
+// constexpr auto
+// apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
+// 	return exts.apply(std::forward<Fn>(fun));
+// }
 
 }  // end namespace std
 
