@@ -98,6 +98,10 @@ class extents_t {
 	using nelems_type = multi::index;
 
  public:
+	operator base_ const&() const& { return impl_; }
+	operator base_ &&() && { return std::move(impl_); }
+	operator base_ &() & { return impl_; }
+
 	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
 
@@ -742,6 +746,11 @@ template<> class extents_t<0> {
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
+	operator base_ const&() const& { return impl_; }
+	operator base_ &&() && { return std::move(impl_); }
+	operator base_ &() & { return impl_; }
+
+
 	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
 
 	static BOOST_MULTI_HD constexpr auto num_elements() /*const*/ -> multi::ssize_t { return 1; }
@@ -809,6 +818,10 @@ template<> class extents_t<1> {
 	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sub() const { return extents_t<0>{this->base().tail()}; }
+
+	operator base_ const&() const& { return impl_; }
+	operator base_ &&() && { return std::move(impl_); }
+	operator base_ &() & { return impl_; }
 
 	class cursor_t {
 		index idx_;
