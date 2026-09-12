@@ -98,6 +98,10 @@ class extents_t {
 	using nelems_type = multi::index;
 
  public:
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
+
 	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
 
@@ -225,7 +229,13 @@ class extents_t {
 	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
 
+	auto lead() const {
+		boost::multi::detail::get<0>(this->impl_);
+	}
+
+	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
+	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
 	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
@@ -698,7 +708,13 @@ class extents_t {
 	}
 
 	template<class F>
-	constexpr auto apply(F&& fun) const -> decltype(auto) {
+	friend constexpr auto apply(F&& fun, extents_t const& self) -> decltype(auto) {
+		return std::apply(std::forward<F>(fun), self.base());
+	}
+
+ private:
+	template<class F>
+	constexpr auto apply(F&& fun) const -> decltype(auto) {  // NOLINT(readability-identifier-naming)
 		return std::apply(std::forward<F>(fun), this->base());
 	}
 };
@@ -735,6 +751,10 @@ template<> class extents_t<0> {
 
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
+
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
 
 	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
 
@@ -803,6 +823,10 @@ template<> class extents_t<1> {
 	constexpr auto sizes() const { return sizes_type{this->size()}; }  // using std::get; return get<0>(static_cast<base_ const&>(*this)); }
 
 	constexpr auto sub() const { return extents_t<0>{this->base().tail()}; }
+
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
 
 	class cursor_t {
 		index idx_;
@@ -1133,11 +1157,11 @@ template<> class tuple_size<boost::multi::extents_t<5>> : public std::integral_c
 #pragma clang diagnostic pop
 #endif
 
-template<typename Fn, boost::multi::dimensionality_type D>
-constexpr auto
-apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
-	return exts.apply(std::forward<Fn>(fun));
-}
+// template<typename Fn, boost::multi::dimensionality_type D>
+// constexpr auto
+// apply(Fn&& fun, boost::multi::extents_t<D> const& exts) noexcept -> decltype(auto) {  // NOLINT(cert-dcl58-cpp,bugprone-std-namespace-modification) workaround
+// 	return exts.apply(std::forward<Fn>(fun));
+// }
 
 }  // end namespace std
 
