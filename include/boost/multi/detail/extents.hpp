@@ -714,7 +714,7 @@ class extents_t {
 
  private:
 	template<class F>
-	constexpr auto apply(F&& fun) const -> decltype(auto) {
+	constexpr auto apply(F&& fun) const -> decltype(auto) {  // NOLINT(readability-identifier-naming)
 		return std::apply(std::forward<F>(fun), this->base());
 	}
 };
