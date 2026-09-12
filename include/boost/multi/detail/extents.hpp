@@ -98,9 +98,9 @@ class extents_t {
 	using nelems_type = multi::index;
 
  public:
-	operator base_ const&() const& { return impl_; }
-	operator base_ &&() && { return std::move(impl_); }
-	operator base_ &() & { return impl_; }
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
 
 	/// A type to hold the size of the Cartesian product in the leading dimension
 	using size_type = index_extension::size_type;
@@ -229,7 +229,13 @@ class extents_t {
 	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
 
+	auto lead() const {
+		boost::multi::detail::get<0>(this->impl_);
+	}
+
+	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
+	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
 	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
@@ -746,10 +752,9 @@ template<> class extents_t<0> {
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
-	operator base_ const&() const& { return impl_; }
-	operator base_ &&() && { return std::move(impl_); }
-	operator base_ &() & { return impl_; }
-
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
 
 	template<class Archive> static void serialize(Archive& /*ar*/, unsigned /*version*/) { /*noop*/ }
 
@@ -819,9 +824,9 @@ template<> class extents_t<1> {
 
 	constexpr auto sub() const { return extents_t<0>{this->base().tail()}; }
 
-	operator base_ const&() const& { return impl_; }
-	operator base_ &&() && { return std::move(impl_); }
-	operator base_ &() & { return impl_; }
+	// operator base_ const&() const& { return impl_; }
+	// operator base_ &&() && { return std::move(impl_); }
+	// operator base_ &() & { return impl_; }
 
 	class cursor_t {
 		index idx_;
