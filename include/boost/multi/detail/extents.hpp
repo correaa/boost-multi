@@ -82,6 +82,7 @@ class extents_t {
 	base_ impl_;  // NOLINT(misc-non-private-member-variables-in-classes) make private
 
  public:
+	/// Type of each of the projection that produce the Cartesian product
 	template<::boost::multi::dimensionality_type DD>
 	using projection_type = std::tuple_element_t<static_cast<std::size_t>(DD), base_>;
 
