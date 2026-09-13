@@ -277,6 +277,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT  ; old spelling kept for compatibility
 
 	// using layout_type::extensions;  // use extents
+	/// returns the extents of the array (Cartesian product of valid indices)
 	using layout_type::extents;
 
 #ifdef _MSC_VER
