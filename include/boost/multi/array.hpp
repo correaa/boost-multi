@@ -1104,8 +1104,8 @@ struct                                                                          
 	// }
 };
 
-template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
-using static_array [[deprecated("static_array has been renamed to dynamics_array (uses dynamic memory)")]] = dynamic_array<T, D, Alloc>;
+// template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
+// using static_array [[deprecated("static_array has been renamed to dynamics_array (uses dynamic memory)")]] = dynamic_array<T, D, Alloc>;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
