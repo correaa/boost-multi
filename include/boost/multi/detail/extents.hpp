@@ -374,7 +374,9 @@ class extents_t {
 		friend constexpr auto operator>=(iterator const& self, iterator const& other) { assert( self.rest_ == other.rest_ ); return self.idx_ >= other.idx_; }
 	};
 
+	/// returns an iterator to the beginning of the structured Cartesian product (in the leading dimension)
 	constexpr auto begin() const { return iterator{this->base().head().first(), this->base().tail()}; }
+	/// returns an iterator to the end of the structured Cartesian product (in the leading dimension)
 	constexpr auto end()   const { return iterator{this->base().head().last() , this->base().tail()}; }
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const {
