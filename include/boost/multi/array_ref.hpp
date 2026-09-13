@@ -3237,13 +3237,13 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	using element_type [[deprecated("use ::element")]] = T;
 
-	using element                                      = T;
-	using element_ptr                                  = typename types::element_ptr;
-	using element_const_ptr                            = typename std::pointer_traits<ElementPtr>::template rebind<typename std::pointer_traits<ElementPtr>::element_type const>;
+	using element           = T;
+	using element_ptr       = typename types::element_ptr;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<typename std::pointer_traits<ElementPtr>::element_type const>;
 	// using element_const_ptr                          = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
-	using element_move_ptr                             = multi::move_ptr<element, element_ptr>;
-	using element_ref                                  = typename types::element_ref;
-	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
+	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+	using element_ref       = typename types::element_ref;
+	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
 	/// `std::allocator_traits<Allocator>::const_pointer` for 1D arrays
 	using const_pointer   = element_const_ptr;
