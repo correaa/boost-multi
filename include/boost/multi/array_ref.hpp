@@ -3229,9 +3229,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using ref_        = const_subarray;
 
 	using element_type [[deprecated("use ::element")]] = T;
+
 	using element                                      = T;
 	using element_ptr                                  = typename types::element_ptr;
-	using element_const_ptr                            = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_const_ptr                            = typename std::pointer_traits<ElementPtr>::template rebind<typename std::pointer_traits<ElementPtr>::element_type const>;
+	// using element_const_ptr                          = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using element_move_ptr                             = multi::move_ptr<element, element_ptr>;
 	using element_ref                                  = typename types::element_ref;
 	using element_cref                                 = typename std::iterator_traits<element_const_ptr>::reference;
@@ -3937,6 +3939,12 @@ template<
 			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>>
 class array_ref : public subarray<T, D, ElementPtr, Layout> {
+
+	static_assert(
+		std::is_same_v<std::decay_t<typename std::pointer_traits<ElementPtr>::element_type>, std::decay_t<T> >,
+		"pointer element type and value type argument must match"
+	);
+	
 	using subarray_layout = Layout;
 
 	using subarray_base = subarray<T, D, ElementPtr, Layout>;
