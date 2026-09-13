@@ -265,6 +265,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::nelems;
 
 	// using layout_type::extension;  // use extent
+	/// returns the extent of the array in the leading dimension
 	using layout_type::extent;
 
 	/// A type to store the extent of an array (the range of valid indices in the leading dimension), returned from `.extent()`.
@@ -274,6 +275,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using extension_type [[deprecated("use extent_type")]] = extent_type;  // NOLINT  ; old spelling kept for compatibility
 
 	// using layout_type::extensions;  // use extents
+	/// returns the extents of the array (Cartesian product of valid indices)
 	using layout_type::extents;
 
 #ifdef _MSC_VER
