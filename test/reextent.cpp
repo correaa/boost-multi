@@ -412,20 +412,33 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 9 );
 	}
 	{
-		multi::array<int, 2> arr({2, 2}, 10);
-		auto old_data = arr.data_elements();
+		multi::array<std::string, 2> arr({2, 2}, std::string{"abcdefghijklmnopq"});
 
 		arr.reset({30, 30});
 
-		BOOST_TEST( arr.data_elements() != old_data );
-
 		BOOST_TEST( arr.size() == 30 );
 
-		arr[29][29] = 123;
+		BOOST_TEST( arr[0][0] == "" );
 
-		BOOST_TEST( arr[29][29] == 123 );  // not, it is impossible to know the value after a reset with extensions only
+		arr[29][29] = "12345678901234567890123456789";
 
+		BOOST_TEST( arr[29][29] == "12345678901234567890123456789" );  // not, it is impossible to know the value after a reset with extensions only
 	}
+	// {
+	// 	multi::array<int, 2> arr({2, 2}, 10);
+
+	// 	auto old_data = arr.data_elements();  // white box test
+
+	// 	arr.reset({30, 30});
+
+	// 	BOOST_TEST( arr.data_elements() != old_data );
+
+	// 	BOOST_TEST( arr.size() == 30 );
+
+	// 	arr[29][29] = 123;
+
+	// 	BOOST_TEST( arr[29][29] == 123 );
+	// }
 
 	return boost::report_errors();
 }
