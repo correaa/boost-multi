@@ -1877,7 +1877,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// When evaluated on a tuple object this is equivalent to `.operator()(get<0>(tup), get<1>(tup), ...)`. (The argument type typical has `tuple_size<Tuple> == D`)
+	/// (inherited) Acting on a tuple  this is equivalent to .operator()(get<0>(tpl), get<1>(tpl), ...). (Typically, the argument type is of size `D` (`tuple_size<Tuple>`, returning an [const] element reference)
 	template<typename Tuple = typename const_subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>{}); }
 
 	/// Random-access iterator in the leading dimension (return type of `.begin()` or `.end()` from a constant subarray)
@@ -2653,7 +2653,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// Acting on a tuple  this is equivalent to .operator()(get<0>(tpl), get<1>(tpl), ...). (Typically, the argument type is of size `D` (`tuple_size<Tuple>`, returning an [const] element reference)
 	using const_subarray<T, D, ElementPtr, Layout>::apply;
+
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	template<typename Tuple = typename subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) && -> decltype(auto) { return apply_impl_(std::move(*this), tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 	template<typename Tuple = typename subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
