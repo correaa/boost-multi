@@ -39,7 +39,12 @@
 #endif
 
 // clang-format off
-namespace boost::multi { template <boost::multi::dimensionality_type D, typename SSize = multi::ssize_t> struct layout_t; }
+namespace boost::multi::detail {
+	/// Layout for strided arrays
+	template <boost::multi::dimensionality_type D, typename SSize = multi::ssize_t>
+	struct layout_t; 
+}  // end namespace boost::multi::detail
+
 namespace boost::multi::detail { template <class ...Ts> class tuple; }
 // clang-format on
 
@@ -185,7 +190,48 @@ class extents_t {
 	BOOST_MULTI_HD constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
 	: impl_{index_extension(exts)...} {}
 
-	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename layout_t<D - 1>::extents_type const& other)
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension::size_type>...>
+	// 		&& std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension::size_type>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD /*implicit*/ constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{static_cast<index_extension>(static_cast<index_extension::size_type>(exts))...} {}
+
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>
+	// 		&& std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD /*implicit*/ constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{static_cast<index_extension>(static_cast<typename index_extension::index>(exts))...} {}
+
+	// template<
+	// 	class... Exts,
+	// 	std::enable_if_t<  // NOLINT(modernize-use-constraints) TODO(correaa)
+	// 		(sizeof...(Exts) >= 2) && (sizeof...(Exts) == static_cast<std::size_t>(D))
+	// 		&& std::conjunction_v<std::is_convertible<Exts, index_extension>...>
+	// 		&& !std::conjunction_v<multi::detail::is_implicitly_convertible<Exts, index_extension>...>,  // NOLINT(modernize-type-traits) not a fold-expr: MSVC 19.21 (VS2019 16.1) miscompiles `(... && ...)` here with C2059
+	// 		int> = 0
+	// >
+	// BOOST_MULTI_HD explicit constexpr extents_t(Exts... exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) allow terse syntax
+	// : base_{index_extension(exts)...} {}
+
+	// template<class OtherExtensions,
+	// 	decltype( multi::detail::implicit_cast<index_extension>(OtherExtensions{}.extent()) )* = nullptr,
+	// 	decltype( multi::detail::implicit_cast<typename layout_t<D - 1>::extents_type>(OtherExtensions{}.sub()) )* = nullptr
+	// >
+	// // cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(runtime/explicit)
+	// BOOST_MULTI_HD constexpr extents_t(OtherExtensions const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+	// : extents_t(other.extent(), other.sub()) {}
+
+	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, typename detail::layout_t<D - 1>::extents_type const& other)
 	: extents_t(multi::detail::ht_tuple(ext, other.base())) {}
 
 	auto lead() const {
@@ -234,7 +280,7 @@ class extents_t {
 
 	friend constexpr auto operator%(nelems_type idx, extents_t const& exts) { return exts.from_linear(idx); }
 
-	constexpr explicit operator bool() const { return !layout_t<D>{*this}.empty(); }
+	constexpr explicit operator bool() const { return !detail::layout_t<D>{*this}.empty(); }  // TODO(correaa) simplifty algorithm
 
 	template<class... Indices>
 	BOOST_MULTI_HD constexpr auto to_linear(index const& idx, Indices const&... rest) const {
@@ -262,7 +308,7 @@ class extents_t {
 		constexpr auto operator[](difference_type n) const {
 			using std::apply;
 			if constexpr(DD != 1) {
-				return cursor_t<typename multi::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
+				return cursor_t<typename multi::detail::layout_t<std::tuple_size_v<Before> + 1>::indexes, DD - 1> (
 					apply([n] (auto... idxs) -> auto {return detail::mk_tuple(idxs..., n);}, bef_)
 				);
 			} else {

@@ -104,13 +104,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_trivially_copy_assignable_v<decltype(&std::declval<multi::array_ref<double, 2>&&>())>);
 			static_assert(std::is_trivially_copyable_v<decltype(&std::declval<multi::array_ref<double, 2>&&>())>);
 
-			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<0>>);
-			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<1>>);
-			static_assert(std::is_trivially_default_constructible_v<multi::layout_t<2>>);
+			static_assert(std::is_trivially_default_constructible_v<multi::detail::layout_t<0>>);
+			static_assert(std::is_trivially_default_constructible_v<multi::detail::layout_t<1>>);
+			static_assert(std::is_trivially_default_constructible_v<multi::detail::layout_t<2>>);
 
-			static_assert(std::is_trivially_copyable_v<multi::layout_t<0>>);
-			static_assert(std::is_trivially_copyable_v<multi::layout_t<1>>);
-			static_assert(std::is_trivially_copyable_v<multi::layout_t<2>>);
+			static_assert(std::is_trivially_copyable_v<multi::detail::layout_t<0>>);
+			static_assert(std::is_trivially_copyable_v<multi::detail::layout_t<1>>);
+			static_assert(std::is_trivially_copyable_v<multi::detail::layout_t<2>>);
 
 			// static_assert(std::is_trivially_copy_assignable_v<multi::subarray_ptr<double, 2>>);
 			// static_assert(std::is_trivially_copyable_v<multi::subarray_ptr<double, 2>>);

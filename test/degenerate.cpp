@@ -30,8 +30,8 @@ auto main() -> int {
 
 		BOOST_TEST( e1 != e2 );
 
-		multi::layout_t<2> const l1(e1);
-		multi::layout_t<2> const l2(e2);
+		multi::detail::layout_t<2> const l1(e1);
+		multi::detail::layout_t<2> const l2(e2);
 
 		BOOST_TEST( l1 == l2 );
 
@@ -54,8 +54,8 @@ auto main() -> int {
 
 		BOOST_TEST( e1 != e2 );
 
-		multi::layout_t<2> const l1(e1);
-		multi::layout_t<2> const l2(e2);
+		multi::detail::layout_t<2> const l1(e1);
+		multi::detail::layout_t<2> const l2(e2);
 
 		// BOOST_TEST( l1 == l2 );
 
