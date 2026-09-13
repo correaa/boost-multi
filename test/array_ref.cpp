@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -9,6 +9,7 @@
 
 #include <algorithm>  // for for_each, equal
 #include <array>      // for array
+#include <complex>    // for complex
 #include <cstdint>    // for int64_t
 #include <iostream>   // for char_traits, operator<<, basic_o...
 #include <iterator>   // for size
@@ -1274,6 +1275,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
+	}
+	{
+		double buffer[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays)
+
+		using ref_t = multi::array_ref<std::complex<double>, 1, std::complex<double>*>;
+		ref_t A(reinterpret_cast<std::complex<double>*>(buffer), multi::extents_t<1>{2});
+
+		auto const& cA = A;
+
+		auto p1 = cA.base();  // FAILS TO COMPILE: cannot convert 'double* const' to 'const std::complex<double>*'
+		BOOST_TEST( p1 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );
+
+		auto p2 = cA.data_elements();  // FAILS TO COMPILE: invalid static_cast from 'double* const' to 'const std::complex<double>*'
+		BOOST_TEST( p2 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );
 	}
 
 	return boost::report_errors();
