@@ -411,6 +411,21 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.size() == 9 );
 	}
+	{
+		multi::array<int, 2> arr({2, 2}, 10);
+		auto old_data = arr.data_elements();
+
+		arr.reset({30, 30});
+
+		BOOST_TEST( arr.data_elements() != old_data );
+
+		BOOST_TEST( arr.size() == 30 );
+
+		arr[29][29] = 123;
+
+		BOOST_TEST( arr[29][29] == 123 );  // not, it is impossible to know the value after a reset with extensions only
+
+	}
 
 	return boost::report_errors();
 }
