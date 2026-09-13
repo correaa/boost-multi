@@ -2342,6 +2342,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// returns an move-iterator (moves on dereference) to the ending in the leading dimension
 	BOOST_MULTI_HD constexpr auto mend() { return move_iterator{this->end()}; }
 
+	/// (inherited) returns a cursor pointing to the top corner element of the array
 	using const_subarray<T, D, ElementPtr, Layout>::home;
 	BOOST_MULTI_HD constexpr auto home() && { return this->home_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto home() & { return this->home_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
