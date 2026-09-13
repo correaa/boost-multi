@@ -301,7 +301,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// Deprecated, prefer `extents()`.
 	[[deprecated("use .extents()")]] BOOST_MULTI_HD constexpr auto extensions() const -> extents_type { return static_cast<layout_type const&>(*this).extents(); }  // cppcheck-suppress duplInheritedMember;
 
+	/// checks if the container has no elements.
 	using layout_type::empty;
+
+	/// checks if the container has no elements (same as `empty()`).
 	using layout_type::is_empty;
 
 	using layout_type::sub;
@@ -2256,8 +2259,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
 
+	/// Element type (generally `T`)
 	using typename const_subarray<T, D, ElementPtr, Layout>::element;
+
+	/// Element pointer type (generally `T*`)
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_ptr;
+
+	/// Element const-pointer type (generally `T const*`)
 	using typename const_subarray<T, D, ElementPtr, Layout>::element_const_ptr;
 
 	/// Subarray reference after binding first index, `multi::subarray<T, D - 1, P>` or, for `D == 1`, `std::pointer_traits<P>::reference` (usually `T&`)
