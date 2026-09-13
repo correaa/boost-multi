@@ -18,9 +18,9 @@ using blas::filling;
 
 template<class Context, class A, class IPIV>
 auto getrf(Context&& ctxt, A&& arr, IPIV&& ipiv){
-	assert( ipiv.size() == std::min(size(arr), size(~arr)) );
+	assert( ipiv.size() == std::min(arr.size(), (~arr).size()) );
 	assert( arr.stride() == 1 );
-	multi::index const i = std::forward<Context>(ctxt).getrf(size(~arr), size(arr), arr.base(), stride(~arr), std::forward<IPIV>(ipiv).data() );
+	multi::index const i = std::forward<Context>(ctxt).getrf((~arr).size(), arr.size(), arr.base(), (~arr).stride(), std::forward<IPIV>(ipiv).data() );
 	// if(i == 0) { return arr(); }
 	// else       { return arr({0, i - 1}, {0, i - 1}); }
 	if(i == 0) { return std::forward<A>(arr)(); }
@@ -33,7 +33,7 @@ void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& barr){
 	assert( lu.stride() == 1 );
 	assert( ipiv.size() >= lu.size() );
 	assert( barr.stride() == 1 );
-	std::forward<Context>(ctxt).getrs('N', size(lu), size(~barr), lu.base(), stride(~lu), ipiv.data(), std::forward<B>(barr).base(), stride(~barr));
+	std::forward<Context>(ctxt).getrs('N', lu.size(), (~barr).size(), lu.base(), (~lu).stride(), ipiv.data(), std::forward<B>(barr).base(), (~barr).stride());
 }
 
 template<class Context, class LU, class IPIV, class V>
@@ -41,7 +41,7 @@ void getrs_one(Context&& ctxt, LU const& lu, IPIV const& ipiv, V&& barr){
 	assert( lu.size() == (~lu).size() );
 	assert( lu.stride() == 1 );
 	assert( barr.stride() == 1 );
-	std::forward<Context>(ctxt).getrs('N', size(lu), 1, lu.base(), stride(~lu), ipiv.data(), std::forward<V>(barr).base(), size(lu));
+	std::forward<Context>(ctxt).getrs('N', lu.size(), 1, lu.base(), (~lu).stride(), ipiv.data(), std::forward<V>(barr).base(), lu.size());
 }
 
 
