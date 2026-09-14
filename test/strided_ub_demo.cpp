@@ -61,7 +61,7 @@ void test_transposed_subarray_overshoot() {
 #endif
 
 	// Iteration works because stride divides the subarray's nelems:
-	auto end = row4.end();
+	auto const end = row4.end();
 	BOOST_TEST( std::distance(row4.begin(), end) == 2 );
 }
 
@@ -93,7 +93,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			{1.0, 2.0, 3.0},
 			{3.0, 4.0, 5.0},
 			{6.0, 7.0, 8.0},
-			{9.0, 9.0, 9.0}
+			{9.0, 9.0, 9.0},
 		};
 
 		BOOST_TEST( arr.strided(2).size() == 2 );

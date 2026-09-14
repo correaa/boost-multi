@@ -333,17 +333,17 @@ class bistride {
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
 		auto base = static_cast<Ptr>(self.ptr_);
-		auto dist = ptr - base;
-		auto outer = dist / self.stride1_;
+		auto const dist = ptr - base;
+		auto const outer = dist / self.stride1_;
 
 		// vvv TODO(correaa) Survived: Replaced / with *
-		auto inner = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul
+		auto const inner = (dist % self.stride1_) / self.stride2_;  // mull-ignore: cxx_div_to_mul
 
-		auto shift = inner + self.n_;
-		auto size2 = self.nelems2_ / self.stride2_;
+		auto const shift = inner + self.n_;
+		auto const size2 = self.nelems2_ / self.stride2_;
 
-		auto new_outer = (shift / size2) + outer;
-		auto new_inner = shift % size2;
+		auto const new_outer = (shift / size2) + outer;
+		auto const new_inner = shift % size2;
 
 		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
@@ -351,8 +351,8 @@ class bistride {
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
 		auto base = static_cast<Ptr>(ptr_);
-		auto dist = ptr - base;
-		auto segment_index = dist / stride1_;
+		auto const dist = ptr - base;
+		auto const segment_index = dist / stride1_;
 		auto ret = base + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}

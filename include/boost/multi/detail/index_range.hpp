@@ -99,7 +99,7 @@ class range {
 	#pragma clang diagnostic ignored "-Wpadded"
 	#endif
 
-	IndexTypeLast last_;  // = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_;  // = first_;  //NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) // TODO(correaa) check how to do partially initialzed, check why it is const
 
 	#ifdef __clang__
 	#pragma clang diagnostic pop
@@ -270,7 +270,7 @@ class range {
 
 	friend constexpr auto intersection(range const& self, range const& other) {
 		auto new_first = (std::max)(self.first(), other.first());
-		auto new_last  = (std::min)(self.last(), other.last());
+		auto const new_last  = (std::min)(self.last(), other.last());
 		new_first      = (std::min)(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}

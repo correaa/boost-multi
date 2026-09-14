@@ -49,12 +49,12 @@ co_celements(Arr2D const& arr2d) {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	multi::array<int, 2> const arr = {
 		{0, 1, 2},
-		{3, 4, 5}
+		{3, 4, 5},
 	};
 
 	BOOST_TEST( arr.extent()[1] == 1 );
 	{
-		auto const [i, j] = arr.extents()[1][2];
+		auto const [i, j] = arr.extents()[1][2];  // NOLINT(readability-identifier-length)
 		BOOST_TEST( i == 1 );
 		BOOST_TEST( j == 2 );
 	}

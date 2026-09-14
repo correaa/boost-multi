@@ -37,7 +37,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		blas::context const ctxt;
 
-		auto res1 = +blas::dot(&ctxt, x, y);
+		auto const res1 = +blas::dot(&ctxt, x, y);
 		BOOST_TEST( std::abs( res1 - std::inner_product(begin(x), end(x), begin(y), 0.0)) < 1e-10 );
 
 		auto const res2 = +blas::dot(&ctxt, x, y);
@@ -49,7 +49,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<double, 1> const y = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length) BLAS naming
 
-		auto res = +blas::dot(x, y);
+		auto const res = +blas::dot(x, y);
 
 		BOOST_TEST( std::abs( res - std::inner_product(begin(x), end(x), begin(y), 0.0)) < 1e-10 );
 	}
@@ -102,7 +102,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 
-		auto res = +blas::dot(x, y);
+		auto const res = +blas::dot(x, y);
 
 		BOOST_TEST( std::abs( res - std::inner_product(begin(x), end(x), begin(y), 0.0F)) < 1e-10F );
 	}
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		complex res{0.0, 0.0};
 		blas::dot(x, y, res);
 
-		auto hermitian_product = [](auto alpha, auto omega) {
+		auto const hermitian_product = [](auto alpha, auto omega) {
 			return alpha * std::conj(omega);
 		};
 
@@ -353,15 +353,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using blas::dot;
 		using blas::hermitized;
 
-		auto res  = dot(x, y);
-		auto res2 = dot(hermitized(x), y);
+		auto const res  = dot(x, y);
+		auto const res2 = dot(hermitized(x), y);
 
 		BOOST_TEST( std::abs( +res - +res2 ) < 1e-10 );
 
-		auto res3 = dot(blas::conj(x), y);  // conjugation doesn't do anything for real array
+		auto const res3 = dot(blas::conj(x), y);  // conjugation doesn't do anything for real array
 		BOOST_TEST( std::abs( res3 - res ) < 1e-10 );
 
-		auto d_arr = dot(blas::C(x), y);
+		auto const d_arr = dot(blas::C(x), y);
 		BOOST_TEST( std::abs( d_arr - res ) < 1e-10 );
 
 		static_assert(!std::is_same_v<decltype(d_arr), double>);

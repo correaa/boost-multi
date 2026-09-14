@@ -160,7 +160,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::array<int, 5>{ { 50, 60, 70, 80, 90 } },
 			std::array<int, 5>{ { 100, 110, 120, 130, 140 } },
 			std::array<int, 5>{ { 150, 160, 170, 180, 190 } },
-		}};
+		}, };
 			// clang-format on
 
 			std::vector<decltype(&std::declval<multi::array_ref<int, 1>&&>())> ptrs;

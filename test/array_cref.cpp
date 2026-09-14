@@ -25,8 +25,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		using complex = std::complex<double>;
 
-		static_assert(std::is_same<std::pointer_traits<complex*>::element_type, complex>{}, "!");
-		static_assert(std::is_same<std::pointer_traits<complex*>::rebind<complex const>, complex const*>{}, "!");
+		static_assert(std::is_same<std::pointer_traits<complex*>::element_type, complex>{}, "!");                  // NOLINT(readability-trailing-comma)
+		static_assert(std::is_same<std::pointer_traits<complex*>::rebind<complex const>, complex const*>{}, "!");  // NOLINT(readability-trailing-comma)
 
 		std::vector<complex>       vec(100, 0.0);  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		std::vector<complex> const cvec(100);      // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
@@ -110,7 +110,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_auto_init_list)
 	{
-		auto                      il = {10, 20, 30};
+		auto const il = {10, 20, 30};
+
 		multi::array<int, 1>      an_array_value(il);            // ok, it is a copy
 		multi::array_cref<int, 1> an_array_const_reference(il);  // ok, it is read only
 

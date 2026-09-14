@@ -16,14 +16,14 @@ namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<!is_conjugated<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
-	-> decltype((std::forward<A>(array)).base()) {
-	return (std::forward<A>(array)).base();
+	-> decltype(std::forward<A>(array).base()) {
+	return std::forward<A>(array).base();
 }
 
 template<class A, std::enable_if_t<is_conjugated<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
-	-> decltype(underlying((std::forward<A>(array)).base())) {
-	return underlying((std::forward<A>(array)).base());
+	-> decltype(underlying(std::forward<A>(array).base())) {
+	return underlying(std::forward<A>(array).base());
 }
 
 using core::herk;
