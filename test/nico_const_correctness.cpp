@@ -8,10 +8,13 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for fill, copy, for_each
+#include <array>        // for array
 #include <iostream>     // for operator<<, basic_ostream::opera...
 #include <iterator>     // for begin, end, ostream_iterator
+#include <tuple>        // for get
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
+#include <vector>       // for vector
 
 namespace multi = boost::multi;
 
@@ -140,6 +143,99 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// multi::array<int, 1>::iterator cfirst = arr1d.begin();  // correctly fails to compile
 
 		BOOST_TEST( arr1d[0] == 1 );
+	}
+
+	{
+		std::array<int, 12> arr = {
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+		};
+		{
+			auto&& mds1 = multi::array_ref(arr.data(), {3, 4});
+
+			BOOST_TEST( mds1.empty() == false );
+			BOOST_TEST( mds1.size() == 3 );  // not 12
+			BOOST_TEST( mds1.num_elements() == 12 );
+			BOOST_TEST( mds1.dimensionality == 2 );
+			BOOST_TEST( mds1.extent().size() == 3 );
+			BOOST_TEST( mds1.extent().last() == 3 );
+
+			using std::get;
+			BOOST_TEST( get<0>(mds1.extents()).size() == 3 );
+			BOOST_TEST( get<0>(mds1.extents()).last() == 3 );
+
+			BOOST_TEST( get<1>(mds1.extents()).size() == 4 );
+			BOOST_TEST( get<1>(mds1.extents()).last() == 4 );
+
+			auto const [is, js] = mds1.extents();
+			for(auto const i : is) {      // NOLINT(altera-unroll-loops) test range iteration
+				for(auto const j : js) {  // NOLINT(altera-unroll-loops) test range iteration
+#if defined(cpp_multidimensional_subscript) && (cpp_multidimensional_subscript >= 202110L)
+					BOOST_TEST(( mds1[i, j] != 0 ));
+#else
+					BOOST_TEST(( mds1[i][j] != 0 ));
+#endif
+				}
+			}
+		}
+		{
+			auto&& mds2 = multi::array_ref(arr.data(), {2, 3, 2});
+
+			BOOST_TEST( mds2.empty() == false );
+			BOOST_TEST( mds2.size() == 2 );  // not 12
+			BOOST_TEST( mds2.num_elements() == 12 );
+			BOOST_TEST( mds2.dimensionality == 3 );
+			BOOST_TEST( mds2.extent().size() == 2 );
+			BOOST_TEST( mds2.extent().last() == 2 );
+
+			using std::get;
+			BOOST_TEST( get<0>(mds2.extents()).size() == 2 );
+			BOOST_TEST( get<0>(mds2.extents()).last() == 2 );
+
+			BOOST_TEST( get<1>(mds2.extents()).size() == 3 );
+			BOOST_TEST( get<1>(mds2.extents()).last() == 3 );
+
+			BOOST_TEST( get<2>(mds2.extents()).size() == 2 );
+			BOOST_TEST( get<2>(mds2.extents()).last() == 2 );
+
+			auto const [is, js, ks] = mds2.extents();
+			for(auto const i : is) {          // NOLINT(altera-unroll-loops) test range iteration
+				for(auto const j : js) {      // NOLINT(altera-unroll-loops) test range iteration
+					for(auto const k : ks) {  // NOLINT(altera-unroll-loops) test range iteration
+#if defined(cpp_multidimensional_subscript) && (cpp_multidimensional_subscript >= 202110L)
+						BOOST_TEST(( mds2[i, j, k] != 0 ));
+#else
+						BOOST_TEST(( mds2[i][j][k] != 0 ));
+#endif
+					}
+				}
+			}
+		}
+		{
+			auto coll = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+			{
+				auto&& mds = multi::array_ref(coll.data(), {static_cast<multi::index>(coll.size() / 3), 3});
+
+				BOOST_TEST( mds[0][1] == 2 );
+
+				auto&& mds1 = mds.transposed();
+
+				BOOST_TEST( mds1[1][0] == 2 );
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {static_cast<multi::index>(coll.size() / 3), 3});
+
+				auto&& mds2 = mds.transposed();
+				// auto&& arr2 = ~(~(arr.transposed()).strided(6));
+
+				using std::get;
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+		}
 	}
 
 	return boost::report_errors();
