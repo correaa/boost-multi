@@ -11,7 +11,6 @@
 #include <array>        // for array
 #include <iostream>     // for operator<<, basic_ostream::opera...
 #include <iterator>     // for begin, end, ostream_iterator
-#include <tuple>        // for get
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
 #include <vector>       // for vector
@@ -228,8 +227,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				// auto&& arr2 = ~(~(arr.transposed()).strided(6));
 
 				using std::get;
-				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
-					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
