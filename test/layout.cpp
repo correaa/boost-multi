@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.cbegin().stride() == 1 );
 		BOOST_TEST( arr.cend().stride() == 1 );
 
-		auto size = arr.cend() - arr.cbegin();
+		auto const size = arr.cend() - arr.cbegin();
 		BOOST_TEST( size == 5 );
 		BOOST_TEST( arr.size() == 5 );
 
@@ -447,7 +447,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
 			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
 			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-		}};
+		},};
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
@@ -1215,13 +1215,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( lyt.extent().front() == 3 );
 		BOOST_TEST( lyt.extent().back() == 8 );
 
-		auto sorted_lyt = lyt.sort();
+		auto const sorted_lyt = lyt.sort();
 
 		BOOST_TEST( sorted_lyt == lyt );
 
-		auto lyt_transpose = lyt.transpose();
+		auto const lyt_transpose = lyt.transpose();
 
-		auto sorted_lyt2 = lyt_transpose.transpose();
+		auto const sorted_lyt2 = lyt_transpose.transpose();
 
 		BOOST_TEST( sorted_lyt2 == sorted_lyt );
 	}

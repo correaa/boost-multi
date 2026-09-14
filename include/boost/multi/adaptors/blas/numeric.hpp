@@ -105,18 +105,18 @@ class involuted {
 
 	constexpr explicit operator decay_type() & { return f_(r_); }
 	constexpr explicit operator decay_type() const& { return f_(r_); }
-	constexpr /*plct*/ operator decay_type() && { return f_(r_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) //NOSONAR to allow terse syntax
+	constexpr /*plct*/ operator decay_type() && { return f_(r_); }  // NOLINT(*-explicit-constructor,hicpp-explicit-conversions) //NOSONAR to allow terse syntax
 
 	// constexpr auto operator*(decay_type const& other) const { return f_(r_) * other; }
 	constexpr friend auto operator*(involuted const& self, decay_type const& other) { return self.f_(self.r_) * other; }
 
-	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
+	template<class DecayType, class = decltype(std::declval<Ref&>() = std::declval<Involution&>()(std::declval<DecayType&&>()))>
 	constexpr auto operator=(DecayType&& other) & -> involuted& {
 		r_ = f_(std::forward<DecayType>(other));
 		return *this;
 	}
 
-	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
+	template<class DecayType, class = decltype(std::declval<Ref&>() = std::declval<Involution&>()(std::declval<DecayType&&>()))>
 	constexpr auto operator=(DecayType&& other) && -> involuted& {
 		r_ = f_(std::forward<DecayType>(other));
 		return *this;
@@ -209,7 +209,7 @@ class involuter {
 
 	template<class Other, decltype(detail::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
+	BOOST_MULTI_HD constexpr /*implct*/ involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}  // NOLINT(*-explicit-constructor,hicpp-explicit-conversions) // NOSONAR inherit implicit conversion of underlying type
 	template<class Other, decltype(detail::explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	BOOST_MULTI_HD constexpr explicit involuter(Other const& other) : f_{other.f_}, it_{other.it_} {}
 
@@ -324,9 +324,9 @@ template<class It>
 auto        is_conjugated_aux(conjugater<It> const& /*self*/) -> std::true_type;
 inline auto is_conjugated_aux(...) -> std::false_type;
 
-template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())){// NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(std::declval<A>().base())){// NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	template<class AA> 
-	constexpr auto operator()(AA const& /*unused*/) const { return is_conjugated_aux((std::declval<A>()).base()); }
+	constexpr auto operator()(AA const& /*unused*/) const { return is_conjugated_aux(std::declval<A>().base()); }
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem = typename D::element, typename Ptr = typename D::element_ptr, std::enable_if_t<!is_complex_array<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20

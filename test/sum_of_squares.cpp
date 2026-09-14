@@ -31,7 +31,7 @@
 // circle (as of build 56) also fails: its libstdc++ integration can't parse the PSTL/TBB glue headers
 // pulled in by <execution> (reports a bogus "undeclared identifier terminate" from deep inside <tuple>).
 #if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && !defined(__circle_build__) && /* NOLINTNEXTLINE(misc-include-cleaner) */ \
-	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14))                                           /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */
+	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14))                                           /* fixed only in libstdc++ 14 */
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
 
@@ -80,7 +80,7 @@ auto sos(ExecutionPolicy&& ep, int N) {        // NOLINT(readability-identifier-
 		(void)std::forward<ExecutionPolicy>(ep);
 		return sos(N);
 	}
-#ifdef MULTI_HAS_PARALLEL_EXECUTION  // avoid non-dependent std::transform_reduce lookup failing on gcc 7/8, where the branch is never instantiated but still parsed
+#ifdef MULTI_HAS_PARALLEL_EXECUTION  // non-dependent std::transform_reduce lookup failing on gcc 7/8, where the branch is never instantiated but still parsed
 	else {
 		return std::transform_reduce(
 			std::forward<ExecutionPolicy>(ep),

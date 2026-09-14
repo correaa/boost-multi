@@ -275,7 +275,7 @@ namespace detail {
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
 	typename extents_t<D>::elements_t::iterator it_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;
+	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) why?
 
  public:
 	restriction_elements_iterator() = default;
@@ -344,7 +344,7 @@ namespace detail {
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
 	typename extents_t<D>::elements_t elems_;
-	Proj                              proj_;
+	Proj                              proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)TODO(correaa) why?
 
  public:
 	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
@@ -377,7 +377,7 @@ class restriction_elements_t {
 template<dimensionality_type D, class Proj>
 class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_copyable_base, detail::copyable_base> {
 	extents_t<D> xs_;
-	Proj         proj_;
+	Proj         proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) why?
 
 	using system = typename multi::detail::function_system<std::decay_t<Proj>>::type;
 

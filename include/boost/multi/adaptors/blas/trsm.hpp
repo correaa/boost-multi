@@ -14,7 +14,7 @@ namespace boost::multi::blas {
 
 enum class diagonal : char {
 	    unit = 'U',
-	non_unit = 'N', general = non_unit
+	non_unit = 'N', general = non_unit,
 };
 
 template<blas::filling Fill, class Array>
@@ -61,7 +61,7 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 		break;
 	case multi::blas::filling::lower:
 		{
-			auto extt = (~ret).extent();
+			auto const extt = (~ret).extent();
 			std::for_each(extt.begin(), extt.end(), [&ret](auto jdx) {
 				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
 			});

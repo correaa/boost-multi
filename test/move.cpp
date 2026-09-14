@@ -55,23 +55,23 @@ void move_element_1d_array() {
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
 		using std::move;  // not necessary, just testing if it works
-		auto vec = move(arr({2, 6}))[0];
+		auto const vec = move(arr({2, 6}))[0];
 		BOOST_TEST( vec.size() == 5 );
 		BOOST_TEST( arr[2].empty() );
 	}
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		auto mbeg = arr({2, 6}).mbegin();
-		auto vec  = *mbeg;
+		auto const mbeg = arr({2, 6}).mbegin();
+		auto const vec  = *mbeg;
 		BOOST_TEST( vec.size() == 5 );
 		BOOST_TEST( arr[2].empty() );
 	}
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		auto mbeg = arr({2, 6}).mbegin();
-		auto vec  = *mbeg;
+		auto const mbeg = arr({2, 6}).mbegin();
+		auto const vec  = *mbeg;
 		BOOST_TEST( vec.size() == 5 );
 		BOOST_TEST( arr[2].empty() );
 	}
@@ -134,7 +134,7 @@ void move_element_2d_array() {
 	multi::array<std::vector<double>, 2> arr({10, 10}, std::vector<double>(5, {}, {}));
 
 	using std::move;
-	auto vec = move(arr({2, 6}, {2, 6}))[0][0];
+	auto const vec = move(arr({2, 6}, {2, 6}))[0][0];
 	BOOST_TEST( vec.size() == 5 );
 	BOOST_TEST( arr[2][2].empty() );
 }
@@ -143,7 +143,7 @@ void move_element_1d_total_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		auto vec = std::move(arr)[2];  // cppcheck-suppress accessMoved ;
+		auto const vec = std::move(arr)[2];  // cppcheck-suppress accessMoved ;
 		BOOST_TEST( vec.size() == 5 );
 
 		// cppcheck-suppress accessMoved ;
@@ -152,7 +152,7 @@ void move_element_1d_total_array() {
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		auto vec = multi::move(arr)[2];
+		auto const vec = multi::move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 
 		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
@@ -319,7 +319,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<std::vector<int>, 2> arr({10, 10}, std::vector<int>(5));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		auto arr2 = std::move(arr);
+		auto const arr2 = std::move(arr);
 
 		// NOLINTNEXTLINE(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
 		BOOST_TEST( arr .   empty() );
@@ -335,7 +335,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<std::vector<int>> sink(5);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		auto* ptr1 = arr[1].data();
+		auto const* ptr1 = arr[1].data();
 
 		// cppcheck-suppress mismatchingContainerExpression ;
 		std::copy(arr({0, 5}).element_moved().begin(), arr({0, 5}).element_moved().end(), sink.begin());
@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<std::vector<int>> sink(5);  // NOLINT(fuchsia-default-arguments-calls)
 
-		auto* ptr1 = arr[1].data();
+		auto const* ptr1 = arr[1].data();
 
 		// cppcheck-suppress mismatchingContainerExpression ;
 		std::copy(arr({0, 5}).element_moved().elements().begin(), arr({0, 5}).element_moved().elements().end(), sink.begin());
@@ -367,7 +367,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.size() == 10 );
 		multi::array<std::vector<int>, 1> arr2({5}, {}, {});  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		auto* ptr1 = arr[1].data();
+		auto const* ptr1 = arr[1].data();
 
 		arr2().elements() = arr({0, 5}).element_moved().elements();
 

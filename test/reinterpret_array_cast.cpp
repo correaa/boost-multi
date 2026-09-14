@@ -279,7 +279,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( std::abs( arr2[2][3][1] - std::get<1>(arr[2][3]) ) < 1E-6 );
 			BOOST_TEST( std::abs( arr2[2][3][2] - std::get<2>(arr[2][3]) ) < 1E-6 );
 
-			auto arr3 = +arr.reinterpret_array_cast<double>(3);
+			auto const arr3 = +arr.reinterpret_array_cast<double>(3);
 			BOOST_TEST( arr3 == arr2 );
 		}
 	}

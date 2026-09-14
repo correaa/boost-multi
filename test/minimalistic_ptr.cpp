@@ -30,7 +30,7 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ;
-	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(*-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 
@@ -71,7 +71,7 @@ class ptr2 : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-link
 	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
-	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(*-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -123,7 +123,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& CC2 = CCP->static_array_cast<int, minimalistic::ptr2<int>>();
 		BOOST_TEST( &CC2[1][1] == &(*CCP)[1][1] );
 
-		static_assert(std::is_convertible<int*, int const*>{}, "!");
+		static_assert(std::is_convertible<int*, int const*>{}, "!");  // NOLINT(readability-trailing-comma) bug in clang-tidy
 
 		minimalistic::ptr<int> const       pd{nullptr};
 		minimalistic::ptr<int const> const pcd = pd;
