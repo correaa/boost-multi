@@ -419,7 +419,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr.size() == 30 );
 
-		BOOST_TEST( arr[0][0] == "" );
+		BOOST_TEST( arr[0][0].empty() );
 
 		arr[29][29] = "12345678901234567890123456789";
 
