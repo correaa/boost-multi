@@ -279,14 +279,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// returns the extents of the array (Cartesian product of valid indices)
 	using layout_type::extents;
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#endif
-	using typename layout_type::extensions_type;  // TODO(correaa) remove
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+// #ifdef _MSC_VER
+// #pragma warning(push)
+// #pragma warning(disable : 4996)
+// #endif
+// 	using typename layout_type::extensions_type;  // TODO(correaa) remove
+// #ifdef _MSC_VER
+// #pragma warning(pop)
+// #endif
 
 	// using typename layout_type::extents_type;
 	/// A type that stores the extents of the array or subarray (returned from `.extents()` and used for `array` constructors)
