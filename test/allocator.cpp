@@ -144,11 +144,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
+		auto const iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
-			begin(iex), end(iex),
-			begin(ua),
+			iex.begin(), iex.end(),
+			ua.begin(),
 			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 		);
 		BOOST_TEST( ua == va );
@@ -188,7 +188,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
+		auto const iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -260,7 +260,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(const_elements)
 	{
-		auto ptr = std::make_unique<int const>(2);
+		auto const ptr = std::make_unique<int const>(2);
 		// ok, can't assign  //  *ptr = 3.0;
 		BOOST_TEST( *ptr == 2 );
 	}
@@ -269,7 +269,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(pmr)
 	{
 		std::array<char, 13> buffer = {
-			{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}
+			{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'},
 		};
 
 		std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
@@ -327,7 +327,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(pmr_double_uninitialized)
 	{
 		std::array<int, 12> buffer{
-			{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999}
+			{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999},
 		};
 
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(int)};
@@ -351,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using T = int;
 		multi::detail::static_allocator<T, 32> sa{};
 
-		auto pp = sa.allocate(10);
+		auto const pp = sa.allocate(10);
 
 		new (std::next(pp, 8)) T{42};
 

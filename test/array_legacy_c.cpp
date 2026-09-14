@@ -22,9 +22,9 @@ using fftw_complex = double[2];
 
 namespace {
 
-void fftw_plan_dft(int rank, int const* n, fftw_complex* in, fftw_complex* out, int sign, unsigned flags);
+void fftw_plan_dft(int rank, int const* n, fftw_complex const* in, fftw_complex* out, int sign, unsigned flags);
 
-void fftw_plan_dft(int rank, int const* n, fftw_complex* in, fftw_complex* out, int sign, unsigned flags) {
+void fftw_plan_dft(int rank, int const* n, fftw_complex const* in, fftw_complex* out, int sign, unsigned flags) {
 	(void)rank, (void)n, (void)in, (void)out, (void)sign, (void)flags;
 }
 
