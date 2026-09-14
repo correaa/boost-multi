@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<double, 4> arr = {};
 
-		// NEXTLINENOLINT(readability-redundant-typename) for C++20
+		// NOLINTNEXTLINE(readability-redundant-typename) for C++20
 		static_assert(std::is_same_v<typename multi::detail::array_traits<decltype(arr)>::element, double>);
 
 		using multi::dimensionality;
@@ -158,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{{ 00, 10, 20, 30, 40, 50, 60, 70, 80, 90 }},
 		{{ 100, 110, 120, 130, 140, 150, 160, 170, 180, 190 }},
 		{{ 200, 210, 220, 230, 240, 250, 260, 270, 280, 290 }},
-	}};
+	},};
 		// clang-format on
 
 		multi::array_ref<int, 2> marr(&carr[0][0], {3, 10});  // NOLINT(readability-container-data-pointer) tests access

@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				int& mass;      // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-				// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions,modernize-use-designated-initializers) for C++20
+				// NOLINTNEXTLINE(modernize-use-designated-initializers,*-explicit-constructor) for C++20
 				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 
 				auto operator+() const { return operator particle(); }
@@ -130,7 +130,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		particle const p11 = SoA(1, 1);
 		BOOST_TEST(p11.mass == 99 );
 
-		auto autop11 = +SoA(1, 1);
+		auto const autop11 = +SoA(1, 1);
 		BOOST_TEST(autop11.mass == 99 );
 
 		SoA(1, 1).mass = 88;

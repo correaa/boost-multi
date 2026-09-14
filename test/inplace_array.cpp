@@ -25,7 +25,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	multi::inplace_array<int, 2, 16> a2d = {
 		{1, 2},
-		{3, 4}
+		{3, 4},
 	};
 
 	BOOST_TEST( a2d.size() == 2 );
@@ -36,7 +36,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		multi::inplace_array<int, 2, 4> b2d = {
 			{1, 2},
-			{3, 4}
+			{3, 4},
 		};
 		auto const end = (~b2d)[1].end();    // UB: forms a pointer past one-past-end
 		BOOST_TEST( end != (~b2d)[1].begin() );  // observe the pointer so the optimizer can't drop the arithmetic

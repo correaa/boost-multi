@@ -188,8 +188,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		fill(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), 80);
 		BOOST_TEST( all_of(begin(d2D.rotated()[1]), end(d2D.rotated()[1]), [](auto&& elem) { return elem == 80;}) );
 
-		fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 80);
-		BOOST_TEST( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) { return elem == 80;}) );
+		fill(d2D.rotated()[1].begin(), d2D.rotated()[1].end(), 80);
+		BOOST_TEST( all_of(d2D.rotated()[1].begin(), d2D.rotated()[1].end(), [](auto&& elem) { return elem == 80;}) );
 
 		auto rand = [gauss = std::uniform_int_distribution<>(0, 10), gen = std::mt19937_64(randdev())]() mutable {
 			return gauss(gen);
@@ -257,8 +257,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			multi::array<double, 2> vel({5, 5});
 
 			auto [is, js] = vel.extents();
-			for(auto i : is) {
-				for(auto j : js) {  // NOLINT(altera-unroll-loops)
+			for(auto const i : is) {
+				for(auto const j : js) {  // NOLINT(altera-unroll-loops)
 					// using std::norm;
 					vel[i][j] = norm(olap[i][j][0]) + norm(olap[i][j][1]) + norm(olap[i][j][2]);
 				}

@@ -515,7 +515,7 @@ auto main() -> int {
 		using complex = std::complex<double>;
 		complex const                  I{0.0, 1.0};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-			{1.0 - 2.0 * I, 9.0 - 1.0 * I}
+			{1.0 - 2.0 * I, 9.0 - 1.0 * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -536,16 +536,16 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.0 + 2.0 * I},
 			{9.0 - 1.0 * I},
-			{1.0 + 1.0 * I}
+			{1.0 + 1.0 * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
-			{11.0 - 2.0 * I, 7.0 - 3.0 * I, 8.0 - 1.0 * I}
+			{11.0 - 2.0 * I, 7.0 - 3.0 * I, 8.0 - 1.0 * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
 
-			BOOST_TEST( size(blas::H(a)) == 1 );
-			BOOST_TEST( size(blas::H(b)[0]) == 1 );
+			BOOST_TEST( blas::H(a).size() == 1 );
+			BOOST_TEST( blas::H(b)[0].size() == 1 );
 
 			blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
 			BOOST_TEST( std::abs( (c[0][0]) - (84.0 + 7.0*I) ) < 1e-12 );
@@ -696,7 +696,7 @@ auto main() -> int {
 	// multi_adaptors_blas_gemm_real_1x3_3x2
 	{
 		multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-			{1.0, 9.0, 1.0}
+			{1.0, 9.0, 1.0},
 		};
 		BOOST_TEST( (~a).stride() == 1 );
 		BOOST_TEST( a   .stride() == 3 );
@@ -747,7 +747,7 @@ auto main() -> int {
 	{
 		using complex                    = std::complex<double>;
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-			{1.0, 9.0, 1.0}
+			{1.0, 9.0, 1.0},
 		};
 
 		BOOST_TEST( (~a).stride() == 1 );
@@ -811,15 +811,17 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
-			auto                    ar = +~a;
+			auto ar = +~a;
+
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+			blas::gemm(1.0, ~ar(ar.extent(), {0, 1}), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 		{
-			auto                    ar = +~a;
+			auto ar = +~a;
+
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
+			blas::gemm_n(1.0, (~ar(ar.extent(), {0, 1})).begin(), (~ar(ar.extent(), {0, 1})).size(), b.begin(), 0.0, (~c).begin());  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
@@ -836,7 +838,7 @@ auto main() -> int {
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0, 12.0},
 			{ 7.0, 19.0},
-			{ 8.0,  1.0}
+			{ 8.0,  1.0},
 		};
 		{
 			multi::array<complex, 2> c({size(a({0, 1})), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
@@ -849,15 +851,17 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[0][1]) - (184.0) ) < 1e-12 );
 		}
 		{
-			auto                     ar = +~a;
+			auto ar = +~a;
+
 			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);
+			blas::gemm(1.0, ~ar(ar.extent(), {0, 1}), b, 0.0, ~c);
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 		{
-			auto                     ar = +~a;
+			auto ar = +~a;
+
 			multi::array<complex, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));
+			blas::gemm_n(1.0, (~ar(ar.extent(), {0, 1})).begin(), (~ar(ar.extent(), {0, 1})).size(), b.begin(), 0.0, (~c).begin());
 			BOOST_TEST( std::abs( (c[1][0]) - (184.0) ) < 1e-12 );
 		}
 	}
@@ -875,7 +879,7 @@ auto main() -> int {
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0},
 			{7.0},
-			{8.0}
+			{8.0},
 		};
 		{
 			multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) BLAS naming
@@ -892,13 +896,13 @@ auto main() -> int {
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm(1.0, ~(ar(ar.extent(), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+			blas::gemm(1.0, ~ar(ar.extent(), {0, 1}), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 		{
 			auto                    ar = +~a;
 			multi::array<double, 2> c({size(~b), size(~ar(ar.extent(), {0, 1}))});  // NOLINT(readability-identifier-length) BLAS naming
-			blas::gemm_n(1.0, begin(~(ar(ar.extent(), {0, 1}))), size(~(ar(ar.extent(), {0, 1}))), begin(b), 0.0, begin(~c));  // c=a⸆b, c⸆=b⸆a
+			blas::gemm_n(1.0, (~ar(ar.extent(), {0, 1})).begin(), (~ar(ar.extent(), {0, 1})).size(), b.begin(), 0.0, (~c).begin());  // c=a⸆b, c⸆=b⸆a
 			BOOST_TEST( std::abs( (c[0][0]) - (82.0) ) < 1e-12 );
 		}
 	}
@@ -912,7 +916,7 @@ auto main() -> int {
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0},
 			{7.0},
-			{8.0}
+			{8.0},
 		};
 
 		{
@@ -937,7 +941,7 @@ auto main() -> int {
 		multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0},
 			{7.0},
-			{8.0}
+			{8.0},
 		};
 		{
 			multi::array<double, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1229,12 +1233,12 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1. + 2. * I},
 			{9. - 1. * I},
-			{1. + 1. * I}
+			{1. + 1. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I},
 			{7. - 3. * I},
-			{8. - 1. * I}
+			{8. - 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1258,8 +1262,10 @@ auto main() -> int {
 		}
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
-			auto                     ha = +blas::hermitized(a);
+			auto const ha = +blas::hermitized(a);
+
 			blas::gemm(1.0, ha, b, 0.0, c);
+
 			BOOST_TEST( std::abs( (c[0][0]) - (80.-53.*I) ) < 1e-12 );
 
 			blas::gemm(1.0, blas::H(b), a, 0.0, c);
@@ -1281,12 +1287,12 @@ auto main() -> int {
 		using complex = std::complex<double>;
 		constexpr complex              I{0, 1};  // NOLINT(readability-identifier-length) BLAS naming
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-			{1. + 2. * I, 9. - 1. * I, 1. + 1. * I}
+			{1. + 2. * I, 9. - 1. * I, 1. + 1. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I, 5. + 2. * I},
 			{ 7. - 3. * I, 2. + 1. * I},
-			{ 8. - 1. * I, 1. + 1. * I}
+			{ 8. - 1. * I, 1. + 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1319,12 +1325,12 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1. + 2. * I},
 			{9. - 1. * I},
-			{1. + 1. * I}
+			{1. + 1. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I, 5. + 2. * I},
 			{ 7. - 3. * I, 2. + 1. * I},
-			{ 8. - 1. * I, 1. + 1. * I}
+			{ 8. - 1. * I, 1. + 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 2});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1345,12 +1351,12 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1. + 2. * I, 5. + 2. * I},
 			{9. - 1. * I, 9. + 1. * I},
-			{1. + 1. * I, 2. + 2. * I}
+			{1. + 1. * I, 2. + 2. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I, 5. + 2. * I},
 			{ 7. - 3. * I, 2. + 1. * I},
-			{ 8. - 1. * I, 1. + 1. * I}
+			{ 8. - 1. * I, 1. + 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1371,12 +1377,12 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1. + 2. * I, 5. + 2. * I},
 			{9. - 1. * I, 9. + 1. * I},
-			{1. + 1. * I, 2. + 2. * I}
+			{1. + 1. * I, 2. + 2. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I},
 			{7. - 3. * I},
-			{8. - 1. * I}
+			{8. - 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({2, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1397,12 +1403,12 @@ auto main() -> int {
 		multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1. + 2. * I},
 			{9. - 1. * I},
-			{1. + 1. * I}
+			{1. + 1. * I},
 		};
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. - 2. * I},
 			{7. - 3. * I},
-			{8. - 1. * I}
+			{8. - 1. * I},
 		};
 		{
 			multi::array<complex, 2> c({1, 1});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1566,7 +1572,7 @@ auto main() -> int {
 			multi::array<complex, 2> c({2, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, a, blas::H(b), 0.0, c);  // c=ab†, c†=ba†
 			BOOST_TEST( std::abs( (c[1][0]) - (complex(188, 43)) ) < 1e-12 && std::abs( (c[1][1]) - (complex(196, 25)) ) < 1e-12 );
-			auto c2 = +blas::gemm(1.0, a, blas::H(b));
+			auto const c2 = +blas::gemm(1.0, a, blas::H(b));
 			BOOST_TEST( c2 == c );
 		}
 		{
@@ -1619,7 +1625,7 @@ auto main() -> int {
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11.0 + 1.0 * I, 12.0 + 1.0 * I, 4.0 + 1.0 * I, 8.0 - 2.0 * I},
 			{ 7.0 + 8.0 * I, 19.0 - 2.0 * I, 2.0 + 1.0 * I, 7.0 + 1.0 * I},
-			{ 5.0 + 1.0 * I,  3.0 - 1.0 * I, 3.0 + 8.0 * I, 1.0 + 1.0 * I}
+			{ 5.0 + 1.0 * I,  3.0 - 1.0 * I, 3.0 + 8.0 * I, 1.0 + 1.0 * I},
 		};
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1646,7 +1652,7 @@ auto main() -> int {
 		multi::array<complex, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
 			{11. + 1. * I, 12. + 1. * I, 4. + 1. * I, 8. - 2. * I},
 			{ 7. + 8. * I, 19. - 2. * I, 2. + 1. * I, 7. + 1. * I},
-			{ 5. + 1. * I,  3. - 1. * I, 3. + 8. * I, 1. + 1. * I}
+			{ 5. + 1. * I,  3. - 1. * I, 3. + 8. * I, 1. + 1. * I},
 		};
 		{
 			multi::array<complex, 2> c = blas::gemm(1.0, a, b);  // c=ab, c⸆=b⸆a⸆  // NOLINT(readability-identifier-length) BLAS naming
@@ -1691,7 +1697,7 @@ auto main() -> int {
 			{4.0 + 2.0 * I, 2.0 + 4.0 * I, 3.0 + 1.0 * I},
 			{7.0 + 1.0 * I, 1.0 + 5.0 * I, 0.0 + 3.0 * I},
 		};
-		auto M2 = +M({0, 3}, {0, 1});
+		auto const M2 = +M({0, 3}, {0, 1});
 		BOOST_TEST( M2 == M({0, 3}, {0, 1}) );
 	}
 
@@ -1702,7 +1708,7 @@ auto main() -> int {
 		static constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) BLAS naming
 
 		// NOLINTNEXTLINE(bugprone-random-generator-seed,cert-msc32-c,cert-msc51-cpp,readability-identifier-length) for test purposes
-		auto rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {
+		auto const rand = [d = std::normal_distribution<>{}, g = std::mt19937{}]() mutable {
 			return d(g) + d(g) * I;
 		};
 
@@ -1757,7 +1763,7 @@ auto main() -> int {
 			{11,  7, 5},
 			{12, 19, 3},
 			{ 4,  2, 3},
-			{ 8,  7, 1}
+			{ 8,  7, 1},
 		};
 		{
 			multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1802,7 +1808,7 @@ auto main() -> int {
 			{11.0,  7.0, 5.0},
 			{12.0, 19.0, 3.0},
 			{ 4.0,  2.0, 3.0},
-			{ 8.0,  7.0, 1.0}
+			{ 8.0,  7.0, 1.0},
 		};
 		{
 			multi::array<complex, 2> c({2, 4});  // NOLINT(readability-identifier-length) BLAS naming
@@ -1938,7 +1944,7 @@ auto main() -> int {
 		{
 			multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
 
-			auto olap3 = +blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec);
+			auto const olap3 = +blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec);
 			BOOST_TEST( std::abs( ((+blas::gemm(1.0, blas::H(mat2), vec))[0][0]) - ((+blas::gemm(1.0, blas::H(mat({0, 3}, {0, 1})), vec))[0][0]) ) < 1e-12 );
 		}
 	}

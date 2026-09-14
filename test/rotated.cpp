@@ -47,7 +47,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					   12  // ok
 					   >
 				buffer = {
-					{0, 1, 2, 3, 4, 5, 6, 7, 8}
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
             };  // , 10, 11};
 
 			multi::array_ref<int, 2> arr({3, 3}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
@@ -66,7 +66,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					   12  // ok
 					   >
 				buffer = {
-					{0, 1, 2, 3, 4, 5, 6, 7, 8}
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
             };  // , 10, 11};
 
 			multi::array_ref<int, 2> arr({3, 3}, buffer.data());  // // TODO(correaa) think how to handle references to arrays (UB)
@@ -180,11 +180,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 4> original({14, 14, 7, 4});
 
-		auto&& unrotd = (original.unrotated());
+		auto&& unrotd = original.unrotated();
 		BOOST_TEST(( unrotd.sizes() == decltype(unrotd.sizes()){4, 14, 14, 7} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
-		auto&& unrotd2 = (original.unrotated().unrotated());
+		auto&& unrotd2 = original.unrotated().unrotated();
 		BOOST_TEST(( unrotd2.sizes() == decltype(unrotd2.sizes()){7, 4, 14, 14} ));
 		BOOST_TEST( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 	}
@@ -197,7 +197,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{{ 5,  6,  7,  8,  9}},
 			{{10, 11, 12, 13, 14}},
 			{{15, 16, 17, 18, 19}},
-		}};
+		},};
 		// clang-format on
 
 		std::array<std::array<int, 5>, 4> stdarr2 = {};

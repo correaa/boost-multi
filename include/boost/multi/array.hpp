@@ -1381,7 +1381,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 
 	// NOSONAR
 	constexpr operator typename std::iterator_traits<typename dynamic_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-		return *(this->base_);
+		return * this->base_;
 	}
 
 	// NOSONAR
@@ -1915,7 +1915,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 			return;
 		}
 
-		auto new_layout = typename array::layout_type{exts};
+		auto const new_layout = typename array::layout_type{exts};
 
 		if(new_layout.num_elements() != this->layout().num_elements()) {
 			this->destroy();
@@ -2007,7 +2007,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 			return std::move(*this);
 		}
 
-		auto new_layout = typename array::layout_type{exts};
+		auto const new_layout = typename array::layout_type{exts};
 
 		if(new_layout.num_elements() != this->layout().num_elements()) {
 			this->destroy();

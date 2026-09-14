@@ -66,7 +66,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr.size() == 100 );
 			BOOST_TEST( arr.begin() < arr.end() );
 
-			auto                                          arr2 = arr.begin();
+			auto const arr2 = arr.begin();
+
 			multi::array<double, 1>::const_iterator const cbb  = arr2;
 			BOOST_TEST( cbb == arr2 );
 			// BOOST_TEST( arr2 == cbb );  // TODO(correaa) problem in C++20
@@ -152,7 +153,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 3> arr = {
 			{ {12, 11},  {24, 10}},
 			{{112, 30}, {344, 40}},
-			{ {12, 11},  {24, 10}}
+			{ {12, 11},  {24, 10}},
 		};
 
 		BOOST_TEST( size(arr) == 3 );
@@ -201,7 +202,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3> arr = {
 			{ {1.2, 1.1},  {2.4, 1.0}},
 			{{11.2, 3.0}, {34.4, 4.0}},
-			{ {1.2, 1.1},  {2.4, 1.0}}
+			{ {1.2, 1.1},  {2.4, 1.0}},
 		};
 
 		multi::array<double, 3>::iterator it;
@@ -249,7 +250,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::string, 2> arr = {
 			{"00", "01"},
 			{"10", "11"},
-			{"20", "21"}
+			{"20", "21"},
 		};
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
@@ -310,7 +311,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( (*arr.begin())[1] == 20 );
 		BOOST_TEST( arr.begin()->operator[](1) == 20 );
 
-		auto rbegin = std::make_reverse_iterator(arr.end());
+		auto const rbegin = std::make_reverse_iterator(arr.end());
 
 		BOOST_TEST( (*rbegin)[1] == 2000 );
 

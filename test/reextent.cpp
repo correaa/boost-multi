@@ -117,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(size(arr3) == 2);
 		BOOST_TEST(size(arr3[0]) == 3);
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 		arr.reextent({2, 3});
 		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
@@ -137,7 +137,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(arr3.size() == 2);
 		BOOST_TEST(arr3[0].size() == 3);
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 		arr.reextent({2, 3}, 990);
 		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
@@ -153,7 +153,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 
 		arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 
@@ -173,7 +173,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 
 		arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 
@@ -393,7 +393,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<std::vector<int>> varr = {
 			std::vector<int>{1, 2},
-			std::vector<int>{3, 4}
+			std::vector<int>{3, 4},
 		};
 
 		arr.reextent({static_cast<multi::array<int, 2>::size_type>(varr.size()), static_cast<multi::array<int, 2>::size_type>(varr[0].size())});
