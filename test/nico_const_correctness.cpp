@@ -18,7 +18,7 @@
 
 #if __cplusplus >= 202002L
 #include <thread>       // for thread
-#include <tuple>        // for get  // IWYU pragma: keep
+#include <tuple>        // for get  // NOLINT(misc-include-cleaner) // IWYU pragma: keep
 #endif
 
 #include <type_traits>  // for decay_t
@@ -257,7 +257,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<std::thread> pool;
 
-		for (int t = 0; t != nthreads; ++t) {
+		pool.reserve(nthreads);
+
+		for (int ti = 0; ti != nthreads; ++ti) {
 			pool.emplace_back(
 				[&counters] {
 					for (auto&& row : counters) {
@@ -268,8 +270,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			);
 		}
-		for(auto& t : pool) {
-			t.join();
+		for(auto& td : pool) {
+			td.join();
 		}
 
 		BOOST_TEST( data[3][3] == 8 );
