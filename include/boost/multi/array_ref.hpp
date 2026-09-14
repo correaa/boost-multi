@@ -265,6 +265,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::nelems;
 
 	// using layout_type::extension;  // use extent
+
+	/// returns extent of the array (range of valid indices in the leading dimension)
 	using layout_type::extent;
 
 	/// A type to store the extent of an array (the range of valid indices in the leading dimension), returned from `.extent()`.
@@ -280,7 +282,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma warning(push)
 #pragma warning(disable : 4996)
 #endif
-	using typename layout_type::extensions_type;  // TODO(correaa) remove
+	// using typename layout_type::extensions_type;  // TODO(correaa) remove
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -1326,6 +1328,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
 	// using typename types::element_type;
+
+	/// returns an object that contains the data layout information
 	using types::layout;
 
 	/// type that holds the layout of the subarray or array
@@ -1560,6 +1564,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return *(end() - 1);
 	}
 
+	/// Index type
 	using typename types::index;
 
 	/// yields an equivalent subarray with a specific starting index
