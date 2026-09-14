@@ -146,7 +146,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
-		std::transform(
+		std::transform(  // NOLINT(modernize-use-ranges) for C++20
 			iex.begin(), iex.end(),
 			ua.begin(),
 			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
