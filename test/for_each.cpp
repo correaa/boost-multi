@@ -116,7 +116,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 				cpu.extents().elements().begin(),
 				cpu.extents().elements().end(),
 				[&cpu](auto const& coords) {
-					auto [i, j, k] = coords;
+					auto [i, j, k] = coords;  // NOLINT(readability-identifier-length)
 
 					cpu[i][j][k] = static_cast<double>(i + j + k);
 				}
@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 				cpu.extents().elements().end(),
 				cpu.elements().begin(),
 				[](auto const& coords) {
-					auto [i, j, k] = coords;
+					auto [i, j, k] = coords;  // NOLINT(readability-identifier-length)
 
 					return static_cast<double>(i + j + k);
 				}

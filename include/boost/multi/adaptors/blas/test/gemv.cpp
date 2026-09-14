@@ -48,7 +48,7 @@ void gemv_broadcast() {
 	// NOLINTNEXTLINE(readability-identifier-length)
 	multi::array<double, 2> const a = {
 		{1.0, 2.0, 3.0},
-		{4.0, 5.0, 6.0}
+		{4.0, 5.0, 6.0},
 	};
 
 	{
@@ -119,7 +119,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-			auto               mv = blas::gemv(1.0, a, x);
+
+			auto const mv = blas::gemv(1.0, a, x);
+
 			copy_n(mv.begin(), mv.size(), y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3) < 0.00001);
 
@@ -179,7 +181,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			multi::array<T, 1> y(multi::extents_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) BLAS naming
-			auto               mv = blas::gemv(1.0, a, x);
+
+			auto const mv = blas::gemv(1.0, a, x);
+
 			copy_n(mv.begin(), mv.size(), y.begin());
 			BOOST_TEST( std::abs( y[1] - 91.3F) < 0.00001F);
 
@@ -347,7 +351,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(blas_gemv_complex_float_mimic_cdot)
 	{
 		multi::array<std::complex<float>, 2> const v1 = {
-			{std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F, 4.0F}, std::complex<float>{5.0F, 6.0F}}
+			{std::complex<float>{1.0F, 2.0F}, std::complex<float>{3.0F, 4.0F}, std::complex<float>{5.0F, 6.0F}},
 		};
 		BOOST_TEST( v1.size() == 1 );
 		BOOST_TEST( v1.num_elements() == 3 );
@@ -355,7 +359,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::complex<float>, 1> const v2 = {
 			std::complex<float>{ 7.0F,  8.0F},
 			std::complex<float>{ 9.0F, 10.0F},
-			std::complex<float>{11.0F, 12.0F}
+			std::complex<float>{11.0F, 12.0F},
 		};
 		BOOST_TEST( v2.size() == 3 );
 
@@ -457,7 +461,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		auto const B = [](auto array) {
 			// NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp,bugprone-random-generator-seed) test purposes
-			auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
+			auto const rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{}]() mutable {
 				return complex{gauss(gen), gauss(gen)};
 			};
 			std::generate(array.elements().begin(), array.elements().end(), rand);
@@ -539,7 +543,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<double, 2> const arr = {
 			{1.0, 2.0},
-			{3.0, 4.0}
+			{3.0, 4.0},
 		};
 		multi::array<double, 1> const vec = {1.0, 2.0};
 

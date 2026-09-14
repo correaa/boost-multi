@@ -1019,7 +1019,7 @@ struct elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
-		auto linear_n = apply(xs_, ns_);
+		auto const linear_n = apply(xs_, ns_);
 		ns_           = xs_.from_linear(linear_n + n);
 		n_ += n;
 		return *this;
@@ -1708,7 +1708,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	auto flattened_aux_() const {
-		auto new_layout = this->layout().flatten(this->base_);
+		auto const new_layout = this->layout().flatten(this->base_);
 		return multi::subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
 	}
 
@@ -3110,9 +3110,9 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	BOOST_MULTI_HD constexpr auto operator()() const& -> element_ref { return *(this->base_); }  // NOLINT(hicpp-explicit-conversions)
 
-	constexpr operator element_ref() && noexcept { return *(this->base_); }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
-	constexpr operator element_ref() & noexcept { return *(this->base_); }        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
-	constexpr operator element_cref() const& noexcept { return *(this->base_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_ref() && noexcept { return * this->base_; }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_ref() & noexcept { return * this->base_; }        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_cref() const& noexcept { return * this->base_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
 
 	constexpr auto elements() const&;
 

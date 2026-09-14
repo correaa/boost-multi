@@ -467,7 +467,7 @@ class extents_t {
 			BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> iterator& {
 				auto len = rest_end_ - rest_begin_;
 				auto off = rest_it_ - rest_begin_;
-				auto tot = off + n;
+				auto const tot = off + n;
 
 				auto quo = tot / len;
 				auto res = tot % len;

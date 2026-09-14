@@ -18,9 +18,9 @@
 
 #if __cplusplus >= 202002L
 #include <thread>       // for thread
+#include <tuple>        // for get  // IWYU pragma: keep
 #endif
 
-#include <tuple>        // for get  // IWYU pragma: keep
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
 #include <vector>       // for vector  // IWYU pragma: keep
@@ -155,9 +155,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		std::array<int, 12> arr = {
-			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
-		};
+		std::array<int, 12> arr{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}};
+
 		{
 			auto&& mds1 = multi::array_ref(arr.data(), {3, 4});
 
@@ -269,7 +268,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				}
 			);
 		}
-		for(auto& t : pool) { t.join(); }
+		for(auto& t : pool) {
+			t.join();
+		}
 
 		BOOST_TEST( data[3][3] == 8 );
 	}

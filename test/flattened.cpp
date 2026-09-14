@@ -13,7 +13,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> const arr = {
 			{ 0,  1,  2,  3,  4},
 			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14}
+			{10, 11, 12, 13, 14},
 		};
 
 		auto const& barr = arr.flattened();
@@ -90,7 +90,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr = {
 			{ 0,  1,  2,  3,  4},
 			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14}
+			{10, 11, 12, 13, 14},
 		};
 
 		BOOST_TEST( arr.size() == 3 );
@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 0,  1,  2,  3,  4, 99},
 			{ 5,  6,  7,  8,  9, 99},
 			{10, 11, 12, 13, 14, 99},
-			{99, 99, 99, 99, 99, 99}
+			{99, 99, 99, 99, 99, 99},
 		};
 
 		auto&& arr = arr_original({0, 3}, {0, 5});
@@ -186,7 +186,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( barr.size() == 15 );
 
-		auto it = barr.begin();
+		auto const it = barr.begin();
 
 		BOOST_TEST( &(*(it + 0))[0] == &arr[0][0][0] );
 		BOOST_TEST( &(*(it + 1))[0] == &arr[0][1][0] );
@@ -203,7 +203,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 0,  1,  2,  3,  4, 55},
 			{ 5,  6,  7,  8,  9, 99},
 			{10, 11, 12, 13, 14, 44},
-			{44, 55, 66, 77, 88, 99}
+			{44, 55, 66, 77, 88, 99},
 		};
 
 		auto const& barr = arr({0, 3}, {0, 5}).flattened();
@@ -211,7 +211,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( barr.size() == 15 );
 
 		{
-			auto it = barr.begin();
+			auto const it = barr.begin();
 
 			BOOST_TEST( &(*(it + 0)) == &arr[0][0] );
 			BOOST_TEST( &(*(it + 1)) == &arr[0][1] );
@@ -307,7 +307,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 0,  1,  2,  3,  4, 99},
 			{ 5,  6,  7,  8,  9, 99},
 			{10, 11, 12, 13, 14, 99},
-			{99, 99, 99, 99, 99, 99}
+			{99, 99, 99, 99, 99, 99},
 		};
 
 		auto&& arr = arr_original({0, 3}, {0, 5});
@@ -319,7 +319,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
 			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
 			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
-			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}
+			{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
 		};
 
 		auto [ni, nj, nk] = arr.sizes();

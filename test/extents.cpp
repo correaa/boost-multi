@@ -102,7 +102,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*it) == 36 );
 	}
 	{
-		auto x1d = multi::extents_t<1>(3);
+		auto const x1d = multi::extents_t<1>(3);
 
 		BOOST_TEST( multi::extents_t<1>(3) == multi::extents_t(3) );
 
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
-		auto x1d = multi::extents_t<1>(3);
+		auto const x1d = multi::extents_t<1>(3);
 
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
@@ -159,15 +159,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( multi::extents_t<2>(4, 3) == multi::extents_t(4, 3) );
 
-		auto ll = [](auto xx, auto yy) {
+		auto const ll = [](auto xx, auto yy) {
 			return xx + yy;
 		};
 		multi::restriction<2, decltype(ll)> const x2df({4, 2}, ll);
 		(void)x2df;
-		auto val = x2df[3][1];
+		auto const val = x2df[3][1];
 		BOOST_TEST(val == 4);
 
-		auto elems = x2df.elements();
+		auto const elems = x2df.elements();
 		BOOST_TEST( elems[7] == 4 );
 		BOOST_TEST( *(x2df.elements().begin() + 1) == 1 + 0 );
 
@@ -297,7 +297,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		// auto it2d = x2d.begin();
 
-		auto it = x2d.elements().begin();
+		auto const it = x2d.elements().begin();
 
 		BOOST_TEST( it == x2d.elements().begin() );
 
@@ -472,7 +472,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto xs1D = multi::extents_t(10);
+		auto const xs1D = multi::extents_t(10);
 		BOOST_TEST( xs1D.size() == 10 );
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
@@ -534,7 +534,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto xs2D = multi::extents_t<2>(5, 7);
+		auto const xs2D = multi::extents_t<2>(5, 7);
 		BOOST_TEST( xs2D.size() == 5 );
 
 		using std::get;
@@ -551,7 +551,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto it = xs2D.begin();
 		// multi::detail::what(*it);
 
-		auto xs3D = multi::extents_t<3>(5, 7, 21);
+		auto const xs3D = multi::extents_t<3>(5, 7, 21);
 		BOOST_TEST( xs3D.size() == 5 );
 		// multi::detail::what(*xs3D.begin());
 
@@ -643,7 +643,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
 	{
-		auto exts = multi::extents_t<2>(3, 4);
+		auto const exts = multi::extents_t<2>(3, 4);
 
 		// auto something = exts[-1];
 		// (void)something;
@@ -659,7 +659,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == exts.elements().begin() + 2 );
 	}
 	{
-		auto exts = multi::extents_t<2>(3, 4);
+		auto const exts = multi::extents_t<2>(3, 4);
 
 		{
 			auto [ext1, ext2] = exts;
@@ -687,7 +687,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// BOOST_TEST( exts == exts.transpose().transpose() );
 	}
 	{
-		auto exts = multi::extents_t<1>(10);
+		auto const exts = multi::extents_t<1>(10);
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 
@@ -699,19 +699,19 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 1) == exts.elements().size() - 2 );
 		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 2) == exts.elements().size() - 3 );
 
-		auto it2 = exts.begin();
-		auto it3 = it2 + 3;
-		auto it4 = it3 + 2;
+		auto const it2 = exts.begin();
+		auto const it3 = it2 + 3;
+		auto const it4 = it3 + 2;
 
 		BOOST_TEST( it4 == exts.begin() + 5 );
 		BOOST_TEST( *it4 == 5 );
 
-		auto it5 = it4 - 3;
+		auto const it5 = it4 - 3;
 		BOOST_TEST( it5 == exts.begin() + 2 );
 		BOOST_TEST( *it5 == 2 );
 	}
 	{
-		auto exts = multi::extents_t<1>(10);
+		auto const exts = multi::extents_t<1>(10);
 
 		// BOOST_TEST( exts[-1] != decltype(exts[-1]){} );  gives an out-of-bounds assert
 
