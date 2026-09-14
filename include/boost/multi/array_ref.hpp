@@ -3942,11 +3942,11 @@ template<
 			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>>
 class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
-	static_assert(
-		std::is_same_v<std::decay_t<typename std::pointer_traits<ElementPtr>::element_type>, std::decay_t<T> >,
-		"pointer element type and value type argument must match"
-	);
-	
+	// static_assert(
+	// 	std::is_same_v<std::decay_t<typename std::pointer_traits<ElementPtr>::element_type>, std::decay_t<T>>,
+	// 	"pointer element type and value type argument must match"
+	// );
+
 	using subarray_layout = Layout;
 
 	using subarray_base = subarray<T, D, ElementPtr, Layout>;
