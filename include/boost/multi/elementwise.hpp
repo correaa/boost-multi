@@ -207,7 +207,7 @@ constexpr auto eye(multi::ssize_t n) {
 /// yields an array expression with (lazy) zero elements.
 template<class Array, class DefaultZero>
 constexpr auto zeros(Array&& arr, DefaultZero df) {
-	auto exts = arr.extents();  // mull-ignore: cxx_init_const
+	auto const exts = arr.extents();  // mull-ignore: cxx_init_const
 	return restricted([arr_ = std::forward<Array>(arr), df](auto... ijk) { return df(arr_(ijk...)); }, exts);
 }
 
@@ -271,7 +271,7 @@ template<class A> exp_bind_t(A) -> exp_bind_t<A>;
 template<class A, std::enable_if_t<multi::has_extents<std::decay_t<A>>::value, int> = 0>  // NOLINT(modernize-use-constraints) for C++23
 BOOST_MULTI_HD constexpr auto exp(A&& alpha) {
 	// shouldn't get to this point for scalars
-	auto xs = alpha.extents();  // mull-ignore: cxx_init_const
+	auto const xs = alpha.extents();  // mull-ignore: cxx_init_const
 	return detail::exp_bind_t<A>(std::forward<A>(alpha)) ^ xs;
 }
 

@@ -40,7 +40,7 @@ void print(std::ostream& os, Array const& arr, std::string_view open, std::strin
 	if constexpr(Array::dimensionality > 1) {
 		os << '\n';
 	}
-	for(auto idx : arr.extent()) {  // NOLINT(altera-unroll-loops) TODO(correaa) use an algorithm
+	for(auto const idx : arr.extent()) {  // NOLINT(altera-unroll-loops) TODO(correaa) use an algorithm
 		multi::detail::print(os, arr[idx], open.size() == 1 ? open : open.substr(1), sep.size() == 1 ? sep : sep.substr(1), close.size() == 1 ? close : close.substr(1), tab.size() == 1 ? tab : tab.substr(1), indent + 1);
 		if(idx != arr.extent().back()) {
 			os << sep[0];
