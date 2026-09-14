@@ -236,6 +236,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::stride;
 	using typename layout_type::stride_type;
 
+	/// returns the total number of elements.
 	using layout_type::num_elements;
 	using layout_type::offset;
 
