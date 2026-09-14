@@ -1732,7 +1732,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	constexpr auto diagonal_aux_() const {
 		using boost::multi::detail::get;
 
-		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
+		auto const square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 
 		multi::detail::layout_t<D - 1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 
@@ -3389,7 +3389,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  public:
 	constexpr auto repeated(size_type n) && {
-		auto exts = this->extents();  // mull-ignore: cxx_init_const
+		auto const exts = this->extents();  // mull-ignore: cxx_init_const
 
 		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n* exts /*)*/;
 	}

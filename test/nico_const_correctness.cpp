@@ -7,13 +7,20 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+#if __cplusplus >= 202002L
+#include <atomic>       // for atomic_ref
+#endif
+
 #include <algorithm>    // for fill, copy, for_each
 #include <array>        // for array
 #include <iostream>     // for operator<<, basic_ostream::opera...
 #include <iterator>     // for begin, end, ostream_iterator
+#include <thread>       // for thread
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
+#include <tuple>        // for get
 #include <vector>       // for vector
+
 
 namespace multi = boost::multi;
 
@@ -236,6 +243,34 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
+#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
+	{
+		multi::array<int, 2> data({4, 4}, 0);
+
+		auto counters = data.element_transformed(
+			[](int& elem) noexcept { return std::atomic_ref<int>(elem); }
+		);
+
+		constexpr int nthreads = 8;
+
+		std::vector<std::thread> pool;
+
+		for (int t = 0; t != nthreads; ++t) {
+			pool.emplace_back(
+				[&counters] {
+					for (auto&& row : counters) {
+						for (auto&& elem : row) {
+							elem.fetch_add(1, std::memory_order_relaxed);
+						}
+					}
+				}
+			);
+		}
+		for(auto& t : pool) { t.join(); }
+
+		BOOST_TEST( data[3][3] == 8 );
+	}
+#endif
 
 	return boost::report_errors();
 }

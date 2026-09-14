@@ -96,7 +96,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 2> arr2 = arr;
 		BOOST_TEST( arr == arr2 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* arr_data = arr.data_elements();
+		auto const* const arr_data = arr.data_elements();
 
 		multi::array<double, 2> arr3 = std::move(arr);
 
@@ -197,7 +197,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::vector<int> vec(5 * 7L, 99);  // NOLINT(fuchsia-default-arguments-calls)
 			std::vector<int> wec(5 * 7L, 33);  // NOLINT(fuchsia-default-arguments-calls)
 
-			auto Bp = &multi::array_ref<int, 2>({5, 7}, wec.data());
+			auto const Bp = &multi::array_ref<int, 2>({5, 7}, wec.data());
 			// multi::array_ptr<int, 2> const Bp(wec.data(), {5, 7});
 
 			make_ref(vec.data()) = *Bp;  // cppcheck-suppress danglingTemporaryLifetime
@@ -240,7 +240,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
 		BOOST_TEST( arr[1][1] == std::vector<int>(40, 4) );  // NOLINT(fuchsia-default-arguments-calls)
-		auto* loc = &arr[1][1][5];
+		auto const* const loc = &arr[1][1][5];
 
 		auto const* arr_ptr = std::addressof(arr);
 

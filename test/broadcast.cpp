@@ -142,7 +142,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
-		auto c = a + b;
+		auto const c = a + b;
 
 		BOOST_TEST(( c == multi::array<int, 1>{5, 7, 9} ));
 	}
@@ -159,11 +159,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		auto const A = multi::array<int, 2>{
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		auto const B = multi::array<int, 2>{
 			{ 0, 10, 20},
-			{30, 40, 50}
+			{30, 40, 50},
 		};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
@@ -186,11 +186,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		auto const A = multi::array<int, 2>{
 			{0, 1},
-			{2, 3}
+			{2, 3},
 		};
 		auto const B = multi::array<int, 2>{
 			{ 0, 10},
-			{20, 30}
+			{20, 30},
 		};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
@@ -203,11 +203,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		auto const A = multi::array<int, 2>{
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		auto const B = multi::array<int, 2>{
 			{ 0, 10, 20},
-			{30, 40, 55}
+			{30, 40, 55},
 		};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
@@ -220,15 +220,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		auto const A = multi::array<int, 2>{
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		auto const B = multi::array<int, 2>{
 			{ 0, 10, 20},
-			{30, 40, 50}
+			{30, 40, 50},
 		};
 		auto const C = multi::array<int, 2>{
 			{  0, 100, 200},
-			{300, 400, 500}
+			{300, 400, 500},
 		};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
@@ -240,11 +240,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		auto const A = multi::array<int, 2>{
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		auto const B = multi::array<int, 2>{
 			{ 0, 10, 20},
-			{30, 40, 50}
+			{30, 40, 50},
 		};
 
 		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		auto f1d = [](auto) { return 1; } ^ multi::extents_t<1>{3};
+		auto const f1d = [](auto) { return 1; } ^ multi::extents_t<1>{3};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
@@ -269,7 +269,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		auto f = []() { return 1; } ^ multi::extents_t<0>{};
+		auto const f = [] { return 1; } ^ multi::extents_t<0>{};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
@@ -283,7 +283,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
-		auto const& c = a + ([]() { return 1; } ^ multi::extents_t<0>{});
+		auto const& c = a + ([] { return 1; } ^ multi::extents_t<0>{});
 
 		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
 		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
@@ -302,7 +302,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
 
-		auto c = a + 1;
+		auto const c = a + 1;
 
 		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == c ));
 		BOOST_TEST(( c == multi::array<int, 1>{2, 3, 4} ));
@@ -310,7 +310,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 2> const A = {
 			{1, 2, 3},
-			{4, 5, 6}
+			{4, 5, 6},
 		};
 
 		multi::array<int, 1> const b = {1, 2, 3};
@@ -346,15 +346,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 2> const A = {
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		multi::array<int, 2> const B = {
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 		multi::array<int, 2> const C = {
 			{0, 1, 2},
-			{3, 4, 5}
+			{3, 4, 5},
 		};
 
 		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
@@ -366,7 +366,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		auto const& r = (A + A * B + 2 * C).diagonal();
 
-		auto trace_D = std::accumulate(r.begin(), r.end(), 0);  // NOLINT(misc-include-cleaner) std::reduce unavailable in libstdc++ < 9 (e.g. clang-8 CI)
+		auto const trace_D = std::accumulate(r.begin(), r.end(), 0);  // NOLINT(misc-include-cleaner) std::reduce unavailable in libstdc++ < 9 (e.g. clang-8 CI)
 
 		BOOST_TEST(trace_D == std::accumulate(D.diagonal().begin(), D.diagonal().end(), 0) );
 	}
@@ -391,8 +391,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
 		multi::array<T, 2> YT({2, 3}, T({{1, 0}, {0, 1}}));
 
-		auto xy = XT[0][0] + YT[0][0];  // ok
-		auto XY = XT + YT;  // error
+		auto const xy = XT[0][0] + YT[0][0];  // ok
+		auto const XY = XT + YT;  // error
 	}
 	// clang-format on
 
