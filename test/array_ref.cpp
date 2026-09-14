@@ -1277,18 +1277,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
 	}
 	{
-		double buffer[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(cppcoreguidelines-avoid-c-arrays)
+		double buffer[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(*-avoid-c-arrays)
 
 		using ref_t = multi::array_ref<std::complex<double>, 1, std::complex<double>*>;
-		ref_t A(reinterpret_cast<std::complex<double>*>(buffer), multi::extents_t<1>{2});
+		ref_t arr(reinterpret_cast<std::complex<double>*>(buffer), multi::extents_t<1>{2});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
-		auto const& cA = A;
+		arr[1] = 5.0;
 
-		auto p1 = cA.base();  // FAILS TO COMPILE: cannot convert 'double* const' to 'const std::complex<double>*'
-		BOOST_TEST( p1 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );
+		auto const& carr = arr;
 
-		auto p2 = cA.data_elements();  // FAILS TO COMPILE: invalid static_cast from 'double* const' to 'const std::complex<double>*'
-		BOOST_TEST( p2 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );
+		auto const* p1 = carr.base();
+		BOOST_TEST( p1 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+		auto const* p2 = carr.data_elements();
+		BOOST_TEST( p2 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
 	return boost::report_errors();
