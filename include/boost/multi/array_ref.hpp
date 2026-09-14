@@ -238,7 +238,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	/// returns the total number of elements.
 	using layout_type::num_elements;
-	using layout_type::offset;
+	// using layout_type::offset;
 
 	/// Type to store an index in the leading dimension
 	using index = typename layout_type::index;
@@ -3377,7 +3377,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
-		return *(this->base_ + (this->stride() * idx - this->offset()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,readability-static-accessed-through-instance) can be static
+		return *(this->base_ + (this->stride() * idx - this->layout().offset()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,readability-static-accessed-through-instance) can be static
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
