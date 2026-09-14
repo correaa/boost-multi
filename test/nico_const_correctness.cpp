@@ -15,12 +15,15 @@
 #include <array>        // for array
 #include <iostream>     // for operator<<, basic_ostream::opera...
 #include <iterator>     // for begin, end, ostream_iterator
+
+#if __cplusplus >= 202002L
 #include <thread>       // for thread
+#endif
+
+#include <tuple>        // for get  // IWYU pragma: keep
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
-#include <tuple>        // for get
-#include <vector>       // for vector
-
+#include <vector>       // for vector  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
