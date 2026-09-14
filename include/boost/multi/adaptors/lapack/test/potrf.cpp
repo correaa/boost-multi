@@ -47,11 +47,11 @@ template<class M> auto print(M const& arr, std::string const& msg) -> decltype(a
 	using std::cout;
 	cout << msg << "\n"
 		 << '{';
-	for(int i = 0; i != size(arr); ++i) {
+	for(int i = 0; i != arr.size(); ++i) {
 		cout << '{';
-		for(auto j : arr[i].extension()) {  // NOLINT(altera-unroll-loops)
+		for(auto j : arr[i].extent()) {  // NOLINT(altera-unroll-loops)
 			cout << arr[i][j];
-			if(j + 1 != size(arr[i])) {
+			if(j + 1 != arr[i].size()) {
 				cout << ", ";
 			}
 		}
@@ -78,7 +78,7 @@ auto randomize(M&& arr) -> M&& {
 		return std::complex<double>(unif(eng), unif(eng));
 	};
 
-	std::for_each(begin(arr), end(arr), [&](auto&& row) { std::generate(begin(row), end(row), gen); });
+	std::for_each(arr.begin(), arr.end(), [&](auto&& row) { std::generate(row.begin(), row.end(), gen); });
 	return std::forward<M>(arr);
 }
 }  // end unnamed namespace

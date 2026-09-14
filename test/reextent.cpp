@@ -46,8 +46,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
-		BOOST_TEST(size(arr3) == 2);
-		BOOST_TEST(size(arr3[0]) == 3);
+		BOOST_TEST( arr3.size() == 2 );
+		BOOST_TEST( arr3[0].size() == 3 );
 
 		arr.reextent({5, 4}, 990);
 		BOOST_TEST( arr.num_elements()== 5L*4L );
