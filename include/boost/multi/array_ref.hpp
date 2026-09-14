@@ -312,13 +312,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_type::sub;
 
+	/// returns a tuple decribing sizes across all the dimensions of the array.
 	using layout_type::sizes;
+
+	/// A D-tuple to hold the sizes of the array
 	using typename layout_type::sizes_type;
 
+	/// A tuple type that allows storing D indices to locate an element in the structured Cartesian product
 	using typename layout_type::indexes;
-
-	// [[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
-	// static constexpr auto num_dimensions() { return dimensionality; }
 
  private:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]

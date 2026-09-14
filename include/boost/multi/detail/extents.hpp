@@ -584,8 +584,8 @@ class extents_t {
 	template<class Func>
 	BOOST_MULTI_HD constexpr auto element_transformed(Func fun) const { return [fun](auto const&... idxs) -> decltype(auto) { return fun(detail::mk_tuple(idxs...)); } ^(*this); }
 
-	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
-	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	[[deprecated("use extent")]] BOOST_MULTI_HD constexpr auto extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	[[nodiscard]] BOOST_MULTI_HD constexpr auto                extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
 	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }
 	BOOST_MULTI_HD constexpr auto sizes() const {
