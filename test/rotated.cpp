@@ -346,7 +346,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		BOOST_TEST((
-			arr.transposed().unordered() == 
+			arr.transposed().unordered() ==
 			multi::array<int, 2>({
 				{ 1, 2},
 				{ 3, 4},

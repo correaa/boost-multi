@@ -16,11 +16,12 @@
 #include <cmath>       // for std::abs
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <functional>  // for std::plus  // IWYU pragma: keep
-#include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
+#include <iostream>    // for std::cout  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // IWYU pragma: keep
 #include <ranges>      // IWYU pragma: keep
 #include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
+#include <vector>      // for vector  // IWYU pragma: keep
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -282,7 +283,9 @@ auto main() -> int {
 		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
 	}
 	{
-		multi::array<float, 4> A = +([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>(9, 6, 7, 8));
+		// NOLINTNEXTLINE(runtime/threadsafe_fn)
+		multi::array<float, 4> A = 
+			+([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>(9, 6, 7, 8));
 	}
 	{
 		multi::array<double, 3> arr;

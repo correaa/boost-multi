@@ -1027,6 +1027,7 @@ template<> class extents_t<1> {
 
 	using indices_type = multi::detail::tuple<multi::index>;
 
+	// cppcheck-suppress functionStatic;
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
 		return indices_type{n};
 	}
