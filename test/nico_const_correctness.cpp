@@ -222,12 +222,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				BOOST_TEST( mds1[1][0] == 2 );
 			}
 			{
-				auto&& mds = multi::array_ref(coll.data(), {static_cast<multi::index>(coll.size() / 3), 3});
+				auto&& mds = multi::array_ref(coll.data(), {3, 4});
 
-				auto&& mds2 = mds.transposed();
-				// auto&& arr2 = ~(~(arr.transposed()).strided(6));
+				auto const& mds2 = ~(mds.strided(1, 2).taked(5));
 
 				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 4 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 5 );
+
 				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
 					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
 						std::cout << mds2[i][j] << ' ';
@@ -235,6 +238,58 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					std::cout << '\n';
 				}
 			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~mds;
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~mds;
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~((~mds).sliced(2, -1, -1));
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 4 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 3 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+
 		}
 	}
 
