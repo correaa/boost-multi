@@ -4081,7 +4081,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: array_ref(::boost::multi::extents(arr), ::boost::multi::data_elements(arr)) {}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, std::remove_const_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20  TT deduced as const-qualified on gcc 8 for named const initializer_list objects
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT> il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: array_ref(
@@ -4092,7 +4092,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 #if !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 9))  // gcc 8 bug
 	// NOLINTNEXTLINE(*-avoid-c-arrays) bug in clang-tidy 19?
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, std::remove_const_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
 #endif
