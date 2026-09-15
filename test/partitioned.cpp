@@ -371,7 +371,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		// NOLINTEND(misc-include-cleaner)
 
-		BOOST_TEST(  size(A2) == 6 );
+		BOOST_TEST(  A2.size() == 6 );
 
 		BOOST_TEST( get<0>(A2.sizes()) == 6 );
 		BOOST_TEST( get<1>(A2.sizes()) == 2 );

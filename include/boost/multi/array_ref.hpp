@@ -2681,6 +2681,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename Tuple = typename subarray::indices_type> BOOST_MULTI_HD constexpr auto apply(Tuple const& tpl) & -> decltype(auto) { return apply_impl_(*this, tpl, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
+	/// yields an array view of higher-dimensionality by partitioning the array in the leading dimensions.
 	using const_subarray<T, D, ElementPtr, Layout>::partitioned;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) & -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
