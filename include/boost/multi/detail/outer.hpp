@@ -300,11 +300,11 @@ class outer_t<Ext, Exts...> : public std::tuple<Ext, Exts...> {  // TODO(correaa
 		// 	};
 	};
 
-	constexpr auto begin() const noexcept {
-		return iterator{
+	constexpr auto begin() const noexcept -> iterator {
+		return iterator(
 			stdx::head(static_cast<std::tuple<Ext, Exts...> const&>(*this)).begin(),
 			std::apply([](auto... xs) noexcept -> auto { return outer_t<Exts...>(xs...); }, stdx::tail(static_cast<std::tuple<Ext, Exts...> const&>(*this)))
-		};
+		);
 	}
 
 	template<std::size_t I>

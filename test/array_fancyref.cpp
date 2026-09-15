@@ -74,7 +74,7 @@ template<class T> class ref {
 
 	// auto operator=(ref     && other) noexcept -> ref& = delete;  // {*p_ = std::move(*other.p_); return *this;}
 
-	constexpr operator T const&() const& { return ptr<T>::value; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr operator T const&() const& { return ptr<T>::value; }  // NOLINT(hicpp-explicit-conversions,*-explicit-constructor)  // NOSONAR(cpp:S1709)
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
 	auto operator==(ref const& /*other*/) const { return true; }
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference

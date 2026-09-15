@@ -34,19 +34,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> array = {
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I},
-			{2.0 - 1.0 * I, 1.0 + 1.0 * I}
+			{2.0 - 1.0 * I, 1.0 + 1.0 * I},
 		};
 		BOOST_TEST( array[0][0] == 1.0 - 3.0*I );
 
 		multi::array<complex, 2> const carray = {
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I},
-			{2.0 - 1.0 * I, 1.0 + 1.0 * I}
+			{2.0 - 1.0 * I, 1.0 + 1.0 * I},
 		};
 		BOOST_TEST( carray[0][0] == 1.0 - 3.0*I );
 
 		namespace blas = multi::blas;
-		auto conjr     = blas::make_conjugater(array.data_elements());
+
+		auto const conjr = blas::make_conjugater(array.data_elements());
 
 		decltype(blas::make_conjugater(carray.data_elements())) ppp;  // = BdataC;
 		ppp = conjr;
@@ -83,7 +84,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I, 9.0 + 3.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I, 9.0 + 3.0 * I},
 			{2.0 - 1.0 * I, 1.0 + 1.0 * I, 9.0 + 3.0 * I},
-			{9.0 + 3.0 * I, 9.0 + 3.0 * I, 9.0 + 3.0 * I}
+			{9.0 + 3.0 * I, 9.0 + 3.0 * I, 9.0 + 3.0 * I},
 		};
 
 		namespace blas = multi::blas;
@@ -109,7 +110,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{1.0, -3.0, 6.0, 2.0, 9.0, 3.0},
 			{8.0,  2.0, 2.0, 4.0, 9.0, 3.0},
 			{2.0, -1.0, 1.0, 1.0, 9.0, 3.0},
-			{9.0,  3.0, 9.0, 3.0, 9.0, 3.0}
+			{9.0,  3.0, 9.0, 3.0, 9.0, 3.0},
 		};
 		BOOST_TEST( blas::real_doubled(arr).sizes() == B_real_doubled.sizes() );
 		BOOST_TEST( blas::real_doubled(arr)         == B_real_doubled         );
@@ -140,7 +141,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::array<double, 2> arr = {
 			{1.0, 3.0, 4.0},
-			{9.0, 7.0, 1.0}
+			{9.0, 7.0, 1.0},
 		};
 		multi::array<complex, 2> complex_arr = arr;
 		BOOST_TEST( complex_arr[1][1] == arr[1][1] );
@@ -148,7 +149,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<complex, 2> arr2 = {
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I},
-			{2.0 - 1.0 * I, 1.0 + 1.0 * I}
+			{2.0 - 1.0 * I, 1.0 + 1.0 * I},
 		};
 
 		multi::array<double, 2> const arr2_real = {

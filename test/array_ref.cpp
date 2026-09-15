@@ -116,7 +116,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{150, 160, 170, 180, 190},
 		};
 
-		auto map = &multi::array_ref<int, 2>(arr);
+		auto const map = &multi::array_ref<int, 2>(arr);
 		// multi::array_ptr<int, 2> const map{&arr};
 
 		BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );  // cppcheck-suppress danglingTemporaryLifetime;
@@ -284,11 +284,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &mar[1] == &stdarr[1] );
 		BOOST_TEST( mar.reindexed(1).sizes() == mar.sizes() );
 
-		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
+		auto const diff = &mar.reindexed(1)[1] - &mar[0];
 		BOOST_TEST( diff == 0 );
 
 		BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-		for(auto idx : mar.stenciled({2, 4}).extent()) {  // NOLINT(altera-unroll-loops)
+		for(auto const idx : mar.stenciled({2, 4}).extent()) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 		}
 
@@ -313,8 +313,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
 		{ { 5.0, 6.0, 7.0, 8.0, 9.0 } },
 		{ { 10.0, 11.0, 12.0, 13.0, 14.0 } },
-		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } }
-	}};
+		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } },
+	},};
 		// clang-format on
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
@@ -358,7 +358,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( mar[0].reindexed(1).extent().first() == mar[0].extent().first () + 1 );
 		BOOST_TEST( mar[0].reindexed(1).extent().last() == mar[0].extent().last() + 1 );
 
-		auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
+		auto const diff = &mar[0].reindexed(1)[1] - &mar[0][0];
 		BOOST_TEST( diff == 0 );
 
 		//  BOOST_TEST( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
@@ -382,10 +382,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_ref_with_stencil)
 	{
 		std::array<std::array<double, 5>, 4> arr = {
-			{{{0.0, 1.0, 2.0, 3.0, 4.0}},
-			 {{5.0, 6.0, 7.0, 8.0, 9.0}},
-			 {{10.0, 11.0, 12.0, 13.0, 14.0}},
-			 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
+			{
+             {{0.0, 1.0, 2.0, 3.0, 4.0}},
+             {{5.0, 6.0, 7.0, 8.0, 9.0}},
+             {{10.0, 11.0, 12.0, 13.0, 14.0}},
+             {{15.0, 16.0, 17.0, 18.0, 19.0}},
+			 },
 		};
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
@@ -433,7 +435,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 1,  2,  3,  4},
 			{ 5,  6,  7,  8},
 			{ 9, 10, 11, 12},
-			{13, 14, 15, 16}
+			{13, 14, 15, 16},
 		};
 
 		aref = barr();
@@ -447,16 +449,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<double, 2> aref({multi::iextension(1, 3), multi::iextension(1, 4)}, vec.data());
 
 		{
-			auto exts                 = aref.extents();
+			auto const exts = aref.extents();
+
+			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+
 			auto const [exts0, exts1] = exts;
+
 			BOOST_TEST( exts0 == multi::iextension(1, 3) );
 
 			BOOST_TEST( exts1.first()  == 1 );
 			BOOST_TEST( exts1.last () == 4 );
 
 			BOOST_TEST( exts1 == multi::iextension(1, 4) );
-
-			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
 			auto exts = aref.extents();
@@ -777,9 +781,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
-			auto sizes1 = get<0>(cref.sizes());
-			auto sizes2 = get<1>(cref.sizes());
-			auto sizes3 = get<2>(cref.sizes());
+			auto const sizes1 = get<0>(cref.sizes());
+			auto const sizes2 = get<1>(cref.sizes());
+			auto const sizes3 = get<2>(cref.sizes());
+
 			BOOST_TEST( sizes1 == 4 );
 			BOOST_TEST( sizes2 == 2 );
 			BOOST_TEST( sizes3 == 3 );
@@ -1019,13 +1024,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 #endif
 
-		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
+		auto const print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
 			std::cout << "rng.size(): " << rng.size() << '\n';                                                  // (4)
 			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 
-		auto print_me2 = [](auto const ptr) {
+		auto const print_me2 = [](auto const ptr) {
 			std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
 			std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) { std::cout << elem << ' '; });
 			std::cout << "\n\n";

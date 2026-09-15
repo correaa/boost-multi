@@ -52,7 +52,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	using multi::elementwise::operator*;  // cppcheck-suppress constStatement
 
-	auto const& M4 = (~((~Aarr)[0].repeated(Barr[0].size()))) * Barr[0];
+	auto const& M4 = (~(~Aarr)[0].repeated(Barr[0].size())) * Barr[0];
 
 	BOOST_TEST( M4[5][7] == 5*7 );
 #endif

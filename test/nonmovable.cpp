@@ -51,6 +51,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::array<ncnm, 4> arr1d{
 			{ncnm(0), ncnm(1), ncnm(2), ncnm(3)}
 		};
+
 		multi::array_ref<ncnm, 2> arr2d_ref({2, 2}, arr1d.data());
 
 		BOOST_TEST( arr2d_ref.size() == 2 );

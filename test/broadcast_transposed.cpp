@@ -62,7 +62,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> A({4}, int{});
 		BOOST_TEST( A.size() == 4 );
 
-		auto rep2 = std::move(A).repeated(2);
+		auto const rep2 = std::move(A).repeated(2);
 		BOOST_TEST( rep2.num_elements() == 8 );
 
 		auto [rep2n, rep2m] = rep2.sizes();

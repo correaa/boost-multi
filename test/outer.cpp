@@ -46,9 +46,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		x2d.begin()[1];
 		// BOOST_TEST( *it == xs[1] );
 
-		auto x2d_it  = x2d.begin();
-		auto x2d_it2 = x2d_it + 2;
-		auto x2d_it3 = x2d_it2 + 1;
+		auto const x2d_it  = x2d.begin();
+		auto const x2d_it2 = x2d_it + 2;
+		auto const x2d_it3 = x2d_it2 + 1;
 		BOOST_TEST( x2d_it3 == x2d.begin() + 3 );
 	}
 	{
@@ -68,7 +68,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST(( els[5] == std::make_tuple(1, 2) ));
 
 		// random-access iteration
-		auto it = els.begin();
+		auto const it = els.begin();
 		BOOST_TEST(( *it == std::make_tuple(0, 0) ));
 		BOOST_TEST(( it[4] == std::make_tuple(1, 1) ));
 		BOOST_TEST( els.end() - els.begin() == 6 );
@@ -90,7 +90,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	{
 		multi::array<int, 1> const arr({5});
 		using std::get;
-		auto is = get<0>(arr.extents());
+		auto const is = get<0>(arr.extents());
 
 		multi::array<int, 1> const brr(multi::extents_t<1>{is});
 	}

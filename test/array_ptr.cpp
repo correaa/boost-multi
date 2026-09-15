@@ -48,8 +48,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto arr_ptr = &arr[2];
 		BOOST_TEST( arr_ptr == arr_ptr );
 
-		auto& arr_ptr_ref = arr_ptr;
-		arr_ptr           = arr_ptr_ref;
+		auto const& arr_ptr_ref = arr_ptr;
+
+		arr_ptr = arr_ptr_ref;
 
 		auto arr_ptr2 = &std::as_const(arr)[2];
 		BOOST_TEST( arr_ptr == arr_ptr2 );
@@ -95,7 +96,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{{{0.0, 1.0, 2.0, 3.0, 4.0}},
 			 {{5.0, 6.0, 7.0, 8.0, 9.0}},
 			 {{10.0, 11.0, 12.0, 13.0, 14.0}},
-			 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
+			 {{15.0, 16.0, 17.0, 18.0, 19.0}},},
 		};
 			// clang-format on
 
@@ -160,7 +161,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			std::array<int, 5>{ { 50, 60, 70, 80, 90 } },
 			std::array<int, 5>{ { 100, 110, 120, 130, 140 } },
 			std::array<int, 5>{ { 150, 160, 170, 180, 190 } },
-		}};
+		}, };
 			// clang-format on
 
 			std::vector<decltype(&std::declval<multi::array_ref<int, 1>&&>())> ptrs;
@@ -199,7 +200,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 
-		auto aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		auto const aP = &my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
@@ -243,7 +244,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( rowP == rowP2 );     // cppcheck-suppress knownConditionTrueFalse ;
 			BOOST_TEST( !(rowP != rowP2) );  // cppcheck-suppress knownConditionTrueFalse ;
 
-			auto rowP0 = &arr[0];
+			auto const rowP0 = &arr[0];
 
 			BOOST_TEST( rowP0 != rowP2 );
 			BOOST_TEST( !(rowP0 == rowP2) );
@@ -251,7 +252,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			rowP2 = decltype(rowP2){nullptr};
 			BOOST_TEST( !rowP2 );
 
-			auto rowP3 = std::exchange(rowP, nullptr);
+			auto const rowP3 = std::exchange(rowP, nullptr);
 			BOOST_TEST( rowP3 == &arr[2] );
 			BOOST_TEST( rowP == nullptr );
 			// BOOST_TEST( !rowP );
@@ -269,7 +270,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			rowP2 = decltype(rowP2){nullptr};
 			BOOST_TEST( !rowP2 );
 
-			auto rowP3 = std::exchange(rowP, nullptr);
+			auto const rowP3 = std::exchange(rowP, nullptr);
 			BOOST_TEST( rowP3 == &arr() );
 			BOOST_TEST( rowP == nullptr );
 			BOOST_TEST( !rowP );

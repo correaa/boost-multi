@@ -47,12 +47,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// clang-format off
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-	multi::array<double, 2> const A = { {10.0, }, };
+	multi::array<double, 2> const A = { {10.0 } };
 		// clang-format on
 		{
 			// clang-format off
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-		multi::array<double, 2> B = {{3.0, }, };
+		multi::array<double, 2> B = {{3.0 } };
 			// clang-format on
 
 			auto const B_cpy = B;
@@ -64,7 +64,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			// clang-format off
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-		multi::array<double, 2> B = {{3.0, }, };
+		multi::array<double, 2> B = {{3.0}};
 
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	multi::array<double, 2> const A = {
 		{ 1.0, 3.0, 4.0 },
 		{ nan, 7.0, 1.0 },
-		{ nan, nan, 8.0 }
+		{ nan, nan, 8.0 },
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		multi::array<double, 2> B = {
 			{ 1.0, 3.0, 4.0 },
 			{ 2.0, 7.0, 1.0 },
-			{ 3.0, 4.0, 2.0 }
+			{ 3.0, 4.0, 2.0 },
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		multi::array<double, 2> B = {
 			{ 1.0, 3.0, 4.0 },
 			{ 2.0, 7.0, 1.0 },
-			{ 3.0, 4.0, 2.0 }
+			{ 3.0, 4.0, 2.0 },
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		multi::array<double, 2> const B = {
 			{ 1.0, 3.0, 4.0 },
 			{ 2.0, 7.0, 1.0 },
-			{ 3.0, 4.0, 2.0 }
+			{ 3.0, 4.0, 2.0 },
 		};
 		auto BT = +~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		multi::array<double, 2> const B = {
 			{ 1.0, 3.0, 4.0 },
 			{ 2.0, 7.0, 1.0 },
-			{ 3.0, 4.0, 2.0 }
+			{ 3.0, 4.0, 2.0 },
 		};
 		auto BT = +~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.0, A, blas::T(BT));
@@ -166,14 +166,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 	multi::array<complex, 2> const A = {
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
-		{           NAN,           NAN, 8.0 + 2.0 * I }
+		{           NAN,           NAN, 8.0 + 2.0 * I },
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
 		{ 1.0 - 9.0 * I, 3.0 + 2.0 * I, 4.0 + 3.0 * I },
 		{ 2.0 - 2.0 * I, 7.0 - 2.0 * I, 1.0 - 1.0 * I },
-		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I, 2.0 + 7.0 * I }
+		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I, 2.0 + 7.0 * I },
 	};
 
 	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
@@ -191,14 +191,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 	multi::array<complex, 2> const A = {
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
-		{           NAN,           NAN, 8.0 + 2.0 * I }
+		{           NAN,           NAN, 8.0 + 2.0 * I },
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
 		{ 1.0 - 9.0 * I, 3.0 + 2.0 * I },
 		{ 2.0 - 2.0 * I, 7.0 - 2.0 * I },
-		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I }
+		{ 3.0 + 1.0 * I, 4.0 + 8.0 * I },
 	};
 
 	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
@@ -217,14 +217,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 	multi::array<complex, 2> const A = {
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
-		{           NAN,           NAN, 8.0 + 2.0 * I }
+		{           NAN,           NAN, 8.0 + 2.0 * I },
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
 		{ 1. - 9. * I },
 		{ 2. - 2. * I },
-		{ 3. + 1. * I }
+		{ 3. + 1. * I },
 	};
 
 	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
@@ -243,14 +243,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 	multi::array<complex, 2> const A = {
 		{ 1.0 + 2.0 * I, 3.0 - 1.0 * I, 4.0 + 9.0 * I },
 		{           NAN, 7.0 + 4.0 * I, 1.0 + 8.0 * I },
-		{           NAN,           NAN, 8.0 + 2.0 * I }
+		{           NAN,           NAN, 8.0 + 2.0 * I },
 	};
 
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> B = {
 		{ 1.0 - 9.0 * I },
 		{ 2.0 - 2.0 * I },
-		{ 3.0 + 1.0 * I }
+		{ 3.0 + 1.0 * I },
 	};
 
 	// B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 
 	// clang-format off
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-	multi::array<double, 2> const A = {{2.0, }, };
+	multi::array<double, 2> const A = {{2.0 } };
 		// clang-format on
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -293,10 +293,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 		namespace blas = multi::blas;
 		using complex  = std::complex<double>;
 
-		// clang-format off
+	// clang-format off
 	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
-	multi::array<complex, 2> const A = {{{ 2.0, 0.0 }, }, };
-		// clang-format on
+	multi::array<complex, 2> const A = {{{ 2.0, 0.0 } } };
+	// clang-format on
 
 		{
 			// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 		multi::array<double, 2> const A = {
 			{1.0, 3.0, 40.0},
 			{nan, 7.0,  1.0},
-			{nan, nan,  8.0}
+			{nan, nan,  8.0},
 		};
 		auto const A_cpy = triangular(blas::filling::upper, A);
 		{

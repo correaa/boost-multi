@@ -1019,8 +1019,8 @@ struct elements_iterator_t
 	}
 
 	BOOST_MULTI_HD constexpr auto operator+=(difference_type n) -> elements_iterator_t& {
-		auto linear_n = apply(xs_, ns_);
-		ns_           = xs_.from_linear(linear_n + n);
+		auto const linear_n = apply(xs_, ns_);
+		ns_                 = xs_.from_linear(linear_n + n);
 		n_ += n;
 		return *this;
 	}
@@ -1714,8 +1714,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	auto flattened_aux_() const {
-		auto new_layout = this->layout().flatten(this->base_);
-		return multi::subarray<T, D - 1, ElementPtr, decltype(new_layout)>(new_layout, this->base_);
+		auto const new_layout = this->layout().flatten(this->base_);
+		return multi::subarray<T, D - 1, ElementPtr, std::decay_t<decltype(new_layout)>>(new_layout, this->base_);
 	}
 
  public:
@@ -1738,7 +1738,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	constexpr auto diagonal_aux_() const {
 		using boost::multi::detail::get;
 
-		auto square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
+		auto const square_size = (std::min)(get<0>(this->sizes()), get<1>(this->sizes()));  // paren for MSVC macros
 
 		multi::detail::layout_t<D - 1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
 
@@ -1803,15 +1803,17 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-// #ifdef __clang__
-// #pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"  // TODO(correaa) for latex documentation in MrDocs
-// #endif
+	// #ifdef __clang__
+	// #pragma clang diagnostic push
+	// #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"  // TODO(correaa) for latex documentation in MrDocs
+	// #endif
+
 	/// A transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-// #ifdef __clang__
-// #pragma clang diagnostic pop
-// #endif
+
+	// #ifdef __clang__
+	// #pragma clang diagnostic pop
+	// #endif
 
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
@@ -3035,8 +3037,11 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 		return 0 < other - *this;
 	}
 
+#ifdef __NVCC__
+#pragma nv_exec_check_disable
+#endif
 	BOOST_MULTI_HD constexpr auto operator*() const noexcept -> reference {
-		return static_cast<reference>(*ptr_);
+		return static_cast<reference>(*ptr_);  // NOLINT(readability-redundant-*)
 	}
 
 	// BOOST_MULTI_HD constexpr auto segment() const -> segment_type {
@@ -3119,9 +3124,9 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	BOOST_MULTI_HD constexpr auto operator()() const& -> element_ref { return *(this->base_); }  // NOLINT(hicpp-explicit-conversions)
 
-	constexpr operator element_ref() && noexcept { return *(this->base_); }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
-	constexpr operator element_ref() & noexcept { return *(this->base_); }        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
-	constexpr operator element_cref() const& noexcept { return *(this->base_); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_ref() && noexcept { return *this->base_; }       // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_ref() & noexcept { return *this->base_; }        // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
+	constexpr operator element_cref() const& noexcept { return *this->base_; }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) : to allow terse syntax
 
 	constexpr auto elements() const&;
 
@@ -3399,7 +3404,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  public:
 	constexpr auto repeated(size_type n) && {
-		auto exts = this->extents();  // mull-ignore: cxx_init_const
+		auto const exts = this->extents();  // mull-ignore: cxx_init_const
 
 		return [self = std::move(*this)](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(self, rest...); } ^ /*(*/ n* exts /*)*/;
 	}
