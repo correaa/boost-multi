@@ -254,8 +254,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
 				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
 
-				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
-					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
@@ -271,8 +271,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
 				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
 
-				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
-					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
@@ -288,8 +288,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				BOOST_TEST( get<0>(mds2.sizes()) == 4 );
 				BOOST_TEST( get<1>(mds2.sizes()) == 3 );
 
-				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {
-					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
