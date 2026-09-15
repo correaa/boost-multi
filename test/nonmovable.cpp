@@ -48,7 +48,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		new (&arr2d[1][1]) ncnm(99);
 	}
 	{
-		std::array<ncnm, 4> arr1d{{ncnm(0), ncnm(1), ncnm(2), ncnm(3)}};
+		std::array<ncnm, 4> arr1d{
+			{ncnm(0), ncnm(1), ncnm(2), ncnm(3)}
+		};
 
 		multi::array_ref<ncnm, 2> arr2d_ref({2, 2}, arr1d.data());
 

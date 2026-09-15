@@ -51,10 +51,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{{1, 2},
-			 {3, 4},},
-			{{5, 6},
-			 {7, 8},},
+			{
+             {1, 2},
+             {3, 4},
+			 },
+			{
+             {5, 6},
+             {7, 8},
+			 },
 		};
 
 		auto const& R0 = std::as_const(A1)[0];
@@ -68,10 +72,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{{1, 2},
-			 {3, 4},},
-			{{5, 6},
-			 {7, 8},},
+			{
+             {1, 2},
+             {3, 4},
+			 },
+			{
+             {5, 6},
+             {7, 8},
+			 },
 		};
 
 		auto const& R0 = A1[0];
