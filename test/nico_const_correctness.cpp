@@ -308,23 +308,22 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		constexpr int nthreads = 8;
 
-		std::vector<std::thread> pool;
+		{
+			std::vector<std::jthread> pool;
 
-		pool.reserve(nthreads);
+			pool.reserve(nthreads);
 
-		for(int ti = 0; ti != nthreads; ++ti) {
-			pool.emplace_back(
-				[&counters] {
-					for(auto&& row : counters) {
-						for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
-							elem.fetch_add(1, std::memory_order_relaxed);
+			for(int ti = 0; ti != nthreads; ++ti) {
+				pool.emplace_back(
+					[&counters] {
+						for(auto&& row : counters) {
+							for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+								elem.fetch_add(1, std::memory_order_relaxed);
+							}
 						}
 					}
-				}
-			);
-		}
-		for(auto& td : pool) {  // NOLINT(altera-unroll-loops)
-			td.join();
+				);
+			}
 		}
 
 		BOOST_TEST( data[3][3] == 8 );
