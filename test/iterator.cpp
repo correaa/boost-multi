@@ -68,7 +68,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			auto const arr2 = arr.begin();
 
-			multi::array<double, 1>::const_iterator const cbb  = arr2;
+			multi::array<double, 1>::const_iterator const cbb = arr2;
 			BOOST_TEST( cbb == arr2 );
 			// BOOST_TEST( arr2 == cbb );  // TODO(correaa) problem in C++20
 		}

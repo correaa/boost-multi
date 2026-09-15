@@ -18,7 +18,7 @@ template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element sum{0};
 	for(auto const i : arr.extent()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += arr[i][i];         // cppcheck-suppress useStlAlgorithm ;
+		sum += arr[i][i];               // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
@@ -27,7 +27,7 @@ template<class Array2D>
 auto trace_with_diagonal(Array2D const& arr) {
 	typename Array2D::element sum{0};
 	for(auto const aii : arr.diagonal()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += aii;                   // cppcheck-suppress useStlAlgorithm ;
+		sum += aii;                         // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }

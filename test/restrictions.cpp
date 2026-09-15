@@ -284,7 +284,7 @@ auto main() -> int {
 	}
 	{
 		// NOLINTNEXTLINE(runtime/threadsafe_fn)
-		multi::array<float, 4> A = 
+		multi::array<float, 4> A =
 			+([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>(9, 6, 7, 8));
 	}
 	{
