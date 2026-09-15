@@ -1327,6 +1327,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
+	/// Integer constant with the rank of the array
 	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
