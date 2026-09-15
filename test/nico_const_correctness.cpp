@@ -297,6 +297,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
+#if defined(__cpp_lib_jthread) && (__cpp_lib_jthread >= 201911L)
 #if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
 	{
 		multi::array<int, 2> data({4, 4}, 0);
@@ -327,6 +328,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( data[3][3] == 8 );
 	}
+#endif
 #endif
 
 	return boost::report_errors();
