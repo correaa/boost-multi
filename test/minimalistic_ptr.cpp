@@ -143,6 +143,26 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// cppcheck-suppress danglingTempReference ;
 			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
 		}
+		{
+			int data[2][5] = {  // NOLINT(*-avoid-c-arrays)
+				{10, 11, 12, 13, 14},
+				{20, 21, 22, 23, 24},
+			};
+
+			minimalistic::ptr<int const> const p0{&data[0][0]};
+
+			multi::array_ref<int const, 2, minimalistic::ptr<int const>> const arr(p0, {2, 5});
+
+			auto&& marr = arr.const_array_cast<int>();
+
+			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0])>, int>);
+
+			marr[1][2] = 99;  // exercise the "mutable view" the cast is meant to provide
+
+			BOOST_TEST( data[1][2] == 99 );
+			BOOST_TEST( marr[0][0] == 10 );
+			BOOST_TEST( marr[1][4] == 24 );
+		}
 	}
 
 	return boost::report_errors();
