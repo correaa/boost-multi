@@ -8,7 +8,8 @@
 #include <boost/core/lightweight_test.hpp>
 
 #if __cplusplus >= 202002L
-#include <atomic>  // for atomic_ref
+#include <atomic>   // for atomic_ref
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE
 #endif
 
 #include <algorithm>  // for fill, copy, for_each
@@ -297,7 +298,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			}
 		}
 	}
-#if defined(__cpp_lib_jthread) && (__cpp_lib_jthread >= 201911L)
+// gcc-10's libstdc++ (32-bit multilib at least) advertises __cpp_lib_jthread without actually defining std::jthread
+#if defined(__cpp_lib_jthread) && (__cpp_lib_jthread >= 201911L) && (!defined(__GLIBCXX__) || (defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE >= 11)))
 #if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
 	{
 		multi::array<int, 2> data({4, 4}, 0);

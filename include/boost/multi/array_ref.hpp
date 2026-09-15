@@ -4090,8 +4090,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		  typename array_ref::extents_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
 
-#if !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 8))  // gcc 7 misapplies this rvalue-only overload to lvalue initializer_list arguments (wrongly picks the deleted candidate over the by-value constructor above)
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
+#if !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 9))  // gcc 8 bug
+	// NOLINTNEXTLINE(*-avoid-c-arrays) bug in clang-tidy 19?
 	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
