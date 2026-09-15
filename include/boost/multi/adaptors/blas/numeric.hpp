@@ -101,6 +101,11 @@ class involuted {
 	auto operator=(involuted const& other) -> involuted&     = delete;
 	auto operator=(involuted&& other) noexcept -> involuted& = delete;  // default
 
+	template<class OtherRef, class = std::enable_if_t<std::is_convertible_v<OtherRef, Ref>>>
+	constexpr involuted(involuted<OtherRef, Involution> const& other) : f_{other.f_}, r_{other.r_} {}
+
+	template<class, class> friend class involuted;
+
 	constexpr auto decay() const& -> decay_type { return f_(r_); }
 
 	constexpr explicit operator decay_type() & { return f_(r_); }

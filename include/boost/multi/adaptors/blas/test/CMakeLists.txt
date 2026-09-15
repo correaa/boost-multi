@@ -76,6 +76,7 @@ set(TEST_SRCS
 	gemm.cpp
 	numeric.cpp
 	nrm2.cpp
+	operations.cpp
 	scal.cpp
 	syrk.cpp
 	traits.cpp
