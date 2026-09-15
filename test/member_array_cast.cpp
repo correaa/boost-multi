@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				int& mass;      // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 				v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes,cppcoreguidelines-avoid-const-or-ref-data-members) exposed by design
 
-				// NOLINTNEXTLINE(modernize-use-designated-initializers,*-explicit-constructor) for C++20
+				// NOLINTNEXTLINE(modernize-use-designated-initializers,hicpp-explicit-conversions,*-explicit-constructor) for C++20
 				operator particle() const { return {mass, position}; }  // NOSONAR(cpp:S1709) allow direct assignment
 
 				auto operator+() const { return operator particle(); }

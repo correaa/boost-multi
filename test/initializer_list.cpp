@@ -186,7 +186,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 	{
-		std::array<double, 3> stdarr{{1.1, 2.2, 3.3}};
+		std::array<double, 3> stdarr{
+			{1.1, 2.2, 3.3}
+		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_TEST(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}

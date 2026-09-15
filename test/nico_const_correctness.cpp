@@ -8,17 +8,17 @@
 #include <boost/core/lightweight_test.hpp>
 
 #if __cplusplus >= 202002L
-#include <atomic>       // for atomic_ref
+#include <atomic>  // for atomic_ref
 #endif
 
-#include <algorithm>    // for fill, copy, for_each
-#include <array>        // for array
-#include <iostream>     // for operator<<, basic_ostream::opera...
-#include <iterator>     // for begin, end, ostream_iterator
+#include <algorithm>  // for fill, copy, for_each
+#include <array>      // for array
+#include <iostream>   // for operator<<, basic_ostream::opera...
+#include <iterator>   // for begin, end, ostream_iterator
 
 #if __cplusplus >= 202002L
-#include <thread>       // for thread
-#include <tuple>        // for get  // NOLINT(misc-include-cleaner) // IWYU pragma: keep
+#include <thread>  // for thread
+#include <tuple>   // for get  // NOLINT(misc-include-cleaner) // IWYU pragma: keep
 #endif
 
 #include <type_traits>  // for decay_t
@@ -155,7 +155,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		std::array<int, 12> arr{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}};
+		std::array<int, 12> arr{
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+		};
 
 		{
 			auto&& mds1 = multi::array_ref(arr.data(), {3, 4});
@@ -259,18 +261,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		pool.reserve(nthreads);
 
-		for (int ti = 0; ti != nthreads; ++ti) {
+		for(int ti = 0; ti != nthreads; ++ti) {
 			pool.emplace_back(
 				[&counters] {
-					for (auto&& row : counters) {
-						for (auto&& elem : row) {
+					for(auto&& row : counters) {
+						for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
 							elem.fetch_add(1, std::memory_order_relaxed);
 						}
 					}
 				}
 			);
 		}
-		for(auto& td : pool) {
+		for(auto& td : pool) {  // NOLINT(altera-unroll-loops)
 			td.join();
 		}
 
