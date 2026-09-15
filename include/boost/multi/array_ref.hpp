@@ -243,6 +243,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// Type to store an index in the leading dimension
 	using index = typename layout_type::index;
 
+	/// Type that describes the extents in the leading dimension
 	using typename layout_type::index_extension;
 
 	/// Type that represents a range of indices
@@ -263,6 +264,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// returns the size of the array in the leading dimension
 	BOOST_MULTI_HD constexpr auto size() const noexcept -> size_type { return layout_type::size(); }
 
+	/// returns the nelems layout (convex hull data size) of the array.
 	using layout_type::nelems;
 
 	// using layout_type::extension;  // use extent
@@ -315,6 +317,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_type::sizes;
 	using typename layout_type::sizes_type;
 
+	/// `D`-tuple that stores the indices of an array
 	using typename layout_type::indexes;
 
 	// [[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
@@ -1329,6 +1332,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	friend class const_subarray<typename types::element, D + 1, typename types::element_ptr>;
 
 	// using typename types::element_type;
+	/// returns the layout of the array.
 	using types::layout;
 
 	/// type that holds the layout of the subarray or array
@@ -1563,6 +1567,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return *(end() - 1);
 	}
 
+	/// Type to store an array index in the leading dimension
 	using typename types::index;
 
 	/// yields an equivalent subarray with a specific starting index
