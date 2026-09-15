@@ -3140,14 +3140,17 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto partitioned() const& = delete;
 	constexpr auto flattened() const    = delete;
 
-	constexpr auto strided(difference_type) const& = delete;
+	constexpr auto strided(difference_type) const&                  = delete;
 	constexpr auto strided(difference_type, difference_type) const& = delete;
 
-	constexpr auto taked(difference_type) const&   = delete;
+	constexpr auto taked(difference_type) const& = delete;
+
 	constexpr auto dropped(difference_type) const& = delete;
 
 	BOOST_MULTI_HD constexpr auto reindexed() const& { return operator()(); }
+
 	BOOST_MULTI_HD constexpr auto rotated() const& { return operator()(); }
+
 	BOOST_MULTI_HD constexpr auto unrotated() const& { return operator()(); }
 	BOOST_MULTI_HD constexpr auto unordered() const& { return operator()(); }
 
