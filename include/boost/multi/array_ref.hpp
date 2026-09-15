@@ -3153,7 +3153,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto strided(difference_type) const&                  = delete;
 	constexpr auto strided(difference_type, difference_type) const& = delete;
 
-	constexpr auto taked(difference_type) const&   = delete;
+	constexpr auto taked(difference_type) const& = delete;
+
 	constexpr auto dropped(difference_type) const& = delete;
 
 	BOOST_MULTI_HD constexpr auto reindexed() const& { return operator()(); }
@@ -4085,7 +4086,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	: array_ref(::boost::multi::extents(arr), ::boost::multi::data_elements(arr)) {}
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, std::remove_const_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20  TT deduced as const-qualified on gcc 8 for named const initializer_list objects
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT> il_1d)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
 	: array_ref(
@@ -4094,10 +4095,12 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 		  typename array_ref::extents_type{static_cast<typename array_ref::size_type>(il_1d.size())}
 	  ) {}
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) bug in clang-tidy 19?
-	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, TT>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
+#if !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 9))  // gcc 8 bug
+	// NOLINTNEXTLINE(*-avoid-c-arrays) bug in clang-tidy 19?
+	template<class TT, std::enable_if_t<std::is_same_v<typename array_ref::value_type, std::remove_const_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	// cppcheck-suppress noExplicitConstructor
 	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
+#endif
 
 	using subarray_base::operator=;
 
