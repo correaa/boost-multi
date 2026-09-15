@@ -295,7 +295,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 					std::cout << '\n';
 				}
 			}
-
 		}
 	}
 #if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
