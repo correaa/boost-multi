@@ -1629,9 +1629,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
-		// TODO(correaa) remove first == last condition
-		BOOST_MULTI_ASSERT(((first == last) || this->extent().contains(first)) && ("sliced first out of bounds"));
-		BOOST_MULTI_ASSERT(((first == last) || this->extent().contains(last - 1)) && ("sliced last  out of bounds"));
+		// TODO(correaa) remove first >= last condition
+		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(first)) && ("sliced first out of bounds"));
+		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(last - 1)) && ("sliced last out of bounds"));
 		typename types::layout_type new_layout = this->layout();
 		new_layout.nelems()                    = this->stride() * (last - first);                               // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
@@ -1689,9 +1689,15 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D, ElementPtr, typename types::layout_type>(new_layout, types::base_);
 	}
 
+	constexpr auto strided_aux_(difference_type step, difference_type den) const {
+		typename types::layout_type const new_layout{this->layout().sub(), this->layout().stride() * step / den, this->layout().offset(), this->layout().nelems()};
+		return subarray<T, D, ElementPtr, typename types::layout_type>(new_layout, types::base_);
+	}
+
  public:
 	/// A subarray-view of the array with skipping `step` in the leading dimension
 	constexpr auto strided(difference_type step) const& { return strided_aux_(step).as_const(); }
+	constexpr auto strided(difference_type step, difference_type den) const& { return strided_aux_(step, den).as_const(); }
 
 	/// A subarray-view from index `first` to index `last` (not inclusive) skipping `step` in the leading dimension
 	constexpr auto sliced(
@@ -2385,6 +2391,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto strided(difference_type step) && { return this->strided_aux_(step); }
 	constexpr auto strided(difference_type step) & { return this->strided_aux_(step); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
+
+	// [[deprecated("generates non unique mappings")]] constexpr auto strided(difference_type step, difference_type den) && { return this->strided_aux_(step, den); }
+	// [[deprecated("generates non unique mappings")]] constexpr auto strided(difference_type step, difference_type den) & { return this->strided_aux_(step, den); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;
 	constexpr auto taked(difference_type count) && -> subarray { return this->taked_aux_(count); }  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -3136,6 +3145,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	constexpr auto flattened() const    = delete;
 
 	constexpr auto strided(difference_type) const& = delete;
+	constexpr auto strided(difference_type, difference_type) const& = delete;
 
 	constexpr auto taked(difference_type) const&   = delete;
 	constexpr auto dropped(difference_type) const& = delete;
@@ -3578,8 +3588,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
 	}
 
+	constexpr auto strided_aux_(difference_type step, difference_type den) const {
+		auto const new_layout = typename types::layout_type{this->layout().sub(), this->layout().stride() * step / den, this->layout().offset(), this->layout().nelems()};
+		return subarray<T, 1, ElementPtr, Layout>(new_layout, types::base_);
+	}
+
  public:
 	constexpr auto strided(difference_type step) const& -> const_subarray { return strided_aux_(step); }
+	constexpr auto strided(difference_type step, difference_type den) const& -> const_subarray { return strided_aux_(step, den); }
 
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array { return sliced(first, last).strided(stride); }
 

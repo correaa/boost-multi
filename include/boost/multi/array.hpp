@@ -1906,7 +1906,9 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	}
 
  public:
+	/// resets the array and reclaims the memory.
 	using unique_::reset;
+
 	void reset(typename array::extents_type const& exts) & {
 		if(exts == this->extents()) {
 			debug_poison_(this->base_, this->num_elements());
