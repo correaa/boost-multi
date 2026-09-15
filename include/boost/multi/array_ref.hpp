@@ -3389,8 +3389,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+		// stride() returns a reference, and is_integral_v is false for a reference type
 		// NOLINTNEXTLINE(readability-static-accessed-through-instance) can be static
-		if constexpr(std::is_integral_v<decltype(this->stride())>) {
+		if constexpr(std::is_integral_v<std::decay_t<decltype(this->stride())>>) {
 			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
 		}
 
