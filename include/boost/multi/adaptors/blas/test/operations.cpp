@@ -2,17 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// #include "../../../adaptors/cuda.hpp"
-#include "boost/multi/array.hpp"
-#include "boost/multi/io.hpp"
+#include "boost/multi/adaptors/blas/operations.hpp"  // for H, H_t
 
-#include "boost/multi/adaptors/blas/dot.hpp"
+#include "boost/multi/array.hpp"
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <cassert>
+#include <cmath>
 #include <complex>
-#include <numeric>
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -36,24 +33,18 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 	{
 		using complex = std::complex<double>;
-		auto const I  = complex{0.0, 1.0};
+		auto const I  = complex{0.0, 1.0};  // NOLINT(readability-identifier-length)
 
-		multi::array<complex, 2> B = {
+		multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length)
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I},
 			{2.0 - 1.0 * I, 1.0 + 1.0 * I}
 		};
 
-		std::cout << B << '\n';
-
-		namespace blas = multi::blas;
-		// multi::array<complex, 2> conjB = blas::H(B);
-
-		std::cout << blas::H(B) << '\n';
-
 		blas::H(B)[1][1] = 10.0 + 50.0 * I;
 
-		std::cout << B << '\n';
+		BOOST_TEST( std::abs( B[1][1].real() -  10.0 ) < 1e-12 );
+		BOOST_TEST( std::abs( B[1][1].imag() - -50.0 ) < 1e-12 );
 	}
 
 	return boost::report_errors();
