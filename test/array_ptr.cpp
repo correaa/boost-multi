@@ -49,7 +49,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr_ptr == arr_ptr );
 
 		auto const& arr_ptr_ref = arr_ptr;
-		arr_ptr           = arr_ptr_ref;
+
+		arr_ptr = arr_ptr_ref;
 
 		auto arr_ptr2 = &std::as_const(arr)[2];
 		BOOST_TEST( arr_ptr == arr_ptr2 );

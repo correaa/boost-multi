@@ -66,16 +66,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::array<double, 2> const arr(ext, 44.0);
 
-			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr.size() == 3 );
 		}
 		{
 			auto const [en, em] = std::make_tuple(3, 4);
 			multi::array<double, 2> const arr({en, em}, 44.0);
-			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr.size() == 3 );
 		}
 		{
 			auto const arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.0); }, std::make_tuple(3, 4));
-			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr.size() == 3 );
 
 			using std::get;
 
@@ -150,7 +150,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		{
 			auto const beg1 = arr({1, 3}, {2, 5}).elements().begin();
-			auto end1 = arr({1, 3}, {2, 5}).elements().end();
+			auto       end1 = arr({1, 3}, {2, 5}).elements().end();
 			auto const end2 = arr({1, 3}, {2, 5}).elements().end();
 
 			for(; end1 != beg1; --end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
@@ -396,7 +396,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			auto const i0 = 3;
 			auto const j0 = 13;
 
-			auto const* ptr = & barr[i0][j0];
+			auto const* ptr = &barr[i0][j0];
 
 			auto dist = ptr - barr.base();
 

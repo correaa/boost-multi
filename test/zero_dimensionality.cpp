@@ -76,7 +76,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			int doub = 20;
 
-			auto const dd   = static_cast<int>(multi::array_ref<int, 0>(&doub, {}));
+			auto const dd = static_cast<int>(multi::array_ref<int, 0>(&doub, {}));
 
 			BOOST_TEST( dd == doub );
 

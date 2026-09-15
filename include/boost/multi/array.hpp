@@ -1381,7 +1381,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 
 	// NOSONAR
 	constexpr operator typename std::iterator_traits<typename dynamic_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-		return * this->base_;
+		return *this->base_;
 	}
 
 	// NOSONAR

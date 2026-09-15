@@ -69,7 +69,7 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 	// typename traits::segment_iterator sl = traits::segment(last);
 	// typename traits::local_iterator   lf = traits::local(first);
 
-	auto sf = first.outer();
+	auto       sf = first.outer();
 	auto const sl = last.outer();
 
 	auto lf = first.local();
@@ -148,8 +148,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	std::cout << "arr2 = " << arr2 << '\n';
 	std::cout << "arr2.flattened().begin().segment() = " << arr2.flattened().begin().segment() << '\n';
 	std::cout << "arr2.flattened().(begin() + 3).segment() = " << (arr2.flattened().begin() + 3).segment() << '\n';
-	std::cout << "*(arr2.flattened().begin().global()) = " << * arr2.flattened().begin().outer() << '\n';
-	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << * (arr2.flattened().begin() + 3).outer()  << '\n';
+	std::cout << "*(arr2.flattened().begin().global()) = " << *arr2.flattened().begin().outer() << '\n';
+	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << *(arr2.flattened().begin() + 3).outer() << '\n';
 
 	ion::fill_segmented(arr2.flattened().begin(), arr2.flattened().end(), 7);
 
