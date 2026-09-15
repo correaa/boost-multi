@@ -231,6 +231,7 @@ struct                                                                          
 
 	explicit dynamic_array(allocator_type const& alloc) : array_alloc{alloc}, ref_(nullptr, {}) {}
 
+	/// Subscript operator (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
 	using ref_::operator();
 
 	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref_::element_moved(); }
