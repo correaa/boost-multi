@@ -3913,6 +3913,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  private:
 	template<class P2, class P1>
 	static constexpr auto bit_cast_(P1 const& p1) {
+		static_assert(!std::is_pointer_v<P1> && !std::is_pointer_v<P2>, "");
 		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
 			return std::bit_cast<P2>(p1);
 		#else
@@ -3933,11 +3934,17 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 												   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-		auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+		P2 ptr2;
+		if constexpr(std::is_pointer_v<P2>) {
+			ptr2 = static_cast<P2>(&(this->base_->*member));
+		} else {
+			auto* ptr0 = bit_cast_<typename const_subarray::element*>(const_subarray::base_);
+			auto&& ref1 = (*ptr0).*member;
+			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
+			auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
-		P2 ptr2 = bit_cast_<P2>(ptr1);
+			ptr2 = bit_cast_<P2>(ptr1);
+		}
 #else
 		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
