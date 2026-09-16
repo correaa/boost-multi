@@ -3913,7 +3913,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  private:
 	template<class P2, class P1>
 	static constexpr auto bit_cast_(P1 const& p1) {
-		static_assert(!std::is_pointer_v<P1> && !std::is_pointer_v<P2>, "");
+		static_assert(!std::is_pointer_v<P1> || !std::is_pointer_v<P2>, "do not use bit_cast for pointers");
 		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
 			return std::bit_cast<P2>(p1);
 		#else
@@ -3938,10 +3938,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		if constexpr(std::is_pointer_v<P2>) {
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
-			auto* ptr0 = bit_cast_<typename const_subarray::element*>(const_subarray::base_);
+			auto*  ptr0 = bit_cast_<typename const_subarray::element*>(const_subarray::base_);
 			auto&& ref1 = (*ptr0).*member;
 			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+			auto* ptr1  = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 			ptr2 = bit_cast_<P2>(ptr1);
 		}

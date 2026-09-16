@@ -165,19 +165,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( marr[1][4] == 24 );
 		}
 		{
-			// same class of UB as above, but in reinterpret_array_cast(count) (array_ref.hpp:2194)
-			// instead of const_array_cast(): `arr` must be a const object to select
-			// const_subarray::reinterpret_array_cast(size_type) const&, whose fancy-pointer
-			// branch does reinterpret_cast<P2 const&>(this->base_) with P2 =
-			// minimalistic::ptr<short const> != ElementPtr = minimalistic::ptr<int const>.
-			//
-			// Unlike const_array_cast's warning, GCC's default -Wstrict-aliasing (level 3,
-			// what pre-push's `.build.g++.release` job and test/CMakeLists.txt both use)
-			// does NOT flag this one; it only shows up at -Wstrict-aliasing=1 or =2:
-			//   array_ref.hpp:2194:67: warning: dereferencing type-punned pointer might
-			//     break strict-aliasing rules [-Wstrict-aliasing]      (at level 1)
-			//   array_ref.hpp:2194:67: warning: type-punning to incomplete type might
-			//     break strict-aliasing rules [-Wstrict-aliasing]      (at level 2)
+			// const_subarray::reinterpret_array_cast(size_type) const& with a fancy ElementPtr
 			std::int32_t data[2][5] = {  // NOLINT(*-avoid-c-arrays)
 				{10, 11, 12, 13, 14},
 				{20, 21, 22, 23, 24},
@@ -195,21 +183,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
 		}
 		{
-			// same class of UB again, but in subarray::reinterpret_pointer_cast_()
-			// (array_ref.hpp:2758), the private helper used by the *mutable*
-			// (non-const) subarray::reinterpret_array_cast(size_type) & overload --
-			// as opposed to const_subarray's, exercised above. `arr` must be a
-			// non-const lvalue here to select that overload (a const object would
-			// pick const_subarray::reinterpret_array_cast() const& instead, whose
-			// own fancy-pointer branch was already fixed with bit_cast_).
-			//
-			// Of the three UB sites found this session, this is the most elusive
-			// for GCC's -Wstrict-aliasing: it only fires at level 1, not level 2
-			// (what test/CMakeLists.txt currently uses, chosen to catch the other
-			// two without the false positives level 1 is documented to add) nor
-			// the default level 3:
-			//   array_ref.hpp:2758:32: warning: dereferencing type-punned pointer
-			//     might break strict-aliasing rules [-Wstrict-aliasing]  (level 1 only)
+			// subarray::reinterpret_pointer_cast_(), used by the mutable (non-const)
+			// subarray::reinterpret_array_cast(size_type) & overload -- `arr` must be
+			// non-const to select it, as opposed to const_subarray's above.
 			std::int32_t data[2][5] = {  // NOLINT(*-avoid-c-arrays)
 				{10, 11, 12, 13, 14},
 				{20, 21, 22, 23, 24},
@@ -225,6 +201,23 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			BOOST_TEST( marr.size() == 2 );
 			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
+		}
+		{
+			// member_cast() with a fancy ElementPtr (existing member_cast tests only use a raw one)
+			struct particle {
+				int    mass;
+				double x;
+			};
+
+			particle data[3] = {{1, 1.0}, {2, 2.0}, {3, 3.0}};  // NOLINT(*-avoid-c-arrays)
+
+			minimalistic::ptr<particle> const p0{&data[0]};
+
+			multi::array_ref<particle, 1, minimalistic::ptr<particle>> const arr(p0, {3});
+
+			auto&& masses = arr.member_cast<int, minimalistic::ptr<int>>(&particle::mass);
+
+			BOOST_TEST( masses[1] == 2 );
 		}
 	}
 
