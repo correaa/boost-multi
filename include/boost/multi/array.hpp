@@ -120,7 +120,7 @@ struct array_allocator {
  protected:
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
 
- public:
+ private:
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif
