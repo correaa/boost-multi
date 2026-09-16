@@ -145,7 +145,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
 		}
 		{
-			int data[2][5] = {  // NOLINT(*-avoid-c-arrays,misc-const-correctness)
+			int data[2][5] = {
+  // NOLINT(*-avoid-c-arrays,misc-const-correctness)
 				{10, 11, 12, 13, 14},
 				{20, 21, 22, 23, 24},
 			};
@@ -166,7 +167,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 		{
 			// const_subarray::reinterpret_array_cast(size_type) const& with a fancy ElementPtr
-			std::int32_t data[2][5] = {  // NOLINT(*-avoid-c-arrays)
+			std::int32_t data[2][5] = {
+  // NOLINT(*-avoid-c-arrays)
 				{10, 11, 12, 13, 14},
 				{20, 21, 22, 23, 24},
 			};
@@ -186,7 +188,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// subarray::reinterpret_pointer_cast_(), used by the mutable (non-const)
 			// subarray::reinterpret_array_cast(size_type) & overload -- `arr` must be
 			// non-const to select it, as opposed to const_subarray's above.
-			std::int32_t data[2][5] = {  // NOLINT(*-avoid-c-arrays)
+			// NOLINTNEXTLINE(*-avoid-c-arrays)
+			std::int32_t data[2][5] = {
 				{10, 11, 12, 13, 14},
 				{20, 21, 22, 23, 24},
 			};
@@ -209,7 +212,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				double x;
 			};
 
-			particle data[3] = {{1, 1.0}, {2, 2.0}, {3, 3.0}};  // NOLINT(*-avoid-c-arrays)
+			// NOLINTNEXTLINE(*-avoid-c-arrays)
+			particle data[3] = {
+				{1, 1.0},
+				{2, 2.0},
+				{3, 3.0}
+			};
 
 			minimalistic::ptr<particle> const p0{&data[0]};
 

@@ -3933,8 +3933,12 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		static_assert(sizeof(T) % sizeof(T2) == 0, "array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
 												   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-		P2 ptr2;
+#if (defined(__GNUC__) && !defined(__INTEL_COMPILER)) || defined(_MSC_VER)
+		#ifndef _MSC_VER
+		P2 ptr2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+		#else
+		P2 ptr2{};  // TODO(correaa) convert this below into a function
+		#endif
 		if constexpr(std::is_pointer_v<P2>) {
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
