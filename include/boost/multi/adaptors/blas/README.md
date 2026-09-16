@@ -119,11 +119,12 @@ multi::array<complex, 2> B = {
 namespace blas = multi::blas;
 multi::array<complex, 2> conjB = blas::C(B);
 
-assert( blas::C(B)[1][2] == std::conj(B[1][2]) );
 assert( blas::T(B)[1][2] ==           B[2][1]  );
-assert( blas::N(B)[1][2] ==           N[1][2]  );
 assert( blas::H(B)[1][2] == std::conj(B[2][1]) );
+assert( blas::N(B)[1][2] ==           B[1][2]  );
+assert( blas::J(B)[1][2] == std::conj(B[1][2]) );
 ```
+[(open with Compiler Explorer)](https://godbolt.org/z/vvxo3zd3z)
 
 Note that views do not play well with self-assignment.
 ```cpp
