@@ -2432,20 +2432,21 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
 	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
 
-	using const_subarray<T, D, ElementPtr, Layout>::reindexed;
+	// /// yields an array view where the elements have been reindexed.
+	// using const_subarray<T, D, ElementPtr, Layout>::reindexed;
 
-	template<class... Indexes>
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto reindexed(index first, Indexes... idxs) & -> subarray {
-		return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
-		// return ((this->reindexed(first).rotated()).reindexed(idxs...)).unrotated();
-	}
-	template<class... Indexes>
-	// cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto reindexed(index first, Indexes... idxs) && -> subarray {
-		return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
-		// return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
-	}
+	// template<class... Indexes>
+	// // cppcheck-suppress duplInheritedMember ; to overwrite
+	// constexpr auto reindexed(index first, Indexes... idxs) & -> subarray {
+	// 	return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
+	// 	// return ((this->reindexed(first).rotated()).reindexed(idxs...)).unrotated();
+	// }
+	// template<class... Indexes>
+	// // cppcheck-suppress duplInheritedMember ; to overwrite
+	// constexpr auto reindexed(index first, Indexes... idxs) && -> subarray {
+	// 	return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
+	// 	// return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
+	// }
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const& -> typename subarray::element_const_ptr { return this->base_; }
