@@ -2123,7 +2123,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
-	template<class P2, class P1> 
+	template<class P2, class P1>
 	static constexpr auto bit_cast_(P1 const& p1) {
 		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
 			return std::bit_cast<P2>(p1);
@@ -3910,6 +3910,18 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
+	template<class P2, class P1>
+	static constexpr auto bit_cast_(P1 const& p1) {
+		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
+			return std::bit_cast<P2>(p1);
+		#else
+			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+			static_assert(sizeof(P2) == sizeof(P1));
+			std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));
+			return p2;
+		#endif
+	}
+
 	template<
 		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
 		class Element = typename const_subarray::element,
@@ -3923,8 +3935,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
 		auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
-		P2 ptr2 = reinterpret_cast<P2&>(ptr1);  // NOSONAR
+		P2 ptr2 = bit_cast_<P2>(ptr1);
 #else
 		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
