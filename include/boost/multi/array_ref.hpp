@@ -3914,14 +3914,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class P2, class P1>
 	static constexpr auto bit_cast_(P1 const& p1) {
 		static_assert(!std::is_pointer_v<P1> || !std::is_pointer_v<P2>, "do not use bit_cast for pointers");
-		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
-			return std::bit_cast<P2>(p1);
-		#else
-			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
-			static_assert(sizeof(P2) == sizeof(P1));
-			std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));
-			return p2;
-		#endif
+#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
+		return std::bit_cast<P2>(p1);
+#else
+		P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+		static_assert(sizeof(P2) == sizeof(P1));
+		std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));
+		return p2;
+#endif
 	}
 
  public:
