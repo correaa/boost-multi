@@ -124,7 +124,7 @@ struct array_allocator {
 #ifdef __NVCC__
 #pragma nv_exec_check_disable
 #endif
-	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }
+	BOOST_MULTI_HD constexpr auto get_allocator() const noexcept -> allocator_type { return alloc_; }  // NOLINT(readability-identifier-naming)
 };
 
 }  // end namespace detail
