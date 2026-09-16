@@ -12,6 +12,10 @@
 #include <cmath>
 #include <type_traits>
 
+#if (__cplusplus >= 202002L)
+#include <bit>  // for std::bit_cast
+#endif
+
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #include <vector>  // for .to conversion
@@ -2147,20 +2151,12 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		if constexpr(std::is_pointer_v<P2>) {
 			return rebind<T2, P2>(this->layout(), const_cast<P2>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		} else {
-#if defined(__cpp_lib_bit_cast)  // for C++20
-			return rebind<T2, P2>(this->layout(), std::bit_cast<P2>(this->base_));
-#else
-			static_assert(sizeof(P2) == sizeof(this->base_));
-			P2 new_base;  // NOLINT(cppcoreguidelines-pro-type-member-init)
-			std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&this->base_), sizeof(P2));
-			return rebind<T2, P2>(this->layout(), new_base);
-#endif
+			return rebind<T2, P2>(this->layout(), bit_cast_<P2>(this->base_));
 		}
 	}
 
 	/// yields a const-element view of the subarray, preventing modification of elements.
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
-	// return rebind<element, element_const_ptr>{this->layout(), this->base()};
 
  private:
 	template<class T2, class P2>
