@@ -1638,7 +1638,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(first)) && ("sliced first out of bounds"));
 		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(last - 1)) && ("sliced last out of bounds"));
 		typename types::layout_type new_layout = this->layout();
-		new_layout.nelems()                    = this->layout().stride() * (last - first);                               // TODO(correaa) : reconstruct layout instead of mutating it
+		new_layout.nelems()                    = this->layout().stride() * (last - first);                      // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -3400,8 +3400,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 		// stride() returns a reference, and is_integral_v is false for a reference type
 		// NOLINTNEXTLINE(readability-static-accessed-through-instance) can be static
-		if constexpr(std::is_integral_v<std::decay_t<decltype(this->stride())>>) {
-			BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
+		if constexpr(std::is_integral_v<std::decay_t<decltype(this->layout().stride())>>) {
+			BOOST_MULTI_ASSERT((this->layout().stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
 		}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
