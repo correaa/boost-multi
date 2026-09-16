@@ -42,17 +42,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(empty_stride)
 	{
-		multi::array<double, 2> ma;
+		multi::array<double, 2> const ma;
 		BOOST_TEST(ma.size() == 0);
-		BOOST_TEST(ma.stride() != 0);
-		BOOST_TEST(size(ma) == 0);
+		BOOST_TEST(ma.layout().stride() != 0);
+		BOOST_TEST(ma.size() == 0);
 
-		multi::array<double, 2> ma0({0, 0}, 0.0);
+		multi::array<double, 2> const ma0({0, 0}, 0.0);
 		BOOST_TEST(ma0.size() == 0);
-		BOOST_TEST(ma0.stride() != 0);
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-		BOOST_TEST(size(ma0) == 0);
-#endif
+		BOOST_TEST(ma0.layout().stride() != 0);
+		BOOST_TEST(ma0.size() == 0);
 	}
 
 	// 4D array
