@@ -53,6 +53,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(decltype(out)::dimensionality == decltype(in)::dimensionality);  // NOLINT(misc-redundant-expression)
 		BOOST_TEST( out.sizes() == in.sizes() );
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
 		static_assert(sizeof(complex) == sizeof(fake::fftw_complex), "!");
 		fake::fftw_plan_dft(
 			decltype(in)::dimensionality,
@@ -63,6 +68,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			reinterpret_cast<fake::fftw_complex*>(out.data_elements()),
 			1, 0
 		);
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 	}
 
 #ifdef __clang__
