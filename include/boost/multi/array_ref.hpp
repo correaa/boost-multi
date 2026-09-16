@@ -2755,7 +2755,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
  private:
 	template<class P2, class P1> 
 	static constexpr auto bit_cast_(P1 const& p1) {
-		#if defined(__cpp_lib_bit_cast)  // for C++20
+		#if defined(__cpp_lib_bit_cast)  && !defined(_MSC_VER)  // for C++20
 			return std::bit_cast<P2>(p1);
 		#else
 			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
