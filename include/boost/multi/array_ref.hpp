@@ -3910,6 +3910,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
+ private:
 	template<class P2, class P1>
 	static constexpr auto bit_cast_(P1 const& p1) {
 		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
@@ -3922,6 +3923,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		#endif
 	}
 
+ public:
 	template<
 		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
 		class Element = typename const_subarray::element,
