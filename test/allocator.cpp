@@ -51,7 +51,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(ma0.size() == 0);
 		BOOST_TEST(ma0.layout().stride() != 0);
 #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-		BOOST_TEST(size(ma0) == 0);
+		BOOST_TEST(ma0.size() == 0);
 #endif
 	}
 
