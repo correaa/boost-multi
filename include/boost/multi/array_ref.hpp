@@ -2119,6 +2119,18 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<class T2, class P2 = typename std::pointer_traits<typename const_subarray::element_ptr>::template rebind<T2>>
 	using rebind = subarray<std::decay_t<T2>, D, P2>;
 
+	template<class P2, class P1> 
+	static constexpr auto bit_cast_(P1 const& p1) {
+		#if defined(__cpp_lib_bit_cast)  // for C++20
+			return std::bit_cast<P2>(p1);
+		#else
+			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+			static_assert(sizeof(P2) == sizeof(P1));
+			std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));
+			return p2;
+		#endif
+	}
+
  public:
 	/// creates a view of the array with element references with const-removed
 	template<
@@ -2135,7 +2147,14 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		if constexpr(std::is_pointer_v<P2>) {
 			return rebind<T2, P2>(this->layout(), const_cast<P2>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		} else {
-			return rebind<T2, P2>(this->layout(), reinterpret_cast<P2 const&>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)  //NOSONAR
+#if defined(__cpp_lib_bit_cast)  // for C++20
+			return rebind<T2, P2>(this->layout(), std::bit_cast<P2>(this->base_));
+#else
+			static_assert(sizeof(P2) == sizeof(this->base_));
+			P2 new_base;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+			std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&this->base_), sizeof(P2));
+			return rebind<T2, P2>(this->layout(), new_base);
+#endif
 		}
 	}
 
@@ -2184,7 +2203,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		} else {  // TODO(correaa) try to unify both if-branches
 			return const_subarray<T2, D + 1, P2>(
 				detail::layout_t<D + 1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+				bit_cast_<P2>(this->base_)
+				// reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		}
 	}
