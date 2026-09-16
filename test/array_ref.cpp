@@ -395,7 +395,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( mar.size() == 4 );
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
-		multi::array<double, 2> ss = {
+		multi::array<double, 2> const ss = {
 			{ 0.0, +1.0,  0.0},
 			{+1.0, -4.0, +1.0},
 			{ 0.0, +1.0,  0.0},
