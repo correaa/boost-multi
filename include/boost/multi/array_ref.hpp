@@ -2125,7 +2125,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 	template<class P2, class P1> 
 	static constexpr auto bit_cast_(P1 const& p1) {
-		#if defined(__cpp_lib_bit_cast)  // for C++20
+		#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
 			return std::bit_cast<P2>(p1);
 		#else
 			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -2753,13 +2753,25 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 
  private:
+	template<class P2, class P1> 
+	static constexpr auto bit_cast_(P1 const& p1) {
+		#if defined(__cpp_lib_bit_cast)  // for C++20
+			return std::bit_cast<P2>(p1);
+		#else
+			P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init)
+			static_assert(sizeof(P2) == sizeof(P1));
+			std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));
+			return p2;
+		#endif
+	}
+
 	template<typename P2>
-	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> decltype(auto) {
+	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> auto {
 		if constexpr(std::is_pointer_v<ElementPtr>) {
 			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
 			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
-			return reinterpret_cast<P2 const&>(base_ptr);     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			return bit_cast_<P2>(base_ptr);  // reinterpret_cast<P2 const&>(base_ptr);     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		}
 	}
 
