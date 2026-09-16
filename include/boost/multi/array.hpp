@@ -226,7 +226,8 @@ struct                                                                          
 
 	/// Signed integer type to represent difference between indices (usually `std::ptrdiff_t`)
 	using typename ref_::difference_type;
-	/// Integer type to represent sizes (usually `std::ptrdiff_t`)
+
+	/// Integer type to represent size in the leading dimension (usually `std::ptrdiff_t`)
 	using typename ref_::size_type;
 
 	explicit dynamic_array(allocator_type const& alloc) : array_alloc{alloc}, ref_(nullptr, {}) {}

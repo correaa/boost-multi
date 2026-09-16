@@ -314,14 +314,14 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_type::sub;
 
+	/// returns a tuple decribing sizes across all the dimensions of the array.
 	using layout_type::sizes;
+
+	/// `D`-tuple type that stores the sizes of an array
 	using typename layout_type::sizes_type;
 
-	/// `D`-tuple that stores the indices of an array
+	/// `D`-tuple type that stores the indices of an array
 	using typename layout_type::indexes;
-
-	// [[deprecated("This is for compatiblity with Boost.MultiArray, you can use `rank` member type or `dimensionality` static member variable")]]
-	// static constexpr auto num_dimensions() { return dimensionality; }
 
  private:
 	[[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
@@ -2409,7 +2409,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto dropped(difference_type count) & -> subarray { return this->dropped_aux_(count); }
 	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
+	/// (inherited) yields a view of the array where the indices are rotated (to the left) (e.g. `a.rotated()[i][j][k] == a[j][k][i]`)
 	using const_subarray<T, D, ElementPtr, Layout>::rotated;
+
 	// cppcheck-suppress-begin duplInheritedMember ; to ovewrite
 	BOOST_MULTI_HD constexpr auto rotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 	BOOST_MULTI_HD constexpr auto rotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
@@ -2707,6 +2709,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
 
+	/// (inherited) yields a view of the subarray where elements are reinterpreted as a different type (elements must have compatible size)
 	using const_subarray<T, D, ElementPtr, Layout>::reinterpret_array_cast;
 
 	template<class T2, class P2 = typename std::pointer_traits<ElementPtr>::template rebind<T2>>
