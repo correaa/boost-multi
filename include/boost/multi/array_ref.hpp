@@ -233,7 +233,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// Dimensionality value of the array (generally `D`)
 	using layout_type::dimensionality;
 
+	/// returns the layout's stride (distance between elements in memory) in the leading dimension.
 	using layout_type::stride;
+
+	/// Stride type (generally `std::ptrdiff_t`)
 	using typename layout_type::stride_type;
 
 	/// returns the total number of elements.
@@ -2390,6 +2393,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// 	return std::move(*this).fill(typename subarray::element{});
 	// }
 
+	/// returns the layout's stride (distance between elements in memory) in the leading dimension.
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto strided(difference_type step) && { return this->strided_aux_(step); }
@@ -2600,6 +2604,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto diagonal() && { return this->diagonal_aux_(); }
 	// cppcheck-suppress-end duplInheritedMember ; to override
 
+	/// (inherited) A subarray‐view from index first to index last (not inclusive) skipping step in the leading dimension
 	using const_subarray<T, D, ElementPtr, Layout>::sliced;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::sliced(first, last); }
