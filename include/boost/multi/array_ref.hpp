@@ -168,8 +168,9 @@ constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 }  // end namespace detail
 
 namespace detail {
+
 template<class P2, class P1>
-constexpr auto bit_cast_(P1 const& p1) {
+constexpr auto bit_cast_(P1 const& p1) {      // NOLINT(readability-identifier-naming)
 	static_assert(sizeof(P2) == sizeof(P1));  // NOLINT(bugprone-sizeof-expression)
 	if constexpr(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>) {
 #if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
@@ -184,6 +185,7 @@ constexpr auto bit_cast_(P1 const& p1) {
 		return reinterpret_cast<P2 const&>(p1);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) this is UB, if this is reached you may need -fno-strict-aliasing
 	}
 }
+
 }  // namespace detail
 
 /// Mutable `D`-dimensional view into part or all of an array
