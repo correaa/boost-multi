@@ -2768,7 +2768,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
 			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
-			return detail::bit_cast_<P2>(base_ptr);                   // reinterpret_cast<P2 const&>(base_ptr);     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			return detail::bit_cast_<P2>(base_ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void)
 		}
 	}
 
