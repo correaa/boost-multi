@@ -145,7 +145,7 @@ Typically, at the lowest level, data is processed in bulk by specially tuned num
 
 _Multi_ is a header-only library and pass:[C++17] or later is required.
 
-The code requires any modern https://godbolt.org/z/hxEYGYEWc[pass:[C++] compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard pass:[C++17] support;
+The code requires any modern https://godbolt.org/z/4Kjd61KzG[pass:[C++] compiler] (or https://godbolt.org/z/zvYoMjeTh[CUDA compiler]) with standard pass:[C++17] support;
 for reference, (at least) any of:
 LLVM's          https://godbolt.org/z/51E1hjfnn[clang (5.0+)] (libc\++ and libstdc\++),
 GNU's           https://godbolt.org/z/1nGEbKc5a[g\++ (7.1+)],
