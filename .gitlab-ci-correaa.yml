@@ -1014,7 +1014,7 @@ culang++:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
     - high-bandwidth
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build wget git pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
@@ -1067,7 +1067,7 @@ cuda-12.6.3:
       - develop
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build g++ git wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
     - cmake --version
     - mkdir build && cd build
     - g++ --version
@@ -1116,7 +1116,7 @@ cuda-13.3.0:
     - arch75
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build g++ git wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
     - cmake --version
     - mkdir build && cd build
     - g++ --version
