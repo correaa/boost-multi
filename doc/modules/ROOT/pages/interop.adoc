@@ -755,6 +755,9 @@ As with CUDA Thrust, advanced algorithms like `hpx::reduce_by_key` are fundament
 [#interop_fmt]
 == Formatting (pass:[{fmt}] Pretty Printing)
 
+NOTE: Although less customizable C++23's `std::print`` supports ranges out of the box and that in turn works directly with arrays of high dimension
+link:https://godbolt.org/z/f7qnh61cT[(open with Compiler Explorer)]
+
 The library doesn't have a "pretty" printing facility to display arrays, beyond basic debug-type output.
 Although it is not ideal, for more control, arrays can be printed and formatted by looping over elements and dimension, as shown in other examples (using standard streams).
 
@@ -800,7 +803,7 @@ link:https://godbolt.org/z/7dcKxa8of[(open with Compiler Explorer)]
 
 When saving arrays to files, please consider using serialization (see section) instead of formatting facilities.
 
-The header `multi/io.hpp` can be used to output arrays and subarrays, but it is mainly for debugging purposes and there is no control of the output format.
+// The header `multi/io.hpp` can be used to output arrays and subarrays, but it is mainly for debugging purposes and there is no control of the output format.
 
 [#interop_python]
 == Python (cppyy)

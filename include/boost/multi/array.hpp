@@ -1876,7 +1876,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 		} else if constexpr(std::is_trivially_copyable_v<T>) {
 			if constexpr(std::is_pointer_v<Ptr>) {
 				static constexpr auto DEAD = std::array<unsigned char, 4>{
-					{0xDE, 0xAD, 0xF5, 0x7F},  // quiet NaN f/d
+					{0xDE, 0xAD, 0xF5, 0x7F}, // quiet NaN f/d
 				};
 #ifdef __clang__
 #pragma clang diagnostic push
