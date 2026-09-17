@@ -72,7 +72,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
 	}
 
 #ifdef __clang__
