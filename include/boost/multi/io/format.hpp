@@ -15,7 +15,11 @@
 #endif
 #endif
 
-#if defined(__cpp_lib_format) && (__cpp_lib_format >= 202110L)
+// only needed as a shim for a standard library that has plain std::format (P0645) but not yet
+// range-formatting (P2286, __cpp_lib_format_ranges) -- once the latter is present, the generic
+// range formatter already handles array/const_subarray (they satisfy std::ranges::range) with
+// identical output, making this specialization redundant.
+#if defined(__cpp_lib_format) && (__cpp_lib_format >= 202110L) && !defined(__cpp_lib_format_ranges)
 template<typename T, boost::multi::dimensionality_type D>
 struct std::formatter<boost::multi::array<T, D>, char> {  // NOLINT(cert-dcl58-cpp) this is the way
 

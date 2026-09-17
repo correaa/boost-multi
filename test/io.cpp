@@ -15,6 +15,8 @@
 #if __has_include(<print>)
 #include <boost/multi/io/format.hpp>
 
+#include <format>
+#include <map>
 #include <print>
 #endif
 #endif
@@ -170,18 +172,32 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			 },
 		};
 	}
-	{
 #if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
 #if __has_include(<print>)
+#if defined(__cpp_lib_format_ranges)
+	{
+		std::map<int, double> const m = {
+			{1, 1.5},
+			{2, 2.5},
+			{3, 3.5}
+		};
+
+		BOOST_TEST( std::format("{}", m) == "{1: 1.5, 2: 2.5, 3: 3.5}" );
+
+		std::print("{}\n", m);  // the whole container, one call
+	}
+#endif
+	{
 		multi::array<double, 2> const arr = {
 			{1,   3},
 			{2, -10},
 		};
-
 		std::print("{}", arr);
-#endif
-#endif
+
+		BOOST_TEST( std::format("{}", arr) == "[[1, 3], [2, -10]]" );
 	}
+#endif
+#endif
 
 	return boost::report_errors();
 }
