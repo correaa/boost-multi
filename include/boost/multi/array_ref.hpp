@@ -178,7 +178,7 @@ constexpr auto bit_cast_(P1 const& p1) {      // NOLINT(readability-identifier-n
 #else
 		P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 		static_assert(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>);
-		std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));  // NOLINT(bugprone-multi-level-implicit-pointer-conversion)
+		std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));  // NOLINT(bugprone-sizeof-expression,bugprone-multi-level-implicit-pointer-conversion)
 		return p2;
 #endif
 	} else {
