@@ -38,7 +38,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length)
 			{1.0 - 3.0 * I, 6.0 + 2.0 * I},
 			{8.0 + 2.0 * I, 2.0 + 4.0 * I},
-			{2.0 - 1.0 * I, 1.0 + 1.0 * I}
+			{2.0 - 1.0 * I, 1.0 + 1.0 * I},
 		};
 
 		blas::H(B)[1][1] = 10.0 + 50.0 * I;

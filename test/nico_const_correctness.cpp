@@ -157,7 +157,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	{
 		std::array<int, 12> arr{
-			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 		};
 
 		{
@@ -235,7 +235,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{
 				auto&& mds = multi::array_ref(coll.data(), {3, 4});
 
-				auto const& mds2 = ~(mds.strided(1, 2).taked(5));
+				auto const& mds2 = ~mds.strided(1, 2).taked(5);
 
 				using std::get;
 				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
@@ -282,7 +282,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{
 				auto&& mds = multi::array_ref(coll.data(), {4, 3});
 
-				auto const& mds2 = ~((~mds).sliced(2, -1, -1));
+				auto const& mds2 = ~(~mds).sliced(2, -1, -1);
 
 				using std::get;
 
