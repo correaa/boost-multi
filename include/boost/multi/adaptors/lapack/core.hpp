@@ -146,7 +146,7 @@ extern "C" {
 xPOTRF(s)   ; xPOTRF(d)    ;
 xPOTRF(c)   ; xPOTRF(z)    ;
 
-//xSYEV(s)    ; xSYEV(d)     ;
+xSYEV(s)    ; xSYEV(d)     ;
 //xSYEVD(s)   ; xSYEVD(d)    ;
 //xHEEV(c)    ; xHEEV(z)     ;
 }
@@ -189,11 +189,11 @@ xpotrf(c) xpotrf(z)
 #define xheev(T) template<class S> v heev(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int& info){LAPACK(T##heev)(jobz, uplo, n, a, lda, w, work, lwork, info);}
 // NOLINTEND(bugprone-macro-parentheses)
 
-// namespace core{
-// // xsyev (s) xsyev (d)
-// // xsyevd(s) xsyevd(d)
-// //                     xheev(c) xheev(z)
-// }
+namespace core {
+xsyev(s) xsyev(d)
+// xsyevd(s) xsyevd(d)
+//                     xheev(c) xheev(z)
+}  // end namespace core
 
 #undef s
 #undef d

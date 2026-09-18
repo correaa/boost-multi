@@ -20,6 +20,8 @@
 
 namespace multi = boost::multi;
 
+dasdasdas
+
 namespace {
 class auto_timer {
 	std::string label_;
@@ -140,46 +142,3 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_gemm_complex_3x2_3x2 const) {
 //       }
 //   }
 // }
-
-#if 0
-BOOST_AUTO_TEST_CASE(const multi_adaptors_blas_cuda_gemm_context_timing){
-	using complex = std::complex<double>;//complex const I{0, 1};
-	
-	multi::array<complex, 2> A({1000, 1000});
-	multi::array<complex, 2> B(      {1000, 1000});
-	multi::array<complex, 2> C({size(A), size(~B)});
-	A[99][99] = B[11][22] = C[33][44] = 1.0;
-	std::cerr<< "memory " << (A.num_elements()+ B.num_elements() + C.num_elements())*sizeof(complex)/1e6 <<" MB"<<std::endl;
-	
-	{
-		auto rand = [d=std::uniform_real_distribution<>{0., 10.}, g=std::mt19937{}]() mutable{return complex{d(g), d(g)};};
-		std::generate(A.elements().begin(), A.elements().end(), rand);
-		std::generate(B.elements().begin(), B.elements().end(), rand);
-	}
-	namespace blas = multi::blas;
-	{
-		auto_timer t; // 2.398206s
-		for(auto i = 0; i != 10; ++i){
-			blas::context ctx;
-			blas::gemm(ctx, 1.0, A, B, 0.0, C);
-		}
-	}
-	using device_array = multi::cuda::array<complex, 2>;
-	{
-		device_array A_gpu = A, B_gpu = B, C_gpu({size(A), size(~B)});
-
-		auto_timer t; // 0.707426s
-		for(auto i = 0; i != 10; ++i){
-			multi::cublas::context ctx;
-			blas::gemm(ctx, 1.0, A_gpu, B_gpu, 0.0, C_gpu);
-		}
-	}
-	{
-		device_array A_gpu = A, B_gpu = B, C_gpu({size(A), size(~B)});
-
-		auto_timer t; // 0.613534s
-		multi::cublas::context ctx;
-		for(auto i = 0; i != 10; ++i) blas::gemm(ctx, 1.0, A_gpu, B_gpu, 0.0, C_gpu);
-	}
-}
-#endif

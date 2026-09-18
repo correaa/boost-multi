@@ -7,10 +7,13 @@
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <functional>   // IWYU pragma: keep   // for std::plus
-#include <numeric>      // for std::transform_reduce
+#include <numeric>      // for std::transform_reduce, std::accumulate (fallback for libstdc++ < 9)
 #include <type_traits>  // for std::is_same_v, std::decay_t
 #include <utility>      // for std::forward
-#include <version>      // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
+
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep   // for the feature-test macros used to guard the paths below
+#endif
 
 #ifdef __cpp_lib_ranges_fold
 #include <algorithm>  // for std::ranges::fold_left  (C++23)
@@ -25,10 +28,17 @@
 // the libstdc++ version (_GLIBCXX_RELEASE), not the compiler: libstdc++ <= 13 breaks
 // for every front end (gcc 13, clang 16..20, icpx, clang-cuda; confirmed in CI).
 // nvcc is excluded too (cudafe++ mis-deduces the same helpers).  // && !defined(_MSC_VER)
-#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && \
-	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14)) /* libstdc++ <= 13: broken pstl call site; fixed in libstdc++ 14 */  // NOLINT(misc-include-cleaner) _GLIBCXX_RELEASE comes from <version>, already included
+// circle (as of build 56) also fails: its libstdc++ integration can't parse the PSTL/TBB glue headers
+// pulled in by <execution> (reports a bogus "undeclared identifier terminate" from deep inside <tuple>).
+#if defined(__cpp_lib_parallel_algorithm) && !defined(__NVCC__) && !defined(__circle_build__) && /* NOLINTNEXTLINE(misc-include-cleaner) */ \
+	!(defined(__GLIBCXX__) && (_GLIBCXX_RELEASE < 14))                                           /* fixed only in libstdc++ 14 */
 #define MULTI_HAS_PARALLEL_EXECUTION 1
 #include <execution>  // for std::execution::par / parallel_policy
+
+// IWYU pragma: no_include <oneapi/tbb/parallel_reduce.h>  // for parallel_reduce
+// IWYU pragma: no_include <oneapi/tbb/task_arena.h>       // for isolate
+// IWYU pragma: no_include <pstl/parallel_backend_tbb.h>   // for __parallel_transform_reduce
+
 #endif
 
 namespace multi = boost::multi;
@@ -44,26 +54,34 @@ auto sos(int N) {  // NOLINT(readability-identifier-length)  // N is the number 
 		0,
 		std::plus<>{}
 	);
-#else  // C++17/20 fallback: there is no std::ranges::transform_reduce
+#elif !defined(__GLIBCXX__) || _GLIBCXX_RELEASE >= 9  // libstdc++ < 9 (gcc 7/8) has no std::transform_reduce
 	return std::transform_reduce(
 		range(0, N).begin(), range(0, N).end(),
 		0,
 		std::plus<>{},
 		[](auto const& e) noexcept { return e * e; }
 	);
+#else                                                 // manual fallback: gcc 7/8
+	return std::accumulate(
+		range(0, N).begin(), range(0, N).end(),
+		0,
+		[](auto acc, auto const& e) noexcept { return acc + e * e; }
+	);
 #endif
 }
 
-struct no_policy_t {};  // placeholder for "no execution policy": an empty aggregate, so `no_policy_t&&` is well-formed and `{}` copy-list-initializes it on every compiler (`void` would make the parameter `void&&`, ill-formed; `std::execution::parallel_policy` can't be copy-list-initialized from `{}` on MSVC)
+struct no_policy_t {};  // `std::execution::parallel_policy` can't be copy-list-initialized from `{}` on MSVC
 
-template<class ExecutionPolicy = no_policy_t>  // default policy is "none" -> the sequential branch below; explicit `sos(std::execution::par, N)` still deduces parallel_policy
+template<class ExecutionPolicy = no_policy_t>  // default policy is "none" -> the sequential branch below
 auto sos(ExecutionPolicy&& ep, int N) {        // NOLINT(readability-identifier-length)  // N is the number of integers to sum
 	using multi::range;
 
 	if constexpr(std::is_same_v<ExecutionPolicy, no_policy_t>) {  // no <execution>: drop the policy, there is no (policy, ...) overload
 		(void)std::forward<ExecutionPolicy>(ep);
 		return sos(N);
-	} else {
+	}
+#ifdef MULTI_HAS_PARALLEL_EXECUTION  // non-dependent std::transform_reduce lookup failing on gcc 7/8, where the branch is never instantiated but still parsed
+	else {
 		return std::transform_reduce(
 			std::forward<ExecutionPolicy>(ep),
 			range(0, N).begin(), range(0, N).end(), 0,
@@ -71,6 +89,7 @@ auto sos(ExecutionPolicy&& ep, int N) {        // NOLINT(readability-identifier-
 			[](auto const& e) { return e * e; }
 		);
 	}
+#endif
 }
 
 }  // namespace

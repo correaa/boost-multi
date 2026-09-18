@@ -144,12 +144,26 @@ struct transform_ptr {  //-V::690
 	template<class UFF>
 	constexpr transform_ptr(pointer ptr, UFF&& fun) : p_{ptr}, f_{std::forward<UFF>(fun)} {}
 
-	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr>
-	// cppcheck-suppress noExplicitConstructor
-	constexpr /*mplc*/ transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709)
+	template<class Other, class P = typename Other::pointer, decltype(detail::implicit_cast<pointer>(std::declval<P>()))* = nullptr
+#ifndef __circle_build__
+			 ,
+			 class = decltype(std::declval<Other const&>().f_)  // `Other` must be a `transform_ptr` (has `f_`), not just anything with a compatible `::pointer`
+#endif
+			 >
+	// NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions) NOSONAR(cpp:S1709)
+	constexpr transform_ptr(Other const& other)  // cppcheck-suppress noExplicitConstructor
+	: p_{other.p_}, f_{other.f_} {
+	}
 
-	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr>
-	constexpr explicit transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}
+	template<class Other, class P = typename Other::pointer, decltype(detail::explicit_cast<pointer>(std::declval<P>()))* = nullptr
+#ifndef __circle_build__
+			 ,
+			 class = decltype(std::declval<Other const&>().f_)
+#endif
+			 >
+	constexpr explicit transform_ptr(Other const& other)
+	: p_{other.p_}, f_{other.f_} {
+	}
 
 	// constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& { return p_; }
@@ -199,7 +213,11 @@ struct transform_ptr {  //-V::690
 
 	~transform_ptr() = default;
 
-	auto operator=(transform_ptr&&) -> transform_ptr& = default;
+	// auto operator=(transform_ptr&&) -> transform_ptr& = default;  // ill-formed/deleted when UF is a reference type (e.g. a captured lambda&)
+	constexpr auto operator=(transform_ptr&& other) noexcept -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
+		p_ = other.p_;
+		return *this;
+	}
 
 	// auto operator=(transform_ptr const& other) -> transform_ptr& = default;
 	constexpr auto operator=(transform_ptr const& other) -> transform_ptr& {  // NOLINT(cert-oop54-cpp) self-assignment is ok
@@ -263,9 +281,9 @@ class value_wrapper : Fun {
 	~value_wrapper() = default;
 
 	template<class... As>
-	BOOST_MULTI_HD constexpr auto operator()(As&&... as) const
-		-> decltype(std::declval<Fun&>()(std::forward<As>(as)...)) {
-		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(as)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
+	BOOST_MULTI_HD constexpr auto operator()(As&&... args) const
+		-> decltype(std::declval<Fun&>()(std::forward<As>(args)...)) {
+		return (const_cast<Fun&>(static_cast<Fun const&>(*this)))(std::forward<As>(args)...);  // NOLINT(cppcoreguidelines-pro-type-const-cast) workaround for nvwrapper
 	}
 
 	constexpr auto operator&() const { return value_wrapper_ptr<Fun>(*this); }  // NOLINT(google-runtime-operator) whole point of this class
@@ -326,9 +344,16 @@ constexpr auto stride(Pointer /*ptr*/) -> std::ptrdiff_t { return 1; }
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) special sfinae trick
 constexpr auto base(Pointer ptr) -> Pointer { return ptr; }
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 template<class TPointer, class U>
 constexpr auto reinterpret_pointer_cast(U* other)                                                 // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
 	-> decltype(reinterpret_cast<TPointer>(other)) { return reinterpret_cast<TPointer>(other); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 template<class T, std::size_t N>
 constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::ssize_t>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
@@ -472,7 +497,7 @@ constexpr auto dimensionality(Container const& /*container*/)
 }
 
 template<class T>
-auto        has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<boost::multi::dimensionality_type>(T::rank_v)), std::true_type{});
+auto        has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<::boost::multi::dimensionality_type>(T::rank_v)), std::true_type{});
 inline auto has_dimensionaliy_member_aux(...) -> decltype(std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
@@ -564,8 +589,8 @@ t<decltype(array.extents())> {
 
 template<class BoostMultiArray, std::size_t... I>
 constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
-	return boost::multi::extents_t<BoostMultiArray::dimensionality>(
-		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return ::boost::multi::extents_t<BoostMultiArray::dimensionality>(
+		::boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])}...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	);
 }
 
@@ -576,7 +601,7 @@ auto transposed(Arr2D&& arr)
 }
 
 template<class T, std::enable_if_t<!has_extents<T>::value /*&& !has_shape<T>::value*/, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-constexpr auto extents(T const& /*unused*/) -> multi::layout_t<0>::extents_type { return {}; }
+constexpr auto extents(T const& /*unused*/) -> multi::detail::layout_t<0>::extents_type { return {}; }
 
 template<class T, std::size_t N>
 constexpr auto extents(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
@@ -615,10 +640,10 @@ auto layout(T const& array)
 }
 
 template<class T, typename = std::enable_if_t<!has_layout_member<T const&>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) in C++20
-auto layout(T const& /*unused*/) -> layout_t<0> { return {}; }
+auto layout(T const& /*unused*/) -> detail::layout_t<0> { return {}; }
 
 template<class T, std::size_t N>
-constexpr auto layout(T (&array)[N]) { return multi::layout_t<std::rank_v<T[N]>>{multi::extents(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
+constexpr auto layout(T (&array)[N]) { return multi::detail::layout_t<std::rank_v<T[N]>>{multi::extents(array)}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
 template<class T, std::size_t N>
 constexpr auto strides(T (&array)[N]) { return layout(array).strides(); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
@@ -671,10 +696,10 @@ constexpr auto num_elements(std::array<std::array<T, M>, N> const& arr)
 	-> std::ptrdiff_t { return static_cast<std::ptrdiff_t>(N) * num_elements(arr[0]); }
 
 template<class T, std::size_t N>
-constexpr auto dimensionality(std::array<T, N> const& /*unused*/) -> boost::multi::dimensionality_type { return 1; }
+constexpr auto dimensionality(std::array<T, N> const& /*unused*/) -> ::boost::multi::dimensionality_type { return 1; }
 
 template<class T, std::size_t M, std::size_t N>
-constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> boost::multi::dimensionality_type {
+constexpr auto dimensionality(std::array<std::array<T, M>, N> const& arr) -> ::boost::multi::dimensionality_type {
 	return 1 + dimensionality(arr[0]);
 }
 
@@ -703,6 +728,9 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 	return num_elements(arr[0]);
 }
 
+// template<class T, std::size_t N, std::size_t M>
+// auto transposed(T (&array)[N][M]) -> decltype(auto) { return ~multi::array_ref<T, 2>(array); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -711,7 +739,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr) {
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr) {
-	return multi::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extents(arr)};
+	return multi::detail::layout_t<multi::detail::array_traits<std::array<T, N>>::dimensionality()>{multi::extents(arr)};
 }
 
 #ifdef __clang__
@@ -738,27 +766,27 @@ template<class T> struct element_t_impl<std::initializer_list<std::initializer_l
 template<class T> using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
-auto base(std::initializer_list<T> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<T> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return il.begin();
+	return ilist.begin();
 }
 
 template<class T>
-auto base(std::initializer_list<std::initializer_list<T>> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<std::initializer_list<T>> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return base(*il.begin());
+	return base(*ilist.begin());
 }
 
 template<class T>
-auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) -> T const* {
-	if(il.size() == 0) {
+auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& ilist) -> T const* {
+	if(ilist.size() == 0) {
 		return nullptr;
 	}
-	return base(*il.begin());
+	return base(*ilist.begin());
 }
 
 #ifdef __clang__
@@ -768,52 +796,42 @@ auto base(std::initializer_list<std::initializer_list<std::initializer_list<T>>>
 #endif
 
 template<class T>
-constexpr auto extents(std::initializer_list<T> const& il) {
-	return multi::extents_t<1>{static_cast<multi::ssize_t>(il.size())};
+constexpr auto extents(std::initializer_list<T> const& ilist) {
+	return multi::extents_t<1>{static_cast<multi::ssize_t>(ilist.size())};
 }
 
 template<class T>
-constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& il) {
-	if(il.size() == 0) {
+constexpr auto extents(std::initializer_list<std::initializer_list<T>> const& ilist) {
+	if(ilist.size() == 0) {
 		return multi::extents_t<2>{0, 0};
 	}
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
-	// for(std::size_t i = 1; i != il.size(); ++i) {
-	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
-	// }
-	return multi::extents_t<2>{static_cast<multi::ssize_t>(il.size()), static_cast<multi::ssize_t>(il.begin()->size())};
+	assert(std::all_of(std::next(ilist.begin()), ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
+	return multi::extents_t<2>{static_cast<multi::ssize_t>(ilist.size()), static_cast<multi::ssize_t>(ilist.begin()->size())};
 }
 
 template<class T>
-constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& il) {
-	if(il.size() == 0) {
+constexpr auto extents(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const& ilist) {
+	if(ilist.size() == 0) {
 		return multi::extents_t<3>{0, 0, 0};
 	}
 
-	assert(std::all_of(il.begin() + 1, il.end(), [size0 = il.begin()->size()](auto const& el) -> bool { return size0 == el.size(); }));
-	// for(std::size_t i = 1; i != il.size(); ++i) {
-	// 	assert( il.begin()[i].size() == il.begin()[0].size() );
-	// }
+	assert(std::all_of(std::next(ilist.begin()), ilist.end(), [size0 = ilist.begin()->size()](auto const& elem) -> bool { return size0 == elem.size(); }));
 
-	// if(il.begin()->size() == 0) {
-	// 	return multi::extents_t<3>{il.size(), 0, 0};
-	// }
-
-	return static_cast<multi::ssize_t>(il.size()) * extents(*il.begin());
+	return static_cast<multi::ssize_t>(ilist.size()) * extents(*ilist.begin());
 	// return multi::extents_t<3>{
-	// 	static_cast<multi::size_t>(il.size()),
-	// 	static_cast<multi::size_t>(il.begin()->size()),
-	// 	static_cast<multi::size_t>(il.begin()->begin()->size())
+	// 	static_cast<multi::size_t>(ilist.size()),
+	// 	static_cast<multi::size_t>(ilist.begin()->size()),
+	// 	static_cast<multi::size_t>(ilist.begin()->begin()->size())
 	// };
 }
 
 template<class T>
-constexpr auto layout(std::initializer_list<T> const& il) {
-	return multi::layout_t<1>{
-		multi::layout_t<0>(multi::extents_t<0>{}),
+constexpr auto layout(std::initializer_list<T> const& ilist) {
+	return multi::detail::layout_t<1>{
+		multi::detail::layout_t<0>(multi::extents_t<0>{}),
 		1,
 		0,
-		static_cast<multi::ssize_t>(il.size())
+		static_cast<multi::ssize_t>(ilist.size())
 	};
 }
 

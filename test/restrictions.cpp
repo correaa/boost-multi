@@ -4,7 +4,11 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#if __cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for __cpp_lib_ranges_fold
+#endif
+
+#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)) && defined(__cpp_lib_ranges_fold) && (__cpp_lib_ranges_fold >= 202207L)
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 
@@ -12,11 +16,12 @@
 #include <cmath>       // for std::abs
 #include <concepts>    // for constructible_from  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <functional>  // for std::plus  // IWYU pragma: keep
-#include <iostream>    // for std::cout  // NOLINT(misc-include-cleaner)
+#include <iostream>    // for std::cout  // IWYU pragma: keep
 #include <iterator>    // IWYU pragma: keep
 #include <limits>      // for std::numeric_limits  // IWYU pragma: keep
 #include <ranges>      // IWYU pragma: keep
 #include <tuple>       // for std::get  // NOLINT(misc-include-cleaner)
+#include <vector>      // for vector  // IWYU pragma: keep
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -36,52 +41,43 @@ constexpr auto maxR1 = []<class R, class V = stdr::range_value_t<R>>(R const& ro
 	return stdr::fold_left(row, low, stdr::max);
 };
 
-constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) {
-	return stdr::fold_left(rng, zero, std::plus<>{});
-};
+constexpr auto sumR1 = []<class R, class V = stdr::range_value_t<R>>(R const& rng, V zero = {}) { return stdr::fold_left(rng, zero, std::plus<>{}); };
 
 #define FWD(var) std::forward<decltype(var)>(var)
 
 auto softmax(auto&& matrix) noexcept {
 	return           //
 		FWD(matrix)  //
-		|
-		stdv::transform([](auto&& row) {
-			auto max = maxR1(row);
-			return        //
-				FWD(row)  //
-				|
-				stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
-		})  //
-		|
-		stdv::transform([](auto&& nums) {
-			auto den = sumR1(nums);
-			return         //
-				FWD(nums)  //
-				|
-				stdv::transform([=](auto num) noexcept { return num / den; });
-		});
+		| stdv::transform([](auto&& row) {
+			  auto max = maxR1(row);
+			  return        //
+				  FWD(row)  //
+				  | stdv::transform([=](auto ele) noexcept { return std::exp(ele - max); });
+		  })  //
+		| stdv::transform([](auto&& nums) {
+			  auto den = sumR1(nums);
+			  return         //
+				  FWD(nums)  //
+				  | stdv::transform([=](auto num) noexcept { return num / den; });
+		  });
 }
 
 namespace multi = boost::multi;
 
 namespace lazy {
 
-template<class A>
-auto operator*(typename A::element scalar, A const& a) {
-	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extensions();
+template<class A> auto operator*(typename A::element scalar, A const& a) {
+	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extents();
 }
 
 namespace elementwise {
 
-template<class A, class B>
-auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extensions();
+template<class A, class B> auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extents();
 }
 
-template<class A, class B>
-auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
-	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extensions();
+template<class A, class B> auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extents();
 }
 
 }  // namespace elementwise
@@ -164,7 +160,7 @@ auto main() -> int {
 		using multi::elementwise::exp;
 		auto subtract_exp = exp(subtract);
 
-		BOOST_TEST( subtract_exp.extensions() == subtract.extensions() );
+		BOOST_TEST( subtract_exp.extents() == subtract.extents() );
 
 		printR2("partial", exp(~(~mat - mat.transformed(maxR1))));
 
@@ -174,7 +170,7 @@ auto main() -> int {
 		// auto rep3  = exp_m_max.transformed(sumR1).repeated(3);
 		// auto final = exp_m_max / exp_m_max.transformed(sumR1).repeated(3);
 		using multi::elementwise::operator/;
-		using multi::elementwise::operator|;
+		using multi::elementwise::experimental::operator|;
 
 		auto x = exp(~mat - (mat | maxR1));
 
@@ -263,7 +259,7 @@ auto main() -> int {
 
 		multi::array<multi::index, 2> v2D_copy = v2D;
 
-		multi::array<multi::index, 2> v2D_copy2(v2D.extensions());
+		multi::array<multi::index, 2> v2D_copy2(v2D.extents());
 
 		v2D_copy2() = v2D;
 		BOOST_TEST( v2D_copy2 == v2D_copy );
@@ -287,14 +283,9 @@ auto main() -> int {
 		BOOST_TEST( ((v2D.begin() + 2) + 1) - v2D.begin() == 3 );
 	}
 	{
-		multi::iextension m(96);
-		multi::iextension h(64);
-		multi::iextension k(64);
-		multi::iextension n(96);
-
-		multi::array<float, 4> A = +(  // NOLINTNEXTLINE(runtime/threadsafe_fn)
-			[](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>{m, h, k, n}
-		);
+		// NOLINTNEXTLINE(runtime/threadsafe_fn)
+		multi::array<float, 4> A =
+			+([](auto...) { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 100.0f; } ^ multi::extents_t<4>(9, 6, 7, 8));
 	}
 	{
 		multi::array<double, 3> arr;
@@ -303,7 +294,8 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
+		auto&& arr = [&vec](auto i) -> int& { return vec[static_cast<std::size_t>(i)]; }
+			^ multi::extents_t<1>(static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
 		arr[1] = 99;
 
@@ -312,7 +304,8 @@ auto main() -> int {
 	{
 		std::vector<int> vec = {1, 2, 3};
 
-		auto&& arr = [&vec](auto i, auto /*j*/) -> int& { return vec[static_cast<std::size_t>(i)]; } ^ multi::extents_t<2>(static_cast<multi::extents_t<1>::size_type>(vec.size()), static_cast<multi::extents_t<1>::size_type>(vec.size()));
+		auto&& arr = [&vec](auto i, auto /*j*/) -> int& { return vec[static_cast<std::size_t>(i)]; }
+			^ multi::extents_t<2>(static_cast<multi::extents_t<1>::size_type>(vec.size()), static_cast<multi::extents_t<1>::size_type>(vec.size()));
 
 		arr[1][1] = 99;
 
@@ -325,7 +318,8 @@ auto main() -> int {
 			{4, 5, 6}
 		};
 
-		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]; } ^ multi::extents_t<2>(static_cast<multi::ssize_t>(vvec.size()), static_cast<multi::ssize_t>(vvec.front().size()));
+		auto&& arr = [&vvec](auto i, auto j) -> int& { return vvec[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)]; }
+			^ multi::extents_t<2>(static_cast<multi::ssize_t>(vvec.size()), static_cast<multi::ssize_t>(vvec.front().size()));
 
 		arr[1][1] = 99;
 
@@ -335,7 +329,5 @@ auto main() -> int {
 	return boost::report_errors();
 }
 #else
-auto main() -> int {
-	return boost::report_errors();
-}
+auto main() -> int { return boost::report_errors(); }
 #endif

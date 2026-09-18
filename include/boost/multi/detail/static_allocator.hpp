@@ -99,7 +99,7 @@ class offset_ptr {
 	constexpr auto operator-(difference_type n) const noexcept -> offset_ptr { return offset_ptr{*this} -= n; }
 	constexpr auto operator+(difference_type n) const noexcept -> offset_ptr { return offset_ptr{*this} += n; }
 
-	friend constexpr auto operator+(difference_type n, offset_ptr const& p) noexcept -> offset_ptr { return p + n; }
+	friend constexpr auto operator+(difference_type n, offset_ptr const& ptr) noexcept -> offset_ptr { return ptr + n; }
 
 	constexpr auto operator++() -> offset_ptr& {
 		assert(ptr_ != nullptr);
@@ -292,7 +292,7 @@ auto operator!=(static_allocator<T, N> const& /*a1*/, static_allocator<U, N> con
 
 template<class T, std::size_t N, class U>
 [[deprecated("don't swap dynamic container with static_allocator")]]
-void swap(static_allocator<T, N>& a1, static_allocator<U, N>& a2) noexcept = delete;
+void swap(static_allocator<T, N>& left, static_allocator<U, N>& right) noexcept = delete;
 
 }  // end namespace boost::multi::detail
 #endif  // BOOST_MULTI_DETAIL_STATIC_ALLOCATOR_HPP

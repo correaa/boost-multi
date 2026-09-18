@@ -26,7 +26,7 @@ auto f_arr(multi::array<int, 1> arr) {
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
-		auto f_arr_ret = f_arr({1, 2, 3});
+		auto const f_arr_ret = f_arr({1, 2, 3});
 		BOOST_TEST(f_arr_ret == 3 );
 
 		// auto f_sub_ret = f_sub({1, 2, 3});
@@ -38,7 +38,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 3> A1({3, 4, 5}, 99);
 		A1[2][1][1] = 88;
 
-		auto constA2 = std::as_const(A1)[2];
+		auto const constA2 = std::as_const(A1)[2];
 		BOOST_TEST( constA2[1][1] == 88 );
 
 		auto A2 = A1[2];
@@ -51,10 +51,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{{1, 2},
-			 {3, 4}},
-			{{5, 6},
-			 {7, 8}},
+			{
+             {1, 2},
+             {3, 4},
+			 },
+			{
+             {5, 6},
+             {7, 8},
+			 },
 		};
 
 		auto const& R0 = std::as_const(A1)[0];
@@ -68,10 +72,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	/* subarray_assignment */
 	{
 		multi::array<int, 3> A1 = {
-			{{1, 2},
-			 {3, 4}},
-			{{5, 6},
-			 {7, 8}},
+			{
+             {1, 2},
+             {3, 4},
+			 },
+			{
+             {5, 6},
+             {7, 8},
+			 },
 		};
 
 		auto const& R0 = A1[0];
@@ -150,7 +158,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 1> const      AA = {1, 2, 3};
 		multi::array<unsigned, 1> const BB = {2, 3, 4};
 
-#if __cplusplus >= 202002L
+#if defined(__cpp_lib_integer_comparison_functions) && (__cpp_lib_integer_comparison_functions >= 202002L)
 		BOOST_TEST( std::cmp_not_equal(AA[0], BB[0]) );
 #else
 		BOOST_TEST( AA[0] != static_cast<int>(BB[0]) );

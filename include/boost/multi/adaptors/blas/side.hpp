@@ -9,7 +9,7 @@ namespace boost::multi::blas {
 
 enum class side : char {
 	left  = 'L',
-	right = 'R'
+	right = 'R',
 };
 
 #ifdef __clang__

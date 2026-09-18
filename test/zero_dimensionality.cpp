@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -15,10 +15,10 @@
 namespace multi = boost::multi;
 
 #include <boost/core/lightweight_test.hpp>
-#define BOOST_AUTO_TEST_CASE(CasenamE) /**/
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-	BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
+	// BOOST_AUTO_TEST_CASE(zero_dimensionality_part1)
+	{
 		{
 			std::vector<int> v1 = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
 
@@ -60,7 +60,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
+	// BOOST_AUTO_TEST_CASE(zero_dimensionality_part2)
+	{
 		{
 			multi::array<std::complex<double>, 2> const arr({1, 2}, std::allocator<std::complex<double>>{});
 			BOOST_TEST( arr.size() == 1 );
@@ -73,8 +74,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &the_doub == &doub );
 		}
 		{
-			int  doub = 20;
-			auto dd   = static_cast<int>(multi::array_ref<int, 0>(&doub, {}));
+			int doub = 20;
+
+			auto const dd = static_cast<int>(multi::array_ref<int, 0>(&doub, {}));
 
 			BOOST_TEST( dd == doub );
 
@@ -85,7 +87,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<int, 0> const arr({}, 5);
 			BOOST_TEST( arr.num_elements() == 1 );
-			auto arr_val = int{arr};
+			auto const arr_val = int{arr};
 			BOOST_TEST( arr_val == 5 );
 		}
 		{

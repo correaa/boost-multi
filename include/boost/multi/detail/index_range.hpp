@@ -99,7 +99,7 @@ class range {
 	#pragma clang diagnostic ignored "-Wpadded"
 	#endif
 
-	IndexTypeLast last_;  // = first_;  // TODO(correaa) check how to do partially initialzed
+	IndexTypeLast last_;  // = first_;  //NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) // TODO(correaa) check how to do partially initialzed, check why it is const
 
 	#ifdef __clang__
 	#pragma clang diagnostic pop
@@ -269,11 +269,9 @@ class range {
 	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto count(Value const& value) const -> size_type { return contains(value); }
 
 	friend constexpr auto intersection(range const& self, range const& other) {
-		using std::max;
-		using std::min;
-		auto new_first = max(self.first(), other.first());
-		auto new_last  = min(self.last(), other.last());
-		new_first      = min(new_first, new_last);
+		auto new_first = (std::max)(self.first(), other.first());
+		auto const new_last  = (std::min)(self.last(), other.last());
+		new_first      = (std::min)(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>(new_first, new_last);
 	}
 };
@@ -348,7 +346,7 @@ struct extent_t : public range<IndexType, IndexTypeLast> {
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extent_t(IndexTypeLast last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor) // NOSONAR(cpp:S1709) allow terse syntax
-	: range<IndexType, IndexTypeLast>(IndexType{}, IndexType{} + last) {}
+	: range<IndexType, IndexTypeLast>(IndexType{}, static_cast<IndexTypeLast>(IndexType{} + last)) {}
 
 	template<
 		class OtherExtension,
@@ -373,13 +371,10 @@ struct extent_t : public range<IndexType, IndexTypeLast> {
 	constexpr extent_t() = default;
 
 	friend constexpr auto intersection(extent_t const& ex1, extent_t const& ex2) -> extent_t {
-		using std::max;
-		using std::min;
+		auto       first = (std::max)(ex1.first(), ex2.first());
+		auto const last  = (std::min)(ex1.last(), ex2.last());
 
-		auto       first = max(ex1.first(), ex2.first());
-		auto const last  = min(ex1.last(), ex2.last());
-
-		first = min(first, last);
+		first = (std::min)(first, last);
 
 		return extent_t{first, last};
 	}

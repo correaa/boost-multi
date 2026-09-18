@@ -42,22 +42,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(empty_stride)
 	{
-		multi::array<double, 2> ma;
+		multi::array<double, 2> const ma;
 		BOOST_TEST(ma.size() == 0);
-		BOOST_TEST(ma.stride() != 0);
-		BOOST_TEST(size(ma) == 0);
+		BOOST_TEST(ma.layout().stride() != 0);
+		BOOST_TEST(ma.size() == 0);
 
-		multi::array<double, 2> ma0({0, 0}, 0.0);
+		multi::array<double, 2> const ma0({0, 0}, 0.0);
 		BOOST_TEST(ma0.size() == 0);
-		BOOST_TEST(ma0.stride() != 0);
-#ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-		BOOST_TEST(size(ma0) == 0);
-#endif
+		BOOST_TEST(ma0.layout().stride() != 0);
+		BOOST_TEST(ma0.size() == 0);
 	}
 
 	// 4D array
 	{
-		multi::array<std::complex<double>, 4> ma(multi::extensions_t<4>({6, 12, 24, 12}));
+		multi::array<std::complex<double>, 4> ma(multi::extents_t<4>({6, 12, 24, 12}));
 		BOOST_TEST( ma.size() == 6);
 
 		ma[1][2][3][4] = std::complex<double>{1.0, 2.0};
@@ -144,12 +142,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<int, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
+		auto const iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
-		std::transform(
-			begin(iex), end(iex),
-			begin(ua),
-			[](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
+		std::transform(  // NOLINT(modernize-use-ranges) for C++20
+			iex.begin(), iex.end(), ua.begin(), [](auto idx) { return multi::array<int, 2>({idx, idx}, static_cast<int>(idx)); }
 		);
 		BOOST_TEST( ua == va );
 	}
@@ -188,7 +184,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<multi::array<std::string, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 
-		auto iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
+		auto const iex = multi::iextension(static_cast<multi::ssize_t>(ua.size()));
 
 		std::transform(
 			begin(iex), end(iex),
@@ -260,7 +256,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(const_elements)
 	{
-		auto ptr = std::make_unique<int const>(2);
+		auto const ptr = std::make_unique<int const>(2);
 		// ok, can't assign  //  *ptr = 3.0;
 		BOOST_TEST( *ptr == 2 );
 	}
@@ -269,7 +265,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(pmr)
 	{
 		std::array<char, 13> buffer = {
-			{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'}
+			{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C'},
 		};
 
 		std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
@@ -327,7 +323,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(pmr_double_uninitialized)
 	{
 		std::array<int, 12> buffer{
-			{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999}
+			{4, 5, 6, 7, 8, 9, 10, 11, 996, 997, 998, 999},
 		};
 
 		std::pmr::monotonic_buffer_resource pool{static_cast<void*>(std::data(buffer)), 12 * sizeof(int)};
@@ -351,7 +347,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using T = int;
 		multi::detail::static_allocator<T, 32> sa{};
 
-		auto pp = sa.allocate(10);
+		auto const pp = sa.allocate(10);
 
 		new (std::next(pp, 8)) T{42};
 
@@ -611,7 +607,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 #endif
 
 	{
-		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::inplace_array<int, 1> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto ptr = arr.base();
 
@@ -686,7 +682,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 	// offset_ptr::operator-= — kills mutants like cxx_sub_assign_to_add_assign
 	// and the implicit -= -> += -n delegation path
 	{
-		multi::inplace_array<int[3]> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		multi::inplace_array<int, 1, 3> arr = {10, 20, 30};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 		auto ptr = arr.base();
 		ptr += 2;

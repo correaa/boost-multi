@@ -46,7 +46,7 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 		// typename traits::local_iterator le =
 		//     (sf == sl) ? traits::local(last) : traits::end(sf);
 
-		auto le = (sf == sl) ? last.local() : (*sf).end();
+		auto const le = (sf == sl) ? last.local() : (*sf).end();
 
 		std::fill(lf, le, x);
 		if(sf == sl) {
@@ -69,8 +69,8 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 	// typename traits::segment_iterator sl = traits::segment(last);
 	// typename traits::local_iterator   lf = traits::local(first);
 
-	auto sf = first.outer();
-	auto sl = last.outer();
+	auto       sf = first.outer();
+	auto const sl = last.outer();
 
 	auto lf = first.local();
 
@@ -78,7 +78,7 @@ void fill_segmented(SegIt first, SegIt last, T x) {
 		// typename traits::local_iterator le =
 		//     (sf == sl) ? traits::local(last) : traits::end(sf);
 
-		auto le = (sf == sl) ? last.local() : (*sf).end();
+		auto const le = (sf == sl) ? last.local() : (*sf).end();
 
 		std::fill(lf, le, x);
 		if(sf == sl) {
@@ -101,7 +101,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::array<int, 2> arr2 = {
 		{1, 2, 3},
-		{4, 5, 6}
+		{4, 5, 6},
 	};
 	BOOST_TEST( arr2.flattened().begin().segment().size() == 3 );
 
@@ -148,8 +148,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	std::cout << "arr2 = " << arr2 << '\n';
 	std::cout << "arr2.flattened().begin().segment() = " << arr2.flattened().begin().segment() << '\n';
 	std::cout << "arr2.flattened().(begin() + 3).segment() = " << (arr2.flattened().begin() + 3).segment() << '\n';
-	std::cout << "*(arr2.flattened().begin().global()) = " << *(arr2.flattened().begin().outer()) << '\n';
-	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << *((arr2.flattened().begin() + 3).outer()) << '\n';
+	std::cout << "*(arr2.flattened().begin().global()) = " << *arr2.flattened().begin().outer() << '\n';
+	std::cout << "*((arr2.flattened().begin() + 3).global()) = " << *(arr2.flattened().begin() + 3).outer() << '\n';
 
 	ion::fill_segmented(arr2.flattened().begin(), arr2.flattened().end(), 7);
 

@@ -54,6 +54,7 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 		if(world_rank == 0) {
 			multi::array<int, 1> const AA = multi::array<int, 1>({1, 2, 3, 4, 5, 6});
 			auto const&&               BB = AA.strided(2);
+
 			BOOST_TEST(( BB == multi::array<int, 1>({1, 3, 5}) ));
 
 			static_assert(decltype(BB.begin())::rank_v == 1);
@@ -85,7 +86,7 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 		} else if(world_rank == 1) {
 			multi::array<int, 1> CC(3, 99);  // NOLINT(misc-const-correctness)
 
-			auto const C_msg = multi::mpi::message(CC);
+			auto const C_msg = multi::mpi::message(CC.elements());
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<int, 1>({1, 3, 5}) ));
@@ -122,8 +123,9 @@ void test_1d(MPI_Comm comm) {  // NOLINT(readability-function-cognitive-complexi
 			// BOOST_TEST( B_it.datatype() == B_msg.datatype() );
 			MPI_Send(B_it.buffer(), static_cast<int>(BB.size()), B_it.datatype(), 1, 0, comm);
 		} else if(world_rank == 1) {
-			multi::array<int, 2> CC({3, 2}, 99);  // NOLINT(misc-const-correctness)
-			auto const&          C_msg = multi::mpi::message(CC);
+			auto CC = multi::array<int, 2>({3, 2}, 99);  // NOLINT(misc-const-correctness)
+
+			auto const& C_msg = multi::mpi::message(CC.elements());
 
 			MPI_Recv(C_msg.buffer(), C_msg.count(), C_msg.datatype(), 0, 0, comm, MPI_STATUS_IGNORE);
 			BOOST_TEST(( CC == multi::array<int, 2>({

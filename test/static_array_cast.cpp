@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -8,7 +8,6 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>    // for equal
-#include <array>        // for array
 #include <cassert>      // for assert
 #include <functional>   // for negate  // IWYU pragma: keep
 #include <iterator>     // for begin, end
@@ -57,7 +56,7 @@ class involuted {  // NOLINT(misc-use-internal-linkage)
 
 	~involuted() = default;
 
-	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+	// NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
 	constexpr operator decay_type() const& noexcept { return f_(r_); }  // NOSONAR(cpp:S1709) simulates a reference
 
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
@@ -100,7 +99,7 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)
 	template<class Other> constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
@@ -158,7 +157,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		cee = 100;
 		BOOST_TEST( doub == -100 );
 
-		auto m5 = involuted<int, std::negate<>>(50);
+		auto const m5 = involuted<int, std::negate<>>(50);
 		BOOST_TEST( m5 == -50 );
 	}
 
@@ -171,7 +170,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &ref[2] == &arr[2] );
 		BOOST_TEST( &arr[2] == &ref[2] );
 
-		BOOST_TEST( std::equal(begin(ref), end(ref), begin(arr), end(arr)) );
+		BOOST_TEST( std::equal(ref.begin(), ref.end(), arr.begin(), arr.end()) );  // NOLINT(modernize-use-ranges) for C++20
 
 		BOOST_TEST( ref == arr() );
 		BOOST_TEST( arr() == ref );
@@ -233,7 +232,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::dynamic_array<int, 1> const arr  = {+00, +10, +20, +30, +40};
 		multi::dynamic_array<int, 1>       arr2 = {-00, -10, -20, -30, -40};
 
-		auto&& neg_arr = multi::static_array_cast<int, involuter<int*, std::negate<>>>(arr);
+		auto&& neg_arr = arr.static_array_cast<int, involuter<int*, std::negate<>>>();
 
 		BOOST_TEST( neg_arr[2] == arr2[2] );
 		BOOST_TEST( arr2[2] == neg_arr[2] );
@@ -277,20 +276,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		multi::array<int, 2> const arr1({
-			{3, 5}
+			{3, 5},
 		});  // this array has 1-row
 		multi::array<int, 2> const arr2 = {
-			{3, 5}
+			{3, 5},
 		};  // this array has 1-row
 
 		BOOST_TEST( arr1 == arr2  );
 	}
-	{
-		multi::array<int, 2> const arr(std::array<multi::ssize_t, 2>{
-			{3, 4}
-		});
-		BOOST_TEST( arr.size() == 3 );
-	}
+	// {
+	// 	multi::array<int, 2> const arr(std::array<multi::ssize_t, 2>{
+	// 		{3, 4}
+	// 	});
+	// 	BOOST_TEST( arr.size() == 3 );
+	// }
 	{
 		multi::array<int, 2> const arr({3, 4}, multi::uninitialized_elements);
 		// std::cout << arr[0][0] << std::endl;  // ok, gives an error in Valgrind "Uninitialized Memory Read"

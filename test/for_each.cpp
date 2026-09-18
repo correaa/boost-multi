@@ -85,7 +85,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 #endif
 #ifdef __cpp_lib_execution
 #if defined(TBB_FOUND) && !defined(__NVCC__)
-#if !defined(__clang__)
+#ifndef __clang__
 		{
 			auto_timer const _{"std::for_each(std::par)"};
 			std::for_each(std::execution::par, cpu.begin(), cpu.end(), [](auto&& plane) {
@@ -116,7 +116,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 				cpu.extents().elements().begin(),
 				cpu.extents().elements().end(),
 				[&cpu](auto const& coords) {
-					auto [i, j, k] = coords;
+					auto [i, j, k] = coords;  // NOLINT(readability-identifier-length)
 
 					cpu[i][j][k] = static_cast<double>(i + j + k);
 				}
@@ -129,7 +129,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 				cpu.extents().elements().end(),
 				cpu.elements().begin(),
 				[](auto const& coords) {
-					auto [i, j, k] = coords;
+					auto [i, j, k] = coords;  // NOLINT(readability-identifier-length)
 
 					return static_cast<double>(i + j + k);
 				}

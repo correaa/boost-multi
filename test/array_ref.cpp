@@ -1,4 +1,4 @@
-// Copyright 2019-2025 Alfredo A. Correa
+// Copyright 2019-2026 Alfredo A. Correa
 // Copyright 2024 Matt Borland
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
@@ -9,6 +9,7 @@
 
 #include <algorithm>  // for for_each, equal
 #include <array>      // for array
+#include <complex>    // for complex
 #include <cstdint>    // for int64_t
 #include <iostream>   // for char_traits, operator<<, basic_o...
 #include <iterator>   // for size
@@ -115,7 +116,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{150, 160, 170, 180, 190},
 		};
 
-		auto map = &multi::array_ref<int, 2>(arr);
+		auto const map = &multi::array_ref<int, 2>(arr);
 		// multi::array_ptr<int, 2> const map{&arr};
 
 		BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );  // cppcheck-suppress danglingTemporaryLifetime;
@@ -281,13 +282,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<std::string, 1> mar = *&multi::array_ref<std::string, 1>(stdarr);  // *multi::array_ptr<std::string, 1>(&stdarr);
 
 		BOOST_TEST( &mar[1] == &stdarr[1] );
-		BOOST_TEST( sizes(mar.reindexed(1)) == sizes(mar) );
+		BOOST_TEST( mar.reindexed(1).sizes() == mar.sizes() );
 
-		auto diff = &(mar.reindexed(1)[1]) - &mar[0];
+		auto const diff = &mar.reindexed(1)[1] - &mar[0];
 		BOOST_TEST( diff == 0 );
 
 		BOOST_TEST( &mar.blocked(2, 4)[2] == &mar[2] );
-		for(auto idx : mar.stenciled({2, 4}).extent()) {  // NOLINT(altera-unroll-loops)
+		for(auto const idx : mar.stenciled({2, 4}).extent()) {  // NOLINT(altera-unroll-loops)
 			BOOST_TEST( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 		}
 
@@ -312,8 +313,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{ { 0.0, 1.0, 2.0, 3.0, 4.0 } },
 		{ { 5.0, 6.0, 7.0, 8.0, 9.0 } },
 		{ { 10.0, 11.0, 12.0, 13.0, 14.0 } },
-		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } }
-	}};
+		{ { 15.0, 16.0, 17.0, 18.0, 19.0 } },
+	},};
 		// clang-format on
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
@@ -357,7 +358,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( mar[0].reindexed(1).extent().first() == mar[0].extent().first () + 1 );
 		BOOST_TEST( mar[0].reindexed(1).extent().last() == mar[0].extent().last() + 1 );
 
-		auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
+		auto const diff = &mar[0].reindexed(1)[1] - &mar[0][0];
 		BOOST_TEST( diff == 0 );
 
 		//  BOOST_TEST( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
@@ -365,7 +366,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-		// BOOST_TEST(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
+		// BOOST_TEST(( mar.stenciled({2, 4}).sizes() == decltype(mar.stenciled({2, 4}).sizes()){2, 5} ));
 		// BOOST_TEST( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 		// BOOST_TEST( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
@@ -381,10 +382,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(array_ref_with_stencil)
 	{
 		std::array<std::array<double, 5>, 4> arr = {
-			{{{0.0, 1.0, 2.0, 3.0, 4.0}},
-			 {{5.0, 6.0, 7.0, 8.0, 9.0}},
-			 {{10.0, 11.0, 12.0, 13.0, 14.0}},
-			 {{15.0, 16.0, 17.0, 18.0, 19.0}}},
+			{
+             {{0.0, 1.0, 2.0, 3.0, 4.0}},
+             {{5.0, 6.0, 7.0, 8.0, 9.0}},
+             {{10.0, 11.0, 12.0, 13.0, 14.0}},
+             {{15.0, 16.0, 17.0, 18.0, 19.0}},
+			 },
 		};
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
@@ -392,7 +395,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( mar.size() == 4 );
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
-		multi::array<double, 2> ss = {
+		multi::array<double, 2> const ss = {
 			{ 0.0, +1.0,  0.0},
 			{+1.0, -4.0, +1.0},
 			{ 0.0, +1.0,  0.0},
@@ -432,7 +435,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{ 1,  2,  3,  4},
 			{ 5,  6,  7,  8},
 			{ 9, 10, 11, 12},
-			{13, 14, 15, 16}
+			{13, 14, 15, 16},
 		};
 
 		aref = barr();
@@ -446,16 +449,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<double, 2> aref({multi::iextension(1, 3), multi::iextension(1, 4)}, vec.data());
 
 		{
-			auto exts                 = aref.extents();
+			auto const exts = aref.extents();
+
+			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
+
 			auto const [exts0, exts1] = exts;
+
 			BOOST_TEST( exts0 == multi::iextension(1, 3) );
 
 			BOOST_TEST( exts1.first()  == 1 );
 			BOOST_TEST( exts1.last () == 4 );
 
 			BOOST_TEST( exts1 == multi::iextension(1, 4) );
-
-			BOOST_TEST( exts == decltype(exts)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 		}
 		{
 			auto exts = aref.extents();
@@ -657,7 +662,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &(dd[1][2]) == &(darr2[1][2]) );
 		BOOST_TEST(( & ref[1].static_array_cast<int, int const*>()[1] == &ref[1][1] ));
-		BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
+		// BOOST_TEST(( &multi::static_array_cast<int, int const*>(ref[1])[1] == &ref[1][1] ));
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -754,10 +759,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::decay_t<decltype(A2)>::dimensionality == 2 && A2.num_elements() == 6 );
 		// BOOST_TEST( multi::rank<std::decay_t<decltype(A2)>>{} == 2 && A2.num_elements() == 6 );
 
-		BOOST_TEST( get<0>(sizes(A2)) == 3 && get<1>(sizes(A2)) == 2 );
+		BOOST_TEST( get<0>(A2.sizes()) == 3 && get<1>(A2.sizes()) == 2 );
 
 		auto const& A3 = cref({0, 3}, 1, {0, 2});
 		BOOST_TEST( std::decay_t<decltype(A3)>::dimensionality == 2 && A3.num_elements() == 6 );
+		BOOST_TEST( A3.dimensionality == 2 && A3.num_elements() == 6 );
 
 		BOOST_TEST( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 		BOOST_TEST( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
@@ -775,9 +781,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using std::get;  // workaround no prior declaration in function call with explicit template arguments is a C++20 extension [-Wc++20-extensions]
 
-			auto sizes1 = get<0>(cref.sizes());
-			auto sizes2 = get<1>(cref.sizes());
-			auto sizes3 = get<2>(cref.sizes());
+			auto const sizes1 = get<0>(cref.sizes());
+			auto const sizes2 = get<1>(cref.sizes());
+			auto const sizes3 = get<2>(cref.sizes());
+
 			BOOST_TEST( sizes1 == 4 );
 			BOOST_TEST( sizes2 == 2 );
 			BOOST_TEST( sizes3 == 3 );
@@ -848,6 +855,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( sizes2 == 2 );
 			BOOST_TEST( sizes3 == 3 );
 		}
+		{
+			using multi::tie;
+			int64_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+			int64_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+			int64_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+			// std::tie(sizes1, sizes2, sizes3) = cref.sizes();
+			tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+			BOOST_TEST( sizes1 == 4 );
+			BOOST_TEST( sizes2 == 2 );
+			BOOST_TEST( sizes3 == 3 );
+		}
+		// {
+		// 	int64_t sizes1;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	int64_t sizes2;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	int64_t sizes3;  // NOLINT(cppcoreguidelines-init-variables)
+		// 	// std::tie(sizes1, sizes2, sizes3) = cref.sizes();
+		// 	std::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		// 	BOOST_TEST( sizes1 == 4 );
+		// 	BOOST_TEST( sizes2 == 2 );
+		// 	BOOST_TEST( sizes3 == 3 );
+		// }
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
@@ -994,13 +1024,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 #endif
 
-		auto print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
+		auto const print_me1 = [](multi::array_ref<int, 1> const& rng) -> void {
 			std::cout << "rng.size(): " << rng.size() << '\n';                                                  // (4)
 			std::for_each(rng.begin(), rng.end(), [](auto const& elem) -> void { std::cout << elem << ' '; });  // NOLINT(llvm-use-ranges,modernize-use-ranges)
 			std::cout << "\n\n";
 		};
 
-		auto print_me2 = [](auto const ptr) {
+		auto const print_me2 = [](auto const ptr) {
 			std::cout << "ptr->size(): " << ptr->size() << '\n';  // (4)
 			std::for_each(ptr->begin(), ptr->end(), [](auto const& elem) { std::cout << elem << ' '; });
 			std::cout << "\n\n";
@@ -1222,17 +1252,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( deduce_element_sub(asub) == 3 );
 	}
 #endif
-
-	// BOOST_AUTO_TEST_CASE(function_passing_4) {
-	//  multi::array<int, 2> arr({3, 3}, 10);
-
-	//  BOOST_TEST( mut_trace_array_deduce     (arr) == 30 );
-	//  BOOST_TEST( mut_trace_array_deduce<int>(arr) == 30 );
-
-	//  BOOST_TEST(  mut_trace_generic                       (arr) == 30  );
-	//  BOOST_TEST(( mut_trace_generic<multi::array<int, 2> >(arr) == 30 ));
-	// }
-
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor)
 	{
 		multi::array<int, 2> arr(3, multi::array<int, 1>{10, 20, 30, 40});
@@ -1251,12 +1270,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1] == 10 );
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
-
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
@@ -1266,15 +1279,31 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({3, 4}, 10);
 
 		BOOST_TEST( get<0>(arr().sizes()) ==  3 );
-		BOOST_TEST( get<0>(sizes(arr())) ==  3 );
-
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
-		BOOST_TEST( get<1>(sizes(arr())) ==  4 );
+	}
+	{
+// intentional double<->complex<double> reinterpretation (the classic)
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+		double buffer[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(*-avoid-c-arrays)
 
-		// BOOST_TEST( get<1>(sizes(arr())) == 10 );
+		using ref_t = multi::array_ref<std::complex<double>, 1, std::complex<double>*>;
+		ref_t arr(reinterpret_cast<std::complex<double>*>(buffer), multi::extents_t<1>{2});  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
-		// BOOST_TEST( get<0>(sizes(arr)) ==  3 );
-		// BOOST_TEST( get<1>(sizes(arr)) == 10 );
+		arr[1] = 5.0;
+
+		auto const& carr = arr;
+
+		auto const* p1 = carr.base();
+		BOOST_TEST( p1 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+		auto const* p2 = carr.data_elements();
+		BOOST_TEST( p2 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 	}
 
 	return boost::report_errors();

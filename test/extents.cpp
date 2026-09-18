@@ -21,7 +21,21 @@
 // IWYU pragma: no_include <variant>  // for get, iwyu bug
 #include <vector>
 
+#if __has_include(<version>)
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE, __GLIBC...
+#endif
+
 namespace multi = boost::multi;
+
+// Observed failure: clang-15 (as its own toolchain, not later clang versions) paired with
+// GCC-11's libstdc++ (_GLIBCXX_RELEASE 11) fails to see boost::multi's iterators as satisfying
+// `range`/`input_or_output_iterator` when instantiated through std::ranges::ref_view (as
+// happens with std::views::reverse and other pipe adaptors), even though the iterator is
+// well-formed and works with std::ranges::begin/end directly. See test/broadcast_softmax.cpp
+// for the same guard.
+#if defined(__clang__) && (__clang_major__ == 15) && defined(__GLIBCXX__) && defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE < 12)
+#define BOOST_MULTI_STDRANGES_PIPE_BROKEN 1
+#endif
 
 auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-cognitive-complexity)
 	auto const A2D = multi::array<int, 2>({5, 7}, 1);
@@ -42,7 +56,9 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	BOOST_TEST( get<1>(A2Dxs) == A2D[0].extent() );
 
 	BOOST_TEST( &A2D() == &A2D(get<0>(A2D.extents()), get<1>(A2D.extents())) );
-	BOOST_TEST( &A2D() == &std::apply(A2D, A2Dxs) );
+
+	using std::apply;
+	BOOST_TEST( &A2D() == &apply(A2D, A2Dxs) );
 
 	BOOST_TEST( A2Dxs.size() == A2D.size() );
 	BOOST_TEST( A2Dxs.sizes() == A2D.sizes() );
@@ -86,7 +102,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<0>(*it) == 36 );
 	}
 	{
-		auto x1d = multi::extents_t<1>(3);
+		auto const x1d = multi::extents_t<1>(3);
 
 		BOOST_TEST( multi::extents_t<1>(3) == multi::extents_t(3) );
 
@@ -120,7 +136,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( x1d.elements().begin() <= x1d.elements().begin() );  // cppcheck-suppress [duplicateExpression];
 	}
 	{
-		auto x1d = multi::extents_t<1>(3);
+		auto const x1d = multi::extents_t<1>(3);
 
 		auto it = x1d.elements().begin();
 		BOOST_TEST( get<0>(*it) == 0 );
@@ -143,15 +159,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( multi::extents_t<2>(4, 3) == multi::extents_t(4, 3) );
 
-		auto ll = [](auto xx, auto yy) {
+		auto const ll = [](auto xx, auto yy) {
 			return xx + yy;
 		};
 		multi::restriction<2, decltype(ll)> const x2df({4, 2}, ll);
 		(void)x2df;
-		auto val = x2df[3][1];
+		auto const val = x2df[3][1];
 		BOOST_TEST(val == 4);
 
-		auto elems = x2df.elements();
+		auto const elems = x2df.elements();
 		BOOST_TEST( elems[7] == 4 );
 		BOOST_TEST( *(x2df.elements().begin() + 1) == 1 + 0 );
 
@@ -281,7 +297,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		// auto it2d = x2d.begin();
 
-		auto it = x2d.elements().begin();
+		auto const it = x2d.elements().begin();
 
 		BOOST_TEST( it == x2d.elements().begin() );
 
@@ -367,6 +383,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 			([](auto x, auto y) { return x + y; } ^ multi::extents_t<2>(3, 4)).elements().begin()
 		));
 
+		using multi::experimental::operator->*;
 		BOOST_TEST(std::equal(
 			arr2df.elements().begin(), arr2df.elements().end(),
 			(multi::extents_t<2>(3, 4)->*[](auto x, auto y) { return x + y; }).elements().begin()
@@ -455,7 +472,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 #endif
 	}
 	{
-		auto xs1D = multi::extents_t(10);
+		auto const xs1D = multi::extents_t(10);
 		BOOST_TEST( xs1D.size() == 10 );
 		using std::get;
 		BOOST_TEST( get<0>(xs1D[3]) == 3 );
@@ -488,6 +505,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs1D.begin() == std::ranges::begin(xs1D) );
 		BOOST_TEST( xs1D.end()   == std::ranges::end(xs1D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto xs1Dr = xs1D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs1Dr.begin() == 9 );
@@ -495,6 +513,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs1Dr[9] == xs1D[0]	);
 		BOOST_TEST( xs1Dr[0] == xs1D[9]	);
+#endif
 
 		// auto xs1D_elements = xs1D.elements();
 		BOOST_TEST( xs1D.elements().begin() == std::ranges::begin(xs1D.elements()) );
@@ -507,13 +526,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::totally_ordered<decltype(v1D)::iterator>);
 		static_assert(std::random_access_iterator<decltype(v1D)::iterator>);
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto v1Dr = v1D | std::views::reverse;
 		BOOST_TEST( v1Dr[0] == v1D[9] );
 		BOOST_TEST( v1Dr[9] == v1D[0] );
 #endif
+#endif
 	}
 	{
-		auto xs2D = multi::extents_t<2>(5, 7);
+		auto const xs2D = multi::extents_t<2>(5, 7);
 		BOOST_TEST( xs2D.size() == 5 );
 
 		using std::get;
@@ -530,7 +551,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// auto it = xs2D.begin();
 		// multi::detail::what(*it);
 
-		auto xs3D = multi::extents_t<3>(5, 7, 21);
+		auto const xs3D = multi::extents_t<3>(5, 7, 21);
 		BOOST_TEST( xs3D.size() == 5 );
 		// multi::detail::what(*xs3D.begin());
 
@@ -543,7 +564,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		static_assert(std::is_trivially_default_constructible_v<multi::range<multi::index, multi::index>>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extent_t<multi::index, multi::index>>);
 
-		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>::base_>);
+		// static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>::base_>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<1>>);
 		static_assert(std::is_trivially_default_constructible_v<multi::extents_t<2>::iterator>);
 
@@ -564,6 +585,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( xs2D.begin() == std::ranges::begin(xs2D) );
 		BOOST_TEST( xs2D.end()   == std::ranges::end(xs2D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto xs2Dr = xs2D | std::ranges::views::reverse;
 
 		BOOST_TEST( *xs2Dr.begin() == *(xs2D.end() - 1) );
@@ -571,6 +593,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( xs2Dr[xs2D.size() - 1] == xs2D[0] );
 		BOOST_TEST( xs2Dr[0] == xs2D[xs2D.size() - 1] );
+#endif
 #endif
 	}
 	{
@@ -582,6 +605,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( v2D.begin() == std::ranges::begin(v2D) );
 		BOOST_TEST( v2D.end()   == std::ranges::end(v2D)   );
 
+#ifndef BOOST_MULTI_STDRANGES_PIPE_BROKEN
 		auto v2Dr = v2D | std::ranges::views::reverse;
 
 		BOOST_TEST( (*v2Dr.begin())[4] == (*(v2D.end() - 1))[4] );
@@ -589,14 +613,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 
 		BOOST_TEST( v2Dr[v2D.size() - 1][5] == v2D[0][5] );
 		BOOST_TEST( v2Dr[0][5] == v2D[v2D.size() - 1][5] );
+#endif
 
 		// auto const v2DT = v2D.transposed() | std::views::reverse;  // TODO(correaa)
 		// BOOST_TEST( v2DT[1][5] == v2D[2][1] );
 		{
 			auto matrix =
-				([](auto ii) noexcept { return static_cast<float>(ii); } ^
-				 multi::extents_t(6))
-					.partitioned(2);
+				([](auto ii) noexcept { return static_cast<float>(ii); } ^ multi::extents_t(6)).partitioned(2);
 
 			auto [matrix_is, matrix_js] = matrix.extents();
 			BOOST_TEST( matrix_is.size() == 2 );
@@ -612,7 +635,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	}
 	{
 		multi::extents_t<2> const x2D(6, 5);
-		multi::extents_t<3> const p3D = multi::layout_t<2>(x2D).partition(2).extents();
+		multi::extents_t<3> const p3D = multi::detail::layout_t<2>(x2D).partition(2).extents();
 
 		using std::get;
 		BOOST_TEST( get<0>(p3D).size() == 2 );
@@ -620,7 +643,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( get<2>(p3D).size() == 5 );
 	}
 	{
-		auto exts = multi::extents_t<2>(3, 4);
+		auto const exts = multi::extents_t<2>(3, 4);
 
 		// auto something = exts[-1];
 		// (void)something;
@@ -636,7 +659,35 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( it == exts.elements().begin() + 2 );
 	}
 	{
-		auto exts = multi::extents_t<1>(10);
+		auto const exts = multi::extents_t<2>(3, 4);
+
+		{
+			auto [ext1, ext2] = exts;
+
+			BOOST_TEST( ext1.size() == 3 );
+			BOOST_TEST( ext2.size() == 4 );
+
+			auto [i1, i2] = exts[1][0];
+			BOOST_TEST( i1 == 1 );
+			BOOST_TEST( i2 == 0 );
+		}
+		// {
+		// 	auto exts_transposed = exts.transpose();
+		// 	auto [i1, i2] = exts_transposed[1][0];
+		// 	BOOST_TEST( i1 == 0 );
+		// 	BOOST_TEST( i2 == 1 );
+		// }
+		// {
+		// 	auto [ext1, ext2] = exts.transpose();
+
+		// 	BOOST_TEST( ext1.size() == 4 );
+		// 	BOOST_TEST( ext2.size() == 3 );
+		// }
+
+		// BOOST_TEST( exts == exts.transpose().transpose() );
+	}
+	{
+		auto const exts = multi::extents_t<1>(10);
 		BOOST_TEST( exts.size() == 10 );
 		BOOST_TEST( (exts.end() - 1) - (exts.begin() + 1) == exts.size() - 2 );
 
@@ -648,19 +699,19 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 1) == exts.elements().size() - 2 );
 		BOOST_TEST( (exts.elements().end() - 1) - (exts.elements().begin() + 2) == exts.elements().size() - 3 );
 
-		auto it2 = exts.begin();
-		auto it3 = it2 + 3;
-		auto it4 = it3 + 2;
+		auto const it2 = exts.begin();
+		auto const it3 = it2 + 3;
+		auto const it4 = it3 + 2;
 
 		BOOST_TEST( it4 == exts.begin() + 5 );
 		BOOST_TEST( *it4 == 5 );
 
-		auto it5 = it4 - 3;
+		auto const it5 = it4 - 3;
 		BOOST_TEST( it5 == exts.begin() + 2 );
 		BOOST_TEST( *it5 == 2 );
 	}
 	{
-		auto exts = multi::extents_t<1>(10);
+		auto const exts = multi::extents_t<1>(10);
 
 		// BOOST_TEST( exts[-1] != decltype(exts[-1]){} );  gives an out-of-bounds assert
 

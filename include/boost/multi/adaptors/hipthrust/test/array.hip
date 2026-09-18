@@ -24,22 +24,6 @@
 
 namespace multi = boost::multi;
 
-// #ifdef __NVCC__
-// template<>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<double>> = true;
-// template<>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<float>> = true;
-// template<>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<double>> = true;
-// template<>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<float>> = true;
-// #else  // vvv nvcc (12.1?) doesn't support this kind of customization: "error: expected initializer before ‘<’"
-// template<class T>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::std::complex<T>> = std::is_trivially_default_constructible<T>::value;
-// template<class T>
-// inline constexpr bool ::boost::multi::force_element_trivial_default_construction<::thrust::complex<T>> = std::is_trivially_default_constructible<T>::value;
-// #endif
-
 namespace {
 
 template<class T> using test_allocator =
@@ -420,326 +404,232 @@ template<class T> void thrust_cpugpu_issue123_3D() {
 }
 #endif
 
-#if 0
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_1D_issue123, T, types_list) {
-	multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{10240*10240});
-	multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{10240*10240});
-	multi::array<T, 1>                    Host(multi::extensions_t<1>{10240*10240});
-	std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-	multi::array<T, 1>                    Hos2(multi::extensions_t<1>{10240*10240});
+// BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_1D_issue123, T, types_list) {
+// 	multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{10240*10240});
+// 	multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{10240*10240});
+// 	multi::array<T, 1>                    Host(multi::extensions_t<1>{10240*10240});
+// 	std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+// 	multi::array<T, 1>                    Hos2(multi::extensions_t<1>{10240*10240});
 
-	std::cout<<"| 1D `"<< typeid(T).name() <<"` total data size: "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+// 	std::cout<<"| 1D `"<< typeid(T).name() <<"` total data size: "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
 
-	Devc = Host;
-	Dev2 = Host;
-	Hos2 = Host;
-	{
-		cpu_timer t;
-		BOOST_REQUIRE( Devc == Dev2 );
-		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-	//  BOOST_REQUIRE( Devc.sliced(0, Devc.size()/2) == Dev2.sliced(0, Devc.size()/2) );
-		BOOST_REQUIRE( thrust::equal( Devc.sliced(0, Devc.size()/2).elements().begin(), Devc.sliced(0, Devc.size()/2).elements().end(), Dev2.sliced(0, Devc.size()/2).elements().begin() ) );
-		std::cout<<"| sliced     devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-	//  BOOST_REQUIRE(Host == Hos2);
-		BOOST_REQUIRE( std::equal( Host.elements().begin(), Host.elements().end(), Hos2.elements().begin() ) );
-		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-	//  BOOST_REQUIRE(Host.sliced(0, Devc.size()/2) == Hos2.sliced(0, Devc.size()/2) );
-		BOOST_REQUIRE( std::equal( Host.sliced(0, Host.size()/2).elements().begin(), Host.sliced(0, Host.size()/2).elements().end(), Hos2.sliced(0, Devc.size()/2).elements().begin() ) );
-		std::cout<<"| sliced     host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
+// 	Devc = Host;
+// 	Dev2 = Host;
+// 	Hos2 = Host;
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE( Devc == Dev2 );
+// 		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 	//  BOOST_REQUIRE( Devc.sliced(0, Devc.size()/2) == Dev2.sliced(0, Devc.size()/2) );
+// 		BOOST_REQUIRE( thrust::equal( Devc.sliced(0, Devc.size()/2).elements().begin(), Devc.sliced(0, Devc.size()/2).elements().end(), Dev2.sliced(0, Devc.size()/2).elements().begin() ) );
+// 		std::cout<<"| sliced     devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 	//  BOOST_REQUIRE(Host == Hos2);
+// 		BOOST_REQUIRE( std::equal( Host.elements().begin(), Host.elements().end(), Hos2.elements().begin() ) );
+// 		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 	//  BOOST_REQUIRE(Host.sliced(0, Devc.size()/2) == Hos2.sliced(0, Devc.size()/2) );
+// 		BOOST_REQUIRE( std::equal( Host.sliced(0, Host.size()/2).elements().begin(), Host.sliced(0, Host.size()/2).elements().end(), Hos2.sliced(0, Devc.size()/2).elements().begin() ) );
+// 		std::cout<<"| sliced     host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
 
-	std::cout<<"   "<<std::endl;
-}
+// 	std::cout<<"   "<<std::endl;
+// }
 
+// BOOST_AUTO_TEST_CASE(thrust_equality_2D_small_host_issue123) {
+// 	multi::array<int, 2> Host = {{1, 2, 3}, {4, 5, 6}};
+// 	multi::array<int, 2> Hos2 = {{1, 2, 3}, {4, 5, 6}};
+// 	BOOST_REQUIRE( Host.size() == 2 );
 
-BOOST_AUTO_TEST_CASE(thrust_equality_2D_small_host_issue123) {
-	multi::array<int, 2> Host = {{1, 2, 3}, {4, 5, 6}};
-	multi::array<int, 2> Hos2 = {{1, 2, 3}, {4, 5, 6}};
-	BOOST_REQUIRE( Host.size() == 2 );
+// 	BOOST_REQUIRE( *Host().elements().begin()    == *Hos2().elements().begin()    );
 
-	BOOST_REQUIRE( *Host().elements().begin()    == *Hos2().elements().begin()    );
+// 	BOOST_REQUIRE(  Host().elements().begin()[0] ==  Hos2().elements().begin()[0] );
+// 	BOOST_REQUIRE(  Host().elements().begin()[1] ==  Hos2().elements().begin()[1] );
+// 	BOOST_REQUIRE(  Host().elements().begin()[2] ==  Hos2().elements().begin()[2] );
+// 	BOOST_REQUIRE(  Host().elements().begin()[3] ==  Hos2().elements().begin()[3] );
+// 	BOOST_REQUIRE(  Host().elements().begin()[4] ==  Hos2().elements().begin()[4] );
+// 	BOOST_REQUIRE(  Host().elements().begin()[5] ==  Hos2().elements().begin()[5] );
 
-	BOOST_REQUIRE(  Host().elements().begin()[0] ==  Hos2().elements().begin()[0] );
-	BOOST_REQUIRE(  Host().elements().begin()[1] ==  Hos2().elements().begin()[1] );
-	BOOST_REQUIRE(  Host().elements().begin()[2] ==  Hos2().elements().begin()[2] );
-	BOOST_REQUIRE(  Host().elements().begin()[3] ==  Hos2().elements().begin()[3] );
-	BOOST_REQUIRE(  Host().elements().begin()[4] ==  Hos2().elements().begin()[4] );
-	BOOST_REQUIRE(  Host().elements().begin()[5] ==  Hos2().elements().begin()[5] );
+// 	BOOST_REQUIRE( *(Host().elements().end() - 1)    == *(Hos2().elements().end() - 1)   );
+// 	BOOST_REQUIRE( *(Host().elements().end() - 2)    == *(Hos2().elements().end() - 2)   );
+// 	BOOST_REQUIRE( *(Host().elements().end() - 3)    == *(Hos2().elements().end() - 3)   );
 
-	BOOST_REQUIRE( *(Host().elements().end() - 1)    == *(Hos2().elements().end() - 1)   );
-	BOOST_REQUIRE( *(Host().elements().end() - 2)    == *(Hos2().elements().end() - 2)   );
-	BOOST_REQUIRE( *(Host().elements().end() - 3)    == *(Hos2().elements().end() - 3)   );
+// 	BOOST_REQUIRE(    std::equal(Host().elements().begin(), Host().elements().end(), Hos2().elements().begin()) );
+// 	BOOST_REQUIRE( thrust::equal(Host().elements().begin(), Host().elements().end(), Hos2().elements().begin()) );
 
-	BOOST_REQUIRE(    std::equal(Host().elements().begin(), Host().elements().end(), Hos2().elements().begin()) );
-	BOOST_REQUIRE( thrust::equal(Host().elements().begin(), Host().elements().end(), Hos2().elements().begin()) );
+// //  BOOST_REQUIRE( Host() == Hos2() );
+// }
 
-//  BOOST_REQUIRE( Host() == Hos2() );
-}
+// BOOST_AUTO_TEST_CASE(thrust_equality_2D_small_gpu_issue123) {
+// 	multi::array<int, 2> Host = {{1, 2, 3}, {4, 5, 6}};
 
-BOOST_AUTO_TEST_CASE(thrust_equality_2D_small_gpu_issue123) {
-	multi::array<int, 2> Host = {{1, 2, 3}, {4, 5, 6}};
+// 	multi::array<int, 2, test_allocator<int>> Devc(Host.extensions()); Devc = Host;
+// 	multi::array<int, 2, test_allocator<int>> Dev2(Host.extensions()); Dev2 = Host;
+// 	BOOST_REQUIRE( Dev2.size() == 2 );
 
-	multi::array<int, 2, test_allocator<int>> Devc(Host.extensions()); Devc = Host;
-	multi::array<int, 2, test_allocator<int>> Dev2(Host.extensions()); Dev2 = Host;
-	BOOST_REQUIRE( Dev2.size() == 2 );
+// 	BOOST_REQUIRE( thrust::equal(
+// 		Devc().elements().begin(),
+// 		Devc().elements().end()  , Dev2().elements().begin()
+// 	));
 
-	BOOST_REQUIRE( thrust::equal(
-		Devc().elements().begin(),
-		Devc().elements().end()  , Dev2().elements().begin()
-	));
+// 	BOOST_REQUIRE( thrust::equal(
+// 		thrust::hip::par,
+// 		Devc().elements().begin(),
+// 		Devc().elements().end()  , Dev2().elements().begin()
+// 	));
 
-	BOOST_REQUIRE( thrust::equal(
-		thrust::hip::par,
-		Devc().elements().begin(),
-		Devc().elements().end()  , Dev2().elements().begin()
-	));
+// 	BOOST_REQUIRE( thrust::equal(
+// 		Devc.rotated().elements().begin(),
+// 		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
+// 	));
 
-	BOOST_REQUIRE( thrust::equal(
-		Devc.rotated().elements().begin(),
-		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
-	));
+// 	BOOST_REQUIRE( thrust::equal(
+// 		thrust::hip::par,
+// 		Devc.rotated().elements().begin(),
+// 		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
+// 	));
 
-	BOOST_REQUIRE( thrust::equal(
-		thrust::hip::par,
-		Devc.rotated().elements().begin(),
-		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
-	));
+// 	BOOST_REQUIRE( multi::adl_equal(
+// 		Devc.rotated().elements().begin(),
+// 		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
+// 	));
+// }
 
-	BOOST_REQUIRE( multi::adl_equal(
-		Devc.rotated().elements().begin(),
-		Devc.rotated().elements().end()  , Dev2.rotated().elements().begin()
-	));
-}
+// BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_2D_issue123, T, types_list) {
+// 	multi::extensions_t<2> x({10240, 10240});
+// 	multi::array<T, 2, test_allocator<T>> Devc(x);
+// 	multi::array<T, 2, test_allocator<T>> Dev2(x);
+// 	multi::array<T, 2>                    Host(x); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+// 	multi::array<T, 2>                    Hos2(x);
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_2D_issue123, T, types_list) {
-	multi::extensions_t<2> x({10240, 10240});
-	multi::array<T, 2, test_allocator<T>> Devc(x);
-	multi::array<T, 2, test_allocator<T>> Dev2(x);
-	multi::array<T, 2>                    Host(x); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-	multi::array<T, 2>                    Hos2(x);
+// 	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
 
-	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+// 	Devc = Host;
+// 	Dev2 = Host;
+// 	Hos2 = Host;
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Host == Hos2);
+// 		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Host.sliced(0, Host.size()/2) == Hos2.sliced(0, Host.size()/2));
+// 	//  BOOST_REQUIRE( std::equal(Host.sliced(0, 5120).elements().begin(), Host.sliced(0, 5120).elements().end(), Hos2.sliced(0, 5120).elements().begin()) );
+// 		std::cout<<"| sliced     host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Host({0, Host.size()/2},{0, Host.size()/2}) == Hos2({0, Hos2.size()/2},{0, Hos2.size()/2}));
+// 	//  BOOST_REQUIRE( std::equal(Host({0, 5120},{0, 5120}).elements().begin(), Host({0, 5120},{0, 5120}).elements().end(), Hos2({0, 5120},{0, 5120}).elements().begin()) );
+// 		std::cout<<"| strided    host == host | "<< Hos2({0, Host.size()/2},{0, Host.size()/2}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Devc == Dev2);
+// 		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Devc.sliced(0, Devc.size()/2) == Dev2.sliced(0, Dev2.size()/2));
+// 		std::cout<<"| sliced     devc == devc | "<< Devc.sliced(0, Devc.size()/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE(Devc({0, Devc.size()/2},{0, Devc.size()/2}) == Dev2({0, Dev2.size()/2},{0, Dev2.size()/2}));
+// 		std::cout<<"| strided    devc == devc | "<< Devc({0, Devc.size()/2},{0, Devc.size()/2}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	std::cout<<"   "<<std::endl;
+// }
 
-	Devc = Host;
-	Dev2 = Host;
-	Hos2 = Host;
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Host == Hos2);
-		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Host.sliced(0, Host.size()/2) == Hos2.sliced(0, Host.size()/2));
-	//  BOOST_REQUIRE( std::equal(Host.sliced(0, 5120).elements().begin(), Host.sliced(0, 5120).elements().end(), Hos2.sliced(0, 5120).elements().begin()) );
-		std::cout<<"| sliced     host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Host({0, Host.size()/2},{0, Host.size()/2}) == Hos2({0, Hos2.size()/2},{0, Hos2.size()/2}));
-	//  BOOST_REQUIRE( std::equal(Host({0, 5120},{0, 5120}).elements().begin(), Host({0, 5120},{0, 5120}).elements().end(), Hos2({0, 5120},{0, 5120}).elements().begin()) );
-		std::cout<<"| strided    host == host | "<< Hos2({0, Host.size()/2},{0, Host.size()/2}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Devc == Dev2);
-		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Devc.sliced(0, Devc.size()/2) == Dev2.sliced(0, Dev2.size()/2));
-		std::cout<<"| sliced     devc == devc | "<< Devc.sliced(0, Devc.size()/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE(Devc({0, Devc.size()/2},{0, Devc.size()/2}) == Dev2({0, Dev2.size()/2},{0, Dev2.size()/2}));
-		std::cout<<"| strided    devc == devc | "<< Devc({0, Devc.size()/2},{0, Devc.size()/2}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	std::cout<<"   "<<std::endl;
-}
+// #if 1
+// BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_issue123_3D, T, types_list) {
+// 	multi::array<T, 3, test_allocator<T>> Devc({1024, 1024, 100});
+// 	multi::array<T, 3, test_allocator<T>> Dev2({1024, 1024, 100});
+// 	multi::array<T, 3>                    Host({1024, 1024, 100}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+// 	multi::array<T, 3>                    Hos2({1024, 1024, 100});
 
-#if 1
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_issue123_3D, T, types_list) {
-	multi::array<T, 3, test_allocator<T>> Devc({1024, 1024, 100});
-	multi::array<T, 3, test_allocator<T>> Dev2({1024, 1024, 100});
-	multi::array<T, 3>                    Host({1024, 1024, 100}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-	multi::array<T, 3>                    Hos2({1024, 1024, 100});
+// 	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
 
-	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+// 	Devc = Host;
+// 	Dev2 = Host;
+// 	Hos2 = Host;
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE( Devc == Dev2 );
+// 		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE( Devc.sliced(0, 512) == Dev2.sliced(0, 512) );
+// 		std::cout<<"| sliced     devc == devc | "<< Dev2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE( Devc({0, 512}, {0, 512}, {0, 512}) == Dev2({0, 512}, {0, 512}, {0, 512}) );
+// 		std::cout<<"| strided    devc == devc | "<< Dev2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 		BOOST_REQUIRE( Host == Hos2 );
+// 		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 	//  BOOST_REQUIRE( Host.sliced(0, 512) == Hos2.sliced(0, 512) );
+// 		BOOST_REQUIRE( std::equal( Host.sliced(0, 512).elements().begin(), Host.sliced(0, 512).elements().end(),  Hos2.sliced(0, 512).elements().begin() ) );
+// 		std::cout<<"| sliced     host == host | "<< Hos2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+// 	}
+// 	{
+// 		cpu_timer t;
+// 	//  BOOST_REQUIRE( Host({0, 512}, {0, 512}, {0, 512}) == Hos2({0, 512}, {0, 512}, {0, 512}) );
+// 		BOOST_REQUIRE( std::equal( Host({0, 512}, {0, 512}, {0, 512}).elements().begin(), Host({0, 512}, {0, 512}, {0, 512}).elements().end(), Hos2({0, 512}, {0, 512}, {0, 512}).elements().begin() ) );
+// 		std::cout<<"| strided    host == host | "<< Hos2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+// 	}
+// 	std::cout<<"   "<<std::endl;
+// }
+// #endif
 
-	Devc = Host;
-	Dev2 = Host;
-	Hos2 = Host;
-	{
-		cpu_timer t;
-		BOOST_REQUIRE( Devc == Dev2 );
-		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE( Devc.sliced(0, 512) == Dev2.sliced(0, 512) );
-		std::cout<<"| sliced     devc == devc | "<< Dev2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE( Devc({0, 512}, {0, 512}, {0, 512}) == Dev2({0, 512}, {0, 512}, {0, 512}) );
-		std::cout<<"| strided    devc == devc | "<< Dev2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-		BOOST_REQUIRE( Host == Hos2 );
-		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-	//  BOOST_REQUIRE( Host.sliced(0, 512) == Hos2.sliced(0, 512) );
-		BOOST_REQUIRE( std::equal( Host.sliced(0, 512).elements().begin(), Host.sliced(0, 512).elements().end(),  Hos2.sliced(0, 512).elements().begin() ) );
-		std::cout<<"| sliced     host == host | "<< Hos2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-	}
-	{
-		cpu_timer t;
-	//  BOOST_REQUIRE( Host({0, 512}, {0, 512}, {0, 512}) == Hos2({0, 512}, {0, 512}, {0, 512}) );
-		BOOST_REQUIRE( std::equal( Host({0, 512}, {0, 512}, {0, 512}).elements().begin(), Host({0, 512}, {0, 512}, {0, 512}).elements().end(), Hos2({0, 512}, {0, 512}, {0, 512}).elements().begin() ) );
-		std::cout<<"| strided    host == host | "<< Hos2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-	}
-	std::cout<<"   "<<std::endl;
-}
-#endif
-#endif
+// BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_1D) {
+// 	using T = inq::complex;
+// 	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > aa(10);
+// 	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > bb(10);
+// 	BOOST_REQUIRE( aa.size() == 10 );
+// 	BOOST_REQUIRE( bb.size() == 10 );
 
-#if 0
-namespace inq {
-	using complex = thrust::complex<double>;
-}
+// 	bb = aa;
 
-BOOST_AUTO_TEST_CASE(thrust_complex_cached_1D) {
-	using T = inq::complex;
-	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > aa(10, T{1., 1.});
-	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > bb(10, T{2., 2.});
+// 	BOOST_REQUIRE(( bb[0] == aa[0] ));
+// }
 
-	bb = aa;
+// BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D) {
+// 	using T = inq::complex;
+// 	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > aa({10, 20}, T{1., 1.});
+// 	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > bb({10, 20}, T{2., 2.});
 
-	BOOST_REQUIRE(( bb[0] == T{1., 1.} ));
-}
+// 	bb = aa;
 
-BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_1D) {
-	using T = inq::complex;
-	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > aa(10);
-	multi::array<T, 1, boost::multi::memory::hip::cached::allocator<T> > bb(10);
-	BOOST_REQUIRE( aa.size() == 10 );
-	BOOST_REQUIRE( bb.size() == 10 );
+// 	BOOST_REQUIRE(( bb[0][0] == T{1., 1.} ));
+// }
 
-	bb = aa;
+// BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_2D) {
+// 	using T = inq::complex;
+// 	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > aa({10, 20});
+// 	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > bb({10, 20});
+// 	BOOST_REQUIRE( aa.size() == 10 );
+// 	BOOST_REQUIRE( bb.size() == 10 );
 
-	BOOST_REQUIRE(( bb[0] == aa[0] ));
-}
+// 	bb = aa;
 
-BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D) {
-	using T = inq::complex;
-	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > aa({10, 20}, T{1., 1.});
-	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > bb({10, 20}, T{2., 2.});
-
-	bb = aa;
-
-	BOOST_REQUIRE(( bb[0][0] == T{1., 1.} ));
-}
-
-BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_2D) {
-	using T = inq::complex;
-	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > aa({10, 20});
-	multi::array<T, 2, boost::multi::memory::hip::cached::allocator<T> > bb({10, 20});
-	BOOST_REQUIRE( aa.size() == 10 );
-	BOOST_REQUIRE( bb.size() == 10 );
-
-	bb = aa;
-
-	BOOST_REQUIRE(( bb[0][0] == aa[0][0] ));
-}
-
-BOOST_AUTO_TEST_CASE(array) {
-
-//{
-//  multi::thrust::hip::array<double, 2> C({2, 3});
-
-//  C[0][0] = 0. ;
-//  C[1][1] = 11.;
-//  BOOST_TEST_REQUIRE( C[1][1] == 11. );
-//}
-
-//{
-//  multi::array<double, 2> const H = {
-//      {00., 01., 02.},
-//      {10., 11., 12.},
-//  };
-
-//  BOOST_TEST_REQUIRE( H[1][1] == 11. );
-
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.num_elements() == H.num_elements() );
-
-//      thrust::copy_n(H.data_elements(), H.num_elements(), C.data_elements());
-//      BOOST_TEST_REQUIRE( C[1][1] == 11. );
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.num_elements() == H.num_elements() );
-
-//      std::copy_n(H.data_elements(), H.num_elements(), C.data_elements());
-//      BOOST_TEST_REQUIRE( C[1][1] == 11. );
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.num_elements() == H.num_elements() );
-
-//      std::uninitialized_copy_n(H.data_elements(), H.num_elements(), C.data_elements());
-//      BOOST_TEST_REQUIRE( C[1][1] == 11. );
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.num_elements() == H.num_elements() );
-
-//      thrust::uninitialized_copy_n(H.data_elements(), H.num_elements(), C.data_elements());
-//      BOOST_TEST_REQUIRE( C[1][1] == 11. );
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.extensions() == H.extensions() );
-//      thrust::copy_n(H.begin(), H.size(), C.begin());
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      BOOST_REQUIRE( C.extensions() == H.extensions() );
-//      std::copy_n(H.begin(), H.size(), C.begin());
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C(H.extensions());
-//      C = H;
-//      BOOST_REQUIRE( C == H );
-//  }
-//  {
-//      multi::thrust::hip::array<double, 2> C = H;
-//      BOOST_REQUIRE( C == H );
-//  }
-//}
-
-}
-#endif
+// 	BOOST_REQUIRE(( bb[0][0] == aa[0][0] ));
+// }
 
 auto main() -> int {
 	// BOOST_AUTO_TEST_CASE(test_univ_alloc)

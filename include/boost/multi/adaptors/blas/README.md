@@ -3,7 +3,7 @@
 -->
 # Multi BLAS Adaptor
 
-_© Alfredo A. Correa, 2018-2025_
+_© Alfredo A. Correa, 2018-2026_
 
 (documentation in progress)
 
@@ -96,15 +96,15 @@ These typically replace the 'T', 'C' and 'N' characted arguments of the BLAS cal
 
 The conjugation operation is a unary operation that conjugates each element of the array, producing a view of the array that preserves the shape of the original array.
 
-### `multi::blas::T(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+### `auto multi::blas::T(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
 The transposition operation is a unary operation that transposes an array, producing a view of the array that transposed the elements (and the shape) of the original array.
 
-### `multi::blas::N(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+### `auto multi::blas::N(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
 This view returns the same array, implies no operations on the array; it is provided for completeness.
 
-### `multi::blas::H(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
+### `auto multi::blas::H(`_complex/real vector/matrix_`) -> `_complex/real vector/matrix view_
 
 ```cpp
 using complex = std::complex<double>; 
@@ -119,11 +119,12 @@ multi::array<complex, 2> B = {
 namespace blas = multi::blas;
 multi::array<complex, 2> conjB = blas::C(B);
 
-assert( blas::C(B)[1][2] == std::conj(B[1][2]) );
 assert( blas::T(B)[1][2] ==           B[2][1]  );
-assert( blas::N(B)[1][2] ==           N[1][2]  );
 assert( blas::H(B)[1][2] == std::conj(B[2][1]) );
+assert( blas::N(B)[1][2] ==           B[1][2]  );
+assert( blas::J(B)[1][2] == std::conj(B[1][2]) );
 ```
+[(open with Compiler Explorer)](https://godbolt.org/z/vvxo3zd3z)
 
 Note that views do not play well with self-assignment.
 ```cpp

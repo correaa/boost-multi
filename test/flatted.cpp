@@ -37,7 +37,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &arrRFU[11][7] == &arr[11][1][2] );
 		}
 		{
-			auto&& arrRFU = (arr.rotated()).flatted().unrotated();
+			auto&& arrRFU = arr.rotated().flatted().unrotated();
 			BOOST_TEST( &arrRFU[11][7] == &arr[11][7/5][7%5] );
 		}
 	}

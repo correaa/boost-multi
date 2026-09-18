@@ -7,11 +7,24 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <algorithm>    // for fill, copy, for_each
-#include <iostream>     // for operator<<, basic_ostream::opera...
-#include <iterator>     // for begin, end, ostream_iterator
+#if __cplusplus >= 202002L
+#include <atomic>   // for atomic_ref
+#include <version>  // IWYU pragma: keep  // for _GLIBCXX_RELEASE
+#endif
+
+#include <algorithm>  // for fill, copy, for_each
+#include <array>      // for array
+#include <iostream>   // for operator<<, basic_ostream::opera...
+#include <iterator>   // for begin, end, ostream_iterator
+
+#if __cplusplus >= 202002L
+#include <thread>  // for thread
+#include <tuple>   // for get  // NOLINT(misc-include-cleaner) // IWYU pragma: keep
+#endif
+
 #include <type_traits>  // for decay_t
 #include <utility>      // for forward
+#include <vector>       // for vector  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
@@ -141,6 +154,188 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr1d[0] == 1 );
 	}
+
+	{
+		std::array<int, 12> arr{
+			{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+		};
+
+		{
+			auto&& mds1 = multi::array_ref(arr.data(), {3, 4});
+
+			BOOST_TEST( mds1.empty() == false );
+			BOOST_TEST( mds1.size() == 3 );  // not 12
+			BOOST_TEST( mds1.num_elements() == 12 );
+			BOOST_TEST( mds1.dimensionality == 2 );
+			BOOST_TEST( mds1.extent().size() == 3 );
+			BOOST_TEST( mds1.extent().last() == 3 );
+
+			using std::get;
+			BOOST_TEST( get<0>(mds1.extents()).size() == 3 );
+			BOOST_TEST( get<0>(mds1.extents()).last() == 3 );
+
+			BOOST_TEST( get<1>(mds1.extents()).size() == 4 );
+			BOOST_TEST( get<1>(mds1.extents()).last() == 4 );
+
+			auto const [is, js] = mds1.extents();
+			for(auto const i : is) {      // NOLINT(altera-unroll-loops) test range iteration
+				for(auto const j : js) {  // NOLINT(altera-unroll-loops) test range iteration
+#if defined(cpp_multidimensional_subscript) && (cpp_multidimensional_subscript >= 202110L)
+					BOOST_TEST(( mds1[i, j] != 0 ));
+#else
+					BOOST_TEST(( mds1[i][j] != 0 ));
+#endif
+				}
+			}
+		}
+		{
+			auto&& mds2 = multi::array_ref(arr.data(), {2, 3, 2});
+
+			BOOST_TEST( mds2.empty() == false );
+			BOOST_TEST( mds2.size() == 2 );  // not 12
+			BOOST_TEST( mds2.num_elements() == 12 );
+			BOOST_TEST( mds2.dimensionality == 3 );
+			BOOST_TEST( mds2.extent().size() == 2 );
+			BOOST_TEST( mds2.extent().last() == 2 );
+
+			using std::get;
+			BOOST_TEST( get<0>(mds2.extents()).size() == 2 );
+			BOOST_TEST( get<0>(mds2.extents()).last() == 2 );
+
+			BOOST_TEST( get<1>(mds2.extents()).size() == 3 );
+			BOOST_TEST( get<1>(mds2.extents()).last() == 3 );
+
+			BOOST_TEST( get<2>(mds2.extents()).size() == 2 );
+			BOOST_TEST( get<2>(mds2.extents()).last() == 2 );
+
+			auto const [is, js, ks] = mds2.extents();
+			for(auto const i : is) {          // NOLINT(altera-unroll-loops) test range iteration
+				for(auto const j : js) {      // NOLINT(altera-unroll-loops) test range iteration
+					for(auto const k : ks) {  // NOLINT(altera-unroll-loops) test range iteration
+#if defined(cpp_multidimensional_subscript) && (cpp_multidimensional_subscript >= 202110L)
+						BOOST_TEST(( mds2[i, j, k] != 0 ));
+#else
+						BOOST_TEST(( mds2[i][j][k] != 0 ));
+#endif
+					}
+				}
+			}
+		}
+		{
+			auto coll = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+			{
+				auto&& mds = multi::array_ref(coll.data(), {static_cast<multi::index>(coll.size() / 3), 3});
+
+				BOOST_TEST( mds[0][1] == 2 );
+
+				auto&& mds1 = mds.transposed();
+
+				BOOST_TEST( mds1[1][0] == 2 );
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {3, 4});
+
+				BOOST_TEST( mds.strided(1, 2).size() == 6 );
+
+				auto const& mds2 = ~mds.strided(1, 2).taked(5);
+
+				BOOST_TEST( mds2.size() == 4 );
+
+				using std::get;
+				for(auto const i : get<0>(mds2.extents())) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					for(auto const j : get<1>(mds2.extents())) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~mds;
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~mds;
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 3 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 4 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+			{
+				auto&& mds = multi::array_ref(coll.data(), {4, 3});
+
+				auto const& mds2 = ~(~mds).sliced(2, -1, -1);
+
+				using std::get;
+
+				BOOST_TEST( get<0>(mds2.sizes()) == 4 );
+				BOOST_TEST( get<1>(mds2.sizes()) == 3 );
+
+				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+						std::cout << mds2[i][j] << ' ';
+					}
+					std::cout << '\n';
+				}
+			}
+		}
+	}
+// gcc-10's libstdc++ (32-bit multilib at least) advertises __cpp_lib_jthread without actually defining std::jthread
+#if defined(__cpp_lib_jthread) && (__cpp_lib_jthread >= 201911L) && (!defined(__GLIBCXX__) || (defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE >= 11)))
+#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
+	{
+		multi::array<int, 2> data({4, 4}, 0);
+
+		auto counters = data.element_transformed(
+			[](int& elem) noexcept { return std::atomic_ref<int>(elem); }
+		);
+
+		constexpr int nthreads = 8;
+
+		{
+			std::vector<std::jthread> pool;
+
+			pool.reserve(nthreads);
+
+			for(int ti = 0; ti != nthreads; ++ti) {
+				pool.emplace_back(
+					[&counters] {
+						for(auto&& row : counters) {
+							for(auto&& elem : row) {  // NOLINT(altera-unroll-loops)
+								elem.fetch_add(1, std::memory_order_relaxed);
+							}
+						}
+					}
+				);
+			}
+		}
+
+		BOOST_TEST( data[3][3] == 8 );
+	}
+#endif
+#endif
 
 	return boost::report_errors();
 }

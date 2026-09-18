@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <initializer_list>  // for initializer_list
 // #include <iterator>          // for size
+#include <string>       // for basic_string, char_traits
 #include <tuple>        // IWYU pragma: keep  // for get
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
@@ -45,8 +46,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
-		BOOST_TEST(size(arr3) == 2);
-		BOOST_TEST(size(arr3[0]) == 3);
+		BOOST_TEST( arr3.size() == 2 );
+		BOOST_TEST( arr3[0].size() == 3 );
 
 		arr.reextent({5, 4}, 990);
 		BOOST_TEST( arr.num_elements()== 5L*4L );
@@ -116,7 +117,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(size(arr3) == 2);
 		BOOST_TEST(size(arr3[0]) == 3);
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 		arr.reextent({2, 3});
 		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
@@ -133,10 +134,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
 		multi::array<double, 2> arr3({2, 3});
-		BOOST_TEST(size(arr3) == 2);
-		BOOST_TEST(size(arr3[0]) == 3);
+		BOOST_TEST(arr3.size() == 2);
+		BOOST_TEST(arr3[0].size() == 3);
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 		arr.reextent({2, 3}, 990);
 		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
@@ -152,7 +153,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 
 		arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 
@@ -172,7 +173,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr[1][2] = 60;
 		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
 
-		auto* const A_base = arr.base();
+		auto const* const A_base = arr.base();
 
 		arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 
@@ -240,7 +241,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		arr = multi::array<int, 2>(extents(arr), 1230);
 		BOOST_TEST( arr[1][2] == 1230 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
@@ -299,7 +301,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 
@@ -326,7 +329,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arr({10, 20}, 40);
 		BOOST_TEST( arr[1][2] == 40 );
 
-		arr.clear();
+		// arr.clear();
+		arr = {};
 		BOOST_TEST( arr.num_elements() == 0 );
 		BOOST_TEST( size(arr) == 0 );
 	}
@@ -389,10 +393,53 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		std::vector<std::vector<int>> varr = {
 			std::vector<int>{1, 2},
-			std::vector<int>{3, 4}
+			std::vector<int>{3, 4},
 		};
 
 		arr.reextent({static_cast<multi::array<int, 2>::size_type>(varr.size()), static_cast<multi::array<int, 2>::size_type>(varr[0].size())});
 	}
+	{
+		multi::array<int, 2> arr({99, 99}, 10);
+		arr.reset();
+
+		BOOST_TEST( arr.is_empty() );
+	}
+	{
+		multi::array<int, 2> arr({99, 99}, 10);
+		arr.reset({9, 9});
+
+		// BOOST_TEST( arr[1][1] == 10 );  // not, it is impossible to know the value after a reset with extensions only
+
+		BOOST_TEST( arr.size() == 9 );
+	}
+	{
+		multi::array<std::string, 2> arr({2, 2}, std::string{"abcdefghijklmnopq"});
+
+		arr.reset({30, 30});
+
+		BOOST_TEST( arr.size() == 30 );
+
+		BOOST_TEST( arr[0][0].empty() );
+
+		arr[29][29] = "12345678901234567890123456789";
+
+		BOOST_TEST( arr[29][29] == "12345678901234567890123456789" );  // not, it is impossible to know the value after a reset with extensions only
+	}
+	// {
+	// 	multi::array<int, 2> arr({2, 2}, 10);
+
+	// 	auto old_data = arr.data_elements();  // white box test
+
+	// 	arr.reset({30, 30});
+
+	// 	BOOST_TEST( arr.data_elements() != old_data );
+
+	// 	BOOST_TEST( arr.size() == 30 );
+
+	// 	arr[29][29] = 123;
+
+	// 	BOOST_TEST( arr[29][29] == 123 );
+	// }
+
 	return boost::report_errors();
 }

@@ -18,7 +18,7 @@
 #include <tuple>
 #include <type_traits>
 
-#if !defined(__HIP_ROCclr__)
+#if !defined(__HIP_ROCclr__) && !defined(MULTI_USE_HIP) && !defined(__HIPCC__)  // `__HIP_ROCclr__` alone isn't reliably defined by a plain `amdclang++ -x hip` invocation (only by `hipcc`/explicit `-D`); `MULTI_USE_HIP` is this project's own always-set HIP switch, and `__HIPCC__` is genuinely compiler-intrinsic for `-x hip` mode
 #include <cufft.h>
 #include <cufftXt.h>
 #endif
@@ -332,12 +332,12 @@ class plan {
 			// std::cout << "doing an inefficient loop of " << which_iodims_[first_howmany_].second.n << std::endl;
 
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
-				cufftExecZ2Z(
+				cufftSafeCall(cufftExecZ2Z(
 					h_,
 					const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 					direction
-				);
+				));
 			}
 			return;
 		}
@@ -353,12 +353,12 @@ class plan {
 
 			for(int idx = 0; idx != which_iodims_[first_howmany_].second.n; ++idx) {          // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
 				for(int jdx = 0; jdx != which_iodims_[first_howmany_ + 1].second.n; ++jdx) {  // NOLINT(altera-unroll-loops,altera-unroll-loops,altera-id-dependent-backward-branch) TODO(correaa) use an algorithm
-					cufftExecZ2Z(
+					cufftSafeCall(cufftExecZ2Z(
 						h_,
 						const_cast<complex_type*>(reinterpret_cast<complex_type const*>(::thrust::raw_pointer_cast(idata + idx * which_iodims_[first_howmany_].second.is + jdx * which_iodims_[first_howmany_ + 1].second.is))),  // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						reinterpret_cast<complex_type*>(::thrust::raw_pointer_cast(odata + idx * which_iodims_[first_howmany_].second.os + jdx * which_iodims_[first_howmany_ + 1].second.os)),                                   // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) legacy interface
 						direction
-					);
+					));
 				}
 			}
 			return;
@@ -412,7 +412,7 @@ class plan {
 
 template<dimensionality_type D, class Alloc = void*>
 class cached_plan {
-	typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>::iterator it_;
+	typename std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D, Alloc>>::iterator it_;
 
  public:
 	cached_plan(cached_plan const&) = delete;
@@ -423,9 +423,9 @@ class cached_plan {
 
 	~cached_plan() = default;
 
-	cached_plan(std::array<bool, D> which, boost::multi::layout_t<D, boost::multi::ssize_t> in, boost::multi::layout_t<D, boost::multi::ssize_t> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
-		thread_local std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>;
-		it_                                                                                                                         = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>{which, in, out});
+	cached_plan(std::array<bool, D> which, boost::multi::detail::layout_t<D, boost::multi::ssize_t> in, boost::multi::detail::layout_t<D, boost::multi::ssize_t> out, Alloc const& alloc = {}) {  // NOLINT(fuchsia-default-arguments-declarations)
+		thread_local std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D, Alloc>>& LEAKY_cache = *new std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D, Alloc>>;
+		it_                                                                                                                         = LEAKY_cache.find(std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>{which, in, out});
 		if(it_ == LEAKY_cache.end()) {
 			it_ = LEAKY_cache.insert(std::make_pair(std::make_tuple(which, in, out), plan<D, Alloc>(which, in, out, alloc))).first;
 		}
@@ -433,18 +433,12 @@ class cached_plan {
 	template<class IPtr, class OPtr>
 	auto execute(IPtr idata, OPtr odata, int direction)
 		-> decltype((void)(std::declval<
-							   typename std::map<std::tuple<std::array<bool, D>, multi::layout_t<D>, multi::layout_t<D>>, plan<D, Alloc>>::iterator&>()
+							   typename std::map<std::tuple<std::array<bool, D>, multi::detail::layout_t<D>, multi::detail::layout_t<D>>, plan<D, Alloc>>::iterator&>()
 							   ->second.execute(idata, odata, direction))) {
 		// assert(it_ != LEAKY_cache.end());
 		it_->second.execute(idata, odata, direction);
 	}
 };
-
-// template<typename In, class Out, dimensionality_type D = In::rank::value, std::enable_if_t<!multi::has_get_allocator<In>::value, int> =0, typename = decltype(::thrust::raw_pointer_cast(std::declval<In const&>().base()))>
-// auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)
-// ->decltype(cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out)) {
-// 	return cufft::cached_plan<D>{which, in.layout(), out.layout()}.execute(in.base(), out.base(), sgn), std::forward<Out>(out);
-// }
 
 template<typename In, class Out, dimensionality_type D = In::dimensionality>  // , std::enable_if_t<    multi::has_get_allocator<In>::value, int> =0, typename = decltype(raw_pointer_cast(std::declval<In const&>().base()))>
 auto dft(std::array<bool, +D> which, In const& in, Out&& out, int sgn)

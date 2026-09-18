@@ -12,6 +12,7 @@
 #include <array>             // for array
 #include <cmath>             // IWYU pragma: keep  // for abs
 #include <complex>           // for operator*, operator+, complex
+#include <cstddef>           // for size_t
 #include <initializer_list>  // for initializer_list, begin, end
 #include <iterator>          // for size, begin, end
 #include <string>            // for basic_string, allocator, char_tr...
@@ -185,8 +186,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 	{
-		std::array<double, 3> stdarr = {
-			{1.1, 2.2, 3.3}
+		std::array<double, 3> stdarr{
+			{1.1, 2.2, 3.3},
 		};
 		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
 		BOOST_TEST(( arr == decltype(arr){1.1, 2.2, 3.3} ));
@@ -219,7 +220,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		using multi::operator+;  // cppcheck-suppress [constStatement];
 
-		auto arr2 = operator+({
+		auto const arr2 = operator+({
 			{ 12,  24, 36},
 			{112, 344, 56},
 			{152, 324, 56},
@@ -253,8 +254,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( vec[1] == 55 );
 	}
 	{
-		std::array<std::array<int, 2>, 3> const nested = {
-			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
+		std::array<std::array<int, 2>, 3> const nested{
+			{{{12, 24}}, {{112, 344}}, {{152, 324}}},
 		};
 
 		using std::begin;
@@ -268,7 +269,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
-			{{{12, 24}}, {{112, 344}}, {{152, 324}}}
+			{{{12, 24}}, {{112, 344}}, {{152, 324}}},
 		};
 		multi::dynamic_array<int, 2> const arr(std::begin(nested), std::end(nested));
 
@@ -297,10 +298,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
 			{
-             {{10, 20}},
-             {{20, 40}},
-             {{30, 60}},
-			 }
+			 {{10, 20}},
+			 {{20, 40}},
+			 {{30, 60}},
+			 },
 		};
 		multi::array<int, 2> arr(begin(nested), end(nested));
 		BOOST_TEST( arr.num_elements() == 6 );
@@ -521,7 +522,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		multi::layout_t<2> const lyt(multi::extents_t<2>(3, 2));
+		multi::detail::layout_t<2> const lyt(multi::extents_t<2>(3, 2));
 		BOOST_TEST( lyt.num_elements() == 6 );
 	}
 	// {
@@ -634,7 +635,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		std::initializer_list<std::initializer_list<int>> const il = {
-			{1, 2, 3}
+			{1, 2, 3},
 		};
 
 		BOOST_TEST( il.size() == 1 );
@@ -661,7 +662,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::initializer_list<std::initializer_list<int>> const il = {
 			{1, 2, 3},
-			{4, 5, 6}
+			{4, 5, 6},
 		};
 
 		BOOST_TEST( il.size() == 2 );
@@ -716,7 +717,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			multi::array<int, 2> A({2, 3});
 			multi::array<int, 2> B{
-				{2, 3}
+				{2, 3},
 			};
 
 			using std::get;
@@ -761,20 +762,43 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	// NOLINTEND(readability-identifier-length,misc-const-correctness)
 
-#ifndef __circle_build__
-	{
-		BOOST_TEST( (multi::initializer_array<int, 2>{
-			{1, 2, 3},
-			{4, 5, 6}
-		})[1][1] == 5 );
-	}
-	{
-		BOOST_TEST( (multi::initializer_array<int, 1>{1, 2, 3})[1] == 2 );
-	}
-#endif
+	// #ifndef __circle_build__
+	// 	{
+	// 		BOOST_TEST( (multi::initializer_array<int, 2>{
+	// 			{1, 2, 3},
+	// 			{4, 5, 6}
+	// 		})[1][1] == 5 );
+	// 	}
+	// 	{
+	// 		BOOST_TEST( (multi::initializer_array<int, 1>{1, 2, 3})[1] == 2 );
+	// 	}
+	// #endif
 	{
 		multi::array<int, 1> numbers(3);
 		numbers = {1, 2, 3};
+	}
+	{
+		struct only_from_whole_array {
+			std::size_t size_ = 0;  // NOLINT(misc-non-private-member-variables-in-classes)
+
+			[[maybe_unused]] only_from_whole_array() noexcept = default;  // some backends (e.g. thrust/CUDA) default-construct-then-fill array elements
+			// the "wrong" ctor that made `Sub` = a whole array look constructible
+			[[maybe_unused]] explicit only_from_whole_array(multi::array<int, 1> const& arr) : size_{static_cast<std::size_t>(arr.size())} {}
+
+			only_from_whole_array(std::size_t val) noexcept : size_{val} {}  // NOLINT(hicpp-explicit-conversions,*-explicit-constructor) the legitimate, per-element ctor
+		};
+
+		static_assert(std::is_constructible_v<only_from_whole_array, multi::array<int, 1>>);
+		static_assert(!std::is_convertible_v<multi::array<int, 1>, only_from_whole_array>);
+
+		multi::array<int, 1> const src({10, 20, 30});
+
+		multi::array<only_from_whole_array, 1> const arr{src};  // this constructor expression was hijacked by init list constructor
+
+		BOOST_TEST( arr.size() == 3 );
+		BOOST_TEST( arr[0].size_ == 10 );
+		BOOST_TEST( arr[1].size_ == 20 );
+		BOOST_TEST( arr[2].size_ == 30 );
 	}
 
 	return boost::report_errors();

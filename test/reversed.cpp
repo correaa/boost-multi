@@ -48,7 +48,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<1>( arr.reversed().transposed().flatted().reversed().sizes() ) ==  5 );
 		BOOST_TEST( get<2>( arr.reversed().transposed().flatted().reversed().sizes() ) == 77 );
 
-		BOOST_TEST(( sizes(arr.reversed().transposed().flatted().reversed()) == decltype(sizes(arr.reversed().transposed().flatted().reversed())){13, 5, 77} ));
+		BOOST_TEST(( arr.reversed().transposed().flatted().reversed().sizes() == decltype(arr.reversed().transposed().flatted().reversed().sizes()){13, 5, 77} ));
 		BOOST_TEST( &arr.reversed().transposed().flatted().reversed()[1][2][ 5] == & arr[1][2][0][ 5] );
 		BOOST_TEST( &arr.reversed().transposed().flatted().reversed()[1][2][10] == & arr[1][2][0][10] );
 		BOOST_TEST( &arr.reversed().transposed().flatted().reversed()[1][2][11] == & arr[1][2][1][ 0] );

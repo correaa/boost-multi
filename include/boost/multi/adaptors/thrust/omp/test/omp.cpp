@@ -63,15 +63,16 @@ auto parallel_array_sum(Array1D const& arr) {
 template<class Array1D>
 auto parallel_idiom_array_sum(Array1D const& arr) {
 	typename Array1D::value_type total = 0.0;
-#if !defined(__NVCOMPILER) && !defined(_MSC_VER)
+// GCC's OpenMP does not accept a range-based `for` as a canonical omp-for loop until GCC 11 (OpenMP 5.0)
+#if !defined(__NVCOMPILER) && !defined(_MSC_VER) && !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 11))
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
 	for(auto const i : arr.extent()) {      // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// cppcheck-suppress useStlAlgorithm ;  // NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) || (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 11))
 #pragma omp parallel for reduction(+ : total)  // NOLINT(openmp-use-default-none)
-	for(auto i = arr.extent().front(); i < arr.extent().back() + 1; ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
+	for(auto i = arr.extent().front(); i <= arr.extent().back(); ++i) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 		// NOLINTNEXTLINE(clang-analyzer-core.NonNullParamChecker)
 		total += arr[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}

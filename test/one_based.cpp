@@ -148,7 +148,7 @@ auto main() -> int {
 		{{  10,  20,  30,  40,  50 }},
 		{{  60,  70,  80,  90, 100 }},
 		{{ 110, 120, 130, 140, 150 }},
-	}};
+	},};
 		// clang-format on
 
 		BOOST_TEST( arr[0][0] == 10 );
@@ -166,7 +166,7 @@ auto main() -> int {
 		);
 		// clang-format on
 
-		BOOST_TEST( sizes(Ar) == sizes(Ar2) );
+		BOOST_TEST( Ar.sizes() == Ar2.sizes() );
 		BOOST_TEST( &Ar2[1][1] == arr[0].data() );
 		BOOST_TEST( &Ar2[2][4] == &arr[1][3] );
 

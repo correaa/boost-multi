@@ -46,7 +46,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<char, 2> arr({3, 3}, 'k');
 
 		std::array<int, 2> point = {
-			{1, 2}
+			{1, 2},
 		};
 
 		BOOST_TEST(  arr[point[0]][point[1]] ==  arr(1, 2) );
@@ -66,16 +66,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::array<double, 2> const arr(ext, 44.0);
 
-			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr.size() == 3 );
 		}
 		{
 			auto const [en, em] = std::make_tuple(3, 4);
 			multi::array<double, 2> const arr({en, em}, 44.0);
-			BOOST_TEST( size(arr) == 3 );
+			BOOST_TEST( arr.size() == 3 );
 		}
 		{
-			auto arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.0); }, std::make_tuple(3, 4));
-			BOOST_TEST( size(arr) == 3 );
+			auto const arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.0); }, std::make_tuple(3, 4));
+			BOOST_TEST( arr.size() == 3 );
 
 			using std::get;
 
@@ -136,8 +136,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(           arr          ({1, 3}, {2, 5})[0][0] == "h"           );
 		BOOST_TEST(          &arr          ({1, 3}, {2, 5})[0][0] == &arr[1][2]    );
 
-//		BOOST_TEST(           arr.stenciled({1, 3}, {2, 5}).size() == 2                  );
-
 		BOOST_TEST(  arr().elements().size() == arr.num_elements() );
 
 		BOOST_TEST( &arr({1, 3}, {2, 5}).elements()[0] == &arr(1, 2) );
@@ -151,9 +149,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &*beg  == &arr(2, 4) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay) bug in clang-tidy 14?
 
 		{
-			auto beg1 = arr({1, 3}, {2, 5}).elements().begin();
-			auto end1 = arr({1, 3}, {2, 5}).elements().end();
-			auto end2 = arr({1, 3}, {2, 5}).elements().end();
+			auto const beg1 = arr({1, 3}, {2, 5}).elements().begin();
+			auto       end1 = arr({1, 3}, {2, 5}).elements().end();
+			auto const end2 = arr({1, 3}, {2, 5}).elements().end();
 
 			for(; end1 != beg1; --end1) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 			}
@@ -368,7 +366,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		auto A2D = multi::array<int, 2>{
 			{1, 2},
-			{3, 4}
+			{3, 4},
 		};
 		BOOST_TEST( A2D[1][1] == 4 );
 
@@ -395,29 +393,29 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( barr.stride() == 5L*((7L*7L) + 11L) );
 
 		{
-			auto i0 = 3;
-			auto j0 = 13;
+			auto const i0 = 3;
+			auto const j0 = 13;
 
-			auto* ptr = &(barr[i0][j0]);
+			auto const* ptr = &barr[i0][j0];
 
 			auto dist = ptr - barr.base();
 
-			auto i = dist / barr.layout().stride();  // get<1>(barr.layout().nelemss());
+			auto const i = dist / barr.layout().stride();  // get<1>(barr.layout().nelemss());
 
 			BOOST_TEST( i == i0 );
 
 			dist = dist % barr.layout().stride();
 
 			using std::get;
-			auto j = dist / get<1>(barr.layout().strides());
+			auto const j = dist / get<1>(barr.layout().strides());
 
 			BOOST_TEST( j == j0 );
 		}
 		{
 			using std::get;
 			auto [is, js] = barr.extents();
-			for(auto i : is) {
-				for(auto j : js) {  // NOLINT(altera-unroll-loops)
+			for(auto const i : is) {
+				for(auto const j : js) {  // NOLINT(altera-unroll-loops)
 					BOOST_TEST(
 						&barr[i][j] ==
 						&barr[
@@ -434,7 +432,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 2> arr = {
 			{1, 2, 3},
-			{4, 5, 6}
+			{4, 5, 6},
 		};
 
 		BOOST_TEST( arr[1][1] == 5 );

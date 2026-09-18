@@ -1,6 +1,14 @@
-// Copyright 2018-2025 Alfredo A. Correa
+// Copyright 2018-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
+
+// @file detail/serialization.hpp
+// @brief Provides compatibility with Boost.Serialization and Cereal
+//
+// The goal of this detail header is to serve as glue code
+// between the current library and both Boost.Serialization and Cereal
+// and at the same time avoid a hard dependency on these libraries
+// effectively maintaining generic serialization
 
 #ifndef BOOST_MULTI_DETAIL_SERIALIZATION_HPP
 #define BOOST_MULTI_DETAIL_SERIALIZATION_HPP
@@ -25,10 +33,12 @@ namespace boost::archive::detail { template <class Ar> class common_oarchive; } 
 namespace boost::serialization { struct binary_object; }
 namespace boost::serialization { template <class T> class array_wrapper; }
 namespace boost::serialization { template <class T> class nvp; }
+namespace boost::serialization { class access; }  // NOLINT(bugprone-forward-declaration-namespace)
 
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct InputArchive; }
 namespace cereal { template <class ArchiveType, std::uint32_t Flags> struct OutputArchive; }
 namespace cereal { template <class T> class NameValuePair; }  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // IWYU pragma: keep  // bug in iwyu 0.18
+namespace cereal { class access; }  // NOLINT(bugprone-forward-declaration-namespace)
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
@@ -79,8 +89,8 @@ struct archive_traits<
 	using self_t = archive_traits<Ar, typename std::enable_if_t<
 		                                  std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar> || std::is_base_of_v<cereal::InputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::InputArchive<Ar, 1>, Ar>>>;
 
-	//  template<class T>
-	//  inline static auto make_nvp  (char const* name, T const& value) noexcept {return cereal::NameValuePair<T const&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // TODO(correaa) replace by cereal::make_nvp from cereal/cereal.hpp
+	// template<class T>
+	// inline static auto make_nvp  (char const* name, T const& value) noexcept {return cereal::NameValuePair<T const&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point  // TODO(correaa) replace by cereal::make_nvp from cereal/cereal.hpp
 	// template<class T>
 	// inline static auto make_nvp  (std::string const& name, T&& value) noexcept {return cereal::NameValuePair<T>{name.c_str(), std::forward<T>(value)};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 	template<class T>

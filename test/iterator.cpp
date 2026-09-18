@@ -21,13 +21,13 @@ namespace multi = boost::multi;
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// iterator_1d
 	{
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<0>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<0>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<0>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<0>>));
 
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<1>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<1>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<1>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<1>>));
 
 		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 1>>));
 		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 1>>));
@@ -66,8 +66,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( arr.size() == 100 );
 			BOOST_TEST( arr.begin() < arr.end() );
 
-			auto                                          arr2 = arr.begin();
-			multi::array<double, 1>::const_iterator const cbb  = arr2;
+			auto const arr2 = arr.begin();
+
+			multi::array<double, 1>::const_iterator const cbb = arr2;
 			BOOST_TEST( cbb == arr2 );
 			// BOOST_TEST( arr2 == cbb );  // TODO(correaa) problem in C++20
 		}
@@ -85,9 +86,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// iterator_2d
 	{
-		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::layout_t<2>>));
-		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::layout_t<2>>));
-		BOOST_TEST((std::is_trivially_default_constructible_v<multi::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::detail::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::detail::layout_t<2>>));
+		BOOST_TEST((std::is_trivially_default_constructible_v<multi::detail::layout_t<2>>));
 
 		// BOOST_TEST((std::is_trivially_copy_constructible_v   <multi::subarray_ptr<double, 2>>));
 		// BOOST_TEST((std::is_trivially_copy_assignable_v      <multi::subarray_ptr<double, 2>>));
@@ -152,7 +153,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 3> arr = {
 			{ {12, 11},  {24, 10}},
 			{{112, 30}, {344, 40}},
-			{ {12, 11},  {24, 10}}
+			{ {12, 11},  {24, 10}},
 		};
 
 		BOOST_TEST( size(arr) == 3 );
@@ -201,7 +202,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<double, 3> arr = {
 			{ {1.2, 1.1},  {2.4, 1.0}},
 			{{11.2, 3.0}, {34.4, 4.0}},
-			{ {1.2, 1.1},  {2.4, 1.0}}
+			{ {1.2, 1.1},  {2.4, 1.0}},
 		};
 
 		multi::array<double, 3>::iterator it;
@@ -220,8 +221,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const& arrc2 = arr();
 
-		// BOOST_TEST( arrc.addressof() == arrc2.addressof() );  // BOOST_TEST( &arrc == &arrc2 );
-		BOOST_TEST( &arrc == &arrc2 );  // BOOST_TEST( &arrc == &arrc2 );
+		// BOOST_TEST( arrc.addressof() == arrc2.addressof() );
+		BOOST_TEST( &arrc == &arrc2 );
 
 		multi::array<double, 3>::iterator const it2 = begin(arr);
 		BOOST_TEST(it == it2);
@@ -249,7 +250,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<std::string, 2> arr = {
 			{"00", "01"},
 			{"10", "11"},
-			{"20", "21"}
+			{"20", "21"},
 		};
 		// NOLINTEND(fuchsia-default-arguments-calls)
 
@@ -310,7 +311,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( (*arr.begin())[1] == 20 );
 		BOOST_TEST( arr.begin()->operator[](1) == 20 );
 
-		auto rbegin = std::make_reverse_iterator(arr.end());
+		auto const rbegin = std::make_reverse_iterator(arr.end());
 
 		BOOST_TEST( (*rbegin)[1] == 2000 );
 
@@ -336,6 +337,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( arr[0][0] == 5 );
 		BOOST_TEST( *(arr.begin()->begin()) == 5 );
+	}
+	{
+		multi::array<std::vector<int>, 1> arr1 = {std::vector<int>(10), std::vector<int>(20), std::vector<int>(30)};
+		multi::array<std::vector<int>, 1> arr2(3);
+
+		std::copy(arr1.mbegin(), arr1.mend(), arr2.begin());
+
+		BOOST_TEST( arr1[1].empty() );
+		BOOST_TEST( arr2[1].size() == 20 );
 	}
 
 	return boost::report_errors();

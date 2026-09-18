@@ -107,6 +107,7 @@ if(NOT ENABLE_CIRCLE)
       -Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
       -Wno-padded
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-nrvo>
+      $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,21>:-Wno-unsafe-buffer-usage-in-libc-call>
       $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>:-Wno-pre-c++17-compat>
     >
     $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>: --expt-relaxed-constexpr>  # --extended-lambda>
@@ -207,11 +208,14 @@ if(MULTI_BUILD_TESTS)
     if(ENABLE_CUDA)
       add_subdirectory(include/boost/multi/adaptors/cuda)
       add_subdirectory(include/boost/multi/adaptors/cufft)
+      add_subdirectory(include/boost/multi/adaptors/vkfft)
       add_subdirectory(include/boost/multi/adaptors/cutensor)
+      add_subdirectory(include/boost/multi/adaptors/lapack/test/cuda)
     endif()
     if(ENABLE_HIP)
       add_subdirectory(include/boost/multi/adaptors/hipfft)
       add_subdirectory(include/boost/multi/adaptors/hipthrust/test)
+      add_subdirectory(include/boost/multi/adaptors/lapack/test/hip)
     endif()
 
     add_subdirectory(include/boost/multi/adaptors/tblis)

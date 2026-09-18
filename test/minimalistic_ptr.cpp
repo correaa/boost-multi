@@ -8,6 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <array>        // for array
+#include <cstdint>      // for int16_t, int32_t
 #include <iterator>     // for iterator_traits
 #include <memory>       // for allocator
 #include <type_traits>  // for is_same, is_convertible, enable...
@@ -30,7 +31,7 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress noExplicitConstructor ;
-	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr(ptr<U> const& other) : impl_{other.impl_} {}  //  NOLINT(*-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 
@@ -71,7 +72,7 @@ class ptr2 : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-link
 	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
 	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
-	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
+	constexpr ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(*-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -123,7 +124,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& CC2 = CCP->static_array_cast<int, minimalistic::ptr2<int>>();
 		BOOST_TEST( &CC2[1][1] == &(*CCP)[1][1] );
 
-		static_assert(std::is_convertible<int*, int const*>{}, "!");
+		static_assert(std::is_convertible<int*, int const*>{}, "!");  // NOLINT(readability-trailing-comma) bug in clang-tidy
 
 		minimalistic::ptr<int> const       pd{nullptr};
 		minimalistic::ptr<int const> const pcd = pd;
@@ -142,6 +143,112 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			// cppcheck-suppress danglingTempReference ;
 			static_assert(std::is_same_v<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<int const>>);
+		}
+		{
+			// NOLINTNEXTLINE(*-avoid-c-arrays,misc-const-correctness)
+			int data[2][5] = {
+				{10, 11, 12, 13, 14},
+				{20, 21, 22, 23, 24},
+			};
+
+			minimalistic::ptr<int const> const p0{&data[0][0]};
+
+			multi::array_ref<int const, 2, minimalistic::ptr<int const>> const arr(p0, {2, 5});
+
+			auto&& marr = arr.const_array_cast<int>();
+
+			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0])>, int>);
+
+			marr[1][2] = 99;  // exercise the "mutable view" the cast is meant to provide
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+			BOOST_TEST( data[1][2] == 99 );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+			BOOST_TEST( marr[0][0] == 10 );
+			BOOST_TEST( marr[1][4] == 24 );
+		}
+		{
+			// const_subarray::reinterpret_array_cast(size_type) const& with a fancy ElementPtr
+			// NOLINTNEXTLINE(*-avoid-c-arrays)
+			std::int32_t data[2][5] = {
+				{10, 11, 12, 13, 14},
+				{20, 21, 22, 23, 24},
+			};
+
+			minimalistic::ptr<std::int32_t const> const p0{&data[0][0]};
+
+			multi::array_ref<std::int32_t const, 2, minimalistic::ptr<std::int32_t const>> const arr(p0, {2, 5});
+
+			auto&& marr = arr.reinterpret_array_cast<std::int16_t const>(2);
+
+			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0][0])>, std::int16_t>);
+
+			BOOST_TEST( marr.size() == 2 );
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+		}
+		{
+			// NOLINTNEXTLINE(*-avoid-c-arrays)
+			std::int32_t data[2][5] = {
+				{10, 11, 12, 13, 14},
+				{20, 21, 22, 23, 24},
+			};
+
+			minimalistic::ptr<std::int32_t> const p0{&data[0][0]};
+
+			multi::array_ref<std::int32_t, 2, minimalistic::ptr<std::int32_t>> arr(p0, {2, 5});  // NOLINT(misc-const-correctness) intentionally non-const
+
+			auto&& marr = arr.reinterpret_array_cast<std::int16_t>(2);
+
+			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0][0])>, std::int16_t>);
+
+			BOOST_TEST( marr.size() == 2 );
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+		}
+		{
+			// member_cast() with a fancy ElementPtr (existing member_cast tests only use a raw one)
+			struct particle {
+				int    mass;
+				double x;
+			};
+
+			// NOLINTNEXTLINE(*-avoid-c-arrays)
+			particle data[3] = {
+				{1, 1.0}, // {.mass = 1, .x = 1.0},  // NOLINT(modernize-use-designated-initializers) for C++20
+				{2, 2.0}, // {.mass = 2, .x = 2.0},  // NOLINT(modernize-use-designated-initializers) for C++20
+				{3, 3.0}, // {.mass = 3, .x = 3.0},  // NOLINT(modernize-use-designated-initializers) for C++20
+			};
+
+			minimalistic::ptr<particle> const p0{&data[0]};
+
+			multi::array_ref<particle, 1, minimalistic::ptr<particle>> const arr(p0, {3});
+
+			auto&& masses = arr.member_cast<int, minimalistic::ptr<int>>(&particle::mass);
+
+			BOOST_TEST( masses[1] == 2 );
 		}
 	}
 

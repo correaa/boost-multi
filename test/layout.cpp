@@ -28,11 +28,11 @@ namespace multi = boost::multi;
 // construction is free and the types remain cheap/memcpy-able/device-friendly.
 // (std::is_trivial is deprecated in C++26, hence the two-trait spelling it recommends)
 template<class T> constexpr bool is_trivial_v = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
-static_assert(is_trivial_v<multi::layout_t<0>>);
-static_assert(is_trivial_v<multi::layout_t<1>>);
-static_assert(is_trivial_v<multi::layout_t<2>>);
-static_assert(is_trivial_v<multi::layout_t<3>>);
-static_assert(is_trivial_v<multi::layout_t<4>>);
+static_assert(is_trivial_v<multi::detail::layout_t<0>>);
+static_assert(is_trivial_v<multi::detail::layout_t<1>>);
+static_assert(is_trivial_v<multi::detail::layout_t<2>>);
+static_assert(is_trivial_v<multi::detail::layout_t<3>>);
+static_assert(is_trivial_v<multi::detail::layout_t<4>>);
 
 namespace {
 auto second_finish(multi::extents_t<3> exts) {
@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.cbegin().stride() == 1 );
 		BOOST_TEST( arr.cend().stride() == 1 );
 
-		auto size = arr.cend() - arr.cbegin();
+		auto const size = arr.cend() - arr.cbegin();
 		BOOST_TEST( size == 5 );
 		BOOST_TEST( arr.size() == 5 );
 
@@ -178,7 +178,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 
 	{
-		multi::array<double, 2> d2D = {
+		multi::array<double, 2> const d2D = {
 			{150.0, 16.0, 17.0, 18.0, 19.0},
 			{ 30.0,  1.0,  2.0,  3.0,  4.0},
 			{100.0, 11.0, 12.0, 13.0, 14.0},
@@ -188,17 +188,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// #if __has_cpp_attribute(no_unique_address) >=201803L and not defined(__NVCC__) and not defined(__PGI)
 		//  BOOST_TEST( sizeof(d2D)==sizeof(double*)+7*sizeof(std::size_t) );
 		// #endif
-		BOOST_TEST( d2D.is_compact() );
-		BOOST_TEST( d2D.rotated().is_compact() );
-		BOOST_TEST( d2D[3].is_compact() );
-		BOOST_TEST( !(d2D.rotated()[2].is_compact()) );
+
+		BOOST_TEST( d2D.layout().is_compact() );
+		BOOST_TEST( d2D.rotated().layout().is_compact() );
+		BOOST_TEST( d2D[3].layout().is_compact() );
+		BOOST_TEST( !(d2D.rotated()[2].layout().is_compact()) );
 	}
 	{
 		multi::array<int, 2> d2D({5, 3});
-		BOOST_TEST( d2D.is_compact() );
-		BOOST_TEST( d2D.rotated().is_compact() );
-		BOOST_TEST( d2D[3].is_compact() );
-		BOOST_TEST( !d2D.rotated()[2].is_compact() );
+		BOOST_TEST( d2D.layout().is_compact() );
+		BOOST_TEST( d2D.rotated().layout().is_compact() );
+		BOOST_TEST( d2D[3].layout().is_compact() );
+		BOOST_TEST( !d2D.rotated()[2].layout().is_compact() );
 	}
 
 	// BOOST_AUTO_TEST_CASE(extensions_layout_to_linear)
@@ -446,7 +447,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
 			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
 			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-		}};
+		},};
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
@@ -1204,7 +1205,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arrp2.size() == 2 );
 	}
 	{
-		multi::layout_t<2> const lyt(multi::extents_t<2>{
+		multi::detail::layout_t<2> const lyt(multi::extents_t<2>{
 			{3,  9},
 			{0, 15}
 		});
@@ -1214,13 +1215,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( lyt.extent().front() == 3 );
 		BOOST_TEST( lyt.extent().back() == 8 );
 
-		auto sorted_lyt = lyt.sort();
+		auto const sorted_lyt = lyt.sort();
 
 		BOOST_TEST( sorted_lyt == lyt );
 
-		auto lyt_transpose = lyt.transpose();
+		auto const lyt_transpose = lyt.transpose();
 
-		auto sorted_lyt2 = lyt_transpose.transpose();
+		auto const sorted_lyt2 = lyt_transpose.transpose();
 
 		BOOST_TEST( sorted_lyt2 == sorted_lyt );
 	}

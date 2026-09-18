@@ -17,8 +17,8 @@ namespace {
 template<class Array2D>
 auto trace_with_indices(Array2D const& arr) {
 	typename Array2D::element sum{0};
-	for(auto i : arr.extent()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += arr[i][i];         // cppcheck-suppress useStlAlgorithm ;
+	for(auto const i : arr.extent()) {  // NOLINT(altera-unroll-loops) testing loops
+		sum += arr[i][i];               // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
@@ -26,8 +26,8 @@ auto trace_with_indices(Array2D const& arr) {
 template<class Array2D>
 auto trace_with_diagonal(Array2D const& arr) {
 	typename Array2D::element sum{0};
-	for(auto aii : arr.diagonal()) {  // NOLINT(altera-unroll-loops) testing loops
-		sum += aii;                   // cppcheck-suppress useStlAlgorithm ;
+	for(auto const aii : arr.diagonal()) {  // NOLINT(altera-unroll-loops) testing loops
+		sum += aii;                         // cppcheck-suppress useStlAlgorithm ;
 	}
 	return sum;
 }
@@ -47,13 +47,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto [is, js] = arr.extents();
 
 		// NOLINTNEXTLINE(altera-unroll-loops) testing loops
-		for(auto i : is) {
-			for(auto j : js) {  // NOLINT(altera-unroll-loops) testing loops
+		for(auto const i : is) {
+			for(auto const j : js) {  // NOLINT(altera-unroll-loops) testing loops
 				arr[i][j] = (10 * i) + j;
 			}
 		}
 
-		auto tr = trace_with_diagonal(arr);
+		auto const tr = trace_with_diagonal(arr);
 
 		BOOST_TEST( tr == 00 + 11 + 22 + 33 + 44 );
 
@@ -126,17 +126,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// 	BOOST_TEST( &v1D[1] == vv.base() );
 
 	// 	multi::array<int, 1> r1D({4}, 0);
-	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
+	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), r1D.begin(), std::plus<>{});  // NOLINT(*-use-ranges) for C++20
 
 	// 	BOOST_TEST( r1D[3] == arr[3] + 2 );
 
-	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
+	// 	std::transform(arr.begin(), arr.end(), v1D.begin(), arr.begin(), [](auto, auto ve) { return ve; });  // NOLINT(*-use-ranges) for C++20
 	// 	BOOST_TEST( arr[3] == 2 );
 	// }
 
 	{
 		multi::array<int, 2> arr({3, 3}, 0);
-		std::fill(multi::diagonal(arr).begin(), multi::diagonal(arr).end(), 1);
+		std::fill(arr.diagonal().begin(), arr.diagonal().end(), 1);
 
 		BOOST_TEST( arr[1][1] == 1 );
 	}

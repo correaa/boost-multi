@@ -1,42 +1,41 @@
 [#reference]
 
-= Reference
+= Reference of Types and Concepts
 
 :idprefix: reference_
 
-[#ref_types]
-== Fundamental Types and Concepts
-
-The library interface presents several closely related types (C++ classes) representing arrays.
+The library interface presents several closely related types (pass:[C++] classes) representing arrays.
 The fundamental types represent multidimensional containers (called `array`), references that can refer to subsets of these containers (called `subarray`), and iterators.
 In addition, there are other classes for advanced uses, such as multidimensional views of existing buffers (called `array_ref`) and non-resizable owning containers (called `dynamic_array`).
 
-If you want to read the API interface as coded, please visit the xref:reference:index.adoc[API documentation page].
+This section is a conceptual overview of the system of types; if you want to read the API interface as coded, please visit the xref:reference:index.adoc[API documentation page].
 
-=== Summary (Cheat Sheet)
+== Summary (Cheat Sheet)
 
 Here is a table to summarize the semantic properties of each class.
 The main array type to reach for is `multi::array`, the other types are for special uses.
 `multi::subarray<T, D>` are generally not used explicitly.
 
 |===
-| Type                              | Dimensionality | Sizes                     | Memory                              | Ownership                      | Uses
+| Type                              | Dimensionality | Sizes                          | Memory                              | Ownership                            | Common names                                    | Uses
 
-| `multi::array<T, D, ...>`         | Static         | Dynamic/Mutable           | Heap (allocates)                    | Yes, transferable (movable)    | General purpose (value type)
-| `multi::array_ref<T, D>`          | Static         | Dynamic/Immutable         | Any  (doesn't allocate)             | No, (pinned)                   | Use existing buffers (e.g. from other libs)
-| `multi::inplace_array<T, D, ...>` | Static         | Dynamic/Mutable (bounded) | Stack (doesn't heap-allocate)       | Yes, non-transferable (pinned) | Fast, stack constrained, lowest level of divide and conquer
-| `multi::dynamic_array<T, D, ...>` | Static         | Dynamic/Immutable         | Heap (allocates, never reallocates) | Yes, non-transferable (pinned) | Multithreading, prevent invalidation
-| `multi::subarray<T, D>`           | Static         | Dynamic/Immutable         | Any  (doesn't allocate)             | No, (pinned)                   | As reference, Implicitly used through `auto` or template, prevent code bloat across compilation boundaries
+| `multi::array<T, D, ...>`         | Static         | Dynamic/Mutable                | Heap (allocates)                    | Yes, transferable (movable)          | "array", "array-value"                          | General purpose (value type)
+| `multi::array_ref<T, D>`          | Static         | Dynamic/Immutable              | Any  (doesn't allocate)             | No, (pinned)                         | "array-reference", "array-view"                               | Use existing buffers (e.g. from other libs)
+| `multi::inplace_array<T, D, ...>` | Static         | Dynamic/Mutable (bounded)      | Stack (doesn't heap-allocate)       | Yes, non-transferable (pinned)       | "inplace array", "stack array", "static array"  | Fast, stack constrained, lowest level of divide and conquer
+| `multi::dynamic_array<T, D, ...>` | Static         | Dynamic/Immutable              | Heap (allocates, never reallocates) | Yes, non-transferable (pinned)       | "dynamic array", "fixed array", "pinned array"  | Multithreading, prevent invalidation
+| `multi::unique_array<T, D, ...>`  | Static         | Dynamic/Mutable (by move from) | Heap (allocates, never reallocates) | Yes (unique), transferable (movable) | "unique array", "move-only array"               | Prevent secondary allocations
+| `multi::subarray<T, D>`           | Static         | Dynamic/Immutable              | Any  (doesn't allocate)             | No, (pinned)                         | "subarray", "subarray-reference", "subarray-view"              | As a reference, implicitly used through `auto` or template, prevent code bloat across compilation boundaries
+| `multi::restriction<D, F>`        | Static         | Dynamic/Immutable              | None (doesn't allocate)             | None                                 | "array restriction", "lazy array", "array-expression" | Use once, build expressions, pass functions as if they were array refences to generic algorithms 
 |===
 
 When using the library, it is simpler to start from `multi::array`, and other types are rarely explicitly used, especially if using the `auto` language feature;
-however, it is convenient for documentation to present the classes in a different order since the classes `multi::array`, `multi::dynamic_array`, `multi::array_ref`, and `subarray` have an *is-a* relationship (from left to right), through C++ public inheritance.
+however, it is convenient for documentation to present the classes in a different order since the classes `multi::array`, `multi::dynamic_array`, `multi::array_ref`, and `subarray` have an *is-a* relationship (from left to right), through pass:[C++] public inheritance.
 For example, `multi::array_ref` has all the methods available to `multi::subarray`, and `multi::array` has all the operations of `multi::array_ref`, etc.
 
 image::types_relations.svg[Type relations diagram,opts=inline]
 
 [#ref_subarray]
-=== Subarrays
+== Subarrays
 
 A subarray-reference is part (or a whole) of another larger array, and they are represented by xref:reference:boost/multi/subarray.adoc[`multi::subarray`] in the library.
 It is important to understand that `subarray` s have referential semantics, their elements are not independent of the values of the larger arrays they are part of.
@@ -98,7 +97,7 @@ A reference `subarray` can be invalidated when its origin array is invalidated o
 For example, if the `array` from which it originates is destroyed or resized.
 
 [#ref_array_ref]
-=== Array References
+== Array References
 
 An array reference, or _D_-dimensional view of a contiguous pre-existing memory buffer, is represented by an object of type `multi::array_ref<T, D, P = T*>`.
 This class doesn't manage the elements it contains, and it has reference semantics (it can't be rebound, assignments are deep, and have the same size restrictions as `subarray`)
@@ -108,18 +107,20 @@ Since `array_ref` is-a `subarray`, it inherits all the class methods and types d
 In addition, it can be constructed from a raw pointer to access memory that is external to the library: `array_ref::array_ref({e1, e2, ...}, p)`.
 Destructor is trivial since elements are not owned or managed.
 
-The interface is almost the same as for `subarray`, which allows to generically program for both `subarray` and `array_ref`.
+The interface is almost the same as for `subarray`, which allows generic programming for both `subarray` and `array_ref`.
 
 `array_ref` contains some optimizations; for example, `elements` provides a flattened random-access and contiguous view of all the elements in the array in canonical order.
 
 An `array_ref` can be invalidated if the original buffer is deallocated.
 
 [#ref_dynamic_array]
-=== Dynamic Arrays
+== Dynamic Arrays
 
-A dynamic array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
-This class owns the elements it contains; it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
-Memory is requested by an allocator of type Alloc, the standard allocator by default.
+A "dynamic" array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::dynamic_array<T, D, Alloc = std::allocator<T>>`.
+This class owns the elements it contains and never reliquishes the memory it own before destruction;
+it has _restricted_ value semantics because assignments are restricted to sources with equal sizes.
+There is no `resize` or `reextents` operation.
+Memory is requested by an allocator of type `Alloc`, the standard allocator by default.
 It supports stateful and polymorphic allocators, which are the default for the special type `multi::pmr::dynamic_array`.
 
 For most uses, a `multi::array` should be preferred instead.
@@ -127,7 +128,8 @@ For most uses, a `multi::array` should be preferred instead.
 The main feature of this class is that its iterators, subarrays, and pointers do not get invalidated unless the whole object is destroyed.
 In this sense, it is semantically similar to a C-array, except that elements are allocated from the heap.
 It can be useful for scoped uses of arrays and multithreaded programming and to ensure that assignments do not incur allocations.
-The C++ core guidelines proposed a similar (albeit one-dimensional) class, called link:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
+The pass:[C++] core guidelines proposed a similar (albeit one-dimensional) class, called link:http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#gslowner-ownership-pointers[`gsl::dyn_array`].
+The reason it is called "dynamic" is because it uses dynamic memory (heap memory).
 
 This class has a constructor that allocates memory given the desired sizes: `dynamic_array::dynamic_array({e1, e2, ...}, T val = {}, Alloc = {})` constructs a D-dimensional array by allocating elements. `dynamic_array::dynamic_array(std::initializer_list<...>)` constructs the array with elements initialized from a nested list.
 The destructor deallocates memory and destroys the elements
@@ -135,8 +137,25 @@ The destructor deallocates memory and destroys the elements
 
 In matters that are not related to memory ownership or allocation, `dynamic_array` has the same interface as `multi::array_ref`.
 
+== Unique Arrays
+
+A "unique" array is a _D_-dimensional array that manages an internal memory buffer, and it is represented by `multi::unique_array<T, D, Alloc = std::allocator<T>>`.
+It is similar to "dynamic" array, except that this class owns the elements it contains but can transfer the memory to another `unique_array`.
+
+Use `unique_array` only when fine grained restrictions over allocations needs to be enforced at compile time.
+For most uses, a `multi::array` should be preferred instead.
+
+It is a "move-only" object;
+it semantics and use cases is similar to `std::unique_ptr<T[]>`, but in the multidimensional context.
+
+Iterators, subarrays, and pointers are transfered with move.
+
+The destructor deallocates memory and destroys the elements
+`operator=` assigns the elements from the source (sizes must match);
+but it also supports move semantic in other cases.
+
 [#ref_array]
-=== Arrays
+== Arrays
 
 This is the main class in the library.
 
@@ -150,25 +169,26 @@ It inherits the behavior interface (including constructors) of `dynamic_array`, 
 New elements are initialized with a default value `v` with a second argument `reextent({e1, e2, ...}, v)`.
 The first argument is of `extents_type`, and the second is optional for element types with a default constructor.
 
-Finally `multi::inplace_array` is a special kind of `multi::array` that uses a internal stack-based allocator; this guarantees total interface compatibility with `multi::array` (it owns the elements, it is resizable, has iterators, etc.)
+Finally `multi::inplace_array` is a special kind of `multi::array` that uses an internal stack-based allocator; this guarantees total interface compatibility with `multi::array` (it owns the elements, it is resizable, has iterators, etc.)
 The third template argument of `multi::inplace_array<T, D, MaxCapacity>` is the maximum capacity of the array (not an allocator.).
 The number of elements of the array is dynamic as long as the number of elements is less or equal than `MaxCapacity` (the behavior is undefined otherwise.)
-Because it stack allocated it doesn't have O(1) moves (move falls back to copy), although copies are fast because memore is in the stack.
-It is very efficient to small arrays of known maximum size.
+Because it is stack allocated it doesn't have O(1) moves (move falls back to copy), although copies are fast because memory is in the stack.
+It is very efficient for small arrays of known maximum size.
 
 [#ref_restriction]
-=== Restrictions
+== Restrictions
 
 A restriction is an array that generates its elements lazily on the fly.
 It is defined by combining a D-dimensional function with a D-dimensional extents object.
 The function is therefore restricted to this Cartesian grid.
 The defining property of restrictions in this library is that they provide the same generic interface as an immutable array.
-This includes the iteration and element-access interface, although pointer access and layout access are not, since there is no actual memory as its elements are not stored.
+This includes the iteration and element-access interface.
+Pointer access and layout access are not part of the interface, since there is no actual memory representation as its elements are not stored.
 
 A factory function `multi::restricted(F fun, multi::extensions_t<D> exts)` can be used to generate a restriction object.
 
 `fun` must be a function that returns deterministically (e.g. doesn't depend on the order of evaluation);
-this is guaranteed if `F` fulfills the "regular invocable" concept (`std::regular_invocable<F, Args…​>` is `true` and `sizeof…​(Args)` is the number of dimensions `D`.)
+this is guaranteed if `F` fulfills the "regular invocable" concept (`std::regular_invocable<F, Args...>` is `true` and `sizeof...(Args)` is the number of dimensions `D`.)
 
 It has almost all properties of `array` (or `subarray`) except that there is no memory backing up the elements.
 So for example, it has `value_type`, `reference`, `const_reference`, `size_type`, `extents_type`, `difference_type`, `operator[]`, `iterator`, `const_iterator`, `elements`, `begin`, and `end`.
@@ -178,8 +198,10 @@ Since restrictions have the same interface as `array`, they can be manipulated a
 Finally, these lazy arrays are generated by functions in the elementwise namespace, such as `multi::elementwise::operator+`.
 Elementwise operations are available through the inclusion of the `multi/elementwise.hpp` header.
 
+// NOTE: Do not place references in lambda captures and put away in the restriction, because then it would turn into a powerful multidimensional range."
+
 [#ref_iterators]
-=== Iterators
+== Iterators
 
 The library offers random-access iterators to subarrays of dimension `D - 1`, and they are represented by types of the form `multi::[sub]array<T, D, P>::(const_)iterator`.
 These are generally used to interact with or implement algorithms.
@@ -193,7 +215,7 @@ An `iterator` that stems from `dynamic_array` becomes invalid only if the origin
 Both concrete arrays (and subarrays) and restrictions have iterators (`.begin()` and `.end()` member functions)
 
 [#ref_cursors]
-=== Cursors
+== Cursors
 
 A cursor is a pointer-like type that supports direct multidimensional indexing from a fixed origin.
 It is represented by `multi::cursor_t<ElementPtr, D, StridesType>` and obtained via the `.home()` member of any array or subarray, which returns a cursor pointing to the top-corner element at index `[0, 0, ..., 0]`.
@@ -222,7 +244,7 @@ auto& elem = c[i][j][k];  // equivalent to A[i][j][k]
 Cursor objects are cheap (and trivial) to copy.
 Cursors are particularly useful in GPU and SIMD contexts where direct pointer arithmetic over strided memory is more natural than iterator-based traversal.
 
-In some loose sense, cursors are like array-references that "forgot" their sizes, they are a way to pass arrays to interfaces that are restricted to take object by value (such as CUDA kernels or C functions)
+In some loose sense, cursors are like array-references that "forgot" their sizes, they are a way to pass arrays to interfaces that are restricted to take objects by value (such as CUDA kernels or C functions)
 
 Both concrete arrays (and subarrays) and restrictions have cursors (`.home()` member function).
 
@@ -255,7 +277,7 @@ Since `array_ref` does not manage the memory associated with it, the reference c
 
 `array` 's manage their memory behind the scenes through allocators, which can be specified at construction.
 It can handle special memory, as long as the underlying types behave coherently, these include link:https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] (and fancy references).
-Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+Associated fancy pointers and fancy references (if any) are deduced from the allocator types.
 
 ==== Allocators and Fancy Pointers
 

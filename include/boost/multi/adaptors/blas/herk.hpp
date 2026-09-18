@@ -16,14 +16,14 @@ namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<!is_conjugated<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
-	-> decltype((std::forward<A>(array)).base()) {
-	return (std::forward<A>(array)).base();
+	-> decltype(std::forward<A>(array).base()) {
+	return std::forward<A>(array).base();
 }
 
 template<class A, std::enable_if_t<is_conjugated<A>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto base_aux(A&& array)
-	-> decltype(underlying((std::forward<A>(array)).base())) {
-	return underlying((std::forward<A>(array)).base());
+	-> decltype(underlying(std::forward<A>(array).base())) {
+	return underlying(std::forward<A>(array).base());
 }
 
 using core::herk;
@@ -113,35 +113,35 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 		if constexpr(is_conjugated<A2D>{}) {
 			//  auto& ctxt = *blas::default_context_of(underlying(a.base()));
 			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-			if(stride(a) == 1 && c.stride() != 1) {
+			if(a.stride() == 1 && c.stride() != 1) {
 				herk(c_side == filling::upper ? 'L' : 'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());
-			} else if(stride(a) == 1 && c.stride() == 1) {
-				if(size(a) == 1) {
+			} else if(a.stride() == 1 && c.stride() == 1) {
+				if(a.size() == 1) {
 					herk(c_side == filling::upper ? 'L' : 'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.stride());
 				} else {
 					assert(0);
 				}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			} else if(stride(a) != 1 && c.stride() == 1) {
-				herk(c_side == filling::upper ? 'U' : 'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(a), &beta, base_c, c.rotated().stride());
-			} else if(stride(a) != 1 && c.stride() != 1) {
-				herk(c_side == filling::upper ? 'L' : 'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(a), &beta, base_c, c.stride());
+			} else if(a.stride() != 1 && c.stride() == 1) {
+				herk(c_side == filling::upper ? 'U' : 'L', 'C', c.size(), a.rotated().size(), &alpha, base_a, a.stride(), &beta, base_c, c.rotated().stride());
+			} else if(a.stride() != 1 && c.stride() != 1) {
+				herk(c_side == filling::upper ? 'L' : 'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, a.stride(), &beta, base_c, c.stride());
 			} else {
 				assert(0);
 			}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		} else {
 			//  auto& ctxt = *blas::default_context_of(           a.base() );
-			if(stride(a) != 1 && c.stride() != 1) {
-				herk(c_side == filling::upper ? 'L' : 'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, stride(a), &beta, base_c, c.stride());
-			} else if(stride(a) != 1 && c.stride() == 1) {
-				if(size(a) == 1) {
+			if(a.stride() != 1 && c.stride() != 1) {
+				herk(c_side == filling::upper ? 'L' : 'U', 'C', c.size(), a.rotated().size(), &alpha, base_a, a.stride(), &beta, base_c, c.stride());
+			} else if(a.stride() != 1 && c.stride() == 1) {
+				if(a.size() == 1) {
 					herk(c_side == filling::upper ? 'L' : 'U', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());
 				} else {
 					assert(0);
 				}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			} else if(stride(a) == 1 && c.stride() != 1) {
+			} else if(a.stride() == 1 && c.stride() != 1) {
 				assert(0);
 			}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			else if(stride(a) == 1 && c.stride() == 1) {
+			else if(a.stride() == 1 && c.stride() == 1) {
 				herk(c_side == filling::upper ? 'U' : 'L', 'N', c.size(), a.rotated().size(), &alpha, base_a, a.rotated().stride(), &beta, base_c, c.rotated().stride());
 			}
 			//  else                                   {assert(0);}

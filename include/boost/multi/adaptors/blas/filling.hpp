@@ -14,7 +14,7 @@ namespace boost::multi::blas {
 
 enum class filling : char {
 	lower = 'U',
-	upper = 'L'
+	upper = 'L',
 };
 
 #ifdef __clang__

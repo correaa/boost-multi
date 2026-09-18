@@ -76,6 +76,7 @@ set(TEST_SRCS
 	gemm.cpp
 	numeric.cpp
 	nrm2.cpp
+	operations.cpp
 	scal.cpp
 	syrk.cpp
 	traits.cpp
@@ -154,6 +155,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wpedantic
 					-Wmove
+					-Wno-c++98-compat-pedantic
 					-Wno-padded
 					-Wno-pass-failed
 					-Wno-exit-time-destructors  # bug in cmake 4, boost,
