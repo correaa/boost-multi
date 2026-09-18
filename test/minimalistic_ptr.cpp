@@ -202,9 +202,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 		}
 		{
-			// subarray::reinterpret_pointer_cast_(), used by the mutable (non-const)
-			// subarray::reinterpret_array_cast(size_type) & overload -- `arr` must be
-			// non-const to select it, as opposed to const_subarray's above.
 			// NOLINTNEXTLINE(*-avoid-c-arrays)
 			std::int32_t data[2][5] = {
 				{10, 11, 12, 13, 14},
