@@ -161,7 +161,17 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			marr[1][2] = 99;  // exercise the "mutable view" the cast is meant to provide
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 			BOOST_TEST( data[1][2] == 99 );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 			BOOST_TEST( marr[0][0] == 10 );
 			BOOST_TEST( marr[1][4] == 24 );
 		}
@@ -182,7 +192,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0][0])>, std::int16_t>);
 
 			BOOST_TEST( marr.size() == 2 );
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 		{
 			// subarray::reinterpret_pointer_cast_(), used by the mutable (non-const)
@@ -203,7 +221,16 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			static_assert(std::is_same_v<std::decay_t<decltype(marr[0][0][0])>, std::int16_t>);
 
 			BOOST_TEST( marr.size() == 2 );
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
 			BOOST_TEST( static_cast<void const*>(&marr[1][2][0]) == static_cast<void const*>(&data[1][2]) );
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 		{
 			// member_cast() with a fancy ElementPtr (existing member_cast tests only use a raw one)
