@@ -108,7 +108,6 @@ class identity_bind {
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
-}  // end namespace detail
 
 /// yields a array with function applied to the elements of the array(s) arguments
 template<class F, class A, class B>
@@ -128,6 +127,7 @@ constexpr auto map(F&& fun, A&& alpha, B&& omega) {
 		}
 	}
 }
+}  // end namespace detail
 
 namespace detail {
 struct plus {
@@ -139,7 +139,7 @@ struct plus {
 /// yields a array with the `+` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator+(A&& alpha, B&& omega) /*noexcept*/ {
-	return elementwise::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::detail::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class T1, class T2>
@@ -157,7 +157,7 @@ struct minus {
 
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator-(A&& alpha, B&& omega) noexcept {
-	return elementwise::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::detail::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 template<class T1, class T2>
@@ -172,12 +172,12 @@ constexpr auto operator-(A&& alpha) { return elementwise::invoke(std::negate<>{}
 
 /// yields an array expression with the `*` operation applied lazily elementwise to two arrays.
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator*(A&& alpha, B&& omega) { return elementwise::detail::map(std::multiplies<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 /// yields an array expression with the `/` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto operator/(A&& alpha, B&& omega) {
-	return elementwise::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
+	return elementwise::detail::map(std::divides<>{}, std::forward<A>(alpha), std::forward<B>(omega));
 }
 
 namespace detail {
@@ -230,11 +230,11 @@ constexpr auto zeros(multi::extents_t<D> const& exts) {
 // greedy ADL `operator&&` candidate for unrelated types whose template args pull in namespace multi
 /// yields an array expression with the `&&` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator&&(A&& alpha, B&& omega) { return elementwise::detail::map(std::logical_and<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 /// yields an array expression with the `||` operation applied lazily elementwise to two arrays
 template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
-constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
+constexpr auto operator||(A&& alpha, B&& omega) { return elementwise::detail::map(std::logical_or<>{}, std::forward<A>(alpha), std::forward<B>(omega)); }
 
 namespace experimental {
 template<class F, class A, std::enable_if_t<true, decltype(std::declval<F&&>()(std::declval<typename std::decay_t<A>::element>()))*> = nullptr>  // NOLINT(modernize-use-constraints) for C++23
