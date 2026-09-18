@@ -298,9 +298,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
 			{
-             {{10, 20}},
-             {{20, 40}},
-             {{30, 60}},
+			 {{10, 20}},
+			 {{20, 40}},
+			 {{30, 60}},
 			 },
 		};
 		multi::array<int, 2> arr(begin(nested), end(nested));
@@ -779,11 +779,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 	{
 		struct only_from_whole_array {
-			std::size_t size_                                 = 0;        // NOLINT(misc-non-private-member-variables-in-classes) trivial test-local aggregate-ish helper
-			[[maybe_unused]] only_from_whole_array() noexcept = default;  // some backends (e.g. thrust/CUDA) default-construct-then-fill array elements; unused on others
-			// [[maybe_unused]]: only ever named inside is_constructible_v/is_convertible_v below, never called (that's the point)
-			[[maybe_unused]] explicit only_from_whole_array(multi::array<int, 1> const& arr) : size_{static_cast<std::size_t>(arr.size())} {}  // the "wrong" ctor that made `Sub` = a whole array look constructible
-			only_from_whole_array(std::size_t val) noexcept : size_{val} {}                                                                    // NOLINT(hicpp-explicit-conversions,*-explicit-constructor) the legitimate, per-element ctor
+			std::size_t size_ = 0;  // NOLINT(misc-non-private-member-variables-in-classes)
+
+			[[maybe_unused]] only_from_whole_array() noexcept = default;  // some backends (e.g. thrust/CUDA) default-construct-then-fill array elements
+			// the "wrong" ctor that made `Sub` = a whole array look constructible
+			[[maybe_unused]] explicit only_from_whole_array(multi::array<int, 1> const& arr) : size_{static_cast<std::size_t>(arr.size())} {}
+
+			only_from_whole_array(std::size_t val) noexcept : size_{val} {}  // NOLINT(hicpp-explicit-conversions,*-explicit-constructor) the legitimate, per-element ctor
 		};
 
 		static_assert(std::is_constructible_v<only_from_whole_array, multi::array<int, 1>>);

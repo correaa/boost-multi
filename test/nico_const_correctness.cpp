@@ -242,8 +242,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				BOOST_TEST( mds2.size() == 4 );
 
 				using std::get;
-				for(auto i : get<0>(mds2.extents())) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
-					for(auto j : get<1>(mds2.extents())) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+				for(auto const i : get<0>(mds2.extents())) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					for(auto const j : get<1>(mds2.extents())) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
