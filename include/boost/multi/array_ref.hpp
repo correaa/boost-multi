@@ -172,15 +172,18 @@ namespace detail {
 template<class P2, class P1>
 constexpr auto bit_cast_(P1 const& p1) {      // NOLINT(readability-identifier-naming)
 	static_assert(sizeof(P2) == sizeof(P1));  // NOLINT(bugprone-sizeof-expression)
+
 	// if constexpr(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>) {
+
 #if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
-		return std::bit_cast<P2>(p1);
+	return std::bit_cast<P2>(p1);
 #else
-		P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
-		static_assert(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>);
-		std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));  // NOLINT(bugprone-sizeof-expression,bugprone-multi-level-implicit-pointer-conversion)
-		return p2;
+	P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+	static_assert(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>);
+	std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));  // NOLINT(bugprone-sizeof-expression,bugprone-multi-level-implicit-pointer-conversion)
+	return p2;
 #endif
+
 	// } else {
 	// 	return reinterpret_cast<P2 const&>(p1);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) this is UB, if this is reached you may need -fno-strict-aliasing
 	// }
@@ -2773,7 +2776,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
 			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
-			return detail::bit_cast_<P2>(base_ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void)
+			return detail::bit_cast_<P2>(base_ptr);           // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void)
 		}
 	}
 

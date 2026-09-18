@@ -235,11 +235,15 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{
 				auto&& mds = multi::array_ref(coll.data(), {3, 4});
 
+				BOOST_TEST( mds.strided(1, 2).size() == 6 );
+
 				auto const& mds2 = ~mds.strided(1, 2).taked(5);
 
+				BOOST_TEST( mds2.size() == 4 );
+
 				using std::get;
-				for(int i = 0; i != get<0>(mds2.sizes()); ++i) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
-					for(int j = 0; j != get<1>(mds2.sizes()); ++j) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+				for(auto i : get<0>(mds2.extents())) {      // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
+					for(auto j : get<1>(mds2.extents())) {  // NOLINT(altera-id-dependent-backward-branch,altera-unroll-loops)
 						std::cout << mds2[i][j] << ' ';
 					}
 					std::cout << '\n';
