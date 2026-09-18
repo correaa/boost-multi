@@ -229,6 +229,7 @@ g++-9-bullseye:
       - develop
   script:
     - arch
+    - apt-get update --fix-missing
     - apt-get install --no-install-recommends --assume-yes ca-certificates cmake ninja-build g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
     - cmake --version
     - g++ --version
@@ -798,6 +799,7 @@ clang++-oldoldstable-cmake4:
       - develop
   script:
     - arch
+    - apt-get update --fix-missing
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates git clang cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - cmake --version
     # - wget --no-verbose -O cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.0-rc2/cmake-4.1.0-rc2-linux-`arch`.sh  # https://cmake.org/files/v3.18/cmake-3.18.0-rc1-Linux-`arch`.sh --no-verbose
@@ -1041,7 +1043,7 @@ culang++-21 cuda-12.8.2 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
     - high-bandwidth
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev libvkfft-dev
     - apt-get install --no-install-recommends -y lsb-release software-properties-common
     - wget https://apt.llvm.org/llvm.sh
     - chmod u+x llvm.sh
@@ -1089,7 +1091,7 @@ cuda-12.6.3 cutensor:
       - develop
   script:
     - nvidia-smi
-    - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y cmake ninja-build g++ wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev libvkfft-dev
     # - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
     # - dpkg -i cuda-keyring_1.1-1_all.deb
     - apt-get update
@@ -1401,7 +1403,7 @@ inq rocm:
     - x86_64  # for image
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget libvkfft-dev  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
