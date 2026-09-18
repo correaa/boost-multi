@@ -171,7 +171,6 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 
-
 			BOOST_TEST( marr[0][0] == 10 );
 			BOOST_TEST( marr[1][4] == 24 );
 		}
