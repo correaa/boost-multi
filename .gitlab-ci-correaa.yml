@@ -16,7 +16,11 @@ workflow:
     # skip a branch pipeline when an MR pipeline already covers the same commit (avoids
     # running every job twice per push while a branch has an open MR); the final catch-all
     # still covers direct pushes, the master cron schedule, and manual "web" runs on any branch.
+    # $CI_DEFAULT_BRANCH must be excluded from the suppression check: MR !2082 (develop -> master)
+    # is a standing open MR whose *source* branch is develop, so $CI_OPEN_MERGE_REQUESTS is always
+    # non-empty on develop pushes; without this line every develop push silently lost full CI.
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
     - if: $CI_COMMIT_TAG
