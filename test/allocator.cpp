@@ -707,6 +707,10 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( qtr == arr.base() );
 		BOOST_TEST( *qtr == 10 );
 	}
+	// {
+	// 	auto fun = []() { return multi::array<int, 2>({2, 2}); };
+	// 	auto p = &fun();
+	// }
 
 	return boost::report_errors();
 }
