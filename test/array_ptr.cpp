@@ -91,14 +91,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_array_ptr)
 	{
 		{
-			// clang-format off
-		std::array<std::array<double, 5>, 4> arr{
-			{{{0.0, 1.0, 2.0, 3.0, 4.0}},
-			 {{5.0, 6.0, 7.0, 8.0, 9.0}},
-			 {{10.0, 11.0, 12.0, 13.0, 14.0}},
-			 {{15.0, 16.0, 17.0, 18.0, 19.0}},},
-		};
-			// clang-format on
+			std::array<std::array<double, 5>, 4> arr{
+				{
+                 {{0.0, 1.0, 2.0, 3.0, 4.0}},
+                 {{5.0, 6.0, 7.0, 8.0, 9.0}},
+                 {{10.0, 11.0, 12.0, 13.0, 14.0}},
+                 {{15.0, 16.0, 17.0, 18.0, 19.0}},
+				 },
+			};
 
 			auto const arrP = &multi::array_ref<double, 2>(arr);
 

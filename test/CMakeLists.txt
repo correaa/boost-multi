@@ -227,7 +227,7 @@ else()
 	# -Wsizeof-array-div # (gcc 11, not in 10)
 	-Wsizeof-pointer-memaccess
 	-Wstack-protector  # -Wstack-usage=<byte-size>
-	-Wstrict-aliasing #=3 # -Wstrict-aliasing=<0,3>
+	-Wstrict-aliasing=1  # level 3 (plain -Wstrict-aliasing, the default) misses reinterpret_cast bug in const_array_cast
 	-Wstrict-null-sentinel  
 	# -Wstrict-overflow=<0,5>
 	-Wstrict-overflow=1

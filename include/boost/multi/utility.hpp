@@ -344,9 +344,16 @@ constexpr auto stride(Pointer /*ptr*/) -> std::ptrdiff_t { return 1; }
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) special sfinae trick
 constexpr auto base(Pointer ptr) -> Pointer { return ptr; }
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 template<class TPointer, class U>
 constexpr auto reinterpret_pointer_cast(U* other)                                                 // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
 	-> decltype(reinterpret_cast<TPointer>(other)) { return reinterpret_cast<TPointer>(other); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 template<class T, std::size_t N>
 constexpr auto size(T const (& /*array*/)[N]) noexcept { return static_cast<multi::ssize_t>(N); }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility

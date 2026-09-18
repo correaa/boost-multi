@@ -12,6 +12,10 @@
 #include <cmath>
 #include <type_traits>
 
+#if (__cplusplus >= 202002L)
+#include <bit>  // for std::bit_cast
+#endif
+
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)
 #include <ranges>  // IWYU pragma: keep
 #include <vector>  // for .to conversion
@@ -162,6 +166,27 @@ template<class T> struct is_const_subarray : decltype(detail::is_const_subarray_
 template<class T>
 constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 }  // end namespace detail
+
+namespace detail {
+
+template<class P2, class P1>
+constexpr auto bit_cast_(P1 const& p1) {      // NOLINT(readability-identifier-naming)
+	static_assert(sizeof(P2) == sizeof(P1));  // NOLINT(bugprone-sizeof-expression)
+	// if constexpr(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>) {
+#if defined(__cpp_lib_bit_cast) && !defined(_MSC_VER)  // for C++20
+		return std::bit_cast<P2>(p1);
+#else
+		P2 p2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+		static_assert(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>);
+		std::memcpy(static_cast<void*>(&p2), static_cast<void const*>(&p1), sizeof(P2));  // NOLINT(bugprone-sizeof-expression,bugprone-multi-level-implicit-pointer-conversion)
+		return p2;
+#endif
+	// } else {
+	// 	return reinterpret_cast<P2 const&>(p1);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) this is UB, if this is reached you may need -fno-strict-aliasing
+	// }
+}
+
+}  // namespace detail
 
 /// Mutable `D`-dimensional view into part or all of an array
 ///
@@ -2138,13 +2163,12 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		if constexpr(std::is_pointer_v<P2>) {
 			return rebind<T2, P2>(this->layout(), const_cast<P2>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		} else {
-			return rebind<T2, P2>(this->layout(), reinterpret_cast<P2 const&>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)  //NOSONAR
+			return rebind<T2, P2>(this->layout(), detail::bit_cast_<P2>(this->base_));
 		}
 	}
 
 	/// yields a const-element view of the subarray, preventing modification of elements.
 	constexpr auto as_const() const { return const_subarray(this->layout(), this->base_); }
-	// return rebind<element, element_const_ptr>{this->layout(), this->base()};
 
  private:
 	template<class T2, class P2>
@@ -2187,7 +2211,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		} else {  // TODO(correaa) try to unify both if-branches
 			return const_subarray<T2, D + 1, P2>(
 				detail::layout_t<D + 1>(this->layout().scale(sizeof(T), sizeof(T2)), 1, 0, count).rotate(),
-				reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+				detail::bit_cast_<P2>(this->base_)
+				// reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 			);
 		}
 	}
@@ -2743,12 +2768,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
  private:
 	template<typename P2>
-	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> decltype(auto) {
+	constexpr static auto reinterpret_pointer_cast_(ElementPtr const& base_ptr) -> auto {
 		if constexpr(std::is_pointer_v<ElementPtr>) {
 			return static_cast<P2>(static_cast<void*>(base_ptr));  // NOLINT(bugprone-casting-through-void) direct reinterepret_cast doesn't work here
 		} else {
 			static_assert(sizeof(ElementPtr) == sizeof(P2));  // TODO(correaa) upgrade to bitcast C++20?
-			return reinterpret_cast<P2 const&>(base_ptr);     // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void) direct reinterepret_cast doesn't work here
+			return detail::bit_cast_<P2>(base_ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,bugprone-casting-through-void)
 		}
 	}
 
@@ -3896,13 +3921,22 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		static_assert(sizeof(T) % sizeof(T2) == 0, "array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
 												   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) reinterpret is what the function does. alternative for GCC/NVCC
-		auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-		auto*  ptr1 = &ref1;                                                                                           //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+#if (defined(__GNUC__) && !defined(__INTEL_COMPILER)) || defined(_MSC_VER)
+#ifndef _MSC_VER
+		P2 ptr2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+#else
+		P2 ptr2{};  // TODO(correaa) convert this below into a function
+#endif
+		if constexpr(std::is_pointer_v<P2>) {
+			ptr2 = static_cast<P2>(&(this->base_->*member));
+		} else {
+			auto*  ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
+			auto&& ref1 = (*ptr0).*member;
+			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
+			auto* ptr1  = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) TODO(correaa) find a better way
-		P2 ptr2 = reinterpret_cast<P2&>(ptr1);  // NOSONAR
+			ptr2 = detail::bit_cast_<P2>(ptr1);
+		}
 #else
 		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif

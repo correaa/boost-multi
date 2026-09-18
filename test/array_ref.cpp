@@ -1282,6 +1282,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( get<1>(arr().sizes()) ==  4 );
 	}
 	{
+// intentional double<->complex<double> reinterpretation (the classic)
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 		double buffer[4] = {1.0, 2.0, 3.0, 4.0};  // NOLINT(*-avoid-c-arrays)
 
 		using ref_t = multi::array_ref<std::complex<double>, 1, std::complex<double>*>;
@@ -1296,6 +1301,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto const* p2 = carr.data_elements();
 		BOOST_TEST( p2 == reinterpret_cast<std::complex<double>*>(&buffer[0]) );  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 	}
 
 	return boost::report_errors();

@@ -238,6 +238,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#elif defined(__GNUC__)
+// intentional double<->std::array<double,3> reinterpretation (the classic
+// numerical-computing idiom), not the fancy-pointer class-confusion bug that
+// -Wstrict-aliasing=2 (test/CMakeLists.txt) is otherwise there to catch
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
@@ -245,6 +251,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
 #endif
 
 		{
@@ -286,10 +294,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast)
 	{
+// intentional complex<double><->complex_dummy<double> reinterpretation (the
+// classic numerical-computing idiom), not the fancy-pointer class-confusion
+// bug that -Wstrict-aliasing=2 (test/CMakeLists.txt) is otherwise there to catch
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 		std::complex<double> cee{1.0, 2.0};
 		auto*                ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		ptr->real                = 11.0;
 		BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 		{
 			multi::array<std::complex<double>, 1> arr(multi::extents_t<1>{multi::iextension{10}});
@@ -303,6 +321,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex)
 	{
+// intentional complex<double><->{std::array<double,2>, double[2]} reinterpretation
+// (the classic numerical-computing idiom), not the fancy-pointer class-confusion
+// bug that -Wstrict-aliasing=2 (test/CMakeLists.txt) is otherwise there to catch
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 		using complex = std::complex<double>;
 		{
 			complex cee{1.0, 2.0};
@@ -319,6 +344,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( ceePC );
 			BOOST_TEST( std::abs( real(cee) - 11.0 ) < 1E-6 );
 		}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 		{
 			multi::array<complex, 1> arr(multi::extents_t<1>{multi::iextension{10}});
 
