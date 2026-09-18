@@ -975,6 +975,46 @@ Note that the elements for these Python objects (`a2d`, `npa2d` and `a2d_ref`) a
 Special care must be taken if the original element is resized, or assigned to a different Python object, in which case the memory will not be valid.
 For this reason alone, it would be an error to name the last variable as the original (`a2d`) instead of the new name (`a2d_ref`).
 
+=== Python (cppyy) / GPU
+
+The CPU-side reflection above does not extend to `boost::multi::thrust::cuda::array<T, D>` (the GPU-allocated array from `boost/multi/adaptors/thrust.hpp`).
+cppyy's Cling interpreter cannot instantiate `thrust::cuda::allocator<T>` itself: it hits SFINAE-detection failures deep inside `thrust`'s allocator/pointer traits, and, separately, Clang-CUDA mode in current cppyy releases only partially supports CUDA versions beyond 11.8 and cannot parse a modern GCC `libstdc++`'s `__float128` usage on the device side.
+So unlike the plain `multi.array['T', D]` above, `multi.thrust.cuda.array['T', D]` cannot be genuine cppyy template reflection.
+
+Instead, `boost/multi/adaptors/cppyy/thrust_cuda_array.cu` explicitly instantiates `multi::thrust::cuda::array<T, D>` for a small, known set of `(T, D)` pairs at ordinary compile time (real `nvcc`, never Cling), behind a plain C dispatch interface (`thrust_cuda_array.hpp`) that Cling only ever calls into.
+The optional module `boost_multi_thrust_cuda.py` wires that dispatch up so the Python call site still reads like the real alias:
+
+[source,python]
+----
+import boost_multi_thrust_cuda as bmc
+bmc.enable('path-to/libthrust_cuda_array.so')  # built by CMake with -DENABLE_CUDA=ON
+
+from boost_multi_thrust_cuda import multi
+
+a = multi.thrust.cuda.array['double', 2](3, 3)
+a[1, 2] = 42.0
+print(a[1, 2], a.memory_type())  # 42.0 2  (cudaMemoryTypeDevice)
+
+c = multi.thrust.cuda.array['std::complex<double>', 1](4)
+c[0] = 1 + 2j
+print(c[0])  # (1+2j)
+----
+
+The precompiled set currently covers dimensions 1 through 4 and element types `int`, `unsigned`, `float`, `double`, `std::complex<float>`, `std::complex<double>`, `thrust::complex<float>` and `thrust::complex<double>`.
+Element values cross the plain-C interface as a `{re, im}` pair regardless of type (real types just leave `im` at zero), so real and complex types share the same `set`/`get` machinery on the Python side.
+
+Requesting a `(T, D)` outside the precompiled set raises `KeyError` rather than silently falling back or compiling anything on the fly:
+
+[source,python]
+----
+multi.thrust.cuda.array['long double', 2](3, 3)
+# KeyError: no multi::thrust::cuda::array precompiled for element type 'long double'; available: [...]
+----
+
+Adding a new element type is a one-line addition to `THRUST_CUDA_ARRAY_TYPES` in `thrust_cuda_array.cu` plus the matching entry in `_TYPE_INFO` in `boost_multi_thrust_cuda.py`, not a redesign.
+Adding a new dimension means one more `create`/`destroy`/`size`/`set`/`get`/`memory_type` overload in `thrust_cuda_array.hpp`/`.cu` (the `(T, D)` implementation itself is a single set of templates handling any `D` via variadic arguments) plus the matching entry in `_PRECOMPILED_DIMS`, also not a redesign.
+A `(T, D)` nobody listed there still will not work from Python without rebuilding the library.
+
 [#interop_c]
 == Legacy Libraries (C-APIs)
 
