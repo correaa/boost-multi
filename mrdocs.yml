@@ -41,6 +41,3 @@ exclude-symbols:
 warn-no-paramdoc: false
 
 verbose: true
-
-# addons-supplemental:
-#   - doc/mrdocs-addons
