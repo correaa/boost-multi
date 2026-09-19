@@ -4,6 +4,7 @@
 
 #include <boost/multi/adaptors/thrust.hpp>
 #include <boost/multi/adaptors/thrust/managed_allocator.hpp>
+
 #include <boost/multi/array.hpp>
 
 #include <cuda_runtime_api.h>
@@ -1067,6 +1068,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<multi::index, 2, thrust::cuda::allocator<multi::index>> const arr = [](multi::index i, multi::index j) { return i + j; } ^ multi::extents_t(10, 10);
 		BOOST_TEST( arr[3][4] == 3 + 4 );
+	}
+	{
+		multi::array<int, 1, thrust::device_allocator<int>> arr1({20}, 5);
+		multi::array<int, 1, thrust::device_allocator<int>> arr2({20});
+		multi::array<int, 1, thrust::device_allocator<int>> arr3({5}, 12);
+
+		thrust::transform(
+			arr1.begin(), arr1.end(), arr2.begin(),
+			[arr3_ = arr3.home()](int x) { return x*(arr3_[2] + arr3_[3]); }
+		);
+
+		BOOST_TEST( arr2[3] == 120 );
 	}
 
 	return boost::report_errors();

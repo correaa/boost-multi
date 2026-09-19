@@ -1848,11 +1848,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	/// A transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	// #ifdef __clang__
-	// #pragma clang diagnostic pop
-	// #endif
+	BOOST_MULTI_HD constexpr auto operator~() const & -> const_subarray { return this->transposed(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto rotated_aux_() const {
@@ -2461,10 +2459,14 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	using const_subarray<T, D, ElementPtr, Layout>::operator~;
+	BOOST_MULTI_HD constexpr auto operator~() & { return this->transposed(); }
+	BOOST_MULTI_HD constexpr auto operator~() && { return std::move(*this).transposed(); }
+
 	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	// auto operator~ (subarray const& self) { return self.transposed(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
 
 	// /// yields an array view where the elements have been reindexed.
 	// using const_subarray<T, D, ElementPtr, Layout>::reindexed;
@@ -3207,9 +3209,11 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	auto flatted() const&                 = delete;
 	auto range() const& -> const_subarray = delete;
 
-	// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information
+	auto operator~() const& = delete;
+
+	/// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information
 	using cursor       = detail::cursor_t<typename const_subarray::element_ptr, 0, typename const_subarray::strides_type>;
-	// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
+	/// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
 	using const_cursor = detail::cursor_t<typename const_subarray::element_const_ptr, 0, typename const_subarray::strides_type>;
 
  private:
@@ -3770,6 +3774,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
 
+	auto operator~() const& = delete;
+
 	using iterator       = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
 	using const_iterator = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
 
@@ -3934,9 +3940,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
 			auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
-			auto&& ref1 = (*ptr0).*member;
+			auto&&      ref1 = (*ptr0).*member;
 			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			auto* ptr1  = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+			auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 			ptr2 = detail::bit_cast_<P2>(ptr1);
 		}

@@ -497,6 +497,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 		// return [proj = proj_](auto i, auto j, auto... rest) { return proj(j, i, rest...); } ^ detail::layout_t<D>(extents()).transpose().extents();
 	}
 
+	/// Same as `transposed`
 	BOOST_MULTI_HD constexpr auto operator~() && { return std::move(*this).transposed(); }
 	BOOST_MULTI_HD constexpr auto operator~() const& { return transposed(); }
 
