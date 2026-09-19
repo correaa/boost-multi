@@ -298,9 +298,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		std::array<std::array<int, 2>, 3> const nested = {
 			{
-			 {{10, 20}},
-			 {{20, 40}},
-			 {{30, 60}},
+             {{10, 20}},
+             {{20, 40}},
+             {{30, 60}},
 			 },
 		};
 		multi::array<int, 2> arr(begin(nested), end(nested));
