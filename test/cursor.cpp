@@ -27,8 +27,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST( &arr.home()[2][2] == &arr[2][2] );
 
+#if (__cplusplus >= 202302L)
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 		BOOST_TEST(( &arr.home()[2, 2] == &arr[2][2] ));
+#endif
 #endif
 	}
 
