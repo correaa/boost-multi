@@ -302,6 +302,358 @@ BOOST_MULTI_HD constexpr auto log(A&& alpha) {
 }
 
 namespace detail {
+template<class A, class B>
+class pow_bind_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	template<class AA, class BB, std::enable_if_t<!std::is_base_of_v<pow_bind_t, std::decay_t<AA>>, int> = 0>                    // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr explicit pow_bind_t(AA&& a, BB&& b) noexcept : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		using ::std::pow;
+		return pow(
+			multi::detail::invoke_square(a_, is...),  // a_[is...] in C++23
+			multi::detail::invoke_square(b_, is...)   // b_[is...] in C++23
+		);
+	}
+};
+
+template<class A, class B> pow_bind_t(A, B) -> pow_bind_t<A, B>;
+}  // namespace detail
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, class B, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value && multi::has_extents<std::decay_t<B>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto pow(A&& alpha, B&& omega) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::pow_bind_t<A, B>(std::forward<A>(alpha), std::forward<B>(omega)) ^ xs;
+}
+
+namespace detail {
+template<class A, class B>
+class hypot_bind_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+	B b_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	template<class AA, class BB, std::enable_if_t<!std::is_base_of_v<hypot_bind_t, std::decay_t<AA>>, int> = 0>                    // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr explicit hypot_bind_t(AA&& a, BB&& b) noexcept : a_{std::forward<AA>(a)}, b_{std::forward<BB>(b)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		using ::std::hypot;
+		return hypot(
+			multi::detail::invoke_square(a_, is...),  // a_[is...] in C++23
+			multi::detail::invoke_square(b_, is...)   // b_[is...] in C++23
+		);
+	}
+};
+
+template<class A, class B> hypot_bind_t(A, B) -> hypot_bind_t<A, B>;
+}  // namespace detail
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, class B, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value && multi::has_extents<std::decay_t<B>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto hypot(A&& alpha, B&& omega) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::hypot_bind_t<A, B>(std::forward<A>(alpha), std::forward<B>(omega)) ^ xs;
+}
+
+namespace detail {
+template<class A>
+class sqrt_bind_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	template<class AA, std::enable_if_t<!std::is_base_of_v<sqrt_bind_t, std::decay_t<AA>>, int> = 0>                    // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr explicit sqrt_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		using ::std::sqrt;
+		return sqrt(
+			multi::detail::invoke_square(a_, is...)  // a_[is...] in C++23
+		);
+	}
+};
+
+template<class A> sqrt_bind_t(A) -> sqrt_bind_t<A>;
+}  // namespace detail
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto sqrt(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::sqrt_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+namespace detail {
+template<class A>
+class sin_bind_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	template<class AA, std::enable_if_t<!std::is_base_of_v<sin_bind_t, std::decay_t<AA>>, int> = 0>                    // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr explicit sin_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		using ::std::sin;
+		return sin(
+			multi::detail::invoke_square(a_, is...)  // a_[is...] in C++23
+		);
+	}
+};
+
+template<class A> sin_bind_t(A) -> sin_bind_t<A>;
+}  // namespace detail
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto sin(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::sin_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+#define DEFINE_BIND_UNARY_STD(NamE) \
+namespace detail { \
+template<class A> \
+class NamE##_bind_t { \
+	A a_;  /* NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor*/ \
+\
+ public: \
+	template<class AA, std::enable_if_t<!std::is_base_of_v<NamE##_bind_t, std::decay_t<AA>>, int> = 0>  /* NOLINT(modernize-use-constraints) for C++20 */ \
+	BOOST_MULTI_HD constexpr explicit NamE##_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  /* NOLINT(bugprone-forwarding-reference-overload) */ \
+\
+	template<class... Is> \
+	constexpr auto operator()(Is... is) const { \
+		using ::std::NamE; \
+		return NamE( \
+			multi::detail::invoke_square(a_, is...)  \
+		); \
+	} \
+}; \
+\
+template<class A> NamE##_bind_t(A) -> NamE##_bind_t<A>; \
+}  /* namespace detail */
+
+DEFINE_BIND_UNARY_STD(cos)
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto cos(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::cos_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(tan)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto tan(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::tan_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(asin)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto asin(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::asin_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(acos)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto acos(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::acos_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(atan)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto atan(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::atan_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(sinh)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto sinh(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::sinh_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(cosh)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto cosh(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::cosh_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(tanh)
+
+/// yields an array expression with the function `cos` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto tanh(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::tanh_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(erf)
+
+/// yields an array expression with the function `erf` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto erf(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::erf_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(erfc)
+
+/// yields an array expression with the function `erfc` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto erfc(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::erfc_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(tgamma)
+
+/// yields an array expression with the function `tgamma` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto tgamma(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::tgamma_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(lgamma)
+
+/// yields an array expression with the function `lgamma` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto lgamma(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::lgamma_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(ceil)
+
+/// yields an array expression with the function `ceil` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto ceil(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::ceil_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(floor)
+
+/// yields an array expression with the function `floor` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto floor(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::floor_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(trunc)
+
+/// yields an array expression with the function `trunc` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto trunc(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::trunc_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+DEFINE_BIND_UNARY_STD(round)
+
+/// yields an array expression with the function `round` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto round(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::round_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+namespace detail {
+template<class A>
+class cbrt_bind_t {
+	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) consider saving .home() cursor
+
+ public:
+	template<class AA, std::enable_if_t<!std::is_base_of_v<cbrt_bind_t, std::decay_t<AA>>, int> = 0>                    // NOLINT(modernize-use-constraints) for C++20
+	BOOST_MULTI_HD constexpr explicit cbrt_bind_t(AA&& a) noexcept : a_{std::forward<AA>(a)} {}  // NOLINT(bugprone-forwarding-reference-overload)
+
+	template<class... Is>
+	constexpr auto operator()(Is... is) const {
+		using ::std::cbrt;
+		return cbrt(
+			multi::detail::invoke_square(a_, is...)  // a_[is...] in C++23
+		);
+	}
+};
+
+template<class A> cbrt_bind_t(A) -> cbrt_bind_t<A>;
+}  // namespace detail
+
+/// yields an array expression with the function `log` applied lazily elementwise.
+template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+							   multi::has_extents<std::decay_t<A>>::value,
+							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
+BOOST_MULTI_HD constexpr auto cbrt(A&& alpha) {
+	auto const xs = alpha.extents();  // shouldn't get to this point for scalars
+	return detail::cbrt_bind_t<A>(std::forward<A>(alpha)) ^ xs;
+}
+
+namespace detail {
 template<class A>
 struct abs_bind_t {
 	A a_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
