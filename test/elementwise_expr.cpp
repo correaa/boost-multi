@@ -75,6 +75,16 @@ auto main() -> int {
 	// 		std::cout << std::abs( matrix_minus_row_max[0][2] ) << '\n';
 	// 		BOOST_TEST( std::abs( matrix_minus_row_max[0][2] ) < 1e-12F );
 	// 	}
+	{
+		using multi::elementwise::pow;
+		using std::pow;
+		BOOST_TEST( std::abs(pow(A, B)[1][1] - pow(A[1][1], B[1][1])) < 1e-12 );
+	}
+	{
+		using multi::elementwise::lgamma;
+		using std::lgamma;
+		BOOST_TEST( std::abs(lgamma(A)[1][1] - lgamma(A[1][1])) < 1e-12 );
+	}
 	return boost::report_errors();
 }
 #else
