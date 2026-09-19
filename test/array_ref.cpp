@@ -1305,6 +1305,13 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma GCC diagnostic pop
 #endif
 	}
+	// BOOST_AUTO_TEST_CASE(array_fill_constructor_2D)
+	{
+		multi::array<int, 2> arr({2, 2}, 10);
+
+		BOOST_TEST( &std::apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+		BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
+	}
 
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
