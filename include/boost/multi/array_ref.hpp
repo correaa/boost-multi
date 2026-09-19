@@ -926,16 +926,19 @@ struct cursor_t {
 		}
 	}
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
-	template<typename... Rest>
+	BOOST_MULTI_HD constexpr auto operator[]() const { return *this; }
+
+template<typename... Rest>
 	BOOST_MULTI_HD constexpr auto operator[](index n, Rest... ns) const -> decltype(auto) {
 		return operator[](n)[ns...];
 	}
 #endif
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 	/// Function call operators, to obtain indexing, on one or more multiple indexing arguments
 	BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
 		return operator[](n);
