@@ -17,6 +17,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		static_assert(std::is_trivially_copy_constructible_v<multi::array<double, 0>::cursor>);
 		static_assert(std::is_trivially_copy_assignable_v<multi::array<double, 0>::cursor>);
 	}
+	{
+		multi::array<int, 1> arr({10}, 5);
+
+		BOOST_TEST( &arr.home()[2] == &arr[2] );
+	}
+	{
+		multi::array<int, 2> arr({4, 4}, 5);
+
+		BOOST_TEST( &arr.home()[2][2] == &arr[2][2] );
+
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+		BOOST_TEST(( &arr.home()[2, 2] == &arr[2][2] ));
+#endif
+	}
 
 	// BOOST_AUTO_TEST_CASE(iterator_1d)
 	{

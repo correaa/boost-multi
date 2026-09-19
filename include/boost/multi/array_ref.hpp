@@ -854,6 +854,7 @@ struct cursor_t {
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
 	/// Tuple type to describe the strides of the array defined by the cursor
 	using strides_type    = StridesType;
+	using index = difference_type;
 
 	/// Element pointer type (e.g. `T*`)
 	using element_ptr                                = ElementPtr;
@@ -913,7 +914,7 @@ struct cursor_t {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 	/// Indexing operator, it returns a cursors of lower dimensionality; recursively obtaining an element at the corresponding relative index
-	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator[](index n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
 			return cursor_t<ElementPtr, D - 1, std::decay_t<decltype(strides_.tail())>>(
@@ -924,6 +925,14 @@ struct cursor_t {
 			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 	}
+
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	template<typename... Rest>
+	BOOST_MULTI_HD constexpr auto operator[](index n, Rest... ns) const -> decltype(auto) {
+		return operator[](n)[ns...];
+	}
+#endif
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
