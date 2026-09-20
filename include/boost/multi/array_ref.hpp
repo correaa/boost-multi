@@ -170,7 +170,7 @@ constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 namespace detail {
 
 template<class P2, class P1>
-constexpr auto bit_cast_(P1 const& ptr1) {      // NOLINT(readability-identifier-naming)
+constexpr auto bit_cast_(P1 const& ptr1) {    // NOLINT(readability-identifier-naming)
 	static_assert(sizeof(P2) == sizeof(P1));  // NOLINT(bugprone-sizeof-expression)
 
 	// if constexpr(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>) {

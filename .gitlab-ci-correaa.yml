@@ -225,27 +225,6 @@ g++ thrust:
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-9-bullseye:
-  stage: build
-  image: debian:bullseye
-  tags:
-    - non-shared
-    - docker
-  allow_failure: false
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-  script:
-    - arch
-    - apt-get update --fix-missing
-    - apt-get install --no-install-recommends --assume-yes ca-certificates cmake ninja-build g++ g++-9 make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev pkg-config wget
-    - cmake --version
-    - g++ --version
-    - g++-9 --version
-    - CXX=g++-9 cmake -S . -B build/ -DCMAKE_BUILD_TYPE=Debug -DDISABLE_MPI=ON
-    - cmake --build build/ || cmake --build build/ --parallel 1 --verbose
-    - cmake --build build/ --target test
-  needs: ["g++"]
-
 g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
   stage: build
   image: debian:unstable
