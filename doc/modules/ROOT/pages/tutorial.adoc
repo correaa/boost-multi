@@ -1,6 +1,6 @@
 [#tutorial]
 
-= Tutorial
+= Advanced Usage
 
 :idprefix: tutorial_
 
