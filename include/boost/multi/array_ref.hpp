@@ -170,7 +170,7 @@ constexpr bool is_const_subarray_v = is_const_subarray<T>::value;
 namespace detail {
 
 template<class P2, class P1>
-constexpr auto bit_cast_(P1 const& ptr1) {    // NOLINT(readability-identifier-naming)
+constexpr auto bit_cast_(P1 const& ptr1) {      // NOLINT(readability-identifier-naming)
 	static_assert(sizeof(P2) == sizeof(P1));  // NOLINT(bugprone-sizeof-expression)
 
 	// if constexpr(std::is_trivially_copyable_v<P1> && std::is_trivially_copyable_v<P2>) {
@@ -854,7 +854,6 @@ struct cursor_t {
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
 	/// Tuple type to describe the strides of the array defined by the cursor
 	using strides_type    = StridesType;
-	using index = difference_type;
 
 	/// Element pointer type (e.g. `T*`)
 	using element_ptr                                = ElementPtr;
@@ -914,7 +913,7 @@ struct cursor_t {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
 #endif
 	/// Indexing operator, it returns a cursors of lower dimensionality; recursively obtaining an element at the corresponding relative index
-	BOOST_MULTI_HD constexpr auto operator[](index n) const -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		using std::get;  // for C++17 compatibility
 		if constexpr(D != 1) {
 			return cursor_t<ElementPtr, D - 1, std::decay_t<decltype(strides_.tail())>>(
@@ -925,28 +924,24 @@ struct cursor_t {
 			return base_[get<0>(strides_) * n];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 	}
-
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+	// /// Function call operators, to obtain indexing, on one or more multiple indexing arguments
+	// BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
+	// 	return operator[](n);
+	// }
+	// template<class... Ns>
+	// BOOST_MULTI_HD constexpr auto operator()(difference_type n, Ns... rest) const -> decltype(auto) {
+	// 	return operator()(n)(rest...);
+	// }
 
-#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
-	BOOST_MULTI_HD constexpr auto operator[]() const { return *this; }
-
-template<typename... Rest>
-	BOOST_MULTI_HD constexpr auto operator[](index n, Rest... ns) const -> decltype(auto) {
+	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+	template<typename... Rest>
+	BOOST_MULTI_HD constexpr auto operator[](difference_type n, Rest... ns) const -> decltype(auto) {
 		return operator[](n)[ns...];
 	}
 #endif
-
-	/// Function call operators, to obtain indexing, on one or more multiple indexing arguments
-	BOOST_MULTI_HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
-		return operator[](n);
-	}
-	template<class... Ns>
-	BOOST_MULTI_HD constexpr auto operator()(difference_type n, Ns... rest) const -> decltype(auto) {
-		return operator[](n)(rest...);
-	}
 
  private:
 	template<class Tuple, std::size_t... I>
@@ -1895,6 +1890,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class const_subarray;
 
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
+	BOOST_MULTI_HD constexpr auto subsc_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
  public:
 	/// Subarray returning operator (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
@@ -1909,9 +1905,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
-	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
-	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
-	template<class... As> BOOST_MULTI_HD constexpr auto brckt_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index_range rng, As... args) const& { return range(rng).rotated().paren_aux_(args...).unrotated(); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(intersecting_range<index> inr, As... args) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index idx, As... args) const& -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
@@ -2663,11 +2659,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto paren_aux_() & { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }  // cppcheck-suppress duplInheritedMember;
 	BOOST_MULTI_HD constexpr auto paren_aux_() && { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 
+	BOOST_MULTI_HD constexpr auto subsc_aux_() & { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }  // cppcheck-suppress duplInheritedMember;
+	BOOST_MULTI_HD constexpr auto subsc_aux_() && { return subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
+
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx) & -> decltype(auto) { return operator[](idx); }
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx) && -> decltype(auto) { return operator[](idx); }
 
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index idx) & -> decltype(auto) { return operator[](idx); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index idx) && -> decltype(auto) { return operator[](idx); }
+
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) & -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(index idx, As... args) && -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
+
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index idx, As... args) & -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(index idx, As... args) && -> decltype(auto) { return operator[](idx).paren_aux_(args...); }
 
 	template<class... As>
 	BOOST_MULTI_HD constexpr auto paren_aux_(index_range irng, As... args) & {
@@ -2678,8 +2683,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return std::move(*this).range(irng).rotated().paren_aux_(args...).unrotated();
 	}
 
+	template<class... As>
+	BOOST_MULTI_HD constexpr auto subsc_aux_(index_range irng, As... args) & {
+		return this->range(irng).rotated().paren_aux_(args...).unrotated();
+	}
+	template<class... As>
+	BOOST_MULTI_HD constexpr auto subsc_aux_(index_range irng, As... args) && {
+		return std::move(*this).range(irng).rotated().paren_aux_(args...).unrotated();
+	}
+
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) & -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 	template<class... As> BOOST_MULTI_HD constexpr auto paren_aux_(intersecting_range<index> inr, As... args) && -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
+
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(intersecting_range<index> inr, As... args) & -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
+	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(intersecting_range<index> inr, As... args) && -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 
  public:
 	using const_subarray<T, D, ElementPtr, Layout>::operator();
@@ -3234,6 +3251,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	auto paren_aux_() const& { return operator()(); }
+	auto subsc_aux_() const& { return operator()(); }
 
  public:
 	template<class Tuple>
@@ -3665,10 +3683,13 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto range(index_range const& rng) const& { return sliced(rng.front(), rng.last()); }
 
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray(this->layout(), this->base_); }
+	BOOST_MULTI_HD constexpr auto subsc_aux_() const& { return const_subarray(this->layout(), this->base_); }
 
 	BOOST_MULTI_HD constexpr auto paren_aux_(index idx) const& -> decltype(auto) { return operator[](idx); }
+	BOOST_MULTI_HD constexpr auto subsc_aux_(index idx) const& -> decltype(auto) { return operator[](idx); }
 
 	BOOST_MULTI_HD constexpr auto paren_aux_(index_range const& rng) const& { return range(rng); }
+	BOOST_MULTI_HD constexpr auto subsc_aux_(index_range const& rng) const& { return range(rng); }
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()() const& { return paren_aux_(); }
@@ -3684,6 +3705,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  private:
 	constexpr auto paren_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), rng)); }
+	constexpr auto subsc_aux_(intersecting_range<index> const& rng) const& -> decltype(auto) { return paren_aux_(intersection(this->extent(), rng)); }
 
  public:
 	BOOST_MULTI_HD constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) { return paren_aux_(isrange); }
@@ -3946,9 +3968,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
 			auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
-			auto&& ref1 = (*ptr0).*member;
+			auto&&      ref1 = (*ptr0).*member;
 			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			auto* ptr1  = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+			auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 			ptr2 = detail::bit_cast_<P2>(ptr1);
 		}
