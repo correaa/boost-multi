@@ -919,7 +919,7 @@ int main() {
 ----
 
 [#tutorial_addressing_subarrays]
-== Addressing subarrays
+== Addressing Subarrays
 
 A fundamental design decision of this library is that subarray references are not copyable.
 This is done to clearly distinguish the value and reference categories of objects,
