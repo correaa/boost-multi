@@ -43,6 +43,8 @@
 * xref:reference:index.adoc[API Reference (auto-generated)]
 * xref:howto.adoc[]
 ** xref:howto.adoc#howto_fill[How to Fill Elements?]
+** xref:howto.adoc#howto_reduce_rows[How to Reduce Over Rows?] 
+** xref:howto.adoc#howto_serialize[How to Serialize an Array?]
 * xref:technical.adoc[]
 ** xref:technical.adoc#technical_indexing[Indexing]
 ** xref:technical.adoc#technical_thread_safety[Thread Safety Guarantees]

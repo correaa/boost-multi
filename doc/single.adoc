@@ -26,6 +26,8 @@ include::modules/ROOT/pages/tutorial.adoc[leveloffset=+1]
 
 include::modules/ROOT/pages/interop.adoc[leveloffset=+1]
 
+include::modules/ROOT/pages/howto.adoc[leveloffset=+1]
+
 include::modules/ROOT/pages/technical.adoc[leveloffset=+1]
 
 include::modules/ROOT/pages/appendix.adoc[leveloffset=+1]
