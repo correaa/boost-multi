@@ -48,7 +48,7 @@
 * xref:technical.adoc[]
 ** xref:technical.adoc#technical_indexing[Indexing]
 ** xref:technical.adoc#technical_thread_safety[Thread Safety Guarantees]
-** xref:technical.adoc#technical_iteration[Out-of-Bounds Pointers]
+** xref:technical.adoc#technical_iteration[Out-of-bounds Pointers]
 ** xref:technical.adoc#technical_change_dimensionality[Change Dimensionality at Runtime?]
 ** xref:technical.adoc#technical_dimensionality_static[Why Is Dimensionality Static?]
 ** xref:technical.adoc#technical_cpp17_minimum[Why C++17 Minimum?]

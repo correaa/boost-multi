@@ -70,7 +70,7 @@ Second, operations that reallocate or change the shape of an owning array (e.g. 
 In one sentence, the functionality of the library is thread-compatible and not thread-hostile, and thread-safety must be ensured by the user through the logic of the access patterns.
 
 [#technical_iteration]
-== Out-of-Bounds Pointer Formation in the Abstract Machine
+== Out-of-bounds Pointer Formation in the Abstract Machine
 
 The pass:[C++] abstract machine imposes strict rules on pointer arithmetic ([expr.add]): In particular, forming a pointer more than one position past the end of an allocation is undefined behavior -- even if the pointer is never dereferenced.
 

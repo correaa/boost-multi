@@ -116,7 +116,7 @@ To reduce the columns instead, reduce the rows of the transposed view, which doe
   // col_sums is {5.0, 7.0, 9.0}
 -----
 
-To control parallelism, use an execution policy on the outer (or the inner) algorithm, since each row is independent:
+To partially control parallelism, use an execution policy on the either the outer or the inner algorithm, since each row is independent:
 
 [source,cpp]
 -----
@@ -128,9 +128,8 @@ To control parallelism, use an execution policy on the outer (or the inner) algo
   );
 -----
 
-Be aware that this are correct, but following this pattern limits full parallelization.
+Be aware that following this pattern limits full parallelization and doesn't take into account memory access patterns.
 Other more advanced algorithms such as Reduce-by-key (e.g. implemented as `thurst::reduce_by_key`) can take advantage of two-dimensionally parallelism.
-
 
 
 [#howto_serialize]
@@ -167,11 +166,5 @@ Binary archives are the fastest and most compact:
 
   assert(A == B);
 -----
-
-Some things to keep in mind:
-
-* Data must be deserialized into the same type it was serialized from; the archive library performs only minimal consistency checks.
-* Views (subarrays) can also be serialized, but their sizes are not saved. Deserialize a view into another view of matching size, since a view cannot be resized.
-* Formatted archives (XML, text) are slow and large for big arrays; prefer a binary archive for large data.
 
 See the xref:interop.adoc#interop_serialization[Serialization] section for more details and a performance comparison between archive formats.

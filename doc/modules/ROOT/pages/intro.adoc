@@ -100,7 +100,7 @@ The library does not throw exceptions and provides basic exception guarantees, s
 Exceptions are propagated transparently from allocations or element construction.
 Indexing, e.g. out-of-bounds errors, and other logical errors result in undefined behavior, which this library attempts to reflect via assertions.
 
-=== More About Use Cases
+=== More about Use Cases
 
 :idprefix: usecases_
 
