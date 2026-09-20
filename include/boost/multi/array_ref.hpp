@@ -3968,9 +3968,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
 			auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
-			auto&& ref1 = (*ptr0).*member;
+			auto&&      ref1 = (*ptr0).*member;
 			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			auto* ptr1  = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+			auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
 			ptr2 = detail::bit_cast_<P2>(ptr1);
 		}
