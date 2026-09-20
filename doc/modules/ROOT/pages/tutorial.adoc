@@ -1004,7 +1004,7 @@ static_assert( trace() == 1 + 5 + 100 );
 link:https://godbolt.org/z/snrzY91eE[(open with Compiler Explorer)]
 
 [#tutorial_restrictions]
-== Restrictions
+== Lazy Evaluation with Restrictions
 
 So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
 In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
