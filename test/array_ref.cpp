@@ -1312,6 +1312,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &std::apply(arr, std::tuple{1, 1}) == &arr[1][1] );
 		BOOST_TEST( &apply(arr, std::tuple{1, 1}) == &arr[1][1] );
 	}
-
+#if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+	{
+		multi::array<int, 1> arr({5});
+		BOOST_TEST( arr({0, 5}).size() == 5 );
+		BOOST_TEST( arr[{0, 5}].size() == 5 );
+	}
+#endif
 	return boost::report_errors();
 }  // NOLINT(readability/fn_size)
