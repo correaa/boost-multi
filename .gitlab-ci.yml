@@ -1,4 +1,7 @@
-# # Copyright 2020-2026 Alfredo A. Correa
+# Copyright 2020-2026 Alfredo A. Correa
+
+# These are the "basic" gitlab ci test.
+# They may be included from a more comprehensive gitlab ci file.
 
 image: debian:stable
 
