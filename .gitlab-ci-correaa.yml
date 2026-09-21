@@ -691,7 +691,7 @@ clang++-latest tidy iwyu everything:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-g++-testing c++20:
+g++-testing c++23:
   stage: build
   image: debian:testing
   tags:
@@ -700,7 +700,7 @@ g++-testing c++20:
   script:
     - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr"
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
   needs: ["g++"]
