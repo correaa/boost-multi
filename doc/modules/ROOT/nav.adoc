@@ -8,7 +8,7 @@
 ** xref:tutorial.adoc#tutorial_copy_assign[Copy, Assignment, and Aliasing]
 ** xref:tutorial.adoc#tutorial_change_size[Change Sizes]
 ** xref:tutorial.adoc#tutorial_iteration[Iterate over your Arrays]
-** xref:tutorial.adoc#tutorial_indexing[Index rahter than Iterating]
+** xref:tutorial.adoc#tutorial_indexing[Index rather than Iterating]
 ** xref:tutorial.adoc#tutorial_element_access[Element Access and Partial Access]
 ** xref:tutorial.adoc#tutorial_slices_and_strides[Slice and Stride your Arrays]
 ** xref:tutorial.adoc#tutorial_conversions[Change Types with Conversions]
