@@ -370,7 +370,7 @@ For the same reason, subarrays cannot be assigned from an array or another subar
 Changing the size of arrays by `reextent`, `clear`, or assignment generally invalidates existing iterators and ranges/views.
 
 [#tutorial_iteration]
-== Iteration
+== Iterate over your Arrays
 
 Historically, iteration over arrays has been done with index-based `for`-loops, where each nesting level is associated with a subdimension.
 For this type of usage, the valid range of indices in all the dimensions of an array is extracted with `.extents()`, and in the 2D (or higher) case, `.extents()` can be conveniently decomposed into two (or more) ranges, one for each dimension.
@@ -582,7 +582,7 @@ In summary, to make a copy (enforce value semantics), use prefix `operator+`, to
 This is just a recommendation that the library cannot enforce, feel free to try alternative idioms.
 
 [#tutorial_indexing]
-== Indexing
+== Index rather than Iterating
 
 Arrays provide random access to elements or subviews.
 Many algorithms on arrays are oriented to linear algebra,
@@ -658,7 +658,7 @@ gj_solve(A({1000, 4000}, {0, 3000}), y);
 ----
 
 [#tutorial_slices_and_strides]
-== Slices and Strides
+== Slice and Stride your Arrays
 
 Given an array, a slice in the first dimension can be taken with the `sliced` function. 
 `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
@@ -739,7 +739,7 @@ Two conditions must hold:
 otherwise, the result is undefined.
 
 [#tutorial_conversions]
-== Conversions
+== Change Types with Conversions
 
 Conversion between arrays of distinct types is possible if the underlying elements allow it.
 The result is as if elements are converted one by one;
