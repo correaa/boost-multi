@@ -1759,10 +1759,14 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	auto flattened() const& { return flattened_aux_().as_const(); }
 
 	constexpr auto flatted() const& {
-		assert(this->layout().is_flattable());
-		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		if constexpr(D > 1) {
+			assert(this->layout().is_flattable());
+			multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
+			new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+			return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		} else {
+			return;
+		}
 	}
 
  private:
@@ -2372,8 +2376,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_NO_DANGLING constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::flattened;
-	constexpr auto flattened() & { return this->flattened_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto flattened() && { return this->flattened_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto flattened() & {  // cppcheck-suppress duplInheritedMember ; to overwrite
+		if constexpr(D > 1) {
+			return this->flattened_aux_();
+		} else {
+			return;
+		}
+	}
+	constexpr auto flattened() && {  // cppcheck-suppress duplInheritedMember ; to overwrite
+		if constexpr(D > 1) {
+			return this->flattened_aux_();
+		} else {
+			return;
+		}
+	}
 
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2628,8 +2644,20 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// template<class Dummy = void, std::enable_if_t<(D > 1) && sizeof(Dummy*), int> =0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress-begin duplInheritedMember ; to override
-	constexpr auto diagonal() & { return this->diagonal_aux_(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
-	constexpr auto diagonal() && { return this->diagonal_aux_(); }
+	constexpr auto diagonal() & {  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+		if constexpr(D > 1) {
+			return this->diagonal_aux_();
+		} else {
+			return;
+		}
+	}
+	constexpr auto diagonal() && {
+		if constexpr(D > 1) {
+			return this->diagonal_aux_();
+		} else {
+			return;
+		}
+	}
 	// cppcheck-suppress-end duplInheritedMember ; to override
 
 	/// (inherited) A subarray‐view from index first to index last (not inclusive) skipping step in the leading dimension
@@ -2728,17 +2756,25 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
 	constexpr auto flatted() const& {
-		assert(this->layout().is_flattable());
-		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		if constexpr(D > 1) {
+			assert(this->layout().is_flattable());
+			multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
+			new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+			return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		} else {
+			return;
+		}
 	}
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
-		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+		if constexpr(D > 1) {
+			multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
+			new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+			return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+		} else {
+			return;
+		}
 	}
 
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override
@@ -4054,18 +4090,26 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 	constexpr auto flatted() const& {
-		assert(this->layout().is_flattable());
-		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		if constexpr(D > 1) {
+			assert(this->layout().is_flattable());
+			multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
+			new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+			return const_subarray<T, D - 1, ElementPtr>{new_layout, this->base_};
+		} else {
+			return;
+		}
 	}
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flatted() & {
-		assert(this->layout().is_flattable());
-		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
-		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
-		return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+		if constexpr(D > 1) {
+			assert(this->layout().is_flattable());
+			multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
+			new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
+			return subarray<T, D - 1, ElementPtr>(new_layout, this->base_);
+		} else {
+			return;
+		}
 	}
 
 	constexpr auto flatted() && { return this->flatted(); }  // cppcheck-suppress duplInheritedMember ; to override

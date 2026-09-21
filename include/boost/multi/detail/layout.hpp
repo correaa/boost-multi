@@ -820,17 +820,21 @@ struct layout_t
 	// }
 
 	BOOST_MULTI_HD constexpr auto transpose() const {
-		return layout_t(
-			sub_type(
-				sub().sub(),
-				stride(),
-				offset(),
-				nelems()
-			),
-			sub().stride(),
-			sub().offset(),
-			sub().nelems()
-		);
+		if constexpr(D > 1) {
+			return layout_t(
+				sub_type(
+					sub().sub(),
+					stride(),
+					offset(),
+					nelems()
+				),
+				sub().stride(),
+				sub().offset(),
+				sub().nelems()
+			);
+		} else {
+			return *this;
+		}
 	}
 
 	constexpr auto reverse() const {
@@ -876,10 +880,6 @@ struct layout_t
 			return 0;
 		}
 		return std::abs(size() * stride()) > std::abs(sub_.hull_size()) ? size() * stride() : sub_.hull_size();
-	}
-
-	[[deprecated("use two arg version")]] constexpr auto scale(size_type factor) const {
-		return layout_t{sub_.scale(factor), stride_ * factor, offset_ * factor, nelems_ * factor};
 	}
 
 #ifdef __clang__

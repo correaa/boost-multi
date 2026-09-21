@@ -141,6 +141,8 @@ struct                                                                          
 	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
 , public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
 , private boost::multi::random_iterable<dynamic_array<T, D, typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
+	friend boost::multi::random_iterable<dynamic_array<T, D, typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>>;  // the CRTP base casts back to this class
+
 	static_assert(
 		std::is_same_v<
 			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
