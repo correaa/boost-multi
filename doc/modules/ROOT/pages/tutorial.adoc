@@ -859,7 +859,7 @@ This syntax will compile only if elements are trivially-default constructible;
 for example, `multi::array<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
 [#tutorial_const_correctness]
-== Const-correctness
+== Disallowing Mutation with Const-correctness
 
 Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
 Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.

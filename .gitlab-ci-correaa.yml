@@ -545,48 +545,6 @@ vs2022-shell c++23:
   needs: ["vs2022-shell"]
   timeout: 30 minutes
 
-vs2022-shell c++20:
-  stage: build
-  variables:
-    CMAKE_GENERATOR: ""   # unset for this job
-  allow_failure: true
-  cache: []
-  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-  script:
-    - pwd
-    # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop
-    # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
-    # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
-    # - winget install Ninja-build.Ninja
-    # - winget install Microsoft.msmpi Microsoft.msmpisdk
-    # - git clone --depth=1 https://github.com/microsoft/vcpkg.git C:\
-    # - C:\vcpkg\bootstrap-vcpkg.bat
-    # - C:\vcpkg\vcpkg install blas fftw3
-    - C:\vcpkg\vcpkg install boost-core
-    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin"  # ;C:\Program Files\CMake\bin;C:\Program Files\7-Zip;C:\local\boost_1_86_0\lib"
-    - $Env:Path -split ';'
-    - cmake --version
-    # /BE switches cl.exe to the EDG front end, which it launches as 'cpfe'. A previous run died with
-    # "command line error D8027: cannot execute 'cpfe'", so locate that binary before configuring.
-    # trailing "; $true" matters: -ErrorAction SilentlyContinue still leaves $? as $false when nothing is
-    # found, and gitlab-runner's pwsh wrapper treats a $false $? after any line as a fatal job error.
-    - Write-Host "--- cpfe on PATH ---"; Get-Command cpfe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source; $true
-    - Write-Host "--- cpfe anywhere under Visual Studio ---"; Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio","C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Filter "cpfe*" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName; $true
-    - Write-Host "--- EDG IntelliSense binaries (Feacp) for comparison ---"; Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio","C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Filter "Feacp*" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName; $true
-    - cmake -S . -B build --fresh -G "Visual Studio 17 2022" -DCMAKE_CXX_FLAGS="/BE /MP /wd4514 /wd5045" -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON  # -DMPIEXEC_EXECUTABLE="C:/Program Files/Microsoft MPI/Bin/mpiexec.exe"
-    - cmake --build build --config Debug --parallel 4 2>&1 | Tee-Object -FilePath build.log ; if ($LASTEXITCODE -ne 0) { cmake --build build --config Debug --parallel 1 --verbose 2>&1 | Tee-Object -FilePath build.log }
-    # D9002 is a driver warning that /WX does not promote, so a misspelled or unsupported flag would otherwise pass silently
-    - if (Select-String -Path build.log -Pattern "D9002" -Quiet) { Write-Host "cl ignored an unknown option (D9002), a flag in CMAKE_CXX_FLAGS did not take effect"; exit 1 }
-    - Start-Sleep -Seconds 10  # try adding this if getting BAD_COMMAND errors
-    - ctest -j 2 --test-dir build --output-on-failure -C Debug  # low j to avoid windows' BAD_COMMAND problems
-  tags:
-    - windows
-    - shell
-  needs: ["vs2022-shell"]
-  timeout: 30 minutes
-
 vs2022-shell clang-cl:
   stage: build
   variables:
@@ -1123,37 +1081,6 @@ rocm c++20:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
 #  needs: ["clang++"]
-
-rocm-release:
-  stage: build
-  image: rocm/dev-ubuntu-24.04
-  allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-  tags:
-    - non-shared
-    - docker
-    - amdrocm
-    - high-bandwidth  # for download rocm extras
-    - x86_64  # for rocm image
-  # before_script: []  # inherit global before_script (force-unsafe-io + apt cache wiring + apt-get update)
-  script:
-    - apt-get install --no-install-recommends -y ninja-build cmake wget pkg-config make libboost-serialization-dev  libblas-dev libfftw3-dev wget gpg
-    - apt-get install --no-install-recommends -y rocthrust-dev hipblas-dev hipfft-dev hipsolver-dev  # rocm-device-libs is in the image's /opt/rocm; installing it from apt pulls a conflicting ROCm 5.7 stack from Ubuntu universe
-    - /opt/rocm/bin/hipconfig --full
-    - rocm-smi
-    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
-    - /opt/rocm/llvm/bin/clang++ --version
-    - cmake --version
-    - mkdir build && cd build
-    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
-    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
-    - export ROCM_PATH=/opt/rocm
-    - export HIP_PATH=/opt/rocm
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a  # TODO(correaa) add CMAKE_BUILD_TYPE
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest || ctest --rerun-failed --output-on-failure
-  needs: ["rocm"]
 
 rocm-latest:
   stage: build
