@@ -1316,7 +1316,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	{
 		multi::array<int, 1> arr({5});
 		BOOST_TEST( arr({0, 5}).size() == 5 );
-		BOOST_TEST( arr[{0, 5}].size() == 5 );
+		BOOST_TEST(( arr[{0, 5}].size() == 5 ));
 	}
 #endif
 	return boost::report_errors();
