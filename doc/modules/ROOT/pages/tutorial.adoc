@@ -46,7 +46,7 @@ There are several libraries for multidimensional arrays in pass:[C++] (see the s
 This library aims to be general in several aspects, dimensionality, memory control, access-by-index, subarray access, compatibility, iteration, algorithms, etc.
 
 [#tutorial_manip]
-== Manipulate your Memory with Array Refences
+== Manipulate your Memory with Array References
 
 Based on the motivation section, in this first example, we use memory that is not managed by the library and manipulate the stored elements.
 This is to show that the library can operate on raw memory that is available already through other libraries or through other parts of a code.
@@ -864,7 +864,7 @@ This syntax will compile only if elements are trivially-default constructible;
 for example, `multi::array<std::string, 2> A2({2, 3}, multi::uninitialized_elements)` will not compile because `std::string` does not have a trivial constructor.
 
 [#tutorial_const_correctness]
-== Disallowing Mutation with Const-correctness
+== Disallowing Mutation of your Arrays
 
 Const-correctness refers to the property of a program to disallow mutation of certain objects when it is undesired or logically incorrect.
 Honoring the const-ness declaration is fundamental not only to avoid bugs and typos but also for thread safety and generic programming.
