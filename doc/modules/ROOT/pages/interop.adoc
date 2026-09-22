@@ -121,7 +121,7 @@ The one-dimensional case `multi::array<T, 1>` is special and partially overlaps 
 The analogies are obvious, both are contiguous memory, provide random access, use allocated dynamic memory, and sizes can be selected at runtime, 
 so it is to be expected to be equivalent to a certain degree.
 For example, both can be constructed from a list of elements (`C c = {x0, x2, ...};`) or from a size `C c(size);` (where `C` is either type).
-Both values are assignable, have the same element access patterns and iterator interface, and implement all (lexical) comparisons.
+Both values are assignable, have the same element access patterns and iterator interface, and implement lexical comparisons.
 
 At the same time, we should know about the differences in the design goals of `std::vector` and `multi::array`, to understand their diverging interface, rather than forcing an equivalance.
 `multi::array<T, 1>` is the one-dimensional special case of general multidimensional arrays oriented toward high performance data access and manipulation;
@@ -140,7 +140,7 @@ In a departure from standard containers, elements are left uninitialized if they
 So, while `multi::array<T, 1> A(+{N}+, T{})` is equivalent to `std::vector<T> V(N, T{})`, `multi::array<T, 1> A(N)` will leave elements `T` uninitialized if the type allows this (e.g. built-ins), unlike `std::vector<T> V(N)` which will initialize the values.
 RAII types (e.g. `std::string`) do not have trivial default constructor, therefore they are not affected by this rule.
 
-Another difference is in scope, with the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`, such as GPU memory or other fancy memory (mapped memory, see example.)
+Another difference is in scope; with the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`, such as GPU memory or other fancy memory (mapped memory, see example.)
 
 Finally, an array `A1D` can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or vice versa.
 Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data_elements(), A1D.num_elements());`. 
@@ -819,9 +819,9 @@ link:https://colab.research.google.com/drive/1MbSdnRkqE9jIE0038nEQL8fRkOBEaAyC?u
 # We import the library
 import cppjit
 cppjit.add_include_path('path-to/boost-multi/include')
-cppyy.include("boost/multi/array.hpp")  # or from single header https://correaa.gitlab.io/boost-multi/boost-multi.hpp
+cppjit.include("boost/multi/array.hpp")  # or from single header https://correaa.gitlab.io/boost-multi/boost-multi.hpp
 
-multi = cppyy.gbl.boost.multi
+multi = cppjit.gbl.boost.multi
 
 # We can create a one-dimensional array with 4 elements initialized to 0.0, or from a list of numbers.
 # We can print the array and change the element values:
@@ -856,8 +856,6 @@ print(a2d[0][1])
 > ```
 > 2.0
 > ```
-
-NOTE: As of Sep 2026, converting a nested Python list directly into a bidimensional array (e.g. `multi.array['double', 2]([[1.0, 2.0], [3.0, 4.0]])`) crashes the Python interpreter; as a workaround, construct from extensions and assign the elements instead.
 
 [source,python]
 ----
@@ -904,7 +902,6 @@ print(type(a2d))
 > ```
 
 The last line reassigns the variable into a Python list, changing its Python type.
-To replace the contents without rebinding the name, use the pass:[C++] assignment operator, which cppyy exposes as `__assign__`:
 
 
 Pointers from arrays can be extracted normally and reused in other libraries, to access the elements through other Python libraries;
