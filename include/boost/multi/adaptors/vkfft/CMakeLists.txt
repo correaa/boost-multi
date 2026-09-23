@@ -67,4 +67,6 @@ elseif(ENABLE_HIP)
 	target_compile_definitions(multi_vkfft INTERFACE VKFFT_BACKEND=2)
 endif()
 
-add_subdirectory(test)  # the test CMakeLists returns early when no GPU toolchain is enabled
+if(NOT WIN32)
+	add_subdirectory(test)  # the test CMakeLists returns early when no GPU toolchain is enabled
+endif()
