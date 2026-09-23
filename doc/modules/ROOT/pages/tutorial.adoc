@@ -805,7 +805,7 @@ link:https://godbolt.org/z/vP6nPY539[(open with Compiler Explorer)]
 
 
 [#tutorial_uninit_v_init]
-== Avoid Pitffals of Uninitialized Elements
+== Avoid Pitfalls of Uninitialized Elements
 
 If available, the library can take advantage of trivial initialization for element types that specifically support it.
 
