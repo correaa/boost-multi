@@ -274,12 +274,14 @@ namespace detail {
 /// A random-access iterator to go through all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<D, Proj>> {
+	using function_ptr = std::decay_t<decltype(&std::declval<Proj const&>())>;
+
 	typename extents_t<D>::elements_t::iterator it_;
-	BOOST_MULTI_NO_UNIQUE_ADDRESS Proj          proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members) TODO(correaa) why?
+	function_ptr                                Pproj_ = nullptr;  // points to the projection of the restriction (not owned), so that projections need not be copyable
 
  public:
 	restriction_elements_iterator() = default;
-	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator iter, Proj proj) : it_{iter}, proj_{std::move(proj)} {}
+	restriction_elements_iterator(typename extents_t<D>::elements_t::iterator iter, function_ptr Pproj) : it_{iter}, Pproj_{Pproj} {}
 
 	/// Increment operator
 	auto operator++() -> auto& {
@@ -331,7 +333,7 @@ class restriction_elements_iterator : ra_iterable<restriction_elements_iterator<
 	/// Dereference operator
 	BOOST_MULTI_HD constexpr auto operator*() const -> decltype(auto) {
 		using std::apply;
-		return apply(proj_, *this->it_);
+		return apply(*Pproj_, *this->it_);
 	}
 
 	/// Subscript operator, same as `*(*this + diff)`
@@ -343,16 +345,18 @@ namespace detail {
 /// A random-access range for all the elements of a restriction
 template<dimensionality_type D, class Proj>
 class restriction_elements_t {
+	using function_ptr = std::decay_t<decltype(&std::declval<Proj const&>())>;
+
 	typename extents_t<D>::elements_t elems_;
-	Proj                              proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)TODO(correaa) why?
+	function_ptr                      Pproj_;  // points to the projection of the restriction (not owned), so that projections need not be copyable
 
  public:
-	restriction_elements_t(typename extents_t<D>::elements_t elems, Proj proj) : elems_{elems}, proj_{std::move(proj)} {}
+	restriction_elements_t(typename extents_t<D>::elements_t elems, function_ptr Pproj) : elems_{elems}, Pproj_{Pproj} {}
 
 	/// Subscript operator
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const -> decltype(auto) {
 		using std::apply;
-		return apply(proj_, elems_[idx]);
+		return apply(*Pproj_, elems_[idx]);
 	}
 
 	/// Signed integer type to do iterator arithmetic
@@ -364,9 +368,9 @@ class restriction_elements_t {
 	using size_type = typename extents_t<D>::size_type;
 
 	/// returns an output random-iterator to the beggining of the elements range
-	auto begin() const -> iterator { return {elems_.begin(), proj_}; }
+	auto begin() const -> iterator { return {elems_.begin(), Pproj_}; }
 	/// returns an output random-iterator to the end of the elements range
-	auto end() const -> iterator { return {elems_.end(), proj_}; }
+	auto end() const -> iterator { return {elems_.end(), Pproj_}; }
 
 	/// returns the size of the elements range
 	auto size() const noexcept -> size_type { return elems_.size(); }
@@ -774,7 +778,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
  public:
 	/// yields a random‐access output range with all the elements of the array
-	constexpr auto elements() const { return elements_t{xs_.elements(), proj_}; }
+	constexpr auto elements() const { return elements_t{xs_.elements(), &proj_}; }
 
 	/// returns the total number of elements in the array
 	constexpr auto num_elements() const { return xs_.num_elements(); }
