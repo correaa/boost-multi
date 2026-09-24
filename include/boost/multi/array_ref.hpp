@@ -936,7 +936,7 @@ struct cursor_t {
 	// 	return operator()(n)(rest...);
 	// }
 
-	#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
+#if defined(__cpp_multidimensional_subscript) && (__cpp_multidimensional_subscript >= 202110L)
 	template<typename... Rest>
 	BOOST_MULTI_HD constexpr auto operator[](difference_type n, Rest... ns) const -> decltype(auto) {
 		return operator[](n)[ns...];
