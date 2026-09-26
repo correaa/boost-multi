@@ -13,13 +13,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	multi::array<int, 2> a;
 
-	assert( a.dimensionality == 2 );
-	static_assert( a.dimensionality == 2 );
+	BOOST_TEST( a.dimensionality == 2 );
+	static_assert(a.dimensionality == 2);
 
 	auto restr = [](auto, auto) { return 1; } ^ multi::extents_t<2>(2, 2);
 
+	BOOST_TEST( restr[1][1] == 1 );
 	BOOST_TEST( restr.dimensionality == 2 );
-	static_assert( restr.dimensionality == 2 );
+	static_assert(restr.dimensionality == 2);
 
 	return boost::report_errors();
 }
