@@ -192,7 +192,7 @@ else()
 	-Wnon-template-friend -Wnon-virtual-dtor
 	-Wnonnull -Wnonnull-compare
 	-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
-	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,14>:-Wnrvo>  # (not in gcc 13)
+	$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,14>:-Wnrvo>
 	-Wnull-dereference
 	-Wodr
 	-Wold-style-cast  # TODO(correaa) fix this
