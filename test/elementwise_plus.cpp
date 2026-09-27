@@ -9,16 +9,19 @@
 
 #include <boost/core/lightweight_test.hpp>
 
+// #include <functional>  // for std::plus
 #include <utility>  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
 auto main() -> int {
-	auto const A = multi::array<int, 2>{  // NOLINT(readability-identifier-length)
+	// NOLINTNEXTLINE(readability-identifier-length)
+	auto const A = multi::array<int, 2>{
 		{0, 1, 2},
 		{3, 4, 5}
 	};
-	auto const B = multi::array<int, 2>{  // NOLINT(readability-identifier-length)
+	// NOLINTNEXTLINE(readability-identifier-length)
+	auto const B = multi::array<int, 2>{
 		{ 0, 10, 20},
 		{30, 40, 50}
 	};
