@@ -9,8 +9,8 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-// #include <functional>  // for std::plus
-#include <utility>  // IWYU pragma: keep
+#include <functional>  // IWYU pragma: keep
+#include <utility>     // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
