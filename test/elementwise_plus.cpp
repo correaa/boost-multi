@@ -62,5 +62,31 @@ auto main() -> int {
 		)[1] == 5 + A[1][1]
 	);
 
+	BOOST_TEST(
+		multi::elementwise::broadcast(
+			std::plus<>{},
+			5,
+			A[1]
+		)[1] == 5 + A[1][1]
+	);
+
+	BOOST_TEST(
+		multi::elementwise::invoke(
+			std::plus<>{},
+			A[1],
+			[](auto ii) { return ii; } ^ A[1].extents()
+		)[2]
+		== A[1][2] + 2
+	);
+
+	BOOST_TEST(
+		multi::elementwise::invoke(
+			std::plus<>{},
+			[](auto ii) { return ii; } ^ A[1].extents(),
+			A[1]
+		)[2]
+		== 2 + A[1][2]
+	);
+
 	return boost::report_errors();
 }
