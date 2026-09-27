@@ -18,7 +18,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	BOOST_TEST( arr.dimensionality == 2 );
 	static_assert(decltype(arr)::dimensionality == 2);
 
-	auto restr = [](auto, auto) { return 1; } ^ multi::extents_t<2>(2, 2);
+	auto restr = [](multi::index, multi::index) { return 1; } ^ multi::extents_t<2>(2, 2);
 
 	BOOST_TEST( restr[1][1] == 1 );
 	BOOST_TEST( restr.dimensionality == 2 );
