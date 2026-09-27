@@ -3,20 +3,22 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+#include <boost/multi/elementwise/invoke.hpp>  // for invoke, broadcast
 #include <boost/multi/elementwise/plus.hpp>
+#include <boost/multi/restriction.hpp>  // for restriction, bind_front_t
 
-#include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
+#include <boost/core/lightweight_test.hpp>
 
-#include <utility>
+#include <utility>  // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
 auto main() -> int {
-	auto const A = multi::array<int, 2>{
+	auto const A = multi::array<int, 2>{  // NOLINT(readability-identifier-length)
 		{0, 1, 2},
 		{3, 4, 5}
 	};
-	auto const B = multi::array<int, 2>{
+	auto const B = multi::array<int, 2>{  // NOLINT(readability-identifier-length)
 		{ 0, 10, 20},
 		{30, 40, 50}
 	};

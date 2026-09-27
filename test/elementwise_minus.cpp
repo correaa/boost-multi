@@ -3,9 +3,13 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
+#include <boost/multi/elementwise/invoke.hpp>  // for invoke
 #include <boost/multi/elementwise/minus.hpp>
+#include <boost/multi/restriction.hpp>  // for bind_front_t, restriction
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
+
+#include <utility>  // for move, forward
 
 namespace multi = boost::multi;
 
