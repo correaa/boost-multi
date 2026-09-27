@@ -9,15 +9,18 @@
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
-#include <utility>  // for move, forward
+#include <functional>  // IWYU pragma: keep
+#include <utility>     // IWYU pragma: keep
 
 namespace multi = boost::multi;
 
 auto main() -> int {
+	// NOLINTNEXTLINE(readability-identifier-length)
 	auto const A = multi::array<int, 2>{
 		{0, 1, 2},
 		{3, 4, 5}
 	};
+	// NOLINTNEXTLINE(readability-identifier-length)
 	auto const B = multi::array<int, 2>{
 		{ 0, 10, 20},
 		{30, 40, 50}
