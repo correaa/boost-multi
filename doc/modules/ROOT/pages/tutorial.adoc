@@ -1009,7 +1009,7 @@ static_assert( trace() == 1 + 5 + 100 );
 link:https://godbolt.org/z/snrzY91eE[(open with Compiler Explorer)]
 
 [#tutorial_restrictions]
-== Lazy Evaluation with Restrictions
+== Make Arrays Lazy with Restrictions
 
 So far, we have examined arrays that contain elements stored in memory; these are referred to as container arrays or concrete arrays, where "concrete arrays" means arrays whose elements are actually stored in memory rather than computed as needed.
 In this section, we will describe another type of multidimensional array where elements are not stored but calculated on the fly.
@@ -1053,9 +1053,9 @@ multi::array<int, 2> A({3, 2});
 auto [is, js] = A.extents();
 
 for(auto i : is) {
- for(auto j : js) {
-  A[i][j] = 10*i + j;
- }
+	for(auto j : js) {
+		A[i][j] = 10*i + j;
+	}
 }
 ----
 ... with a simpler construction without intermediate steps:
@@ -1077,10 +1077,10 @@ For example, this transformation subtracts each row's mean value, row by row:
 [source,cpp]
 ----
 auto shift = std::views::transform(
- []<class Row>(Row&& row) {
-  auto mean = std::reduce(row.begin(), row.end()) / row.size();
-  return std::forward<Row>(row) | std::views::transform([=](auto e) { return e - mean; });
- }
+	[]<class Row>(Row&& row) {
+		auto mean = std::reduce(row.begin(), row.end()) / row.size();
+		return std::forward<Row>(row) | std::views::transform([=](auto e) { return e - mean; });
+	}
 );
 ----
 
@@ -1119,7 +1119,7 @@ link:https://godbolt.org/z/8bhrjrxGG[(open with Compiler Explorer)]
 The main constraint of the function is that it needs to return values independently of the order of evaluation in which elements are probed; more formally it has to be link:https://eel.is/c++draft/res.on.requirements#3[equality preserving] in the context in which it is used.
 
 [#tutorial_elementwise]
-== Elementwise Expressions
+== Operate on your Arrays with Elementwise Expressions
 
 The library provides facilities and a set of operator overloads to generate lazily evaluated expressions.
 Lazy expressions are useful for generating complex array expressions that are evaluated element-wise without the need for temporary arrays or storage.

@@ -1,11 +1,11 @@
 [#technical]
 
-= Technical Points (Design Rationale)
+= Technical Points
 
 :idprefix: technical_
 
 [#technical_indexing]
-== Indexing (Square Brackets vs. Parentheses?)
+== Indexing with Square Brackets
 
 The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
 It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.
@@ -207,6 +207,6 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 |===
 
 [#technical_cpp17_minimum]
-== Why Is the C++17 Standard Chosen as the Minimum?
+== Why Is the pass:[C++17] Standard Chosen as the Minimum?
 
-The implementation uses `if constexpr` intensively.
+The implementation relies heavily on `if constexpr`, a pass:[C++17] language feature, which makes pass:[C++17] a hard requirement.
