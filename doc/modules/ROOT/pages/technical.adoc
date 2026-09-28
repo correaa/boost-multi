@@ -1,11 +1,11 @@
 [#technical]
 
-= Technical Points (Design Rationale)
+= Technical Points
 
 :idprefix: technical_
 
 [#technical_indexing]
-== Indexing (Square Brackets vs. Parentheses?)
+== Indexing with Square Brackets
 
 The chained bracket notation (`A[i][j][k]`) allows you to refer to elements and lower-dimensional subarrays consistently and generically, and it is the recommended way to access array objects.
 It is a frequently raised question whether the chained bracket notation is beneficial for performance, as each use of the bracket leads to the creation of temporary objects, which in turn generates a partial copy of the layout.

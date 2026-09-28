@@ -2423,21 +2423,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// }
 	// constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element{}); }
 
-	// template<class TT = typename subarray::element>
-	// [[deprecated]] constexpr auto fill(TT const& value) && -> decltype(auto) { return std::move(this->fill(value)); }
-	// [[deprecated]] constexpr auto fill() && -> decltype(auto) {
-	// 	return std::move(*this).fill(typename subarray::element{});
-	// }
-
-	/// yield an array view that skips `step` subarrays in the leading dimension
+	/// yields an array view that skips `step` subarrays in the leading dimension
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto strided(difference_type step) && { return this->strided_aux_(step); }
 	constexpr auto strided(difference_type step) & { return this->strided_aux_(step); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
-
-	// [[deprecated("generates non unique mappings")]] constexpr auto strided(difference_type step, difference_type den) && { return this->strided_aux_(step, den); }
-	// [[deprecated("generates non unique mappings")]] constexpr auto strided(difference_type step, difference_type den) & { return this->strided_aux_(step, den); }
 
 	using const_subarray<T, D, ElementPtr, Layout>::taked;
 	constexpr auto taked(difference_type count) && -> subarray { return this->taked_aux_(count); }  // cppcheck-suppress duplInheritedMember ; to overwrite
