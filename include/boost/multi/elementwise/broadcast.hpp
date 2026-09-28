@@ -5,9 +5,9 @@
 #ifndef BOOST_MULTI_ELEMENTWISE_BROADCAST_HPP
 #define BOOST_MULTI_ELEMENTWISE_BROADCAST_HPP
 
+#include "boost/multi/elementwise/invoke.hpp"
 #include "boost/multi/restriction.hpp"
 #include "boost/multi/utility.hpp"
-#include "boost/multi/elementwise/invoke.hpp"
 
 namespace boost::multi::elementwise {
 
@@ -48,9 +48,7 @@ auto broadcast(Fun&& fun, A&& alpha, B&& beta) {
 			);
 		} else {
 			return elementwise::invoke(  // qualified: unqualified `invoke` is ADL-hijacked by `std::invoke` when Fun is a std:: functor (e.g. std::divides<>)
-				std::forward<Fun>(fun),
-				std::forward<A>(alpha),
-				std::forward<B>(beta)
+				std::forward<Fun>(fun), std::forward<A>(alpha), std::forward<B>(beta)
 			);
 		}
 	}
