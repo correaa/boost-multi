@@ -101,12 +101,12 @@ class identity_bind {
 // }
 }  // end namespace detail
 
-namespace detail {
-struct plus {
-	template<class T1, class T2>
-	constexpr auto operator()(T1&& a, T2&& b) const;
-};
-}  // end namespace detail
+// namespace detail {
+// struct plus {
+// 	template<class T1, class T2>
+// 	constexpr auto operator()(T1&& a, T2&& b) const;
+// };
+// }  // end namespace detail
 
 // /// yields a array with the `+` operation applied lazily elementwise to two arrays
 // template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
@@ -114,29 +114,29 @@ struct plus {
 // 	return elementwise::detail::map(elementwise::detail::plus{}, std::forward<A>(alpha), std::forward<B>(omega));
 // }
 
-template<class T1, class T2>
-constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
-	using elementwise::operator+;  // cppcheck-suppress constStatement ;
-	return std::forward<T1>(a) + std::forward<T2>(b);
-}
+// template<class T1, class T2>
+// constexpr auto detail::plus::operator()(T1&& a, T2&& b) const {
+// 	using elementwise::operator+;  // cppcheck-suppress constStatement ;
+// 	return std::forward<T1>(a) + std::forward<T2>(b);
+// }
 
-namespace detail {
-struct minus {
-	template<class T1, class T2>
-	constexpr auto operator()(T1&& a, T2&& b) const;
-};
-}  // end namespace detail
+// namespace detail {
+// struct minus {
+// 	template<class T1, class T2>
+// 	constexpr auto operator()(T1&& a, T2&& b) const;
+// };
+// }  // end namespace detail
 
 // template<class A, class B, std::enable_if_t<has_dimensionality<std::decay_t<A>>::value || has_dimensionality<std::decay_t<B>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 // constexpr auto operator-(A&& alpha, B&& omega) noexcept {
 // 	return elementwise::detail::map(elementwise::detail::minus{}, std::forward<A>(alpha), std::forward<B>(omega));
 // }
 
-template<class T1, class T2>
-constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
-	using elementwise::operator-;  // cppcheck-suppress constStatement ;
-	return std::forward<T1>(a) - std::forward<T2>(b);
-}
+// template<class T1, class T2>
+// constexpr auto detail::minus::operator()(T1&& a, T2&& b) const {
+// 	using elementwise::operator-;  // cppcheck-suppress constStatement ;
+// 	return std::forward<T1>(a) - std::forward<T2>(b);
+// }
 
 // /// yields an array expression with the `-` operation applied lazily elementwise to two arrays
 // template<class A>
