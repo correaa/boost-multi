@@ -1515,6 +1515,7 @@ antora:
   stage: build
   allow_failure: false
   interruptible: false
+  retry: 2  # xps-wsl runner intermittently drops the connection during artifact upload
   tags:
     - non-shared
     - docker
