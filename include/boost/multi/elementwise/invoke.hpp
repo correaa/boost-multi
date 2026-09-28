@@ -5,8 +5,8 @@
 #ifndef BOOST_MULTI_ELEMENTWISE_INVOKE_HPP
 #define BOOST_MULTI_ELEMENTWISE_INVOKE_HPP
 
-#include <boost/multi/restriction.hpp>
-#include <boost/multi/utility.hpp>
+#include "boost/multi/restriction.hpp"
+#include "boost/multi/utility.hpp"
 
 #include <algorithm>
 #include <array>
