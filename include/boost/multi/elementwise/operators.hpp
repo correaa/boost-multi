@@ -50,4 +50,4 @@ auto operator-(A&& alpha) {
 
 }  // namespace boost::multi::elementwise
 
-#endif
+#endif  // BOOST_MULTI_ELEMENTWISE_OPERATORS_HPP

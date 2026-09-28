@@ -56,4 +56,4 @@ auto broadcast(Fun&& fun, A&& alpha, B&& beta) {
 
 }  // namespace boost::multi::elementwise
 
-#endif
+#endif  // BOOST_MULTI_ELEMENTWISE_BROADCAST_HPP

@@ -38,4 +38,4 @@ auto invoke(Fun&& fun, A&& alpha, Bs&&... bs) {
 
 }  // namespace boost::multi::elementwise
 
-#endif
+#endif  // BOOST_MULTI_ELEMENTWISE_INVOKE_HPP
