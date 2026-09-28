@@ -10,9 +10,7 @@
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 #include <boost/multi/elementwise.hpp>         // for operations
 #include <boost/multi/restriction.hpp>         // for restriction
-
 #include <boost/core/lightweight_test.hpp>
-
 #include <algorithm>  // for generate, transform
 #include <cmath>      // for abs  // IWYU pragma: keep
 #include <complex>    // for complex, operator*
@@ -26,6 +24,8 @@
 #include <utility>      // for move, forward
 // IWYU pragma: no_include <stdlib.h>       // for abs
 #include <iostream>
+
+#include "boost/multi/elementwise/operators.hpp"
 
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
@@ -558,9 +558,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::elementwise::exp;
 		using multi::elementwise::log;
 
-		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
+		// auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
 
-		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
+		BOOST_TEST( std::abs( log(+gemv(5.0, arr, vec) + exp(vec))[1] - 4.13339 ) < 1e-4 );
 	}
 #endif
 

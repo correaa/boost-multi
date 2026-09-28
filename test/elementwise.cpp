@@ -3,7 +3,9 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/elementwise/invoke.hpp>  // for invoke, broadcast
+#include <boost/multi/elementwise/broadcast.hpp>  // for broadcast
+#include <boost/multi/elementwise/invoke.hpp>     // for invoke
+#include <boost/multi/elementwise/minus.hpp>
 #include <boost/multi/elementwise/plus.hpp>
 #include <boost/multi/restriction.hpp>  // for restriction, bind_front_t
 
@@ -41,9 +43,9 @@ auto main() -> int {
 		multi::elementwise::invoke(
 			std::plus<>{},
 			A[1],
-			[](auto) { return 5; } ^ A[1].extents() 
+			[](auto) { return 5; } ^ A[1].extents()
 		)[1]
-		== A[1][1] + 5 
+		== A[1][1] + 5
 	);
 
 	BOOST_TEST(
@@ -86,6 +88,33 @@ auto main() -> int {
 			A[1]
 		)[2]
 		== 2 + A[1][2]
+	);
+
+	BOOST_TEST( multi::elementwise::minus(A, B)[1][1] == A[1][1] - B[1][1] );
+
+	BOOST_TEST( multi::elementwise::minus(multi::array<int, 2>{
+		{0, 1, 2},
+		{3, 4, 5}
+	}, B)[1][1] == A[1][1] - B[1][1] );
+
+	BOOST_TEST( multi::elementwise::minus(A[1], B[1])[1] == A[1][1] - B[1][1] );
+
+	BOOST_TEST( multi::elementwise::invoke(std::minus<>{}, A[1], B[1])[1] == A[1][1] - B[1][1] );
+
+	BOOST_TEST(
+		multi::elementwise::invoke(
+			std::minus<>{},
+			A[1],
+			[](auto) { return 5; } ^ A[1].extents()
+		)[1] == A[1][1] - 5
+	);
+
+	BOOST_TEST(
+		multi::elementwise::broadcast(
+			std::minus<>{},
+			A[1],
+			5
+		)[1] == A[1][1] - 5
 	);
 
 	return boost::report_errors();
