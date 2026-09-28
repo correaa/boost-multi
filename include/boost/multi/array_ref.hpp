@@ -280,6 +280,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// Type that represents a range of indices
 	using index_range = typename layout_type::index_range;  // re-export publicly: array_types inherits Layout privately, so MSVC otherwise sees index_range as inaccessible (C2247) in derived subarray classes
 
+	/// Type that represents the layout strides (generally a D-tuple)
 	using typename layout_type::strides_type;
 
 	/// returns the layout internal strides of an array as a tuple
@@ -343,7 +344,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	/// checks if the container has no elements (same as `empty()`).
 	using layout_type::is_empty;
 
-	using layout_type::sub;
+	// using layout_type::sub;
 
 	/// returns a tuple decribing sizes across all the dimensions of the array.
 	using layout_type::sizes;
@@ -1996,8 +1997,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"  // TODO(correaa) use checked span
 #endif
 
-	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->sub(), this->layout().stride()); }
-	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->nelems(), this->sub(), this->layout().stride()); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_MULTI_HD constexpr auto begin_aux_() const { return iterator(types::base_, this->layout().sub(), this->layout().stride()); }
+	BOOST_MULTI_HD constexpr auto end_aux_() const { return iterator(types::base_ + this->layout().nelems(), this->layout().sub(), this->layout().stride()); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
 #pragma clang diagnostic pop
