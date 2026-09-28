@@ -207,6 +207,6 @@ Other cases with dynamic dimension and/or static sizes are not provided directly
 |===
 
 [#technical_cpp17_minimum]
-== Why Is the C++17 Standard Chosen as the Minimum?
+== Why Is the pass:[C++17] Standard Chosen as the Minimum?
 
-The implementation uses `if constexpr` intensively.
+The implementation relies heavily on `if constexpr`, a pass:[C++17] language feature, which makes pass:[C++17] a hard requirement.
