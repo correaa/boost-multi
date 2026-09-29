@@ -564,11 +564,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	}
 #endif
 	{
-		multi::array<double, 2> const A({4, 3}, 1.0);       // NOLINT(readability-identifier-length)
-		multi::array<double, 1> const x = {1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length)
+		auto const A = multi::array<double, 2>({4, 3}, 1.0);       // NOLINT(readability-identifier-length)
+		auto const x = multi::array<double, 1>{1.0, 2.0, 3.0};  // NOLINT(readability-identifier-length)
 
 		{
-			multi::array<double, 1> y = {0.0, 0.0, 0.0, 0.0};  // NOLINT(readability-identifier-length)
+			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};  // NOLINT(readability-identifier-length)
 
 			multi::blas::gemv(5.0, A, x, 1.0, y);  // y <-  5.0 A * x + 1.0 y
 
@@ -577,7 +577,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using multi::blas::operators::operator%;
 
-			multi::array<double, 1> y = {0.0, 0.0, 0.0, 0.0};
+			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};
 
 			y = A%x;
 		}
