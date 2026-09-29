@@ -22,6 +22,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
 
 find_package(Boost CONFIG)  # tests require Boost.Core LightweightTest
+find_package(OpenMP COMPONENTS CXX)  # portable_kernel_*.cu also exercise Thrust's OMP backend
 
 include(CTest)
 enable_testing()
@@ -39,6 +40,7 @@ set(TEST_SRCS
 	for_each.cu
 	memory_resource.cu
 	neighbor_list.cu
+	portable_kernel_daxpy.cu
 	restriction.cu
 	run_reduce.cu
 	set_identity_kernel.cu
@@ -97,6 +99,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 	>
 	)
 endforeach()
+
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(portable_kernel_daxpy.cu.x PRIVATE OpenMP::OpenMP_CXX)
+endif()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)
 

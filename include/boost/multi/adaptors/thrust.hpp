@@ -410,6 +410,10 @@ namespace thrust {
 
 // template<class It> struct iterator_system;  // not needed in cuda 12.0, doesn't work on cuda 12.5
 
+// thrust/omp.hpp defines these same two specializations for standalone OMP-only builds; when both
+// headers are included together in one translation unit, whichever comes first wins and the other
+// skips, since a repeated specialization is a compile error.
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
 template<class T, ::boost::multi::dimensionality_type D, class Pointer, bool IsConst, bool IsMove, typename Stride, class SubLayout>
 struct iterator_system<::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride, SubLayout>> {
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride, SubLayout>::element_ptr>::type;
@@ -419,6 +423,7 @@ template<typename Pointer, class LayoutType>
 struct iterator_system<::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
+#endif  // BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
 
 template<class T, class UF, class Ptr, class Ref>
 struct iterator_system<::boost::multi::transform_ptr<T, UF, Ptr, Ref>> {  // TODO(correaa) might need changes for IsConst templating
