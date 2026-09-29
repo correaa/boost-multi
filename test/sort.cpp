@@ -185,7 +185,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( std::is_sorted(vec.begin(), vec.end()) );  // NOLINT(llvm-use-ranges,modernize-use-ranges) for C++20
 
 		// clang-format off
-		std::array<std::array<double, 5>, 4> d2D {{
+		auto d2D = std::array<std::array<double, 5>, 4>{{
 			{{150.0, 16.0, 17.0, 18.0, 19.0}},
 			{{ 30.0,  1.0,  2.0,  3.0,  4.0}},
 			{{100.0, 11.0, 12.0, 13.0, 14.0}},

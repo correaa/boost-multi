@@ -18,12 +18,12 @@ auto main() -> int {
 	// NOLINTNEXTLINE(readability-identifier-length)
 	auto const A = multi::array<int, 2>{
 		{0, 1, 2},
-		{3, 4, 5}
+		{3, 4, 5},
 	};
 	// NOLINTNEXTLINE(readability-identifier-length)
 	auto const B = multi::array<int, 2>{
 		{ 0, 10, 20},
-		{30, 40, 50}
+		{30, 40, 50},
 	};
 
 	BOOST_TEST( multi::elementwise::plus(A, B)[1][1] == A[1][1] + B[1][1] );
@@ -41,9 +41,9 @@ auto main() -> int {
 		multi::elementwise::invoke(
 			std::plus<>{},
 			A[1],
-			[](auto) { return 5; } ^ A[1].extents() 
+			[](auto) { return 5; } ^ A[1].extents()
 		)[1]
-		== A[1][1] + 5 
+		== A[1][1] + 5
 	);
 
 	BOOST_TEST(
