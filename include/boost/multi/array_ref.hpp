@@ -899,9 +899,8 @@ struct cursor_t {
 	template<class, dimensionality_type, class, class> friend class multi::const_subarray;
 	template<class, dimensionality_type, class> friend struct detail::cursor_t;
 
- private:
 	template<class TT>
-	static constexpr TT* to_address_(TT* p) noexcept {
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
 		return p;
 	}
@@ -924,7 +923,6 @@ struct cursor_t {
 	template<class OtherCursor>
 	BOOST_MULTI_HD constexpr explicit cursor_t(OtherCursor const& other) : strides_{other.strides()}, base_{other.base()} {}
 
- public:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -3317,7 +3315,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
  private:
 	template<class TT>
-	static constexpr TT* to_address_(TT* p) noexcept {
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
 		return p;
 	}
@@ -4000,7 +3998,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  private:
 	template<class TT>
-	static constexpr TT* to_address_(TT* p) noexcept {
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
 		return p;
 	}
