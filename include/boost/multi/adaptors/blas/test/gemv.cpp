@@ -577,7 +577,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			using multi::blas::operators::operator%;
 
-			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};
+			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};  // NOLINT(readability-identifier-length)
 
 			y = A%x;
 		}
