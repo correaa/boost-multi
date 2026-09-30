@@ -67,12 +67,17 @@ auto main() -> int {
 	{
 		multi::thrust::universal_array<double, 2> vel({5, 5});
 
+		// olap is a device_array (not vel)
 		thrust::transform(
 			vel.elements().extent().begin(),
 			vel.elements().extent().end(),
 			vel.elements().begin(),
-			[olap_base = olap.flatted().home()] __device__(int mm) {
-				return thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][0])) + thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][1])) + thrust::norm(static_cast<thrust::complex<double>>(olap_base[mm][2]));
+			[
+				// olap_base = olap.flatted().home()                   // error inside the lambda, template norm can't apply to thrust reference
+				olap_base = olap.flatted().raw_array_cast().home()  // ok
+				// olap_base = +olap.flatted().home()                  // ok
+			] __device__(int mm) {
+				return thrust::norm(olap_base[mm][0]) + thrust::norm(olap_base[mm][1]) + thrust::norm(olap_base[mm][2]);
 			}
 		);
 
