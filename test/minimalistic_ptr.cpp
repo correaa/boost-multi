@@ -37,6 +37,7 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
 	constexpr auto operator*() const -> reference { return *impl_; }
+	constexpr auto operator->() const -> T* { return impl_; }
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -124,7 +125,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& CC2 = CCP->static_array_cast<int, minimalistic::ptr2<int>>();
 		BOOST_TEST( &CC2[1][1] == &(*CCP)[1][1] );
 
-		static_assert(std::is_convertible<int*, int const*>{}, "!");  // NOLINT(readability-trailing-comma) bug in clang-tidy
+		auto&& raw = CCP->raw_array_cast();
+
+		static_assert(std::is_same_v<decltype(raw.base()), int*>);
+		static_assert(std::decay_t<decltype(raw)>::dimensionality == 2);
+
+		BOOST_TEST( &raw[1][1] == &buffer[21] );
+
+		raw[1][2] = 8;  // mutable view from a mutable array
+		BOOST_TEST( (*CCP)[1][2] == 8 );
+
+		auto const& CCR = *CCP;
+		auto&& craw = CCR.raw_array_cast();  // the const overload (the `using` / ref-qualifier issue)
+		static_assert(std::is_same_v<decltype(craw.base()), int const*>);
+		BOOST_TEST( &craw[1][1] == &buffer[21] );
 
 		minimalistic::ptr<int> const       pd{nullptr};
 		minimalistic::ptr<int const> const pcd = pd;

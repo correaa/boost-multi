@@ -2111,7 +2111,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	template<class TT>
-	static constexpr TT* to_address_(TT* p) noexcept {
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
 		return p;
 	}
@@ -2121,7 +2121,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return to_address_(p.operator->());
 	}
 
-	constexpr auto raw_array_cast_aux_() const -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast_aux_() const& -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
 		return {this->layout(), std::to_address(this->base_)};
 		#else
@@ -2130,7 +2130,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	constexpr auto raw_array_cast() const {
+	constexpr auto raw_array_cast() const& {
 		return raw_array_cast_aux_().as_const();
 	}
 
@@ -2529,10 +2529,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
-	constexpr auto raw_array_cast() & -> subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return this->raw_array_cast_aux_();
 	}
-	constexpr auto raw_array_cast() && -> subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return this->raw_array_cast_aux_();
 	}
 
@@ -3334,7 +3334,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
  public:
-	constexpr auto raw_array_cast() const {
+	constexpr auto raw_array_cast() const& {
 		return raw_array_cast_aux_().as_const();
 	}
 
@@ -4018,7 +4018,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  public:
  	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
-	constexpr auto raw_array_cast() const -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return raw_array_cast_aux_().as_const();
 	}
 
