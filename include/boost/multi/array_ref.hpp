@@ -4019,7 +4019,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  public:
- 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. Useful for kernel translation.
+ 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
 	constexpr auto raw_array_cast() const -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return raw_array_cast_aux_().as_const();
 	}
