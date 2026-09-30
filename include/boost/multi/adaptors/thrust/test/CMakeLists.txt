@@ -35,6 +35,7 @@ set(TEST_SRCS
 	broadcast_softmax.cu
 	by_key.cu
 	device_function.cu
+	device_reference_in_kernel.cu
 	diffusion3d_kernel.cu
 	fill_async.cu
 	for_each.cu
