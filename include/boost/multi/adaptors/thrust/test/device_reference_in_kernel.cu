@@ -29,7 +29,7 @@ auto main() -> int {
 	{
 		multi::thrust::device_array<double, 1> y(1000, 10.0);
 
-		thrust::for_each(
+		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
 			[x = 2.0, y = y.home()] __device__(int i) {
 				y[i] = x + y[i];  // this works because thrust::reference have some basic conversions and + is a built-in function
@@ -38,13 +38,13 @@ auto main() -> int {
 			}
 		);
 
-		BOOST_TEST( y[0] == 12.0 );  // there is thrust magic here too
-		BOOST_TEST( y[999] == 12.0 );
+		BOOST_TEST( std::abs( static_cast<double>(y[0]) - 12.0 ) < 1e-12 );
+		BOOST_TEST( std::abs( static_cast<double>(y[999]) - 12.0 ) < 1e-12 );
 	}
 	{
 		multi::thrust::device_array<thrust::complex<double>, 1> y(1000, thrust::complex<double>(10.0, 0.0));
 
-		thrust::for_each(
+		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
 			[x = thrust::complex<double>(2.0, 0.0), y = y.home()] __device__(int i) {
 				// y[i] = x + y[i];  // doesn't work because operator+(complex) is a template
@@ -53,13 +53,13 @@ auto main() -> int {
 			}
 		);
 
-		BOOST_TEST( thrust::complex<double>(y[0]) == thrust::complex<double>(12.0, 0.0) );
-		BOOST_TEST( thrust::complex<double>(y[999]) == thrust::complex<double>(12.0, 0.0) );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[0]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[999]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 	}
 	{
 		multi::thrust::universal_array<thrust::complex<double>, 1> y(1000, thrust::complex<double>(10.0, 0.0));
 
-		thrust::for_each(
+		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
 			[x = thrust::complex<double>(2.0, 0.0), y = y.home()] __device__(int i) {
 				// y[i] = x + y[i];  // works because these are raw references directly
@@ -68,13 +68,13 @@ auto main() -> int {
 			}
 		);
 
-		BOOST_TEST( y[0] == thrust::complex<double>(12.0, 0.0) );
-		BOOST_TEST( y[999] == thrust::complex<double>(12.0, 0.0) );
+		BOOST_TEST( thrust::abs( y[0] - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
+		BOOST_TEST( thrust::abs( y[999] - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 	}
 	{
 		multi::thrust::device_array<thrust::complex<double>, 1> y(1000, thrust::complex<double>(10.0, 0.0));
 
-		thrust::for_each(
+		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
 			[x = thrust::complex<double>(2.0, 0.0), y = y.raw_array_cast().home()] __device__(int i) {
 				y[i] = x + y[i];  // works because of the conversion above
@@ -83,13 +83,13 @@ auto main() -> int {
 			}
 		);
 
-		BOOST_TEST( thrust::complex<double>(y[0]) == thrust::complex<double>(12.0, 0.0) );
-		BOOST_TEST( thrust::complex<double>(y[999]) == thrust::complex<double>(12.0, 0.0) );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[0]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[999]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 	}
 	{
 		multi::thrust::device_array<thrust::complex<double>, 1> y(1000, thrust::complex<double>(10.0, 0.0));
 
-		thrust::for_each(
+		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
 			[x = thrust::complex<double>(2.0, 0.0), y = +y.home()] __device__(int i) {
 				y[i] = x + y[i];  // works because of the conversion above
@@ -98,8 +98,8 @@ auto main() -> int {
 			}
 		);
 
-		BOOST_TEST( thrust::complex<double>(y[0]) == thrust::complex<double>(12.0, 0.0) );
-		BOOST_TEST( thrust::complex<double>(y[999]) == thrust::complex<double>(12.0, 0.0) );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[0]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
+		BOOST_TEST( thrust::abs( thrust::complex<double>(y[999]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 	}
 
 	return boost::report_errors();
