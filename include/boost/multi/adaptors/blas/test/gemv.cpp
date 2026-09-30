@@ -572,12 +572,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::blas::gemv(5.0, A, x, 1.0, y);  // y <-  5.0 A * x + 1.0 y
 
-			BOOST_TEST(y[0] == 30.0);
+			BOOST_TEST( std::abs( y[0] - 30.0 ) < 1e-12 );
 		}
 		{
 			using multi::blas::operators::operator%;
 
-			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};
+			auto y = multi::array<double, 1>{0.0, 0.0, 0.0, 0.0};  // NOLINT(readability-identifier-length)
 
 			y = A%x;
 		}

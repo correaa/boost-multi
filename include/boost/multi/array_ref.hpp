@@ -899,6 +899,22 @@ struct cursor_t {
 	template<class, dimensionality_type, class, class> friend class multi::const_subarray;
 	template<class, dimensionality_type, class> friend struct detail::cursor_t;
 
+	template<class TT>
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+		static_assert(!std::is_function_v<TT>);
+		return p;
+	}
+
+	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
+	static constexpr auto to_address_(const TT& p) noexcept {
+		return to_address_(p.operator->());
+	}
+
+ public:
+	auto operator+() const -> cursor_t<typename std::pointer_traits<element_ptr>::element_type*, D, StridesType> {
+		return {to_address_(base_), strides_};
+	}
+
 	BOOST_MULTI_HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
 
 	template<class OtherCursor, class = decltype(multi::detail::implicit_cast<element_ptr>(std::declval<OtherCursor>().base()))>
@@ -907,7 +923,6 @@ struct cursor_t {
 	template<class OtherCursor>
 	BOOST_MULTI_HD constexpr explicit cursor_t(OtherCursor const& other) : strides_{other.strides()}, base_{other.base()} {}
 
- public:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -957,8 +972,8 @@ struct cursor_t {
 		base_ += apply_impl_(tup, std::make_index_sequence<std::tuple_size_v<Tuple>>{});
 		return *this;
 	}
-	BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *base_; }
-	BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_; }
+	// BOOST_MULTI_HD constexpr auto operator*() const -> reference { return *base_; }
+	// BOOST_MULTI_HD constexpr auto operator->() const -> pointer { return base_; }
 
 	BOOST_MULTI_HD constexpr auto base() const -> pointer { return base_; }
 	BOOST_MULTI_HD constexpr auto strides() const -> strides_type { return strides_; }
@@ -2095,6 +2110,31 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
+	template<class TT>
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+		static_assert(!std::is_function_v<TT>);
+		return p;
+	}
+
+	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
+	static constexpr auto to_address_(const TT& p) noexcept {
+		return to_address_(p.operator->());
+	}
+
+	constexpr auto raw_array_cast_aux_() const& -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
+		return {this->layout(), std::to_address(this->base_)};
+		#else
+		return {this->layout(), to_address_(this->base_)};
+		#endif
+	}
+
+ public:
+	constexpr auto raw_array_cast() const& {
+		return raw_array_cast_aux_().as_const();
+	}
+
+ private:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast_(Args&&... args) const& {  // name taken from std::static_pointer_cast
 		return subarray<T2, D, P2>(this->layout(), P2{this->base_, std::forward<Args>(args)...});
@@ -2487,6 +2527,14 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() & -> ElementPtr { return this->base_; }
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
+
+	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
+	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		return this->raw_array_cast_aux_();
+	}
+	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		return this->raw_array_cast_aux_();
+	}
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
@@ -3132,6 +3180,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
 	using element_type [[deprecated("use ::element")]] = typename types::element;
 	using element                                      = typename types::element;
+	using element_ptr                                  = ElementPtr;  // typename const_subarray::element_ptr;
 	using element_ref                                  = typename std::iterator_traits<typename const_subarray::element_ptr>::reference;
 	using element_cref                                 = typename std::iterator_traits<typename const_subarray::element_const_ptr>::reference;
 	using iterator                                     = detail::array_iterator<T, 0, ElementPtr>;
@@ -3262,6 +3311,31 @@ class const_subarray<T, 0, ElementPtr, Layout>
 			typename const_subarray::layout_type{this->layout()},
 			reinterpret_pointer_cast<P2>(this->base_)
 		);
+	}
+
+ private:
+	template<class TT>
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+		static_assert(!std::is_function_v<TT>);
+		return p;
+	}
+
+	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
+	static constexpr auto to_address_(const TT& p) noexcept {
+		return to_address_(p.operator->());
+	}
+
+	constexpr auto raw_array_cast_aux_() const -> subarray<T, 0, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
+		return {this->layout(), std::to_address(this->base_)};
+		#else
+		return {this->layout(), to_address_(this->base_)};
+		#endif
+	}
+
+ public:
+	constexpr auto raw_array_cast() const& {
+		return raw_array_cast_aux_().as_const();
 	}
 
  private:
@@ -3914,11 +3988,38 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	constexpr auto static_array_cast() const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base_)};
 	}
+
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> subarray<T2, 1, P2, Layout> {  // name taken from std::static_pointer_cast
 		return subarray<T2, 1, P2, Layout>(
 			this->layout(), P2{this->base_, std::forward<Args>(args)...}
 		);
+	}
+
+ private:
+	template<class TT>
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+		static_assert(!std::is_function_v<TT>);
+		return p;
+	}
+
+	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
+	static constexpr auto to_address_(const TT& p) noexcept {
+		return to_address_(p.operator->());
+	}
+
+	constexpr auto raw_array_cast_aux_() const -> subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
+		return {this->layout(), std::to_address(this->base_)};
+		#else
+		return {this->layout(), to_address_(this->base_)};
+		#endif
+	}
+
+ public:
+ 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
+	constexpr auto raw_array_cast() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+		return raw_array_cast_aux_().as_const();
 	}
 
 	template<class UF>
