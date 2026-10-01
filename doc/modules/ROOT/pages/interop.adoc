@@ -682,16 +682,28 @@ int main() {
 	// kernel invocation code
 	assert(N % 32 == 0);
 	dim3 dimBlock(32, 32);
-	dim3 dimGrid(N/32, N/32);
+	dim3 dimGrid(N/32, N/32);  // N must be multiple of 32 in this simple version
 	Kernel<<<dimGrid, dimBlock>>>(A.home(), B.home(), C.home(), N);
 	cudaDeviceSynchronize();
 
     // now C = A x B
 }
 ----
-link:https://godbolt.org/z/eKbeosrWa[(open with Compiler Explorer)]
+link:https://godbolt.org/z/MMzeGnf5d[(open with Compiler Explorer)]
 
-Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarily occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()`).
+Expressions such as `A.begin()` (iterators) can also be passed to kernels, but they could unnecessarily occupy more kernel "stack space" when size information is not needed (e.g. `A.begin()->size()` is not needed).
+
+Inside kernels, expression like `A[y][k]` yield a Thrust proxy reference, not a raw reference, which breaks template operators (e.g. `A[y][k] * B[k][x]` for `thrust::complex`).
+(Universal memory doesn't have this problem.)
+To use raw pointers instead, pass `.raw_array_cast()` views, or prefix the cursor with `+`:
+
+[source,cpp]
+----
+Kernel<<<dimGrid, dimBlock>>>(A.raw_array_cast().home(), B.raw_array_cast().home(), C.raw_array_cast().home(), N);
+// or Kernel<<<dimGrid, dimBlock>>>(+A.home(), +B.home(), +C.home(), N);
+----
+
+As a rule, don't dereference these raw views in host code, use them when passing parameters to kernels or in captures for device lambdas.
 
 [#interop_sycl]
 == SYCL

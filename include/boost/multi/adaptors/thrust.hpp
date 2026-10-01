@@ -82,8 +82,7 @@ __host__ __device__
 #include <cassert>
 #include <cstdio>    // for std::fprintf
 #include <iterator>  // for iterator_traits
-#include <memory>    // for allocator_traits, allocator, pointer_traits
-// #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
+#include <memory>    // for allocator_traits, allocator, pointer_traits// #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
 #include <type_traits>  // for decay_t
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
@@ -144,17 +143,26 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 	using base::allocate;
 	[[nodiscard]] static constexpr auto allocate(Alloc& alloc, size_type n, const_void_pointer hint) -> pointer {
-		auto ret = allocator_traits::allocate(alloc, n);
-		if(!hint) {
-			prefetch_to_device_(ret, n * sizeof(TT), get_current_device_());
-			return ret;
+		auto       ret = allocator_traits::allocate(alloc, n);
+		auto const dev = hint ? get_device_(hint) : get_current_device_();
+		if(concurrent_managed_access_(dev)) {  // prefetch is only a hint, not supported e.g. on Windows (WDDM) or pre-Pascal GPUs
+			prefetch_to_device_(ret, n * sizeof(TT), dev);
 		}
-		prefetch_to_device_(ret, n * sizeof(TT), get_device_(hint));
 		return ret;
 	}
 
  private:
 	using device_index = int;
+
+	static auto concurrent_managed_access_(device_index dev) -> bool {
+		int ret = 0;
+#if defined(MULTI_USE_HIP)
+		auto const err = hipDeviceGetAttribute(&ret, hipDeviceAttributeConcurrentManagedAccess, dev);
+#else
+		auto const err = cudaDeviceGetAttribute(&ret, cudaDevAttrConcurrentManagedAccess, dev);
+#endif
+		return err == HICUP_(Success) && ret != 0;
+	}
 	static auto get_current_device_() -> device_index {
 		int device;  // NOLINT(cppcoreguidelines-init-variables) delayed init
 #ifdef __GNUC__
@@ -410,6 +418,10 @@ namespace thrust {
 
 // template<class It> struct iterator_system;  // not needed in cuda 12.0, doesn't work on cuda 12.5
 
+// thrust/omp.hpp defines these same two specializations for standalone OMP-only builds; when both
+// headers are included together in one translation unit, whichever comes first wins and the other
+// skips, since a repeated specialization is a compile error.
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
 template<class T, ::boost::multi::dimensionality_type D, class Pointer, bool IsConst, bool IsMove, typename Stride, class SubLayout>
 struct iterator_system<::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride, SubLayout>> {
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::array_iterator<T, D, Pointer, IsConst, IsMove, Stride, SubLayout>::element_ptr>::type;
@@ -419,6 +431,7 @@ template<typename Pointer, class LayoutType>
 struct iterator_system<::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>> {  // TODO(correaa) might need changes for IsConst templating
 	using type = typename ::thrust::iterator_system<typename ::boost::multi::detail::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
+#endif  // BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
 
 template<class T, class UF, class Ptr, class Ref>
 struct iterator_system<::boost::multi::transform_ptr<T, UF, Ptr, Ref>> {  // TODO(correaa) might need changes for IsConst templating

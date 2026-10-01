@@ -22,6 +22,9 @@ namespace boost::multi::thrust::omp {
 	template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::omp::allocator<T>>;
 }  // end namespace boost::multi::thrust::omp
 
+// thrust.hpp defines the same specializations (plus more); skip ours when both headers are
+// included together in one translation unit, or the redundant specialization is a compile error.
+#ifndef BOOST_MULTI_ADAPTORS_THRUST_HPP
 namespace thrust {
 
 template<class T, ::boost::multi::dimensionality_type D, class Pointer, bool IsConst, bool IsMove, typename Stride, class SubLayout>
@@ -35,5 +38,6 @@ struct iterator_system<::boost::multi::detail::elements_iterator_t<Pointer, Layo
 };
 
 }  // end namespace thrust
+#endif  // BOOST_MULTI_ADAPTORS_THRUST_HPP
 
 #endif  // BOOST_MULTI_ADAPTORS_THRUST_OMP_HPP
