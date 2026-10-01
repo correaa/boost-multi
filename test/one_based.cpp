@@ -144,11 +144,11 @@ auto main() -> int {
 	// BOOST_AUTO_TEST_CASE(one_base_2D_ref)
 	{
 		// clang-format off
-	std::array<std::array<int, 5>, 3> arr = {{
-		{{  10,  20,  30,  40,  50 }},
-		{{  60,  70,  80,  90, 100 }},
-		{{ 110, 120, 130, 140, 150 }},
-	},};
+		std::array<std::array<int, 5>, 3> arr = {{
+			{{  10,  20,  30,  40,  50 }},
+			{{  60,  70,  80,  90, 100 }},
+			{{ 110, 120, 130, 140, 150 }},
+		}, };
 		// clang-format on
 
 		BOOST_TEST( arr[0][0] == 10 );

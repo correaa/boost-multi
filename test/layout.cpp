@@ -447,7 +447,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
 			{{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})}},
 			{{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}},
-		},};
+		}, };
 		// clang-format on
 
 		BOOST_TEST( &B2blk[1][1][1][1] == &B2[3][3] );
