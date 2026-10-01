@@ -182,13 +182,14 @@ class gemv_range {
 	auto begin() const -> iterator { return {alpha_, m_begin_, v_first_, ctxt_}; }
 	auto end() const -> iterator { return {alpha_, m_end_, v_first_, ctxt_}; }
 
-	auto                         size() const -> size_type { return end() - begin(); }
-	auto                         extensions() const -> typename decay_type::extents_type { return typename decay_type::extensions_type{
-								{0, size()}
- }; }
-	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extents_type { return typename decay_type::extents_type{
-		{0, size()}
- }; }
+	auto size() const -> size_type { return end() - begin(); }
+	auto extensions() const -> typename decay_type::extents_type {
+		return typename decay_type::extensions_type({0, size()});
+	}
+
+	[[nodiscard]] constexpr auto extents() const -> typename decay_type::extents_type {
+		return typename decay_type::extents_type({0, size()});
+	}
 
 	auto decay() const { return decay_type{*this}; }
 
