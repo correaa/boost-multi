@@ -714,6 +714,7 @@ class extents_t {
 		return get<Index>(std::move(this->base()));
 	}
 
+	/// applies a function to an the tuple of extents
 	template<class F>
 	friend constexpr auto apply(F&& fun, extents_t const& self) -> decltype(auto) {
 		return std::apply(std::forward<F>(fun), self.base());
