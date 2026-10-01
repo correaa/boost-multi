@@ -24,6 +24,15 @@ namespace multi = boost::multi;
 // y <- x + y, generic (e.g. to also work with float or complex)
 template<class T> __host__ __device__ void xpy(T const& x, T& y) { y = x + y; }
 
+// e.g. not supported on Windows
+auto universal_memory_supported() -> bool {
+	int dev = 0;
+	cudaGetDevice(&dev);
+	int is_cma = 0;
+	cudaDeviceGetAttribute(&is_cma, cudaDevAttrConcurrentManagedAccess, dev);
+	return is_cma == 1;
+}
+
 auto main() -> int {
 	// basic types, basic operators works without much problems
 	{
@@ -56,7 +65,7 @@ auto main() -> int {
 		BOOST_TEST( thrust::abs( thrust::complex<double>(y[0]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 		BOOST_TEST( thrust::abs( thrust::complex<double>(y[999]) - thrust::complex<double>(12.0, 0.0) ) < 1e-12 );
 	}
-	{
+	if(universal_memory_supported()) {
 		multi::thrust::universal_array<thrust::complex<double>, 1> y(1000, thrust::complex<double>(10.0, 0.0));
 
 		thrust::for_each(thrust::device,

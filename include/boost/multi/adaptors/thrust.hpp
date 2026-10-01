@@ -82,8 +82,7 @@ __host__ __device__
 #include <cassert>
 #include <cstdio>    // for std::fprintf
 #include <iterator>  // for iterator_traits
-#include <memory>    // for allocator_traits, allocator, pointer_traits
-// #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
+#include <memory>    // for allocator_traits, allocator, pointer_traits// #include <thrust/iterator/detail/iterator_traits.inl>          // for iterator_system
 #include <type_traits>  // for decay_t
 
 // // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
@@ -144,17 +143,26 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 
 	using base::allocate;
 	[[nodiscard]] static constexpr auto allocate(Alloc& alloc, size_type n, const_void_pointer hint) -> pointer {
-		auto ret = allocator_traits::allocate(alloc, n);
-		if(!hint) {
-			prefetch_to_device_(ret, n * sizeof(TT), get_current_device_());
-			return ret;
+		auto       ret = allocator_traits::allocate(alloc, n);
+		auto const dev = hint ? get_device_(hint) : get_current_device_();
+		if(concurrent_managed_access_(dev)) {  // prefetch is only a hint, not supported e.g. on Windows (WDDM) or pre-Pascal GPUs
+			prefetch_to_device_(ret, n * sizeof(TT), dev);
 		}
-		prefetch_to_device_(ret, n * sizeof(TT), get_device_(hint));
 		return ret;
 	}
 
  private:
 	using device_index = int;
+
+	static auto concurrent_managed_access_(device_index dev) -> bool {
+		int ret = 0;
+#if defined(MULTI_USE_HIP)
+		auto const err = hipDeviceGetAttribute(&ret, hipDeviceAttributeConcurrentManagedAccess, dev);
+#else
+		auto const err = cudaDeviceGetAttribute(&ret, cudaDevAttrConcurrentManagedAccess, dev);
+#endif
+		return err == HICUP_(Success) && ret != 0;
+	}
 	static auto get_current_device_() -> device_index {
 		int device;  // NOLINT(cppcoreguidelines-init-variables) delayed init
 #ifdef __GNUC__
