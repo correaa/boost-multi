@@ -319,10 +319,10 @@ class random_iterable {
 	friend T;
 
  public:
-	constexpr auto        cfront() const& -> decltype(auto) { return static_cast<T const&>(*this).front(); }
-	constexpr auto        cback() const& -> decltype(auto) { return static_cast<T const&>(*this).back(); }
-	friend constexpr auto cfront(T const& myself) -> decltype(auto) { return myself.cfront(); }
-	friend constexpr auto cback(T const& myself) -> decltype(auto) { return myself.cback(); }
+	// constexpr auto        cfront() const& -> decltype(auto) { return static_cast<T const&>(*this).front(); }
+	// constexpr auto        cback() const& -> decltype(auto) { return static_cast<T const&>(*this).back(); }
+	// friend constexpr auto cfront(T const& myself) -> decltype(auto) { return myself.cfront(); }
+	// friend constexpr auto cback(T const& myself) -> decltype(auto) { return myself.cback(); }
 };
 #ifdef _MSC_VER
 #pragma warning( pop )
