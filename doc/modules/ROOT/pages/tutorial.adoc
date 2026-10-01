@@ -1379,3 +1379,84 @@ Note that lazy expressions are themselves multidimensional arrays, and share the
 // assert( std::equal(sevens.begin(), sevens.end(), single.broadcasted().begin()) );
 // ```
 // (https://godbolt.org/z/nnxjsrvM1)
+
+[#tutorial_performance]
+== Performance Portability for your Arrays
+
+The library strives for several aspects of portability.
+First, it is portable in the sense that it can compile with a variety of compilers, and it strives to allow use on different kinds of hardware, such as GPUs.
+Second, it is portable in the sense that element types are interchangeable and can be changed or upgraded while generic algorithms remain valid, for example element types can be upgraded from `float` to `double` to increase precision or to `half` (`float16`) to increase speed.
+
+Finally, another form of portability is concerned with performance across the board.
+Performance portability demands that the same code, at least at the algorithm interface level, performs well on different platforms without changes.
+Therefore, performance portability can only be evaluated on a case-by-case basis for specific combinations of data structures and algorithms.
+From the library's perspective, the main concern is to enable performance portability when combined with well-designed libraries and portable algorithms.
+
+We start from a simple example, a hand roled loop to implement `daxpy` (one dimensional array addition)
+
+[source,cpp]
+----
+multi::array<double, 1> x(N);
+multi::array<double, 1> y(N);
+
+for(int i = 0; i != x.size(); ++i) {  // using int for simplicity
+	y[i] = a * x[i] + y[i];
+}
+----
+
+This loop is fine, but it is not parallel, and will not work on GPUs (if `x` and `y` are changed to be in GPU memory this will not even run), and there is no abstraction.
+
+In order to make this code work in a more general way one would need to rewrite this loop in two other different ways.
+Without going into details, these other forms will look like this''
+
+[source,cpp]
+----
+#pragma omp parallel for
+for(int i = 0; i != x.size(); ++i) {
+	y[i] = a * x[i] + y[i];
+}
+----
+
+and
+
+[source,cpp]
+----
+__global__ void daxpy_kernel(double a, double const* x, double* y, int n) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if(i < n) {
+        y[i] = a * x[i] + y[i];
+    }
+}
+----
+
+This forces us to maintain at least 3 version of the code.
+
+The idea is to simultaneously achive abstraction and performance portability by replacing this with a single function, that is a direct translation of the 
+
+[source,cpp]
+----
+thrust::for_each(
+	x.extent().begin(), x.extent().end(),
+	[a, x_ = x.home(), y_ = y.home()] __host__ __device__(int i) {
+		y_[i] = a * x_[i] + y_[i];
+	}
+);
+----
+
+If we use a specialized algorithm instead we can achieve both abstraction and performance:
+
+[source,cpp]
+----
+thrust::transform(
+	x.begin(), x.end(), y.begin(), y.begin(),
+	[a] __host__ __device__(double xi, double yi) {
+		return a * xi + yi;
+	}
+);
+----
+
+link:https://godbolt.org/z/j6c1oKEWW[(open with Compiler Explorer)]
+
+This will work whether the plain CPU arrays `multi::array<double, 1>`, are interchanged with GPU arrays `multi::thrust::cuda::array<double, 1>` or with OMP arrays  `multi::thrust::omp::array<double, 1>`.
+
+There is no general solution for the problem of performance portability, it depends on the libraries you use and the complexity of the algorithms (e.g. reduction, linear algebra, dimensionality, etc.)
