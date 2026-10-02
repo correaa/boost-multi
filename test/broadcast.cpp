@@ -11,7 +11,6 @@
 
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
-#include <cstdlib>     // for abs
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>
 #include <iterator>  // IWYU pragma: keep
