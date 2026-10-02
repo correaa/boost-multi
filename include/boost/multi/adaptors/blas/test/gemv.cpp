@@ -7,9 +7,10 @@
 #include <boost/multi/adaptors/blas/dot.hpp>   // for dot, dot_ref
 #include <boost/multi/adaptors/blas/gemv.hpp>  // for gemv_range, gemv, oper...
 #include <boost/multi/adaptors/blas/nrm2.hpp>  // for operator^
+
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 #include <boost/multi/elementwise.hpp>         // for operations
-#include <boost/multi/restriction.hpp>         // for restriction
+#include <boost/multi/restriction.hpp>         // IWYU pragma: keep  // for restriction
 
 #include <boost/core/lightweight_test.hpp>
 
@@ -25,6 +26,8 @@
 #include <type_traits>  // for is_same_v
 #include <utility>      // for move, forward
 // IWYU pragma: no_include <stdlib.h>       // for abs
+#include "boost/multi/elementwise/operators.hpp"
+
 #include <iostream>
 
 namespace multi = boost::multi;
@@ -91,7 +94,7 @@ void gemv_broadcast() {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_double)
 	{
-		using T = double;
+		using T                    = double;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const a = {
 			{ 9.0, 24.0, 30.0, 9.0},
@@ -153,7 +156,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 	// BOOST_AUTO_TEST_CASE(multi_blas_gemv_float)
 	{
-		using T = float;
+		using T                    = float;
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 		multi::array<T, 2> const a = {
 			{ 9.0, 24.0, 30.0, 9.0},
@@ -558,9 +561,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using multi::elementwise::exp;
 		using multi::elementwise::log;
 
-		auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
+		// auto ret = log(+gemv(5.0, arr, vec) + exp(vec));
 
-		BOOST_TEST( std::abs( ret[1] - 4.13339 ) < 1e-4 );
+		BOOST_TEST( std::abs( log(+gemv(5.0, arr, vec) + exp(vec))[1] - 4.13339 ) < 1e-4 );
 	}
 #endif
 	{

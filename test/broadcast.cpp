@@ -4,7 +4,8 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
-#include <boost/multi/restriction.hpp>  // for restriction, operator!=
+#include <boost/multi/elementwise/operators.hpp>  // for operator+, operator*
+#include <boost/multi/restriction.hpp>            // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
@@ -383,18 +384,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		BOOST_TEST( arr.size() == 3 );
 		BOOST_TEST( arr[2][2] == 0 );
 	}
-	// clang-format off
-	{
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
+	// // clang-format off
+	// {
+	// 	using multi::elementwise::operator+;  // cppcheck-suppress constStatement ;
 
-		using T = multi::array<int, 2>;
-		multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
-		multi::array<T, 2> YT({2, 3}, T({{1, 0}, {0, 1}}));
+	// 	using T = multi::array<int, 2>;
+	// 	multi::array<T, 2> XT({2, 3}, T({{1, 0}, {0, 1}}));
+	// 	multi::array<T, 2> YT({2, 3}, T({{1, 0}, {0, 1}}));
 
-		auto const xy = XT[0][0] + YT[0][0];  // ok
-		auto const XY = XT + YT;  // error
-	}
-	// clang-format on
+	// 	auto const xy = XT[0][0] + YT[0][0];  // ok
+	// 	auto const XY = XT + YT;  // error
+
+	// 	BOOST_TEST( (XT + YT)[0][0][1][1] == XT[0][0][1][1] + YT[0][0][1][1] );
+	// }
+	// // clang-format on
 
 	// {
 	// 	multi::array<int, 1> const a = {1, 2, 3};

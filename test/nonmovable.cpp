@@ -5,7 +5,7 @@
 
 #include <boost/multi/array.hpp>  // for subarray, array, range, operator!=
 
-#include "boost/multi/restriction.hpp"  // for operator^
+#include "boost/multi/restriction.hpp"  // IWYU pragma: keep  // for operator^
 
 #include <boost/core/lightweight_test.hpp>
 

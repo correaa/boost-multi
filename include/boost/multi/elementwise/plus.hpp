@@ -19,4 +19,4 @@ auto plus(A const& alpha, B const& omega) {
 
 }  // namespace boost::multi::elementwise
 
-#endif
+#endif  // BOOST_MULTI_ELEMENTWISE_PLUS_HPP

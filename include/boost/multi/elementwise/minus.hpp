@@ -19,4 +19,4 @@ auto minus(A const& alpha, B const& omega) {
 
 }  // namespace boost::multi::elementwise
 
-#endif
+#endif  // BOOST_MULTI_ELEMENTWISE_MINUS_HPP

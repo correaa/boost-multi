@@ -7,6 +7,7 @@
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
+#include <algorithm>  // for max
 #include <array>
 #include<cassert>
 #include<complex>
