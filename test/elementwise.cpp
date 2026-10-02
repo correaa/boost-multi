@@ -7,7 +7,6 @@
 #include <boost/multi/elementwise/invoke.hpp>     // for invoke
 #include <boost/multi/elementwise/minus.hpp>
 #include <boost/multi/elementwise/plus.hpp>
-#include <boost/multi/restriction.hpp>  // for restriction, bind_front_t
 
 #include <boost/core/lightweight_test.hpp>
 

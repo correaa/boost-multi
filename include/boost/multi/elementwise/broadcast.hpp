@@ -9,6 +9,9 @@
 #include "boost/multi/restriction.hpp"
 #include "boost/multi/utility.hpp"
 
+#include <type_traits>  // for decay_t
+#include <utility>      // for forward
+
 namespace boost::multi::elementwise {
 
 /// yields an array expression that would result from invoking a function of `n` arguments to corresponding elements of arrays (extents and dimensionality are adapted when possible).
