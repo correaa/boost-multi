@@ -24,6 +24,7 @@
 // #include <typeinfo>     // for bad_cast
 #include <utility>  // for as_const, move
 #include <vector>   // for vector
+#include <version>  // IWYU pragma: keep  // for __cpp_lib_span
 
 namespace multi = boost::multi;
 
