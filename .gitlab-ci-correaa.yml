@@ -687,7 +687,7 @@ clang++-latest tidy iwyu everything:
     - iwyu --version
     - clang-format --version
     - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_LINK_WHAT_YOU_USE=ON -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
-    - cmake --build . -- -k
+    - cmake --build . -- -k 0
     - ctest --output-on-failure
   needs: ["clang++"]
 
