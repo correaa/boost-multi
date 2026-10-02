@@ -8,6 +8,8 @@
 #include "boost/multi/detail/layout.hpp"  // IWYU pragma: export
 #include "boost/multi/utility.hpp"
 
+#include <type_traits>  // for decay_t
+
 #ifdef __NVCC__
 #define BOOST_MULTI_HD __host__ __device__
 #else
@@ -623,7 +625,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
  public:
 	/// returns a cursor pointing to the top corner element of the array (a cursors is a lightweight representation of the array that drops the extents with pointer semantics)
 	/// unlike `begin()`/`end()`, the cursor owns a copy of the projection so it stays valid even if the restriction it was taken from does not (e.g. when captured into a closure by `elementwise::invoke`)
-	auto home() const & {
+	auto home() const& {
 		auto cur = extents().home();  // mull-ignore: cxx_init_const ; equivalent mutant for D > 1: extents_t<D>::cursor_t stores no start indices (see extents.hpp), so `cur` carries no runtime state to corrupt there
 		return cursor_t<decltype(cur), D>{proj_, cur};
 	}

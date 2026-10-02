@@ -1,4 +1,5 @@
 [
+    { "symbol": ["std::get", "private", "<tuple>", "public"] },
     { "include": ["@<boost/mpl/aux_/preprocessed/gcc/list.hpp>", "private", "<boost/mpl/list.hpp>", "public"] },
     { "include": ["@<boost/iterator/iterator_facade.hpp>", "private", "<boost/multi_array.hpp>", "public"] },
     { "include": ["@<bits/chrono.h>", "private", "<chrono>", "public"] },

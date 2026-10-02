@@ -5,12 +5,13 @@
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise.hpp>
 #include <boost/multi/elementwise/operators.hpp>  // for operator+, operator*
-#include <boost/multi/restriction.hpp>            // for restriction, operator!=
+#include <boost/multi/restriction.hpp>            // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #include <algorithm>   // IWYU pragma: keep  // for std::equal
 #include <cmath>       // for std::abs
+#include <cstdlib>     // for abs
 #include <functional>  // for std::plus  // NOLINT(misc-include-cleaner)  // IWYU pragma: keep
 #include <iostream>
 #include <iterator>  // IWYU pragma: keep

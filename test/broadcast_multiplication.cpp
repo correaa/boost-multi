@@ -4,7 +4,7 @@
 
 #include <boost/multi/array.hpp>
 #include <boost/multi/elementwise/operators.hpp>  // for operator*
-#include <boost/multi/restriction.hpp>            // for restriction, operator!=
+#include <boost/multi/restriction.hpp>            // IWYU pragma: keep
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
