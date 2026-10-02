@@ -2,9 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#include <boost/core/lightweight_test.hpp>
-
-#include <boost/multi/adaptors/cuda/cublas.hpp>
+#include <boost/multi/adaptors/cuda/cublas.hpp>  // must come before the blas headers, it provides their default (cuBLAS) context
 
 #include <boost/multi/adaptors/blas/asum.hpp>
 #include <boost/multi/adaptors/blas/axpy.hpp>
@@ -15,16 +13,16 @@
 #include <boost/multi/adaptors/blas/scal.hpp>
 #include <boost/multi/adaptors/blas/swap.hpp>
 #include <boost/multi/adaptors/blas/trsm.hpp>
-#include <boost/multi/adaptors/cuda/cublas.hpp>
 #include <boost/multi/adaptors/thrust.hpp>
 
 #include <thrust/complex.h>
 #include <thrust/inner_product.h>
 #include <thrust/transform_reduce.h>
+#include <thrust/version.h>  // for THRUST_VERSION
+
+#include <boost/core/lightweight_test.hpp>
 
 #include <numeric>
-
-#include <thrust/version.h>  // for THRUST_VERSION
 
 #if THRUST_VERSION >= 300000  // CCCL/Thrust 3.0+
 #include <cuda/std/functional>
@@ -852,21 +850,21 @@ int main() {
 		// blas::gemv(1.0, blas::H(A), x, 0.0, y);
 
 		{
-// TODO(correaa) MKL gives an error here
-		// multi::array<complex, 1, Alloc> yy = { 1.1 + I* 0.0, 2.1 +I* 0.0, 3.1 + I* 0.0, 6.7 + I*0.0 };  // NOLINT(readability-identifier-length) BLAS naming
-		// std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), [&x] (auto const& Ac) {
-		// 	using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
-		// 	return blas::dot(*Ac, x);}
-		// );
+			// TODO(correaa) MKL gives an error here
+			// multi::array<complex, 1, Alloc> yy = { 1.1 + I* 0.0, 2.1 +I* 0.0, 3.1 + I* 0.0, 6.7 + I*0.0 };  // NOLINT(readability-identifier-length) BLAS naming
+			// std::transform(begin(transposed(A)), end(transposed(A)), begin(yy), [&x] (auto const& Ac) {
+			// 	using blas::operators::operator*;  // nvcc 11.8 needs this to be inside lambda
+			// 	return blas::dot(*Ac, x);}
+			// );
 
-		// BOOST_TEST( std::abs(static_cast<complex>(yy[0]).real() -  61.7) < 1.e-7  );
-		// BOOST_TEST( std::abs(static_cast<complex>(yy[1]).real() -  97.0) < 1.e-7  );
-		// BOOST_TEST( std::abs(static_cast<complex>(yy[2]).real() - 169.8) < 1.e-7  );
-		// BOOST_TEST( std::abs(static_cast<complex>(yy[3]).real() -  27.7) < 1.e-7  );
+			// BOOST_TEST( std::abs(static_cast<complex>(yy[0]).real() -  61.7) < 1.e-7  );
+			// BOOST_TEST( std::abs(static_cast<complex>(yy[1]).real() -  97.0) < 1.e-7  );
+			// BOOST_TEST( std::abs(static_cast<complex>(yy[2]).real() - 169.8) < 1.e-7  );
+			// BOOST_TEST( std::abs(static_cast<complex>(yy[3]).real() -  27.7) < 1.e-7  );
 
-		// using blas::operators::operator*;
-		// BOOST_TEST( std::abs( static_cast<complex>(yy[0]).real() - (+blas::dot(*(~A)[0], x)).real()) < 1.e-7  );
-		// BOOST_TEST( std::abs( static_cast<complex>(yy[1]).real() - (+blas::dot(*(~A)[1], x)).real()) < 1.e-7  );
+			// using blas::operators::operator*;
+			// BOOST_TEST( std::abs( static_cast<complex>(yy[0]).real() - (+blas::dot(*(~A)[0], x)).real()) < 1.e-7  );
+			// BOOST_TEST( std::abs( static_cast<complex>(yy[1]).real() - (+blas::dot(*(~A)[1], x)).real()) < 1.e-7  );
 		}
 	}
 
@@ -932,26 +930,41 @@ int main() {
 		};
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;  // computed row by row, in place
+			auto C_rows = C;  // computed row by row, only through the output iterator
+
 			blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);
 
 			// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
 			//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
 			// );
-			std::transform(begin(A), end(A), begin(C_copy), end(C_copy), [&B, aa = 1.0, bb = 0](auto const& Ar, auto&& Cr) { return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr)); });
+			std::transform(A.begin(), A.end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 0](auto const& Ar, auto&& Cr) { return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr)); });
+
+			// the lambda doesn't modify its second argument, so the rows reach C_rows only through the output iterator
+			// (with a wrong output iterator, e.g. C_rows.end(), C_rows keeps its initial values and the checks below fail)
+			std::transform(A.begin(), A.end(), C_rows.begin(), C_rows.begin(), [&B](auto const& Ar, auto const& /*Cr*/) {
+				multi::array<complex, 1, Alloc> row(Ar.extents(), complex{0.0, 0.0});  // a new row, not the one in C_rows
+				blas::gemv(1.0, blas::T(B), Ar, 0.0, row);
+				return row;
+			});
 
 			BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
 			BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
+
+			BOOST_TEST( static_cast<complex>(C_rows[0][0]) == static_cast<complex>(C[0][0]) );
+			BOOST_TEST( static_cast<complex>(C_rows[0][1]) == static_cast<complex>(C[0][1]) );
+			BOOST_TEST( static_cast<complex>(C_rows[1][0]) == static_cast<complex>(C[1][0]) );
+			BOOST_TEST( static_cast<complex>(C_rows[1][1]) == static_cast<complex>(C[1][1]) );
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
-			C                                      = blas::gemm(1.0 + I * 0.0, A, B);
 
-			// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
-			//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
-			// );
-			std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 0.0](auto const& Ar, auto&& Cr) {
+			auto C_copy = C;
+
+			C = blas::gemm(1.0 + I * 0.0, A, B);
+
+			std::transform(A.begin(), A.end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 0.0](auto const& Ar, auto&& Cr) {
 				return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 			});
 
@@ -960,10 +973,12 @@ int main() {
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;
+
 			C += blas::gemm(1.0 + I * 0.0, A, B);
 
-			std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)), [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
+			std::transform(B.transposed().begin(), B.transposed().end(), C_copy.transposed().begin(), C_copy.transposed().begin(), [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
 
 			BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
 			BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
@@ -971,11 +986,13 @@ int main() {
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
 			auto                            C_copy = C;
+
 			using blas::operators::operator*;
 			using blas::operators::operator+=;
+
 			C += A * B;
 
-			std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+			std::transform(A.begin(), A.end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 				return blas::gemv(aa, blas::T(B), Ar, bb, std::move(Cr));
 			});
 
@@ -1002,23 +1019,24 @@ int main() {
 		};
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;
+
 			blas::gemm({1.0, 0.0}, A, blas::T(B), {0.0, 0.0}, C);
 
-			std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)), [&A, aa = 1.0, bb = 0.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
+			std::transform(B.begin(), B.end(), C_copy.transposed().begin(), C_copy.transposed().begin(), [&A, aa = 1.0, bb = 0.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
 
 			BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
 			BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
-			C                                      = blas::gemm(1.0 + I * 0.0, A, blas::T(B));
 
-			// std::transform(begin(transposed(B)), end(transposed(B)), begin(transposed(C_copy)), begin(transposed(C_copy)),
-			//  [&A, aa=1.0, bb=0.0] (auto const& Bc, auto&& Cc) {return blas::gemv(aa, A, Bc, bb, std::move(Cc));}
-			// );
-			std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 0.0](auto const& Ac, auto&& Cr) {
+			auto C_copy = C;
+
+			C = blas::gemm(1.0 + I * 0.0, A, blas::T(B));
+
+			std::transform(A.begin(), A.end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 0.0](auto const& Ac, auto&& Cr) {
 				return blas::gemv(aa, B, Ac, bb, std::move(Cr));
 			});
 
@@ -1027,22 +1045,27 @@ int main() {
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;
+
 			C += blas::gemm(1.0 + I * 0.0, A, blas::T(B));
 
-			std::transform(begin(B), end(B), begin(transposed(C_copy)), begin(transposed(C_copy)), [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
+			std::transform(B.begin(), B.end(), C_copy.transposed().begin(), C_copy.transposed().begin(), [&A, aa = 1.0, bb = 1.0](auto const& Bc, auto&& Cc) { return blas::gemv(aa, A, Bc, bb, std::move(Cc)); });
 
 			BOOST_TEST( static_cast<complex>(C_copy[1][0]) == static_cast<complex>(C[1][0]) );
 			BOOST_TEST( static_cast<complex>(C_copy[0][1]) == static_cast<complex>(C[0][1]) );
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;
+
 			using blas::operators::operator*;
 			using blas::operators::operator+=;
+
 			C += A * ~B;
 
-			std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+			std::transform(A.begin(), A.end(), C_copy.begin(), C_copy.begin(), [&B, aa = 1.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 				return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 			});
 
@@ -1051,12 +1074,15 @@ int main() {
 		}
 		{
 			multi::array<complex, 2, Alloc> C({2, 2}, {3.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
-			auto                            C_copy = C;
+
+			auto C_copy = C;
+
 			using blas::operators::operator*;
 			using blas::operators::operator+=;
+
 			C += 2.0 * (A * ~B);
 
-			std::transform(begin(A), end(A), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
+			std::transform(A.begin(), A.end(), begin(C_copy), begin(C_copy), [&B, aa = 2.0, bb = 1.0](auto const& Ar, auto&& Cr) {
 				return blas::gemv(aa, B, Ar, bb, std::move(Cr));
 			});
 
@@ -1260,25 +1286,25 @@ int main() {
 					}
 				}
 			}
-// TODO(correaa) MKL gives an error here
-// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
-		// {
-		// 	std::transform(A.begin(), A.end(), CC.begin(), CC.begin(), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
-		// 		return std::transform(
-		// 			BT.begin(), BT.end(), Cr.begin(), Cr.begin(), [&Ar](auto const& Bc, auto&& Ce) {
-		// 				return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;
-		// 			}
-		// 		), std::move(Cr);
-		// 	});
-		// }
-		// BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
-		// BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
+			// TODO(correaa) MKL gives an error here
+			// unknown location(0): fatal error: in "cublas_one_gemv_complex_conjtrans_zero": memory access violation at address: 0x00000007: no mapping at fault address
+			// {
+			// 	std::transform(A.begin(), A.end(), CC.begin(), CC.begin(), [BT = transposed(B)](auto const& Ar, auto&& Cr) {
+			// 		return std::transform(
+			// 			BT.begin(), BT.end(), Cr.begin(), Cr.begin(), [&Ar](auto const& Bc, auto&& Ce) {
+			// 				return 1.0*blas::dot(Ar, blas::C(Bc)) + 0.0*Ce;
+			// 			}
+			// 		), std::move(Cr);
+			// 	});
+			// }
+			// BOOST_TEST( static_cast<complex>(CC[1][0]).real() == static_cast<complex>(C[1][0]).real() );
+			// BOOST_TEST( static_cast<complex>(CC[1][0]).imag() == static_cast<complex>(C[1][0]).imag() );
 
-		// BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
-		// BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
+			// BOOST_TEST( static_cast<complex>(CC[0][1]).real() == static_cast<complex>(C[0][1]).real() );
+			// BOOST_TEST( static_cast<complex>(CC[0][1]).imag() == static_cast<complex>(C[0][1]).imag() );
 
-		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
-		// BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
+			// BOOST_TEST( static_cast<complex>(C_copy[1][0]).real() == +static_cast<complex>(C[0][1]).real() );
+			// BOOST_TEST( static_cast<complex>(C_copy[1][0]).imag() == -static_cast<complex>(C[0][1]).imag() );
 		}
 	}
 
@@ -2004,12 +2030,12 @@ int main() {
 			{3.0 + 1.0 * I, 1.0 - 1.0 * I},
 		};
 
-		#if !defined(_MSC_VER)
+#if !defined(_MSC_VER)
 		using blas::operators::operator|=;
 		using blas::operators::U;
 		B |= U(A);  // B←A⁻¹.B, B†←A⁻¹.B†
 		BOOST_TEST( std::abs( static_cast<complex>(B[2][1]).imag() - -0.0882353) < 0.001 );
-		#endif
+#endif
 	}
 
 	// BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_gemm_check_no_const_right)
