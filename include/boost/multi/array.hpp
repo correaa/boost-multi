@@ -194,6 +194,11 @@ struct                                                                          
 	}
 
 	// NOLINTNEXTLINE(readability-identifier-naming) make private name
+	void allocate(typename multi::allocator_traits<typename dynamic_array::allocator_type>::const_void_pointer hint) {
+		this->base_ = array_alloc::allocate(static_cast<typename multi::allocator_traits<typename dynamic_array::allocator_type>::size_type>(this->dynamic_array::num_elements()), hint);
+	}
+
+	// NOLINTNEXTLINE(readability-identifier-naming) make private name
 	template<typename It> constexpr auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
@@ -251,7 +256,7 @@ struct                                                                          
 	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor,bugprone-exception-escape)
 	: array_alloc{other.alloc()},
 	  ref_(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),  // NOLINT(readability-redundant-typename) needed for C++17
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), /*hint =*/ other.data_elements()),  // NOLINT(readability-redundant-typename) needed for C++17
 		  other.extents()
 	  ) {
 		static_assert(std::is_nothrow_move_constructible_v<typename dynamic_array::element>,
@@ -715,7 +720,7 @@ struct                                                                          
 		  multi::allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc())
 	  ),
 	  ref_(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(other.num_elements()), /*hint =*/ other.data_elements()),
 		  other.extents()
 	  ) {
 		assert(this->stride() != 0);
@@ -1319,14 +1324,13 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	: dynamic_array(extensions, allocator_type{}) {}
 
 	dynamic_array(dynamic_array const& other, allocator_type const& alloc)  // 5b
-	: array_alloc{alloc}, ref_(dynamic_array::allocate(other.num_elements()), extents(other)) {
+	: array_alloc{alloc}, ref_(dynamic_array::allocate(other.num_elements(), /*hint =*/ other.data_elements()), other.extents()) {
 		assert(this->stride() != 0);
 		uninitialized_copy_(other.data_elements());
 	}
 
 	dynamic_array(dynamic_array const& other)  // 5b
-	: array_alloc{other.get_allocator()}, ref_{dynamic_array::allocate(other.num_elements(), other.data_elements()), {}} {
-		assert(this->stride() != 0);
+	: array_alloc{other.get_allocator()}, ref_{dynamic_array::allocate(other.num_elements(), /*hint =*/ other.data_elements()), {}} {
 		uninitialized_copy(other.data_elements());
 	}
 
@@ -1792,7 +1796,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 				this->alloc() = other.alloc();
 			}
 			this->layout_mutable() = other.layout();
-			array::allocate();
+			array::allocate(other.data_elements());
 			array::uninitialized_copy_elements(other.data_elements());
 		}
 		return *this;
