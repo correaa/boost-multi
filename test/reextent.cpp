@@ -8,7 +8,7 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>
-#include <initializer_list>  // for initializer_list
+#include <initializer_list>  // IWYU pragma: keep  // for initializer_list
 // #include <iterator>          // for size
 #include <string>       // for basic_string, char_traits
 #include <tuple>        // IWYU pragma: keep  // for get

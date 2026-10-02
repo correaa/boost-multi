@@ -10,7 +10,7 @@
 
 #include <boost/multi/array.hpp>               // for array, layout_t, array...
 #include <boost/multi/elementwise.hpp>         // for operations
-#include <boost/multi/restriction.hpp>         // for restriction
+#include <boost/multi/restriction.hpp>         // IWYU pragma: keep  // for restriction
 
 #include <boost/core/lightweight_test.hpp>
 

@@ -14,7 +14,7 @@
 #include <iterator>  // for size, begin, end
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for iota
-#include <tuple>        // for get
+#include <tuple>        // for get  // NOLINT(misc-include-cleaner) IWYU maps std::get to <tuple>
 #include <type_traits>  // for is_same_v
 #include <utility>      // for pair
 

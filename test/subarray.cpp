@@ -11,6 +11,7 @@
 #include <tuple>        // for tuple, apply
 #include <type_traits>  // for std::is_swappable_v
 #include <utility>      // for as_const
+#include <version>      // for __cpp_lib_integer_comparison_functions
 
 namespace multi = boost::multi;
 
