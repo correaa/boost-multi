@@ -23,7 +23,10 @@ if(DISABLE_THRUST_OMP)
     message(WARNING "OMP disabled, OMP-through-Thrust capabilities will not be tested")
 else()
     if(OpenMP_FOUND)
-        find_package(Thrust CONFIG)
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+            get_filename_component(NVHPC_CUDA_CMAKE_DIR "${CMAKE_CXX_COMPILER}/../../../cuda/lib64/cmake" ABSOLUTE)  # NVHPC ships its own CCCL: compilers/bin/nvc++ -> cuda/lib64/cmake/thrust
+        endif()
+        find_package(Thrust CONFIG HINTS "${NVHPC_CUDA_CMAKE_DIR}")
 
         if(NOT Thrust_FOUND)
             message(WARNING "Cannot find Thurst in the system, fetching from CCCL")

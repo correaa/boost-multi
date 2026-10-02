@@ -7,13 +7,14 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#include <array>    // for get, array
+#include <array>    // for array
 #include <cmath>    // for abs  // IWYU pragma: keep
 #include <complex>  // for complex, real, operator==, imag
 // IWYU pragma: no_include <cstdlib>                          // for abs
 #include <iterator>  // for size, begin, end
 // IWYU pragma: no_include <memory>       // for allocator
 #include <numeric>      // for iota
+#include <tuple>        // for get  // NOLINT(misc-include-cleaner) IWYU maps std::get to <tuple>
 #include <type_traits>  // for is_same_v
 #include <utility>      // for pair
 

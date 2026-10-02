@@ -17,6 +17,7 @@
 #include <numeric>    // for accumulate, iota
 #ifdef BOOST_MULTI_HAS_SPAN
 #include <span>  // for span
+#include <version>  // IWYU pragma: keep
 #endif
 #include <string>       // for basic_string, operator""s, string
 #include <tuple>        // for std::tie

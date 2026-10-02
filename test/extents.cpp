@@ -3,7 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/multi/array.hpp>
-#include <boost/multi/restriction.hpp>
+#include <boost/multi/restriction.hpp>  // IWYU pragma: keep  // for restriction, operator^
 
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 

@@ -412,10 +412,6 @@ else()
 			target_link_libraries(${TEST_EXE} PRIVATE multi)
 			target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
-			if(TBB_FOUND)
-				target_link_libraries    (${TEST_EXE} PRIVATE TBB::tbb)
-				target_compile_definitions(${TEST_EXE} PUBLIC TBB_FOUND=1)
-			endif()
 
 			# set_property(TARGET ${TEST_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
@@ -425,5 +421,17 @@ else()
 
 			add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 		endforeach()
+
+		if(TBB_FOUND)
+			target_link_libraries     (for_each.cpp.x PRIVATE TBB::tbb)
+			target_compile_definitions(for_each.cpp.x PUBLIC TBB_FOUND=1)
+
+			target_link_libraries     (ranges_zip.cpp.x PRIVATE TBB::tbb)
+			target_compile_definitions(ranges_zip.cpp.x PUBLIC TBB_FOUND=1)
+
+			target_link_libraries     (sum_of_squares.cpp.x PRIVATE TBB::tbb)
+			target_compile_definitions(sum_of_squares.cpp.x PUBLIC TBB_FOUND=1)
+		endif()
+
 	endif()
 endif()

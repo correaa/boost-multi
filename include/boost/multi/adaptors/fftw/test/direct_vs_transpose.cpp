@@ -14,7 +14,7 @@
 #include <random>
 #include <string>
 #include <string_view>
-#include <type_traits>  // for is_const_v
+#include <type_traits>  // IWYU pragma: keep  // for is_const_v (dependent)
 
 namespace multi = boost::multi;
 

@@ -18,6 +18,7 @@
 #include <algorithm>  // for for_each
 #include <iostream>   // for basic_ostream, operator<<
 #include <string>     // for char_traits, operator<<
+#include <version>    // IWYU pragma: keep  // for __cpp_lib_ranges, __cpp_lib_execution
 
 namespace multi = boost::multi;
 

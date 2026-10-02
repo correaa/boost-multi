@@ -1,4 +1,6 @@
 [
+    { "symbol": ["std::nullptr_t", "private", "<cstddef>", "public"] },
+    { "symbol": ["__cpp_lib_jthread", "private", "<version>", "public"] },
     { "symbol": ["std::get", "private", "<tuple>", "public"] },
     { "symbol": ["std::get", "private", "<array>", "public"] },
     { "symbol": ["std::get", "private", "<utility>", "public"] },
@@ -19,6 +21,7 @@
     { "include": ["@<__fwd/sstream.h>", "private", "<sstream>", "public"] },
     { "include": ["@<functional>", "public", "<boost/core/lightweight_test.hpp>", "public"] },
     { "include": ["@<bits/std_abs.h>", "private", "<cstdlib>", "public"] },
+    { "include": ["@<bits/std_abs.h>", "private", "<cmath>", "public"] },
     { "include": ["@<__bit_reference>", "private", "<utility>", "public"] },
     { "include": ["@<__fwd/string_view.h>", "private", "<string_view>", "public"] },
     { "include": ["@<__ostream/basic_ostream.h>", "private", "<ostream>", "public"] },

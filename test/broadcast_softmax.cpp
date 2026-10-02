@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+#include <boost/multi/elementwise/operators.hpp>  // for operator-, operator/
+
 #include <boost/core/lightweight_test.hpp>  // IWYU pragma: keep
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && __has_include(<ranges>)

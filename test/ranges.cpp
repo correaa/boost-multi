@@ -10,6 +10,7 @@
 #include <algorithm>   // for std::ran  // IWYU pragma: keep  //  NOLINT(misc-include-cleaner)
 #include <functional>  // for plus<>  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
 #include <memory>      // for allocator  // IWYU pragma: keep  // NOLINT(misc-include-cleaner)
+#include <version>     // IWYU pragma: keep  // for __cpp_lib_ranges, __cpp_lib_ranges_fold
 
 #if defined(__cplusplus) && (__cplusplus >= 202002L) && __has_include(<ranges>)
 // clang 16 c++23 crashed when including ranges

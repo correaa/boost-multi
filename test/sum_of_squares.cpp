@@ -8,7 +8,7 @@
 
 #include <functional>   // IWYU pragma: keep   // for std::plus
 #include <numeric>      // for std::transform_reduce, std::accumulate (fallback for libstdc++ < 9)
-#include <type_traits>  // for std::is_same_v, std::decay_t
+#include <type_traits>  // IWYU pragma: keep  // for std::is_same_v, std::decay_t (dependent)
 #include <utility>      // for std::forward
 
 #if __has_include(<version>)
