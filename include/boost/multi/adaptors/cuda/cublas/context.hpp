@@ -333,7 +333,9 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));  // the result is in device memory
 			sync_call<hicu(blasCdotc)>(static_cast<int>(n), (Complex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (Complex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (Complex*)::thrust::raw_pointer_cast(rr) );
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));
 		} else {
 			sync_call<hicu(blasCdotc)>(static_cast<int>(n), (Complex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (Complex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (Complex*)rr);
 		}
@@ -354,9 +356,10 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		hicu(blasPointerMode_t) mode;
 		[[maybe_unused]] auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
-	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));  // the result is in device memory
 			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)::thrust::raw_pointer_cast(rr) );
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));
 		} else {
 			sync_call<hicu(blasZdotc)>(static_cast<int>(n), (DoubleComplex const*)::thrust::raw_pointer_cast(xx), static_cast<int>(incx), (DoubleComplex const*)::thrust::raw_pointer_cast(yy), static_cast<int>(incy), (DoubleComplex*)rr);
 		}
@@ -544,7 +547,9 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));  // the result is in device memory
 			sync_call<hicu(blasCdotu)>(static_cast<int>(n), reinterpret_cast<Complex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<Complex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<Complex*>(::thrust::raw_pointer_cast(rr)) );
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));
 		} else {
 			sync_call<hicu(blasCdotu)>(static_cast<int>(n), reinterpret_cast<Complex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<Complex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<Complex*>(rr));
 		}
@@ -565,13 +570,13 @@ class context : private std::unique_ptr<typename std::pointer_traits<hicu(blasHa
 		hicu(blasPointerMode_t) mode;
 		[[maybe_unused]] auto s = hicu(blasGetPointerMode)(get(), &mode); assert( s == HICU(BLAS_STATUS_SUCCESS) );
 		assert( mode == HICU(BLAS_POINTER_MODE_HOST) );
-	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
 		if constexpr(is_convertible_v<RRP, ::thrust_hicup::pointer<RR>>) {
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_DEVICE));  // the result is in device memory
 			sync_call<hicu(blasZdotu)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<DoubleComplex*>(::thrust::raw_pointer_cast(rr)) );
+			hicu(blasSetPointerMode)(get(), HICU(BLAS_POINTER_MODE_HOST));
 		} else {
 			sync_call<hicu(blasZdotu)>(static_cast<int>(n), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(xx)), static_cast<int>(incx), reinterpret_cast<DoubleComplex const*>(::thrust::raw_pointer_cast(yy)), static_cast<int>(incy), reinterpret_cast<DoubleComplex*>(rr));
 		}
-	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_HOST);
 	}
 };
 
