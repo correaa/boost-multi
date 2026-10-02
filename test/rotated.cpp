@@ -15,7 +15,6 @@
 #include <ranges>  // IWYU pragma: keep
 #endif
 
-#include <tuple>        // for get // NOLINT(misc-include-cleaner)
 #include <type_traits>  // for is_assignable_v
 
 namespace multi = boost::multi;
