@@ -898,8 +898,8 @@ cuda-emulated:
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75-virtual -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CUDA_FLAGS="--extended-lambda" -DDISABLE_MPI=1
     # only the CUDA tests (*.cu), the rest have no device code
     - cmake --build . --target $(ninja -t targets all | grep -oE '^[a-z0-9_]+\.cu\.x' | grep -v '^cmake_' | sort -u) || cmake --build . --parallel 1 --verbose --target $(ninja -t targets all | grep -oE '^[a-z0-9_]+\.cu\.x' | grep -v '^cmake_' | sort -u)
-    # excluded: speed benchmarks (timing ratios are meaningless on a simulator), dot/nrm2 (crash in the simulator's cuBLAS), all (out-of-bounds write reported by the simulator, to be investigated)
-    - /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo|dot|nrm2|all)\.cu\.x$' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo|dot|nrm2|all)\.cu\.x$' --timeout 600 --rerun-failed --output-on-failure
+    # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
+    - /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 --rerun-failed --output-on-failure
   needs: ["g++"]
 
 cuda-11.6.1:
