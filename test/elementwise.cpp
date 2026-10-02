@@ -7,6 +7,7 @@
 #include <boost/multi/elementwise/invoke.hpp>     // for invoke
 #include <boost/multi/elementwise/minus.hpp>
 #include <boost/multi/elementwise/plus.hpp>
+#include <boost/multi/restriction.hpp>  // IWYU pragma: keep  // for restriction, operator^
 
 #include <boost/core/lightweight_test.hpp>
 
