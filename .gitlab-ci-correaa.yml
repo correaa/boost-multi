@@ -464,7 +464,6 @@ vs2022-shell:
   stage: build
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
-    GIT_STRATEGY: fetch
   allow_failure: false
   cache: []
   retry:
@@ -499,7 +498,6 @@ vs2022-shell c++17:
   stage: build
   variables:
     CMAKE_GENERATOR: ""   # unset for this job
-    GIT_STRATEGY: fetch
   allow_failure: false
   cache: []
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
