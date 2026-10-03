@@ -614,8 +614,8 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 			if constexpr(DD != 1) {
-				auto cur = cur_[n];
-				return cursor_t<decltype(cur), DD - 1, Proj const&>{proj_, cur};
+				// auto cur = cur_[n];
+				return cursor_t<decltype(cur_[n]), DD - 1, Proj const&>{proj_, cur_[n]};
 			} else {
 				return apply_(proj_, cur_[n]);
 			}
