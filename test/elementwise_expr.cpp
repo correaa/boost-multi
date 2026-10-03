@@ -85,6 +85,23 @@ auto main() -> int {
 		using std::lgamma;
 		BOOST_TEST( std::abs(lgamma(A)[1][1] - lgamma(A[1][1])) < 1e-12 );
 	}
+	{
+		using multi::elementwise::operator+;
+
+		multi::array<double, 2> C = A + 1.0;  // int + double gives double elements (storing them in an int array is a narrowing conversion, MSVC C4244)
+
+		BOOST_TEST( C.size() == A.size() );
+		BOOST_TEST( std::abs( C[1][1] - (A[1][1] + 1.0) ) < 1e-12 );
+	}
+	{
+		using multi::elementwise::exp;
+		multi::array<double, 1> C = exp(A[1]);
+
+		BOOST_TEST( C.size() == A[1].size() );
+
+		BOOST_TEST( std::abs( C[1] - std::exp(A[1][1]) ) < 1e-12 );
+	}
+
 	return boost::report_errors();
 }
 #else
