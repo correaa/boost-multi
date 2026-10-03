@@ -618,8 +618,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 
 		BOOST_MULTI_HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 			if constexpr(DD != 1) {
-				auto cur = cur_[n];
-				return cursor_t<decltype(cur), DD - 1, Proj const&>{proj_, cur};
+				return cursor_t<std::decay_t<decltype(cur_[n])>, DD - 1, Proj const&>{proj_, cur_[n]};
 			} else {
 				return apply_(proj_, cur_[n]);
 			}
@@ -630,13 +629,11 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	/// returns a cursor pointing to the top corner element of the array (a cursors is a lightweight representation of the array that drops the extents with pointer semantics)
 	/// unlike `begin()`/`end()`, the cursor owns a copy of the projection so it stays valid even if the restriction it was taken from does not (e.g. when captured into a closure by `elementwise::invoke`)
 	auto home() const& {
-		auto cur = extents().home();  // mull-ignore: cxx_init_const ; equivalent mutant for D > 1: extents_t<D>::cursor_t stores no start indices (see extents.hpp), so `cur` carries no runtime state to corrupt there
-		return cursor_t<decltype(cur), D>{proj_, cur};
+		return cursor_t<std::decay_t<decltype(extents().home())>, D>{proj_, extents().home()};
 	}
 
 	auto home() && {
-		auto cur = extents().home();
-		return cursor_t<decltype(cur), D>{std::move(proj_), cur};
+		return cursor_t<std::decay_t<decltype(extents().home())>, D>{std::move(proj_), extents().home()};
 	}
 
 	/// Random-access iterator in the leading dimension, in general they dereference to a restriction array of lower dimension or, for `D == 1`, to an element value (`T`) lazily generated.

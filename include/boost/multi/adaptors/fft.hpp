@@ -15,7 +15,7 @@
 #include <array>        // for array
 #include <cstddef>      // for size_t
 #include <iterator>     // for random_access_iterator_tag
-#include <tuple>        // for apply
+#include <tuple>        // for apply  // IWYU pragma: keep (std::apply is used in templates, which iwyu 0.21 misses)
 #include <type_traits>  // for decay_t, conditional_t, true_type
 #include <utility>      // for forward
 // IWYU pragma: no_include <variant>                        // for get

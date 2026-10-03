@@ -687,7 +687,7 @@ clang++-latest tidy iwyu everything:
     - iwyu --version
     - clang-format --version
     - CXX=clang++ CXX_FLAGS="-Weverything" cmake .. -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_LINK_WHAT_YOU_USE=ON -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--mapping_file=$PWD/../.iwyu-test.imp;-Xiwyu;--no_fwd_decls;-Xiwyu;--error"
-    - cmake --build . -- -k 0
+    - cmake --build .
     - ctest --output-on-failure
   needs: ["clang++"]
 
@@ -884,22 +884,25 @@ cuda-emulated:
   image: nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcc only, the simulator replaces the CUDA runtime (needs gcc >= 13 to build)
   variables:
     PANTHEONSIM_COMMIT: dd9dbb1f14be1aa69dc45c04253491fe0fd2c533  # pinned, the simulator is under active development
+    OMPI_ALLOW_RUN_AS_ROOT: "1"  # the container runs as root
+    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+    OMPI_MCA_rmaps_base_oversubscribe: "1"  # the MPI test asks for 4 ranks, the runner may have fewer cores
   tags:
     - non-shared
     - x86_64
   script:
-    - apt-get install --no-install-recommends -y git cmake ninja-build g++ pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get install --no-install-recommends -y git cmake ninja-build g++ pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev libopenmpi-dev openmpi-bin
     - git clone https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim checkout $PANTHEONSIM_COMMIT
     - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release && cmake --build /opt/pantheonsim/build --parallel 4
     - /opt/pantheonsim/build/vgpu info --gpu nvidia/t4
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     # PTX-only binaries (the simulator interprets PTX, not SASS) linked to the shared CUDA runtime (so the simulator can stand in for it)
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75-virtual -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CUDA_FLAGS="--extended-lambda" -DDISABLE_MPI=1
-    # only the CUDA tests (*.cu), the rest have no device code
-    - cmake --build . --target $(ninja -t targets all | grep -oE '^[a-z0-9_]+\.cu\.x' | grep -v '^cmake_' | sort -u) || cmake --build . --parallel 1 --verbose --target $(ninja -t targets all | grep -oE '^[a-z0-9_]+\.cu\.x' | grep -v '^cmake_' | sort -u)
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=75-virtual -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CUDA_FLAGS="--extended-lambda"
+    # only the CUDA tests (*.cu), the rest have no device code, plus the MPI test (ranks running inside the simulator environment)
+    - cmake --build . --target $(ninja -t targets all | grep -oE '^([a-z0-9_]+\.cu|mpi\.cpp)\.x' | grep -v '^cmake_' | sort -u) || cmake --build . --parallel 1 --verbose --target $(ninja -t targets all | grep -oE '^([a-z0-9_]+\.cu|mpi\.cpp)\.x' | grep -v '^cmake_' | sort -u)
     # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
-    - /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 --rerun-failed --output-on-failure
+    - /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$|^mpi\.cpp\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu nvidia/t4 ctest -R '\.cu\.x$|^mpi\.cpp\.x$' -E '^(speed|speed_algo)\.cu\.x$' --timeout 600 --rerun-failed --output-on-failure
   needs: ["g++"]
 
 cuda-11.6.1:
@@ -1124,6 +1127,36 @@ rocm c++20:
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest || ctest --rerun-failed --output-on-failure || echo "ctest failed, probably due to lack of hardware"
 #  needs: ["clang++"]
+
+# HIP tests on a simulated AMD GPU (PantheonSim, https://github.com/pantheongpu/pantheonsim), no physical GPU needed
+hip-emulated:
+  stage: build
+  image: rocm/dev-ubuntu-24.04:7.0.2-complete  # hipcc only, the simulator replaces the HIP runtime (it supports ROCm 6.4 to 7.2)
+  allow_failure: true  # TODO(correaa) flip to false once it passes (untested, rocThrust/rocPRIM on the simulator unverified)
+  variables:
+    PANTHEONSIM_COMMIT: dd9dbb1f14be1aa69dc45c04253491fe0fd2c533  # pinned, the simulator is under active development
+  tags:
+    - non-shared
+    - docker
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
+  script:
+    - apt-get install --no-install-recommends -y ninja-build git cmake g++ wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
+    - git clone https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim checkout $PANTHEONSIM_COMMIT
+    - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
+    - /opt/pantheonsim/build/vgpu info --gpu amd/mi300x
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
+    - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 --rerun-failed --output-on-failure
+  needs: ["clang++"]
 
 rocm-latest:
   stage: build
