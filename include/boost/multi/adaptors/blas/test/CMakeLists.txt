@@ -103,11 +103,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_link_libraries     (${TEST_EXE} PRIVATE Boost::boost)  # headers)   # unit_test_framework   )
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
-	if(TBB_FOUND)
-		target_link_libraries(${TEST_EXE} PRIVATE TBB::tbb)
-		target_compile_definitions(${TEST_EXE} PRIVATE MULTI_HAVE_TBB)  # gate parallel-execution code paths on TBB availability (libstdc++ std::execution::par needs TBB at link time)
-	endif()
-
 	target_link_libraries(${TEST_EXE} PRIVATE ${BLAS_LIBRARIES})  # there is no BLAS_INCLUDE_DIRS
 
     target_link_libraries(${TEST_EXE} PUBLIC multi)
@@ -207,3 +202,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND $<TARGET_FILE:${TEST_EXE}>)
 endforeach()
+
+if(TBB_FOUND)
+	target_link_libraries(copy.cpp.x PRIVATE TBB::tbb)
+	target_compile_definitions(copy.cpp.x PRIVATE MULTI_HAVE_TBB)  # gate parallel-execution code paths on TBB availability (libstdc++ std::execution::par needs TBB at link time)
+endif()

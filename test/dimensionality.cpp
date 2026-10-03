@@ -12,7 +12,7 @@
 namespace multi = boost::multi;
 
 namespace {
-// NOLINTNEXTLINE(readability-identifier-naming) nvcc (<12.4) cannot use a function-local lambda/type as a template argument within the same function, so this must live at namespace scope
+// NOLINTNEXTLINE(readability-identifier-naming) nvcc (<12.4) cannot use a function-local lambda/type as a template argument within the same function
 struct proj_fn {
 	constexpr auto operator()(multi::index /*row*/, multi::index /*col*/) const { return 1; }
 };
