@@ -1367,7 +1367,7 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	}
 	using element_const_ptr = typename std::pointer_traits<typename dynamic_array::element_ptr>::template rebind<typename dynamic_array::element const>;
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(dynamic_array const& self) -> allocator_type { return self.get_allocator(); }
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
