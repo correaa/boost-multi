@@ -1374,8 +1374,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return ref_::base(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto base(dynamic_array& self) -> typename dynamic_array::element_ptr { return self.base(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto base(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.base(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto base(dynamic_array& self) -> typename dynamic_array::element_ptr { return self.base(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto base(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.base(); }
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
