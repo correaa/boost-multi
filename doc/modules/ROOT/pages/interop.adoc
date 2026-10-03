@@ -695,11 +695,11 @@ Expressions such as `A.begin()` (iterators) can also be passed to kernels, but t
 
 Inside kernels, expression like `A[y][k]` yield a Thrust proxy reference, not a raw reference, which breaks template operators (e.g. `A[y][k] * B[k][x]` for `thrust::complex`).
 (Universal memory doesn't have this problem.)
-To use raw pointers instead, pass `.raw_array_cast()` views, or prefix the cursor with `+`:
+To use raw pointers instead, pass `.as_raw()` views, or prefix the cursor with `+`:
 
 [source,cpp]
 ----
-Kernel<<<dimGrid, dimBlock>>>(A.raw_array_cast().home(), B.raw_array_cast().home(), C.raw_array_cast().home(), N);
+Kernel<<<dimGrid, dimBlock>>>(A.as_raw().home(), B.as_raw().home(), C.as_raw().home(), N);
 // or Kernel<<<dimGrid, dimBlock>>>(+A.home(), +B.home(), +C.home(), N);
 ----
 
