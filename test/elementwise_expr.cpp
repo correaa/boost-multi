@@ -87,7 +87,8 @@ auto main() -> int {
 	}
 	{
 		using multi::elementwise::operator+;
-		multi::array<int, 2> C = A + 1.0;
+
+		multi::array<double, 2> C = A + 1.0;  // int + double gives double elements (storing them in an int array is a narrowing conversion, MSVC C4244)
 
 		BOOST_TEST( C.size() == A.size() );
 		BOOST_TEST( std::abs( C[1][1] - (A[1][1] + 1.0) ) < 1e-12 );
