@@ -3408,8 +3408,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using typename detail::array_types<T, 1, ElementPtr, Layout>::size_type;
 
 	BOOST_MULTI_HD constexpr auto get_allocator() const -> default_allocator_type { return default_allocator_of(const_subarray::base()); }
-	BOOST_MULTI_FRIEND_CONSTEXPR
-	auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR
+	// auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
 	using decay_type = array<std::decay_t<typename types::element>, dimensionality_type{1}, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
 
