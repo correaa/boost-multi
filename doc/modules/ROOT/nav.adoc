@@ -18,6 +18,7 @@
 ** xref:tutorial.adoc#tutorial_constexpr[Compile-time Evaluation]
 ** xref:tutorial.adoc#tutorial_restrictions[Lazy Evaluation with Restrictions]
 ** xref:tutorial.adoc#tutorial_elementwise[Elementwise Expressions]
+** xref:tutorial.adoc#tutorial_performance[Performance Portability for your Arrays]
 * xref:interop.adoc[]
 ** xref:interop.adoc#interop_stl[Standard Library (STL Algorithms)]
 ** xref:interop.adoc#interop_range_v3[Range-v3]

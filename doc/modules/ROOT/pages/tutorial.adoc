@@ -1387,33 +1387,33 @@ The library strives for several aspects of portability.
 First, it is portable in the sense that it can compile with a variety of compilers, and it strives to allow use on different kinds of hardware, such as GPUs.
 Second, it is portable in the sense that element types are interchangeable and can be changed or upgraded while generic algorithms remain valid, for example element types can be upgraded from `float` to `double` to increase precision or to `half` (`float16`) to increase speed.
 
-Finally, another form of portability is concerned with performance across the board.
+Finally, another form of portability is concerned with performance across platforms.
 Performance portability demands that the same code, at least at the algorithm interface level, performs well on different platforms without changes.
 Therefore, performance portability can only be evaluated on a case-by-case basis for specific combinations of data structures and algorithms.
 From the library's perspective, the main concern is to enable performance portability when combined with well-designed libraries and portable algorithms.
 
-We start from a simple example, a hand roled loop to implement `daxpy` (one dimensional array addition)
+We start from a simple example: a hand-rolled loop implementing a generalized `daxpy`, a one-dimensional array update with a per-element function application `f`; `f` is used later to control the compute intensity.
 
 [source,cpp]
 ----
-multi::array<double, 1> x(N);
-multi::array<double, 1> y(N);
+multi::array<float, 1> x(N);
+multi::array<float, 1> y(N);
 
 for(int i = 0; i != x.size(); ++i) {  // using int for simplicity
-	y[i] = a * x[i] + y[i];
+	y[i] = a * x[i] + f(y[i]);
 }
 ----
 
 This loop is fine, but it is not parallel, and will not work on GPUs (if `x` and `y` are changed to be in GPU memory this will not even run), and there is no abstraction.
 
 In order to make this code work in a more general way one would need to rewrite this loop in two other different ways.
-Without going into details, these other forms will look like this''
+Without going into details, these other forms will look like this:
 
 [source,cpp]
 ----
 #pragma omp parallel for
 for(int i = 0; i != x.size(); ++i) {
-	y[i] = a * x[i] + y[i];
+	y[i] = a * x[i] + f(y[i]);
 }
 ----
 
@@ -1421,24 +1421,24 @@ and
 
 [source,cpp]
 ----
-__global__ void daxpy_kernel(double a, double const* x, double* y, int n) {
+__global__ void daxpy_kernel(float a, float const* x, float* y, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if(i < n) {
-        y[i] = a * x[i] + y[i];
+        y[i] = a * x[i] + f(y[i]);
     }
 }
 ----
 
-This forces us to maintain at least 3 version of the code.
+This forces us to maintain at least 3 versions of the code.
 
-The idea is to simultaneously achive abstraction and performance portability by replacing this with a single function, that is a direct translation of the 
+The idea is to simultaneously achieve abstraction and performance portability by replacing this with a single function, that is a direct translation of the loop above:
 
 [source,cpp]
 ----
 thrust::for_each(
 	x.extent().begin(), x.extent().end(),
 	[a, x_ = x.home(), y_ = y.home()] __host__ __device__(int i) {
-		y_[i] = a * x_[i] + y_[i];
+		y_[i] = a * x_[i] + f(y_[i]);
 	}
 );
 ----
@@ -1449,14 +1449,47 @@ If we use a specialized algorithm instead we can achieve both abstraction and pe
 ----
 thrust::transform(
 	x.begin(), x.end(), y.begin(), y.begin(),
-	[a] __host__ __device__(double xi, double yi) {
-		return a * xi + yi;
+	[a] __host__ __device__(float xi, float yi) {
+		return a * xi + f(yi);
 	}
 );
 ----
 
 link:https://godbolt.org/z/j6c1oKEWW[(open with Compiler Explorer)]
 
-This will work whether the plain CPU arrays `multi::array<double, 1>`, are interchanged with GPU arrays `multi::thrust::cuda::array<double, 1>` or with OMP arrays  `multi::thrust::omp::array<double, 1>`.
+This will work whether the plain CPU arrays `multi::array<float, 1>` are interchanged with GPU arrays `multi::thrust::device_array<float, 1>` or with OMP arrays `multi::thrust::omp::array<float, 1>`.
 
-There is no general solution for the problem of performance portability, it depends on the libraries you use and the complexity of the algorithms (e.g. reduction, linear algebra, dimensionality, etc.)
+Wrapping the algorithm in a template function makes the portability explicit: one definition of `daxpy`, no backend branch, the array type decides the backend.
+Furthermore by using template parameters and a function object we can make the function, not only performance portable but also generic in the element type.
+(`f = exp` is substituted here to make the algorithm clearly compute-bound.)
+
+[source,cpp]
+----
+template<class T>
+struct daxpy_fn {
+	T a;
+	constexpr auto operator()(T xi, T yi) const -> T { return a * xi + exp(yi); }
+};
+
+template<class X1D, class Y1D, typename T = typename X1D::element>
+auto daxpy(T a, X1D const& x, Y1D&& y) -> Y1D&& {
+	thrust::transform(x.begin(), x.end(), y.begin(), y.begin(), daxpy_fn<T>{a});
+	return std::forward<Y1D>(y);
+}
+----
+
+|===
+| Array type                               | Backend              | `daxpy` (generic) | Hand-written for that platform
+
+| `multi::array<float, 1>`                 | CPU (serial)         | 0.070 s           | 0.061 s (raw loop)
+| `multi::thrust::omp::array<float, 1>`    | OpenMP (12 threads)  | 0.013 s           | 0.018 s (`#pragma omp parallel for` loop)
+| `multi::thrust::device_array<float, 1>`  | CUDA (GPU)           | 0.0011 s          | 0.0012 s (raw `__global__` kernel)
+|===
+
+(data size is 1GB, ran on Intel Core i7-9750H / Quadro RTX 5000 Max-Q.)
+
+link:https://godbolt.org/z/PPYccYsGe[(open with Compiler Explorer)]
+
+What we gain with the portable version is that there is a single piece of code to maintain and, at the same time, the code is on par with the platform-specific hand-written version.
+There is no general solution for the problem of performance portability; it depends on the libraries you use and the complexity of the algorithms (e.g. reduction, linear algebra, dimensionality, etc.).
+To approach performance portability, it is important to understand and make use of existing algorithms in libraries, or design your own at a high level of abstraction.
