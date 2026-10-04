@@ -1096,7 +1096,7 @@ template<> class extents_t<1> {
 	}
 };
 
-template<dimensionality_type D> using iextensions = extents_t<D>;
+template<dimensionality_type D> using iextensions [[deprecated("use extents_t")]] = extents_t<D>;
 
 template<dimensionality_type D> using extensions_t [[deprecated("use extents_t")]] = extents_t<D>;
 
