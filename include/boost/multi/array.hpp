@@ -1281,10 +1281,10 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		uninitialized_fill(elem);
 	}
 
-	dynamic_array() : dynamic_array(multi::iextensions<0>{}) {}  // TODO(correaa) a noexcept will force a partially formed state for zero dimensional arrays
+	dynamic_array() : dynamic_array(multi::extents_t<0>{}) {}  // TODO(correaa) a noexcept will force a partially formed state for zero dimensional arrays
 
 	explicit dynamic_array(typename dynamic_array::element const& elem)
-	: dynamic_array(multi::iextensions<0>{}, elem) {}
+	: dynamic_array(multi::extents_t<0>{}, elem) {}
 
 	template<
 		class Singleton, std::enable_if_t<!std::is_base_of_v<dynamic_array, Singleton> && !std::is_same_v<Singleton, typename dynamic_array::element>, int> = 0,  // NOLINT(modernize-type-traits) for C++20
