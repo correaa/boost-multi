@@ -101,6 +101,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST( result[i] == reference[i] );
 		}
 	}
+#if defined(_OPENMP)  // Thrust's OMP backend static_asserts without compiler OpenMP support (e.g. -fopenmp)
 	{  // omp: same daxpy(), called with OpenMP-allocated arrays
 		multi::thrust::omp::array<double, 1> const ox  = x;
 		multi::thrust::omp::array<double, 1> const oy0 = y0;
@@ -110,6 +111,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			BOOST_TEST( result[i] == reference[i] );
 		}
 	}
+#endif
 
 	return boost::report_errors();
 }

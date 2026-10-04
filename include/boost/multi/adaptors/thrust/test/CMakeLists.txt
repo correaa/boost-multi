@@ -108,6 +108,7 @@ if(OpenMP_CXX_FOUND)
 	# is silently never selected (no error, just runs the sequential fallback).
 	target_compile_options(portable_kernel_daxpy.cu.x PRIVATE
 		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=${OpenMP_CXX_FLAGS}>
+		$<$<COMPILE_LANG_AND_ID:CUDA,Clang>:${OpenMP_CXX_FLAGS}>
 	)
 endif()
 
