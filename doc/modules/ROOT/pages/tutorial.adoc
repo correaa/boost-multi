@@ -1455,12 +1455,12 @@ thrust::transform(
 );
 ----
 
-link:https://godbolt.org/z/j6c1oKEWW[(open with Compiler Explorer)]
+link:https://godbolt.org/z/PPYccYsGe[(open with Compiler Explorer)]
 
 This will work whether the plain CPU arrays `multi::array<float, 1>` are interchanged with GPU arrays `multi::thrust::device_array<float, 1>` or with OMP arrays `multi::thrust::omp::array<float, 1>`.
 
 Wrapping the algorithm in a template function makes the portability explicit: one definition of `daxpy`, no backend branch, the array type decides the backend.
-Furthermore by using template parameters and a function object we can make the function, not only performance portable but also generic in the element type.
+Furthermore by using template parameters and a function object we can make the function not only performance-portable but also generic in the element type.
 (`f = exp` is substituted here to make the algorithm clearly compute-bound.)
 
 [source,cpp]
@@ -1481,14 +1481,12 @@ auto daxpy(T a, X1D const& x, Y1D&& y) -> Y1D&& {
 |===
 | Array type                               | Backend              | `daxpy` (generic) | Hand-written for that platform
 
-| `multi::array<float, 1>`                 | CPU (serial)         | 0.070 s           | 0.061 s (raw loop)
-| `multi::thrust::omp::array<float, 1>`    | OpenMP (12 threads)  | 0.013 s           | 0.018 s (`#pragma omp parallel for` loop)
-| `multi::thrust::device_array<float, 1>`  | CUDA (GPU)           | 0.0011 s          | 0.0012 s (raw `__global__` kernel)
+| `multi::array<float, 1>`                 | CPU (serial)         | 1.16 s            | 1.09 s (raw loop)
+| `multi::thrust::omp::array<float, 1>`    | OpenMP (12 threads)  | 0.27 s            | 0.22 s (`#pragma omp parallel for` loop)
+| `multi::thrust::device_array<float, 1>`  | CUDA (GPU)           | 0.0100 s          | 0.0098 s (raw `__global__` kernel)
 |===
 
-(data size is 1GB, ran on Intel Core i7-9750H / Quadro RTX 5000 Max-Q.)
-
-link:https://godbolt.org/z/PPYccYsGe[(open with Compiler Explorer)]
+(data size is 1 GiB per array; measured on Intel Core i7-9750H / Quadro RTX 5000 Max-Q.)
 
 What we gain with the portable version is that there is a single piece of code to maintain and, at the same time, the code is on par with the platform-specific hand-written version.
 There is no general solution for the problem of performance portability; it depends on the libraries you use and the complexity of the algorithms (e.g. reduction, linear algebra, dimensionality, etc.).
