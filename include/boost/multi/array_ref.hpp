@@ -1416,10 +1416,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct dynamic_array;
 
-	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-
-	// TODO(correaa) vvv consider making it explicit (seems that in C++23 it can prevent auto s = a[0];)
-	// const_subarray(const_subarray const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
+	template<typename, multi::dimensionality_type, typename, class, bool> friend struct detail::subarray_ptr;
 
  public:
 	const_subarray(const_subarray const&) = delete;
