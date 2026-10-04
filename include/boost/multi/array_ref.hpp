@@ -3459,7 +3459,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
-	friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
+	// friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
 
 	BOOST_MULTI_HD constexpr auto operator&() const& { return const_ptr{this->base_, this->layout()}; }  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
