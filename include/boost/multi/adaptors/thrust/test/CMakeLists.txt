@@ -103,6 +103,12 @@ endforeach()
 
 if(OpenMP_CXX_FOUND)
 	target_link_libraries(portable_kernel_daxpy.cu.x PRIVATE OpenMP::OpenMP_CXX)
+	# OpenMP::OpenMP_CXX only adds the link flags; nvcc's host sub-compiler still needs the
+	# OpenMP compile flags explicitly forwarded through -Xcompiler, or Thrust's OpenMP backend
+	# is silently never selected (no error, just runs the sequential fallback).
+	target_compile_options(portable_kernel_daxpy.cu.x PRIVATE
+		$<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:-Xcompiler=${OpenMP_CXX_FLAGS}>
+	)
 endif()
 
 set_tests_properties(speed.cu.x PROPERTIES RUN_SERIAL TRUE)

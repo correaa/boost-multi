@@ -16,6 +16,13 @@
 #include <boost/multi/array.hpp>
 
 #include <thrust/system/omp/memory.h>  // for ::thrust::omp::allocator
+// thrust::transform/for_each pick a backend via ADL on the iterators' tag type, found only among
+// overloads already declared in the translation unit. The OpenMP-tagged overloads live in
+// thrust/system/omp/detail/{transform,for_each}.h, pulled in transitively only by this header
+// (not by omp/memory.h above, and not by omp/detail/execution_policy.h alone): without it, calling
+// thrust::transform on a multi::thrust::omp::array with no explicit execution policy silently
+// resolves to the generic (serial) overload instead of the OpenMP one, with no error or warning.
+#include <thrust/system/omp/execution_policy.h>
 #include <type_traits>
 
 namespace boost::multi::thrust::omp {
