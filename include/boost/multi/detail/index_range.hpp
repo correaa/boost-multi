@@ -268,6 +268,7 @@ class range {
 	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto contains(Value const& value) const -> bool { return (first_ <= value) && (value < last_); }
 	template<class Value> [[nodiscard]] BOOST_MULTI_HD constexpr auto count(Value const& value) const -> size_type { return contains(value); }
 
+	/// returns the intersection between two integer ranges
 	friend constexpr auto intersection(range const& self, range const& other) {
 		auto new_first = (std::max)(self.first(), other.first());
 		auto const new_last  = (std::min)(self.last(), other.last());
