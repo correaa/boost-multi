@@ -172,7 +172,7 @@ coverage:
   tags:
     - non-shared
     - docker
-  allow_failure: true
+  allow_failure: false
   script:
     - apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake ninja-build curl g++ gcovr git make lcov  libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
@@ -231,7 +231,7 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
   tags:
     - non-shared
     - docker
-  allow_failure: true
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   script:
@@ -249,7 +249,7 @@ g++-unstable c++26:
   tags:
     - non-shared
     - docker
-  allow_failure: true  # C++26 is a moving target
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   script:
@@ -267,7 +267,7 @@ g++-stable c++26:
   tags:
     - non-shared
     - docker
-  allow_failure: true  # C++26 is a moving target
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   script:
@@ -358,7 +358,7 @@ clang++-16 c++20:
 mingw-w64:
   stage: build
   image: debian:latest
-  allow_failure: true  # runner not always available
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   tags:
@@ -983,7 +983,7 @@ culang++:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
 culang++-21 cuda-12.8.2 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda/tags
   stage: build
   image: nvcr.io/nvidia/cuda:12.8.2-devel-ubuntu24.04
-  allow_failure: true
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   tags:
@@ -1077,7 +1077,7 @@ cuda-13.3.0:
 rocm:
   stage: build
   image: rocm/dev-ubuntu-24.04:7.0.2-complete
-  allow_failure: true  # TODO(correaa) flip to false once the (re-enabled) HIP subdirs build clean on ROCm 7 / CCCL 3
+  allow_failure: false
   tags:
     - non-shared
     - docker
@@ -1104,7 +1104,7 @@ rocm:
 rocm c++20:
   stage: build
   image: rocm/dev-ubuntu-24.04:7.0.2-complete
-  allow_failure: true  # TODO(correaa) flip to false once the (re-enabled) HIP subdirs build clean on ROCm 7 / CCCL 3
+  allow_failure: false
   tags:
     - non-shared
     - docker
@@ -1430,7 +1430,7 @@ qmcpack rocm:
   tags:
     - non-shared
     - high-bandwidth
-  allow_failure: true
+  allow_failure: false
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git openmpi-bin libopenmpi-dev g++ gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-openmpi-dev liblapack-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy rsync libxml2-dev
@@ -1459,7 +1459,7 @@ qmcpack rocm:
 
 sonar:
   stage: build
-  allow_failure: true
+  allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   tags:
