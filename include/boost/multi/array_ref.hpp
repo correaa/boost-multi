@@ -3455,7 +3455,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using const_ptr = detail::subarray_ptr<T, 1, ElementPtr, Layout, true>;
 	using ptr       = detail::subarray_ptr<T, 1, ElementPtr, Layout, false>;
 
-	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
+	// template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
