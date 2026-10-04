@@ -1303,7 +1303,7 @@ inq cuda:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libmpich-dev mpich libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Ninja"  # "Unix Makefiles"
     - nvidia-smi
-    - __nvcc_device_query
+    # - __nvcc_device_query
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - echo "runner has ${NGPU} GPU(s)"
     - unset CUDA_VISIBLE_DEVICES
