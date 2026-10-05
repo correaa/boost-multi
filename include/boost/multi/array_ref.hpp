@@ -2065,21 +2065,25 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return (this->extent() != other.extent()) || (this->elements() != other.elements());
 	}
 
-	friend constexpr auto lexicographical_compare(const_subarray const& self, const_subarray const& other) -> bool {
-		if(self.extent().first() > other.extent().first()) {
+ private:
+	/// compares two subarrays lexicographically, index by index, subarray by subarray along the leading dimension (recursively).
+	constexpr auto lexicographical_compare_(const_subarray const& other) const -> bool {
+		if(this->extent().first() > other.extent().first()) {
 			return true;
 		}
-		if(self.extent().first() < other.extent().first()) {
+		if(this->extent().first() < other.extent().first()) {
 			return false;
 		}
 		return adl_lexicographical_compare(
-			self.begin(), self.end(),
-			other.begin(), other.end()
+			this->begin(), this->end(),
+			this->begin(), other.end()
 		);
 	}
 
-	constexpr auto operator<(const_subarray const& other) const& -> bool { return lexicographical_compare(*this, other); }
-	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare(*this, other); }
+ public:
+	/// Less‐than operators (all ordering operations are lexicographical order, subarray by subarray, recursively)
+	constexpr auto operator<(const_subarray const& other) const& -> bool { return lexicographical_compare_(other); }
+	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare_(other); }
 	constexpr auto operator>(const_subarray const& other) const& -> bool { return other < *this; }
 
 	/// yields a view of the array in which the internal representation is static_cast to another type (and/or pointer)
