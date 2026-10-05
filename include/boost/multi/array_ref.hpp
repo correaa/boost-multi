@@ -1776,6 +1776,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+ 	/// yields a view of the array that is flattened in the first two leading dimensions
 	auto flattened() const& { return flattened_aux_().as_const(); }
 
 	constexpr auto flatted() const& {
@@ -2444,11 +2445,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto flattened() & { return this->flattened_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flattened() && { return this->flattened_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// returns an iterator to the beginning (in the leading dimension)
 	using const_subarray<T, D, ElementPtr, Layout>::begin;
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto begin() && noexcept { return this->begin_aux_(); }
 	BOOST_MULTI_HD constexpr auto begin() & noexcept { return this->begin_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// returns an iterator to the end (in the leading dimension)
 	using const_subarray<T, D, ElementPtr, Layout>::end;
 	BOOST_MULTI_HD constexpr auto end() && noexcept { return this->end_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	// cppcheck-suppress duplInheritedMember ; to overwrite
@@ -4194,6 +4197,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
 	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
+	/// yields a view of the array that is flattened in the first two leading dimensions
 	constexpr auto flatted() const& {
 		assert(this->layout().is_flattable());
 		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
@@ -4566,6 +4570,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	//  auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
 
  public:
+	/// serializes the array into a archive object (e.g. Boost.Serialization archives)
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const version) {  // cppcheck-suppress duplInheritedMember ;
 		serialize_flat_(arxiv, version);
