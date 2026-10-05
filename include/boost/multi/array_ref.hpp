@@ -2304,6 +2304,12 @@ BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...>& sarr) noexcept -> decl
 	return sarr.move();  // TODO(correaa) use this for SFINAE
 }
 
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...> const& sarr) noexcept -> decltype(auto) {
+	return sarr.move();  // TODO(correaa) use this for SFINAE
+}
+
 /// swaps two array references; for subarrays (including r-value subarrays), the elements are swap, for array values this has the same effect as `std::swap`.
 template<class T1, class T2>
 BOOST_MULTI_HD constexpr auto swap(T1&& ref1, T2&& ref2) noexcept -> decltype(std::forward<T1>(ref1).swap(std::forward<T2>(ref2))) {
