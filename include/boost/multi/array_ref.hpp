@@ -2131,6 +2131,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
+	/// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
 	constexpr auto as_raw() const& {
 		return as_raw_aux_().as_const();
 	}
@@ -4146,12 +4147,12 @@ using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template r
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-/// A `D`-dimensional view of a contiguous, pre-existing memory buffer.
+/// A multidimensional view of a contiguous, pre-existing memory buffer.
 ///
 /// Does not own or manage the elements it references.
 /// Has reference semantics: cannot be rebound after construction, assignments are deep,
 /// and the size is fixed for the object's lifetime.
-/// Invalidated if the underlying buffer is deallocated or moved.
+/// Invalidated if the underlying buffer is deallocated.
 ///
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
@@ -4166,12 +4167,6 @@ template<
 			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
 			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>>
 class array_ref : public subarray<T, D, ElementPtr, Layout> {
-
-	// static_assert(
-	// 	std::is_same_v<std::decay_t<typename std::pointer_traits<ElementPtr>::element_type>, std::decay_t<T>>,
-	// 	"pointer element type and value type argument must match"
-	// );
-
 	using subarray_layout = Layout;
 
 	using subarray_base = subarray<T, D, ElementPtr, Layout>;
