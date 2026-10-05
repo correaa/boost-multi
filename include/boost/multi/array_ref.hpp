@@ -2076,7 +2076,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		}
 		return adl_lexicographical_compare(
 			this->begin(), this->end(),
-			this->begin(), other.end()
+			other.begin(), other.end()
 		);
 	}
 
