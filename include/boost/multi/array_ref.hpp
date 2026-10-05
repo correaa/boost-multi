@@ -2350,8 +2350,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 
-	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
-	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
+	// friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
+	// friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
 
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
