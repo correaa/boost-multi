@@ -25,14 +25,14 @@ auto broadcast(Fun&& fun, A&& alpha, B&& beta) {
 	if constexpr(!multi::has_dimensionality<std::decay_t<A>>::value) {
 		return elementwise::broadcast(
 			std::forward<Fun>(fun),
-			[alpha_ = std::forward<A>(alpha)]() { return alpha_; } ^ multi::extents_t<0>{},
+			[alpha_ = std::forward<A>(alpha)] { return alpha_; } ^ multi::extents_t<0>{},
 			std::forward<B>(beta)
 		);
 	} else if constexpr(!multi::has_dimensionality<std::decay_t<B>>::value) {
 		return elementwise::broadcast(
 			std::forward<Fun>(fun),
 			std::forward<A>(alpha),
-			[beta_ = std::forward<B>(beta)]() { return beta_; } ^ multi::extents_t<0>{}
+			[beta_ = std::forward<B>(beta)] { return beta_; } ^ multi::extents_t<0>{}
 		);
 	} else {
 		if constexpr(std::decay_t<A>::dimensionality < std::decay_t<B>::dimensionality) {

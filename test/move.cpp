@@ -163,7 +163,8 @@ void move_element_1d_total_array() {
 		auto const vec = move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 
-		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
+		// cppcheck-suppress accessMoved ;
+		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move)
 	}
 #ifdef __clang__
 #pragma clang diagnostic pop
