@@ -164,7 +164,7 @@ void move_element_1d_total_array() {
 		BOOST_TEST( vec.size() == 5 );
 
 		// cppcheck-suppress accessMoved ;
-		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move)
+		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
 #ifdef __clang__
 #pragma clang diagnostic pop
