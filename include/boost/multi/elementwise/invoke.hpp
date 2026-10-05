@@ -21,7 +21,7 @@ namespace boost::multi::elementwise {
 
 /// yields an array expression that would result from invoking a function of `n` arguments to corresponding elements of `n` arrays (all extents must match).
 template<class Fun, class A, class... Bs>
-auto invoke(Fun&& fun, A&& alpha, Bs&&... bs) {
+auto invoke(Fun&& fun, A&& alpha, Bs&&... bs) {  // NOLINT(cppcoreguidelines-missing-std-forward)
 	auto const exts = alpha.extents();
 	assert(((exts == bs.extents()) && ...));
 	return

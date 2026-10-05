@@ -1502,8 +1502,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan_aux_(); }
 #endif
 
-	/// possibly moves the contents
-	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
+	// /// possibly moves the contents
+	// friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
 
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2065,21 +2065,25 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return (this->extent() != other.extent()) || (this->elements() != other.elements());
 	}
 
-	friend constexpr auto lexicographical_compare(const_subarray const& self, const_subarray const& other) -> bool {
-		if(self.extent().first() > other.extent().first()) {
+ private:
+	/// compares two subarrays lexicographically, index by index, subarray by subarray along the leading dimension (recursively).
+	constexpr auto lexicographical_compare_(const_subarray const& other) const -> bool {
+		if(this->extent().first() > other.extent().first()) {
 			return true;
 		}
-		if(self.extent().first() < other.extent().first()) {
+		if(this->extent().first() < other.extent().first()) {
 			return false;
 		}
 		return adl_lexicographical_compare(
-			self.begin(), self.end(),
+			this->begin(), this->end(),
 			other.begin(), other.end()
 		);
 	}
 
-	constexpr auto operator<(const_subarray const& other) const& -> bool { return lexicographical_compare(*this, other); }
-	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare(*this, other); }
+ public:
+	/// Less‐than operators (all ordering operations are lexicographical order, subarray by subarray, recursively)
+	constexpr auto operator<(const_subarray const& other) const& -> bool { return lexicographical_compare_(other); }
+	constexpr auto operator<=(const_subarray const& other) const& -> bool { return *this == other || lexicographical_compare_(other); }
 	constexpr auto operator>(const_subarray const& other) const& -> bool { return other < *this; }
 
 	/// yields a view of the array in which the internal representation is static_cast to another type (and/or pointer)
@@ -2289,13 +2293,21 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 #endif
 
 /// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
-template<class T>
-BOOST_MULTI_HD constexpr auto move(T&& ref) noexcept -> decltype(auto) {
-	if constexpr(has_member_move<T>::value) {
-		return std::forward<T>(ref).move();  // TODO(correaa) use this for SFINAE
-	} else {
-		return std::move(std::forward<T>(ref));
-	}
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...>&& sarr) noexcept -> decltype(auto) {
+	return std::move(sarr).move();  // TODO(correaa) use this for SFINAE
+}
+
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...>& sarr) noexcept -> decltype(auto) {
+	return sarr.move();  // TODO(correaa) use this for SFINAE
+}
+
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...> const& sarr) noexcept -> decltype(auto) {
+	return sarr.move();  // TODO(correaa) use this for SFINAE
 }
 
 /// swaps two array references; for subarrays (including r-value subarrays), the elements are swap, for array values this has the same effect as `std::swap`.
@@ -2316,7 +2328,16 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
  public:
 	using subarray<T, D, ElementPtr, Layout>::operator[];
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		return multi::move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+		using std::move;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif
+		return move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	}
 
 	using subarray<T, D, ElementPtr, Layout>::begin;
@@ -2350,8 +2371,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 
-	// friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
+	// yields a subarray whose elements are marked for move
 	// friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
+	// friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
