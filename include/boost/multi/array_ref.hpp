@@ -2329,7 +2329,15 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
 	using subarray<T, D, ElementPtr, Layout>::operator[];
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using std::move;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif
 		return move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	}
 
 	using subarray<T, D, ElementPtr, Layout>::begin;
