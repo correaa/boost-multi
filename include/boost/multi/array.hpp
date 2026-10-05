@@ -820,7 +820,15 @@ struct                                                                          
 	/// Subscript operators (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		using std::move;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif
 		return move(ref_::operator[](idx));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	}
 
 	/// returns the maximum number of elements that the vector can hold.
