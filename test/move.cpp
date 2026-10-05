@@ -111,7 +111,9 @@ void move_element_1d_array() {
 
 		std::vector<std::vector<double>> out_vec(4, {}, {});
 		auto&&                           marr62 = arr({2, 6});
-		std::copy(multi::move(marr62).begin(), multi::move(marr62).end(), out_vec.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
+
+		using std::move;
+		std::copy(move(marr62).begin(), move(marr62).end(), out_vec.begin());  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 		BOOST_TEST( out_vec[0].size() == 5 );
 		BOOST_TEST( out_vec[1].size() == 5 );
 		BOOST_TEST( arr[2].empty() );
@@ -134,7 +136,7 @@ void move_element_2d_array() {
 	multi::array<std::vector<double>, 2> arr({10, 10}, std::vector<double>(5, {}, {}));
 
 	using std::move;
-	auto const vec = move(arr({2, 6}, {2, 6}))[0][0];
+	auto const vec = multi::move(arr({2, 6}, {2, 6}))[0][0];
 	BOOST_TEST( vec.size() == 5 );
 	BOOST_TEST( arr[2][2].empty() );
 }
@@ -149,14 +151,24 @@ void move_element_1d_total_array() {
 		// cppcheck-suppress accessMoved ;
 		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif
 	{
 		multi::array<std::vector<double>, 1> arr(10, std::vector<double>(5, {}, {}));
 
-		auto const vec = multi::move(arr)[2];
+		using std::move;
+		auto const vec = move(arr)[2];
 		BOOST_TEST( vec.size() == 5 );
 
-		BOOST_TEST( arr[2].empty() );  // cppcheck-suppress accessMoved ;
+		// cppcheck-suppress accessMoved ;
+		BOOST_TEST( arr[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 	}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 }  // namespace
 

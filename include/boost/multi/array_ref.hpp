@@ -1502,8 +1502,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan_aux_(); }
 #endif
 
-	/// possibly moves the contents
-	friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
+	// /// possibly moves the contents
+	// friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
 
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2293,13 +2293,21 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 #endif
 
 /// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
-template<class T>
-BOOST_MULTI_HD constexpr auto move(T&& ref) noexcept -> decltype(auto) {
-	if constexpr(has_member_move<T>::value) {
-		return std::forward<T>(ref).move();  // TODO(correaa) use this for SFINAE
-	} else {
-		return std::move(std::forward<T>(ref));
-	}
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...>&& sarr) noexcept -> decltype(auto) {
+	return std::move(sarr).move();  // TODO(correaa) use this for SFINAE
+}
+
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...>& sarr) noexcept -> decltype(auto) {
+	return sarr.move();  // TODO(correaa) use this for SFINAE
+}
+
+/// yields an array reference marked for move; for subarrays (including r-value subarrays), its elements are marked as movable, for array values this has the same effect as `std::move`.
+template<class T, dimensionality_type D, class... Ts>
+BOOST_MULTI_HD constexpr auto move(subarray<T, D, Ts...> const& sarr) noexcept -> decltype(auto) {
+	return sarr.move();  // TODO(correaa) use this for SFINAE
 }
 
 /// swaps two array references; for subarrays (including r-value subarrays), the elements are swap, for array values this has the same effect as `std::swap`.
@@ -2320,7 +2328,16 @@ class move_subarray : public subarray<T, D, ElementPtr, Layout> {
  public:
 	using subarray<T, D, ElementPtr, Layout>::operator[];
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		return multi::move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+		using std::move;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif
+		return move(subarray<T, D, ElementPtr, Layout>::operator[](idx));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	}
 
 	using subarray<T, D, ElementPtr, Layout>::begin;
@@ -2354,8 +2371,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
 
-	friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
-	friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
+	// yields a subarray whose elements are marked for move
+	// friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
+	// friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
@@ -3459,7 +3477,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using const_ptr = detail::subarray_ptr<T, 1, ElementPtr, Layout, true>;
 	using ptr       = detail::subarray_ptr<T, 1, ElementPtr, Layout, false>;
 
-	template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
+	// template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
 	template<class, dimensionality_type D, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
