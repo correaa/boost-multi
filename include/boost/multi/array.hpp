@@ -1387,12 +1387,12 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	// BOOST_MULTI_FRIEND_CONSTEXPR auto base(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.base(); }
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
-	constexpr auto origin() const& -> typename dynamic_array::element_const_ptr { return ref_::origin(); }
+	[[deprecated]] constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
+	[[deprecated]] constexpr auto origin() const& -> typename dynamic_array::element_const_ptr { return ref_::origin(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(dynamic_array& self) -> typename dynamic_array::element_ptr { return self.origin(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR auto origin(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.origin(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto origin(dynamic_array& self) -> typename dynamic_array::element_ptr { return self.origin(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR auto origin(dynamic_array const& self) -> typename dynamic_array::element_const_ptr { return self.origin(); }
 
 	// NOSONAR
 	constexpr operator typename std::iterator_traits<typename dynamic_array::element_const_ptr>::reference() const& {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
