@@ -249,12 +249,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				double x;
 			};
 
+			// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 			// NOLINTNEXTLINE(*-avoid-c-arrays)
 			particle data[3] = {
-				{1, 1.0}, // {.mass = 1, .x = 1.0},  // NOLINT(modernize-use-designated-initializers) for C++20
-				{2, 2.0}, // {.mass = 2, .x = 2.0},  // NOLINT(modernize-use-designated-initializers) for C++20
-				{3, 3.0}, // {.mass = 3, .x = 3.0},  // NOLINT(modernize-use-designated-initializers) for C++20
+				{1, 1.0}, // {.mass = 1, .x = 1.0},  
+				{2, 2.0}, // {.mass = 2, .x = 2.0},
+				{3, 3.0}, // {.mass = 3, .x = 3.0},
 			};
+			// NOLINTEND(modernize-use-designated-initializers)
 
 			minimalistic::ptr<particle> const p0{&data[0]};
 

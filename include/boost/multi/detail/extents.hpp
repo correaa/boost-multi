@@ -243,7 +243,8 @@ class extents_t {
 	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
-	[[deprecated]] friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
+	// [[deprecated]]
+	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
 		// return extents_t<D + 1>(tuple(extension, self.base()));
 		return extents_t<D + 1>(ext, self);
 	}
