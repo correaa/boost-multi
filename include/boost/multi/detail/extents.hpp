@@ -243,7 +243,7 @@ class extents_t {
 	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
-	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
+	[[deprecated]] friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
 		// return extents_t<D + 1>(tuple(extension, self.base()));
 		return extents_t<D + 1>(ext, self);
 	}
@@ -1000,6 +1000,10 @@ template<> class extents_t<1> {
 
 	BOOST_MULTI_HD constexpr explicit extents_t(base_ tup)
 	: impl_{tup} {}
+
+	// Constructor for Cartesian product construction: (index_extension, extents_t<0>) -> extents_t<1>
+	BOOST_MULTI_HD constexpr extents_t(index_extension const& ext, extents_t<0> const& /*other*/)
+	: impl_{ext} {}
 
 	template<class OtherExtents,
 		decltype( multi::detail::implicit_cast<multi::index_extension>(OtherExtents{}.extent()) )* = nullptr
