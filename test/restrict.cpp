@@ -26,7 +26,16 @@ auto main() -> int {
 		BOOST_TEST( R3[1][1] == 2 );
 		BOOST_TEST( R4[1][1] == 2 );
 		BOOST_TEST( R5[1][1] == 2 );
-		// BOOST_TEST( R6[1][1] == 2 );
+	}
+	{
+		auto const R1 = multi::restriction({5}, [](auto ii) { return ii * 2; });
+		auto const cur = R1.home();
+
+		BOOST_TEST( cur[0] == 0 );
+		BOOST_TEST( cur[1] == 2 );
+		BOOST_TEST( cur[2] == 4 );
+		BOOST_TEST( cur[3] == 6 );
+		BOOST_TEST( cur[4] == 8 );
 	}
 
 	return boost::report_errors();
