@@ -19,7 +19,6 @@ struct proj_fn {
 }  // namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
-
 	multi::array<int, 2> const arr;
 
 	BOOST_TEST( arr.dimensionality == 2 );

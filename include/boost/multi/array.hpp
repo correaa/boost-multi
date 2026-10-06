@@ -307,8 +307,13 @@ struct                                                                          
 	constexpr explicit dynamic_array(It const& first, It const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref_(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type{index_extension(adl_distance(first, last)) * multi::extents(*first)}.num_elements())),
-		  index_extension(adl_distance(first, last)) * multi::extents(*first)
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type(
+			extents_t<D>(index_extension(adl_distance(first, last)), multi::extents(*first))
+			// index_extension(adl_distance(first, last)) * multi::extents(*first)
+		  ).num_elements())
+			),
+		  extents_t<D>(index_extension(adl_distance(first, last)), multi::extents(*first))
+		  // index_extension(adl_distance(first, last)) * multi::extents(*first)
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
@@ -780,7 +785,9 @@ struct                                                                          
 		class Tuple,
 		std::size_t                                                                                      = std::tuple_size<Tuple>::value,  // NOLINT(modernize-type-traits) TODO(correaa) remove or use tuple_size_v
 		std::enable_if_t<                                                                                                                  // NOLINT(modernize-use-constraints)
-			detail::all_elements_convertible_to<T, Tuple>::value && !multi::has_size<Tuple>::value, int> = 0>
+			detail::all_elements_convertible_to<T, Tuple>::value && !multi::has_size<Tuple>::value, 
+			int> = 0
+	>
 	explicit constexpr dynamic_array(Tuple const& tup)
 	: dynamic_array(std_apply_(make_from_tuple{}, tup)) {}
 
