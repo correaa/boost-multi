@@ -272,10 +272,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{10, 20, 30}
 		);
 
-		BOOST_TEST((  25 % extents(arr) == decltype(  25 % extents(arr)){0, 0, 25} ));
-		BOOST_TEST((  55 % extents(arr) == decltype(  55 % extents(arr))(0, 1, 25) ));
-		BOOST_TEST(( 655 % extents(arr) == decltype( 655 % extents(arr))(1, 1, 25) ));
-		BOOST_TEST((1255 % extents(arr) == decltype(1255 % extents(arr))(2, 1, 25) ));
+		BOOST_TEST((   25 / arr.extents() == decltype(  25 / arr.extents()){0, 0, 25} ));
+		BOOST_TEST((   55 / arr.extents() == decltype(  55 / arr.extents())(0, 1, 25) ));
+		BOOST_TEST((  655 / arr.extents() == decltype( 655 / arr.extents())(1, 1, 25) ));
+		BOOST_TEST(( 1255 / arr.extents() == decltype(1255 / arr.extents())(2, 1, 25) ));
 
 		auto const point = arr.extents().from_linear(655);
 		//  BOOST_TEST( p == std::make_tuple(1, 1, 25) );

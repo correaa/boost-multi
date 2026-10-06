@@ -278,7 +278,8 @@ class extents_t {
 		return multi::detail::ht_tuple(n / sub_num_elements, sub().from_linear(n % sub_num_elements));
 	}
 
-	friend constexpr auto operator%(nelems_type idx, extents_t const& exts) { return exts.from_linear(idx); }
+	// Convert linear index to multi-dimensional indices using modulo operator (idx / extents)
+	friend constexpr auto operator/(nelems_type idx, extents_t const& exts) { return exts.from_linear(idx); }
 
 	constexpr explicit operator bool() const { return !detail::layout_t<D>{*this}.empty(); }  // TODO(correaa) simplifty algorithm
 
