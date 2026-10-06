@@ -1962,8 +1962,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  private:
-	template<class It>
-	friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
+	// /// yields a subarray view from a pair of iterators
+	// template<class It>
+	// friend BOOST_MULTI_HD constexpr auto ref(It begin, It end) -> multi::subarray<typename It::element, It::rank_v, typename It::element_ptr>;
 
 	using const_ptr = detail::subarray_ptr<T, D, ElementPtr, Layout, true>;
 	using ptr       = detail::subarray_ptr<T, D, ElementPtr, Layout, false>;
