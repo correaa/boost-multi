@@ -22,7 +22,8 @@ template<class T>
 class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linkage)
 	using underlying_type = T*;
 	underlying_type impl_;
-	template<class> friend class ptr;
+	template<class>
+	friend class ptr;
 
  public:
 	ptr() = default;  // cppcheck-suppress uninitMemberVar ;
@@ -59,8 +60,10 @@ class ptr : public std::iterator_traits<T*> {  // NOLINT(misc-use-internal-linka
 	//  T& operator[](difference_type n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
 
-	template<class T2> auto operator==(ptr<T2> const& other) const& { return impl_ == other.impl_; }
-	template<class> friend class ptr2;
+	template<class T2>
+	auto operator==(ptr<T2> const& other) const& { return impl_ == other.impl_; }
+	template<class>
+	friend class ptr2;
 };
 
 template<class T>
@@ -135,8 +138,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		raw[1][2] = 8;  // mutable view from a mutable array
 		BOOST_TEST( (*CCP)[1][2] == 8 );
 
-		auto const& CCR = *CCP;
-		auto&& craw = CCR.as_raw();  // the const overload (the `using` / ref-qualifier issue)
+		auto const& CCR  = *CCP;
+		auto&&      craw = CCR.as_raw();  // the const overload (the `using` / ref-qualifier issue)
 		static_assert(std::is_same_v<decltype(craw.base()), int const*>);
 		BOOST_TEST( &craw[1][1] == &buffer[21] );
 
@@ -249,12 +252,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 				double x;
 			};
 
-			// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
+			// NOLINTBEGIN(modernize-use-designated-initializers) for C++20 (e.g. {.mass = 1, .x = 1.0})
 			// NOLINTNEXTLINE(*-avoid-c-arrays)
 			particle data[3] = {
-				{1, 1.0}, // {.mass = 1, .x = 1.0},  
-				{2, 2.0}, // {.mass = 2, .x = 2.0},
-				{3, 3.0}, // {.mass = 3, .x = 3.0},
+				{1, 1.0},
+				{2, 2.0},
+				{3, 3.0},
 			};
 			// NOLINTEND(modernize-use-designated-initializers)
 
