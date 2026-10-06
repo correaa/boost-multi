@@ -111,6 +111,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST(   subarr.elements().begin() == subarr.elements().begin()  );
 		BOOST_TEST( !(subarr.elements().begin() != subarr.elements().begin()) );
 		BOOST_TEST( !(subarr.elements().begin() < subarr.elements().begin())  );  // cppcheck-suppress duplicateExpression ; for testing purposes
+
+		auto const& elems = arr.elements().as_raw();
+		BOOST_TEST( elems.size() == arr.num_elements() );
+	}
+	{
+		multi::array<int, 2> arr({3, 3}, 99);
+
+		auto&& elems = arr.elements().as_raw();
+		BOOST_TEST( elems.size() == arr.num_elements() );
+
+		elems[0] = 5;
+		BOOST_TEST( arr[0][0] == 5 );
+	}
+	{
+		multi::array<int, 2> arr({3, 3}, 99);
+
+		auto const& elems = arr.elements().as_raw();
+		BOOST_TEST( elems.size() == arr.num_elements() );
+
+		// elems[0] = 5;  // fails, ok
+		// BOOST_TEST( arr[0][0] == 5 );
 	}
 
 	// BOOST_AUTO_TEST_CASE(multi_test_stencil)
