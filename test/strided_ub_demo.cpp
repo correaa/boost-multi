@@ -98,15 +98,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		BOOST_TEST( arr.strided(2).size() == 2 );
 	}
-	// {
-	// 	multi::array<double, 2> arr = {
-	// 		{1.0, 2.0, 3.0},
-	// 		{3.0, 4.0, 5.0},
-	// 		{6.0, 7.0, 8.0},
-	// 	};
-
-	// 	BOOST_TEST( arr.strided(2).size() == 2 );
-	// }
 
 	return boost::report_errors();
 }
