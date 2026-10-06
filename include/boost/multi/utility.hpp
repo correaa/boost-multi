@@ -605,7 +605,8 @@ constexpr auto extents(T const& /*unused*/) -> multi::detail::layout_t<0>::exten
 
 template<class T, std::size_t N>
 constexpr auto extents(T (&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return index_extension{N} * extents(array[0]);
+	return extents_t(index_extension{N}, extents(array[0]));
+	// return index_extension{N} * extents(array[0]);
 }
 
 template<dimensionality_type D>
@@ -715,7 +716,7 @@ template<class T, std::size_t N>
 
 template<class T, std::size_t N, std::size_t M>
 auto extents(std::array<std::array<T, N>, M> const& arr) {
-	return multi::iextension{M} * extents(arr[0]);
+	return extents_t(multi::iextension{M}, extents(arr[0]));
 }
 
 template<class T, std::size_t N>
