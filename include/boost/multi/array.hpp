@@ -1444,8 +1444,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 		return subarray<T, 0, typename dynamic_array::element_ptr>{new_layout, this->base_};
 	}
 
-	friend constexpr auto rotated(dynamic_array& self) -> decltype(auto) { return self.rotated(); }
-	friend constexpr auto rotated(dynamic_array const& self) -> decltype(auto) { return self.rotated(); }
+	// friend constexpr auto rotated(dynamic_array& self) -> decltype(auto) { return self.rotated(); }
+	// friend constexpr auto rotated(dynamic_array const& self) -> decltype(auto) { return self.rotated(); }
 
  private:
 	constexpr auto unrotated_aux_() {
