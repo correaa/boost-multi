@@ -71,7 +71,7 @@ using sizes_t = typename extents_t<D>::sizes_type;
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;  // TODO(correaa) why the declaration is in this header
 
-/// A multidimensional array (pinned in heap memory)
+/// A multidimensional array (fix to a managed memory buffer)
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam Alloc Allocator type
@@ -349,6 +349,7 @@ class extents_t {
 		constexpr auto operator+(difference_type n) const { return iterator{idx_ + n, rest_}; }
 		constexpr auto operator-(difference_type n) const { return iterator{idx_ - n, rest_}; }
 
+		/// Substract operator for iterators
 		friend constexpr auto operator-(iterator const& self, iterator const& other) -> difference_type { assert( self.rest_ == other.rest_ ); return self.idx_ - other.idx_; }
 
 		friend constexpr auto operator+(difference_type n, iterator const& self) { return self + n; }
@@ -772,7 +773,7 @@ template<> class extents_t<0> {
 		return indices_type{};
 	}
 
-	friend constexpr auto operator%(nelems_type const& n, extents_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
+	[[deprecated]] friend constexpr auto operator/(nelems_type const& n, extents_t const& /*s*/) -> tuple<> { return /*s.*/ from_linear(n); }
 
 	static BOOST_MULTI_HD constexpr auto to_linear() /*const*/ -> difference_type { return 0; }
 	BOOST_MULTI_HD constexpr auto        operator()() const { return to_linear(); }
