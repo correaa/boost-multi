@@ -71,7 +71,7 @@ using sizes_t = typename extents_t<D>::sizes_type;
 /// @tparam Alloc Allocator type
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T> > struct array;  // TODO(correaa) why the declaration is in this header
 
-/// A multidimensional array value
+/// A multidimensional array (pinned in heap memory)
 /// @tparam T Element type
 /// @tparam D Dimensionality (non-negative)
 /// @tparam Alloc Allocator type
