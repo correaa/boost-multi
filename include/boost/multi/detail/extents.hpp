@@ -1100,10 +1100,6 @@ template<dimensionality_type D> using iextensions = extents_t<D>;
 
 template<dimensionality_type D> using extensions_t [[deprecated("use extents_t")]] = extents_t<D>;
 
-// template<boost::multi::dimensionality_type D>
-// constexpr auto array_size_impl(boost::multi::extents_t<D> const&)
-// 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
-
 extents_t(multi::ssize_t) -> extents_t<1>;
 /// deduces an extents dimension from the number of size arguments
 extents_t(multi::ssize_t, multi::ssize_t) -> extents_t<2>;
@@ -1112,6 +1108,9 @@ extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t) -> ext
 extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t) -> extents_t<5>;
 extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t) -> extents_t<6>;
 extents_t(multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t, multi::ssize_t) -> extents_t<7>;
+
+template<dimensionality_type D>
+extents_t(index_extension, extents_t<D>) -> extents_t<D + 1>;
 
 }  // end namespace boost::multi
 
