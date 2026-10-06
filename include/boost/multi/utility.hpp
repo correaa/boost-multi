@@ -716,7 +716,7 @@ template<class T, std::size_t N>
 
 template<class T, std::size_t N, std::size_t M>
 auto extents(std::array<std::array<T, N>, M> const& arr) {
-	return multi::iextension{M} * extents(arr[0]);
+	return extents_t(multi::iextension{M}, extents(arr[0]));
 }
 
 template<class T, std::size_t N>
