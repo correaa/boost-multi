@@ -63,7 +63,7 @@ class iterator_facade {
 	constexpr auto        operator-(difference_type n) const { return self_type{self_()} -= n; }
 	constexpr auto        operator+(difference_type n) const { return self_type{self_()} += n; }
 
-	/// Addition operator for iterator
+	/// Addition operator for iterators
 	template<class = void>
 	friend constexpr auto operator+(difference_type n, self_type const& self) { return self + n; }
 

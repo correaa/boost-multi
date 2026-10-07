@@ -4214,9 +4214,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	array_ref(iterator, iterator) = delete;
 
-	// return type removed for MSVC
-	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
-	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
+	// // return type removed for MSVC
+	// friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
+	// friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 	/// yields a view of the array that is flattened in the first two leading dimensions
 	constexpr auto flatted() const& {
@@ -4812,7 +4812,7 @@ template<class T> constexpr auto cbegin(T&& rng) -> decltype(boost::multi::begin
 template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::end(static_cast<T const&>(std::forward<T>(rng))); }
 
 // multi::size is here for symmetry with multi::begin, multi::end
-/// returns an iterator to the beginning of the given range (same as `std::size`), in the leading dimension.
+/// returns the size of a given range (same as `std::size`), in the leading dimension.
 template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
 
 // template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
