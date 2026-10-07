@@ -1034,10 +1034,10 @@ template<> class extents_t<1> {
 		return indices_type{n};
 	}
 
-	friend constexpr auto operator%(nelems_type idx, extents_t const& extensions)
-		-> multi::detail::tuple<multi::index> {
-		return extensions.from_linear(idx);
-	}
+	// friend constexpr auto operator/(nelems_type idx, extents_t const& extensions)
+	// 	-> multi::detail::tuple<multi::index> {
+	// 	return extensions.from_linear(idx);
+	// }
 
 	static BOOST_MULTI_HD constexpr auto to_linear(index const& idx) -> difference_type { return idx; }
 
