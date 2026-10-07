@@ -3472,8 +3472,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  public:
 	const_subarray(const_subarray const&) = delete;
 
-	friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
-	friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
+	// friend constexpr auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
+	// friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }     // needed by nvcc
 
 	const_subarray(const_subarray&&) noexcept = default;  // in C++ 14 this was necessary to return array references from functions
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
