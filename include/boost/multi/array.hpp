@@ -1460,8 +1460,8 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	constexpr auto unrotated() const& { return unrotated_aux_().as_const(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	friend constexpr auto unrotated(dynamic_array& self) -> decltype(auto) { return self.unrotated(); }
-	friend constexpr auto unrotated(dynamic_array const& self) -> decltype(auto) { return self.unrotated(); }
+	// friend constexpr auto unrotated(dynamic_array& self) -> decltype(auto) { return self.unrotated(); }
+	// friend constexpr auto unrotated(dynamic_array const& self) -> decltype(auto) { return self.unrotated(); }
 
 	constexpr auto operator=(dynamic_array const& other) -> dynamic_array& {
 		assert(this->extents() == other.extents());
