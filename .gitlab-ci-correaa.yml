@@ -1410,8 +1410,8 @@ inq hip-emulated:
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     # only the unit tests, the full simulations (*.sh, *.py, inq::tests::*) take minutes on a real GPU and would not finish on a simulator
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests' --timeout 1800 --output-on-failure
-  timeout: 3 hours 30 minutes
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests' --timeout 7200 --output-on-failure  # some unit tests take more than 30 min on the simulator
+  timeout: 8 hours  # can be capped by the runner's maximum timeout
   needs: ["inq", "hip-emulated"]
 
 qmcpack:
