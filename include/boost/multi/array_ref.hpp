@@ -1878,19 +1878,12 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	// #ifdef __clang__
-	// #pragma clang diagnostic push
-	// #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"  // TODO(correaa) for latex documentation in MrDocs
-	// #endif
-
 	/// A transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	// #ifdef __clang__
-	// #pragma clang diagnostic pop
-	// #endif
+	BOOST_MULTI_HD auto operator~() const& { return transposed(); }
 
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto rotated_aux_() const {
@@ -2545,10 +2538,15 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	using const_subarray<T, D, ElementPtr, Layout>::operator~;
+	BOOST_MULTI_HD auto operator~() & { return transposed(); }
+	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }
+
 	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
 	// auto operator~ (subarray const& self) { return self.transposed(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
-	BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
+
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
+	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
 
 	// /// yields an array view where the elements have been reindexed.
 	// using const_subarray<T, D, ElementPtr, Layout>::reindexed;
@@ -3321,6 +3319,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	auto flatted() const&                 = delete;
 	auto range() const& -> const_subarray = delete;
 
+	auto operator~() const&               = delete;
+
 	// a lightweigh type for multidimensional indexing, it has the indexing interface of an array but without size (extents) information
 	using cursor       = detail::cursor_t<typename const_subarray::element_ptr, 0, typename const_subarray::strides_type>;
 	// a lightweigh type for multidimensional indexing (const version), it has the indexing interface of an array but without size (extents) information
@@ -3913,6 +3913,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	auto transposed() const& = delete;
 	auto flatted() const&    = delete;
+
+	auto operator~() const& = delete;
 
 	using iterator       = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, false, false, typename layout_type::stride_type>;
 	using const_iterator = typename multi::detail::array_iterator<element, 1, typename types::element_ptr, true, false, typename layout_type::stride_type>;
