@@ -128,7 +128,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& CC2 = CCP->static_array_cast<int, minimalistic::ptr2<int>>();
 		BOOST_TEST( &CC2[1][1] == &(*CCP)[1][1] );
 
-		auto&& raw = CCP->as_raw();
+		auto&& raw = CCP->raw_array_cast();
 
 		static_assert(std::is_same_v<decltype(raw.base()), int*>);
 		static_assert(std::decay_t<decltype(raw)>::dimensionality == 2);
@@ -139,7 +139,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( (*CCP)[1][2] == 8 );
 
 		auto const& CCR  = *CCP;
-		auto&&      craw = CCR.as_raw();  // the const overload (the `using` / ref-qualifier issue)
+		auto&&      craw = CCR.raw_array_cast();  // the const overload (the `using` / ref-qualifier issue)
 		static_assert(std::is_same_v<decltype(craw.base()), int const*>);
 		BOOST_TEST( &craw[1][1] == &buffer[21] );
 
