@@ -3486,8 +3486,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout> friend class const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, class Alloc> friend struct dynamic_array;  // TODO(correaa) check if this is necessary
 
-	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
-	friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
+	// template<class T2, class P2, class TT, dimensionality_type DD, class PP>
+	// friend constexpr auto static_array_cast(subarray<TT, DD, PP> const&) -> decltype(auto);
 
  public:
 	const_subarray(const_subarray const&) = delete;
