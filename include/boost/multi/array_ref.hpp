@@ -1201,6 +1201,23 @@ struct elements_range_t {
 
 	constexpr elements_range_t(pointer base, layout_type const& lyt) : base_{std::move(base)}, l_{lyt} {}
 
+ private:
+	template<class TT>
+	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+		static_assert(!std::is_function_v<TT>);
+		return p;
+	}
+
+	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
+	static constexpr auto to_address_(const TT& p) noexcept {
+		return to_address_(p.operator->());
+	}
+
+	constexpr auto as_raw_aux_() const { return elements_range_t<decltype(to_address_(base_)), layout_type>(base_, l_); }
+ public:
+
+	constexpr auto as_raw() const { return as_raw_aux_().as_const(); }	
+
 	constexpr auto base() -> pointer { return base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	constexpr auto base() const -> const_pointer { return base_; }
 
@@ -2137,6 +2154,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	constexpr auto as_raw() const& {
 		return as_raw_aux_().as_const();
 	}
+
+	constexpr auto as_raw() & { return as_raw_aux_(); }
+	constexpr auto as_raw() && { return as_raw_aux_(); }
 
  private:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
@@ -4398,10 +4418,6 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr auto elements() & noexcept -> elements_type { return elements_aux_(); }
 	constexpr auto elements() && noexcept -> elements_type { return elements_aux_(); }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
-
-	// friend constexpr auto elements(array_ref& self) -> elements_type { return self.elements(); }
-	// friend constexpr auto elements(array_ref&& self) -> elements_type { return std::move(self).elements(); }
-	// friend constexpr auto elements(array_ref const& self) -> celements_type { return self.elements(); }
 
  private:
 	constexpr auto celements_() const& { return celements_type{array_ref::data_elements(), array_ref::num_elements()}; }  // cppcheck-suppress duplInheritedMember ; to overwrite
