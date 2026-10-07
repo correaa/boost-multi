@@ -296,7 +296,7 @@ class pow_bind_t {
 template<class A, class B> pow_bind_t(A, B) -> pow_bind_t<A, B>;
 }  // namespace detail
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `pow` applied lazily elementwise.
 template<class A, class B, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 							   multi::has_extents<std::decay_t<A>>::value && multi::has_extents<std::decay_t<B>>::value,
 							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -328,7 +328,7 @@ class hypot_bind_t {
 template<class A, class B> hypot_bind_t(A, B) -> hypot_bind_t<A, B>;
 }  // namespace detail
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `hypot` applied lazily elementwise.
 template<class A, class B, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 							   multi::has_extents<std::decay_t<A>>::value && multi::has_extents<std::decay_t<B>>::value,
 							   int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -358,7 +358,7 @@ class sqrt_bind_t {
 template<class A> sqrt_bind_t(A) -> sqrt_bind_t<A>;
 }  // namespace detail
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `sqrt` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -388,7 +388,7 @@ class sin_bind_t {
 template<class A> sin_bind_t(A) -> sin_bind_t<A>;
 }  // namespace detail
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `sin` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -421,7 +421,7 @@ BOOST_MULTI_HD constexpr auto sin(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(cos)
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `cos` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -432,7 +432,7 @@ BOOST_MULTI_HD constexpr auto cos(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(tan)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `tan` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -443,7 +443,7 @@ BOOST_MULTI_HD constexpr auto tan(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(asin)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `asin` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -454,7 +454,7 @@ BOOST_MULTI_HD constexpr auto asin(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(acos)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `acos` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -465,7 +465,7 @@ BOOST_MULTI_HD constexpr auto acos(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(atan)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `atan` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -476,7 +476,7 @@ BOOST_MULTI_HD constexpr auto atan(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(sinh)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `sinh` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -487,7 +487,7 @@ BOOST_MULTI_HD constexpr auto sinh(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(cosh)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `cosh` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -498,7 +498,7 @@ BOOST_MULTI_HD constexpr auto cosh(A&& alpha) {
 
 DEFINE_BIND_UNARY_STD(tanh)
 
-/// yields an array expression with the function `cos` applied lazily elementwise.
+/// yields an array expression with the function `tanh` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
@@ -616,7 +616,7 @@ class cbrt_bind_t {
 template<class A> cbrt_bind_t(A) -> cbrt_bind_t<A>;
 }  // namespace detail
 
-/// yields an array expression with the function `log` applied lazily elementwise.
+/// yields an array expression with the function `cbrt` applied lazily elementwise.
 template<class A, std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
 					  multi::has_extents<std::decay_t<A>>::value,
 					  int> = 0>  // NOLINT(modernize-use-constraints) for C++23
