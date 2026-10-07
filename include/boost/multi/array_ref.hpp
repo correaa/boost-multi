@@ -4812,7 +4812,7 @@ template<class T> constexpr auto cbegin(T&& rng) -> decltype(boost::multi::begin
 template<class T> constexpr auto cend(T&& rng) -> decltype(boost::multi::end(static_cast<T const&>(std::forward<T>(rng)))) { return boost::multi::end(static_cast<T const&>(std::forward<T>(rng))); }
 
 // multi::size is here for symmetry with multi::begin, multi::end
-/// returns an iterator to the beginning of the given range (same as `std::size`), in the leading dimension.
+/// returns the size of a given range (same as `std::size`), in the leading dimension.
 template<class T> constexpr auto size(T&& rng) -> decltype(std::forward<T>(rng).size()) { return std::forward<T>(rng).size(); }
 
 // template<class T> constexpr auto stride(T const& rng) -> decltype(rng.stride()) { return rng.stride(); }
