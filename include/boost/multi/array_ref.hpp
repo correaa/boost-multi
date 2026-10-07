@@ -4214,9 +4214,9 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
 	array_ref(iterator, iterator) = delete;
 
-	// return type removed for MSVC
-	friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
-	friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
+	// // return type removed for MSVC
+	// friend constexpr auto sizes(array_ref const& self) noexcept /*-> typename array_ref::sizes_type*/ { return self.sizes(); }  // needed by nvcc
+	// friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 	/// yields a view of the array that is flattened in the first two leading dimensions
 	constexpr auto flatted() const& {
