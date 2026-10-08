@@ -85,7 +85,7 @@ auto main() -> int {
 
 		thrust::for_each(thrust::device,
 			y.extent().begin(), y.extent().end(),
-			[x = thrust::complex<double>(2.0, 0.0), y = y.as_raw().home()] __device__(int i) {
+			[x = thrust::complex<double>(2.0, 0.0), y = y.raw_array_cast().home()] __device__(int i) {
 				y[i] = x + y[i];  // works because of the conversion above
 				// xpy(x, y[i]);  // works because of the conversion above
 				// xpy(x, thrust::raw_reference_cast(y[i]));  // works but unnecessary

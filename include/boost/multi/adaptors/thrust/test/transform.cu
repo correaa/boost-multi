@@ -74,7 +74,7 @@ auto main() -> int {
 			vel.elements().begin(),
 			[
 				// olap_base = olap.flatted().home()                   // error inside the lambda, template norm can't apply to thrust reference
-				olap_base = olap.flatted().as_raw().home()  // ok
+				olap_base = olap.flatted().raw_array_cast().home()     // ok
 				// olap_base = +olap.flatted().home()                  // ok
 			] __device__(int mm) {
 				return thrust::norm(olap_base[mm][0]) + thrust::norm(olap_base[mm][1]) + thrust::norm(olap_base[mm][2]);
