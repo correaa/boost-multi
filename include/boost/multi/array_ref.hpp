@@ -4087,11 +4087,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) && { return element_transformed(std::forward<UF>(fun)); }
 
+ private:
 	template<
-		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
-		class Element = typename const_subarray::element,
-		class PM      = T2 std::decay_t<Element>::*>
-	constexpr auto member_cast(PM member) const {
+		class T2,
+		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		class Element = typename const_subarray::element
+		//, class PM      = T2 std::decay_t<Element>::*
+	>
+	constexpr auto member_array_cast_aux_(T2 Element::* member) const {
 		static_assert(sizeof(T) % sizeof(T2) == 0, "array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
 												   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 
@@ -4104,17 +4107,38 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		if constexpr(std::is_pointer_v<P2>) {
 			ptr2 = static_cast<P2>(&(this->base_->*member));
 		} else {
-			auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
-			auto&&      ref1 = (*ptr0).*member;
-			// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+			ptr2 = static_cast<P2>(&(to_address_(this->base_)->*member));
+			// auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
+			// auto&&      ref1 = (*ptr0).*member;
+			// // auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
+			// auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
 
-			ptr2 = detail::bit_cast_<P2>(ptr1);
+			// ptr2 = detail::bit_cast_<P2>(ptr1);
 		}
 #else
 		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
 		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), ptr2);
+	}
+
+ public:
+ 	template<
+		class T2,
+		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		class Element = typename const_subarray::element
+	>
+	constexpr auto member_array_cast(T2 Element::* member) const {
+		return member_array_cast_aux_<T2, P2, Element>(member);  // .as_const();
+	}
+
+	template<
+		class T2,
+		class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
+		class Element = typename const_subarray::element
+	>
+	// [[deprecated("use member_array_cast")]]
+	constexpr auto member_cast(T2 Element::* member) const {
+		return member_array_cast_aux_<T2, P2, Element>(member); // .as_const();
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>

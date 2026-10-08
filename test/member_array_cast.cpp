@@ -140,6 +140,18 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( SoA(1, 1).mass == SoA(0, 0).mass);
 		BOOST_TEST( SoA(1, 1) == SoA(0, 0));
 		BOOST_TEST( !(SoA(1, 1) != SoA(0, 0)));
+
+		{
+			multi::array<particle, 1> const a1({10}, particle{20, v3d{{1.0, 2.0, 3.0}}});
+			BOOST_TEST( a1.member_array_cast(&particle::mass)[0] == 20 );
+			// a1.member_cast(&particle::mass)[0] = 90;   // compiles, writes into a const array
+		}
+		// {
+		// 	multi::array<particle, 1> a1({10}, {20, v3d{{1.0, 2.0, 3.0}}});
+		// 	BOOST_TEST( a1.member_array_cast(&particle::mass)[0] == 20 );
+		// 	a1.member_cast(&particle::mass)[0] = 90;  // compiles, writes into a const array
+		// 	BOOST_TEST( a1.member_array_cast(&particle::mass)[0] == 90 );
+		// }
 	}
 
 	struct employee_dummy {
@@ -212,10 +224,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 		// NOLINTEND(misc-include-cleaner,modernize-use-designated-initializers) bug in clang-tidy 18
 
-		auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
-		BOOST_TEST(size(d1D_names) == size(d1D));
-		BOOST_TEST(d1D_names[1] == d1D[1].name);
-		BOOST_TEST(&d1D_names[1] == &d1D[1].name);
+		auto&& d1D_names = d1D.member_array_cast<std::string>(&employee::name);
+		BOOST_TEST( d1D_names.size() == d1D.size() );
+		BOOST_TEST( d1D_names[1] == d1D[1].name );
+		BOOST_TEST( &d1D_names[1] == &d1D[1].name );
 
 		// NOLINTBEGIN(modernize-use-designated-initializers) for C++20
 		multi::array<employee, 2> d2D = {
