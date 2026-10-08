@@ -160,8 +160,8 @@ c++-macos-shell:
     - cmake --version
     - c++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
-    - cmake --build . || cmake --build . --parallel 1 --verbose
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
+    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
     - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
   needs: ["clang++"]
 
