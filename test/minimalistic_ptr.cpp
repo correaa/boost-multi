@@ -265,7 +265,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			multi::array_ref<particle, 1, minimalistic::ptr<particle>> const arr(p0, {3});
 
-			auto&& masses = arr.member_cast<int, minimalistic::ptr<int>>(&particle::mass);
+			auto&& masses = arr.member_array_cast(&particle::mass);
 
 			BOOST_TEST( masses[1] == 2 );
 		}
