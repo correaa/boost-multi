@@ -1216,7 +1216,8 @@ struct elements_range_t {
 	constexpr auto as_raw_aux_() const { return elements_range_t<decltype(to_address_(base_)), layout_type>(base_, l_); }
  public:
 
-	constexpr auto as_raw() const { return as_raw_aux_().as_const(); }	
+	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const { return as_raw_aux_().as_const(); }	
+	constexpr auto raw_array_cast() const { return as_raw_aux_().as_const(); }	
 
 	constexpr auto base() -> pointer { return base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	constexpr auto base() const -> const_pointer { return base_; }
@@ -4095,30 +4096,37 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		//, class PM      = T2 std::decay_t<Element>::*
 	>
 	constexpr auto member_array_cast_aux_(T2 Element::* member) const {
-		static_assert(sizeof(T) % sizeof(T2) == 0, "array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
-												   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
+		static_assert(sizeof(T) % sizeof(T2) == 0,
+			"member_array_cast requires an integral stride: the size of the array element type must be a multiple of the size of the member type. "
+			"Use alignas/padding on the member type or a custom pointer otherwise.");
 
-#if (defined(__GNUC__) && !defined(__INTEL_COMPILER)) || defined(_MSC_VER)
-#ifndef _MSC_VER
-		P2 ptr2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
-#else
-		P2 ptr2{};  // TODO(correaa) convert this below into a function
-#endif
-		if constexpr(std::is_pointer_v<P2>) {
-			ptr2 = static_cast<P2>(&(this->base_->*member));
-		} else {
-			ptr2 = static_cast<P2>(&(to_address_(this->base_)->*member));
-			// auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
-			// auto&&      ref1 = (*ptr0).*member;
-			// // auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
-			// auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+		// static_assert(sizeof(T) % sizeof(T2) == 0, "array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. "
+		// 										   "Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 
-			// ptr2 = detail::bit_cast_<P2>(ptr1);
-		}
-#else
-		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
-#endif
-		return subarray<T2, 1, P2>(this->layout().scale(sizeof(T), sizeof(T2)), ptr2);
+// #if (defined(__GNUC__) && !defined(__INTEL_COMPILER)) || defined(_MSC_VER)
+// #ifndef _MSC_VER
+// 		P2 ptr2;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+// #else
+// 		P2 ptr2{};  // TODO(correaa) convert this below into a function
+// #endif
+// 		ptr2 = static_cast<P2>(&(to_address_(this->base_)->*member));
+// 		// if constexpr(std::is_pointer_v<P2>) {
+// 		// 	ptr2 = static_cast<P2>(&(this->base_->*member));
+// 		// } else {
+// 		// 	auto const* ptr0 = detail::bit_cast_<typename const_subarray::element*>(const_subarray::base_);
+// 		// 	auto&&      ref1 = (*ptr0).*member;
+// 		// 	// auto&& ref1 = (*(reinterpret_cast<typename const_subarray::element* const&>(const_subarray::base_))).*member;  // ->*pm;
+// 		// 	auto* ptr1       = &ref1;  //-V::537 ptr1 is reinterpreted (not dereferenced) below to support fancy pointer types
+
+// 		// 	ptr2 = detail::bit_cast_<P2>(ptr1);
+// 		// }
+// #else
+// 		auto ptr2 = static_cast<P2>(&(this->base_->*member));  // this crashes nvcc 11.2-11.4 and some? gcc compiler
+// #endif
+		return subarray<T2, 1, P2>(
+			this->layout().scale(sizeof(T), sizeof(T2)),
+			static_cast<P2>(&(to_address_(this->base_)->*member))
+		);
 	}
 
  public:

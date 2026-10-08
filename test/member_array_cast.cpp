@@ -142,7 +142,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( !(SoA(1, 1) != SoA(0, 0)));
 
 		{
-			multi::array<particle, 1> const a1({10}, particle{20, v3d{{1.0, 2.0, 3.0}}});
+			multi::array<particle, 1> const a1({10}, particle{20, v3d{{1.0, 2.0, 3.0}}});  // NOLINT(modernize-use-designated-initializers) for C++20
 			BOOST_TEST( a1.member_array_cast(&particle::mass)[0] == 20 );
 			// a1.member_cast(&particle::mass)[0] = 90;   // compiles, writes into a const array
 		}
