@@ -390,11 +390,11 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		const_subarray<element, D - 1, element_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference>;
 
-	/// returns the base pointer of the array (arithmetic base of the layout, generally the first element)
+	/// returns the base pointer of the array (arithmetic base of the layout, generally a pointer to the first element)
 	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	/// returns the base const-pointer of the array (arithmetic base of the layout, generally the first element)
-	BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
+	// /// returns the base const-pointer of the array (arithmetic base of the layout, generally a const-pointer to the first element)
+	// BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
 
 	/// returns the layout of the array
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
@@ -1849,20 +1849,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	/// produces a subarray of higher dimension by chunking in the leading dimension (if `count` doesn't divide `size`, so elements are left out at the end)
+	/// produces a subarray of higher dimension by chunking in the leading dimension (if `count` doesn't divide `size`, subelements and the end are left)
 	BOOST_MULTI_HD constexpr auto chunked(size_type count) const& -> const_subarray<T, D + 1, element_ptr> { return chunked_aux_(count); }
-
-	// constexpr auto tiled(size_type count) const& {
-	// 	BOOST_MULTI_ASSERT(count != 0);
-	// 	struct divided_type {
-	// 		const_subarray<T, D + 1, element_ptr> quotient;
-	// 		const_subarray<T, D, element_ptr>     remainder;
-	// 	};
-	// 	return divided_type(
-	// 		this->taked(this->size() - (this->size() % count)).chunked(count),
-	// 		this->dropped(this->size() - (this->size() % count))
-	// 	);
-	// }
 
  private:
 	constexpr auto reversed_aux_() const { return const_subarray(layout().reverse(), types::base_); }
@@ -2579,22 +2567,23 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	using const_subarray<T, D, ElementPtr, Layout>::as_raw;
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const & {
+		return this->as_raw_aux_().as_const();
+	}
+	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
 
 	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
-	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
-	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
-
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
