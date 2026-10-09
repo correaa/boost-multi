@@ -394,7 +394,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference>;
 
 	/// returns the base pointer of the array (arithmetic base of the layout, generally a pointer to the first element)
-	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD constexpr auto base() const -> element_const_ptr { return base_; }  // cppcheck-suppress [duplInheritedMember, returnByReference] ; to overwrite
 
 	// /// returns the base const-pointer of the array (arithmetic base of the layout, generally a const-pointer to the first element)
 	// BOOST_MULTI_HD constexpr auto cbase() const -> element_const_ptr { return base_; }
