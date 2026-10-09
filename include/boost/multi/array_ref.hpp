@@ -1032,7 +1032,7 @@ struct elements_iterator_t
 	: base_{std::move(base)}, l_{lyt}, n_{n}, xs_{l_.extents()}, ns_{lyt.is_empty() ? indices_type{} : xs_.from_linear(n)} {}
 
  public:
-	elements_iterator_t() = default;
+	elements_iterator_t() = default;  // cppcheck-suppress uninitMemberVar
 
  private:
 	/// Arithmetic base pointer of the iterator, typically the base of the original array
