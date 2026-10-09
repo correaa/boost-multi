@@ -201,7 +201,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 		// cppcheck-suppress danglingTempReference
 		std::stable_sort(d2D_ref.begin(), d2D_ref.end());  // NOLINT(modernize-use-ranges)
-		BOOST_TEST( std::is_sorted( d2D_ref.begin(), d2D_ref.end() ) );  // cppcheck-suppress danglingTempReference
+		// cppcheck-suppress danglingTempReference
+		BOOST_TEST( std::is_sorted( d2D_ref.begin(), d2D_ref.end() ) );  // NOLINT(modernize-use-ranges)
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
 		BOOST_TEST( !std::is_sorted( d2D_ref.rotated().begin(), d2D_ref.rotated().end() ) );  // cppcheck-suppress danglingTempReference

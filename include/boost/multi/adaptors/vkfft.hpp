@@ -200,7 +200,7 @@ class plan {
 		// VkFFT position 0.  multi's `.strides()` are *not* guaranteed sorted (a
 		// subarray / rotated view can put the unit stride in the middle), so we
 		// sort here rather than assume axis D-1 is the fast one.
-		std::array<axis_, static_cast<std::size_t>(D)> ax{};
+		std::array<axis_, std::size_t{D}> ax{};
 		for(std::size_t i = 0; i != static_cast<std::size_t>(D); ++i) { ax[i] = axis_{ns[i], istr[i], ostr[i], which[i]}; }
 		std::stable_sort(ax.begin(), ax.end(), [](axis_ const& a, axis_ const& b) { return a.is < b.is; });  // this is the natural order for vfFFT
 

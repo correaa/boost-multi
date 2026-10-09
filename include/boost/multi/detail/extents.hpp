@@ -148,7 +148,7 @@ class extents_t {
 	template<class... Ts, std::enable_if_t<sizeof...(Ts) == static_cast<std::size_t>(D), int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; allow terse syntax // NOLINTNEXTLINE(runtime/explicit)
 	BOOST_MULTI_HD constexpr extents_t(detail::tuple<Ts...> const& exts)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
-	: extents_t(exts, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
+	: extents_t(exts, std::make_index_sequence<std::size_t{D}>()) {}
 
 	template<class... Ts, std::enable_if_t<sizeof...(Ts) == static_cast<std::size_t>(D), int> = 0, class = decltype(base_{std::declval<::std::tuple<Ts...> >()})>  // NOLINT(modernize-use-constraints) TODO(correaa)
 	// cppcheck-suppress noExplicitConstructor ; allow terse syntax // NOLINTNEXTLINE(runtime/explicit)
@@ -637,7 +637,7 @@ class extents_t {
  public:
 	template<class Archive>
 	void serialize(Archive& arxiv, unsigned int const /*version*/) {
-		serialize_impl_(arxiv, std::make_index_sequence<static_cast<std::size_t>(D)>());
+		serialize_impl_(arxiv, std::make_index_sequence<std::size_t{D}>());
 	}
 
  private:
@@ -658,7 +658,7 @@ class extents_t {
 
  public:
 	BOOST_MULTI_HD constexpr auto num_elements() const -> multi::ssize_t {
-		return static_cast<multi::ssize_t>(num_elements_impl_(std::make_index_sequence<static_cast<std::size_t>(D)>()));
+		return static_cast<multi::ssize_t>(num_elements_impl_(std::make_index_sequence<std::size_t{D}>()));
 	}
 
 	friend constexpr auto intersection(extents_t const& self, extents_t const& other) -> extents_t {
