@@ -196,10 +196,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto&& d2D_ref = *&multi::array_ref<double, 2>({4, 5}, &d2D[0][0]);  // NOLINT(readability-container-data-pointer) test access
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)              // bug in is_sorted in clang 7
-		BOOST_TEST( !std::is_sorted(d2D_ref.begin(), d2D_ref.end() ) );  // cppcheck-suppress danglingTempReference
+		// cppcheck-suppress danglingTempReference  
+		BOOST_TEST( !std::is_sorted(d2D_ref.begin(), d2D_ref.end() ) );  // NOLINT(modernize-use-ranges)
 #endif
-
-		std::stable_sort(d2D_ref.begin(), d2D_ref.end());           // cppcheck-suppress danglingTempReference
+		// cppcheck-suppress danglingTempReference
+		std::stable_sort(d2D_ref.begin(), d2D_ref.end());  // NOLINT(modernize-use-ranges)
 		BOOST_TEST( std::is_sorted( d2D_ref.begin(), d2D_ref.end() ) );  // cppcheck-suppress danglingTempReference
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
