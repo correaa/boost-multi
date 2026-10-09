@@ -809,8 +809,8 @@ nvhpc-26.5:
 
 cunvhpc:  # CUDA device compilation through nvhpc (nvhpc's nvcc driver + nvc++ as host/CXX), like the new pre-push CUDA 13 line. g++ as host fails because CUDA 13.1's crt/math_functions.h declares rsqrt/rsqrtf without noexcept while glibc 2.41+ declares them noexcept(true); only nvc++'s front-end tolerates it. Compile-only: the nvidia-gpu runner is Pascal sm_61 which CUDA 13 dropped, so device binaries can't be executed here.
   stage: build
-  image: nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04  # nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04
-  # image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  # image: nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04  # nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04
+  image: nvcr.io/nvidia/nvhpc:26.3-devel-cuda13.1-ubuntu24.04  # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - large-disk-space
