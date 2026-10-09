@@ -1125,6 +1125,36 @@ hip-emulated:
     - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 --rerun-failed --output-on-failure
   needs: ["clang++"]
 
+# same as hip-emulated in C++20, where std::equal is constexpr (implicitly __host__ __device__ in clang) and overload resolution can differ between host and device passes (see MR !2142)
+hip-emulated c++20:
+  stage: build
+  image: rocm/dev-ubuntu-24.04:7.0.2-complete  # hipcc only, the simulator replaces the HIP runtime (it supports ROCm 6.4 to 7.2)
+  allow_failure: false
+  variables:
+    PANTHEONSIM_COMMIT: dd9dbb1f14be1aa69dc45c04253491fe0fd2c533  # pinned, the simulator is under active development
+  tags:
+    - non-shared
+    - docker
+    - high-bandwidth  # for download rocm extras
+    - x86_64  # for rocm image
+  script:
+    - apt-get install --no-install-recommends -y ninja-build git cmake g++ wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
+    - git clone https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim checkout $PANTHEONSIM_COMMIT
+    - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
+    - /opt/pantheonsim/build/vgpu info --gpu amd/mi300x
+    - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
+    - mkdir build && cd build
+    - export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}
+    - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
+    - export ROCM_PATH=/opt/rocm
+    - export HIP_PATH=/opt/rocm
+    # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
+    - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_HIP_STANDARD=20 -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DDISABLE_MPI=1
+    - cmake --build . || cmake --build . --parallel 1 --verbose
+    # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 --rerun-failed --output-on-failure
+  needs: ["clang++"]
+
 rocm-latest:
   stage: build
   image: rocm/dev-ubuntu-24.04:7.2.3-complete
