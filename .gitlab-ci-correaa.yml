@@ -147,7 +147,7 @@ g++-m32 sanitize:
 
 c++-macos-shell:
   stage: build
-  allow_failure: true  # runner might not be available
+  allow_failure: true  # because runner might not be available
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   cache: []
@@ -160,9 +160,10 @@ c++-macos-shell:
     - cmake --version
     - c++ --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
-    - cmake --build . --parallel 2 || cmake --build . --parallel 1 --verbose
-    - ctest --parallel 2 || ctest --verbose --rerun-failed --output-on-failure
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_LINK_WARNING_AS_ERROR=ON -DCMAKE_CXX_FLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG"
+    - cmake --build . --parallel 2
+    - export MallocPreScribble=1 MallocScribble=1 MallocGuardEdges=1 MallocErrorAbort=1
+    - ctest --parallel 2 --output-on-failure
   needs: ["clang++"]
 
 coverage:
