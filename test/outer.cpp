@@ -55,7 +55,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		// outer_t behaves like a (lazy) array of coordinate tuples
 		multi::detail::outer_t const x2d(2, 3);  // 2 x 3 structured cartesian product
 
-		BOOST_TEST( x2d.num_elements() == 6 );
+		BOOST_TEST( x2d.num_elements() == 6 );  // cppcheck-suppress knownConditionTrueFalse
 
 		auto const els = x2d.elements();  // lazy random-access range of (i, j) tuples
 		BOOST_TEST( els.size() == 6 );

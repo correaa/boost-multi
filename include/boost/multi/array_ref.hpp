@@ -123,9 +123,12 @@ template<> inline constexpr bool force_element_trivial_default_construction<std:
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(__has_cpp_attribute) && __has_cpp_attribute(gnu::no_dangling)
+#if defined(__has_cpp_attribute)  // nested: an undefined function-like macro can't be invoked even after a false `&&`
+#if __has_cpp_attribute(gnu::no_dangling)
 #define BOOST_MULTI_NO_DANGLING [[gnu::no_dangling]]
-#else
+#endif
+#endif
+#ifndef BOOST_MULTI_NO_DANGLING
 #define BOOST_MULTI_NO_DANGLING
 #endif
 
@@ -294,7 +297,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using size_type = typename layout_type::size_type;
 	// using layout_type::size;
 	/// returns the size of the array in the leading dimension
-	BOOST_MULTI_HD constexpr auto size() const noexcept -> size_type { return layout_type::size(); }
+	BOOST_MULTI_HD constexpr auto size() const noexcept -> size_type { return layout_type::size(); }  // cppcheck-suppress duplInheritedMember ;
 
 	/// returns the nelems layout (convex hull data size) of the array.
 	using layout_type::nelems;
@@ -364,7 +367,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	// [[deprecated("This is for compatiblity with Boost.MultiArray, you can use `offsets` member function")]]
 	// constexpr auto shape() const { return detail::convertible_tuple<decltype(this->sizes())>(this->sizes()); }
 
-	[[deprecated("use layout().is_compact()")]] auto is_compact() const { return this->layout().is_compact(); }
+	[[deprecated("use layout().is_compact()")]] auto is_compact() const { return this->layout().is_compact(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
  private:
 	constexpr auto layout_mutable() -> layout_type& { return static_cast<layout_type&>(*this); }  // NOLINT(readability-identifier-naming)
@@ -400,9 +403,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type const& { return *this; }
 
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_PUSH()
-	// cppcheck-suppress duplInheritedMember ; to overwrite
 	[[deprecated("for compatibility with BMA, use .base()")]]
-	constexpr auto origin() const& -> decltype(auto) { return base_ + Layout::origin(); }  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	constexpr auto origin() const& -> decltype(auto) {  // cppcheck-suppress duplInheritedMember
+		return base_ + Layout::origin();                // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	}
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
 
  protected:
@@ -424,7 +428,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
  public:
 	array_types() = default;  // cppcheck-suppress uninitMemberVar ; base_ not initialized
 
-	BOOST_MULTI_HD constexpr array_types(layout_type const& lyt, element_ptr data)
+	BOOST_MULTI_HD constexpr array_types(layout_type const& lyt, element_ptr data)  // cppcheck-suppress noExplicitConstructor 
 	: Layout{lyt}, base_{std::move(data)} {}
 
  protected:
@@ -1585,7 +1589,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const {
-		BOOST_MULTI_ASSERT((/*this->stride() == 0 ||*/ (this->extent().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT( this->extent().contains(idx) && "out of bounds");
 
 		// clang-format off
 	#if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -1611,7 +1615,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	// clang-format on
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> const_reference {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
+		BOOST_MULTI_ASSERT((this->stride() == 0 || (this->extent().contains(idx))) && "out of bounds");
 		return const_reference(
 			this->layout().sub(),
 			this->base_ + (idx * this->layout().stride() - this->layout().offset())  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -1701,8 +1705,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
  private:
 	BOOST_MULTI_HD constexpr auto sliced_aux_(index first, index last) const {
 		// TODO(correaa) remove first >= last condition
-		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(first)) && ("sliced first out of bounds"));
-		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(last - 1)) && ("sliced last out of bounds"));
+		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(first)) && "sliced first out of bounds");
+		BOOST_MULTI_ASSERT(((first >= last) || this->extent().contains(last - 1)) && "sliced last out of bounds");
 		typename types::layout_type new_layout = this->layout();
 		new_layout.nelems()                    = this->layout().stride() * (last - first);                      // TODO(correaa) : reconstruct layout instead of mutating it
 		BOOST_MULTI_ASSERT(this->base_ || ((first * this->layout().stride() - this->layout().offset()) == 0));  // it is UB to offset a nullptr
@@ -1870,7 +1874,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	/// A transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	BOOST_MULTI_HD auto operator~() const& { return transposed(); }
+	BOOST_MULTI_HD auto operator~() const& { return transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
@@ -2536,30 +2540,8 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::operator~;
-	BOOST_MULTI_HD auto operator~() & { return transposed(); }
-	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD
-	// auto operator~ (subarray const& self) { return self.transposed(); }
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray& self) { return self.transposed(); }
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(subarray&& self) { return std::move(self).transposed(); }
-
-	// /// yields an array view where the elements have been reindexed.
-	// using const_subarray<T, D, ElementPtr, Layout>::reindexed;
-
-	// template<class... Indexes>
-	// // cppcheck-suppress duplInheritedMember ; to overwrite
-	// constexpr auto reindexed(index first, Indexes... idxs) & -> subarray {
-	// 	return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
-	// 	// return ((this->reindexed(first).rotated()).reindexed(idxs...)).unrotated();
-	// }
-	// template<class... Indexes>
-	// // cppcheck-suppress duplInheritedMember ; to overwrite
-	// constexpr auto reindexed(index first, Indexes... idxs) && -> subarray {
-	// 	return const_subarray<T, D, ElementPtr, Layout>::reindexed(first, idxs...);
-	// 	// return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
-	// }
+	BOOST_MULTI_HD auto operator~() & { return transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const& -> typename subarray::element_const_ptr { return this->base_; }
@@ -2567,6 +2549,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const & {
 		return this->as_raw_aux_().as_const();
 	}
@@ -2576,14 +2559,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
+	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
 		return this->as_raw_aux_();
 	}
-	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
+	constexpr auto raw_array_cast() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		return this->as_raw_aux_();
 	}
+	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto operator=(const_subarray<T, D, ElementPtr, Layout> const& other) & -> subarray& {
@@ -2845,7 +2831,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto partitioned(size_type size) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(size); }
 
 	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
-	constexpr auto flatted() const& {
+	constexpr auto flatted() const& {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		assert(this->layout().is_flattable());
 		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
@@ -3580,7 +3566,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 		// stride() returns a reference, and is_integral_v is false for a reference type
 		// NOLINTNEXTLINE(readability-static-accessed-through-instance) can be static
 		if constexpr(std::is_integral_v<std::decay_t<decltype(this->layout().stride())>>) {
-			BOOST_MULTI_ASSERT((this->layout().stride() == 0 || (this->extent().contains(idx))) && ("out of bounds"));
+			BOOST_MULTI_ASSERT( (this->layout().stride() == 0 || (this->extent().contains(idx))) && "out of bounds" );
 		}
 
 #if defined(__clang__) && (__clang_major__ >= 16) && !defined(__INTEL_LLVM_COMPILER)
@@ -4269,7 +4255,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	// friend constexpr auto size(array_ref const& self) noexcept /*-> typename array_ref::size_type*/ { return self.size(); }     // needed by nvcc
 
 	/// yields a view of the array that is flattened in the first two leading dimensions
-	constexpr auto flatted() const& {
+	constexpr auto flatted() const& {  // cppcheck-suppress duplInheritedMember
 		assert(this->layout().is_flattable());
 		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size();  // TODO(correaa) : use immutable layout
@@ -4755,8 +4741,8 @@ using array_ptr [[deprecated]] = detail::array_ptr<T, D, Ptr>;
 // template<class P> auto make_array_ref(P data, extents_t<4> exts) { return make_array_ref<4>(data, exts); }
 // template<class P> auto make_array_ref(P data, extents_t<5> exts) { return make_array_ref<5>(data, exts); }
 
-#ifdef __cpp_deduction_guides
 namespace detail {
+#ifdef __cpp_deduction_guides
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
 array_ptr(It) -> array_ptr<V, 0, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>  // pointer_traits doesn't have ::value_type
@@ -4767,9 +4753,7 @@ template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<2>) -> array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>) -> array_ptr<V, 3, It>;
-#endif
 
-#ifdef __cpp_deduction_guides
 template<
 	class T,
 	std::size_t N,

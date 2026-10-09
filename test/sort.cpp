@@ -195,19 +195,19 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		auto&& d2D_ref = *&multi::array_ref<double, 2>({4, 5}, &d2D[0][0]);  // NOLINT(readability-container-data-pointer) test access
 
-#if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
-		BOOST_TEST( !std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
+#if !defined(__clang_major__) || (__clang_major__ != 7)              // bug in is_sorted in clang 7
+		BOOST_TEST( !std::is_sorted(d2D_ref.begin(), d2D_ref.end() ) );  // cppcheck-suppress danglingTempReference
 #endif
 
-		std::stable_sort(begin(d2D_ref), end(d2D_ref));
-		BOOST_TEST( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
+		std::stable_sort(d2D_ref.begin(), d2D_ref.end());           // cppcheck-suppress danglingTempReference
+		BOOST_TEST( std::is_sorted( d2D_ref.begin(), d2D_ref.end() ) );  // cppcheck-suppress danglingTempReference
 
 #if !defined(__clang_major__) || (__clang_major__ != 7)  // bug in is_sorted in clang 7
-		BOOST_TEST( !std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+		BOOST_TEST( !std::is_sorted( d2D_ref.rotated().begin(), d2D_ref.rotated().end() ) );  // cppcheck-suppress danglingTempReference
 #endif
 
-		std::stable_sort(begin(d2D_ref.rotated()), end(d2D_ref.rotated()));
-		BOOST_TEST( std::is_sorted( begin(d2D_ref.rotated()), end(d2D_ref.rotated()) ) );
+		std::stable_sort(d2D_ref.rotated().begin(), d2D_ref.rotated().end());  // cppcheck-suppress danglingTempReference
+		BOOST_TEST( std::is_sorted( d2D_ref.rotated().begin(), d2D_ref.rotated().end() ) );  // cppcheck-suppress danglingTempReference
 	}
 
 	// BOOST_AUTO_TEST_CASE(lexicographical_compare)

@@ -54,7 +54,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<int>     dest_v = {99, 99};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 1> dest_a = {88, 88};
 
-		BOOST_TEST( dest_v.size() == 2 );
+		BOOST_TEST( dest_v.size() == 2 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( dest_a.size() == 2 );
 
 		resize_copy_1(source, dest_v);
@@ -74,7 +74,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<int>     dest_v = {99, 99};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 1> dest_a = {88, 88};
 
-		BOOST_TEST( dest_v.size() == 2 );
+		BOOST_TEST( dest_v.size() == 2 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( dest_a.size() == 2 );
 
 		resize_copy_2(source, dest_v);
@@ -94,7 +94,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<int>     dest_v = {990, 990};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 1> dest_a = {880, 880};
 
-		BOOST_TEST( dest_v.size() == 2 );
+		BOOST_TEST( dest_v.size() == 2 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( dest_a.size() == 2 );
 
 		resize_copy_3(source, dest_v);
@@ -114,7 +114,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<int>     dest_v = {990, 990};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 1> dest_a = {880, 880};
 
-		BOOST_TEST( dest_v.size() == 2 );
+		BOOST_TEST( dest_v.size() == 2 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( dest_a.size() == 2 );
 
 		resize_copy_4(source.begin(), source.end(), dest_v);
@@ -154,7 +154,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::vector<int>     dest_v = {990, 990};  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<int, 1> dest_a = {880, 880};
 
-		BOOST_TEST( dest_v.size() == 2 );
+		BOOST_TEST( dest_v.size() == 2 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( dest_a.size() == 2 );
 
 		{  // look same code as below

@@ -492,21 +492,9 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		BOOST_TEST( xx[3] == dog );
 		BOOST_TEST( ww.empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved)
 
-		// vv.resize(15);
-
-		// swap(xx, vv);
-		// BOOST_TEST( vv[3] == dog );
-		// BOOST_TEST( xx[3] == cat );
-
 		{
 			std::vector<std::vector<std::string, multi::detail::static_allocator<std::string, 32>>> const VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
-			BOOST_TEST( VV.size() == 3 );
-			// swap(VV[0], VV[1]);
-			// std::sort(VV.begin(), VV.end());
-			// BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
-			// VV.resize(10, xx);
-			// std::sort(VV.begin(), VV.end());
-			// BOOST_TEST( std::is_sorted(VV.begin(), VV.end()) );
+			BOOST_TEST( VV.size() == 3 );  // cppcheck-suppress knownConditionTrueFalse
 		}
 	}
 #endif
@@ -590,7 +578,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 
 		{
 			std::vector<small_array<int, 2, 4UL * 4UL>> VV = {vv, xx, vv};  // NOLINT(fuchsia-default-arguments-calls)
-			BOOST_TEST( VV.size() == 3 );
+			BOOST_TEST( VV.size() == 3 );  // cppcheck-suppress knownConditionTrueFalse
 
 			swap(VV[0], VV[1]);
 			BOOST_TEST( VV[0] == xx );

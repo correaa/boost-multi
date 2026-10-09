@@ -332,8 +332,8 @@ class bistride {
 
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
-		auto base = static_cast<Ptr>(self.ptr_);
-		auto const dist = ptr - base;
+		auto base_aux = static_cast<Ptr>(self.ptr_);
+		auto const dist = ptr - base_aux;
 		auto const outer = dist / self.stride1_;
 
 		// vvv TODO(correaa) Survived: Replaced / with *
@@ -345,15 +345,15 @@ class bistride {
 		auto const new_outer = (shift / size2) + outer;
 		auto const new_inner = shift % size2;
 
-		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return base_aux + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
-		auto base = static_cast<Ptr>(ptr_);
-		auto const dist = ptr - base;
+		auto base_aux = static_cast<Ptr>(ptr_);
+		auto const dist = ptr - base_aux;
 		auto const segment_index = dist / stride1_;
-		auto ret = base + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		auto ret = base_aux + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)

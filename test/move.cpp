@@ -321,6 +321,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		Av = {};  // Av.clear();
 
+		// cppcheck-suppress knownConditionTrueFalse 
 		BOOST_TEST( Av.size() == 0 );  // NOLINT(readability-container-size-empty)
 		BOOST_TEST( Bv.size() == 10 );
 		BOOST_TEST( Bv[5].size() == 4 );

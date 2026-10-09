@@ -393,7 +393,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
 		auto const& mar = *&multi::array_ref<double, 2>(arr);
-		BOOST_TEST( mar.size() == 4 );
+		BOOST_TEST( mar.size() == 4 );  // cppcheck-suppress danglingTempReference
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
 		multi::array<double, 2> const ss = {
@@ -597,12 +597,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array_ref<std::string, 1>&& mar = *&multi::array_ref<std::string, 1>{arr};
 		// multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
 
-		BOOST_TEST(  mar.extent().first() == 0 );
-		BOOST_TEST(  mar.extent().last()  == 5 );
+		BOOST_TEST(  mar.extent().first() == 0 );  // cppcheck-suppress danglingTempReference
+		BOOST_TEST(  mar.extent().last()  == 5 );  // cppcheck-suppress danglingTempReference
 
-		auto&& mar1 = mar.reindexed(1);
+		auto&& mar1 = mar.reindexed(1);  // cppcheck-suppress danglingTempReference
 
-		BOOST_TEST( mar1.extent().size() == mar.extent().size() );
+		BOOST_TEST( mar1.extent().size() == mar.extent().size() );  // cppcheck-suppress danglingTempReference
 
 		BOOST_TEST(  mar1.extent().first() == 1 );
 
@@ -614,7 +614,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		// BOOST_TEST( *extent(mar1).begin() == 1 );
 		BOOST_TEST( *mar1.extent().begin() == 1 );
 
-		BOOST_TEST( mar1.size() == mar.size() );
+		BOOST_TEST( mar1.size() == mar.size() );  // cppcheck-suppress danglingTempReference
 		BOOST_TEST( mar1.layout().extent().first() == 1 );
 
 		BOOST_TEST( mar1.extent().first() == 1 );

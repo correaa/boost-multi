@@ -138,8 +138,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		raw[1][2] = 8;  // mutable view from a mutable array
 		BOOST_TEST( (*CCP)[1][2] == 8 );
 
-		auto const& CCR  = *CCP;
-		auto&&      craw = CCR.raw_array_cast();  // the const overload (the `using` / ref-qualifier issue)
+		auto const& CCR  = *CCP;                  // cppcheck-suppress danglingTempReference
+		auto&&      craw = CCR.raw_array_cast();  // cppcheck-suppress danglingTempReference
 		static_assert(std::is_same_v<decltype(craw.base()), int const*>);
 		BOOST_TEST( &craw[1][1] == &buffer[21] );
 
