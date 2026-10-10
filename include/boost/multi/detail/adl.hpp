@@ -183,11 +183,22 @@ class adl_equal_t {
 #endif
 		 template<class... As>
 		 constexpr auto _(priority<3> /**/, As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)...)) template<class... As> constexpr auto _(priority<4> /**/, As&&... args) const BOOST_MULTI_DECLRET(equal(std::forward<As>(args)..., std::equal_to<>{}))  // WORKAROUND makes syntax compatible with boost::ranges::equal if, for some reason, it is included.
+#ifdef BOOST_MULTI_ADL_HAS_THRUST
+	 // must outrank priority<4>: there the std::equal_to<> argument brings std into ADL, and in C++20 (constexpr, so implicitly __host__ __device__) std::equal
+	 // can win in the device pass while thrust::equal wins in the host pass, leaving thrust's kernels registered but missing from the device code (MR !2142)
+	 // restricted to non-host iterators, because thrust::equal hard-fails for some host iterators (e.g. blas::involuted) that the lower priorities handle
+	 template<class It1, class It1Last, class It2,
+		 std::enable_if_t<  // NOLINT(modernize-use-constraints) for C++20
+			 !std::is_convertible_v<typename thrust::iterator_system<std::decay_t<It1>>::type, thrust::system::cpp::tag> ||
+			 !std::is_convertible_v<typename thrust::iterator_system<std::decay_t<It2>>::type, thrust::system::cpp::tag>,
+		 int> = 0>
+	 constexpr auto _(priority<5> /**/, It1&& first1, It1Last&& last1, It2&& first2) const BOOST_MULTI_DECLRET(::thrust::equal(std::forward<It1>(first1), std::forward<It1Last>(last1), std::forward<It2>(first2)))
+#endif
 	 template<class T, class... As>
-	 constexpr auto _(priority<5> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::equal(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).equal(std::forward<As>(args)...))
+	 constexpr auto _(priority<6> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::decay_t<T>::equal(std::forward<T>(arg), std::forward<As>(args)...)) template<class T, class... As> constexpr auto _(priority<7> /**/, T&& arg, As&&... args) const BOOST_MULTI_DECLRET(std::forward<T>(arg).equal(std::forward<As>(args)...))
 
 		 public : template<class... As>
-				  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<6>(), std::forward<As>(args)...))
+				  constexpr auto operator()(As&&... args) const BOOST_MULTI_DECLRET(_(priority<7>(), std::forward<As>(args)...))
 };
 inline constexpr adl_equal_t adl_equal;
 
