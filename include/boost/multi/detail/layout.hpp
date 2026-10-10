@@ -332,8 +332,8 @@ class bistride {
 
 	template<class Ptr>
 	friend BOOST_MULTI_HD constexpr auto operator+(Ptr const& ptr, bistride const& self) {
-		auto base = static_cast<Ptr>(self.ptr_);
-		auto const dist = ptr - base;
+		auto base_aux = static_cast<Ptr>(self.ptr_);
+		auto const dist = ptr - base_aux;
 		auto const outer = dist / self.stride1_;
 
 		// vvv TODO(correaa) Survived: Replaced / with *
@@ -345,15 +345,15 @@ class bistride {
 		auto const new_outer = (shift / size2) + outer;
 		auto const new_inner = shift % size2;
 
-		return base + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return base_aux + (new_outer * self.stride1_) + (new_inner * self.stride2_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
 	template<class Ptr>
 	BOOST_MULTI_HD constexpr auto segment_base(Ptr const& ptr) const {
-		auto base = static_cast<Ptr>(ptr_);
-		auto const dist = ptr - base;
+		auto base_aux = static_cast<Ptr>(ptr_);
+		auto const dist = ptr - base_aux;
 		auto const segment_index = dist / stride1_;
-		auto ret = base + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		auto ret = base_aux + (segment_index * stride1_);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		return ret;
 	}
 	#if (defined(__clang__) && (__clang_major__ >= 16)) && !defined(__INTEL_LLVM_COMPILER)
@@ -735,14 +735,9 @@ struct layout_t
 	[[deprecated("use get<d>(m.extensions()")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto
 	extension(dimensionality_type dim) const {
-		return std::apply([](auto... extensions) -> auto { return std::array<index_extension, static_cast<std::size_t>(D)>{{extensions...}}; }, extensions().base()).at(static_cast<std::size_t>(dim));
-	}  // cppcheck-suppress syntaxError ; bug in cppcheck 2.14
-	   //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	// constexpr auto stride(dimensionality_type dim) const {
-	// 	return std::apply([](auto... strides) -> auto { return std::array<stride_type, static_cast<std::size_t>(D)>{{strides...}}; }, strides()).at(static_cast<std::size_t>(dim));
-	// }
-	//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
-	//  constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
+		constexpr auto dee = static_cast<std::size_t>(D);  // workaround bug in cppcheck 2.17
+		return std::apply([](auto... extensions) -> auto { return std::array<index_extension, dee>{{extensions...}}; }, extensions().base()).at(static_cast<std::size_t>(dim));
+	}
 
 	BOOST_MULTI_HD constexpr auto sort() const {
 		auto ret = layout_t(

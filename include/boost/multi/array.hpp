@@ -166,7 +166,7 @@ struct                                                                          
 	using decay_type     = array<T, D, allocator_type>;
 
 	/// returns the allocator that is used to acquire/release memory and to construct/destroy the elements in that memory
-	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type {
+	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		return detail::array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator();
 	}
 
@@ -240,18 +240,18 @@ struct                                                                          
 	/// Subscript operator (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
 	using ref_::operator();
 
-	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref_::element_moved(); }
+	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref_::element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	using ref_::taked;
 
 	/// yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
-	constexpr auto taked(difference_type count) && -> decltype(auto) { return ref_::taked(count).element_moved(); }
+	constexpr auto taked(difference_type count) && -> decltype(auto) { return ref_::taked(count).element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// yields an array of the same dimensionality with the first n dropped in the leading dimension.
 	using ref_::dropped;
 
 	/// Gives a subarray dropping the first `n` indices in the leading dimension
-	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref_::dropped(n).element_moved(); }
+	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref_::dropped(n).element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor,bugprone-exception-escape)
 	: array_alloc{other.alloc()},
@@ -814,22 +814,22 @@ struct                                                                          
 	}
 
 	/// returns an iterator to the beginning in the leading dimension
-	constexpr auto begin() const& noexcept -> typename dynamic_array::const_iterator { return ref_::begin(); }
+	constexpr auto begin() const& noexcept -> typename dynamic_array::const_iterator { return ref_::begin(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// returns an iterator to the end in the leading dimension
-	constexpr auto end() const& noexcept -> typename dynamic_array::const_iterator { return ref_::end(); }
+	constexpr auto end() const& noexcept -> typename dynamic_array::const_iterator { return ref_::end(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	constexpr auto begin() && noexcept -> typename dynamic_array::move_iterator { return ref_::begin(); }
-	constexpr auto end() && noexcept -> typename dynamic_array::move_iterator { return ref_::end(); }
+	constexpr auto begin() && noexcept -> typename dynamic_array::move_iterator { return ref_::begin(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto end() && noexcept -> typename dynamic_array::move_iterator { return ref_::end(); }      // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	constexpr auto begin() & noexcept -> typename dynamic_array::iterator { return ref_::begin(); }
-	constexpr auto end() & noexcept -> typename dynamic_array::iterator { return ref_::end(); }
+	constexpr auto begin() & noexcept -> typename dynamic_array::iterator { return ref_::begin(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	constexpr auto end() & noexcept -> typename dynamic_array::iterator { return ref_::end(); }      // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	/// Inherited indexed access
 	using ref_::operator[];
 
 	/// Subscript operators (takes multiple parameters, the number of parameters is equal or lower than the number of dimensions, individual arguments can be single indices or ranges)
-	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
+	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		using std::move;
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -922,13 +922,13 @@ struct                                                                          
 	BOOST_MULTI_HD constexpr auto data_elements() const& -> element_const_ptr { return this->base_; }                                                               // cppcheck-suppress duplInheritedMember ; to override
 	BOOST_MULTI_HD constexpr auto data_elements() && -> typename dynamic_array::element_move_ptr { return typename dynamic_array::element_move_ptr{this->base_}; }  // cppcheck-suppress duplInheritedMember ; to override
 
-	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }
-	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }
+	constexpr auto base() & -> typename dynamic_array::element_ptr { return ref_::base(); }                                                        // cppcheck-suppress duplInheritedMember
+	constexpr auto base() const& -> typename dynamic_array::element_const_ptr { return typename dynamic_array::element_const_ptr{ref_::base()}; }  // cppcheck-suppress duplInheritedMember
 
 	[[deprecated("for compatibility with BMA, use .data_elements()")]]
-	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }
+	constexpr auto origin() & -> typename dynamic_array::element_ptr { return ref_::origin(); }  // cppcheck-suppress duplInheritedMember
 	[[deprecated("for compatibility with BMA, use .data_elements()")]]
-	constexpr auto origin() const& -> typename dynamic_array::element_const_ptr { return ref_::origin(); }
+	constexpr auto origin() const& -> typename dynamic_array::element_const_ptr { return ref_::origin(); }  // cppcheck-suppress duplInheritedMember
 
 	template<class TT, typename EElementPtr, class LLayout>
 	auto operator=(multi::const_subarray<TT, D, EElementPtr, LLayout> const& other) -> dynamic_array& {

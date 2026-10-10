@@ -19,8 +19,8 @@
 namespace multi = boost::multi;
 
 namespace {
-void fun(multi::array<std::complex<float>, 2> arr);
-void fun(multi::array<std::complex<float>, 2> arr) { arr = {}; }
+void fun(multi::array<std::complex<float>, 2> arr);                // NOLINT(performance-unnecessary-value-param)
+void fun(multi::array<std::complex<float>, 2> arr) { (void)arr; }  // NOLINT(performance-unnecessary-value-param)
 
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/);
 void gun(multi::array<std::complex<float>, 2> const& /*unused*/) {

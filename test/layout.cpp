@@ -386,13 +386,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		BOOST_TEST(( extent(arr) == multi::index_extension{0, 25} ));
 		BOOST_TEST(( extent(arr) == multi::iextension     {0, 25} ));
-		// BOOST_TEST(( extension(arr) == multi::irange{0, 25} ));
 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_2)
 	{
 		std::array<std::array<std::array<double, 25>, 25>, 25> const arr{};
-		BOOST_TEST( arr.size() == 25 );
+		BOOST_TEST( arr.size() == 25 );  // cppcheck-suppress knownConditionTrueFalse
 
 		using multi::extent;
 		BOOST_TEST(( extent(arr) == multi::index_extension{0, 25} ));

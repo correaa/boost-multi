@@ -28,7 +28,7 @@ template<class Self> struct selfable {
 
  public:
 	using self_type = Self;
-	constexpr auto        self() const -> self_type const& {
+	constexpr auto        self() const -> self_type const& {  // cppcheck-suppress duplInheritedMember
 		static_assert(std::is_base_of_v<selfable<Self>, Self>);
 		return static_cast<self_type const&>(*this);
 	}
@@ -83,7 +83,7 @@ template<class T, class V> struct totally_ordered2;
 template<class Self>
 struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
 	using self_type = Self;
-	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }
+	BOOST_MULTI_HD constexpr auto self() const -> self_type const& { return static_cast<self_type const&>(*this); }  // cppcheck-suppress duplInheritedMember
 
 	friend BOOST_MULTI_HD constexpr auto operator==(totally_ordered2 const& myself, totally_ordered2 const& other) -> bool { return !(myself.self() < other.self()) && !(other.self() < myself.self()); }
 

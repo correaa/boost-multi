@@ -353,7 +353,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		));
 
 		for(auto&& elem : arr.transposed().unordered().elements()) {  // NOLINT(altera-unroll-loops)
-			elem += 2;
+			elem += 2;  // cppcheck-suppress useStlAlgorithm
 		}
 
 		std::for_each(

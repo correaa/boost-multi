@@ -109,24 +109,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		BOOST_TEST( c_copy2 == c_copy1 );
 
 		auto const c_copy3 = +c;
-		BOOST_TEST( c_copy3 == c_copy1 );
+		BOOST_TEST( c_copy3 == c_copy1 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( c_copy3.base() != nullptr );
 	}
-	// {
-	// 	using multi::elementwise::exp;
-	// 	auto c = exp(
-	// 		{{1.0, 2.0, 3.0},
-	// 		{4.0, 5.0, 6.0}}
-	// 	);
-
-	// 	BOOST_TEST( std::abs(c[0][0] - std::exp(1.0)) < 1e-4 );
-	// 	BOOST_TEST( std::abs(c[0][1] - std::exp(2.0)) < 1e-4 );
-	// 	BOOST_TEST( std::abs(c[0][2] - std::exp(3.0)) < 1e-4 );
-
-	// 	BOOST_TEST( std::abs(c[1][0] - std::exp(4.0)) < 1e-4 );
-	// 	BOOST_TEST( std::abs(c[1][1] - std::exp(5.0)) < 1e-4 );
-	// 	BOOST_TEST( std::abs(c[1][2] - std::exp(6.0)) < 1e-4 );
-	// }
 	{
 		multi::array<int, 1> const a = {-1, -2, 3};
 

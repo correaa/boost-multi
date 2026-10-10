@@ -153,8 +153,8 @@ auto main() -> int {
 
 		BOOST_TEST( arr[0][0] == 10 );
 
-		multi::array_ref<int, 2> const& Ar = *&multi::array_ref<int, 2>({3, 5}, arr[0].data());
-		BOOST_TEST( &Ar[1][3] == &arr[1][3] );
+		multi::array_ref<int, 2> const& Ar = *&multi::array_ref<int, 2>({3, 5}, arr[0].data());  // cppcheck-suppress danglingTempReference
+		BOOST_TEST( &Ar[1][3] == &arr[1][3] );                                                       // cppcheck-suppress danglingTempReference
 
 		// clang-format off
 		multi::array_ref<int, 2> const& Ar2 = *&multi::array_ref<int, 2>(
@@ -166,15 +166,14 @@ auto main() -> int {
 		);
 		// clang-format on
 
-		BOOST_TEST( Ar.sizes() == Ar2.sizes() );
-		BOOST_TEST( &Ar2[1][1] == arr[0].data() );
-		BOOST_TEST( &Ar2[2][4] == &arr[1][3] );
+		BOOST_TEST( Ar.sizes() == Ar2.sizes() );    // cppcheck-suppress danglingTempReference
+		BOOST_TEST( &Ar2[1][1] == arr[0].data() );  // cppcheck-suppress danglingTempReference
+		BOOST_TEST( &Ar2[2][4] == &arr[1][3] );     // cppcheck-suppress danglingTempReference
 
-		BOOST_TEST( Ar2.extents() != Ar.extents() );
-		BOOST_TEST( !(Ar2 == Ar) );
-		BOOST_TEST( Ar2 != Ar );
+		BOOST_TEST( Ar2.extents() != Ar.extents() );  // cppcheck-suppress danglingTempReference
+		BOOST_TEST( !(Ar2 == Ar) );                   // cppcheck-suppress danglingTempReference
+		BOOST_TEST( Ar2 != Ar );                      // cppcheck-suppress danglingTempReference
 	}
-
 	{
 		multi::array<int, 2> AA = {
 			{'a', 'b'},

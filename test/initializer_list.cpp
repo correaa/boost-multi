@@ -47,7 +47,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
 		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( vec[1] == 20 );
+		BOOST_TEST( vec[1] == 20 );  // cppcheck-suppress knownConditionTrueFalse
 	}
 	{
 		multi::dynamic_array<int, 1> arr = {12, 34, 56};
@@ -785,6 +785,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			// the "wrong" ctor that made `Sub` = a whole array look constructible
 			[[maybe_unused]] explicit only_from_whole_array(multi::array<int, 1> const& arr) : size_{static_cast<std::size_t>(arr.size())} {}
 
+			// cppcheck-suppress noExplicitConstructor
 			only_from_whole_array(std::size_t val) noexcept : size_{val} {}  // NOLINT(hicpp-explicit-conversions,*-explicit-constructor) the legitimate, per-element ctor
 		};
 
