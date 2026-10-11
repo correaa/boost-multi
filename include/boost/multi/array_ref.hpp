@@ -1675,7 +1675,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		return subarray<T, D + 1, element_ptr>(new_layout, this->base_);
 	}
 
-	// public:
 	BOOST_MULTI_HD constexpr auto halved() const& -> const_subarray<T, D + 1, element_ptr> { return halved_aux_(); }  // NOLINT(readability-identifier-naming) TODO(correaa) remove
 
 // private:
@@ -2518,10 +2517,12 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto unrotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// (inherited) yields a transposed view, that exchanges the first two indices
 	using const_subarray<T, D, ElementPtr, Layout>::transposed;
 	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto transposed() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// (inherited) yields a view in which index access is unordered (an arbitrary transposition of indices generally to optimize access)
 	using const_subarray<T, D, ElementPtr, Layout>::unordered;
 	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -3585,13 +3586,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	constexpr auto repeated(size_type n) const& {
 		return [this](auto /*idx*/, auto... rest) -> decltype(auto) { return detail::invoke_square(*this, rest...); } ^ /*(*/ n* this->extents() /*)*/;
 	}
-
-	// template<template<class...> class Container = std::vector, class... As>
-	// constexpr auto to(As const&... args) const& {
-	// 	using inner_value_type = typename const_subarray::value_type;
-	// 	using container_type   = Container<inner_value_type, As...>;
-	// 	return container_type(this->begin(), this->end(), args...);
-	// }
 
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> typename const_subarray::const_reference { return at_aux_(idx); }  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 

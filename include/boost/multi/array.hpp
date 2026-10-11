@@ -242,15 +242,12 @@ struct                                                                          
 
 	BOOST_MULTI_HD constexpr auto operator()() && -> decltype(auto) { return ref_::element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// (inherited) yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
 	using ref_::taked;
-
-	/// yields an array-view of the same dimensionality taking the first count subarrays in the leading dimension
 	constexpr auto taked(difference_type count) && -> decltype(auto) { return ref_::taked(count).element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
-	/// yields an array of the same dimensionality with the first n dropped in the leading dimension.
+	/// (inherited) yields an array of the same dimensionality with the first n dropped in the leading dimension.
 	using ref_::dropped;
-
-	/// Gives a subarray dropping the first `n` indices in the leading dimension
 	constexpr auto dropped(difference_type n) && -> decltype(auto) { return ref_::dropped(n).element_moved(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
 	constexpr dynamic_array(dynamic_array&& other) /*noexcept(false)*/  // NOLINT(cppcoreguidelines-noexcept-move-operations,hicpp-noexcept-move,performance-noexcept-move-constructor,bugprone-exception-escape)
