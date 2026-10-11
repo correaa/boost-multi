@@ -30,12 +30,15 @@ class allocator1 {  // NOLINT(misc-use-internal-linkage)
 	using value_type = T;
 
 	allocator1() noexcept = delete;
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
+
+	// NOLINTBEGIN(*-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor
 	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
 
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
+	// cppcheck-suppress noExplicitConstructor
 	template<class U>
 	allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
+	// NOLINTEND(*-explicit-constructor,hicpp-explicit-conversions)
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {
