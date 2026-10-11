@@ -102,7 +102,7 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 
 	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	// cppcheck-suppress noExplicitConstructor
-	template<class Other>  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)
+	template<class Other>                                  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)
 	constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
