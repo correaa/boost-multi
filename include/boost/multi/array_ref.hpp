@@ -2487,20 +2487,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() && { return this->to_mdspan_aux_(); }
 #endif
 
-	// /// assigns `.size()` values after an iterator into the array.
-	// template<class It> constexpr auto assign(It first) & -> It {  // cppcheck-suppress duplInheritedMember ; to overwrite
-	// 	adl_copy_n(first, this->size(), begin());
-	// 	std::advance(first, this->size());
-	// 	return first;
-	// }
-	// template<class It> BOOST_MULTI_HD constexpr auto assign(It first) && -> It { return assign(first); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-
-	// template<class TT = typename subarray::element>
-	// constexpr auto fill(TT const& value) & -> decltype(auto) {
-	// 	return adl_fill_n(this->begin(), this->size(), value), *this;
-	// }
-	// constexpr auto fill() & -> decltype(auto) { return fill(typename subarray::element{}); }
-
 	/// yields an array view that skips `step` subarrays in the leading dimension
 	using const_subarray<T, D, ElementPtr, Layout>::strided;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
@@ -3559,7 +3545,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto home() const& -> const_cursor { return home_aux_(); }
 
  private:
-	template<typename, multi::dimensionality_type, typename, class> friend class subarray;
+	template<typename, multi::dimensionality_type, typename, class>
+	friend class subarray;
 
 	BOOST_MULTI_HD constexpr auto at_aux_(index idx) const -> typename const_subarray::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 		// stride() returns a reference, and is_integral_v is false for a reference type
@@ -3617,19 +3604,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  public:
-	template<typename Tuple> BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(*this, tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
-
-	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) { return *this; }  // NOLINT(modernize-use-constraints) for C++20
-	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(auto) {                    // NOLINT(modernize-use-constraints) for C++20
-	// 	using std::get;
-	// 	return operator[](get<0>(indices));
-	// }
-
-	// template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value > 1), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	// BOOST_MULTI_HD constexpr auto operator[](Tuple const& indices) const& -> decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
-	// 	using std::get;  // for C++17 compatibility
-	// 	return operator[](get<0>(indices))[detail::tuple_tail(indices)];
-	// }
+	template<typename Tuple>
+	BOOST_MULTI_HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) { return apply_impl_(*this, tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>()); }
 
 // Warning C4459 comes from boost::multi_array having a namespace indices which collides with the variable name?
 #ifdef _MSC_VER
@@ -4051,15 +4027,15 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
 	constexpr auto as_raw_aux_() const -> subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
-		#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
+#if defined(__cpp_lib_to_address) && (__cpp_lib_to_address >= 201711L)
 		return {this->layout(), std::to_address(this->base_)};
-		#else
+#else
 		return {this->layout(), to_address_(this->base_)};
-		#endif
+#endif
 	}
 
  public:
- 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
+	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
 	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return as_raw_aux_().as_const();
 	}
@@ -4068,7 +4044,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	constexpr auto raw_array_cast() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return as_raw_aux_().as_const();
 	}
-
 
 	template<class UF>
 	BOOST_MULTI_HD constexpr auto element_transformed(UF&& fun) const& {

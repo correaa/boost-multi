@@ -790,6 +790,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	constexpr auto num_elements() const { return xs_.num_elements(); }
 };
 
+// clang-format off
 #ifdef __cpp_deduction_guides
 /// deduces the dimensionality of the restriction from the extents and the restricted function
 template<dimensionality_type D, typename Fun>
@@ -804,6 +805,7 @@ template<typename Fun> restriction(extents_t<4>, Fun) -> restriction<4, Fun>;
 template<typename Fun> restriction(extents_t<5>, Fun) -> restriction<5, Fun>;
 template<typename Fun> restriction(extents_t<6>, Fun) -> restriction<6, Fun>;
 #endif
+// clang-format on
 
 /// creates a restriction of D dimensions of a function that takes D arguments given an extents of Cartesian indices.
 template<dimensionality_type D, typename F>  // nvc++ has 'restrict' reserved

@@ -19,7 +19,7 @@ AlignOperands: DontAlign  # AlignAfterOperator
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: All
 AllowShortCaseLabelsOnASingleLine: true
-# AlwaysBreakTemplateDeclarations: Leave
+# AlwaysBreakTemplateDeclarations: Leave  # Leave added in clang-format 16
 BreakBeforeBinaryOperators: NonAssignment   # or: All
 # BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
