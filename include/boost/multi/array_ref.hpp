@@ -210,6 +210,9 @@ class subarray;
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>
 class move_subarray;
 
+template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
+class array_ref;  // defaults are given at the definition
+
 namespace detail {
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 constexpr auto is_subarray_aux(const_subarray<T, D, ElementPtr, Layout> const&) -> std::true_type;
@@ -409,7 +412,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	}
 	BOOST_MULTI_IGNORED_UNSAFE_BUFFER_USAGE_POP()
 
- protected:
+ private:
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4820)  // warning C4820:  '7' bytes padding added after data member 'boost::multi::array_types<T,2,ElementPtr,Layout>::base_' [C:\Gitlab-Runner\builds\t3_1sV2uA\0\correaa\boost-multi\build\test\array_fancyref.cpp.x.vcxproj]
@@ -421,6 +424,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #endif
 
 	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class> friend struct detail::array_iterator;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class ::boost::multi::const_subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class ::boost::multi::subarray;
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend class ::boost::multi::array_ref;
 
 	// using derived = subarray<T, D, ElementPtr, Layout>;
 	BOOST_MULTI_HD constexpr explicit array_types(std::nullptr_t) : Layout{}, base_(nullptr) {}
