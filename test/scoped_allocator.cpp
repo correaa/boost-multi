@@ -23,7 +23,8 @@ template<class T = void>
 class allocator1 {  // NOLINT(misc-use-internal-linkage)
 	int* heap_ = nullptr;
 
-	template<class> friend class allocator1;
+	template<class>
+	friend class allocator1;
 
  public:
 	using value_type = T;
@@ -33,7 +34,8 @@ class allocator1 {  // NOLINT(misc-use-internal-linkage)
 	allocator1(int* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit)  // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
 
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
-	template<class U> allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
+	template<class U>
+	allocator1(allocator1<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {
@@ -64,7 +66,8 @@ template<class T = void>
 class allocator2 {  // NOLINT(misc-use-internal-linkage)
 	std::int64_t* heap_ = nullptr;
 
-	template<class> friend class allocator2;
+	template<class>
+	friend class allocator2;
 
  public:
 	using value_type = T;
@@ -74,7 +77,8 @@ class allocator2 {  // NOLINT(misc-use-internal-linkage)
 	allocator2(std::int64_t* heap) : heap_{heap} { assert(heap_); }  // NOLINT(runtime/explicit) // NOSONAR(cpp:S1709) mimic memory resource syntax (pass pointer)
 
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor,hicpp-explicit-conversions)
-	template<class U> allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
+	template<class U>
+	allocator2(allocator2<U> const& other) noexcept : heap_{other.heap_} {}  // NOSONAR(cpp:S1709) allocator conversions are not explicit
 
 	auto allocate(std::size_t n) {
 		if(n == 0) {

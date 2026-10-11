@@ -764,7 +764,8 @@ template<class T> struct element_t_impl<std::initializer_list<std::initializer_l
 };
 }  // namespace detail
 
-template<class T> using element_t = typename detail::element_t_impl<T>::type;
+template<class T>
+using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
 auto base(std::initializer_list<T> const& ilist) -> T const* {

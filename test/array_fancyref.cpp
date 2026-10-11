@@ -13,9 +13,11 @@
 
 namespace fancy {
 
-template<class T> class ref;
+template<class T>
+class ref;
 
-template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions,misc-use-internal-linkage)
+template<class T = void>
+class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions,misc-use-internal-linkage)
 	static double const value;
 
  public:
@@ -57,10 +59,13 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	friend auto get_allocator(ptr const& /*self*/) noexcept { return std::allocator<value_type>{}; }
 };
 
-template<> double const ptr<double>::value       = 42.0;
-template<> double const ptr<double const>::value = 42.0;
+template<>
+double const ptr<double>::value = 42.0;
+template<>
+double const ptr<double const>::value = 42.0;
 
-template<class T> class ref {
+template<class T>
+class ref {
 	friend class ptr<T>;
 	friend class ref<T const>;
 	ref() = default;
@@ -82,7 +87,8 @@ template<class T> class ref {
 	using decay_t = std::decay_t<T>;
 };
 
-template<class T> struct allocator {  // NOLINT(misc-use-internal-linkage)
+template<class T>
+struct allocator {  // NOLINT(misc-use-internal-linkage)
 	using pointer    = ptr<T>;
 	using value_type = T;
 	static auto allocate(std::size_t /*size*/) { return pointer{}; }
@@ -91,7 +97,8 @@ template<class T> struct allocator {  // NOLINT(misc-use-internal-linkage)
 	}
 	//  std::true_type operator==(allocator const&){return {};}
 	allocator() = default;
-	template<class T2> explicit allocator(allocator<T2> const& /*other*/) {
+	template<class T2>
+	explicit allocator(allocator<T2> const& /*other*/) {
 		/*no-op;*/
 	}
 	template<class... Args>
