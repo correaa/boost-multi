@@ -1801,6 +1801,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
  	/// yields a view of the array that is flattened in the first two leading dimensions
 	auto flattened() const& { return flattened_aux_().as_const(); }
 
+	/// yields a view of the array that is flattened in the first two leading dimensions
 	constexpr auto flatted() const& {
 		assert(this->layout().is_flattable());
 		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
@@ -2455,6 +2456,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr auto                         elements() & { return this->elements_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_NO_DANGLING constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// (inherited) yields a view of the array that is flattened in the first two leading dimensions
 	using const_subarray<T, D, ElementPtr, Layout>::flattened;
 	constexpr auto flattened() & { return this->flattened_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 	constexpr auto flattened() && { return this->flattened_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite

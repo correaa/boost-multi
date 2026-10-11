@@ -1698,11 +1698,9 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>               // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray&() & { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	/// Obtain a reference to a constant C-array reference (`T(const&)[N]`) by casting
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                          // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray const&() const& { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
-	/// Obtain a reference to a C-array reference (`T(&)[N]`) by casting (from an r-value)
 	template<class CArray, std::enable_if_t<std::is_array_v<CArray>, int> = 0>                // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 	constexpr explicit operator CArray&() && { return this->template to_carray_<CArray>(); }  // cppcheck-suppress duplInheritedMember ; to override
 
