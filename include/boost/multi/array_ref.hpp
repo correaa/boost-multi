@@ -1871,12 +1871,11 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// A transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
+	/// yields a transpose view \f$A^\mathrm{T}\f$, that exchanges the first two indices
 	BOOST_MULTI_HD constexpr auto transposed() const& -> const_subarray { return transposed_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// yields a transpose view (same as `.transposed()`)
 	BOOST_MULTI_HD auto operator~() const& { return transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR BOOST_MULTI_HD auto operator~(const_subarray const& self) -> const_subarray { return self.transposed(); }
 
  private:
 	BOOST_MULTI_HD constexpr auto rotated_aux_() const {

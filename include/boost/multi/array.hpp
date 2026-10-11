@@ -2023,7 +2023,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 		}
 	}
 
-	/// Change the extents of the array to @p exts, preserving elements when possible. (generally allocates, elements are discarded unless extents do not change).
+	/// changes the extents of the array to @p exts, preserving elements when possible. (generally allocates).
 	// at the moment requires nothrow default constructible
 	auto reextent(typename array::extents_type const& exts) && -> array&& {  // NOLINT(readability-redundant-typename)
 		if(exts == this->extents()) {
