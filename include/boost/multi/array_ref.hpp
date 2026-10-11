@@ -1770,11 +1770,11 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// A subarray-view of the array with skipping `step` in the leading dimension
+	/// yields a subarray-view of the array with skipping `step` in the leading dimension
 	constexpr auto strided(difference_type step) const& { return strided_aux_(step).as_const(); }
 	constexpr auto strided(difference_type step, difference_type den) const& { return strided_aux_(step, den).as_const(); }
 
-	/// A subarray-view from index `first` to index `last` (not inclusive) skipping `step` in the leading dimension
+	/// yields a subarray-view from index `first` to index `last` (not inclusive) skipping `step` in the leading dimension
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index step
 	) const& -> const_subarray {
