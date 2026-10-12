@@ -8,6 +8,7 @@ project(boost-multi-adaptors-lapack-test-hip LANGUAGES CXX HIP)
 find_package(Boost REQUIRED COMPONENTS headers)
 
 find_package(hipsolver REQUIRED)
+find_package(hipBLAS REQUIRED)
 find_package(rocthrust REQUIRED)
 
 enable_testing()
@@ -18,3 +19,9 @@ target_compile_definitions(lapack_cusolver.hip.x PRIVATE MULTI_USE_HIP)  # redun
 target_link_libraries(lapack_cusolver.hip.x PRIVATE multi roc::hipsolver roc::rocthrust Boost::headers)
 
 add_test(NAME lapack_cusolver.hip.x COMMAND $<TARGET_FILE:lapack_cusolver.hip.x>)
+
+add_executable(lapack_potrf_trsm_sizes.hip.x potrf_trsm_sizes.hip)
+target_compile_definitions(lapack_potrf_trsm_sizes.hip.x PRIVATE MULTI_USE_HIP)
+target_link_libraries(lapack_potrf_trsm_sizes.hip.x PRIVATE multi roc::hipsolver roc::hipblas roc::rocthrust Boost::headers)
+
+add_test(NAME lapack_potrf_trsm_sizes.hip.x COMMAND $<TARGET_FILE:lapack_potrf_trsm_sizes.hip.x>)
