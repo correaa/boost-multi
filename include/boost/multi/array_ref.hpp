@@ -2575,7 +2575,6 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	/// swaps every corresponding element of the array references, extents must match. O(N) operation
 	constexpr void swap(subarray& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extents() == other.extents());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
@@ -2589,6 +2588,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
 	constexpr void swap(subarray& other) && noexcept { return swap(other); }
 
+	/// swaps the contents of this array with other (doesn't allocate, O(1) operation)
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
 	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
 	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
