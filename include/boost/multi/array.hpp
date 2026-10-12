@@ -1703,6 +1703,8 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 
 	// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved) false positive in clang-tidy 17-20 ?
 	using /*detail::*/ unique_array<T, D, Alloc>::unique_array;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
+
+	/// The value type associated with a subelement, a subarray of lower dimension (`multi::array<element, D - 1>`) or the element type)
 	using typename /*detail::*/ unique_array<T, D, Alloc>::value_type;
 
 	/// Initializer list constructor from a (nested) list of (subarray) element  @p values. (Nested list should not be ragged.) (allocates)
@@ -2154,20 +2156,21 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 
 #undef BOOST_MULTI_IL
 
+/// deduces an array of dimension 1 from a C-array
 template<class T> array(T[]) -> array<T, static_cast<dimensionality_type>(1U)>;  // NOSONAR(cpp:S5945) NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-/// Deduction guide: builds an `array` from a 0-D extents specification and a fill value `T`, enabling the braced `{}` extents notation.
+/// deduces an `array` of 0-D from a 0-D extents specification and a fill value `T`, enabling the braced `{}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<0>, T) -> array<T, static_cast<dimensionality_type>(0U)>;  // TODO(correaa) use some std::allocator_traits instead of is_allocator
-/// Deduction guide: builds an `array` from a 1-D extents specification and a fill value `T`, enabling the braced `{n0}` extents notation.
+/// deduces an `array` of 1-D from a 1-D extents specification and a fill value `T`, enabling the braced `{n0}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<1>, T) -> array<T, static_cast<dimensionality_type>(1U)>;
-/// Deduction guide: builds an `array` from a 2-D extents specification and a fill value `T`, enabling the braced `{n0, n1}` extents notation.
+/// deduces an `array` of 2-D from a 2-D extents specification and a fill value `T`, enabling the braced `{n0, n1}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<2>, T) -> array<T, static_cast<dimensionality_type>(2U)>;
-/// Deduction guide: builds an `array` from a 3-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2}` extents notation.
+/// deduces an `array` of 3-D from a 3-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<3>, T) -> array<T, static_cast<dimensionality_type>(3U)>;
-/// Deduction guide: builds an `array` from a 4-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3}` extents notation.
+/// deduces an `array` of 4-D from a 4-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<4>, T) -> array<T, static_cast<dimensionality_type>(4U)>;
-/// Deduction guide: builds an `array` from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3, n4}` extents notation.
+/// deduces an `array` of 5-D from a 5-D extents specification and a fill value `T`, enabling the braced `{n0, n1, n2, n3, n4}` extents notation.
 template<class T, class = std::enable_if_t<!multi::is_allocator_v<T>>> array(extents_t<5>, T) -> array<T, static_cast<dimensionality_type>(5U)>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)

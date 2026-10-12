@@ -2592,8 +2592,11 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
+	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
 	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
+	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
 	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
+	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
 	friend constexpr void swap(subarray& self, subarray& other) noexcept { self.swap(other); }
 
 	// fix mutation
