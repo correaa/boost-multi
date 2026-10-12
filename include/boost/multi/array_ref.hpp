@@ -2590,7 +2590,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
 	constexpr void swap(subarray& other) && noexcept { return swap(other); }
 
-	/// swaps the contents of this array with other (doesn't allocate, O(1) operation)
+	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
 	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
 	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
 	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
