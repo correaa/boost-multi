@@ -1225,9 +1225,8 @@ struct elements_range_t {
 
 	constexpr auto as_raw_aux_() const { return elements_range_t<decltype(to_address_(base_)), layout_type>(base_, l_); }
  public:
-
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const { return as_raw_aux_().as_const(); }	
-	constexpr auto raw_array_cast() const { return as_raw_aux_().as_const(); }	
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const { return as_raw_aux_().as_const(); }	
+	// constexpr auto raw_array_cast() const { return as_raw_aux_().as_const(); }	
 
 	constexpr auto base() -> pointer { return base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	constexpr auto base() const -> const_pointer { return base_; }
@@ -2141,13 +2140,13 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	/// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
-		return as_raw_aux_().as_const();
-	}
+	// /// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
+	// 	return as_raw_aux_().as_const();
+	// }
 
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() & { return as_raw_aux_(); }
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() && { return as_raw_aux_(); }
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() & { return as_raw_aux_(); }
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() && { return as_raw_aux_(); }
 
 	/// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
 	constexpr auto raw_array_cast() const& {
@@ -2544,17 +2543,17 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto base() && -> ElementPtr { return this->base_; }
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
-	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const & {
-		return this->as_raw_aux_().as_const();
-	}
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
-		return this->as_raw_aux_();
-	}
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
-		return this->as_raw_aux_();
-	}
-	// cppcheck-suppress-end duplInheritedMember ; to overwrite
+	// // cppcheck-suppress-begin duplInheritedMember ; to overwrite
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const & {
+	// 	return this->as_raw_aux_().as_const();
+	// }
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
+	// 	return this->as_raw_aux_();
+	// }
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() && -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
+	// 	return this->as_raw_aux_();
+	// }
+	// // cppcheck-suppress-end duplInheritedMember ; to overwrite
 
 	/// (inherited) yields a view of the array where the underlying memory handle is a raw pointer (in general T*), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`).
 	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
@@ -3367,9 +3366,9 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
  public:
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
-		return as_raw_aux_().as_const();
-	}
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
+	// 	return as_raw_aux_().as_const();
+	// }
 
 	constexpr auto raw_array_cast() const& {
 		return as_raw_aux_().as_const();
@@ -4039,10 +4038,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  public:
-	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
-	[[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
-		return as_raw_aux_().as_const();
-	}
+	// /// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
+	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
+	// 	return as_raw_aux_().as_const();
+	// }
 
 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
 	constexpr auto raw_array_cast() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
