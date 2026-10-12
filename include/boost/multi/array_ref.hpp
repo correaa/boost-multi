@@ -2533,6 +2533,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
+	/// (inherited) yields a transpose view (same as `.transposed()`)
 	using const_subarray<T, D, ElementPtr, Layout>::operator~;
 	BOOST_MULTI_HD auto operator~() & { return transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
@@ -2555,6 +2556,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	}
 	// cppcheck-suppress-end duplInheritedMember ; to overwrite
 
+	/// (inherited) yields a view of the array where the underlying memory handle is a raw pointer (in general T*), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`).
 	using const_subarray<T, D, ElementPtr, Layout>::raw_array_cast;
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	constexpr auto raw_array_cast() & -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {
