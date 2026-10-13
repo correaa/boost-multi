@@ -196,7 +196,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			{{ 5,  6,  7,  8,  9}},
 			{{10, 11, 12, 13, 14}},
 			{{15, 16, 17, 18, 19}},
-		},};
+		}, };
 		// clang-format on
 
 		std::array<std::array<int, 5>, 4> stdarr2 = {};
