@@ -1434,8 +1434,8 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	auto operator=(const_subarray&&) -> const_subarray&      = delete;
 
 	const_subarray() = default;
-	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& ptr)
-	: detail::array_types<T, D, ElementPtr, Layout>{layout, ptr} {}
+	BOOST_MULTI_HD constexpr const_subarray(layout_type const& layout, ElementPtr const& potr)
+	: detail::array_types<T, D, ElementPtr, Layout>{layout, potr} {}
 
  protected:
 	// using types::types;
