@@ -1880,6 +1880,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	// 	return *this;
 	// }
 
+	/// swaps the value of two arrays (O(1) opperations)
 	friend void swap(array& self, array& other) noexcept { self.swap(other); }
 
  private:
@@ -1920,7 +1921,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 #endif
 			}
 		}
-// non-trivial T: do nothing — you can't fabricate a poison T without
+// non-trivial T: do nothing — you can't produce a poison T without
 // constructing one, and there's no generic "weird valid value".
 #endif
 	}
@@ -2200,31 +2201,11 @@ array(MatValues) -> array<T, D>;
 template<class T, dimensionality_type D>
 array(const_subarray<T, D>) -> array<T, D>;
 
-template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::rank_v, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>  /// , class Alloc = typename DT::allocator_type>
+/// deduces array dimensionality and element type from that of the source
+template<class MatValues, class T = typename MatValues::element, dimensionality_type D = MatValues::dimensionality, class Alloc = std::allocator<T>, class = std::enable_if_t<multi::is_allocator_v<Alloc>>>
 array(MatValues, Alloc) -> array<T, D, Alloc>;
 
-// template<typename T, dimensionality_type D, typename P> array(subarray<T, D, P>) -> array<T, D>;
-
-// template<
-// 	class Range, std::enable_if_t<!has_extents<Range>::value, int> = 0,
-// 	typename V = decltype(*::std::begin(std::declval<Range const&>()))
-// 	// typename V = typename std::iterator_traits<decltype(::std::begin(std::declval<Range const&>()))>::value_type
-// 	>
-// array(Range) -> array<V, 1>;
-
-// template<class Reference>
-// auto operator+(Reference const& ref) -> decltype(array<typename Reference::element, Reference::dimensionality>(ref)) {
-// 	return array<typename Reference::element, Reference::dimensionality>(ref);
-// }
-
 #endif  // ends defined(__cpp_deduction_guides)
-
-// template<class T, std::size_t N>
-// // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-// auto decay(T const (&arr)[N]) noexcept -> multi::array<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>> {
-// 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-// 	return multi::array_cref<std::remove_all_extents_t<T[N]>, std::rank_v<T[N]>>(data_elements(arr), extents(arr));
-// }
 
 template<class T, std::size_t N>
 struct detail::array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
