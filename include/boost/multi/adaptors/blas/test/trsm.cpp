@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		BOOST_TEST( std::abs( (+blas::gemm(1., A_cpy, B))[1][2] - B_cpy[1][2] ) < 1e-10 );
 	}
 	{
-		auto const AT     = +~A;
+		auto const AT     = +~A;  // cppcheck-suppress syntaxError
 		auto const AT_cpy = triangular(blas::filling::lower, AT);
 
 		// NOLINTNEXTLINE(readability-identifier-length) BLAS naming

@@ -153,27 +153,27 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<!is_complex_array<C2D>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& C)                                                                         // NOLINT(readability-identifier-length) BLAS naming
-	-> decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(C))) {
-	return syrk(c_side, alpha, a, beta, std::forward<C2D>(C));
+auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& CC)                                                                         // NOLINT(readability-identifier-length) BLAS naming
+	-> decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(CC))) {
+	return syrk(c_side, alpha, a, beta, std::forward<C2D>(CC));
 }
 
 template<class AA, class A2D, class C2D, class = typename A2D::element_ptr>
-auto herk(filling c_side, AA alpha, A2D const& a, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
-	-> decltype(herk(c_side, alpha, a, 0., std::forward<C2D>(C))) {
-	return herk(c_side, alpha, a, 0., std::forward<C2D>(C));
+auto herk(filling c_side, AA alpha, A2D const& a, C2D&& CC)  // NOLINT(readability-identifier-length) BLAS naming
+	-> decltype(herk(c_side, alpha, a, 0.0, std::forward<C2D>(CC))) {
+	return herk(c_side, alpha, a, 0.0, std::forward<C2D>(CC));
 }
 
 template<typename AA, class A2D, class C2D>
-auto herk(AA alpha, A2D const& a, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
-	-> decltype(herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(C)))) {
-	return herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(C)));
+auto herk(AA alpha, A2D const& a, C2D&& CC)  // NOLINT(readability-identifier-length) BLAS naming
+	-> decltype(herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(CC)))) {
+	return herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(CC)));
 }
 
 template<class A2D, class C2D>
-auto herk(A2D const& A, C2D&& C)  // NOLINT(readability-identifier-length) BLAS naming
-	-> decltype(herk(1.0, A, std::forward<C2D>(C))) {
-	return herk(1.0, A, std::forward<C2D>(C));
+auto herk(A2D const& a2d, C2D&& c2d)  // NOLINT(readability-identifier-length) BLAS naming
+	-> decltype(herk(1.0, a2d, std::forward<C2D>(c2d))) {
+	return herk(1.0, a2d, std::forward<C2D>(c2d));
 }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>

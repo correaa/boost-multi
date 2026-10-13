@@ -96,7 +96,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const& coll1_take3_const = coll1({0, 3});
 		// fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const ("assignment of read-only")
 
-		(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
+		(void)coll2, (void)coll1_take3_const, (void)coll1_take3;  // cppcheck-suppress constStatement
 	}
 
 	// BOOST_AUTO_TEST_CASE(const_views_2d)

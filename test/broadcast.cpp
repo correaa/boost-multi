@@ -126,7 +126,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		multi::array<int, 1> const a = {1, 2, 3};
 		multi::array<int, 1> const b = {4, 5, 6};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const c = a + b;
 
@@ -136,7 +136,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 		multi::array<int, 1> const a = {1, 2, 3};
 		multi::array<int, 1> const b = {4, 5, 6};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const& c = a + b;
 
@@ -233,8 +233,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 			{30, 40, 50},
 		};
 
-		using multi::elementwise::operator*;  // cppcheck-suppress [constStatement];
-		using multi::elementwise::operator+;  // cppcheck-suppress [constStatement];
+		using multi::elementwise::operator*;  // cppcheck-suppress constStatement
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		multi::array<int, 2> const C = A + (A * B);
 
@@ -245,7 +245,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		auto const f1d = [](auto) { return 1; } ^ multi::extents_t<1>{3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const& c = a + f1d;
 
@@ -257,7 +257,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 
 		auto const f = [] { return 1; } ^ multi::extents_t<0>{};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const& c = a + f;
 
@@ -267,7 +267,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const& c = a + ([] { return 1; } ^ multi::extents_t<0>{});
 
@@ -277,7 +277,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		std::cout << (a + 1)[1] << '\n';
 		BOOST_TEST(( multi::array<int, 1>{2, 3, 4} == a + 1 ));
@@ -286,7 +286,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexit,bugpron
 	{
 		multi::array<int, 1> const a = {1, 2, 3};
 
-		using multi::elementwise::operator+;  // cppcheck-suppress constStatement;
+		using multi::elementwise::operator+;  // cppcheck-suppress constStatement
 
 		auto const c = a + 1;
 

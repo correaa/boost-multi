@@ -290,7 +290,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		element_test::destruct_count  = 0;
 		{
 			multi::array<element_test, 2> arr({3, 4}, element_test(1));
-			arr.reextent({5, 5});  // resize to larger dimensions: allocates new buffer, constructs new, copies intersection, destroys old
+
+			// cppcheck-suppress throwInEntryPoint
+			arr.reextent({5, 5});
 		}
 
 		BOOST_TEST( element_test::construct_count == element_test::destruct_count );  // no leaks

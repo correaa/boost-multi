@@ -96,12 +96,12 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		{
 			auto n = std::numeric_limits<double>::quiet_NaN();  // NOLINT(readability-identifier-length) BLAS naming
 
-			n = multi::blas::nrm2(X);  // cppcheck-suppress redundantAssignment ; test assignment from conversion
-			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
+			n = multi::blas::nrm2(X);  // cppcheck-suppress [redundantAssignment, redundantInitialization] ; test assignment from conversion
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse
 		}
 		{
 			double const n = multi::blas::nrm2(X);  // NOLINT(readability-identifier-length) BLAS naming
-			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse ;
+			BOOST_TEST( std::abs( n - multi::blas::nrm2(X) ) < 1e-10 );  // cppcheck-suppress knownConditionTrueFalse
 		}
 		{
 			multi::array<double, 0> res{0.0};
@@ -121,72 +121,5 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		}
 	}
 
-	// BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case){
-	//   using complex = std::complex<double>;
-	//   multi::array<complex, 2> const cA = {
-	//       {1.0,  2.0,  3.0,  4.0},
-	//       {5.0,  6.0,  7.0,  8.0},
-	//       {9.0, 10.0, 11.0, 12.0}
-	//   };
-	// }
-
-	//  using multi::blas::nrm2;
-	//  double n;
-	//  BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-	//  BOOST_TEST( nrm2(rotated(cA)[1])    == n );
-	//}
-
-	// #if 0
-	// BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_thrust){
-	//   using complex = thrust::complex<double>;
-	//   multi::array<complex, 2> const cA = {
-	//       {1.,  2.,  3.,  4.},
-	//       {5.,  6.,  7.,  8.},
-	//       {9., 10., 11., 12.}
-	//   };
-
-	//  using multi::blas::nrm2;
-	//  double n;
-	//  BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-	//  BOOST_TEST( nrm2(rotated(cA)[1])    == n );
-	//}
-
-	// BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_types){
-	//   boost::mpl::for_each<boost::mpl::list<
-	//       std   ::complex<double>,
-	//       thrust::complex<double>//,
-	//   //  boost::multi::complex<double> // TODO make this work
-	//   >>([](auto cplx){
-	//       multi::array<decltype(cplx), 2> const cA = {
-	//           {1.,  2.,  3.,  4.},
-	//           {5.,  6.,  7.,  8.},
-	//           {9., 10., 11., 12.}
-	//       };
-
-	//      using multi::blas::nrm2;
-	//      double n;
-	//      BOOST_TEST( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
-	//      BOOST_TEST( nrm2(rotated(cA)[1])    == n );
-	//  });
-	//}
-	// #endif
-
-	// BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex){
-	//   using complex = std::complex<double>; complex const I{0,1};
-	//   multi::array<complex, 2> const cA = {
-	//       {1.,  2. + 1.*I,  3.,  4.},
-	//       {5.,  6. + 4.*I,  7.,  8.},
-	//       {9., 10. - 3.*I, 11., 12.}
-	//   };
-
-	//  using multi::blas::nrm2;
-	//  double n;
-	//  BOOST_TEST( nrm2(rotated(cA)[1], n)   == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
-	//  BOOST_TEST( nrm2(rotated(cA)[1])      == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
-
-	//  using namespace multi::blas::operators;
-	//  BOOST_TEST_REQUIRE( (rotated(cA)[1]^-1) == 1/std::sqrt(norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1])) , boost::test_tools::tolerance(1e-15) );
-	//  BOOST_TEST_REQUIRE( (rotated(cA)[1]^2) == norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) , boost::test_tools::tolerance(1e-15) );
-	//}
 	return boost::report_errors();
 }

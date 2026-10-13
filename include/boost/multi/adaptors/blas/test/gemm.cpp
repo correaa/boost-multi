@@ -610,7 +610,8 @@ auto main() -> int {
 			BOOST_TEST( std::abs( (c[1][2]) - (31.0) ) < 1e-12 );
 		}
 		{
-			auto                    ar = +~a;
+			auto                    ar = +~a;  // cppcheck-suppress syntaxError
+
 			multi::array<double, 2> c({3, 2});  // NOLINT(readability-identifier-length) BLAS naming
 			blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
 			BOOST_TEST( std::abs( (c[2][1]) - (31.0) ) < 1e-12 );

@@ -126,19 +126,20 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			BOOST_TEST( &(*arrP).operator[](1)[1] == &arr[1][1] );
 			BOOST_TEST( &arrP->operator[](1)[1] == &arr[1][1] );
 
-			auto const arrP2 = &multi::array_ref<double, 2>(arr);
-			BOOST_TEST( arrP == arrP2 );  // cppcheck-suppress danglingTemporaryLifetime ;
+			auto const arrP2 = &multi::array_ref<double, 2>(arr);  // cppcheck-suppress constVariablePointer ; bug in cppcheck
+
+			BOOST_TEST( arrP == arrP2 );  // cppcheck-suppress danglingTemporaryLifetime
 			BOOST_TEST( !(arrP != arrP2) );
 
 			std::array<std::array<double, 5>, 4> arr2{};
 
-			auto arr2P = &multi::array_ref<double, 2>{arr2};
+			auto arr2P = &multi::array_ref<double, 2>{arr2};  // cppcheck-suppress constVariablePointer
 
-			BOOST_TEST( arr2P != arrP );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime] ;
+			BOOST_TEST( arr2P != arrP );  // cppcheck-suppress [knownConditionTrueFalse,danglingTemporaryLifetime]
 			BOOST_TEST( !(arr2P == arrP) );
 
 			arr2P = arrP;
-			BOOST_TEST(  arrP ==  arr2P );  // cppcheck-suppress knownConditionTrueFalse ;
+			BOOST_TEST(  arrP ==  arr2P );  // cppcheck-suppress knownConditionTrueFalse
 			BOOST_TEST( *arrP == *arr2P );
 
 			BOOST_TEST(  (*arrP).operator==(*arrP) );

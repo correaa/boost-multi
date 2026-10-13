@@ -368,9 +368,9 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 namespace operators {
 	template<class A2D, class B2D,
 		std::enable_if_t<(A2D::dimensionality == 2) && (B2D::dimensionality == 2),int> =0>  // NOLINT(modernize-use-constraints) for C++20
-	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
-	->decltype(blas::gemm(1.0, A, B)) {
-		return blas::gemm(1.0, A, B); }
+	auto operator*(A2D const& a2d, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
+	->decltype(blas::gemm(1.0, a2d, B)) {
+		return blas::gemm(1.0, a2d, B); }
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas

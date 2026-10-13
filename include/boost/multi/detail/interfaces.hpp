@@ -55,7 +55,7 @@ class incrementable_facade : public regular<Self>, public weakly_incrementable_f
 	incrementable_facade() = default;  // NOLINT(bugprone-crtp-constructor-accessibility)
 	
  public:
-	friend auto operator++(self_type& self, int) {  // cppcheck-suppress duplInheritedMember;
+	friend auto operator++(self_type& self, int) {  // cppcheck-suppress duplInheritedMember
 		auto ret{self}; ++self; return ret;
 	}
 };

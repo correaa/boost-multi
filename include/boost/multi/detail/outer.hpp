@@ -96,10 +96,11 @@ class outer_t<> : public std::tuple<> {  // base case: zero-dimensional extents
 
 	outer_t() = default;
 
+	// cppcheck-suppress functionStatic
 	constexpr auto num_elements() const noexcept -> multi::ssize_t { return 1; }  // NOLINT(readability-convert-member-functions-to-static)
 
-	constexpr auto from_linear(index /*n*/) const noexcept -> indices_type { return {}; }  // NOLINT(readability-convert-member-functions-to-static)
-	constexpr auto sizes() const noexcept -> std::tuple<> { return {}; }                    // NOLINT(readability-convert-member-functions-to-static)
+	constexpr auto from_linear(index /*n*/) const noexcept -> indices_type { return {}; }  // cppcheck-suppress functionStatic ;  // NOLINT(readability-convert-member-functions-to-static)
+	constexpr auto sizes() const noexcept -> std::tuple<> { return {}; }                   // cppcheck-suppress functionStatic ;  // NOLINT(readability-convert-member-functions-to-static)
 
 	friend constexpr auto operator==(outer_t const& /*self*/, outer_t const& /*other*/) noexcept -> bool { return true; }
 	friend constexpr auto operator!=(outer_t const& /*self*/, outer_t const& /*other*/) noexcept -> bool { return false; }

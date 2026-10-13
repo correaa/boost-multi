@@ -76,7 +76,7 @@ class identity_bind {
 
  public:
 	template<class TT, std::enable_if_t<!std::is_base_of_v<identity_bind, std::decay_t<TT>>, int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	explicit constexpr identity_bind(TT&& val) : val_{std::forward<TT>(val)} {}                         // NOLINT(bugprone-forwarding-reference-overload)
+	explicit constexpr identity_bind(TT&& valu) : val_{std::forward<TT>(valu)} {}                         // NOLINT(bugprone-forwarding-reference-overload)
 
 	BOOST_MULTI_HD constexpr auto operator()() const -> auto& { return val_; }
 };
@@ -166,8 +166,8 @@ constexpr auto eye(multi::ssize_t n, T unit, ZF zero_f) {
 }
 
 template<class T, class ZF = detail::default_zero_f<T>>
-constexpr auto eye(multi::ssize_t size, T unit) {
-	return eye(size, unit, detail::default_zero_f<T>{});
+constexpr auto eye(multi::ssize_t n, T unit) {
+	return eye(n, unit, detail::default_zero_f<T>{});
 }
 
 /// yields an array expression (square, with size `n`) with the (lazy) identity element in the diagonal, and zero elsewhere.

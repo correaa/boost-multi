@@ -255,7 +255,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			using blas::operators::operator%;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator-;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
 			using blas::operators::operator^;  // cppcheck-suppress constStatement ; bug in cppcheck 2.18
-			BOOST_TEST((((~+~a) % x - a % x) ^ 2) < 1e-9);
+			BOOST_TEST((((~+~a) % x - a % x) ^ 2) < 1e-9);  // cppcheck-suppress syntaxError
 		}
 	}
 
