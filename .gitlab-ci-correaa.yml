@@ -804,6 +804,7 @@ nvhpc-26.5:
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin/nvc++ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++20 -D_GLIBCXX_ASSERTIONS=0"
     - cmake --build . || cmake --build . --parallel 1 --verbose
+    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 timeout 60 mpiexec -n 4 hostname || echo "mpiexec hostname failed or hung (rc=$?), the problem is in the launcher (PRRTE), not MPI_Init"  # diagnostic, no MPI_Init involved
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,sm OMPI_MCA_coll=^ucc,hcoll,cuda OMPI_MCA_osc=^ucx CUDA_VISIBLE_DEVICES= ctest --output-on-failure --timeout 300  # bypass all of HPC-X's UCX paths (pml, coll ucc/hcoll/cuda, osc) and hide GPUs, mpi.cpp.x hangs in them on multi-GPU runners (jgpu)
   needs: ["nvhpc"]
 
