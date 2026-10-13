@@ -1126,7 +1126,8 @@ hip-emulated:
     - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DDISABLE_MPI=1
     - cmake --build . || cmake --build . --parallel 1 --verbose
     # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 --rerun-failed --output-on-failure
+    # excluded: lapack_potrf_trsm_sizes, the simulator's rocSOLVER potrf is wrong for n >= 66 (filed upstream with pantheonsim)
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed|lapack_potrf_trsm_sizes' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed|lapack_potrf_trsm_sizes' --timeout 600 --rerun-failed --output-on-failure
   needs: ["clang++"]
 
 # same as hip-emulated in C++20, where std::equal is constexpr (implicitly __host__ __device__ in clang) and overload resolution can differ between host and device passes (see MR !2142)
@@ -1156,7 +1157,8 @@ hip-emulated c++20:
     - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20 -DCMAKE_HIP_STANDARD=20 -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_CXX_FLAGS="-DMULTI_USE_HIP" -DCMAKE_HIP_FLAGS="-DMULTI_USE_HIP" -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DDISABLE_MPI=1
     - cmake --build . || cmake --build . --parallel 1 --verbose
     # excluded: speed benchmarks (timing ratios are meaningless on a simulator)
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed' --timeout 600 --rerun-failed --output-on-failure
+    # excluded: lapack_potrf_trsm_sizes, the simulator's rocSOLVER potrf is wrong for n >= 66 (filed upstream with pantheonsim)
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed|lapack_potrf_trsm_sizes' --timeout 600 || /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -E 'speed|lapack_potrf_trsm_sizes' --timeout 600 --rerun-failed --output-on-failure
   needs: ["clang++"]
 
 rocm-latest:
