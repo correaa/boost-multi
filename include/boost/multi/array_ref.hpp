@@ -2518,24 +2518,37 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto rotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::rotated(); }
 	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
+	/// (inherited) yields a view of the array where the indices are rotated (to the left) (e.g. `a.unrotated()[i][j][k] == a[k][i][j]`)
 	using const_subarray<T, D, ElementPtr, Layout>::unrotated;
-	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto unrotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	// cppcheck-suppress-begin duplInheritedMember ; to ovewrite
+	BOOST_MULTI_HD constexpr auto unrotated() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
+	BOOST_MULTI_HD constexpr auto unrotated() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unrotated(); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	/// (inherited) yields a transposed view, that exchanges the first two indices
 	using const_subarray<T, D, ElementPtr, Layout>::transposed;
-	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto transposed() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	// cppcheck-suppress-begin duplInheritedMember ; to ovewrite
+	BOOST_MULTI_HD constexpr auto transposed() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }
+	BOOST_MULTI_HD constexpr auto transposed() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::transposed(); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	/// (inherited) yields a view in which index access is unordered (an arbitrary transposition of indices generally to optimize access)
 	using const_subarray<T, D, ElementPtr, Layout>::unordered;
-	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	// cppcheck-suppress-begin duplInheritedMember ; to ovewrite
+	BOOST_MULTI_HD constexpr auto unordered() && -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }
+	BOOST_MULTI_HD constexpr auto unordered() & -> subarray { return const_subarray<T, D, ElementPtr, Layout>::unordered(); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	/// (inherited) yields a transpose view (same as `.transposed()`)
 	using const_subarray<T, D, ElementPtr, Layout>::operator~;
-	BOOST_MULTI_HD auto operator~() & { return transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
-	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+
+	// cppcheck-suppress-begin duplInheritedMember ; to ovewrite
+	BOOST_MULTI_HD auto operator~() & { return transposed(); }
+	BOOST_MULTI_HD auto operator~() && { return std::move(*this).transposed(); }
+	// cppcheck-suppress-end duplInheritedMember ; to ovewrite
 
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto base() const& -> typename subarray::element_const_ptr { return this->base_; }
