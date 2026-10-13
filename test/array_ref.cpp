@@ -87,7 +87,7 @@ inline auto trace_separate_sub(multi::subarray<int, 2> const& arr) -> int {
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) for test
-		int icarr[5] = {};  // cppcheck-suppress constVariable;
+		int icarr[5] = {};  // cppcheck-suppress constVariable
 
 		multi::array_ref<int, 1> const iarrr(std::data(icarr), 5);
 		static_assert(std::is_base_of_v<
@@ -120,30 +120,30 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		auto const map = &multi::array_ref<int, 2>(arr);
 		// multi::array_ptr<int, 2> const map{&arr};
 
-		BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );  // cppcheck-suppress danglingTemporaryLifetime;
+		BOOST_TEST( &(*map).operator[](1)[1] == &arr[1][1] );  // cppcheck-suppress danglingTemporaryLifetime
 		BOOST_TEST( &map->operator[](1)[1] == &arr[1][1] );
 
-		BOOST_TEST( (*&arr)[1][1] == 60 );  // cppcheck-suppress redundantPointerOp;
+		BOOST_TEST( (*&arr)[1][1] == 60 );  // cppcheck-suppress redundantPointerOp
 
-		multi::array_ref<int, 2>&& mar = *map;  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference];
+		multi::array_ref<int, 2>&& mar = *map;  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference]
 
-		BOOST_TEST( &mar[1][1] == &arr[1][1] );  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference];
+		BOOST_TEST( &mar[1][1] == &arr[1][1] );  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference]
 
-		mar[1][1] = 90;  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference];
+		mar[1][1] = 90;  // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference]
 
-		BOOST_TEST( mar[1][1] == 90 );           // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference];
-		BOOST_TEST( &mar[1][1] == &arr[1][1] );  // cppcheck-suppress danglingTempReference;
+		BOOST_TEST( mar[1][1] == 90 );           // cppcheck-suppress [danglingTemporaryLifetime,danglingTempReference]
+		BOOST_TEST( &mar[1][1] == &arr[1][1] );  // cppcheck-suppress danglingTempReference
 
 		auto const& a_const = arr;
 		//  int const(&a_const)[4][5] = a;
-		BOOST_TEST(&a_const[1][1] == &arr[1][1]);  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST(&a_const[1][1] == &arr[1][1]);  // cppcheck-suppress knownConditionTrueFalse
 
-		static_assert(decltype(mar(2, {1, 3}))::rank_v == 1);  // cppcheck-suppress danglingTempReference;
+		static_assert(decltype(mar(2, {1, 3}))::rank_v == 1);  // cppcheck-suppress danglingTempReference
 
-		BOOST_TEST( size(mar(2, {1, 3})) == 2 );         // cppcheck-suppress danglingTempReference;
-		BOOST_TEST( &mar(2, {1, 3})[1] == &arr[2][2] );  // cppcheck-suppress danglingTempReference;
+		BOOST_TEST( size(mar(2, {1, 3})) == 2 );         // cppcheck-suppress danglingTempReference
+		BOOST_TEST( &mar(2, {1, 3})[1] == &arr[2][2] );  // cppcheck-suppress danglingTempReference
 
-		[[maybe_unused]] multi::array_ref<int, 2> const& cmar = *map;  // cppcheck-suppress danglingTempReference;
+		[[maybe_unused]] multi::array_ref<int, 2> const& cmar = *map;  // cppcheck-suppress danglingTempReference
 
 		// *(cmar.base()) = 99.0;
 		// *(cmar[0].base()) = 88.0;
@@ -641,7 +641,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( &ref[1][2] == & ref2[1][2] );
 
 		ref[1][1] = 20;
-		BOOST_TEST( ref[1][1] == 20 );  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST( ref[1][1] == 20 );  // cppcheck-suppress knownConditionTrueFalse
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -656,7 +656,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		};
 
 		darr2[1][0] = 20;
-		BOOST_TEST( darr2[1][0] == 20 );  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST( darr2[1][0] == 20 );  // cppcheck-suppress knownConditionTrueFalse
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 		auto const& dd = std::as_const(darr2);
@@ -1159,7 +1159,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		// NOLINTNEXTLINE(altera-unroll-loops) test for-range loop
 		for(auto const& aii : mar.diagonal()) {
-			sum += aii;  // cppcheck-suppress useStlAlgorithm;
+			sum += aii;  // cppcheck-suppress useStlAlgorithm
 		}
 		BOOST_TEST( sum == mar[0][0] + mar[1][1] + mar[2][2]);
 	}
@@ -1171,9 +1171,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		arrR[0][0] = 21;
 
-		arr.reextent({5, 5});
+		arr.reextent({5, 5});  // cppcheck-suppress throwInEntryPoint
 
-		BOOST_TEST( arr [0][0] == 21 );  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST( arr [0][0] == 21 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST(&arrR[0][0] == &arr[0][0]);
 	}
 
@@ -1191,7 +1191,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		[[maybe_unused]] multi::Array<int const&, 2> arrCR2 = arrCR;
 
 		arr.reextent({5, 5});
-		BOOST_TEST( arrR[0][0] == 51 );  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST( arrR[0][0] == 51 );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST(&arrR[0][0] == &arr[0][0]);
 	}
 

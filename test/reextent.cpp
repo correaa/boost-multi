@@ -111,14 +111,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		BOOST_TEST( arr.num_elements() == 6 );
 
 		arr[1][2] = 60;
-		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse ;
+		BOOST_TEST( arr[1][2] == 60 );  // cppcheck-suppress knownConditionTrueFalse
 
 		multi::array<double, 2> arr3({2, 3});
 		BOOST_TEST(size(arr3) == 2);
 		BOOST_TEST(size(arr3[0]) == 3);
 
 		auto const* const A_base = arr.base();
-		arr.reextent({2, 3});
+		arr.reextent({2, 3});  // cppcheck-suppress throwInEntryPoint
 		BOOST_TEST( arr.num_elements()== 2L*3L );
 		BOOST_TEST( arr[1][2] ==  60 );  // reextent preserves values when it can...
 

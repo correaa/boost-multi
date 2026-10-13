@@ -157,14 +157,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	struct employee_dummy {
 		std::string name;
 		// NOLINTNEXTLINE(runtime/int)
-		short salary;  // NOLINT(google-runtime-int)
+		short salary;  // cppcheck-suppress uninitMemberVarNoCtor ;  // NOLINT(google-runtime-int)
 
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-		std::size_t age;
+		std::size_t age;  // cppcheck-suppress uninitMemberVarNoCtor
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -175,14 +175,14 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		std::string name;
 
 		// NOLINTNEXTLINE(runtime/int)
-		short salary;  // NOLINT(google-runtime-int)
+		short salary;  // cppcheck-suppress uninitMemberVarNoCtor ;  // NOLINT(google-runtime-int)
 
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-		std::size_t age;
+		std::size_t age;  // cppcheck-suppress uninitMemberVarNoCtor
 
 #ifdef __clang__
 #pragma clang diagnostic pop

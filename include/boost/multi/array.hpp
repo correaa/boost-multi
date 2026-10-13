@@ -438,9 +438,9 @@ struct                                                                          
 		}
 	}
 
-	explicit dynamic_array(typename dynamic_array::extents_type extensions, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
+	explicit dynamic_array(typename dynamic_array::extents_type exts, typename dynamic_array::element const& elem, allocator_type const& alloc)  // NOLINT(readability-redundant-typename)
 	: array_alloc{alloc},
-	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements()), nullptr), extensions} {  // NOLINT(readability-redundant-typename)
+	  ref_{array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{exts}.num_elements()), nullptr), exts} {  // NOLINT(readability-redundant-typename)
 		try {
 			array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename multi::allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);  // NOLINT(readability-redundant-typename)
 		} catch(...) {
@@ -507,18 +507,18 @@ struct                                                                          
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>                                                            // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)                                                                                                        // fill constructor
-	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(extension * value.extents()).num_elements())), extension * value.extents()) {  // NOLINT(readability-redundant-typename)
+	explicit dynamic_array(typename dynamic_array::index_extension const& ext, ValueType const& value, allocator_type const& alloc)                                                                                                        // fill constructor
+	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(ext * value.extents()).num_elements())), ext * value.extents()) {  // NOLINT(readability-redundant-typename)
 		static_assert(std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>);                                                         // TODO(correaa) not implemented for non-trivial types,
 		adl_fill_n(this->begin(), this->size(), value);                                                                                                                                                                                          // TODO(correaa) implement via .elements()? substitute with uninitialized version of fill, uninitialized_fill_n?
 	}
 
 	template<class ValueType, class = decltype(std::declval<ValueType>().extents()), std::enable_if_t<std::is_convertible_v<ValueType, typename dynamic_array::value_type>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)
-	: dynamic_array(extension, value, allocator_type{}) {}
+	explicit dynamic_array(typename dynamic_array::index_extension const& exts, ValueType const& value)
+	: dynamic_array(exts, value, allocator_type{}) {}
 
-	explicit dynamic_array(::boost::multi::extents_t<D> const& extensions, allocator_type const& alloc)
-	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements())), extensions) {
+	explicit dynamic_array(::boost::multi::extents_t<D> const& exts, allocator_type const& alloc)
+	: array_alloc{alloc}, ref_(array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{exts}.num_elements())), exts) {
 		try {
 			uninitialized_default_construct();
 		} catch(...) {
@@ -543,22 +543,22 @@ struct                                                                          
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& alloc)
-	: dynamic_array(extensions, alloc) {}
+	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& exts, UninitilazedTag /*unused*/, allocator_type const& alloc)
+	: dynamic_array(exts, alloc) {}
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                    // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
-	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unusued*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]*/;
+	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& exts, UninitilazedTag /*unusued*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]*/;
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                    // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (!std::is_trivially_default_constructible_v<typename dynamic_array::element> && !multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
 	[[deprecated("****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****")]]
-	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unused*/, allocator_type const& /*alloc*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****"]]*/;
+	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& exts, UninitilazedTag /*unused*/, allocator_type const& /*alloc*/) = delete /*[["****element type cannot be partially formed (uninitialized), if you insists that this type should be treated as trivially constructible, consider opting-in to multi::force_trivial_default_construction at your own risk****"]]*/;
 
 	template<class UninitilazedTag, std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_same_v<UninitilazedTag, ::boost::multi::uninitialized_elements_t>), int> = 0,                                                                  // NOLINT(modernize-use-constraints) for C++20
 			 std::enable_if_t<sizeof(UninitilazedTag*) && (std::is_trivially_default_constructible_v<typename dynamic_array::element> || multi::force_element_trivial_default_construction<typename dynamic_array::element>), int> = 0>  // NOLINT(modernize-use-constraints) for C++20
-	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& extensions, UninitilazedTag /*unusued*/) : dynamic_array(extensions) {}
+	explicit constexpr dynamic_array(::boost::multi::extents_t<D> const& exts, UninitilazedTag /*unusued*/) : dynamic_array(exts) {}
 
 	template<class OtherT, class OtherEP, class OtherLayout, class = std::enable_if_t<std::is_assignable<typename ref_::element_ref, typename multi::subarray<OtherT, D, OtherEP, OtherLayout>::element>{}>, class = decltype(adl_copy(std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().begin(), std::declval<multi::subarray<OtherT, D, OtherEP, OtherLayout> const&>().end(), std::declval<typename dynamic_array::iterator>()))>
 	constexpr dynamic_array(multi::const_subarray<OtherT, D, OtherEP, OtherLayout> const& other, allocator_type const& alloc)
@@ -1028,10 +1028,10 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	using decay_type = array<T, 0, Alloc>;
 
 	template<class Ptr>
-	void assign(Ptr data) & {
-		if(data) {
+	void assign(Ptr ptr) & {
+		if(ptr) {
 			assert(this->num_elements() == 1);
-			adl_copy_n(data, this->num_elements(), this->base());
+			adl_copy_n(ptr, this->num_elements(), this->base());
 		}
 	}
 
@@ -1091,11 +1091,11 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	using ref_::operator!=;
 
 	explicit dynamic_array(
-		typename dynamic_array::extents_type const& extensions,
+		typename dynamic_array::extents_type const& exts,
 		typename dynamic_array::element const& elem, allocator_type const& alloc
 	)
 	: array_alloc{alloc},
-	  ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{extensions}.num_elements())), extensions) {
+	  ref_(dynamic_array::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type{exts}.num_elements())), exts) {
 		uninitialized_fill(elem);
 	}
 
@@ -1187,17 +1187,17 @@ struct dynamic_array<T, 0, Alloc>  // NOLINT(misc-multiple-inheritance) : design
 	// }
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same_v<ValueType, value_type>>>             // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
-	explicit dynamic_array(typename dynamic_array::index_extension const& extension, ValueType const& value)  // 3
-	: dynamic_array(extension, value, allocator_type{}) {}
+	explicit dynamic_array(typename dynamic_array::index_extension const& ext, ValueType const& value)  // 3
+	: dynamic_array(ext, value, allocator_type{}) {}
 
-	explicit dynamic_array(typename dynamic_array::extents_type const& extensions, allocator_type const& alloc)  // 3
-	: array_alloc{alloc}, ref_(dynamic_array::allocate(typename dynamic_array::layout_t{extensions}.num_elements()), extensions) {
+	explicit dynamic_array(typename dynamic_array::extents_type const& exts, allocator_type const& alloc)  // 3
+	: array_alloc{alloc}, ref_(dynamic_array::allocate(typename dynamic_array::layout_t{exts}.num_elements()), exts) {
 		static_assert(std::is_nothrow_default_constructible_v<typename dynamic_array::element>, "element type's default constructor must be noexcept");
 		uninitialized_value_construct();
 	}
 
-	explicit dynamic_array(typename dynamic_array::extents_type const& extensions)  // 3
-	: dynamic_array(extensions, allocator_type{}) {}
+	explicit dynamic_array(typename dynamic_array::extents_type const& exts)  // 3
+	: dynamic_array(exts, allocator_type{}) {}
 
 	dynamic_array(dynamic_array const& other, allocator_type const& alloc)  // 5b
 	: array_alloc{alloc}, ref_(dynamic_array::allocate(other.num_elements(), /*hint =*/ other.data_elements()), other.extents()) {
@@ -1924,18 +1924,18 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 		return std::move(*this);
 	}
 
-	auto reextent(typename array::extents_type const& extensions) & -> array& {  // NOLINT(readability-redundant-typename)
-		if(extensions == this->extents()) {
+	auto reextent(typename array::extents_type const& exts) & -> array& {  // NOLINT(readability-redundant-typename)
+		if(exts == this->extents()) {
 			return *this;
 		}
 		auto&& tmp = typename array::ref_(
 			this->dynamic_::array_alloc::allocate(
 				static_cast<typename multi::allocator_traits<typename array::allocator_type>::size_type>(
-					typename array::layout_type{extensions}.num_elements()
+					typename array::layout_type{exts}.num_elements()
 				),
 				this->data_elements()  // used as hint
 			),
-			extensions
+			exts
 		);
 		if constexpr(!(std::is_trivially_default_constructible_v<typename array::element> || multi::force_element_trivial_default_construction<typename array::element>)) {
 			try {
@@ -1946,7 +1946,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 			}
 		}
 
-		auto const intersect = intersection(this->extents(), extensions);
+		auto const intersect = intersection(this->extents(), exts);
 
 		try {
 			tmp.apply(intersect) = this->apply(intersect);  // TODO(correaa) : use `.moved_elements()`? or move_n?

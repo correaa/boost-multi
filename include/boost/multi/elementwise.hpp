@@ -161,8 +161,8 @@ struct default_zero_f {
 }  // end namespace detail
 
 template<class T, class ZF>
-constexpr auto eye(multi::ssize_t size, T unit, ZF zero_f) {
-	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extents_t<2>({size, size}));
+constexpr auto eye(multi::ssize_t n, T unit, ZF zero_f) {
+	return restricted([unit, zero = zero_f(unit)](auto ii, auto jj) { return ii == jj ? unit : zero; }, multi::extents_t<2>({n, n}));
 }
 
 template<class T, class ZF = detail::default_zero_f<T>>

@@ -685,7 +685,7 @@ libs/boost-multi/test/allocator.cpp:378:18: note: declared here
 		// -= 0 is a no-op
 		auto const before = ptr;
 		ptr -= 0;
-		BOOST_TEST( ptr == before );  // cppcheck-suppress knownConditionTrueFalse;
+		BOOST_TEST( ptr == before );  // cppcheck-suppress knownConditionTrueFalse
 		BOOST_TEST( *ptr == 10 );
 
 		// chain: += n then -= n returns to original

@@ -56,7 +56,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			for(auto&& plane : cpu) {                                             // NOLINT(modernize-use-ranges)
 				for(auto&& row : plane) {                                         // NOLINT(altera-unroll-loops)
 					for(auto&& elem : row) {                                      // NOLINT(altera-unroll-loops)
-						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm;
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm
 					}
 				}
 			}
@@ -66,7 +66,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			std::for_each(cpu.begin(), cpu.end(), [](auto&& plane) {              // NOLINT(modernize-use-ranges,llvm-use-ranges) for C++20
 				for(auto&& row : plane) {                                         // NOLINT(altera-unroll-loops)
 					for(auto&& elem : row) {                                      // NOLINT(altera-unroll-loops)
-						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm;
+						elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm
 					}
 				}
 			});
@@ -78,7 +78,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		// 	std::ranges::for_each(cpu, [](auto&& plane) {
 		// 		for(auto&& row : std::forward<decltype(plane)>(plane)) {                                         // NOLINT(altera-unroll-loops)
 		// 			for(auto&& elem : std::forward<decltype(row)>(row)) {         // NOLINT(altera-unroll-loops)
-		// 				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm;
+		// 				elem += std::sqrt(std::pow(elem, 1.5) + std::sin(elem));  // cppcheck-suppress useStlAlgorithm
 		// 			}
 		// 		}
 		// 	});

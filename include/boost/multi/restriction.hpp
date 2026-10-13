@@ -107,6 +107,7 @@ struct bind_transposed_t {
 template<class Proj>
 struct bind_front_t {
 	multi::index idx_;
+	// cppcheck-suppress uninitMemberVarNoCtor
 	Proj         proj_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 	// bind_front_t(multi::index idx, Proj& proj) : idx_{idx}, proj_{proj} {}

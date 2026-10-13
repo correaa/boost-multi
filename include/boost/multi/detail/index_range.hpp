@@ -310,8 +310,8 @@ class intersecting_range {
 	friend constexpr auto intersection(range<IndexType> const& other, intersecting_range const& self) {
 		return intersection(other, self.impl_);
 	}
-	friend constexpr auto operator<(intersecting_range const& self, IndexType end) {
-		return intersecting_range::make_(self.impl_.first(), end);
+	friend constexpr auto operator<(intersecting_range const& self, IndexType last) {
+		return intersecting_range::make_(self.impl_.first(), last);
 	}
 	friend constexpr auto operator<=(IndexType first, intersecting_range const& self) {
 		return intersecting_range::make_(first, self.impl_.last());

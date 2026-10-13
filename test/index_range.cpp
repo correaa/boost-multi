@@ -203,8 +203,10 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 		multi::range<std::integral_constant<int, 0>, int> const irng({}, 12);
 
-#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)  // NOLINT(whitespace/line_length)
+#if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L))
+#if (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(__NVCC__) && !defined(__NVCOMPILER)
 		static_assert(sizeof(irng) == sizeof(int));
+#endif
 #endif
 
 		BOOST_TEST( irng.first() == 0 );
