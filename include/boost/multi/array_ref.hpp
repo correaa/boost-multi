@@ -4755,13 +4755,13 @@ array_ptr(T (*)[N]) -> array_ptr<V, static_cast<multi::dimensionality_type>(D)>;
 #ifdef __cpp_deduction_guides
 // template<typename It, class Tuple> array_ref(It, Tuple) -> array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size_v<Tuple>, It>;
 
+/// deduces the array reference dimensionality and element type from a pointer and an extension
 template<typename Ptr> array_ref(Ptr, extents_t<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<2>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
-
 
 template<class It> const_subarray(It, It) -> const_subarray<typename It::element, It::dimensionality + 1, typename It::element_ptr, detail::layout_t<It::dimensionality + 1>>;
 
