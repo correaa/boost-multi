@@ -1338,6 +1338,91 @@ inq cuda:
   timeout: 4 hours 00 minutes
   needs: ["inq", "cuda"]
 
+inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and CXX compiler (like cunvhpc), and nvhpc's own CUDA-aware MPI (HPC-X), no distro MPI in the image
+  stage: test
+  image: nvcr.io/nvidia/nvhpc:26.5-devel-cuda13.2-ubuntu24.04  # same image as nvhpc-26.5, https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  tags:
+    - non-shared
+    - nvidia-gpu
+    - arch75
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+  variables:
+    OMPI_ALLOW_RUN_AS_ROOT: "1"
+    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+    OMPI_MCA_rmaps_base_oversubscribe: "1"
+    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware (accelerator:cuda stages device buffers)
+    OMPI_MCA_btl: self,sm,smcuda  # smcuda (CUDA IPC) when it initializes, sm otherwise; self,smcuda alone leaves ranks unreachable
+    OMPI_MCA_coll: ^ucc,hcoll  # keep coll:cuda for collectives on device buffers
+    OMPI_MCA_osc: ^ucx
+  script:
+    # no libopenmpi-dev or mpich here, MPI must come from nvhpc
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy
+    - 'if dpkg -l | grep -E "^ii +(openmpi-bin|libopenmpi-dev|libopenmpi3t64|mpich|libmpich-dev|libmpich12)[ :]"; then echo "a distro MPI was pulled in, this job must only see nvhpc MPI"; exit 1; fi'
+    - export CMAKE_GENERATOR="Ninja"
+    - nvidia-smi
+    - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)  # e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
+    - export NVHPC_MPI=$NVHPC_ROOT/comm_libs/mpi
+    - export PATH=$NVHPC_MPI/bin:$PATH
+    - which nvcc nvc++ mpicxx mpirun
+    - nvcc --version
+    - nvc++ --version
+    - export NVHPC_CUDA_VERSION=$(nvcc --version | sed -n 's/.*release \([0-9.]*\),.*/\1/p')  # the CUDA the trampolines picked for this driver, also the one HPC-X is taken from
+    - export NVHPC_CUDA=$NVHPC_ROOT/cuda/$NVHPC_CUDA_VERSION  # not $NVHPC_ROOT/cuda/{include,lib64}, those symlinks can point to a CUDA version that is not installed
+    - ls $NVHPC_CUDA/lib64/libcudart.so
+    # proof that nvhpc's MPI is the one linked and that it takes device buffers (a non-CUDA-aware MPI segfaults in the allreduce)
+    - |
+      cat > mpicheck.cpp <<'EOF'
+      #include <mpi.h>
+      #include <mpi-ext.h>
+      #include <cuda_runtime.h>
+      #include <cstdio>
+      int main(int argc, char** argv) {
+        MPI_Init(&argc, &argv);
+        int rank, size; MPI_Comm_rank(MPI_COMM_WORLD, &rank); MPI_Comm_size(MPI_COMM_WORLD, &size);
+        char version[MPI_MAX_LIBRARY_VERSION_STRING]; int len; MPI_Get_library_version(version, &len);
+        int host = rank + 1, *dev;
+        if(cudaMalloc(&dev, sizeof(int)) != cudaSuccess) { std::printf("cudaMalloc failed\n"); MPI_Abort(MPI_COMM_WORLD, 2); }
+        cudaMemcpy(dev, &host, sizeof(int), cudaMemcpyHostToDevice);
+        MPI_Allreduce(MPI_IN_PLACE, dev, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        cudaMemcpy(&host, dev, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaFree(dev);
+        int const ok = MPIX_Query_cuda_support() && host == size*(size + 1)/2;
+        if(rank == 0) { std::printf("%s\ncuda-aware: %d, device-buffer allreduce: %d (expected %d)\n", version, MPIX_Query_cuda_support(), host, size*(size + 1)/2); }
+        MPI_Finalize();
+        return ok ? 0 : 1;
+      }
+      EOF
+    - mpicxx mpicheck.cpp -o mpicheck -I$NVHPC_CUDA/include -L$NVHPC_CUDA/lib64 -lcudart -Wl,-rpath,$NVHPC_CUDA/lib64  # host code only, no -cuda (that would compile device code for the runner's GPU)
+    - ldd ./mpicheck | grep -E "libmpi|libcudart"
+    - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
+    - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
+    - timeout 120 mpirun -n 2 ./mpicheck
+    - export NGPU=$(nvidia-smi --list-gpus | wc -l)
+    - unset CUDA_VISIBLE_DEVICES
+    # same A30-over-RTX-A2000 selection as inq cuda
+    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
+    - export PREFIX=`mktemp -d`
+    - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
+    - rm -rf inq/external_libs/multi
+    - ln -s $CI_PROJECT_DIR inq/external_libs/multi
+    - cd inq
+    - export GPUBIND=`pwd`/scripts/gpubind
+    - mkdir build && cd build
+    - cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" -DMPI_CXX_COMPILER=$NVHPC_MPI/bin/mpicxx -DMPIEXEC_EXECUTABLE=$NVHPC_MPI/bin/mpirun  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - grep -E "^MPI_.*_LIBRARY:FILEPATH=|^MPIEXEC_EXECUTABLE:" CMakeCache.txt
+    - 'grep -q "^MPI_mpi_LIBRARY:FILEPATH=$NVHPC_ROOT/" CMakeCache.txt || { echo "FindMPI did not pick nvhpc MPI"; exit 1; }'
+    - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
+    - cmake --install .
+    - ldd $PREFIX/bin/inq | grep libmpi
+    - 'ldd $PREFIX/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
+    - export NP=2
+    - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
+    - echo "NP=${NP} JOBS=${JOBS}"
+    - INQ_EXEC_ENV="mpirun -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+  timeout: 4 hours 00 minutes
+  needs: ["inq", "cunvhpc"]
+
 inq rocm:
   stage: test
   image: rocm/dev-ubuntu-24.04:6.4.4-complete
