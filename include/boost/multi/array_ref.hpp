@@ -4274,8 +4274,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	auto to_mdspan_contiguous_aux_() const {
 		using std::apply;
 		return apply(
-			[](auto... szs) {
-				return std::mdspan<T, std::dextents<std::size_t, D> >(this->base_, szs...);
+			[bas = this->base_](auto... szs) {
+				return std::mdspan<T, std::dextents<std::size_t, D> >(bas, szs...);
 			},
 			this->sizes()
 		);
