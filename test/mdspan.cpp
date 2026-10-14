@@ -134,6 +134,14 @@ auto main() -> int {
 		fun(arr({1, 3}, {1, 3}));
 #endif
 	}
+	{
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+		multi::array<int, 2> arr({3, 2}, 5);
+
+		std::mdspan<int, std::dextents<std::size_t, 2>> mdspan_arr = arr;
+		BOOST_TEST(( &mdspan_arr[1, 1] == &arr[1, 1] ));
+#endif
+	}
 	// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
 	// 	std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr_const = arr;
 	// 	BOOST_TEST(( &mdspan_arr_const[0, 0] == &arr[0][0] ));
