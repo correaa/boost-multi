@@ -294,6 +294,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		return layout_type::strides();
 	}
 
+	/// Type for index arithmetic in the leading dimension
 	using typename layout_type::difference_type;
 
 	/// Type to hold the size of the array in the leading dimension
