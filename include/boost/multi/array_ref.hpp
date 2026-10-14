@@ -2781,6 +2781,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class... As> BOOST_MULTI_HD constexpr auto subsc_aux_(intersecting_range<index> inr, As... args) && -> decltype(auto) { return paren_aux_(intersection(this->extent(), inr), args...); }
 
  public:
+	/// (inherited) indexing operator
 	using const_subarray<T, D, ElementPtr, Layout>::operator();
 	// cppcheck-suppress-begin duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto operator()() & -> subarray { return this->paren_aux_(); }
@@ -4342,6 +4343,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	explicit array_ref(std::initializer_list<TT>&& il_1d) = delete;
 #endif
 
+	/// (inherited) assignment operator
 	using subarray_base::operator=;
 
  private:
