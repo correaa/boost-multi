@@ -139,7 +139,7 @@ auto main() -> int {
 		multi::array<int, 2> arr({3, 2}, 5);
 
 		std::mdspan<int, std::dextents<std::size_t, 2>> mdspan_arr = arr;
-		BOOST_TEST( &mdspan_arr(1, 1) == &arr[1][1] );
+		BOOST_TEST(( &mdspan_arr[1, 1] == &arr[1, 1] ));
 #endif
 	}
 	// #if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
