@@ -24,6 +24,7 @@
 #if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))
 #if __has_include(<mdspan>)
 #include <mdspan>
+#define BOOST_MULTI_HAS_MDSPAN 1
 #endif
 #endif
 
@@ -1507,7 +1508,7 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
 #undef BM_DELETE
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
  private:
 	auto to_mdspan_aux_() const {
 		using std::apply;
@@ -2488,7 +2489,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	BOOST_MULTI_HD constexpr auto home() && { return this->home_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto home() & { return this->home_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return this->to_mdspan_aux_(); }
 	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() & { return this->to_mdspan_aux_(); }
 	operator std::mdspan<T, std::dextents<std::size_t, D>, std::layout_stride>() && { return this->to_mdspan_aux_(); }
