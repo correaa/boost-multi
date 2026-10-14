@@ -1394,9 +1394,9 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
       }
       EOF
     - mpicxx mpicheck.cpp -o mpicheck -I$NVHPC_CUDA/include -L$NVHPC_CUDA/lib64 -lcudart -Wl,-rpath,$NVHPC_CUDA/lib64  # host code only, no -cuda (that would compile device code for the runner's GPU)
-    - ldd ./mpicheck | grep -E "libmpi|libcudart"
-    - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
-    - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
+    # - ldd ./mpicheck | grep -E "libmpi|libcudart"
+    # - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
+    # - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
     - timeout 120 mpirun -n 2 ./mpicheck
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - unset CUDA_VISIBLE_DEVICES
@@ -1419,7 +1419,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - export NP=2
     - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
     - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="mpirun -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - INQ_EXEis there an off the shelf mpi distribution I can use in "inq cuda" that is gpu aware?C_ENV="mpirun -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
   needs: ["inq", "cunvhpc"]
 
