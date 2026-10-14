@@ -4269,6 +4269,25 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr explicit operator std::span<U>() { return std::span<U>(this->data_elements(), this->size()); }
 #endif
 
+#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+ private:
+	auto to_mdspan_contiguous_aux_() const {
+		using std::apply;
+		return apply(
+			[](auto... szs) {
+				return std::mdspan<T, std::dextents<std::size_t, D> >(this->base_, szs...);
+			},
+			this->sizes()
+		);
+	}
+
+ public:
+ 	/// A array_ref can be converted implicitly to a mdspan object
+	operator std::mdspan<T, std::dextents<std::size_t, D> >() & { return to_mdspan_contiguous_aux_(); }
+	operator std::mdspan<T, std::dextents<std::size_t, D> >() && { return to_mdspan_contiguous_aux_(); }
+	operator std::mdspan<T const, std::dextents<std::size_t, D> >() const& { return to_mdspan_contiguous_aux_(); }
+#endif
+
 	template<class OtherPtr, class = std::enable_if_t<!std::is_same_v<OtherPtr, ElementPtr>>, decltype(multi::detail::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: subarray_base(other.layout(), ElementPtr{std::move(other).base()}) {}  // cppcheck-suppress internalAstError ; bug in cppcheck 2.13.0
