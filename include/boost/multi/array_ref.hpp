@@ -912,14 +912,14 @@ struct cursor_t {
 	template<class, dimensionality_type, class> friend struct detail::cursor_t;
 
 	template<class TT>
-	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+	static constexpr auto to_address_(TT* ptr) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
-		return p;
+		return ptr;
 	}
 
 	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
-	static constexpr auto to_address_(const TT& p) noexcept {
-		return to_address_(p.operator->());
+	static constexpr auto to_address_(TT const& ptr) noexcept {
+		return to_address_(ptr.operator->());
 	}
 
  public:
@@ -1215,14 +1215,14 @@ struct elements_range_t {
 
  private:
 	template<class TT>
-	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+	static constexpr auto to_address_(TT* ptr) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
-		return p;
+		return ptr;
 	}
 
 	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
-	static constexpr auto to_address_(const TT& p) noexcept {
-		return to_address_(p.operator->());
+	static constexpr auto to_address_(TT const& ptr) noexcept {
+		return to_address_(ptr.operator->());
 	}
 
 	constexpr auto as_raw_aux_() const { return elements_range_t<decltype(to_address_(base_)), layout_type>(base_, l_); }
