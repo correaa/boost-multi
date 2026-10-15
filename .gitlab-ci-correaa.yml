@@ -1434,7 +1434,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - echo "NP=${NP} JOBS=${JOBS}"
     - INQ_EXEC_ENV="$MPI_RUN -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
-  needs: ["inq", "cunvhpc"]
+#  needs: ["inq", "cunvhpc"]
 
 inq rocm:
   stage: test
