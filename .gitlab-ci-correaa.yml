@@ -1371,7 +1371,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - export OMPI_HOME=$NVHPC_OMPI
     - export MPI_CXX=$NVHPC_OMPI/bin/mpicxx
     - export MPI_RUN=$NVHPC_OMPI/bin/mpirun
-    - echo "HPC-X Open MPI prefix: $NVHPC_OMPI"
+    - 'echo "HPC-X Open MPI prefix: $NVHPC_OMPI"'
     - which nvcc nvc++ mpicxx mpirun
     - nvcc --version
     - nvc++ --version
