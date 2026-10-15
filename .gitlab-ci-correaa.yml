@@ -1339,14 +1339,14 @@ inq cuda:
   needs: ["inq", "cuda"]
 
 inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and CXX compiler (like cunvhpc), and nvhpc's own CUDA-aware MPI (HPC-X), no distro MPI in the image
-  stage: test
+  stage: build  # test
   image: nvcr.io/nvidia/nvhpc:26.5-devel-cuda13.2-ubuntu24.04  # same image as nvhpc-26.5, https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - nvidia-gpu
     - arch75
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+  # rules:
+  #   - if: '$CI_COMMIT_BRANCH == "develop"'
   variables:
     OMPI_ALLOW_RUN_AS_ROOT: "1"
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
