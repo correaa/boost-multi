@@ -1363,7 +1363,15 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - nvidia-smi
     - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)  # e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
     - export NVHPC_MPI=$NVHPC_ROOT/comm_libs/mpi
-    - export PATH=$NVHPC_MPI/bin:$PATH
+    # Resolve the actual HPC-X Open MPI installation selected by mpicxx.
+    - export NVHPC_OMPI=$(dirname "$(dirname "$(readlink -f "$NVHPC_MPI/bin/mpicxx")")")
+    - export PATH=$NVHPC_OMPI/bin:$NVHPC_MPI/bin:$PATH
+    - export LD_LIBRARY_PATH=$NVHPC_OMPI/lib:$NVHPC_MPI/lib:${LD_LIBRARY_PATH:-}
+    - export OPAL_PREFIX=$NVHPC_OMPI
+    - export OMPI_HOME=$NVHPC_OMPI
+    - export MPI_CXX=$NVHPC_OMPI/bin/mpicxx
+    - export MPI_RUN=$NVHPC_OMPI/bin/mpirun
+    - echo "HPC-X Open MPI prefix: $NVHPC_OMPI"
     - which nvcc nvc++ mpicxx mpirun
     - nvcc --version
     - nvc++ --version
@@ -1397,7 +1405,8 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     # - ldd ./mpicheck | grep -E "libmpi|libcudart"
     # - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
     # - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
-    - timeout 120 mpirun -n 2 ./mpicheck
+    - "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 hostname
+    - timeout 120 "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 ./mpicheck
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - unset CUDA_VISIBLE_DEVICES
     # same A30-over-RTX-A2000 selection as inq cuda
@@ -1409,7 +1418,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - cd inq
     - export GPUBIND=`pwd`/scripts/gpubind
     - mkdir build && cd build
-    - cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_Fortran_COMPILER=nvfortran -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" -DMPI_CXX_COMPILER=$NVHPC_MPI/bin/mpicxx -DMPIEXEC_EXECUTABLE=$NVHPC_MPI/bin/mpirun  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" -DMPI_CXX_COMPILER=$MPI_CXX -DMPIEXEC_EXECUTABLE=$MPI_RUN  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
     - grep -E "^MPI_.*_LIBRARY:FILEPATH=|^MPIEXEC_EXECUTABLE:" CMakeCache.txt
     - 'grep -q "^MPI_mpi_LIBRARY:FILEPATH=$NVHPC_ROOT/" CMakeCache.txt || { echo "FindMPI did not pick nvhpc MPI"; exit 1; }'
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
@@ -1419,7 +1428,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - export NP=2
     - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
     - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEis there an off the shelf mpi distribution I can use in "inq cuda" that is gpu aware?C_ENV="mpirun -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - INQ_EXEC_ENV="$MPI_RUN --prefix $NVHPC_OMPI -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
   needs: ["inq", "cunvhpc"]
 
