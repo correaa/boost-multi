@@ -1363,12 +1363,15 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - nvidia-smi
     - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)  # e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
     - export NVHPC_MPI=$NVHPC_ROOT/comm_libs/mpi
-    # Resolve the actual HPC-X Open MPI installation selected by mpicxx.
-    - export NVHPC_OMPI=$(dirname "$(dirname "$(readlink -f "$NVHPC_MPI/bin/mpicxx")")")
+    # The wrapper lives in comm_libs/hpcx; its reported library directory identifies the actual Open MPI installation.
+    - export NVHPC_OMPI=$(dirname "$("$NVHPC_MPI/bin/mpicxx" --showme:libdirs)")
+    - 'test -f "$NVHPC_OMPI/share/openmpi/help-mca-base.txt" && test -f "$NVHPC_OMPI/lib/libmpi.so"'
     - export PATH=$NVHPC_OMPI/bin:$NVHPC_MPI/bin:$PATH
-    - export LD_LIBRARY_PATH=$NVHPC_OMPI/lib:$NVHPC_MPI/lib:${LD_LIBRARY_PATH:-}
+    - export LD_LIBRARY_PATH=$NVHPC_OMPI/lib:${LD_LIBRARY_PATH:-}
     - export OPAL_PREFIX=$NVHPC_OMPI
     - export OMPI_HOME=$NVHPC_OMPI
+    - export PRTE_PREFIX=$NVHPC_OMPI
+    - export PMIX_PREFIX=$NVHPC_OMPI
     - export MPI_CXX=$NVHPC_OMPI/bin/mpicxx
     - export MPI_RUN=$NVHPC_OMPI/bin/mpirun
     - 'echo "HPC-X Open MPI prefix: $NVHPC_OMPI"'
@@ -1405,12 +1408,13 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     # - ldd ./mpicheck | grep -E "libmpi|libcudart"
     # - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
     # - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
-    - '"$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 hostname'
-    - 'timeout 120 "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 ./mpicheck'
+    - '"$MPI_RUN" -n 2 hostname'
+    - 'timeout 120 "$MPI_RUN" -n 2 ./mpicheck'
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - unset CUDA_VISIBLE_DEVICES
     # same A30-over-RTX-A2000 selection as inq cuda
     - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
+    - 'timeout 120 "$MPI_RUN" -n 2 ./mpicheck'
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
@@ -1428,7 +1432,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - export NP=2
     - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
     - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="$MPI_RUN --prefix $NVHPC_OMPI -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - INQ_EXEC_ENV="$MPI_RUN -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
   needs: ["inq", "cunvhpc"]
 
