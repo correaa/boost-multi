@@ -1405,8 +1405,8 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     # - ldd ./mpicheck | grep -E "libmpi|libcudart"
     # - 'ldd ./mpicheck | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "mpicheck not linked against nvhpc MPI"; exit 1; }'
     # - 'ldd ./mpicheck | grep libcudart | grep -q "$NVHPC_CUDA" || { echo "mpicheck not linked against nvhpc CUDA $NVHPC_CUDA_VERSION"; exit 1; }'
-    - "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 hostname
-    - timeout 120 "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 ./mpicheck
+    - '"$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 hostname'
+    - 'timeout 120 "$MPI_RUN" --prefix "$NVHPC_OMPI" -n 2 ./mpicheck'
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
     - unset CUDA_VISIBLE_DEVICES
     # same A30-over-RTX-A2000 selection as inq cuda
