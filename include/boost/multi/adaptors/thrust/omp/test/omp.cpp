@@ -18,6 +18,10 @@
 // #include <thrust/transform.h>
 
 #include <cassert>
+`
+#ifdef _MSC_VER
+#pragma warning(disable : 4702)  // to explicitly ignore unreachable code warnings.
+#endif
 
 // #include <omp.h>  // NOLINT(clang-diagnostic-error)
 #include <thrust/reduce.h>                       // IWYU pragma: keep
