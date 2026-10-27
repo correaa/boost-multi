@@ -2839,7 +2839,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	// cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_HD constexpr auto partitioned(size_type count) && -> subarray<T, D + 1, typename subarray::element_ptr> { return this->partitioned_aux_(count); }
 
-	// using const_subarray<T, D, ElementPtr, Layout>::flatted;
+	/// yields a view of the array that is flattened in the first two leading dimensions
 	constexpr auto flatted() const& {  // cppcheck-suppress duplInheritedMember ; to overwrite
 		assert(this->layout().is_flattable());
 		multi::detail::layout_t<D - 1> new_layout{this->layout().sub()};
