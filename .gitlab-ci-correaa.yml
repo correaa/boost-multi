@@ -438,9 +438,9 @@ vs2022-shell:
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   script:
     - pwd
-    # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop
-    # - winget install Kitware.CMake --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
-    # - winget install Microsoft.VisualStudio.2022.BuildTools --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
+    # - winget install Git.Git Microsoft.PowerShell Docker.DockerDesktop --scope machine
+    # - winget install Kitware.CMake --silent --disable-interactivity --scope machine --accept-package-agreements --accept-source-agreements
+    # - winget install Microsoft.VisualStudio.2022.BuildTools --scope machine --silent --disable-interactivity --accept-package-agreements --accept-source-agreements --override "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional --quiet --norestart"
     # - winget install Ninja-build.Ninja
     # - winget install Microsoft.msmpi Microsoft.msmpisdk
     # - git clone --depth=1 https://github.com/microsoft/vcpkg.git C:\
