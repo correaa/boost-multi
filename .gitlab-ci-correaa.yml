@@ -562,6 +562,42 @@ vs2022-shell cudatk-17:
   needs: ["vs2022-shell", "cuda"]
   timeout: 60 minutes
 
+vs2022-shell hipsdk:
+  stage: build
+  variables:
+    CMAKE_GENERATOR: ""   # unset for this job; Ninja is passed explicitly below
+    HIP_ARCH: "gfx1100"   # set to your GPU (RX 7900 = gfx1100, RX 9070 = gfx1201, RX 6800 = gfx1030)
+  allow_failure: true
+  before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
+  cache: []
+  script:
+    - C:\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    - whoami
+    # MSVC environment (cl, link, Windows SDK, plus VS-bundled CMake and Ninja)
+    - '& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -HostArch amd64 -SkipAutomaticLocation'
+    - $HIP = ($env:HIP_PATH -replace '\\','/').TrimEnd('/')
+    - $env:Path += ";C:/vcpkg/installed/x64-windows/bin;$HIP/bin;C:\Program Files\CMake\bin;C:\Program Files\7-Zip"
+    - cmake --version
+    - '& "$HIP/bin/clang++.exe" --version'
+    - mkdir build
+    - >
+      cmake -S . -B build -G Ninja
+      -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_CXX_COMPILER="$HIP/bin/clang++.exe"
+      -DCMAKE_HIP_COMPILER="$HIP/bin/clang++.exe"
+      -DCMAKE_CXX_STANDARD=20 -DCMAKE_HIP_STANDARD=20
+      -DENABLE_HIP=1
+      -DCMAKE_HIP_ARCHITECTURES="$env:HIP_ARCH"
+      -DCMAKE_PREFIX_PATH="$HIP"
+      -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - cmake --build build --parallel ; if (!$?) { cmake --build build --parallel 1 --verbose }
+  tags:
+    - windows
+    - shell
+    - hip
+  needs: ["vs2022-shell"]
+  timeout: 60 minutes
+
 vs2022-shell cudatk:
   stage: build
   variables:
