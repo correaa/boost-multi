@@ -571,7 +571,7 @@ vs2022-shell hipsdk:
   before_script: []  # override global before_script (bash commands don't work on Windows shell runner)
   cache: []
   script:
-    - C:\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer
+    - C:\vcpkg\vcpkg install fftw3 boost-multi-array boost-timer boost-core
     - whoami
     # MSVC environment (cl, link, Windows SDK, plus VS-bundled CMake and Ninja)
     - '& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -HostArch amd64 -SkipAutomaticLocation'
