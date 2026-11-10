@@ -10,10 +10,11 @@
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/adaptors/blas/gemv.hpp>
 
-#include <array>
+// #include <array>
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <utility>                                // for as_const
 
 namespace multi = boost::multi;
 
