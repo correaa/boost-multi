@@ -49,7 +49,7 @@ void gesvd(AArray2D&& AA, UArray2D& UU, SArray1D& ss, VTArray2D& VV, Alloc alloc
 	}
 
 	auto const  lwork = static_cast<MLP_INT>(dwork);
-	auto* const work  = alloc.allocate(lwork);
+	auto* const work  = alloc.allocate(static_cast<typename std::allocator_traits<Alloc>::size_type>(lwork));
 
 	dgesvd_(
 		'A' /*all left*/, 'A' /*all right*/,
@@ -60,7 +60,7 @@ void gesvd(AArray2D&& AA, UArray2D& UU, SArray1D& ss, VTArray2D& VV, Alloc alloc
 		UU.base(), static_cast<MLP_INT>(UU.stride()),
 		work, lwork, info
 	);
-	alloc.deallocate(work, lwork);
+	alloc.deallocate(work, static_cast<typename std::allocator_traits<Alloc>::size_type>(lwork));
 
 	if(info != 0) {
 		throw std::runtime_error("Error in DGESVD computation, info: " + std::to_string(info));

@@ -10,12 +10,14 @@
 
 #include <algorithm>  // for min
 #include <cassert>
+#include <memory>     // for allocator_traits
 #include <stdexcept>  // for runtime_error
 #include <string>     // for operator+, to_string, allocator
 #include <utility>    // for forward
 
 extern "C" {
 using integer = int const&;
+using integer_out = int&;
 
 void dgeqrf_(  // NOLINT(readability-identifier-naming) externally linked
 	integer,   // M,
@@ -25,7 +27,7 @@ void dgeqrf_(  // NOLINT(readability-identifier-naming) externally linked
 	double*,   // TAU,  // double precision, dimension( * )    TAU,
 	double*,   // WORK,  // double precision, dimension( * )    WORK,
 	integer,   // LWORK,
-	integer    // INFO
+	integer_out  // INFO
 );
 }
 
@@ -42,7 +44,7 @@ auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 	double dwork;  // NOLINT(cppcoreguidelines-init-variables) delayed initialization
 	int    info;   // NOLINT(cppcoreguidelines-init-variables) delayed initialization
 	dgeqrf_(
-		size(~aa), size(aa), aa.base(), aa.stride(),
+		static_cast<int>((~aa).size()), static_cast<int>(aa.size()), aa.base(), static_cast<int>(aa.stride()),
 		tau.base(),
 		&dwork, -1,
 		info  // cppcheck-suppress uninitvar ;
@@ -52,15 +54,15 @@ auto geqrf(Array2D&& aa, TAU& tau, Allocator alloc) -> Array2D&& {
 	}
 
 	auto const  lwork = static_cast<int>(dwork);
-	auto* const work  = alloc.allocate(lwork);
+	auto* const work  = alloc.allocate(static_cast<typename std::allocator_traits<Allocator>::size_type>(lwork));
 
 	dgeqrf_(
-		size(~aa), size(aa), aa.base(), aa.stride(),
+		static_cast<int>(size(~aa)), static_cast<int>(size(aa)), aa.base(), static_cast<int>(aa.stride()),
 		tau.base(),
 		work, lwork,
 		info
 	);
-	alloc.deallocate(work, lwork);
+	alloc.deallocate(work, static_cast<typename std::allocator_traits<Allocator>::size_type>(lwork));
 
 	if(info != 0) {  // cppcheck-suppress identicalConditionAfterEarlyExit ; TODO(correaa) investigate
 		throw std::runtime_error("Error in DGESVD computation, info: " + std::to_string(info));

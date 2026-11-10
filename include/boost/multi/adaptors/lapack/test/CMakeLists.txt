@@ -57,7 +57,7 @@ target_link_libraries(geqrf.cpp.x PUBLIC  multi-lapack Boost::boost)
 target_link_libraries(potrf.cpp.x PRIVATE multi-lapack Boost::boost)
 target_link_libraries(svd.cpp.x   PUBLIC  multi-lapack Boost::boost)
 
-add_test(NAME getrf.cpp.x COMMAND $<TARGET_FILE:geqrf.cpp.x>)
+add_test(NAME getrf.cpp.x COMMAND $<TARGET_FILE:getrf.cpp.x>)
 add_test(NAME geqrf.cpp.x COMMAND $<TARGET_FILE:geqrf.cpp.x>)
 add_test(NAME potrf.cpp.x COMMAND $<TARGET_FILE:potrf.cpp.x>)
 add_test(NAME svd.cpp.x   COMMAND $<TARGET_FILE:svd.cpp.x>  )

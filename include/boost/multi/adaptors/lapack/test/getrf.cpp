@@ -106,15 +106,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto BT = +~BB;
 
 		auto lu_solve = [](auto&& Aio, auto&& Po, auto&& Bio) {  // solve A.X = B; put result in B
-			auto AT = +~Aio;
-			auto BT = +~Bio;
+			auto AT_copy = +~Aio;
+			auto BT_copy = +~Bio;
 
-			auto const& LU = multi::lapack::getrf(~AT, Po);
+			auto const& LU = multi::lapack::getrf(~AT_copy, Po);
 			assert(LU.size() == Po.size());
-			multi::lapack::getrs(LU, std::as_const(Po), ~BT);
+			multi::lapack::getrs(LU, std::as_const(Po), ~BT_copy);
 
-			Bio = ~BT;
-			Aio = ~AT;
+			Bio = ~BT_copy;
+			Aio = ~AT_copy;
 		};
 		lu_solve(~AT, PP, ~BT);
 
@@ -149,15 +149,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto BT = +~BB;
 
 		auto lu_solve = [](auto&& Aio, auto&& Po, auto&& Bio) {  // solve A.X = B; put result in B
-			auto AT = +~Aio;
-			auto BT = +~Bio;
+			auto AT_copy = +~Aio;
+			auto BT_copy = +~Bio;
 
-			auto const& LU = multi::lapack::getrf(~AT, Po);
+			auto const& LU = multi::lapack::getrf(~AT_copy, Po);
 			assert(LU.size() == Po.size());
-			multi::lapack::getrs(LU, std::as_const(Po), ~BT);
+			multi::lapack::getrs(LU, std::as_const(Po), ~BT_copy);
 
-			Bio = ~BT;
-			Aio = ~AT;
+			Bio = ~BT_copy;
+			Aio = ~AT_copy;
 		};
 		lu_solve(~AT, PP, ~BT);
 
@@ -224,13 +224,13 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		auto AA = Aconst;
 		auto VV = Vconst;
 
-		auto lu_solve_one = [](auto&& Aio, auto&& Po, auto&& VV) {  // solve A.X = B; put result in B
+		auto lu_solve_one = [](auto&& Aio, auto&& Po, auto&& Vout) {  // solve A.X = B; put result in B
 			auto AT = +~Aio;
 			//  auto BT = +~Bio;
 
 			auto const& LU = multi::lapack::getrf(~AT, Po);
 			assert(LU.size() == Po.size());
-			multi::lapack::getrs_one(LU, std::as_const(Po), VV);
+			multi::lapack::getrs_one(LU, std::as_const(Po), Vout);
 
 			//  Bio = ~BT;
 			Aio = ~AT;
@@ -275,7 +275,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		multi::array<int, 1> dee({9}, 0.0);
 		for(int i = 0; i != 9; ++i) {  // NOLINT(altera-unroll-loops)
-			dee[PP[i]] = i;
+			dee[PP[i] - 1] = i;  // LAPACK ipiv is 1-based
 		}
 
 		for(int i = 0; i != size(AA); ++i) {
@@ -292,4 +292,6 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 			std::cout << '\n';
 		}
 	}
+
+	return boost::report_errors();
 }

@@ -8,7 +8,7 @@ project(
 
 add_library(multi-lapack INTERFACE)
 
-if(NOT DEFINED ENABLE_CIRCLE)
+if(DEFINED ENABLE_CIRCLE)  # circle: "mangle of arg not implemented" in lapack adaptors
 	return()
 endif()
 

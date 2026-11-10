@@ -41,7 +41,7 @@ auto operator<<(std::ostream& os, std::complex<double> const& cx) -> std::ostrea
 	return os << real(cx) << " + I*" << imag(cx);
 }
 
-template<class M> auto print(M const& arr) -> decltype(auto) { return print(arr, ""); }
+// template<class M> auto print(M const& arr) -> decltype(auto) { return print(arr, ""); }
 template<class M> auto print(M const& arr, std::string const& msg) -> decltype(auto) {
 	using multi::size;
 	using std::cout;
@@ -68,19 +68,19 @@ auto print(M const& arr, char const* msg) -> decltype(auto) {
 	return print(arr, std::string{msg});
 }
 
-template<class M>
-auto randomize(M&& arr) -> M&& {
-	std::random_device dev;
-	std::mt19937       eng{dev()};
+// template<class M>
+// auto randomize(M&& arr) -> M&& {
+// 	std::random_device dev;
+// 	std::mt19937       eng{dev()};
 
-	auto gen = [&]() {
-		auto unif = std::uniform_real_distribution<>{-1.0, 1.0};
-		return std::complex<double>(unif(eng), unif(eng));
-	};
+// 	auto gen = [&]() {
+// 		auto unif = std::uniform_real_distribution<>{-1.0, 1.0};
+// 		return std::complex<double>(unif(eng), unif(eng));
+// 	};
 
-	std::for_each(arr.begin(), arr.end(), [&](auto&& row) { std::generate(row.begin(), row.end(), gen); });
-	return std::forward<M>(arr);
-}
+// 	std::for_each(arr.begin(), arr.end(), [&](auto&& row) { std::generate(row.begin(), row.end(), gen); });
+// 	return std::forward<M>(arr);
+// }
 }  // end unnamed namespace
 
 #define BOOST_AUTO_TEST_CASE(CasenamE) /**/
@@ -316,11 +316,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 			//  BOOST_TEST( A[2][1] != A[2][1] );
 			print(A, "decomposition");
 
-			multi::array<complex, 2> C(A.extensions(), complex{0.0, 0.0});  // NOLINT(readability-identifier-length) conventional lapack name
+			multi::array<complex, 2> C(A.extents(), complex{0.0, 0.0});  // NOLINT(readability-identifier-length) conventional lapack name
 
 			multi::array<complex, 2> AA = A;
 
-			auto const [is, js] = AA.extensions();
+			auto const [is, js] = AA.extents();
 			for(auto i : is) {
 				for(auto j = 0; j != i; ++j) {  // NOLINT(altera-unroll-loops,altera-id-dependent-backward-branch)
 					AA[i][j] = std::conj(A[j][i]);
