@@ -8,7 +8,7 @@
 #include "boost/multi/adaptors/blas/filling.hpp"
 #include "boost/multi/utility.hpp"  // for size
 
-// #include <algorithm>  // for min
+#include <algorithm>  // IWYU pragma: keep
 #include <cassert>
 #include <memory>     // for allocator_traits
 #include <stdexcept>  // for runtime_error
