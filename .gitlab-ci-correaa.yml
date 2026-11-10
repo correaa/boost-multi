@@ -588,6 +588,7 @@ vs2022-shell hipsdk:
       -DCMAKE_CXX_STANDARD=20 -DCMAKE_HIP_STANDARD=20
       -DENABLE_HIP=1
       -DCMAKE_HIP_ARCHITECTURES="$env:HIP_ARCH"
+      -DDISABLE_THRUST_OMP=1
       -DCMAKE_PREFIX_PATH="$HIP"
       -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - cmake --build build --parallel ; if (!$?) { cmake --build build --parallel 1 --verbose }
