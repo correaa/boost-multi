@@ -1,20 +1,18 @@
 // Copyright 2019-2025 Alfredo A. Correa
 
-#include <boost/core/lightweight_test.hpp>
-
-#include <boost/multi/adaptors/lapack/core.hpp>
-#include <boost/multi/adaptors/lapack/getrf.hpp>
-
-#include <boost/multi/array.hpp>
-
 #include <boost/multi/adaptors/blas/gemm.hpp>
 #include <boost/multi/adaptors/blas/gemv.hpp>
+#include <boost/multi/adaptors/lapack/core.hpp>
+#include <boost/multi/adaptors/lapack/getrf.hpp>
+#include <boost/multi/array.hpp>
 
-// #include <array>
+#include <boost/core/lightweight_test.hpp>
+
+#include <algorithm>  // IWYU pragma: keep
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <utility>                                // for as_const
+#include <utility>  // for as_const
 
 namespace multi = boost::multi;
 
@@ -260,15 +258,15 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 		multi::array<int, 1> PP({9}, 0.0);
 
 		auto BB = +~multi::array<double, 2>{
-			{93.0, 186.0},  //  279.0,  372.0,  465.0 },
-			{84.4, 168.8},  //  253.2,  337.6,  422.0 },
-			{76.6, 153.2},  //  229.8,  306.4,  383.0 },
-			{70.0, 140.0},  //  210.0,  280.0,  350.0 },
-			{65.0, 130.0},  //  195.0,  260.0,  325.0 },
-			{62.0, 124.0},  //,  186.0,  248.0,  310.0 },
-			{61.4, 122.8},  //  184.2,  245.6,  307.0 },
-			{63.6, 127.2},  //  190.8,  254.4,  318.0 },
-			{69.0, 138.0}   //,  207.0,  276.0,  345.0 }
+			{93.0, 186.0}, //  279.0,  372.0,  465.0 },
+			{84.4, 168.8}, //  253.2,  337.6,  422.0 },
+			{76.6, 153.2}, //  229.8,  306.4,  383.0 },
+			{70.0, 140.0}, //  210.0,  280.0,  350.0 },
+			{65.0, 130.0}, //  195.0,  260.0,  325.0 },
+			{62.0, 124.0}, //,  186.0,  248.0,  310.0 },
+			{61.4, 122.8}, //  184.2,  245.6,  307.0 },
+			{63.6, 127.2}, //  190.8,  254.4,  318.0 },
+			{69.0, 138.0}  //,  207.0,  276.0,  345.0 }
 		};
 
 		lapack::context const ctxt;
@@ -276,7 +274,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape)
 
 		multi::array<int, 1> dee({9}, 0.0);
 		for(int i = 0; i != 9; ++i) {  // NOLINT(altera-unroll-loops)
-			dee[PP[i] - 1] = i;  // LAPACK ipiv is 1-based
+			dee[PP[i] - 1] = i;        // LAPACK ipiv is 1-based
 		}
 
 		for(int i = 0; i != size(AA); ++i) {
