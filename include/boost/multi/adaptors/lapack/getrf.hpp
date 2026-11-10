@@ -29,12 +29,21 @@ auto getrf(Context&& ctxt, A&& arr, IPIV&& ipiv){
 }
 
 template<class Context, class LU, class IPIV, class B>
-void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& barr){
+auto getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& barr) -> B&& {
 	assert( lu.size() == (~lu).size() );
 	assert( lu.stride() == 1 );
 	assert( ipiv.size() >= lu.size() );
 	assert( barr.stride() == 1 );
-	std::forward<Context>(ctxt).getrs('N', static_cast<int>(lu.size()), static_cast<int>((~barr).size()), lu.base(), static_cast<int>((~lu).stride()), ipiv.data(), std::forward<B>(barr).base(), static_cast<int>((~barr).stride()));
+	std::forward<Context>(ctxt).getrs(
+		'N', static_cast<int>(lu.size()),
+		static_cast<int>((~barr).size()),
+		lu.base(),
+		static_cast<int>((~lu).stride()),
+		ipiv.data(),
+		barr.base(),
+		static_cast<int>((~barr).stride())
+	);
+	return std::forward<B>(barr);
 }
 
 template<class Context, class LU, class IPIV, class V>
@@ -50,7 +59,7 @@ template<class A, class IPIV>
 auto getrf(A&& arr, IPIV&& ipiv){return getrf(::lapack::context{}, std::forward<A>(arr), std::forward<IPIV>(ipiv));}
 
 template<class LU, class IPIV, class B>
-void getrs(LU const& lu, IPIV const& ipiv, B&& barr){return getrs(::lapack::context{}, lu, ipiv, std::forward<B>(barr));}
+auto getrs(LU const& lu, IPIV const& ipiv, B&& barr) -> decltype(auto) {return getrs(::lapack::context{}, lu, ipiv, std::forward<B>(barr));}
 
 template<class LU, class IPIV, class B>
 void getrs_one(LU const& lu, IPIV const& ipiv, B&& barr){return getrs_one(::lapack::context{}, lu, ipiv, std::forward<B>(barr));}
