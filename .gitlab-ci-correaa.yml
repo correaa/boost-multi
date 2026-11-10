@@ -1263,7 +1263,7 @@ circle-dev:
     - non-shared
     - x86_64  # for circle executable
   script:
-    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build cmake g++-11 gzip libboost-serialization-dev libblas-dev liblapack-dev libelf1 libfftw3-dev make pkg-config tar tree wget libpython3-dev  # clang
+    - apt-get -qq install --no-install-recommends -y --quiet ca-certificates ninja-build clang-17 cmake g++-11 gzip libboost-serialization-dev libblas-dev liblapack-dev libelf1 libfftw3-dev make pkg-config tar tree wget libpython3-dev  # clang-17, not clang (=18 on 24.04): circle needs its stddef.h etc., but clang>=18 xmmintrin.h breaks circle builtins
     - mkdir -p build_latest ; cd build_latest
     - wget https://www.circle-lang.org/download/circle_linux_x86_64.tgz --no-verbose
     - tar -zxvf circle_linux_x86_64.tgz
