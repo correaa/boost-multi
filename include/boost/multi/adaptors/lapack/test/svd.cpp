@@ -9,8 +9,8 @@
 #include <boost/core/lightweight_test.hpp>
 
 #include <cmath>        // IWYU pragma: keep  // for std::abs
-#include <cstdlib>      // for abs
-#include <tuple>        // for tuple_element<>::type
+// #include <cstdlib>      // for abs
+// #include <tuple>        // for tuple_element<>::type
 #include <type_traits>  // IWYU pragma: keep  // for add_const<>::type
 // IWYU pragma: no_include <memory>  // for std::allocator
 

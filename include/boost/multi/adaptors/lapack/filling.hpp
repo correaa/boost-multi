@@ -14,7 +14,7 @@ namespace boost::multi::lapack {
 
 enum class filling : char {
 	lower = 'U',
-	upper = 'L',
+	upper = 'L'
 };
 
 #ifdef __NVCC__  // in place of global -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
@@ -26,13 +26,26 @@ enum class filling : char {
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#if __has_warning("-Wswitch-default")  // clang >= 18
+#pragma clang diagnostic ignored "-Wswitch-default"
+#endif
+#endif
+
 inline auto flip(filling side) -> filling {
-	switch(side) {
+	switch(side) {  // NOLINT(clang-diagnostic-switch-default)
 	case filling::lower: return filling::upper;
 	case filling::upper: return filling::lower;
 	}
 	BOOST_MULTI_UNREACHABLE();  // LCOV_EXCL_LINE
 }
+
+#if defined(__clang__)
+#if __has_warning("-Wswitch-default")  // clang >= 18
+#pragma clang diagnostic pop
+#endif
+#endif
 
 #ifdef __NVCOMPILER
 #pragma diagnostic pop

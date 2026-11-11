@@ -158,7 +158,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wno-documentation-unknown-command  # array_ref.hpp uses \mathrm{} etc. in doc comments, not a recognized Doxygen/clang command
 					# -Wno-float-equal  # BLWT uses equality between float and double
 					-Wno-error=\#warnings
-					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy
+					-Wno-c++98-compat -Wno-c++98-compat-bind-to-temporary-copy -Wno-c++98-compat-pedantic
 					> # -Wno-c++98-compat  # use of constexpr
 					$<$<CXX_COMPILER_ID:IntelLLVM>:
 					-Wno-unknown-warning-option  # for -Wno-enum-constexpr-conversion in older versions

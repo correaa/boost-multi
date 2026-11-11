@@ -140,8 +140,11 @@ class dft_range {
 		};
 
 		auto operator*() const -> fake_array {
-			fake_array fa{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extents()};
-			return fa;
+			if constexpr(dimensionality == 1) {
+				return fake_array{multi::extents_t<0>{}};
+			} else {
+				return fake_array{(*static_cast<typename std::decay_t<In>::const_iterator const&>(*this)).extents()};
+			}
 		}
 
 	 private:

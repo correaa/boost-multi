@@ -17,24 +17,24 @@ enable_testing()
 include(CTest)
 
 add_executable(equal.hip.amd.x equal.hip)
-target_link_libraries(equal.hip.amd.x PRIVATE multi roc::rocthrust)
+target_link_libraries(equal.hip.amd.x PRIVATE multi roc::rocthrust Boost::headers)
 add_test(NAME equal.hip.amd.x COMMAND  $<TARGET_FILE:equal.hip.amd.x>)
 
 add_executable(vector.hip.amd.x vector.hip)
 #set_source_files_properties(vector.hip PROPERTIES LANGUAGE HIP)
-target_link_libraries(vector.hip.amd.x PRIVATE multi roc::rocthrust)
+target_link_libraries(vector.hip.amd.x PRIVATE multi roc::rocthrust Boost::headers)
 
 add_test(NAME vector.hip.amd.x COMMAND $<TARGET_FILE:vector.hip.amd.x>)
 
 add_executable(array.hip.amd.x array.hip)
 #set_source_files_properties(array.hip PROPERTIES LANGUAGE HIP)
-target_link_libraries(array.hip.amd.x PRIVATE multi roc::rocthrust)
+target_link_libraries(array.hip.amd.x PRIVATE multi roc::rocthrust Boost::headers)
 
 add_test(NAME array.hip.amd.x COMMAND $<TARGET_FILE:array.hip.amd.x>)
 
 add_executable(speed.hip.amd.x speed.hip)
 #set_source_files_properties(speed.hip PROPERTIES LANGUAGE HIP)
-target_link_libraries(speed.hip.amd.x PRIVATE multi roc::rocthrust)
+target_link_libraries(speed.hip.amd.x PRIVATE multi roc::rocthrust Boost::headers)
 
 add_test(NAME speed.hip.amd.x COMMAND $<TARGET_FILE:speed.hip.amd.x>)
 

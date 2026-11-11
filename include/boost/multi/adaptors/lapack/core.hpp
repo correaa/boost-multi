@@ -33,7 +33,7 @@
 
 // cppcheck-suppress [preprocessorErrorDirective] bug in cppcheck 2.11
 #define xPOTRF(T)     v LAPACK(T##potrf)(UPLO, int const& N, T*, int const& LDA, int& INFO)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
-#define xSYEV(T)      v LAPACK(T##syev) (JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
+#define xSYEV(T)      v LAPACK(T##syev) (JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
 #define xSYEVD(T)     v LAPACK(T##syevd)(JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, IWORK, LIWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
 #define xHEEV(T)      v LAPACK(T##heev) (JOBZ, UPLO, int const& N, T*, int const& LDA, T*, T*, LWORK, int& INFO)  // NOLINT(bugprone-macro-parentheses)
 
@@ -54,9 +54,9 @@ void T##getrf_( \
                       /*On exit, the factors L and U from the factorization*/    \
 	integer     LDA,  /*The leading dimension of the array A.  LDA >= max(1,M).*/\
 	integer_ptr IPIV, /*The pivot indices; for 1 <= i <= min(M,N), row i of the matrix was interchanged with row IPIV(i).*/\
-	integer_out INFO  /*= 0:  successful exit*/\
-                      /*< 0:  if INFO = -i, the i-th argument had an illegal value*/\
-                      /*> 0:  if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.*/\
+	integer_out INFO  /* = 0:  successful exit*/\
+                      /* < 0:  if INFO = -i, the i-th argument had an illegal value*/\
+                      /* > 0:  if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.*/\
 ) \
 /*NOLINTEND(readability-identifier-length,bugprone-macro-parentheses)*/
 
@@ -69,19 +69,19 @@ void T##getrs_( \
 	                   /* = 'N':  A * X = B  (No transpose)                         */\
 	                   /* = 'T':  A**T* X = B  (Transpose)                          */\
 	                   /* = 'C':  A**T* X = B  (Conjugate transpose = Transpose)    */\
-	integer      N,    /*The order of the matrix A.  N >= 0.                        */\
-	integer      NRHS, /*The number of right hand sides, i.e., the number of columns*/\
-	                   /*of the matrix B.  NRHS >= 0.                               */\
+	integer      N,    /* The order of the matrix A.  N >= 0.                        */\
+	integer      NRHS, /* The number of right hand sides, i.e., the number of columns*/\
+	                   /* of the matrix B.  NRHS >= 0.                               */\
 	T const*     A,    /* The factors L and U from the factorization A = P*L*U      */\
-	                   /*as computed by SGETRF.                                     */\
-	integer      LDA,  /*The leading dimension of the array A.  LDA >= max(1,N).    */\
-	integer_cptr IPIV, /*The pivot indices from SGETRF; for 1<=i<=N, row i of the   */\
-	                   /*matrix was interchanged with row IPIV(i).                  */\
-	T*           B,    /*On entry, the right hand side matrix B.                    */\
-	                   /*On exit, the solution matrix X.                            */\
-	integer      LDB,  /*The leading dimension of the array B.  LDB >= max(1,N).    */\
-	integer_out  INFO  /*= 0:  successful exit                                      */\
-	                   /*< 0:  if INFO = -i, the i-th argument had an illegal value */\
+	                   /* as computed by SGETRF.                                     */\
+	integer      LDA,  /* The leading dimension of the array A.  LDA >= max(1,N).    */\
+	integer_cptr IPIV, /* The pivot indices from SGETRF; for 1<=i<=N, row i of the   */\
+	                   /* matrix was interchanged with row IPIV(i).                  */\
+	T*           B,    /* On entry, the right hand side matrix B.                    */\
+	                   /* On exit, the solution matrix X.                            */\
+	integer      LDB,  /* The leading dimension of the array B.  LDB >= max(1,N).    */\
+	integer_out  INFO  /* = 0:  successful exit                                      */\
+	                   /* < 0:  if INFO = -i, the i-th argument had an illegal value */\
 )
 // NOLINTEND(readability-identifier-length)
 // NOLINTEND(bugprone-macro-parentheses)
@@ -166,7 +166,7 @@ xSYEV(s)    ; xSYEV(d)     ;
 #undef INT
 
 
-#define xpotrf(T) template<class S> v potrf(char uplo, S n, T *x, S incx, int& info){LAPACK(T##potrf)(uplo, n, x, incx, info);}  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
+#define xpotrf(T) template<class S> v potrf(char uplo, S n, T *x, S incx, int& info){LAPACK(T##potrf)(uplo, static_cast<int>(n), x, static_cast<int>(incx), info);}  // NOLINT(bugprone-macro-parentheses,readability-identifier-length)
 
 namespace core {
 xpotrf(s) xpotrf(d)
