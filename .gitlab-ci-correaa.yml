@@ -856,7 +856,7 @@ cunvhpc:  # CUDA device compilation through nvhpc (nvhpc's nvcc driver + nvc++ a
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
   script:
-    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get install --no-install-recommends -y cmake ninja-build make libboost-serialization-dev libfftw3-dev pkg-config  # libblas-dev
     - which nvcc
     - which nvc++
     - nvcc --version
@@ -1271,7 +1271,8 @@ circle-dev:
     - cd ..
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1 -DCMAKE_CXX_FLAGS="-U__SSE3__ -DHERK_BISECT_N=${HERK_BISECT_N:-0} -DGEMM_BISECT_N=${GEMM_BISECT_N:-0}"  # -U__SSE3__: keeps <random> from including clang's *mmintrin.h, whose builtin calls circle rejects
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1 -DCMAKE_CXX_FLAGS="-U__SSE3__ -DHERK_BISECT_N=${HERK_BISECT_N:-0} -DGEMM_BISECT_N=${GEMM_BISECT_N:-0}"
+  # -U__SSE3__: keeps <random> from including clang's *mmintrin.h, whose builtin calls circle rejects
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
 
