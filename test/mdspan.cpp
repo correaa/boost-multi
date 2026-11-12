@@ -14,7 +14,7 @@
 
 namespace multi = boost::multi;
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
 template<
 	class MultiArray,
 	typename T                   = std::remove_reference_t<typename std::decay_t<MultiArray>::element_cref>,
@@ -57,7 +57,7 @@ auto main() -> int {
 
 		BOOST_TEST( carr[1][1] == 6 );
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
 		std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr_const = carr;
 		BOOST_TEST(( &mdspan_arr_const[0, 0] == &carr[0][0] ));
 		fun_const(mdspan_arr_const);
@@ -87,7 +87,7 @@ auto main() -> int {
 
 		BOOST_TEST( arr[1][1] == 6 );
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
 		std::mdspan<int const, std::dextents<std::size_t, 2>, std::layout_stride> mdspan_arr_const = arr;
 		BOOST_TEST(( &mdspan_arr_const[0, 0] == &arr[0][0] ));
 		fun_const(mdspan_arr_const);
@@ -135,7 +135,7 @@ auto main() -> int {
 #endif
 	}
 	{
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
 		multi::array<int, 2> arr({3, 2}, 5);
 
 		std::mdspan<int, std::dextents<std::size_t, 2>> mdspan_arr = arr;
