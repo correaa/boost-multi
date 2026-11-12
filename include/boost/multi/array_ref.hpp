@@ -1531,9 +1531,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	operator std::mdspan<T const, std::dextents<std::size_t, D>, std::layout_stride>() const& { return to_mdspan_aux_(); }
 #endif
 
-	// /// possibly moves the contents
-	// friend BOOST_MULTI_HD constexpr auto move(const_subarray const& self) -> const_subarray { return const_subarray(self.layout(), self.base_); }
-
 	/// returns a random-access range with all the elements of the array
 	constexpr auto elements() const& { return const_elements_range(this->base(), this->layout()); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
@@ -1542,13 +1539,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  public:
 	~const_subarray() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-
-	// 	BOOST_MULTI_FRIEND_CONSTEXPR auto sizes(const_subarray const& self) noexcept -> typename const_subarray::sizes_type { return self.sizes(); }  // needed by nvcc
-	// #if (defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || (defined(__NVCOMPILER) /*&& (__NVCOMPILER_MAJOR__ < 23 || (__NVCOMPILER_MAJOR__ == 23 && __NVCOMPILER_MINOR__ < 11))*/)
-	// 	template<class = void> friend constexpr auto size(const_subarray const& self) noexcept -> typename const_subarray::size_type { return self.size(); }
-	// #endif
-
-	//	friend constexpr auto dimensionality(const_subarray const& /*self*/) { return D; }
 
  private:
 	using default_allocator_type = typename multi::pointer_traits<const_subarray::element_ptr>::default_allocator_type;
@@ -1559,8 +1549,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
-
-	// BOOST_MULTI_FRIEND_CONSTEXPR auto get_allocator(const_subarray const& self) -> default_allocator_type { return self.get_allocator(); }
 
 	/// Associated type that this reference decays to (when true copies are needed)
 	using decay_type = array<std::decay_t<typename types::element>, D, typename multi::pointer_traits<typename const_subarray::element_ptr>::default_allocator_type>;
@@ -3709,9 +3697,9 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) & -> const_subarray { return sliced_aux_(first, last); }
 	BOOST_MULTI_HD constexpr auto sliced(index first, index last) && -> const_subarray { return sliced_aux_(first, last); }
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
  private:
-	auto to_mdspan_aux_() const {
+	auto to_strided_mdspan_aux_() const {
 		using std::apply;
 		auto shape = apply(
 			[](auto... sizes) -> auto { return std::dextents<std::size_t, 1>{static_cast<std::size_t>(sizes)...}; },
@@ -3727,13 +3715,13 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 			this->base_, std::layout_stride::mapping(shape, strides)
 		};
 	}
-	auto to_mdspan_() const& {
-		return std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>(to_mdspan_aux_());
+	auto to_strided_mdspan_() const& {
+		return std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>(to_strided_mdspan_aux_());
 	}
 
  public:
 	/// A (const_)subarray can be converted implicitly to a strided mdspan object
-	operator std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>() const& { return to_mdspan_(); }
+	operator std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>() const& { return to_strided_mdspan_(); }
 #endif
 
  private:
@@ -4272,7 +4260,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	constexpr explicit operator std::span<U>() { return std::span<U>(this->data_elements(), this->size()); }
 #endif
 
-#if defined(__cpp_lib_mdspan) && (__cpp_lib_mdspan >= 202207L)
+#ifdef BOOST_MULTI_HAS_MDSPAN
  private:
 	auto to_mdspan_contiguous_aux_() const {
 		using std::apply;
