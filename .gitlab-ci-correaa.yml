@@ -1523,7 +1523,7 @@ inq hip-emulated:
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
     OMPI_MCA_btl_vader_single_copy_mechanism: "none"
     OMPI_MCA_rmaps_base_oversubscribe: "1"
-    INQ_EXEC_ENV: "mpirun --oversubscribe -n 1"  # 2 ranks (not 4), each one simulates its own GPU on the CPU; inq's arrays are managed memory, which the simulator gives as plain host memory, so the distro Open MPI can read them
+    INQ_EXEC_ENV: "mpirun --oversubscribe -n 1"  # each rank simulates its own GPU on the CPU
   tags:
     - non-shared
     - large-disk-space
@@ -1547,7 +1547,7 @@ inq hip-emulated:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DINQ_MPI_DEVICE_POINTERS_RUN=0  # skip inq's GPU-aware MPI check: it tests hipMalloc memory, which on the simulator is not host-addressable, but inq's arrays use hipMallocManaged, which is
+    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DENABLE_GPU_INTEGRATED_MEMORY=OFF -DINQ_MPI_DEVICE_POINTERS_RUN=0  # the simulator's hipMalloc memory is not host-addressable, so inq's arrays must use hipMallocManaged (plain host memory there) for the distro Open MPI and MPI-IO to read them; the GPU-aware check tests hipMalloc memory, skip it
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     # only the unit tests, the full simulations (*.sh, *.py, inq::tests::*) take minutes on a real GPU and would not finish on a simulator
