@@ -3715,7 +3715,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 			this->base_, std::layout_stride::mapping(shape, strides)
 		};
 	}
-	auto to_stried_mdspan_() const& {
+	auto to_strided_mdspan_() const& {
 		return std::mdspan<T const, std::dextents<std::size_t, 1>, std::layout_stride>(to_strided_mdspan_aux_());
 	}
 
