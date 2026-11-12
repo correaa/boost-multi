@@ -1523,7 +1523,7 @@ inq hip-emulated:
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
     OMPI_MCA_btl_vader_single_copy_mechanism: "none"
     OMPI_MCA_rmaps_base_oversubscribe: "1"
-    INQ_EXEC_ENV: "mpirun --oversubscribe -n 2"  # 2 ranks (not 4), each one simulates its own GPU on the CPU
+    INQ_EXEC_ENV: "mpirun --oversubscribe -n 1"  # 1 rank: the distro Open MPI is not ROCm-aware and can't read the simulator's device memory
   tags:
     - non-shared
     - large-disk-space
@@ -1546,7 +1546,7 @@ inq hip-emulated:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942
+    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DINQ_MPI_DEVICE_POINTERS_RUN=0  # skip inq's GPU-aware MPI check, the simulator's device memory is not host-addressable and the distro Open MPI is not ROCm-aware
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     # only the unit tests, the full simulations (*.sh, *.py, inq::tests::*) take minutes on a real GPU and would not finish on a simulator
