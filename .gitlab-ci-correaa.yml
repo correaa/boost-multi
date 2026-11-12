@@ -1518,12 +1518,12 @@ inq hip-emulated:
   image: rocm/dev-ubuntu-24.04:6.4.4-complete  # same as inq rocm, the simulator supports ROCm 6.4 to 7.2
   allow_failure: true  # TODO(correaa) flip to false once it passes (untested, VkFFT's hiprtc kernels on the simulator unverified)
   variables:
-    PANTHEONSIM_COMMIT: dd9dbb1f14be1aa69dc45c04253491fe0fd2c533  # pinned, the simulator is under active development
+    PANTHEONSIM_COMMIT: 1baa3ad3e3da8128989ace97b93d94fde9d6993d  # pinned, the simulator is under active development; >= 9beca831 for v_pk_add_f32 with constant 0 (VkFFT's float negate, pantheonsim #580)
     OMPI_ALLOW_RUN_AS_ROOT: "1"  # the container runs as root
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
     OMPI_MCA_btl_vader_single_copy_mechanism: "none"
     OMPI_MCA_rmaps_base_oversubscribe: "1"
-    INQ_EXEC_ENV: "mpirun --oversubscribe -n 1"  # 1 rank: the distro Open MPI is not ROCm-aware and can't read the simulator's device memory
+    INQ_EXEC_ENV: "mpirun --oversubscribe -n 1"  # 2 ranks (not 4), each one simulates its own GPU on the CPU; inq's arrays are managed memory, which the simulator gives as plain host memory, so the distro Open MPI can read them
   tags:
     - non-shared
     - large-disk-space
@@ -1532,6 +1532,7 @@ inq hip-emulated:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git g++ gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - git clone https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim checkout $PANTHEONSIM_COMMIT
     - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
+    - /opt/pantheonsim/build/vgpu --version
     - /opt/pantheonsim/build/vgpu info --gpu amd/mi300x
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
@@ -1546,7 +1547,7 @@ inq hip-emulated:
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
     # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DINQ_MPI_DEVICE_POINTERS_RUN=0  # skip inq's GPU-aware MPI check, the simulator's device memory is not host-addressable and the distro Open MPI is not ROCm-aware
+    - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DINQ_MPI_DEVICE_POINTERS_RUN=0  # skip inq's GPU-aware MPI check: it tests hipMalloc memory, which on the simulator is not host-addressable, but inq's arrays use hipMallocManaged, which is
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     # only the unit tests, the full simulations (*.sh, *.py, inq::tests::*) take minutes on a real GPU and would not finish on a simulator
