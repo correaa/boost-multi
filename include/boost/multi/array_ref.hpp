@@ -3341,14 +3341,14 @@ class const_subarray<T, 0, ElementPtr, Layout>
 
  private:
 	template<class TT>
-	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+	static constexpr auto to_address_(TT* ptr) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
-		return p;
+		return ptr;
 	}
 
 	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
-	static constexpr auto to_address_(const TT& p) noexcept {
-		return to_address_(p.operator->());
+	static constexpr auto to_address_(const TT& ptr) noexcept {
+		return to_address_(ptr.operator->());
 	}
 
 	constexpr auto as_raw_aux_() const -> subarray<T, 0, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
@@ -3360,10 +3360,6 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	}
 
  public:
-	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
-	// 	return as_raw_aux_().as_const();
-	// }
-
 	constexpr auto raw_array_cast() const& {
 		return as_raw_aux_().as_const();
 	}
@@ -4013,14 +4009,14 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
  private:
 	template<class TT>
-	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+	static constexpr auto to_address_(TT* ptr) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
-		return p;
+		return ptr;
 	}
 
 	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
-	static constexpr auto to_address_(const TT& p) noexcept {
-		return to_address_(p.operator->());
+	static constexpr auto to_address_(const TT& ptr) noexcept {
+		return to_address_(ptr.operator->());
 	}
 
 	constexpr auto as_raw_aux_() const -> subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
@@ -4032,11 +4028,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	}
 
  public:
-	// /// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
-	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
-	// 	return as_raw_aux_().as_const();
-	// }
-
 	/// yields a view of the same elements through a raw pointer (a fancy pointer becomes `T*`), for arrays already using raw pointers it is an equivalent view. (Useful for kernel translation.)
 	constexpr auto raw_array_cast() const& -> const_subarray<T, 1, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
 		return as_raw_aux_().as_const();
