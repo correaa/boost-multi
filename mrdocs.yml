@@ -20,7 +20,7 @@ generator: adoc
 multipage: true
 
 extract-private: false
-extract-friends: false
+# extract-friends: false  # this is deprecated, friend are always extracted
 
 # inherit-base-members: "copy-dependencies"  # "reference" "copy-all"
 
