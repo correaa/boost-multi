@@ -1528,7 +1528,7 @@ inq hip-emulated:
     - large-disk-space
     - x86_64  # for image
   script:
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git g++ gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git g++ gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev python3-numpy rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - git clone --depth 1 https://github.com/pantheongpu/pantheonsim /opt/pantheonsim
     - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
     - /opt/pantheonsim/build/vgpu --version
@@ -1550,7 +1550,7 @@ inq hip-emulated:
     - cmake --install .
     # the unit tests plus the quickest full simulations (< 10 s on CPU, ~50x slower on the simulator); the rest of inq::tests::* would not finish on a simulator
     # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests|^inq::test_list_is_current$|^inq::tests::(bo|neon|help\.sh|na2\+\.py)$' --timeout 7200 --output-on-failure  # some unit tests take more than 30 min on the simulator
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests|^inq::test_list_is_current$|^inq::tests::(bo|neon|help\.sh|na2\+\.py)$' --timeout 10800 --output-on-failure  # drude_weight takes ~2 h on the simulator, more when sharing the CPU with other tests (CTEST_PARALLEL_LEVEL)
   timeout: 8 hours  # can be capped by the runner's maximum timeout
   needs: ["inq", "hip-emulated"]
 
