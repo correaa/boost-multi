@@ -6,7 +6,7 @@
 
 #include <boost/core/lightweight_test.hpp>
 
-#if (__cplusplus >= 202302L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))
+#if (__cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L))  // nvc++ (26.5) reports 202100L for -std=c++23
 #if __has_include(<mdspan>)
 #include <mdspan>
 #endif
