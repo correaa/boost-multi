@@ -1378,7 +1378,7 @@ inq cuda:
 
 inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and CXX compiler (like cunvhpc), and nvhpc's own CUDA-aware MPI (HPC-X), no distro MPI in the image
   stage: test
-  image: nvcr.io/nvidia/nvhpc:26.5-devel-cuda13.2-ubuntu24.04  # same image as nvhpc-26.5, https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
+  image: nvcr.io/nvidia/nvhpc:25.11-devel-cuda13.0-ubuntu24.04  # newest nvhpc on CUDA 13.0: the runner driver (580) supports CUDA <= 13.0, and NVRTC 13.2 (26.5) emits PTX the driver JIT cannot load ("cannot load the runtime compiled kernel"), https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nvhpc/tags
   tags:
     - non-shared
     - nvidia-gpu
