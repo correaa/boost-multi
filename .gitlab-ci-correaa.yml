@@ -1770,7 +1770,9 @@ mrdocs:
 # see result of MrDocs here: https://correaa.gitlab.io/boost-multi/multi/reference/index.html
 
 antora:
-  image: antora/antora
+  image:
+    name: antora/antora:latest
+    pull_policy: always  # some runners (cybertruck, asus) cache an old :latest with Node 16, Antora >= 3.2.2 needs Node >= 20
   stage: build
   allow_failure: false
   interruptible: false
