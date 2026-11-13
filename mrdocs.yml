@@ -38,6 +38,7 @@ exclude-symbols:
 # sort-members-by: location
 # sort-namespace-members-by: location
 
+warn-if-undocumented: true  # the default, explicit so it isn't turned off by accident
 warn-no-paramdoc: false
 
 verbose: true

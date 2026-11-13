@@ -983,7 +983,7 @@ struct                                                                          
 	void serialize(Archive& arxiv, unsigned int const version) { ref_::serialize(arxiv, version); }  // cppcheck-suppress duplInheritedMember ; to override
 
  private:
-	void swap_(dynamic_array& other) noexcept { operator()().swap(other()); }  // cppcheck-suppress functionStatic
+	void swap_(dynamic_array& other) noexcept { swap(operator()(), other()); }  // cppcheck-suppress functionStatic
 
  public:
 	/// swaps the contents of two dynamic arrays (extents must match, doesn't allocate, O(N) operations)

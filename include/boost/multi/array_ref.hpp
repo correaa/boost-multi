@@ -2574,27 +2574,29 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 		return *this;
 	}
 
-	constexpr void swap(subarray& other) & noexcept {
+ private:
+	constexpr void swap_(subarray& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extents() == other.extents());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
 	}
 
-	constexpr void swap(subarray&& other) & noexcept {
+	constexpr void swap_(subarray&& other) & noexcept {
 		BOOST_MULTI_ASSERT(this->extent() == other.extent());
 		adl_swap_ranges(this->elements().begin(), this->elements().end(), std::move(other).elements().begin());
 	}
 
-	constexpr void swap(subarray&& other) && noexcept { return swap(std::move(other)); }
-	constexpr void swap(subarray& other) && noexcept { return swap(other); }
+	constexpr void swap_(subarray&& other) && noexcept { return swap_(std::move(other)); }
+	constexpr void swap_(subarray& other) && noexcept { return swap_(other); }
 
+ public:
 	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
-	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap(std::move(other)); }
+	friend constexpr void swap(subarray&& self, subarray&& other) noexcept { std::move(self).swap_(std::move(other)); }
 	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
-	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap(other); }
+	friend constexpr void swap(subarray&& self, subarray& other) noexcept { std::move(self).swap_(other); }
 	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
-	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap(std::move(other)); }
+	friend constexpr void swap(subarray& self, subarray&& other) noexcept { self.swap_(std::move(other)); }
 	/// swaps the contents of subarrays with other (extents must match, doesn't allocate, O(N) operations)
-	friend constexpr void swap(subarray& self, subarray& other) noexcept { self.swap(other); }
+	friend constexpr void swap(subarray& self, subarray& other) noexcept { self.swap_(other); }
 
 	// fix mutation
 	// template<class TT, class... As> constexpr auto operator=(const_subarray<TT, 1L, As...> const& other) && -> decltype(auto) {operator=(          other ); return *this;}
