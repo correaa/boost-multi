@@ -2111,14 +2111,14 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 
  private:
 	template<class TT>
-	static constexpr auto to_address_(TT* p) noexcept -> TT* {
+	static constexpr auto to_address_(TT* ptr) noexcept -> TT* {
 		static_assert(!std::is_function_v<TT>);
-		return p;
+		return ptr;
 	}
 
 	template<class TT>	// if constexpr (requires{ std::pointer_traits<T>::to_address(p); })
-	static constexpr auto to_address_(const TT& p) noexcept {
-		return to_address_(p.operator->());
+	static constexpr auto to_address_(const TT& ptr) noexcept {
+		return to_address_(ptr.operator->());
 	}
 
 	constexpr auto as_raw_aux_() const& -> subarray<T, D, typename std::pointer_traits<element_ptr>::element_type*, Layout> {  // name taken from std::static_pointer_cast
@@ -2130,14 +2130,6 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	}
 
  public:
-	// /// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
-	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() const& {
-	// 	return as_raw_aux_().as_const();
-	// }
-
-	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() & { return as_raw_aux_(); }
-	// [[deprecated("use raw_array_cast")]] constexpr auto as_raw() && { return as_raw_aux_(); }
-
 	/// yields a view of the array where the underlying memory handle is a raw pointer (in general `T*`), useful for lambda kernels. Handler must be convertible with a pointer (e.g. through `std::to_address`). 
 	constexpr auto raw_array_cast() const& {
 		return as_raw_aux_().as_const();
