@@ -65,7 +65,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		using std::swap;
 		auto&& arr1_sub = arr1();
 		auto&& arr2_sub = arr2();
-		arr1_sub.swap(arr2_sub);
+		swap(arr1_sub, arr2_sub);
+		// arr1_sub.swap(arr2_sub);
 
 		BOOST_TEST( arr1[1] == 101 );
 		BOOST_TEST( arr2[1] ==   1 );

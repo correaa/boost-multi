@@ -682,7 +682,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arrA({4, 5}, 99);
 		multi::array<int, 2> arrB({4, 5}, 88);
 
-		arrA().swap(arrB());
+		using std::swap;
+		swap(arrA(), arrB());
+		// arrA().swap(arrB());
 
 		BOOST_TEST( arrA[0][0] == 88 );
 		BOOST_TEST( arrB[0][0] == 99 );
@@ -693,7 +695,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		multi::array<int, 2> arrA({4, 5}, 99);
 		multi::array<int, 2> arrB({4, 5}, 88);
 
-		arrA[0].swap(arrB[0]);
+		swap(arrA[0], arrB[0]);
 
 		BOOST_TEST( arrA[0][0] == 88 );
 		BOOST_TEST( arrB[0][0] == 99 );

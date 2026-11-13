@@ -20,7 +20,7 @@ generator: adoc
 multipage: true
 
 extract-private: false
-extract-friends: false
+# extract-friends: false  # this is deprecated, friend are always extracted
 
 # inherit-base-members: "copy-dependencies"  # "reference" "copy-all"
 
@@ -38,6 +38,7 @@ exclude-symbols:
 # sort-members-by: location
 # sort-namespace-members-by: location
 
+warn-if-undocumented: true  # the default, explicit so it isn't turned off by accident
 warn-no-paramdoc: false
 
 verbose: true

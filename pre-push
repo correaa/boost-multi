@@ -68,6 +68,10 @@ export UBSAN_OPTIONS=print_stacktrace=1
 # Cross-page `xref:file.adoc#id[]` links may emit warnings under plain Asciidoctor; the PDF is still produced.
 PATH="/usr/bin:$PATH" asciidoctor-pdf --safe-mode unsafe --failure-level WARN -a pdf-theme=doc/pdf-theme.yml -a localdatetime="$(date)" doc/single.adoc -a allow-uri-read -o multi-documentation.pdf && echo "generated multi-documentation.pdf"
 
+# reference pages (same as the mrdocs CI job), warns on undocumented entries but doesn't fail (add --warn-as-error once they are all documented)
+# install: wget https://github.com/cppalliance/mrdocs/releases/download/develop-release/MrDocs-develop-Linux.tar.gz && tar zxf MrDocs-develop-Linux.tar.gz -C $HOME/opt && ln -s $HOME/opt/MrDocs-*/bin/mrdocs $HOME/bin/
+(mrdocs --version 2>/dev/null && (DIR=build-mrdocs; [ -d "$DIR" ] || CXX=clang++ cmake -S . -B "$DIR" -DCMAKE_CXX_STANDARD=23 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DMULTI_BUILD_TESTS=OFF -DMULTI_BUILD_PACKAGE=OFF) && mrdocs mrdocs.yml || exit 666) || echo "mrdocs not installed"
+
 if [[ $(uname -m) != 'aarch64' ]]; then
 (clang-format-21 --version 2>/dev/null && clang-format-21 --output-replacements-xml --dry-run -Werror include/**/*.hpp test/*.cpp || exit 666) || echo "clang-format-21 not installed"
 
