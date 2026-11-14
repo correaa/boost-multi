@@ -55,6 +55,12 @@ else()
 
         thrust_create_target(ThrustOMP DEVICE OMP)
 
+        target_compile_options(ThrustOMP INTERFACE
+            $<$<CXX_COMPILER_ID:MSVC>:
+                /wd4702  # CCCL: unreachable code in libcudacxx/include/cuda/std/__string/constexpr_c_functions.h, a code-generator warning that /external:W0 doesn't silence
+            >
+        )
+
         add_executable(omp.cpp.x omp.cpp)
 
         target_include_directories(omp.cpp.x SYSTEM PUBLIC
