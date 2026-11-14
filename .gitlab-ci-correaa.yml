@@ -1453,6 +1453,9 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     # same A30-over-RTX-A2000 selection as inq cuda
     - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
     - 'timeout 120 "$MPI_RUN" -n 2 ./mpicheck'
+    # singleton MPI_Init (no mpirun), the way inq's configure-time check runs; diagnostic only, report and continue
+    - 'timeout 60 ./mpicheck || echo "singleton mpicheck failed, exit status $? (124 is a timeout)"'
+    - 'OMPI_MCA_ess_singleton_isolated=1 timeout 60 ./mpicheck || echo "singleton mpicheck with ess_singleton_isolated failed, exit status $? (124 is a timeout)"'
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
