@@ -1389,8 +1389,8 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     OMPI_ALLOW_RUN_AS_ROOT: "1"
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
     OMPI_MCA_rmaps_base_oversubscribe: "1"
-    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware (accelerator:cuda stages device buffers)
-    OMPI_MCA_btl: self,sm,smcuda  # smcuda (CUDA IPC) when it initializes, sm otherwise; self,smcuda alone leaves ranks unreachable
+    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware (Open MPI 4's built-in CUDA support stages device buffers)
+    OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable; Open MPI 4 (HPC-X in nvhpc 25.x) calls the shared-memory BTL vader, 5.x renamed it sm
     OMPI_MCA_coll: ^ucc,hcoll  # keep coll:cuda for collectives on device buffers
     OMPI_MCA_osc: ^ucx
   script:
