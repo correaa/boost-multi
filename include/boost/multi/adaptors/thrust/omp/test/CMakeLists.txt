@@ -55,6 +55,7 @@ else()
 
         thrust_create_target(ThrustOMP DEVICE OMP)
 
+        target_compile_definitions(ThrustOMP INTERFACE $<$<CXX_COMPILER_ID:NVHPC>:CCCL_DISABLE_FLOAT128_SUPPORT>)  # workarounds https://github.com/NVIDIA/cccl/issues/12648
         target_compile_options(ThrustOMP INTERFACE
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4702  # CCCL: unreachable code in libcudacxx/include/cuda/std/__string/constexpr_c_functions.h, a code-generator warning that /external:W0 doesn't silence
