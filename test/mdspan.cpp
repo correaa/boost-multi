@@ -161,7 +161,7 @@ auto main() -> int {
 		};
 		multi::array<double, 2> C({2, 2}, 0.0);
 
-		using mdspan2D = std::mdspan<double, std::dextents<std::size_t, 2>, std::layout_stride>;
+		using mdspan2D = std::mdspan<double, std::dims<2>, std::layout_stride>;
 
 		mdspan2D A_mds = A;
 		mdspan2D B_mds = B;
