@@ -1469,6 +1469,8 @@ class const_subarray : private detail::array_types<T, D, ElementPtr, Layout> {
 	using detail::array_types<T, D, ElementPtr, Layout>::base_;
 	using detail::array_types<T, D, ElementPtr, Layout>::layout_mutable;
 
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
+
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
 
@@ -3265,6 +3267,8 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using detail::array_types<T, 0, ElementPtr, Layout>::base_;
 	using detail::array_types<T, 0, ElementPtr, Layout>::layout_mutable;
 
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
+
  public:
 
 	using element_type [[deprecated("use ::element")]] = typename types::element;
@@ -3492,6 +3496,8 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
  protected:
 	using detail::array_types<T, 1, ElementPtr, Layout>::base_;
 	using detail::array_types<T, 1, ElementPtr, Layout>::layout_mutable;
+
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
 
  public:
 

@@ -60,7 +60,8 @@ class involuted {  // NOLINT(misc-use-internal-linkage)
 	constexpr operator decay_type() const& noexcept { return f_(r_); }  // NOSONAR(cpp:S1709) simulates a reference
 
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
-	template<class DecayType> constexpr auto operator=(DecayType&& other) & -> involuted& {
+	template<class DecayType>
+	constexpr auto operator=(DecayType&& other) & -> involuted& {
 		r_ = f_(std::forward<DecayType>(other));
 		return *this;
 	}
@@ -84,7 +85,8 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	It                              it_;
 	BOOST_MULTI_NO_UNIQUE_ADDRESS F f_;
 
-	template<class, class> friend class involuter;
+	template<class, class>
+	friend class involuter;
 
  public:
 	using pointer         = involuter<typename std::iterator_traits<It>::pointer, F>;
@@ -100,7 +102,8 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 
 	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)
-	template<class Other> constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
+	template<class Other>
+	constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
@@ -140,11 +143,14 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 #endif
 
 #ifdef __cpp_deduction_guides
-template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
+template<class T, class F>
+involuted(T&&, F) -> involuted<T const, F>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
-template<class Ref> using negated = involuted<Ref, std::negate<>>;
-template<class Ptr> using negater = involuter<Ptr, std::negate<>>;
+template<class Ref>
+using negated = involuted<Ref, std::negate<>>;
+template<class Ptr>
+using negater = involuter<Ptr, std::negate<>>;
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
 	// BOOST_AUTO_TEST_CASE(multi_array_involution)
