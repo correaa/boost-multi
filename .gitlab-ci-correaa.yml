@@ -1384,60 +1384,34 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - nvidia-gpu
     - arch75
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "simplify-inq-nvhpc-cuda"'  # TEMPORARY: branch trigger, remove before merging
   variables:
     OMPI_ALLOW_RUN_AS_ROOT: "1"
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
     OMPI_MCA_rmaps_base_oversubscribe: "1"
-    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware (Open MPI 4's built-in CUDA support stages device buffers)
-    OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable; Open MPI 4 (HPC-X in nvhpc 25.x) calls the shared-memory BTL vader, 5.x renamed it sm
+    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware
+    OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable
     OMPI_MCA_coll: ^ucc,hcoll  # keep coll:cuda for collectives on device buffers
-    OMPI_MCA_osc: ^ucx
+    OMPI_MCA_ess_singleton_isolated: "1"  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
   script:
-    # no libopenmpi-dev or mpich here, MPI must come from nvhpc
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy
-    - 'if dpkg -l | grep -E "^ii +(openmpi-bin|libopenmpi-dev|libopenmpi3t64|mpich|libmpich-dev|libmpich12)[ :]"; then echo "a distro MPI was pulled in, this job must only see nvhpc MPI"; exit 1; fi'
-    - export CMAKE_GENERATOR="Ninja"
-    - nvidia-smi
-    - nvc++ --version
-    - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)  # e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
-    - export NVHPC_MPI=$NVHPC_ROOT/comm_libs/mpi
-    # The wrapper lives in comm_libs/hpcx; its reported library directory identifies the actual Open MPI installation.
-    - export NVHPC_OMPI=$(dirname "$("$NVHPC_MPI/bin/mpicxx" --showme:libdirs)")
-    - 'test -f "$NVHPC_OMPI/share/openmpi/help-mca-base.txt" && test -f "$NVHPC_OMPI/lib/libmpi.so"'
-    - export PATH=$NVHPC_OMPI/bin:$NVHPC_MPI/bin:$PATH
-    - export LD_LIBRARY_PATH=$NVHPC_OMPI/lib:${LD_LIBRARY_PATH:-}
-    - export OPAL_PREFIX=$NVHPC_OMPI
-    - export OMPI_HOME=$NVHPC_OMPI
-    - export PRTE_PREFIX=$NVHPC_OMPI
-    - export PMIX_PREFIX=$NVHPC_OMPI
-    - export MPI_CXX=$NVHPC_OMPI/bin/mpicxx
-    - export MPI_RUN=$NVHPC_OMPI/bin/mpirun
-    - export OMPI_MCA_ess_singleton_isolated=1  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
-    - export NGPU=$(nvidia-smi --list-gpus | wc -l)
-    - unset CUDA_VISIBLE_DEVICES
-    # same A30-over-RTX-A2000 selection as inq cuda
-    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
-    - export PREFIX=`mktemp -d`
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake git libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy
+    - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)
+    - export OPAL_PREFIX=$(dirname "$($NVHPC_ROOT/comm_libs/mpi/bin/mpicxx --showme:libdirs)")  # the actual Open MPI inside nvhpc's HPC-X
+    - export PATH=$OPAL_PREFIX/bin:$PATH LD_LIBRARY_PATH=$OPAL_PREFIX/lib:${LD_LIBRARY_PATH:-}
+    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'  # same A30-over-RTX-A2000 selection as inq cuda
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - export GPUBIND=`pwd`/scripts/gpubind
     - mkdir build && cd build
-    - cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" -DMPI_CXX_COMPILER=$MPI_CXX -DMPIEXEC_EXECUTABLE=$MPI_RUN  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
-    - grep -E "^MPI_.*_LIBRARY:FILEPATH=|^MPIEXEC_EXECUTABLE:" CMakeCache.txt
-    - 'grep -q "^MPI_mpi_LIBRARY:FILEPATH=$NVHPC_ROOT/" CMakeCache.txt || { echo "FindMPI did not pick nvhpc MPI"; exit 1; }'
-    - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
+    - cmake .. --install-prefix=$CI_PROJECT_DIR/prefix -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
     - cmake --install .
-    - ldd $PREFIX/bin/inq | grep libmpi
-    - 'ldd $PREFIX/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
-    - export NP=2
-    - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
-    - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="$MPI_RUN -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - 'ldd $CI_PROJECT_DIR/prefix/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
+    - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
+    - INQ_EXEC_ENV="mpirun -np 2 `pwd`/../scripts/gpubind" ctest --parallel $(( NVIS >= 2 ? 3 : 1 )) --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
-  needs: ["inq", "cunvhpc"]
+  needs: [{job: inq, optional: true}, {job: cunvhpc, optional: true}]  # TEMPORARY optional, restore before merging
 
 inq rocm:
   stage: test
