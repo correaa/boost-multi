@@ -1405,8 +1405,16 @@ template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct 
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+// nvcc < 12.4 (EDG front end) reports SFINAE failures (e.g. has_extents) for members reached through a private base,
+// even when re-exported with using-declarations; fall back to public inheritance there
+#if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))
+#define BOOST_MULTI_ARRAY_TYPES_ACCESS public
+#else
+#define BOOST_MULTI_ARRAY_TYPES_ACCESS private
+#endif
+
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-class const_subarray : private detail::array_types<T, D, ElementPtr, Layout> {
+class const_subarray : BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
@@ -3231,7 +3239,7 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 /// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
-: private detail::array_types<T, 0, ElementPtr, Layout> {
+: BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, 0, ElementPtr, Layout> {
  public:
 	using types = detail::array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
@@ -3448,7 +3456,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inheritance) to define operators via CRTP
 : public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, private detail::array_types<T, 1, ElementPtr, Layout> {
+, BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, 1, ElementPtr, Layout> {
  public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
