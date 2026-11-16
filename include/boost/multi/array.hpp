@@ -269,7 +269,8 @@ struct                                                                          
 
 	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept
 	: array_alloc{alloc}, ref_(std::exchange(static_cast<ref_&>(other).base_, nullptr), other.extents()) {
-		static_cast<ref_&&>(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+		// static_cast<ref_&&>(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 	explicit constexpr dynamic_array(decay_type&& other) noexcept
