@@ -1406,10 +1406,36 @@ template<typename T, ::boost::multi::dimensionality_type D, class Alloc> struct 
 #endif
 
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
+class const_subarray : private detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
+	using detail::array_types<T, D, ElementPtr, Layout>::size;
+	using detail::array_types<T, D, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, D, ElementPtr, Layout>::extents;
+	using detail::array_types<T, D, ElementPtr, Layout>::extent;
+	using detail::array_types<T, D, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, D, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, D, ElementPtr, Layout>::stride;
+	using detail::array_types<T, D, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, D, ElementPtr, Layout>::empty;
+	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, D, ElementPtr, Layout>::strides;
+	using detail::array_types<T, D, ElementPtr, Layout>::base;
+
+	using typename detail::array_types<T, D, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::dimensionality_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::indexes;
+
 	/// Integer constant with the rank of the array
 	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
@@ -1440,6 +1466,9 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	: detail::array_types<T, D, ElementPtr, Layout>{layout, potr} {}
 
  protected:
+	using detail::array_types<T, D, ElementPtr, Layout>::base_;
+	using detail::array_types<T, D, ElementPtr, Layout>::layout_mutable;
+
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
 
@@ -3199,10 +3228,44 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 /// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
-: public detail::array_types<T, 0, ElementPtr, Layout> {
+: private detail::array_types<T, 0, ElementPtr, Layout> {
  public:
 	using types = detail::array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
+
+	using detail::array_types<T, 0, ElementPtr, Layout>::size;
+	using detail::array_types<T, 0, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, 0, ElementPtr, Layout>::extents;
+	using detail::array_types<T, 0, ElementPtr, Layout>::extent;
+	using detail::array_types<T, 0, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, 0, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, 0, ElementPtr, Layout>::stride;
+	using detail::array_types<T, 0, ElementPtr, Layout>::strides;
+	using detail::array_types<T, 0, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, 0, ElementPtr, Layout>::empty;
+	using detail::array_types<T, 0, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, 0, ElementPtr, Layout>::base;
+	using detail::array_types<T, 0, ElementPtr, Layout>::layout;
+	using detail::array_types<T, 0, ElementPtr, Layout>::rank_v;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::dimensionality_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::indexes;
+
+ protected:
+	using detail::array_types<T, 0, ElementPtr, Layout>::base_;
+	using detail::array_types<T, 0, ElementPtr, Layout>::layout_mutable;
+
+ public:
 
 	using element_type [[deprecated("use ::element")]] = typename types::element;
 	using element                                      = typename types::element;
@@ -3379,7 +3442,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inheritance) to define operators via CRTP
 : public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, public detail::array_types<T, 1, ElementPtr, Layout> {
+, private detail::array_types<T, 1, ElementPtr, Layout> {
  public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -3399,6 +3462,38 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	using types = detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
+
+	using detail::array_types<T, 1, ElementPtr, Layout>::size;
+	using detail::array_types<T, 1, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, 1, ElementPtr, Layout>::extents;
+	using detail::array_types<T, 1, ElementPtr, Layout>::extent;
+	using detail::array_types<T, 1, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, 1, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, 1, ElementPtr, Layout>::stride;
+	using detail::array_types<T, 1, ElementPtr, Layout>::strides;
+	using detail::array_types<T, 1, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, 1, ElementPtr, Layout>::empty;
+	using detail::array_types<T, 1, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, 1, ElementPtr, Layout>::base;
+	using detail::array_types<T, 1, ElementPtr, Layout>::layout;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::indexes;
+
+ protected:
+	using detail::array_types<T, 1, ElementPtr, Layout>::base_;
+	using detail::array_types<T, 1, ElementPtr, Layout>::layout_mutable;
+
+ public:
 
 	using rank        = std::integral_constant<dimensionality_type, rank_v>;
 	using layout_type = Layout;
