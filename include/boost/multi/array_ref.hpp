@@ -1422,7 +1422,7 @@ class const_subarray : private detail::array_types<T, D, ElementPtr, Layout> {
 	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
 	using detail::array_types<T, D, ElementPtr, Layout>::strides;
 	using detail::array_types<T, D, ElementPtr, Layout>::base;
-	using detail::array_types<T, D, ElementPtr, Layout>::origin;
+	using detail::array_types<T, D, ElementPtr, Layout>::origin;  // TODO(correaa) remove 
 
 	using typename detail::array_types<T, D, ElementPtr, Layout>::extents_type;
 	using typename detail::array_types<T, D, ElementPtr, Layout>::value_type;
