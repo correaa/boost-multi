@@ -115,7 +115,7 @@ struct array_allocator {
 
 	template<typename It, typename Size>
 	// NOLINTNEXTLINE(readability-identifier-naming) TODO(correaa) rename
-	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // COMMENTTHIScppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	auto destroy_n(It first, Size n) { return adl_alloc_destroy_n(this->alloc(), first, n); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
  protected:
 	constexpr explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}  // NOLINT(modernize-pass-by-value)
