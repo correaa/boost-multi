@@ -2367,16 +2367,13 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<class, multi::dimensionality_type, class, bool, bool, typename, class> friend struct detail::array_iterator;
 
  public:
+	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
 	using typename const_subarray<T, D, ElementPtr, Layout>::size_type;
 
 	subarray(subarray const&) = delete;
 
 	/// yields a subarray whose elements are marked for move
 	BOOST_MULTI_HD constexpr auto move() { return move_subarray<T, D, ElementPtr, Layout>(*this); }
-
-	// yields a subarray whose elements are marked for move
-	// friend BOOST_MULTI_HD constexpr auto move(subarray&& self) { return std::move(self).move(); }
-	// friend BOOST_MULTI_HD constexpr auto move(subarray& self) { return self.move(); }
 
 	/// Iterator in the leading dimension that mark elements as movable
 	using move_iterator = detail::array_iterator<T, D, ElementPtr, false, true>;
@@ -2438,7 +2435,9 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
 
+	/// returns a random-access range with all the elements of the array
 	using const_subarray<T, D, ElementPtr, Layout>::elements;
+
 	constexpr auto                         elements() & { return this->elements_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
 	BOOST_MULTI_NO_DANGLING constexpr auto elements() && { return this->elements_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
 
@@ -3236,19 +3235,6 @@ class const_subarray<T, 0, ElementPtr, Layout>
 		adl_copy_n(&rng, 1, this->base_);
 		return *this;
 	}
-
-	// constexpr auto elements_at(size_type idx [[maybe_unused]]) const& -> element_cref {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	return *(this->base_);
-	// }
-	// constexpr auto elements_at(size_type idx [[maybe_unused]]) && -> element_ref {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	return *(this->base_);
-	// }
-	// constexpr auto elements_at(size_type idx [[maybe_unused]]) & -> element_ref {
-	// 	BOOST_MULTI_ASSERT(idx < this->num_elements());
-	// 	return *(this->base_);
-	// }
 
 	constexpr auto operator!=(const_subarray const& other) const { return !adl_equal(other.base_, other.base_ + 1, this->base_); }
 	constexpr auto operator==(const_subarray const& other) const { return adl_equal(other.base_, other.base_ + 1, this->base_); }
