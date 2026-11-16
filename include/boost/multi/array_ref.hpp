@@ -2431,6 +2431,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	#endif
 	// clang-format on
 
+	/// Address‐of operators
 	using const_subarray<T, D, ElementPtr, Layout>::operator&;
 
 	using const_subarray<T, D, ElementPtr, Layout>::const_subarray;
