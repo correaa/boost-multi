@@ -1409,7 +1409,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - cmake --install .
     - 'ldd $CI_PROJECT_DIR/prefix/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
     - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
-    - INQ_EXEC_ENV="mpirun -np 2 `pwd`/../scripts/gpubind" ctest --parallel $(( NVIS >= 2 ? 3 : 1 )) --output-on-failure --timeout 5000
+    - 'INQ_EXEC_ENV="mpirun -np 2 `pwd`/../scripts/gpubind" ctest --parallel $(( NVIS >= 2 ? 3 : 1 )) --output-on-failure --timeout 5000'
   timeout: 4 hours 00 minutes
   needs: [{job: inq, optional: true}, {job: cunvhpc, optional: true}]  # TEMPORARY optional, restore before merging
 
