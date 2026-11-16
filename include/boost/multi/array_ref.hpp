@@ -2444,8 +2444,10 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 
 	/// (inherited) yields a view of the array that is flattened in the first two leading dimensions
 	using const_subarray<T, D, ElementPtr, Layout>::flattened;
-	constexpr auto flattened() & { return this->flattened_aux_(); }   // cppcheck-suppress duplInheritedMember ; to overwrite
-	constexpr auto flattened() && { return this->flattened_aux_(); }  // cppcheck-suppress duplInheritedMember ; to overwrite
+	// cppcheck-suppress [duplInheritedMember, functionStatic] ; to overwrite
+	constexpr auto flattened() & { return this->flattened_aux_(); }
+	// cppcheck-suppress [duplInheritedMember, functionStatic] ; to overwrite
+	constexpr auto flattened() && { return this->flattened_aux_(); }
 
 	/// returns an iterator to the beginning (in the leading dimension)
 	using const_subarray<T, D, ElementPtr, Layout>::begin;

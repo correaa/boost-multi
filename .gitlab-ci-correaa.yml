@@ -1394,19 +1394,16 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     OMPI_MCA_ess_singleton_isolated: "1"  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy
-    - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)
-    - export OPAL_PREFIX=$(dirname "$($NVHPC_ROOT/comm_libs/mpi/bin/mpicxx --showme:libdirs)")  # the actual Open MPI inside nvhpc's HPC-X
-    - export PATH=$OPAL_PREFIX/bin:$PATH LD_LIBRARY_PATH=$OPAL_PREFIX/lib:${LD_LIBRARY_PATH:-}
+    - . /opt/nvidia/hpc_sdk/Linux_x86_64/*/comm_libs/*/hpcx/latest/hpcx-init.sh && hpcx_load  # nvhpc's own CUDA-aware Open MPI (HPC-X) first in PATH and LD_LIBRARY_PATH
     - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'  # same A30-over-RTX-A2000 selection as inq cuda
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
     - mkdir build && cd build
-    - cmake .. --install-prefix=$CI_PROJECT_DIR/prefix -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
     - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
-    - cmake --install .
-    - 'ldd $CI_PROJECT_DIR/prefix/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
+    - 'ldd src/inq | grep libmpi | grep -q "$OPAL_PREFIX" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
     - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
     - 'INQ_EXEC_ENV="mpirun -np 2 `pwd`/../scripts/gpubind" ctest --parallel $(( NVIS >= 2 ? 3 : 1 )) --output-on-failure --timeout 5000'
   timeout: 4 hours 00 minutes
