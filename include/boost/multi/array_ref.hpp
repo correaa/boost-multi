@@ -4455,7 +4455,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	/// pointer to a contiguous range of `.num_elements()` that contains the elements of the array
-	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(array_ref::base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(this->base_); }
 
 	template<class TT, class... As, std::enable_if_t<!std::is_base_of_v<array_ref, array_ref<TT, D, As...>>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {                                   // if MSVC complains here, it probably needs /EHsc /permissive- for C++17 mode
@@ -4618,8 +4618,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-	BOOST_MULTI_HD constexpr auto data_elements() & -> typename array_ref::element_ptr { return array_ref::base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename array_ref::element_ptr { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename array_ref::element_ptr { return this->base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename array_ref::element_ptr { return this->base_; }
 
 	// friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
@@ -4659,13 +4659,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	template<class TTN>
 	constexpr auto to_carray_() & -> TTN& {
 		check_sizes_<TTN>();
-		return *launder_(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *launder_(reinterpret_cast<TTN*>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
 	template<typename To>
 	constexpr auto to_carray_() const& -> To const& {
 		check_sizes_<To>();
-		return *launder_(reinterpret_cast<To const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *launder_(reinterpret_cast<To const*>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
