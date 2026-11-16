@@ -398,7 +398,7 @@ class adl_uninitialized_copy_t {
 	}
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
-	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
+	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?  // cppcheck-suppress functionStatic
 	{
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy(first, last, d_first);
