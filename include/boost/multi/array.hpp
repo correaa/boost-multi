@@ -268,13 +268,13 @@ struct                                                                          
 	}
 
 	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept
-	: array_alloc{alloc}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+	: array_alloc{alloc}, ref_(std::exchange(static_cast<ref_&>(other).base_, nullptr), other.extents()) {
+		static_cast<ref_&&>(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 	explicit constexpr dynamic_array(decay_type&& other) noexcept
-	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(static_cast<ref_&>(other).base_, nullptr), other.extents()) {
+		static_cast<ref_&&>(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))

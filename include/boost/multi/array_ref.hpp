@@ -1422,6 +1422,7 @@ class const_subarray : private detail::array_types<T, D, ElementPtr, Layout> {
 	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
 	using detail::array_types<T, D, ElementPtr, Layout>::strides;
 	using detail::array_types<T, D, ElementPtr, Layout>::base;
+	using detail::array_types<T, D, ElementPtr, Layout>::origin;
 
 	using typename detail::array_types<T, D, ElementPtr, Layout>::extents_type;
 	using typename detail::array_types<T, D, ElementPtr, Layout>::value_type;
@@ -3247,6 +3248,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 	using detail::array_types<T, 0, ElementPtr, Layout>::empty;
 	using detail::array_types<T, 0, ElementPtr, Layout>::is_empty;
 	using detail::array_types<T, 0, ElementPtr, Layout>::base;
+	using detail::array_types<T, 0, ElementPtr, Layout>::origin;
 	using detail::array_types<T, 0, ElementPtr, Layout>::layout;
 	using detail::array_types<T, 0, ElementPtr, Layout>::rank_v;
 	using typename detail::array_types<T, 0, ElementPtr, Layout>::index;
@@ -3479,6 +3481,7 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using detail::array_types<T, 1, ElementPtr, Layout>::empty;
 	using detail::array_types<T, 1, ElementPtr, Layout>::is_empty;
 	using detail::array_types<T, 1, ElementPtr, Layout>::base;
+	using detail::array_types<T, 1, ElementPtr, Layout>::origin;
 	using detail::array_types<T, 1, ElementPtr, Layout>::layout;
 	using typename detail::array_types<T, 1, ElementPtr, Layout>::index;
 	using typename detail::array_types<T, 1, ElementPtr, Layout>::extents_type;
