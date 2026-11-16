@@ -1515,7 +1515,8 @@ inq hip-emulated:
     - cmake --install .
     # the unit tests plus the quickest full simulations (< 10 s on CPU, ~50x slower on the simulator); the rest of inq::tests::* would not finish on a simulator
     # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests|^inq::test_list_is_current$|^inq::tests::(bo|neon|help\.sh|na2\+\.py)$' --timeout 10800 --output-on-failure  # drude_weight takes ~2 h on the simulator, more when sharing the CPU with other tests (CTEST_PARALLEL_LEVEL)
+    # excluded: drude_weight (~3 h) and tdmlwf_trans (~2 h) on the simulator, they made the job exceed its timeout
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests|^inq::test_list_is_current$|^inq::tests::(bo|neon|help\.sh|na2\+\.py)$' -E 'unit_tests::(observables::drude_weight|wannier::tdmlwf_trans)$' --timeout 10800 --output-on-failure  # drude_weight takes ~2 h on the simulator, more when sharing the CPU with other tests (CTEST_PARALLEL_LEVEL)
   timeout: 8 hours  # can be capped by the runner's maximum timeout
   needs: ["inq", "hip-emulated"]
 
