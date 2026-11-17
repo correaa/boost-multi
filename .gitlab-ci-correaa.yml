@@ -1437,19 +1437,45 @@ inq rocm:
   stage: test
   image: rocm/dev-ubuntu-24.04:6.4.4-complete
   allow_failure: false
+  variables:
+    UCX_VERSION: "1.17.0"
+    OMPI_VERSION: "5.0.6"
+  cache:
+    - key: apt-$CI_JOB_IMAGE
+      paths:
+        - .apt-cache/
+      when: always
+    - key: openmpi-rocm-5.0.6-ucx-1.17.0-$CI_JOB_IMAGE
+      paths:
+        - .mpi-rocm/
   tags:
     - non-shared
     - large-disk-space
     - x86_64  # for image
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget libvkfft-dev  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libnuma-dev bzip2 g++ libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget libvkfft-dev  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
+    # the distro OpenMPI is not GPU-aware: build UCX with ROCm transports and OpenMPI on top of it (cached across runs)
+    - export MPI_PREFIX=$CI_PROJECT_DIR/.mpi-rocm
+    - |
+      if [ ! -x $MPI_PREFIX/bin/mpirun ]; then
+        wget -q https://github.com/openucx/ucx/releases/download/v$UCX_VERSION/ucx-$UCX_VERSION.tar.gz
+        tar xzf ucx-$UCX_VERSION.tar.gz
+        (cd ucx-$UCX_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-rocm=/opt/rocm --without-cuda --without-java --disable-doxygen-doc && make -j$(nproc) -s && make install -s)
+        wget -q https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-$OMPI_VERSION.tar.bz2
+        tar xjf openmpi-$OMPI_VERSION.tar.bz2
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-ucx=$MPI_PREFIX --with-rocm=/opt/rocm --disable-mpi-fortran --without-cuda && make -j$(nproc) -s && make install -s)
+        rm -rf ucx-$UCX_VERSION* openmpi-$OMPI_VERSION*
+      fi
+    - export PATH=$MPI_PREFIX/bin:$PATH
+    - export LD_LIBRARY_PATH=$MPI_PREFIX/lib:$LD_LIBRARY_PATH
+    - ompi_info | grep -i "accelerator: rocm"  # fail early if not ROCm-aware
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git  #--branch fix-mutation-in-projectors-lambda
     - rm -rf inq/external_libs/multi
