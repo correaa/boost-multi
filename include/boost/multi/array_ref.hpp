@@ -1044,8 +1044,8 @@ struct elements_iterator_t
 
  private:
 	/// Arithmetic base pointer of the iterator, typically the base of the original array
-	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }              // cppcheck-suppress returnByReference ;  // NOLINT(readability-identifier-naming) TODO(correaa) rename
-	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }  // cppcheck-suppress returnByReference ;  // NOLINT(readability-identifier-naming) TODO(correaa) rename
+	BOOST_MULTI_HD constexpr auto base() -> pointer { return base_; }              // cppcheck-suppress [returnByReference,functionStatic] ;  // NOLINT(readability-identifier-naming) TODO(correaa) rename
+	BOOST_MULTI_HD constexpr auto base() const -> const_pointer { return base_; }  // cppcheck-suppress [returnByReference,functionStatic] ;  // NOLINT(readability-identifier-naming) TODO(correaa) rename
 
 	/// Layout used to calculate the position of an iterator, typically the layout of the original array
 	BOOST_MULTI_HD constexpr auto layout() const -> layout_type { return l_; }  // NOLINT(readability-identifier-naming) TODO(correaa) rename
