@@ -101,9 +101,9 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 	// vvv this is needed to make involuter<T> implicitly convertible to involuter<T const>
-	// cppcheck-suppress noExplicitConstructor ;  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)
 	template<class Other>
-	constexpr involuter(involuter<Other, F> const& other)  // NOSONAR(cpp:S1709)
+	// cppcheck-suppress noExplicitConstructor ;
+	constexpr involuter(involuter<Other, F> const& other)  // NOLINTNEXTLINE(*-explicit-constructor, hicpp-explicit-conversions)  // NOSONAR(cpp:S1709)
 	: it_{multi::detail::implicit_cast<It>(other.it_)}, f_{other.f_} {}
 
 	constexpr auto operator*() const { return reference{*it_, f_}; }
