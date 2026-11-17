@@ -442,8 +442,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 #pragma warning(pop)
 #endif
 
-	template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class>
-	friend struct detail::array_iterator;
+	// template<class, ::boost::multi::dimensionality_type, typename, bool, bool, typename, class>
+	// friend struct detail::array_iterator;
 	template<typename, ::boost::multi::dimensionality_type, typename, class>
 	friend class ::boost::multi::const_subarray;
 	template<typename, ::boost::multi::dimensionality_type, typename, class>
@@ -545,6 +545,7 @@ struct subarray_ptr  // : to allow mixin CRTP
  public:
 	template<typename, multi::dimensionality_type, typename, class, bool>
 	friend struct subarray_ptr;
+	/// @internal
 	template<typename, multi::dimensionality_type, typename, bool, bool, typename, class>
 	friend struct detail::array_iterator;
 
@@ -2424,6 +2425,7 @@ class subarray : public const_subarray<T, D, ElementPtr, Layout> {
 	template<typename, multi::dimensionality_type, typename, class, bool>
 	friend struct detail::subarray_ptr;
 
+	/// @internal
 	template<class, multi::dimensionality_type, class, bool, bool, typename, class>
 	friend struct detail::array_iterator;
 
@@ -3569,12 +3571,10 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	using ptr       = detail::subarray_ptr<T, 1, ElementPtr, Layout, false>;
 
 	// template<typename, multi::dimensionality_type, typename, class, bool> friend struct subarray_ptr;
-	template<class, dimensionality_type D, class, bool, bool, typename, class>
-	friend struct detail::array_iterator;
+	// template<class, dimensionality_type D, class, bool, bool, typename, class>
+	// friend struct detail::array_iterator;
 
  public:
-	// friend constexpr auto dimensionality(const_subarray const& /*self*/) -> dimensionality_type { return 1; }
-
 	BOOST_MULTI_HD constexpr auto operator&() const& { return const_ptr{this->base_, this->layout()}; }  // NOLINT(google-runtime-operator) extend semantics  //NOSONAR
 
 	BOOST_MULTI_HD constexpr void assign(std::initializer_list<typename const_subarray::value_type> values) const {
