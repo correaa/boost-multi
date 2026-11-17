@@ -16,7 +16,8 @@
 
 namespace {
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
-template<class T> auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
+template<class T>
+auto fwd_array(T&& array) -> T&& { return std::forward<T>(array); }
 }  // end unnamed namespace
 
 auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugprone-exception-escape)
@@ -147,7 +148,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 
 			auto&& arrR = *arrP;                  // cppcheck-suppress danglingTempReference
 			BOOST_TEST( &arrR[1][1] == &arr[1][1] );  // cppcheck-suppress danglingTempReference
-			BOOST_TEST( arrR == *arrP );              // cppcheck-suppress danglingTempReference
+			BOOST_TEST( arrR == *arrP );              // cppcheck-suppress [danglingTempReference, knownConditionTrueFalse]
 
 			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), (*arrP).begin(), (*arrP).end()) );  // cppcheck-suppress danglingTempReference
 			BOOST_TEST( std::equal(arrR.begin(), arrR.end(), arrP->begin(), arrP->end()) );      // cppcheck-suppress danglingTempReference

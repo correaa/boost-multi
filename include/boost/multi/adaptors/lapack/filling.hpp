@@ -1,10 +1,9 @@
-// Copyright 2024 Alfredo A. Correa
+// Copyright 2024-2026 Alfredo A. Correa
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MULTI_ADAPTORS_LAPACK_FILLING_HPP
 #define BOOST_MULTI_ADAPTORS_LAPACK_FILLING_HPP
-#pragma once
 
 #include "boost/multi/detail/config/UNREACHABLE.hpp"  // for BOOST_MULTI_UNREACHABLE
 
@@ -26,7 +25,7 @@ enum class filling : char {
 #pragma diag_suppress = implicit_return_from_non_void_function
 #endif
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma clang diagnostic push
 #if __has_warning("-Wswitch-default")  // clang >= 18
 #pragma clang diagnostic ignored "-Wswitch-default"
@@ -41,7 +40,7 @@ inline auto flip(filling side) -> filling {
 	BOOST_MULTI_UNREACHABLE();  // LCOV_EXCL_LINE
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #if __has_warning("-Wswitch-default")  // clang >= 18
 #pragma clang diagnostic pop
 #endif

@@ -42,7 +42,8 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	using reference         = typename std::move_iterator<Ptr>::reference;
 	using iterator_category = typename std::iterator_traits<std::move_iterator<Ptr>>::iterator_category;
 
-	template<class U> using rebind = std::conditional_t<
+	template<class U>
+	using rebind = std::conditional_t<
 		std::is_const_v<U>,
 		typename std::pointer_traits<Ptr>::template rebind<U>,
 		move_ptr<U, U*>>;
@@ -83,17 +84,21 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	BOOST_MULTI_HD constexpr auto operator!=(move_ptr const& other) const -> bool { return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other); }
 };
 
-template<class T> struct ref_add_const {
+template<class T>
+struct ref_add_const {
 	using type = T const;
 };  // this is not the same as std::add_const
 
-template<class T> struct ref_add_const<T const> {
+template<class T>
+struct ref_add_const<T const> {
 	using type = T const;
 };
-template<class T> struct ref_add_const<T const&> {
+template<class T>
+struct ref_add_const<T const&> {
 	using type = T const&;
 };
-template<class T> struct ref_add_const<T&> {
+template<class T>
+struct ref_add_const<T&> {
 	using type = T const&;
 };
 
@@ -110,7 +115,8 @@ struct transform_ptr {  //-V::690
 	using reference         = Ref;
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
 
-	template<class U> using rebind =
+	template<class U>
+	using rebind =
 		transform_ptr<
 			std::remove_cv_t<U>,
 			UF, Ptr,
@@ -240,7 +246,8 @@ struct transform_ptr {  //-V::690
 #pragma warning(pop)
 #endif
 
-	template<class, class, class, class> friend struct transform_ptr;
+	template<class, class, class, class>
+	friend struct transform_ptr;
 };
 
 #ifdef __clang__
@@ -299,7 +306,8 @@ class value_wrapper_ptr : Fun {
 	// Fun f_;
 	explicit BOOST_MULTI_HD constexpr value_wrapper_ptr(Fun const& fun) : Fun(fun) {}
 
-	template<class> friend class value_wrapper;
+	template<class>
+	friend class value_wrapper;
 
  public:
 	// BOOST_MULTI_HD constexpr value_wrapper_ptr(value_wrapper_ptr const& other) : f_(other.f_) {}
@@ -320,15 +328,18 @@ template<class T, typename = typename T::rank>
 auto        has_rank_aux(T const&) -> std::true_type;
 inline auto has_rank_aux(...) -> std::false_type;
 
-template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
+template<class T>
+struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
 
-template<typename T> struct rank;
+template<typename T>
+struct rank;
 
 template<class T, typename = decltype(std::declval<T&>().move())>
 auto        has_member_move_aux(T const&) -> std::true_type;
 inline auto has_member_move_aux(...) -> std::false_type;
 
-template<class T> struct has_member_move : decltype(has_member_move_aux(std::declval<T>())){};
+template<class T>
+struct has_member_move : decltype(has_member_move_aux(std::declval<T>())){};
 
 template<typename T, typename = std::enable_if_t<has_rank<T>{}>>
 constexpr auto rank_aux(T const&) -> typename T::rank;
@@ -336,7 +347,8 @@ constexpr auto rank_aux(T const&) -> typename T::rank;
 template<typename T, typename = std::enable_if_t<!has_rank<T>::value>>
 constexpr auto rank_aux(T const&) -> std::integral_constant<std::size_t, std::rank_v<T>>;
 
-template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
+template<typename T>
+struct rank : decltype(rank_aux(std::declval<T>())){};
 
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) special sfinae trick
 constexpr auto stride(Pointer /*ptr*/) -> std::ptrdiff_t { return 1; }
@@ -390,7 +402,8 @@ constexpr auto to_address(T* const& ptr)
 template<class T>
 auto has_get_allocator_aux(T const& cont) -> decltype(cont.get_allocator(), std::true_type{});
 
-template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
+template<class T>
+struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
 
 // template<class T1, class T2, typename Ret = T1>  // std::common_type_t<T1, T2>>
 // auto common(T1 const& val1, T2 const& val2) -> Ret {
@@ -403,7 +416,8 @@ template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std:
 template<class T>
 auto        has_num_elements_aux(T const& /*array*/) -> decltype(std::declval<T const&>().num_elements() + 1, std::true_type{});
 inline auto has_num_elements_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 constexpr auto num_elements(A const& arr)
@@ -414,24 +428,28 @@ constexpr auto num_elements(A const& arr)
 template<class T>
 auto        has_size_aux(T const& cont) -> decltype(std::size(cont), std::true_type{});
 inline auto has_size_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_size : decltype(has_size_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T>
 auto        has_data_elements_aux(T&& array) -> decltype(array.data_elements() + 1, std::true_type{});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_data_elements_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T>
 auto        has_base_aux(T&& array) -> decltype(array.base() + 1, std::true_type{});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_base_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_base : decltype(has_base_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_base : decltype(has_base_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 namespace detail {
 template<class T>
 auto        has_data_aux(T&& cont) -> decltype(cont.data_elements() + 1, std::true_type{});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_data_aux(...) -> decltype(std::false_type{});
 }  // end namespace detail
-template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_data : decltype(detail::has_data_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 auto data_elements(Array& arr) { return std::data(arr); }
@@ -453,11 +471,14 @@ constexpr auto data_elements(A const& arr)
 template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> && !has_data_elements<std::decay_t<T>>::value && !has_data<std::decay_t<T>>::value, int> = 0>  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
 constexpr auto data_elements(T& value) -> decltype(&value) { return &value; }
 
-template<class A> struct num_elements_t : std::integral_constant<std::ptrdiff_t, 1> {};
+template<class A>
+struct num_elements_t : std::integral_constant<std::ptrdiff_t, 1> {};
 
-template<class T, std::size_t N> struct num_elements_t<T[N]> : std::integral_constant<std::ptrdiff_t, N * num_elements_t<T>{}> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, std::size_t N>
+struct num_elements_t<T[N]> : std::integral_constant<std::ptrdiff_t, N * num_elements_t<T>{}> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-template<class T, std::size_t N> struct num_elements_t<T (&)[N]> : num_elements_t<T[N]> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, std::size_t N>
+struct num_elements_t<T (&)[N]> : num_elements_t<T[N]> {};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N>
 constexpr auto num_elements(T const (& /*array*/)[N]) noexcept { return num_elements_t<T[N]>{}; }  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
@@ -488,7 +509,8 @@ constexpr auto data_elements(T (&array)[N]) noexcept { return data_elements(arra
 template<class T>
 auto        has_dimensionality_aux(T const& /*array*/) -> decltype(T::rank_v, std::true_type{});
 inline auto has_dimensionality_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 constexpr auto dimensionality(Container const& /*container*/)
@@ -499,7 +521,8 @@ constexpr auto dimensionality(Container const& /*container*/)
 template<class T>
 auto        has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<::boost::multi::dimensionality_type>(T::rank_v)), std::true_type{});
 inline auto has_dimensionaliy_member_aux(...) -> decltype(std::false_type{});
-template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T, typename = std::enable_if_t<!has_dimensionality_member<T>{}>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 constexpr auto dimensionality(T const& /*, void* = nullptr*/) { return 0; }
@@ -542,7 +565,8 @@ constexpr auto corigin(T const (&array)[N]) noexcept { return corigin(array[0]);
 template<class T, typename = decltype(std::declval<T>().extent())>
 auto        has_extent_aux(T const&) -> std::true_type;
 inline auto has_extent_aux(...) -> std::false_type;
-template<class T> struct has_extent : decltype(has_extent_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+template<class T>
+struct has_extent : decltype(has_extent_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Container, class = std::enable_if_t<!has_extent<Container>::value>>  // NOLINT(modernize-use-constraints) TODO(correaa)
 auto extent(Container const& cont)
@@ -567,13 +591,15 @@ template<class T, typename = decltype(std::declval<T const&>().elements())>
 auto        has_elements_aux(T const&) -> std::true_type;
 inline auto has_elements_aux(...) -> std::false_type;
 
-template<class T> struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
+template<class T>
+struct has_elements : decltype(has_elements_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
 template<class T, typename = decltype(std::declval<T const&>().extents())>
 auto        has_extents_aux(T const&) -> std::true_type;
 inline auto has_extents_aux(...) -> std::false_type;
 
-template<class T> struct has_extents : decltype(has_extents_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
+template<class T>
+struct has_extents : decltype(has_extents_aux(std::declval<T>())){};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
 template<class T, std::enable_if_t<has_extents<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 [[nodiscard]] constexpr auto extents(T const& array) -> std::decay_\
@@ -618,8 +644,10 @@ struct extensions_aux {
 	}
 };
 
-template<> struct extensions_aux<0> {
-	template<class T> static auto call(T const& /*unused*/) { return multi::extents_t<0>{}; }  // std::make_tuple();}
+template<>
+struct extensions_aux<0> {
+	template<class T>
+	static auto call(T const& /*unused*/) { return multi::extents_t<0>{}; }  // std::make_tuple();}
 };
 
 template<dimensionality_type D, class T, std::enable_if_t<has_extent<T>::value, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
@@ -678,18 +706,24 @@ struct detail::array_traits<std::array<std::array<T, M>, N>> {
 	using decay_type  = std::array<value_type, M>;
 };
 
-template<class T, std::size_t N> constexpr auto                data_elements(std::array<T, N>& arr) noexcept { return arr.data(); }
-template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N>& arr) noexcept { return data_elements(arr[0]); }
+template<class T, std::size_t N>
+constexpr auto data_elements(std::array<T, N>& arr) noexcept { return arr.data(); }
+template<class T, std::size_t M, std::size_t N>
+constexpr auto data_elements(std::array<std::array<T, M>, N>& arr) noexcept { return data_elements(arr[0]); }
 
-template<class T, std::size_t N> constexpr auto                data_elements(std::array<T, N> const& arr) noexcept { return arr.data(); }
-template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N> const& arr) noexcept { return data_elements(arr[0]); }
+template<class T, std::size_t N>
+constexpr auto data_elements(std::array<T, N> const& arr) noexcept { return arr.data(); }
+template<class T, std::size_t M, std::size_t N>
+constexpr auto data_elements(std::array<std::array<T, M>, N> const& arr) noexcept { return data_elements(arr[0]); }
 
-template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>&& arr) noexcept { return std::move(arr).data(); }
+template<class T, std::size_t N>
+constexpr auto data_elements(std::array<T, N>&& arr) noexcept { return std::move(arr).data(); }
 
 template<class T, std::size_t M, std::size_t N>
 constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept { return data_elements(std::move(arr)[0]); }
 
-template<class T, std::size_t N> constexpr auto num_elements(std::array<T, N> const& /*unused*/) noexcept
+template<class T, std::size_t N>
+constexpr auto num_elements(std::array<T, N> const& /*unused*/) noexcept
 	-> std::ptrdiff_t { return N; }
 
 template<class T, std::size_t M, std::size_t N>
@@ -748,23 +782,30 @@ constexpr auto layout(std::array<T, N> const& arr) {
 #endif
 
 namespace detail {
-template<class T> struct element_t_impl {};
+template<class T>
+struct element_t_impl {};
 
-template<class T> auto element_t_aux(T) -> T;
-template<class T> auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
+template<class T>
+auto element_t_aux(T) -> T;
+template<class T>
+auto element_t_aux(std::initializer_list<T>) -> typename element_t_impl<T>::type;
 
-template<class T> struct element_t_impl<std::initializer_list<T>> {
+template<class T>
+struct element_t_impl<std::initializer_list<T>> {
 	using type = T;
 };
-template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<T>>> {
+template<class T>
+struct element_t_impl<std::initializer_list<std::initializer_list<T>>> {
 	using type = T;
 };
-template<class T> struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
+template<class T>
+struct element_t_impl<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> {
 	using type = T;
 };
 }  // namespace detail
 
-template<class T> using element_t = typename detail::element_t_impl<T>::type;
+template<class T>
+using element_t = typename detail::element_t_impl<T>::type;
 
 template<class T>
 auto base(std::initializer_list<T> const& ilist) -> T const* {

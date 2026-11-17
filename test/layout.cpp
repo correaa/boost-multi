@@ -27,7 +27,8 @@ namespace multi = boost::multi;
 // all layout types must stay trivial (trivially copyable + trivial default ctor) so default
 // construction is free and the types remain cheap/memcpy-able/device-friendly.
 // (std::is_trivial is deprecated in C++26, hence the two-trait spelling it recommends)
-template<class T> constexpr bool is_trivial_v = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
+template<class T>
+constexpr bool is_trivial_v = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
 static_assert(is_trivial_v<multi::detail::layout_t<0>>);
 static_assert(is_trivial_v<multi::detail::layout_t<1>>);
 static_assert(is_trivial_v<multi::detail::layout_t<2>>);
@@ -263,27 +264,27 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #endif
 	}
 
-// 	// BOOST_AUTO_TEST_CASE(linearize)
-// 	{
-// 		multi::array<double, 3> const arr(
-// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
-// 			multi::extents_t<3>
-// #endif
-// 			{10, 20, 30}
-// 		);
+	// 	// BOOST_AUTO_TEST_CASE(linearize)
+	// 	{
+	// 		multi::array<double, 3> const arr(
+	// #ifdef _MSC_VER  // problem with MSVC 14.3 c++17
+	// 			multi::extents_t<3>
+	// #endif
+	// 			{10, 20, 30}
+	// 		);
 
-// 		BOOST_TEST((   25 / arr.extents() == decltype(  25 / arr.extents()){0, 0, 25} ));
-// 		BOOST_TEST((   55 / arr.extents() == decltype(  55 / arr.extents())(0, 1, 25) ));
-// 		BOOST_TEST((  655 / arr.extents() == decltype( 655 / arr.extents())(1, 1, 25) ));
-// 		BOOST_TEST(( 1255 / arr.extents() == decltype(1255 / arr.extents())(2, 1, 25) ));
+	// 		BOOST_TEST((   25 / arr.extents() == decltype(  25 / arr.extents()){0, 0, 25} ));
+	// 		BOOST_TEST((   55 / arr.extents() == decltype(  55 / arr.extents())(0, 1, 25) ));
+	// 		BOOST_TEST((  655 / arr.extents() == decltype( 655 / arr.extents())(1, 1, 25) ));
+	// 		BOOST_TEST(( 1255 / arr.extents() == decltype(1255 / arr.extents())(2, 1, 25) ));
 
-// 		auto const point = arr.extents().from_linear(655);
-// 		//  BOOST_TEST( p == std::make_tuple(1, 1, 25) );
-// 		using multi::detail::get;
-// 		BOOST_TEST( get<0>(point) ==  1 );
-// 		BOOST_TEST( get<1>(point) ==  1 );
-// 		BOOST_TEST( get<2>(point) == 25 );
-// 	}
+	// 		auto const point = arr.extents().from_linear(655);
+	// 		//  BOOST_TEST( p == std::make_tuple(1, 1, 25) );
+	// 		using multi::detail::get;
+	// 		BOOST_TEST( get<0>(point) ==  1 );
+	// 		BOOST_TEST( get<1>(point) ==  1 );
+	// 		BOOST_TEST( get<2>(point) == 25 );
+	// 	}
 
 	// BOOST_AUTO_TEST_CASE(layout_tuple_2d)
 	{
