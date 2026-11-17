@@ -23,13 +23,18 @@
 #include <ranges>    // IWYU pragma: keep
 #endif
 
-template<typename ComplexRef> struct Conjd;  // NOLINT(readability-identifier-naming) for testing
+template<typename ComplexRef>
+struct Conjd;  // NOLINT(readability-identifier-naming) for testing
 
 struct Conj_t {  // NOLINT(readability-identifier-naming,misc-use-internal-linkage) for testing
-	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const noexcept { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
-	template<class T> constexpr auto          operator()(Conjd<T> const&) const = delete;
-	template<class T> constexpr auto          operator()(Conjd<T>&&) const      = delete;
-	template<class T> constexpr auto          operator()(Conjd<T>&) const       = delete;
+	template<class ComplexRef>
+	constexpr auto operator()(ComplexRef&& zee) const noexcept { return Conjd<decltype(zee)>{std::forward<ComplexRef>(zee)}; }
+	template<class T>
+	constexpr auto operator()(Conjd<T> const&) const = delete;
+	template<class T>
+	constexpr auto operator()(Conjd<T>&&) const = delete;
+	template<class T>
+	constexpr auto operator()(Conjd<T>&) const = delete;
 };
 inline constexpr Conj_t Conj;
 

@@ -47,7 +47,7 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d)
 	{
 		std::vector<int> const vec = {10, 20, 30};  // NOLINT(fuchsia-default-arguments-calls)
-		BOOST_TEST( vec[1] == 20 );  // cppcheck-suppress knownConditionTrueFalse
+		BOOST_TEST( vec[1] == 20 );                     // cppcheck-suppress knownConditionTrueFalse
 	}
 	{
 		multi::dynamic_array<int, 1> arr = {12, 34, 56};

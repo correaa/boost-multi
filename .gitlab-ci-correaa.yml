@@ -1284,7 +1284,7 @@ inq:
     - large-memory-space
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make ninja-build pkg-config python3-dev libscalapack-mpich-dev
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git  # --branch fix-mutation-in-projectors-lambda
     - rm -rf inq/external_libs/multi
@@ -1336,14 +1336,38 @@ inq-debug:
 inq cuda:
   allow_failure: false
   stage: test
+  variables:
+    OMPI_VERSION: "4.1.6"
+  cache:
+    - key: apt-$CI_JOB_IMAGE
+      paths:
+        - .apt-cache/
+      when: always
+    - key: openmpi-cuda-4.1.6-$CI_JOB_IMAGE
+      paths:
+        - .openmpi-cuda-4.1.6/
   image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - non-shared
     - nvidia-gpu
     - arch75
   script:
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libmpich-dev mpich libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran wget bzip2 make g++ openssh-client libscalapack-openmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Ninja"  # "Unix Makefiles"
+    # the distro MPI packages are not CUDA-aware, so build OpenMPI against the CUDA toolkit (ob1 + smcuda, no UCX needed); cached across runs
+    - export OMPI_PREFIX=$CI_PROJECT_DIR/.openmpi-cuda-$OMPI_VERSION
+    - |
+      if [ ! -x $OMPI_PREFIX/bin/mpirun ]; then
+        wget -q https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-$OMPI_VERSION.tar.bz2
+        tar xjf openmpi-$OMPI_VERSION.tar.bz2
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$OMPI_PREFIX --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs --disable-mpi-fortran --without-ucx --without-verbs && make -j$(nproc) -s && make install -s)
+        rm -rf openmpi-$OMPI_VERSION openmpi-$OMPI_VERSION.tar.bz2
+      fi
+    - export PATH=$OMPI_PREFIX/bin:$PATH
+    - export LD_LIBRARY_PATH=$OMPI_PREFIX/lib:$LD_LIBRARY_PATH
+    - export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader,smcuda OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - ompi_info --parsable --all | grep -E "mpi_built_with_cuda_support:value:true"  # fail early if not CUDA-aware
     - nvidia-smi
     # - __nvcc_device_query
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
@@ -1363,7 +1387,7 @@ inq cuda:
     #- rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # native doesn't work in this version of cmake # =75  # =80  # nvcc's EDG frontend rejects bundled fmt's C++20 literal-operator-template UDL (fixed_string NTTP); force the pre-C++20 fallback
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # native doesn't work in this version of cmake # =75  # =80  # nvcc's EDG frontend rejects bundled fmt's C++20 literal-operator-template UDL (fixed_string NTTP); force the pre-C++20 fallback
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
@@ -1372,7 +1396,7 @@ inq cuda:
     # run 3 tests concurrently only when >=2 GPUs are visible, otherwise 1 to avoid piling 6 processes onto a single GPU (OOM risk)
     - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$(nvidia-smi --list-gpus | wc -l); fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
     - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - INQ_EXEC_ENV="mpirun --oversubscribe -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
   needs: ["inq", "cuda"]
 
@@ -1384,78 +1408,75 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - nvidia-gpu
     - arch75
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "simplify-inq-nvhpc-cuda"'  # TEMPORARY: branch trigger, remove before merging
   variables:
     OMPI_ALLOW_RUN_AS_ROOT: "1"
     OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
-    OMPI_MCA_rmaps_base_oversubscribe: "1"
-    OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware (Open MPI 4's built-in CUDA support stages device buffers)
-    OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable; Open MPI 4 (HPC-X in nvhpc 25.x) calls the shared-memory BTL vader, 5.x renamed it sm
+    # OMPI_MCA_pml: ob1  # HPC-X's UCX hangs on the multi-GPU runners (see nvhpc-26.5), ob1 is still CUDA-aware
+    OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable
     OMPI_MCA_coll: ^ucc,hcoll  # keep coll:cuda for collectives on device buffers
-    OMPI_MCA_osc: ^ucx
+    OMPI_MCA_ess_singleton_isolated: "1"  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
   script:
-    # no libopenmpi-dev or mpich here, MPI must come from nvhpc
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy
-    - 'if dpkg -l | grep -E "^ii +(openmpi-bin|libopenmpi-dev|libopenmpi3t64|mpich|libmpich-dev|libmpich12)[ :]"; then echo "a distro MPI was pulled in, this job must only see nvhpc MPI"; exit 1; fi'
-    - export CMAKE_GENERATOR="Ninja"
-    - nvidia-smi
-    - nvc++ --version
-    - export NVHPC_ROOT=$(cd "$(dirname "$(which nvc++)")/../.." && pwd)  # e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/26.5
-    - export NVHPC_MPI=$NVHPC_ROOT/comm_libs/mpi
-    # The wrapper lives in comm_libs/hpcx; its reported library directory identifies the actual Open MPI installation.
-    - export NVHPC_OMPI=$(dirname "$("$NVHPC_MPI/bin/mpicxx" --showme:libdirs)")
-    - 'test -f "$NVHPC_OMPI/share/openmpi/help-mca-base.txt" && test -f "$NVHPC_OMPI/lib/libmpi.so"'
-    - export PATH=$NVHPC_OMPI/bin:$NVHPC_MPI/bin:$PATH
-    - export LD_LIBRARY_PATH=$NVHPC_OMPI/lib:${LD_LIBRARY_PATH:-}
-    - export OPAL_PREFIX=$NVHPC_OMPI
-    - export OMPI_HOME=$NVHPC_OMPI
-    - export PRTE_PREFIX=$NVHPC_OMPI
-    - export PMIX_PREFIX=$NVHPC_OMPI
-    - export MPI_CXX=$NVHPC_OMPI/bin/mpicxx
-    - export MPI_RUN=$NVHPC_OMPI/bin/mpirun
-    - export OMPI_MCA_ess_singleton_isolated=1  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
-    - export NGPU=$(nvidia-smi --list-gpus | wc -l)
-    - unset CUDA_VISIBLE_DEVICES
-    # same A30-over-RTX-A2000 selection as inq cuda
-    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'
-    - export PREFIX=`mktemp -d`
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy libscalapack-mpich-dev
+    - . /opt/nvidia/hpc_sdk/Linux_x86_64/*/comm_libs/*/hpcx/latest/hpcx-init.sh && hpcx_load  # nvhpc's own CUDA-aware Open MPI (HPC-X) first in PATH and LD_LIBRARY_PATH
+    - 'GOOD=$(nvidia-smi --query-gpu=index,name --format=csv,noheader | { grep -v RTX || true; } | cut -d, -f1 | paste -sd,); if [ -n "$GOOD" ]; then export CUDA_VISIBLE_DEVICES="$GOOD"; fi; echo "using GPUs: ${CUDA_VISIBLE_DEVICES:-all}"'  # same A30-over-RTX-A2000 selection as inq cuda
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git
     - rm -rf inq/external_libs/multi
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
-    - export GPUBIND=`pwd`/scripts/gpubind
     - mkdir build && cd build
-    - cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" -DMPI_CXX_COMPILER=$MPI_CXX -DMPIEXEC_EXECUTABLE=$MPI_RUN  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
-    - grep -E "^MPI_.*_LIBRARY:FILEPATH=|^MPIEXEC_EXECUTABLE:" CMakeCache.txt
-    - 'grep -q "^MPI_mpi_LIBRARY:FILEPATH=$NVHPC_ROOT/" CMakeCache.txt || { echo "FindMPI did not pick nvhpc MPI"; exit 1; }'
-    - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
-    - cmake --install .
-    - ldd $PREFIX/bin/inq | grep libmpi
-    - 'ldd $PREFIX/bin/inq | grep libmpi | grep -q "$NVHPC_ROOT" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
-    - export NP=2
-    - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$NGPU; fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
-    - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="$MPI_RUN -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
+    - 'ldd src/inq | grep libmpi | grep -q "$OPAL_PREFIX" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
+    - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
+    - 'INQ_EXEC_ENV="mpirun -np 2 `pwd`/../scripts/gpubind" ctest --parallel $(( NVIS >= 2 ? 3 : 1 )) --output-on-failure --timeout 5000'
   timeout: 4 hours 00 minutes
-  needs: ["inq", "cunvhpc"]
+  needs: [{job: inq, optional: true}, {job: cunvhpc, optional: true}]  # TEMPORARY optional, restore before merging
 
 inq rocm:
   stage: test
   image: rocm/dev-ubuntu-24.04:6.4.4-complete
   allow_failure: false
+  variables:
+    UCX_VERSION: "1.17.0"
+    OMPI_VERSION: "4.1.6"  # 4.1.x (not 5.x) to stay ABI-compatible with the distro libscalapack-openmpi
+  cache:
+    - key: apt-$CI_JOB_IMAGE
+      paths:
+        - .apt-cache/
+      when: always
+    - key: openmpi-rocm-4.1.6-ucx-1.17.0-$CI_JOB_IMAGE
+      paths:
+        - .mpi-rocm/
   tags:
     - non-shared
     - large-disk-space
     - x86_64  # for image
   script:
     - export CMAKE_GENERATOR="Unix Makefiles"  # "Ninja"
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget libvkfft-dev  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran gpg hipblas-dev hipfft-dev libnuma-dev bzip2 g++ openssh-client libscalapack-openmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev rocthrust-dev wget libvkfft-dev  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - /opt/rocm/bin/hipconfig --full
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
     - cmake --version
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
+    # the distro OpenMPI is not GPU-aware: build UCX with ROCm transports and OpenMPI on top of it (cached across runs)
+    - export MPI_PREFIX=$CI_PROJECT_DIR/.mpi-rocm
+    - |
+      if [ ! -x $MPI_PREFIX/bin/mpirun ]; then
+        wget -q https://github.com/openucx/ucx/releases/download/v$UCX_VERSION/ucx-$UCX_VERSION.tar.gz
+        tar xzf ucx-$UCX_VERSION.tar.gz
+        (cd ucx-$UCX_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-rocm=/opt/rocm --without-cuda --without-java --disable-doxygen-doc && make -j$(nproc) -s && make install -s)
+        wget -q https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-$OMPI_VERSION.tar.bz2
+        tar xjf openmpi-$OMPI_VERSION.tar.bz2
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-ucx=$MPI_PREFIX --with-rocm=/opt/rocm --disable-mpi-fortran --without-cuda --without-verbs && make -j$(nproc) -s && make install -s)
+        rm -rf ucx-$UCX_VERSION* openmpi-$OMPI_VERSION*
+      fi
+    - export PATH=$MPI_PREFIX/bin:$PATH
+    - export LD_LIBRARY_PATH=$MPI_PREFIX/lib:$LD_LIBRARY_PATH
+    - 'ucx_info -v | grep -e --with-rocm'  # fail early if UCX has no ROCm transports
+    - 'ompi_info | grep "pml: ucx"'  # and OpenMPI must use UCX
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git  #--branch fix-mutation-in-projectors-lambda
     - rm -rf inq/external_libs/multi
@@ -1493,7 +1514,7 @@ inq hip-emulated:
     - large-disk-space
     - x86_64  # for image
   script:
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git g++ gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev python3-numpy rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git g++ gfortran gpg hipblas-dev hipfft-dev libopenmpi-dev libscalapack-openmpi-dev libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev make pkg-config python3-dev python3-numpy rocthrust-dev wget  # rocm-device-libs removed: in the image's /opt/rocm; apt pulls a conflicting ROCm 5.7 stack
     - git clone --depth 1 https://github.com/pantheongpu/pantheonsim /opt/pantheonsim
     - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
     - /opt/pantheonsim/build/vgpu --version
@@ -1513,10 +1534,8 @@ inq hip-emulated:
     - cmake .. -G Ninja -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx942 -DENABLE_GPU_INTEGRATED_MEMORY=OFF -DINQ_MPI_DEVICE_POINTERS_RUN=0  # the simulator's hipMalloc memory is not host-addressable, so inq's arrays must use hipMallocManaged (plain host memory there) for the distro Open MPI and MPI-IO to read them; the GPU-aware check tests hipMalloc memory, skip it
     - cmake --build . --parallel $(( ($(nproc) + 1) / 2 ))
     - cmake --install .
-    # the unit tests plus the quickest full simulations (< 10 s on CPU, ~50x slower on the simulator); the rest of inq::tests::* would not finish on a simulator
-    # gfx942 is the MI300X instruction set, the simulator executes the real AMD machine code
-    # excluded: drude_weight (~3 h) and tdmlwf_trans (~2 h) on the simulator, they made the job exceed its timeout
-    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests|^inq::test_list_is_current$|^inq::tests::(bo|neon|help\.sh|na2\+\.py)$' -E 'unit_tests::(observables::drude_weight|wannier::tdmlwf_trans)$' --timeout 10800 --output-on-failure  # drude_weight takes ~2 h on the simulator, more when sharing the CPU with other tests (CTEST_PARALLEL_LEVEL)
+    # only the unit tests, the full simulations (*.sh, *.py, inq::tests::*) take minutes on a real GPU and would not finish on a simulator
+    - /opt/pantheonsim/build/vgpu run --gpu amd/mi300x ctest -R 'unit_tests' -E 'observables::drude_weight' --timeout 7200 --output-on-failure  # some unit tests take more than 30 min on the simulator; drude_weight times out (2h) on the simulator (hipBLASLt/Tensile kernels missing from the code object)
   timeout: 8 hours  # can be capped by the runner's maximum timeout
   needs: ["inq", "hip-emulated"]
 

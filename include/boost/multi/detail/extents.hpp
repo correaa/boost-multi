@@ -590,7 +590,7 @@ class extents_t {
 	BOOST_MULTI_HD constexpr auto               extension() const { return this->get<0>(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	[[nodiscard]] BOOST_MULTI_HD constexpr auto extent() const { return this->get<0>(); }     // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 
-	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }
+	BOOST_MULTI_HD constexpr auto size() const noexcept { return this->get<0>().size(); }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... exts) -> auto { return multi::detail::mk_tuple(exts.size()...); });
 	}

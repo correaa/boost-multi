@@ -23,9 +23,11 @@
 
 namespace multi = boost::multi;
 
-template<class Ref> class propagate_const;
+template<class Ref>
+class propagate_const;
 
-template<class T> class propagate_const<T&> {
+template<class T>
+class propagate_const<T&> {
 	T& r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:
@@ -47,7 +49,8 @@ template<class T> class propagate_const<T&> {
 	explicit operator T&() noexcept { return r_; }
 };
 
-template<class T> class propagate_const<T const&> {
+template<class T>
+class propagate_const<T const&> {
 	T const& r_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
  public:

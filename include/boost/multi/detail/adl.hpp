@@ -398,7 +398,7 @@ class adl_uninitialized_copy_t {
 	}
 #ifdef BOOST_MULTI_ADL_HAS_THRUST
 	template<class InIt, class FwdIt, class ValueType = typename std::iterator_traits<FwdIt>::value_type>
-	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // doesn't work with culang 17, cuda 12 ?
+	constexpr auto _(priority<2> /**/, InIt first, InIt last, FwdIt d_first) const -> decltype(::thrust::uninitialized_copy(first, last, d_first))  // cppcheck-suppress functionStatic ;  // doesn't work with culang 17, cuda 12 ?
 	{
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return ::thrust::copy(first, last, d_first);
@@ -431,6 +431,7 @@ class adl_uninitialized_copy_n_t {
 			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<ItFwd>>::type, thrust::system::cpp::tag>
 		>
 	>
+	// cppcheck-suppress functionStatic
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
@@ -704,6 +705,7 @@ class adl_alloc_destroy_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<1> /**/, Alloc&& /*unused*/, As&&... args) const BOOST_MULTI_DECLRET(adl_destroy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	#ifdef BOOST_MULTI_ADL_HAS_THRUST  // CLANG_FORMAT_OFF
 	template<class Alloc, class It, class Size>
+	// cppcheck-suppress functionStatic ; TODO(correaa) consider making these functions static
 	constexpr auto _(priority<2> /**/, Alloc& alloc, It first, Size n) const BOOST_MULTI_DECLRET((thrust::detail::destroy_range(alloc, first, first + n)))  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	#endif  // DO_NOT_FORMAT
 	template<class... As>

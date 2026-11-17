@@ -9,7 +9,7 @@
 // Prefer the standardized `std::unreachable()` (C++23), fall back to compiler
 // intrinsics, and finally to a hard trap so the fallback stays defined behavior.
 
-#if defined(__has_include)
+#ifdef __has_include
 #  if __has_include(<version>)
 #    include <version>
 #  endif
