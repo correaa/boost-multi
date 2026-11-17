@@ -1475,7 +1475,7 @@ inq rocm:
       fi
     - export PATH=$MPI_PREFIX/bin:$PATH
     - export LD_LIBRARY_PATH=$MPI_PREFIX/lib:$LD_LIBRARY_PATH
-    - ompi_info | grep -i "accelerator: rocm"  # fail early if not ROCm-aware
+    - 'ompi_info | grep -i "accelerator: rocm"'  # fail early if not ROCm-aware
     - export PREFIX=`mktemp -d`
     - git clone --depth 1 --recurse-submodules --shallow-submodules --jobs=4 https://gitlab.com/npneq/inq.git  #--branch fix-mutation-in-projectors-lambda
     - rm -rf inq/external_libs/multi
