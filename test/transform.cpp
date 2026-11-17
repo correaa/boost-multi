@@ -90,7 +90,8 @@ class involuted {  // NOLINT(misc-use-internal-linkage)
 template<class Involution, class It>
 class involuter {  // NOLINT(misc-use-internal-linkage)
 	It it_;
-	template<class, class> friend class involuter;
+	template<class, class>
+	friend class involuter;
 
  public:
 	using pointer         = involuter<Involution, typename std::iterator_traits<It>::pointer>;
@@ -137,8 +138,10 @@ class involuter {  // NOLINT(misc-use-internal-linkage)
 #endif
 };
 
-template<class Ref> using negated = involuted<std::negate<>, Ref>;
-template<class It> using negater  = involuter<std::negate<>, It>;
+template<class Ref>
+using negated = involuted<std::negate<>, Ref>;
+template<class It>
+using negater = involuter<std::negate<>, It>;
 
 // clang-format off
 class basic_conjugate_t {  // NOLINT(misc-use-internal-linkage)
@@ -171,7 +174,8 @@ struct conjugate<> : private basic_conjugate_t {
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
 
-template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef> {  // NOLINT(misc-use-internal-linkage)
+template<class ComplexRef>
+struct conjd : test::involuted<conjugate<>, ComplexRef> {  // NOLINT(misc-use-internal-linkage)
 	explicit conjd(ComplexRef ref) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, ref) {}
 	auto real() const { return underlying(*this).real(); }
 	auto imag() const {
@@ -192,10 +196,12 @@ template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRe
 #endif
 
 #ifdef __cpp_deduction_guides
-template<class T> conjd(T&&) -> conjd<T>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
+template<class T>
+conjd(T&&) -> conjd<T>;  // NOLINT(misc-use-internal-linkage) bug in clang-tidy 19
 #endif
 
-template<class Complex> using conjr = test::involuter<conjugate<>, Complex>;
+template<class Complex>
+using conjr = test::involuter<conjugate<>, Complex>;
 
 template<class P = std::complex<double>*>
 class indirect_real {  // NOLINT(misc-use-internal-linkage)
