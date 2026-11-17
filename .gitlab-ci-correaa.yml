@@ -1343,7 +1343,7 @@ inq cuda:
       paths:
         - .apt-cache/
       when: always
-    - key: openmpi-cuda-4.1.6-$CI_JOB_IMAGE
+    - key: openmpi-cuda-4.1.6-fortran-$CI_JOB_IMAGE
       paths:
         - .openmpi-cuda-4.1.6/
   image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -1360,7 +1360,7 @@ inq cuda:
       if [ ! -x $OMPI_PREFIX/bin/mpirun ]; then
         wget -q https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-$OMPI_VERSION.tar.bz2
         tar xjf openmpi-$OMPI_VERSION.tar.bz2
-        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$OMPI_PREFIX --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs --disable-mpi-fortran --without-ucx --without-verbs && make -j$(nproc) -s && make install -s)
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$OMPI_PREFIX --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs --without-ucx --without-verbs && make -j$(nproc) -s && make install -s)
         rm -rf openmpi-$OMPI_VERSION openmpi-$OMPI_VERSION.tar.bz2
       fi
     - export PATH=$OMPI_PREFIX/bin:$PATH
@@ -1445,7 +1445,7 @@ inq rocm:
       paths:
         - .apt-cache/
       when: always
-    - key: openmpi-rocm-4.1.6-ucx-1.17.0-$CI_JOB_IMAGE
+    - key: openmpi-rocm-4.1.6-ucx-1.17.0-fortran-$CI_JOB_IMAGE
       paths:
         - .mpi-rocm/
   tags:
@@ -1461,7 +1461,7 @@ inq rocm:
     - wget https://github.com/Kitware/CMake/releases/download/v3.27.0-rc3/cmake-3.27.0-rc3-linux-x86_64.sh --no-verbose
     - sh ./cmake-3.27.0-rc3-linux-x86_64.sh --skip-license --prefix=/usr
     - cmake --version
-    # the distro OpenMPI is not GPU-aware: build UCX with ROCm transports and OpenMPI on top of it (cached across runs)
+    # the distro OpenMPI is not GPU-aware: build UCX with ROCm transports and OpenMPI on top of it (cached across runs) (OpenMPI 4.1 gets ROCm support only through UCX, it has no --with-rocm of its own)
     - export MPI_PREFIX=$CI_PROJECT_DIR/.mpi-rocm
     - |
       if [ ! -x $MPI_PREFIX/bin/mpirun ]; then
@@ -1470,7 +1470,7 @@ inq rocm:
         (cd ucx-$UCX_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-rocm=/opt/rocm --without-cuda --without-java --disable-doxygen-doc && make -j$(nproc) -s && make install -s)
         wget -q https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-$OMPI_VERSION.tar.bz2
         tar xjf openmpi-$OMPI_VERSION.tar.bz2
-        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-ucx=$MPI_PREFIX --with-rocm=/opt/rocm --disable-mpi-fortran --without-cuda --without-verbs && make -j$(nproc) -s && make install -s)
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$MPI_PREFIX --with-ucx=$MPI_PREFIX --without-cuda --without-verbs && make -j$(nproc) -s && make install -s)
         rm -rf ucx-$UCX_VERSION* openmpi-$OMPI_VERSION*
       fi
     - export PATH=$MPI_PREFIX/bin:$PATH
@@ -1487,7 +1487,7 @@ inq rocm:
     - export CMAKE_PREFIX_PATH=/opt/rocm:${CMAKE_PREFIX_PATH}
     - export ROCM_PATH=/opt/rocm
     - export HIP_PATH=/opt/rocm
-    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a
+    - cmake .. -DCMAKE_HIP_COMPILER=/opt/rocm/llvm/bin/clang++ --install-prefix=$PREFIX -DENABLE_HIP=1 -DCMAKE_HIP_ARCHITECTURES=gfx90a -DINQ_MPI_DEVICE_POINTERS_RUN=0  # this runner has no GPU, so inq's configure-time GPU-aware-MPI check (needs a device) cannot run
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - cmake --install .
     - export OMPI_ALLOW_RUN_AS_ROOT=1
