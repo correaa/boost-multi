@@ -28,7 +28,7 @@ auto main() -> int {
 		BOOST_TEST( R5[1][1] == 2 );
 	}
 	{
-		auto const R1 = multi::restriction({5}, [](auto ii) { return ii * 2; });
+		auto const R1  = multi::restriction({5}, [](auto ii) { return ii * 2; });
 		auto const cur = R1.home();
 
 		BOOST_TEST( cur[0] == 0 );

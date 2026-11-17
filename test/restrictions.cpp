@@ -66,17 +66,20 @@ namespace multi = boost::multi;
 
 namespace lazy {
 
-template<class A> auto operator*(typename A::element scalar, A const& a) {
+template<class A>
+auto operator*(typename A::element scalar, A const& a) {
 	return [scalar, &a](auto... is) { return scalar * a[is...]; } ^ a.extents();
 }
 
 namespace elementwise {
 
-template<class A, class B> auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+template<class A, class B>
+auto operator*(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
 	return [&a, &b](auto... is) { return a[is...] * b[is...]; } ^ a.extents();
 }
 
-template<class A, class B> auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
+template<class A, class B>
+auto operator+(A const& a, B const& b) requires(A::dimensionality == B::dimensionality) {
 	return [&a, &b](auto... is) { return a[is...] + b[is...]; } ^ a.extents();
 }
 

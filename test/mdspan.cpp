@@ -181,7 +181,7 @@ auto main() -> int {
 
 		// scaling a strided sub-block leaves the rest untouched
 		multi::array<double, 2> D({3, 3}, 1.0);
-		mdspan2D center_mds = D({1, 3}, {1, 3});
+		mdspan2D                center_mds = D({1, 3}, {1, 3});
 		std::linalg::scale(3.0, center_mds);
 		BOOST_TEST( D[0][0] == 1.0 );
 		BOOST_TEST( D[1][1] == 3.0 );
@@ -203,10 +203,13 @@ auto main() -> int {
 			{4.0, 5.0, 6.0},
 		};
 		multi::array<double, 2> G({3, 3}, 0.0);
+
 		mdspan2D Ft_mds = F.transposed();
 		mdspan2D F_mds  = F;
 		mdspan2D G_mds  = G;
+
 		std::linalg::matrix_product(Ft_mds, F_mds, G_mds);
+
 		BOOST_TEST( G[0][0] == 17.0 );
 		BOOST_TEST( G[1][2] == 36.0 );
 		BOOST_TEST( G[2][2] == 45.0 );

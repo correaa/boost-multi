@@ -705,6 +705,7 @@ class adl_alloc_destroy_n_t {
 	template<class Alloc, class... As> constexpr auto _(priority<1> /**/, Alloc&& /*unused*/, As&&... args) const BOOST_MULTI_DECLRET(adl_destroy_n(std::forward<As>(args)...))  // NOLINT(cppcoreguidelines-missing-std-forward)
 	#ifdef BOOST_MULTI_ADL_HAS_THRUST  // CLANG_FORMAT_OFF
 	template<class Alloc, class It, class Size>
+	// cppcheck-suppress functionStatic ; TODO(correaa) consider making these functions static
 	constexpr auto _(priority<2> /**/, Alloc& alloc, It first, Size n) const BOOST_MULTI_DECLRET((thrust::detail::destroy_range(alloc, first, first + n)))  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	#endif  // DO_NOT_FORMAT
 	template<class... As>
