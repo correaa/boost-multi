@@ -845,7 +845,8 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance,fuchsia-multiple-inhe
 #endif
 
  public:
-	BOOST_MULTI_HD constexpr auto base() const -> element_ptr { return this->ptr_.base_; }
+	// cppcheck-suppress internalAstError  ; cppcheck internal AST bug
+	BOOST_MULTI_HD constexpr auto base() const -> element_ptr { return ptr_.base(); }
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type { return stride_; }
 
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr { return self.base(); }
