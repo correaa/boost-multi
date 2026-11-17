@@ -1336,14 +1336,38 @@ inq-debug:
 inq cuda:
   allow_failure: false
   stage: test
+  variables:
+    OMPI_VERSION: "4.1.6"
+  cache:
+    - key: apt-$CI_JOB_IMAGE
+      paths:
+        - .apt-cache/
+      when: always
+    - key: openmpi-cuda-4.1.6-$CI_JOB_IMAGE
+      paths:
+        - .openmpi-cuda-4.1.6/
   image: nvcr.io/nvidia/cuda:12.0.1-devel-ubuntu22.04  # nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
     - non-shared
     - nvidia-gpu
     - arch75
   script:
-    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libmpich-dev mpich libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
+    - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran wget bzip2 make g++ libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev
     - export CMAKE_GENERATOR="Ninja"  # "Unix Makefiles"
+    # the distro MPI packages are not CUDA-aware, so build OpenMPI against the CUDA toolkit (ob1 + smcuda, no UCX needed); cached across runs
+    - export OMPI_PREFIX=$CI_PROJECT_DIR/.openmpi-cuda-$OMPI_VERSION
+    - |
+      if [ ! -x $OMPI_PREFIX/bin/mpirun ]; then
+        wget -q https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-$OMPI_VERSION.tar.bz2
+        tar xjf openmpi-$OMPI_VERSION.tar.bz2
+        (cd openmpi-$OMPI_VERSION && ./configure -q --prefix=$OMPI_PREFIX --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs --disable-mpi-fortran --without-ucx --without-verbs && make -j$(nproc) -s && make install -s)
+        rm -rf openmpi-$OMPI_VERSION openmpi-$OMPI_VERSION.tar.bz2
+      fi
+    - export PATH=$OMPI_PREFIX/bin:$PATH
+    - export LD_LIBRARY_PATH=$OMPI_PREFIX/lib:$LD_LIBRARY_PATH
+    - export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader,smcuda OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - ompi_info --parsable --all | grep -E "mpi_built_with_cuda_support:value:true"  # fail early if not CUDA-aware
     - nvidia-smi
     # - __nvcc_device_query
     - export NGPU=$(nvidia-smi --list-gpus | wc -l)
@@ -1363,7 +1387,7 @@ inq cuda:
     #- rm -f cmake/FindNCCL.cmake  # disable NCCL workaround
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DMPI_EXECUTABLE_SUFFIX=.mpich -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # native doesn't work in this version of cmake # =75  # =80  # nvcc's EDG frontend rejects bundled fmt's C++20 literal-operator-template UDL (fixed_string NTTP); force the pre-C++20 fallback
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. --install-prefix=$PREFIX -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # native doesn't work in this version of cmake # =75  # =80  # nvcc's EDG frontend rejects bundled fmt's C++20 literal-operator-template UDL (fixed_string NTTP); force the pre-C++20 fallback
     - time (cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1)
     - apt-get -qq --no-install-recommends -y install python3-numpy
     - cmake --install .
@@ -1372,7 +1396,7 @@ inq cuda:
     # run 3 tests concurrently only when >=2 GPUs are visible, otherwise 1 to avoid piling 6 processes onto a single GPU (OOM risk)
     - 'if [ -n "$CUDA_VISIBLE_DEVICES" ]; then NVIS=$(( $(echo "$CUDA_VISIBLE_DEVICES" | tr -cd , | wc -c) + 1 )); else NVIS=$(nvidia-smi --list-gpus | wc -l); fi; export JOBS=$(( NVIS >= 2 ? 3 : 1 ))'
     - echo "NP=${NP} JOBS=${JOBS}"
-    - INQ_EXEC_ENV="mpirun.mpich -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
+    - INQ_EXEC_ENV="mpirun --oversubscribe -np ${NP} $GPUBIND" ctest --parallel ${JOBS} --progress --output-on-failure --timeout 5000
   timeout: 4 hours 00 minutes
   needs: ["inq", "cuda"]
 
