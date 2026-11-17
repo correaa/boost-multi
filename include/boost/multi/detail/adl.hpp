@@ -431,6 +431,7 @@ class adl_uninitialized_copy_n_t {
 			!std::is_convertible_v<typename thrust::iterator_system<std::decay_t<ItFwd>>::type, thrust::system::cpp::tag>
 		>
 	>
+	// cppcheck-suppress functionStatic
 	constexpr auto _(priority<3>/**/, It first, Size count, ItFwd d_first) const -> decltype(::thrust::uninitialized_copy_n(first, count, d_first)) {  // NOLINT(performance-unnecessary-value-param)
 		if constexpr(std::is_trivially_default_constructible_v<ValueType> || multi::force_element_trivial_default_construction<ValueType>) {
 			return count?::thrust::copy_n(first, count, d_first):d_first;  // condition fixes a bug in Thrust 2, github.com/NVIDIA/thrust/issues/939, fixed later
