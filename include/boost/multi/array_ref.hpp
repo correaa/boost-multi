@@ -4953,9 +4953,13 @@ template<typename Ptr> array_ref(Ptr, extents_t<3>) -> array_ref<typename std::i
 template<typename Ptr> array_ref(Ptr, extents_t<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
 
+/// Deduce a constant subarray rference from a pair of subarray iterators (iterators must have compatible provenance)
 template<class It> const_subarray(It, It) -> const_subarray<typename It::element, It::dimensionality + 1, typename It::element_ptr, detail::layout_t<It::dimensionality + 1>>;
 
+/// Deduce a constant subarray rference from initializer list
 template<class T> const_subarray(std::initializer_list<T>) -> const_subarray<T, 1>;
+
+/// Deduce a constant subarray rference from initializer list
 template<class T> const_subarray(std::initializer_list<std::initializer_list<T>>) -> const_subarray<T, 2>;
 #endif
 // clang-format on
