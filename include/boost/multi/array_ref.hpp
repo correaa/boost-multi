@@ -3560,6 +3560,11 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 	  ) {
 	}
 
+#if !(defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 9))  // gcc 8 bug
+	template<class TT, std::enable_if_t<std::is_same_v<ElementPtr, TT const*>, int> = 0>      // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,modernize-use-constraints) for C++20
+	explicit BOOST_MULTI_HD constexpr const_subarray(std::initializer_list<TT>&& il_1d) = delete;  // would dangle: reference to a temporary initializer list
+#endif
+
 	// boost serialization needs `delete(...)`. void boost::serialization::extended_type_info_typeid<T>::destroy(const void*) const [with T = boost::multi::subarray<double, 1, double*, boost::multi::detail::layout_t<1> >]
 	// void operator delete(void* ptr) noexcept = delete;
 	// void operator delete(void* ptr, void* place ) noexcept = delete;  // NOLINT(bugprone-easily-swappable-parameters)

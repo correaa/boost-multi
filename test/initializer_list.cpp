@@ -518,7 +518,8 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 #pragma clang diagnostic pop
 #endif
 	{
-		BOOST_TEST( multi::const_subarray({1, 2, 3})[1] == 2 );
+		auto const& il = {1, 2, 3};
+		BOOST_TEST( multi::const_subarray(il)[1] == 2 );
 	}
 #endif
 	{
