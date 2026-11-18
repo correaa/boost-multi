@@ -1447,9 +1447,9 @@ struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-// nvcc < 12.4 (EDG front end) reports SFINAE failures (e.g. has_extents) for members reached through a private base,
+// nvcc < 12.4 and nvc++ < 23 (EDG front end; verified fixed in nvc++ 23.11) report SFINAE failures (e.g. has_extents, size) for members reached through a private base,
 // even when re-exported with using-declarations; fall back to public inheritance there
-#if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))
+#if (defined(__NVCC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))) || (defined(__NVCOMPILER) && __NVCOMPILER_MAJOR__ < 23)
 #define BOOST_MULTI_ARRAY_TYPES_ACCESS public
 #else
 #define BOOST_MULTI_ARRAY_TYPES_ACCESS private
