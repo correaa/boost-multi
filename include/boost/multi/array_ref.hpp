@@ -845,7 +845,8 @@ struct array_iterator  // NOLINT(misc-multiple-inheritance,fuchsia-multiple-inhe
 #endif
 
  public:
-	BOOST_MULTI_HD constexpr auto base() const -> element_ptr { return ptr_.base_; }
+	// cppcheck-suppress internalAstError  ; cppcheck internal AST bug
+	BOOST_MULTI_HD constexpr auto base() const -> element_ptr { return ptr_.base(); }
 	BOOST_MULTI_HD constexpr auto stride() const -> stride_type { return stride_; }
 
 	friend /*constexpr*/ auto base(array_iterator const& self) -> element_ptr { return self.base(); }
@@ -1446,11 +1447,46 @@ struct dynamic_array;  // this might be needed by MSVC 14.3 in c++17 mode
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
+// nvcc < 12.4 (EDG front end) reports SFINAE failures (e.g. has_extents) for members reached through a private base,
+// even when re-exported with using-declarations; fall back to public inheritance there
+#if defined(__NVCC__) && (__CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4))
+#define BOOST_MULTI_ARRAY_TYPES_ACCESS public
+#else
+#define BOOST_MULTI_ARRAY_TYPES_ACCESS private
+#endif
+
 template<typename T, ::boost::multi::dimensionality_type D, typename ElementPtr, class Layout>
-class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
+class const_subarray : BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, D, ElementPtr, Layout> {
 	using types = detail::array_types<T, D, ElementPtr, Layout>;  // TODO(correaa) eliminate
 
  public:
+	using detail::array_types<T, D, ElementPtr, Layout>::size;
+	using detail::array_types<T, D, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, D, ElementPtr, Layout>::extents;
+	using detail::array_types<T, D, ElementPtr, Layout>::extent;
+	using detail::array_types<T, D, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, D, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, D, ElementPtr, Layout>::stride;
+	using detail::array_types<T, D, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, D, ElementPtr, Layout>::empty;
+	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, D, ElementPtr, Layout>::strides;
+	using detail::array_types<T, D, ElementPtr, Layout>::base;
+	using detail::array_types<T, D, ElementPtr, Layout>::origin;  // TODO(correaa) remove 
+
+	using typename detail::array_types<T, D, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::dimensionality_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, D, ElementPtr, Layout>::indexes;
+
 	/// Integer constant with the rank of the array
 	using detail::array_types<T, D, ElementPtr, Layout>::rank_v;
 
@@ -1481,6 +1517,11 @@ class const_subarray : public detail::array_types<T, D, ElementPtr, Layout> {
 	: detail::array_types<T, D, ElementPtr, Layout>{layout, potr} {}
 
  protected:
+	using detail::array_types<T, D, ElementPtr, Layout>::base_;
+	using detail::array_types<T, D, ElementPtr, Layout>::layout_mutable;
+
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
+
 	// using types::types;
 	BOOST_MULTI_HD constexpr explicit const_subarray(std::nullptr_t nil) : types{nil} {}
 
@@ -3289,10 +3330,47 @@ struct array_iterator<Element, 1, Ptr, IsConst, IsMove, Stride>  // NOLINT(cppco
 /// ... a specialization for zero dimensions
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 0, ElementPtr, Layout>
-: public detail::array_types<T, 0, ElementPtr, Layout> {
+: BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, 0, ElementPtr, Layout> {
  public:
 	using types = detail::array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
+
+	using detail::array_types<T, 0, ElementPtr, Layout>::size;
+	using detail::array_types<T, 0, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, 0, ElementPtr, Layout>::extents;
+	using detail::array_types<T, 0, ElementPtr, Layout>::extent;
+	using detail::array_types<T, 0, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, 0, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, 0, ElementPtr, Layout>::stride;
+	using detail::array_types<T, 0, ElementPtr, Layout>::strides;
+	using detail::array_types<T, 0, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, 0, ElementPtr, Layout>::empty;
+	using detail::array_types<T, 0, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, 0, ElementPtr, Layout>::base;
+	using detail::array_types<T, 0, ElementPtr, Layout>::origin;
+	using detail::array_types<T, 0, ElementPtr, Layout>::layout;
+	using detail::array_types<T, 0, ElementPtr, Layout>::rank_v;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::dimensionality_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, 0, ElementPtr, Layout>::indexes;
+
+ protected:
+	using detail::array_types<T, 0, ElementPtr, Layout>::base_;
+	using detail::array_types<T, 0, ElementPtr, Layout>::layout_mutable;
+
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
+
+ public:
 
 	using element_type [[deprecated("use ::element")]] = typename types::element;
 	using element                                      = typename types::element;
@@ -3470,7 +3548,7 @@ class const_subarray<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inheritance) to define operators via CRTP
 : public multi::random_iterable<const_subarray<T, 1, ElementPtr, Layout>>
-, public detail::array_types<T, 1, ElementPtr, Layout> {
+, BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, 1, ElementPtr, Layout> {
  public:
 	~const_subarray() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -3490,6 +3568,41 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	using types = detail::array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
+
+	using detail::array_types<T, 1, ElementPtr, Layout>::size;
+	using detail::array_types<T, 1, ElementPtr, Layout>::sizes;
+	using detail::array_types<T, 1, ElementPtr, Layout>::extents;
+	using detail::array_types<T, 1, ElementPtr, Layout>::extent;
+	using detail::array_types<T, 1, ElementPtr, Layout>::num_elements;
+	using detail::array_types<T, 1, ElementPtr, Layout>::dimensionality;
+	using detail::array_types<T, 1, ElementPtr, Layout>::stride;
+	using detail::array_types<T, 1, ElementPtr, Layout>::strides;
+	using detail::array_types<T, 1, ElementPtr, Layout>::nelems;
+	using detail::array_types<T, 1, ElementPtr, Layout>::empty;
+	using detail::array_types<T, 1, ElementPtr, Layout>::is_empty;
+	using detail::array_types<T, 1, ElementPtr, Layout>::base;
+	using detail::array_types<T, 1, ElementPtr, Layout>::origin;
+	using detail::array_types<T, 1, ElementPtr, Layout>::layout;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::extents_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::value_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::stride_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index_extension;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::index_range;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::strides_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::difference_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::extent_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::indices_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::sizes_type;
+	using typename detail::array_types<T, 1, ElementPtr, Layout>::indexes;
+
+ protected:
+	using detail::array_types<T, 1, ElementPtr, Layout>::base_;
+	using detail::array_types<T, 1, ElementPtr, Layout>::layout_mutable;
+
+	template<typename, ::boost::multi::dimensionality_type, typename, class> friend struct detail::array_types;
+
+ public:
 
 	using rank        = std::integral_constant<dimensionality_type, rank_v>;
 	using layout_type = Layout;
@@ -4438,7 +4551,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	/// pointer to a contiguous range of `.num_elements()` that contains the elements of the array
-	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(array_ref::base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(this->base_); }
 
 	template<class TT, class... As, std::enable_if_t<!std::is_base_of_v<array_ref, array_ref<TT, D, As...>>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {                                   // if MSVC complains here, it probably needs /EHsc /permissive- for C++17 mode
@@ -4601,8 +4714,8 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 #pragma clang diagnostic pop
 #endif
 
-	BOOST_MULTI_HD constexpr auto data_elements() & -> typename array_ref::element_ptr { return array_ref::base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
-	BOOST_MULTI_HD constexpr auto data_elements() && -> typename array_ref::element_ptr { return array_ref::base_; }
+	BOOST_MULTI_HD constexpr auto data_elements() & -> typename array_ref::element_ptr { return this->base_; }  // cppcheck-suppress functionStatic ; bug in cppcheck 2.19.0
+	BOOST_MULTI_HD constexpr auto data_elements() && -> typename array_ref::element_ptr { return this->base_; }
 
 	// friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr { return std::move(self).data_elements(); }
 
@@ -4647,13 +4760,13 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	template<class TTN>
 	constexpr auto to_carray_() & -> TTN& {
 		check_sizes_<TTN>();
-		return *launder_(reinterpret_cast<TTN*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *launder_(reinterpret_cast<TTN*>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
 	template<typename To>
 	constexpr auto to_carray_() const& -> To const& {
 		check_sizes_<To>();
-		return *launder_(reinterpret_cast<To const*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return *launder_(reinterpret_cast<To const*>(this->base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:

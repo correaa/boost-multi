@@ -112,9 +112,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 		);
 
 		// #ifndef _MSC_VER  // doesn't work with msvc 14.3 c++17 permissive mode
-		BOOST_TEST( size(va[0]) == 0 );
-		BOOST_TEST( size(va[1]) == 1 );
-		BOOST_TEST( size(va[2]) == 2 );
+		BOOST_TEST( va[0].size() == 0 );
+		BOOST_TEST( va[1].size() == 1 );
+		BOOST_TEST( va[2].size() == 2 );
 		// #endif
 
 		BOOST_TEST( va[1] [0][0] == 1 );

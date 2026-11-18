@@ -268,13 +268,14 @@ struct                                                                          
 	}
 
 	constexpr dynamic_array(decay_type&& other, allocator_type const& alloc) noexcept
-	: array_alloc{alloc}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+	: array_alloc{alloc}, ref_(std::exchange(static_cast<ref_&>(other).base_, nullptr), other.extents()) {
+		// static_cast<ref_&&>(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+		static_cast<ref_&&>(std::move(other)).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 	explicit constexpr dynamic_array(decay_type&& other) noexcept
-	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(other.base_, nullptr), other.extents()) {
-		std::move(other).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
+	: array_alloc{std::move(other.alloc())}, ref_(std::exchange(static_cast<ref_&>(other).base_, nullptr), other.extents()) {
+		static_cast<ref_&&>(std::move(other)).layout_mutable() = typename dynamic_array::layout_type(typename dynamic_array::extents_type{});  // = {};  careful! this is the place where layout can become invalid
 	}
 
 #if (__cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)) && (!defined(__clang_major__) || (__clang_major__ != 10))
@@ -304,13 +305,8 @@ struct                                                                          
 	constexpr explicit dynamic_array(It const& first, It const& last, allocator_type const& alloc)
 	: array_alloc{alloc},
 	  ref_(
-		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type(
-			extents_t<D>(index_extension(adl_distance(first, last)), multi::extents(*first))
-			// index_extension(adl_distance(first, last)) * multi::extents(*first)
-		  ).num_elements())
-			),
+		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(layout_type(extents_t<D>(index_extension(adl_distance(first, last)), multi::extents(*first))).num_elements())),
 		  extents_t<D>(index_extension(adl_distance(first, last)), multi::extents(*first))
-		  // index_extension(adl_distance(first, last)) * multi::extents(*first)
 	  ) {
 #if defined(__clang__) && defined(__CUDACC__)
 		// TODO(correaa) add workaround for non-default constructible type and use adl_alloc_uninitialized_default_construct_n
@@ -956,7 +952,7 @@ struct                                                                          
 	// Element-move (deep move) assignment, moves each element from the @p other array. Source and destination extents should match
 	// @note Linear complexity in the number of elements (cheaper than copy assignment if elements are effectively movable)
 	constexpr auto operator=(dynamic_array&& other) noexcept -> dynamic_array& {  // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-		assert(other.extents() == dynamic_array::extents());
+		assert(other.extents() == this->extents());
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) there is no std::move_n algorithm
 		assert(this->stride() != 0);
 		return *this;
@@ -969,7 +965,7 @@ struct                                                                          
 	/// Copy assignment from @p other array of a related typed
 	template<class TT, class... As>
 	auto operator=(dynamic_array<TT, D, As...> const& other) & -> dynamic_array& {
-		assert(extents(other) == dynamic_array::extents());
+		assert(extents(other) == this->extents());
 		if(!this->is_empty()) {
 			adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		}
@@ -1693,7 +1689,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	/// Assignment from @p other array of a different element type (allocates, unless extents are already equal or the number of elements is the same)
 	template<class TT, class AAlloc>
 	auto operator=(multi::array<TT, D, AAlloc> const& other) -> array& {
-		if(array::extents() == other.extents()) {
+		if(this->extents() == other.extents()) {
 			dynamic_::operator=(other);
 		} else if(this->num_elements() == other.extents().num_elements()) {
 			this->layout_mutable() = typename array::layout_type(other.extents());
@@ -1711,7 +1707,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 		std::enable_if_t<has_extents<std::decay_t<Range>>::value, int>        = 0,
 		std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints,modernize-type-traits) for C++20
 	auto operator=(Range&& other) -> array& {
-		if(array::extents() == other.extents()) {
+		if(this->extents() == other.extents()) {
 			this->operator()() = std::forward<Range>(other);
 		} else if(this->num_elements() == other.extents().num_elements()) {
 			typename array::layout_type const new_layout{other.extents()};
@@ -1731,7 +1727,7 @@ struct array : /*detail::*/ unique_array<T, D, Alloc> {  // NOLINT(cppcoreguidel
 	// 	class Range, class = decltype(std::declval<dynamic_&>().operator=(std::declval<Range&&>())),
 	// 	std::enable_if_t<!std::is_base_of_v<array, std::decay_t<Range>>, int> = 0>  // NOLINT(modernize-use-constraints) TODO(correaa) for C++20
 	// auto from(Range&& other) -> array& {                                            // TODO(correaa) : check that LHS is not read-only?
-	// 	if(array::extents() == other.extents()) {
+	// 	if(this->extents() == other.extents()) {
 	// 		this->operator()() = other;
 	// 	} else if(this->num_elements() == other.extents().num_elements()) {
 	// 		reshape(other.extents());
