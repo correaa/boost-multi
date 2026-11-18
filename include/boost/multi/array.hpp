@@ -134,32 +134,32 @@ struct array_allocator {
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
 
-template<class T, dimensionality_type D, class DummyAlloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
+template<class T, dimensionality_type D, class Alloc /*= std::allocator<T>*/>  // DummyAlloc mechanism allows using the convention array<T, an_allocator<>>, is an_allocator supports void template argument
 struct                                                                              // NOLINT(misc-multiple-inheritance) : used for composition
 	dynamic_array
 : private detail::array_allocator<
-	  typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>
-, public array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>
-, private boost::multi::random_iterable<dynamic_array<T, D, typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>> {
+	  Alloc>
+, public array_ref<T, D, typename multi::allocator_traits<Alloc>::pointer>
+, private boost::multi::random_iterable<dynamic_array<T, D, Alloc>> {
 	static_assert(
 		std::is_same_v<
-			std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
+			std::remove_const_t<typename multi::allocator_traits<Alloc>::value_type>,
 			typename dynamic_array::element>
 			|| std::is_same_v<
-				std::remove_const_t<typename multi::allocator_traits<DummyAlloc>::value_type>,
+				std::remove_const_t<typename multi::allocator_traits<Alloc>::value_type>,
 				void>,  // allocator template can be redundant or void (which can be a default for the allocator)
 		"allocator value type must match array value type"
 	);
 
  private:
-	using array_alloc = detail::array_allocator<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>;
+	using array_alloc = detail::array_allocator<Alloc>;
 
 	template<class, dimensionality_type, class> friend struct array;
 	template<class, dimensionality_type, class> friend class unique_array;
 
  public:
 	/// Allocator type (returned by `get_allocator()`)
-	using allocator_type = typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>;  // NOLINT(readability-redundant-typename) needed for C++17
+	using allocator_type = typename multi::allocator_traits<Alloc>::template rebind_alloc<T>;  // NOLINT(readability-redundant-typename) needed for C++17
 	/// Layout type (generally a strided layout `multi::layout_t<D>`)
 	using layout_type    = typename array_ref<T, D, typename multi::allocator_traits<allocator_type>::pointer>::layout_type;  // NOLINT(readability-redundant-typename) needed for C++17
 	/// Associalted array value type (generally itself, `multi::array<element, dimensionality, allocator_type>`)
@@ -167,7 +167,7 @@ struct                                                                          
 
 	/// returns the allocator that is used to acquire/release memory and to construct/destroy the elements in that memory
 	BOOST_MULTI_HD constexpr auto get_allocator() const -> allocator_type {  // cppcheck-suppress duplInheritedMember ; to overwrite
-		return detail::array_allocator<typename allocator_traits<DummyAlloc>::template rebind_alloc<T>>::get_allocator();
+		return detail::array_allocator<Alloc>::get_allocator();
 	}
 
 	/// @internal
@@ -459,7 +459,7 @@ struct                                                                          
 		typename dynamic_array::extents_type exts, It elements_first
 	)
 	: array_alloc{},
-	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename) for C++23
+	  array_ref<T, D, typename multi::allocator_traits<Alloc>::pointer>(  // NOLINT(readability-redundant-typename) for C++23
 		  exts,
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(exts).num_elements()),  // NOLINT(readability-redundant-typename) for C++23
 								nullptr)
@@ -481,7 +481,7 @@ struct                                                                          
 		typename dynamic_array::extents_type exts, typename dynamic_array::element const& elem
 	)
 	: array_alloc{},
-	  array_ref<T, D, typename multi::allocator_traits<typename multi::allocator_traits<DummyAlloc>::template rebind_alloc<T>>::pointer>(  // NOLINT(readability-redundant-typename)
+	  array_ref<T, D, typename multi::allocator_traits<Alloc>::pointer>(  // NOLINT(readability-redundant-typename)
 		  exts,
 		  array_alloc::allocate(static_cast<typename multi::allocator_traits<allocator_type>::size_type>(typename dynamic_array::layout_type(exts).num_elements()),  // NOLINT(readability-redundant-typename)
 								nullptr)
