@@ -1471,16 +1471,32 @@ class const_subarray : BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, D, 
 	using detail::array_types<T, D, ElementPtr, Layout>::empty;
 	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
 	using detail::array_types<T, D, ElementPtr, Layout>::strides;
+
+	/// returns the base pointer of the array (arithmetic base of the layout, generally a pointer to the first element)
 	using detail::array_types<T, D, ElementPtr, Layout>::base;
 	using detail::array_types<T, D, ElementPtr, Layout>::origin;  // TODO(correaa) remove 
 
 	using typename detail::array_types<T, D, ElementPtr, Layout>::extents_type;
+
+	/// The value type associated after binding the first index (generally multi::array<element, D ‐ 1>)
 	using typename detail::array_types<T, D, ElementPtr, Layout>::value_type;
+
+	/// Integer type to store dimensionality information (e.g. 1D, 2D, 3D)
 	using typename detail::array_types<T, D, ElementPtr, Layout>::dimensionality_type;
+
+	/// Stride type (generally `std::ptrdiff_t`)
 	using typename detail::array_types<T, D, ElementPtr, Layout>::stride_type;
+
+	/// Type that describes the extents in the leading dimension
 	using typename detail::array_types<T, D, ElementPtr, Layout>::index_extension;
+
+	/// Type that represents a range of indices
 	using typename detail::array_types<T, D, ElementPtr, Layout>::index_range;
+
+	/// Type that represents the layout strides (generally a D‐tuple)
 	using typename detail::array_types<T, D, ElementPtr, Layout>::strides_type;
+
+	/// Signed integer type to represent difference between indices (usually std::ptrdiff_t)
 	using typename detail::array_types<T, D, ElementPtr, Layout>::difference_type;
 	using typename detail::array_types<T, D, ElementPtr, Layout>::extent_type;
 	using typename detail::array_types<T, D, ElementPtr, Layout>::indices_type;
@@ -4378,11 +4394,14 @@ using array_cptr = array_ptr<T, D, typename std::pointer_traits<Ptr>::template r
 template<
 	typename T, dimensionality_type D, typename ElementPtr = T*,
 	class Layout =
-		std::conditional_t<
-			(D == 1),
-			// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
-			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
-			multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>>>
+		multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+		// std::conditional_t<
+		// 	(D == 1),
+		// 	// contiguous_layout<>,  // 1, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// 	multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>,
+		// 	multi::detail::layout_t<D, typename std::pointer_traits<ElementPtr>::difference_type>
+		// >
+>
 class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	using subarray_layout = Layout;
 
