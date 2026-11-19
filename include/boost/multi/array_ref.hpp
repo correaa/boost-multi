@@ -135,7 +135,7 @@ friend constexpr  // workaround nvcc
 #define BOOST_MULTI_HD
 #endif
 
-#if defined(__has_cpp_attribute)  // nested: an undefined function-like macro can't be invoked even after a false `&&`
+#ifdef __has_cpp_attribute  // nested: an undefined function-like macro can't be invoked even after a false `&&`
 #if __has_cpp_attribute(gnu::no_dangling)
 #define BOOST_MULTI_NO_DANGLING [[gnu::no_dangling]]
 #endif
