@@ -1468,8 +1468,13 @@ class const_subarray : BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, D, 
 	using detail::array_types<T, D, ElementPtr, Layout>::dimensionality;
 	using detail::array_types<T, D, ElementPtr, Layout>::stride;
 	using detail::array_types<T, D, ElementPtr, Layout>::nelems;
+
+	/// Checks if the container has no elements
 	using detail::array_types<T, D, ElementPtr, Layout>::empty;
+
+	/// Checks if the container has no elements
 	using detail::array_types<T, D, ElementPtr, Layout>::is_empty;
+
 	using detail::array_types<T, D, ElementPtr, Layout>::strides;
 
 	/// returns the base pointer of the array (arithmetic base of the layout, generally a pointer to the first element)
@@ -4416,6 +4421,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 	/// Type for random-access iteration in the leading dimension, that results from `.begin()`/`.end()` members
 	using iterator = typename subarray_base::iterator;
 
+	/// A type to hold the size of an array or subarray (size in the leading dimension) (usually signed)
 	using typename subarray_base::size_type;
 
 	constexpr array_ref() = delete;  // because reference cannot be unbound
@@ -4974,6 +4980,7 @@ template<typename Ptr> array_ref(Ptr, extents_t<0>) -> array_ref<typename std::i
 template<typename Ptr> array_ref(Ptr, extents_t<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<2>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
+/// @internal
 template<typename Ptr> array_ref(Ptr, extents_t<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
 template<typename Ptr> array_ref(Ptr, extents_t<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
 
