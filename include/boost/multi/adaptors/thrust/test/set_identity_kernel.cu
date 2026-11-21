@@ -9,6 +9,7 @@
 #include <thrust/system/cuda/memory.h>
 
 #include <chrono>
+#include <iostream>
 
 namespace multi = boost::multi;
 
