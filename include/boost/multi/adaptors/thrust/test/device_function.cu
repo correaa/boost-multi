@@ -284,7 +284,7 @@ int main() {
 		::thrust::generate_n(
 			thrust::device,
 			vec.begin(), vec.size(),
-			[a = 1, b = 2] __device__() { return a + b; }
+			[a = 1, b = 2] __device__() -> int { return a + b; }  // trailing return type: CCCL 3.4 queries the generator's return type in host code, which an extended __device__ lambda without one does not allow
 		);
 
 		thrust::host_vector<int> h_vec = vec;
