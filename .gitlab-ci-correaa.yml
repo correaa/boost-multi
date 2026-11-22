@@ -479,7 +479,7 @@ vs2022-shell c++17:
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/MP /wd4514 /wd5045" -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON  # -DDISABLE_MPI=1
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
-    - ctest -j 4 --test-dir build --output-on-failure --repeat until-pass:2 -C Debug
+    - ctest -j 2 --test-dir build --output-on-failure --repeat until-pass:2 -C Debug  # low j to avoid windows' BAD_COMMAND problems (as in vs2022-shell); with -j 4 random tests were still "Not Run" even with the repeat
   tags:
     - windows
     - shell
