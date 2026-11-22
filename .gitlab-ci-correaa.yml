@@ -479,7 +479,7 @@ vs2022-shell c++17:
     - cmake --version
     - cmake -S . -B build -DCMAKE_CXX_FLAGS="/MP /wd4514 /wd5045" -DCMAKE_CXX_STANDARD=17 -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_COMPILE_WARNING_AS_ERROR=ON  # -DDISABLE_MPI=1
     - cmake --build build --config Debug --parallel 4 ; if (!$?) { cmake --build build --config Debug --parallel 1 --verbose }
-    - ctest -j 2 --test-dir build --output-on-failure --repeat until-pass:2 -C Debug  # low j to avoid windows' BAD_COMMAND problems (as in vs2022-shell); with -j 4 random tests were still "Not Run" even with the repeat
+    - ctest -j 2 --test-dir build --output-on-failure -C Debug ; if (!$?) { ctest --rerun-failed --test-dir build --output-on-failure -C Debug }  # windows randomly fails to start some executables (BAD_COMMAND, "Not Run"): low j, and a second pass for whatever did not pass; --repeat until-pass does not retry tests that were never started
   tags:
     - windows
     - shell
@@ -1414,6 +1414,8 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     OMPI_MCA_btl: self,vader,smcuda  # smcuda (CUDA IPC) when it initializes, vader otherwise; self,smcuda alone leaves ranks unreachable
     OMPI_MCA_coll: ^ucc,hcoll  # keep coll:cuda for collectives on device buffers
     OMPI_MCA_ess_singleton_isolated: "1"  # singleton MPI_Init (no mpirun, as in inq's configure-time device-pointer check) hangs spawning orted in this container
+    OMPI_CC: gcc  # the HPC-X mpicc/mpif90 wrappers call nvc/nvfortran by default; ELPA and ScaLAPACK are built through them. nvfortran has a different ABI than gfortran (e.g. functions returning complex use a hidden pointer), which crashed libpaw (run_paw_lib, libpaw::unit_test), and nvc-built ScaLAPACK needs libnvc at link time
+    OMPI_FC: gfortran  # see OMPI_CC
   script:
     - apt-get -qq install --no-install-recommends -y ca-certificates cmake ninja-build git gfortran libblas-dev libboost-filesystem-dev libboost-iostreams-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config python3-dev python3-numpy libscalapack-mpich-dev
     - . /opt/nvidia/hpc_sdk/Linux_x86_64/*/comm_libs/*/hpcx/latest/hpcx-init.sh && hpcx_load  # nvhpc's own CUDA-aware Open MPI (HPC-X) first in PATH and LD_LIBRARY_PATH
@@ -1423,7 +1425,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
     - mkdir build && cd build
-    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=nvc -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # nvc/nvfortran too, so CMake agrees with the HPC-X mpicc/mpif90 wrappers that ELPA's configure gets (they call nvc/nvfortran), as in inq's own nvhpc job. CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0" "-DELPA_CONFIGURE_OPTIONS=--disable-avx512;--disable-sse-assembly;--disable-mpi-module"  # nvc/nvfortran too, so CMake agrees with the HPC-X mpicc/mpif90 wrappers that ELPA's configure gets (they call nvc/nvfortran), as in inq's own nvhpc job. CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
     - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
     - 'ldd src/inq | grep libmpi | grep -q "$OPAL_PREFIX" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
     - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
