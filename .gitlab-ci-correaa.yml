@@ -226,9 +226,9 @@ g++ thrust:
     - ctest --output-on-failure
   needs: ["g++"]
 
-g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
+g++-testing c++23 par:  # debian-testing: gcc is a bit behind unstable
   stage: build
-  image: debian:unstable
+  image: debian:testing
   tags:
     - non-shared
     - docker
@@ -242,7 +242,7 @@ g++-unstable c++23 par:  # debian-unstable: default is gcc 15.2.0 as of Jan 2026
     - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_FLAGS="-fimplicit-constexpr" -DDISABLE_MPI=1
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest --output-on-failure
-  needs: ["g++-testing c++20"]
+  needs: ["g++-stable c++20"]
 
 g++-unstable c++26:
   stage: build
@@ -260,25 +260,7 @@ g++-unstable c++26:
     - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-std=c++2c" -DDISABLE_MPI=1
     - cmake --build . || cmake --build . --parallel 1 --verbose
     - ctest --output-on-failure
-  needs: ["g++-unstable c++23 par"]
-
-g++-stable c++26:
-  stage: build
-  image: debian:stable
-  tags:
-    - non-shared
-    - docker
-  allow_failure: false
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-  script:
-    - apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake ninja-build make  libboost-serialization-dev libblas-dev libfftw3-dev libtbb-dev
-    - mkdir build && cd build
-    - g++ --version
-    - CXX=g++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-std=c++2c" -DDISABLE_MPI=1
-    - cmake --build . || cmake --build . --parallel 1 --verbose
-    - ctest --output-on-failure
-  needs: ["g++-unstable c++23 par"]
+  needs: ["g++-testing c++23 par"]
 
 clang++ ubsan:  # more UB is detected on Release
   stage: build
@@ -694,9 +676,9 @@ clang++-latest tidy iwyu everything:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-g++-testing c++20:
+g++-stable c++20:
   stage: build
-  image: debian:testing
+  image: debian:stable
   tags:
     - non-shared
     - docker
