@@ -797,6 +797,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 template<dimensionality_type D, typename Fun>
 restriction(multi::extents_t<D>, Fun) -> restriction<D, Fun>;
 
+#ifndef __MRDOCS__  // not seen by MrDocs (it predefines __MRDOCS__ while parsing), these are the same guides as above for concrete extents, only needed for the terse syntax
 template<typename Fun> restriction(extents_t<0>, Fun) -> restriction<0, Fun>;
 template<typename Fun> restriction(extents_t<1>, Fun) -> restriction<1, Fun>;
 /// Specialization for concrete extents arguments to allow a terse syntax, e.g. `auto r = restriction({3, 4}, fun);`.
@@ -805,6 +806,7 @@ template<typename Fun> restriction(extents_t<3>, Fun) -> restriction<3, Fun>;
 template<typename Fun> restriction(extents_t<4>, Fun) -> restriction<4, Fun>;
 template<typename Fun> restriction(extents_t<5>, Fun) -> restriction<5, Fun>;
 template<typename Fun> restriction(extents_t<6>, Fun) -> restriction<6, Fun>;
+#endif  // __MRDOCS__
 #endif
 // clang-format on
 

@@ -1173,8 +1173,6 @@ hip-emulated c++20:
   stage: build
   image: rocm/dev-ubuntu-24.04:7.0.2-complete  # hipcc only, the simulator replaces the HIP runtime (it supports ROCm 6.4 to 7.2)
   allow_failure: false
-  variables:
-    PANTHEONSIM_COMMIT: dd9dbb1f14be1aa69dc45c04253491fe0fd2c533  # pinned, the simulator is under active development
   tags:
     - non-shared
     - docker
@@ -1182,7 +1180,7 @@ hip-emulated c++20:
     - x86_64  # for rocm image
   script:
     - apt-get install --no-install-recommends -y ninja-build git cmake g++ wget pkg-config make libboost-serialization-dev libblas-dev libfftw3-dev
-    - git clone https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim checkout $PANTHEONSIM_COMMIT
+    - git clone --depth 1 https://github.com/pantheongpu/pantheonsim /opt/pantheonsim && git -C /opt/pantheonsim log -1 --oneline  # latest main (not pinned, so regressions of the simulator show here first); the commit is printed to trace which one ran
     - cmake -S /opt/pantheonsim -B /opt/pantheonsim/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ && cmake --build /opt/pantheonsim/build --parallel 4  # the simulator needs gcc >= 13 (or clang >= 17)
     - /opt/pantheonsim/build/vgpu info --gpu amd/mi300x
     - HIPCC_VERBOSE=1 /opt/rocm/bin/hipcc --version
