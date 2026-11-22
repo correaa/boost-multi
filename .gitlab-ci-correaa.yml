@@ -632,7 +632,7 @@ vs2022-shell cudarun:  # nvcc 13+ does not compiler for arch 61 (XPS card)
     - shell
     - cudatk
     - cuda
-  needs: ["vs2022-shell cudatk"]
+  needs: ["vs2022-shell cudatk-17"]
   timeout: 60 minutes
 
 clang++-m32:
