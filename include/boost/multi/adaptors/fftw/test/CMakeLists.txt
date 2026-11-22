@@ -185,6 +185,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 						-Xcompiler=/wd4555  # result of expression not used (from Windows SDK's winnt.h)
 						-Xcompiler=/wd4191  # unsafe conversion from 'FARPROC' to function pointer type (from CUDA Toolkit's own nvtx3/nvtxDetail/nvtxInit.h)
 						-Xcompiler=/wd5039  # pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc (from Windows SDK's winbase.h)
+						-Xcompiler=/wd4643  # forward declaring 'X' in namespace std is not permitted by the C++ Standard (from CUDA Toolkit's own CCCL 3.4 cccl/cuda/std/__fwd/*.h)
 					>
 				>
 		)
