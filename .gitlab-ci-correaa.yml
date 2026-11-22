@@ -999,7 +999,7 @@ culang++-21 cuda-12.8.2 tidy:  # https://catalog.ngc.nvidia.com/orgs/nvidia/cont
 cuda-12:
   stage: build
   allow_failure: false
-  image: nvidia/cuda:12.9.2-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
+  image: nvidia/cuda:12.8.2-devel-ubuntu24.04  # not 12.9.x: nvcc 12.9.0 and 12.9.2 segfault (cicc) on any std::views::transform with a lambda at -std=c++20 with g++ 13 (fixed in 13.0); was nvcr.io/nvidia/cuda:12.6.3-devel-ubuntu24.04  # nvcr.io/nvidia/cuda:12.5.0-devel-ubuntu22.04
   tags:
     - non-shared
     - nvidia-gpu
