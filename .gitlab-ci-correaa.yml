@@ -1425,7 +1425,7 @@ inq cunvhpc:  # inq on GPU through nvhpc: nvcc driver + nvc++ as CUDA host and C
     - ln -s $CI_PROJECT_DIR inq/external_libs/multi
     - cd inq
     - mkdir build && cd build
-    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=nvc -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_Fortran_COMPILER=nvfortran -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # nvc/nvfortran too, so CMake agrees with the HPC-X mpicc/mpif90 wrappers that ELPA's configure gets (they call nvc/nvfortran), as in inq's own nvhpc job. CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
+    - cmake .. -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=nvc -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CUDA_HOST_COMPILER=nvc++ -DCMAKE_CUDA_ARCHITECTURES="75;80" -DCMAKE_CUDA_FLAGS="-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0"  # nvc/nvfortran too, so CMake agrees with the HPC-X mpicc/mpif90 wrappers that ELPA's configure gets (they call nvc/nvfortran), as in inq's own nvhpc job. CUDA 13 dropped sm_70, 75 for Turing cards behind arch75, 80 for the A30 (and the A2000 runs it)
     - cmake --build . --parallel $(( ($(nproc) + 1) / 2 )) || cmake --build . --parallel 1
     - 'ldd src/inq | grep libmpi | grep -q "$OPAL_PREFIX" || { echo "inq not linked against nvhpc MPI"; exit 1; }'
     - 'NVIS=$(( $(echo "${CUDA_VISIBLE_DEVICES:-$(nvidia-smi --list-gpus | cut -d: -f1 | paste -sd,)}" | tr -cd , | wc -c) + 1 ))'
