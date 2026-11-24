@@ -2007,8 +2007,6 @@ class const_subarray : BOOST_MULTI_ARRAY_TYPES_ACCESS detail::array_types<T, D, 
  private:
 	template<typename, ::boost::multi::dimensionality_type, typename, class>
 	friend class const_subarray;
-	template<typename, ::boost::multi::dimensionality_type, typename, class>
-	friend class array_ref;  // array_ref reaches the private array_types base (e.g. this->base_) through const_subarray
 
 	BOOST_MULTI_HD constexpr auto paren_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
 	BOOST_MULTI_HD constexpr auto subsc_aux_() const& { return const_subarray<T, D, ElementPtr, Layout>(this->layout(), this->base_); }
@@ -3690,8 +3688,6 @@ class const_subarray<T, 1, ElementPtr, Layout>  // NOLINT(misc-multiple-inherita
 
 	template<typename, ::boost::multi::dimensionality_type, typename EP, class LLayout>
 	friend class const_subarray;
-	template<typename, ::boost::multi::dimensionality_type, typename, class>
-	friend class array_ref;  // array_ref reaches the private array_types base (e.g. this->base_) through const_subarray
 	template<typename, ::boost::multi::dimensionality_type, class Alloc>
 	friend struct dynamic_array;  // TODO(correaa) check if this is necessary
 
