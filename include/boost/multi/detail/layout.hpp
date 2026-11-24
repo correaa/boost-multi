@@ -569,8 +569,8 @@ struct layout_t
 	: sub_{apply_        ([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base()))}
 	// : sub_{/*std::*/apply([](auto const&... subexts) { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base()))}
 	, stride_{sub_.num_elements() ? sub_.num_elements() : 1}
-	, offset_{boost::multi::detail::get<0>(exts.base()).first() * stride_}
-	, nelems_{boost::multi::detail::get<0>(exts.base()).size() * sub().num_elements()} {}
+	, offset_{get<0>(exts).first() * stride_}
+	, nelems_{get<0>(exts).size() * sub().num_elements()} {}
 
 	BOOST_MULTI_HD constexpr explicit layout_t(extents_type const& exts, strides_type const& strds)
 	: sub_{std::apply([](auto const&... subexts) -> auto { return multi::extents_t<D - 1>{subexts...}; }, detail::tail(exts.base())), detail::tail(strds)}, stride_{boost::multi::detail::get<0>(strds)}, offset_{boost::multi::detail::get<0>(exts.base()).first() * stride_}, nelems_{boost::multi::detail::get<0>(exts.base()).size() * sub().num_elements()} {}

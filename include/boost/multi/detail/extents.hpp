@@ -238,11 +238,17 @@ class extents_t {
 		boost::multi::detail::get<0>(this->impl_);
 	}
 
+	// private:
+	// public:
 	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
 	// [[deprecated]]
 	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
 
+	template<dimensionality_type, typename>
+	friend struct ::boost::multi::detail::layout_t;
+
+	// public:
 	[[deprecated]]
 	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
 		// return extents_t<D + 1>(tuple(extension, self.base()));
@@ -594,27 +600,6 @@ class extents_t {
 	BOOST_MULTI_HD constexpr auto sizes() const {
 		return this->apply([](auto const&... exts) -> auto { return multi::detail::mk_tuple(exts.size()...); });
 	}
-
-	// this implementation is incorrect, use restriction
-	// /// creates an extents object with the indices rotated to the left
-	// constexpr auto rotate() const {
-	// 	this->apply([](auto const& head, auto const&... rest) -> extents_t { return extents_t(rest..., head); });
-	// }
-
-	// this implementation is incorrect, use restriction
-	// /// creates an extents object with the indices rotated to the right
-	// constexpr auto unrotate() const {
-	// 	this->apply([](auto const&... rest, auto const& tail) -> extents_t { return extents_t(tail, rest...); });
-	// }
-
-	// this implementation is incorrect, use restriction
-	// /// creates an extents object with the first two dimensions transposed
-	// constexpr auto transpose() const {
-	// 	return this->apply([](auto const& head1, auto const& head2, auto const&... rest) -> extents_t { return extents_t(head2, head1, rest...); });
-	// }
-
-	// /// creates an extents object with the first two dimensions transposed
-	// constexpr auto transposed() const { return transpose(); }
 
 	[[deprecated]] BOOST_MULTI_HD constexpr auto extensions() const {
 		using std::apply;

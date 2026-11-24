@@ -450,7 +450,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto operator[](index idx) && -> decltype(auto) {
 		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
-			return detail::bind_front_t<Proj>{idx, std::move(proj_)} ^ extents_t<D - 1>(xs_.base().tail());
+			return detail::bind_front_t<Proj>{idx, std::move(proj_)} ^ xs_.sub();
 		} else {
 			return proj_(idx);
 		}
@@ -459,7 +459,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto operator[](index idx) & -> decltype(auto) {
 		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
-			return detail::bind_front_t<Proj>{idx, proj_} ^ extents_t<D - 1>(xs_.base().tail());
+			return detail::bind_front_t<Proj>{idx, proj_} ^ xs_.sub();
 		} else {
 			return proj_(idx);
 		}
@@ -468,7 +468,7 @@ class restriction : std::conditional_t<std::is_reference_v<Proj>, detail::non_co
 	BOOST_MULTI_HD constexpr auto operator[](index idx) const& -> decltype(auto) {
 		// assert( extent().contains(idx) );
 		if constexpr(D != 1) {
-			return detail::bind_front_t<Proj const&>{idx, proj_} ^ extents_t<D - 1>(xs_.base().tail());
+			return detail::bind_front_t<Proj const&>{idx, proj_} ^ xs_.sub();
 		} else {
 			return proj_(idx);
 		}
