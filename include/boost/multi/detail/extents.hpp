@@ -238,17 +238,13 @@ class extents_t {
 		boost::multi::detail::get<0>(this->impl_);
 	}
 
-	// private:
-	// public:
-	// [[deprecated]]
-	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }
-	// [[deprecated]]
-	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }
+ private:
+	BOOST_MULTI_HD constexpr auto base() const& -> base_ const& { return impl_; }  // NOLINT(readability-identifier-naming)
+	BOOST_MULTI_HD constexpr auto base() & -> base_& { return impl_; }             // NOLINT(readability-identifier-naming)
 
 	template<dimensionality_type, typename>
 	friend struct ::boost::multi::detail::layout_t;
-
-	// public:
+	public:
 	[[deprecated]]
 	friend constexpr auto operator*(index_extension const& ext, extents_t const& self) -> extents_t<D + 1> {
 		// return extents_t<D + 1>(tuple(extension, self.base()));
