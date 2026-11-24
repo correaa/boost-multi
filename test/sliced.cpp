@@ -55,9 +55,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_array_stride)
 	{
 		multi::array<int, 2> arr = {
-			{ 10,  20,  30,  40},
-			{ 50,  60,  70,  80},
-			{ 90, 100, 110, 120},
+			{10, 20, 30, 40},
+			{50, 60, 70, 80},
+			{90, 100, 110, 120},
 			{130, 140, 150, 160},
 		};
 		BOOST_TEST((
@@ -71,9 +71,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(multi_array_take)
 	{
 		multi::array<int, 2> arr = {
-			{ 10,  20,  30,  40},
-			{ 50,  60,  70,  80},
-			{ 90, 100, 110, 120},
+			{10, 20, 30, 40},
+			{50, 60, 70, 80},
+			{90, 100, 110, 120},
 			{130, 140, 150, 160},
 		};
 		BOOST_TEST((
@@ -87,9 +87,9 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// BOOST_AUTO_TEST_CASE(drop)
 	{
 		multi::array<double, 2> arr = {
-			{ 10,  20,  30,  40},
-			{ 50,  60,  70,  80},
-			{ 90, 100, 110, 120},
+			{10, 20, 30, 40},
+			{50, 60, 70, 80},
+			{90, 100, 110, 120},
 			{130, 140, 150, 160},
 		};
 		BOOST_TEST((
