@@ -757,7 +757,7 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 		auto const is3 = intersection(xs1, xs2);
 
 		BOOST_TEST( is3 == multi::extents_t<3>({2, 4}, {1, 3}, {3, 6}) );
-		BOOST_TEST( is3.num_elements() == 2 * 2 * 3 );
+		BOOST_TEST( is3.num_elements() == 2L * 2L * 3L );
 	}
 	{
 		multi::extents_t<2> const xs1({0, 2}, {0, 5});
