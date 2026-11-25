@@ -4581,7 +4581,7 @@ class array_ref : public subarray<T, D, ElementPtr, Layout> {
 
  public:
 	/// pointer to a contiguous range of `.num_elements()` that contains the elements of the array
-	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(this->base_); }
+	BOOST_MULTI_HD constexpr auto data_elements() const& { return static_cast<typename array_ref::element_const_ptr>(this->base()); }
 
 	template<class TT, class... As, std::enable_if_t<!std::is_base_of_v<array_ref, array_ref<TT, D, As...>>, int> = 0>  // NOLINT(modernize-use-constraints)  TODO(correaa) for C++20
 	constexpr auto operator=(array_ref<TT, D, As...> const& other) && -> array_ref& {                                   // if MSVC complains here, it probably needs /EHsc /permissive- for C++17 mode

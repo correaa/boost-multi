@@ -738,5 +738,33 @@ auto main() -> int {  // NOLINT(bugprone-exception-escape,readability-function-c
 	// 	multi::array<int, 2> A({v.size(), v.size()}, 99);  // error, needs to be explicit, good
 	// }
 
+	// intersection of multidimensional extents (instantiates the recursive D -> D - 1 friend; nvcc rejects private access to extents_t<D - 1> there)
+	{
+		multi::extents_t<2> const xs1({0, 4}, {1, 5});
+		multi::extents_t<2> const xs2({2, 6}, {0, 3});
+
+		auto const is2 = intersection(xs1, xs2);
+
+		BOOST_TEST( is2 == multi::extents_t<2>({2, 4}, {1, 3}) );
+		BOOST_TEST( get<0>(is2) == multi::index_extension(2, 4) );
+		BOOST_TEST( get<1>(is2) == multi::index_extension(1, 3) );
+		BOOST_TEST( is2.num_elements() == 4 );
+	}
+	{
+		multi::extents_t<3> const xs1({0, 4}, {1, 5}, {2, 6});
+		multi::extents_t<3> const xs2({2, 6}, {0, 3}, {3, 9});
+
+		auto const is3 = intersection(xs1, xs2);
+
+		BOOST_TEST( is3 == multi::extents_t<3>({2, 4}, {1, 3}, {3, 6}) );
+		BOOST_TEST( is3.num_elements() == 2 * 2 * 3 );
+	}
+	{
+		multi::extents_t<2> const xs1({0, 2}, {0, 5});
+		multi::extents_t<2> const xs2({3, 6}, {0, 5});  // disjoint in the leading dimension
+
+		BOOST_TEST( intersection(xs1, xs2).num_elements() == 0 );
+	}
+
 	return boost::report_errors();
 }

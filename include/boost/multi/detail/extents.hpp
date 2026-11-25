@@ -643,15 +643,9 @@ class extents_t {
 	}
 
 	friend constexpr auto intersection(extents_t const& self, extents_t const& other) -> extents_t {
-		using boost::multi::detail::get;
 		return extents_t(
-			multi::detail::ht_tuple(
-				index_extension(intersection(get<0>(self.base()), get<0>(other.base()))),
-				intersection(
-					extents_t<D - 1>(self.base().tail()),
-					extents_t<D - 1>(other.base().tail())
-				).base()
-			)
+			index_extension(intersection(self.template get<0>(), other.template get<0>())),
+			intersection(self.sub(), other.sub())
 		);
 	}
 
