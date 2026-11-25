@@ -253,11 +253,11 @@ auto main() -> int {  // NOLINT(readability-function-cognitive-complexity,bugpro
 	// subrange_start_finish
 	{
 		multi::array<double, 2> arr = {
-			{ 1.0,  2.0},
-			{ 3.0,  4.0},
-			{ 5.0,  6.0},
-			{ 7.0,  8.0},
-			{ 9.0, 10.0},
+			{1.0, 2.0},
+			{3.0, 4.0},
+			{5.0, 6.0},
+			{7.0, 8.0},
+			{9.0, 10.0},
 			{11.0, 12.0},
 			{13.0, 14.0},
 		};
